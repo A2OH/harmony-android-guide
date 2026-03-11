@@ -5,6 +5,9 @@ from ..database import get_db, rows_to_dicts, row_to_dict
 
 router = APIRouter(prefix="/api/subsystems", tags=["Subsystems"])
 
+# Only count callable APIs in subsystem stats
+CALLABLE_FILTER = "a.kind IN ('method', 'constructor')"
+
 
 @router.get("")
 def list_subsystems():
@@ -23,8 +26,8 @@ def get_subsystem(name: str):
             return None
         result = dict(sub)
 
-        # Score distribution within this subsystem
-        result["score_distribution"] = rows_to_dicts(db.execute("""
+        # Score distribution within this subsystem (callable APIs only)
+        result["score_distribution"] = rows_to_dicts(db.execute(f"""
             SELECT
                 CASE
                     WHEN compat_score >= 9 THEN '9-10'
@@ -34,42 +37,42 @@ def get_subsystem(name: str):
                     ELSE '1-2'
                 END as bucket,
                 COUNT(*) as count
-            FROM android_apis
-            WHERE subsystem = ?
-            GROUP BY bucket ORDER BY MIN(compat_score)
+            FROM android_apis a
+            WHERE a.subsystem = ? AND {CALLABLE_FILTER}
+            GROUP BY bucket ORDER BY MIN(a.compat_score)
         """, (name,)).fetchall())
 
-        # Effort distribution
-        result["effort_distribution"] = rows_to_dicts(db.execute("""
+        # Effort distribution (callable APIs only)
+        result["effort_distribution"] = rows_to_dicts(db.execute(f"""
             SELECT m.effort_level, COUNT(*) as count
             FROM api_mappings m
             JOIN android_apis a ON m.android_api_id = a.id
-            WHERE a.subsystem = ?
+            WHERE a.subsystem = ? AND {CALLABLE_FILTER}
             GROUP BY m.effort_level
         """, (name,)).fetchall())
 
-        # Top types in this subsystem
-        result["types"] = rows_to_dicts(db.execute("""
+        # Top types in this subsystem (count only callable APIs)
+        result["types"] = rows_to_dicts(db.execute(f"""
             SELECT t.id, t.name, t.kind, p.name as package_name,
                    COUNT(a.id) as api_count,
                    ROUND(AVG(a.compat_score), 1) as avg_score
             FROM android_types t
             JOIN android_packages p ON t.package_id = p.id
             JOIN android_apis a ON a.type_id = t.id
-            WHERE a.subsystem = ?
+            WHERE a.subsystem = ? AND {CALLABLE_FILTER}
             GROUP BY t.id
             ORDER BY api_count DESC
             LIMIT 50
         """, (name,)).fetchall())
 
-        # Top gaps (lowest scoring APIs)
-        result["top_gaps"] = rows_to_dicts(db.execute("""
-            SELECT a.id, a.name, a.signature, a.compat_score,
+        # Top gaps (lowest scoring callable APIs)
+        result["top_gaps"] = rows_to_dicts(db.execute(f"""
+            SELECT a.id, a.name, a.kind, a.signature, a.compat_score,
                    t.name as type_name, p.name as package_name
             FROM android_apis a
             JOIN android_types t ON a.type_id = t.id
             JOIN android_packages p ON t.package_id = p.id
-            WHERE a.subsystem = ? AND a.compat_score < 3
+            WHERE a.subsystem = ? AND a.compat_score < 3 AND {CALLABLE_FILTER}
             ORDER BY a.compat_score ASC
             LIMIT 20
         """, (name,)).fetchall())

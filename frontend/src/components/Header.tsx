@@ -38,7 +38,7 @@ export default function Header() {
         </form>
         <button
           onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-          className="text-sm text-gray-400 hover:text-white border border-gray-700 px-2 py-1 rounded whitespace-nowrap"
+          className="shrink-0 text-sm text-gray-400 hover:text-white border border-gray-700 px-3 py-1 rounded whitespace-nowrap"
         >
           {lang === 'en' ? '中文' : 'EN'}
         </button>

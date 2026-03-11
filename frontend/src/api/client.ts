@@ -32,9 +32,13 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 export interface StatsOverview {
   total_android_apis: number;
+  total_android_entries?: number;
+  total_android_constants?: number;
   total_android_types: number;
   total_android_packages: number;
   total_oh_apis: number;
+  total_oh_entries?: number;
+  total_oh_constants?: number;
   total_oh_types: number;
   total_oh_modules: number;
   total_mappings: number;

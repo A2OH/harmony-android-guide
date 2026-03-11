@@ -12,31 +12,43 @@ import type {
 // --- Stats ---
 export async function getStatsOverview(): Promise<StatsOverview> {
   const db = await getDb();
-  const totalAndroid = queryOne(db, 'SELECT COUNT(*) as c FROM android_apis')!.c;
+  // Count only callable APIs (methods/constructors), not constants/fields
+  const CALLABLE = "kind IN ('method', 'constructor')";
+  const OH_CALLABLE = "kind IN ('method', 'function', 'c_function', 'property')";
+
+  const totalAndroid = queryOne(db, `SELECT COUNT(*) as c FROM android_apis WHERE ${CALLABLE}`)!.c;
+  const totalAndroidEntries = queryOne(db, 'SELECT COUNT(*) as c FROM android_apis')!.c;
+  const totalAndroidConstants = queryOne(db, "SELECT COUNT(*) as c FROM android_apis WHERE kind IN ('field', 'enum_constant')")!.c;
   const totalTypes = queryOne(db, 'SELECT COUNT(*) as c FROM android_types')!.c;
   const totalPkgs = queryOne(db, 'SELECT COUNT(*) as c FROM android_packages')!.c;
-  const totalOh = queryOne(db, 'SELECT COUNT(*) as c FROM oh_apis')!.c;
+  const totalOh = queryOne(db, `SELECT COUNT(*) as c FROM oh_apis WHERE ${OH_CALLABLE}`)!.c;
+  const totalOhEntries = queryOne(db, 'SELECT COUNT(*) as c FROM oh_apis')!.c;
+  const totalOhConstants = queryOne(db, "SELECT COUNT(*) as c FROM oh_apis WHERE kind IN ('enum_value', 'macro', 'typedef')")!.c;
   const totalOhTypes = queryOne(db, 'SELECT COUNT(*) as c FROM oh_types')!.c;
   const totalOhMods = queryOne(db, 'SELECT COUNT(*) as c FROM oh_modules')!.c;
-  const totalMappings = queryOne(db, 'SELECT COUNT(*) as c FROM api_mappings')!.c;
-  const mapped = queryOne(db, 'SELECT COUNT(DISTINCT android_api_id) as c FROM api_mappings WHERE oh_api_id IS NOT NULL')!.c;
-  const avgScore = queryOne(db, 'SELECT AVG(score) as a FROM api_mappings')!.a || 0;
+  const totalMappings = queryOne(db, `SELECT COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.${CALLABLE}`)!.c;
+  const mapped = queryOne(db, `SELECT COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.${CALLABLE} AND m.oh_api_id IS NOT NULL`)!.c;
+  const avgScore = queryOne(db, `SELECT AVG(m.score) as a FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.${CALLABLE}`)!.a || 0;
 
   const scoreDist: Record<string, number> = {};
-  queryAll(db, 'SELECT ROUND(score) as s, COUNT(*) as c FROM api_mappings GROUP BY ROUND(score) ORDER BY s').forEach((r: any) => {
+  queryAll(db, `SELECT ROUND(m.score) as s, COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.${CALLABLE} GROUP BY ROUND(m.score) ORDER BY s`).forEach((r: any) => {
     scoreDist[String(r.s)] = r.c;
   });
 
   const effortDist: Record<string, number> = {};
-  queryAll(db, 'SELECT effort_level, COUNT(*) as c FROM api_mappings GROUP BY effort_level').forEach((r: any) => {
+  queryAll(db, `SELECT m.effort_level, COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.${CALLABLE} GROUP BY m.effort_level`).forEach((r: any) => {
     effortDist[r.effort_level] = r.c;
   });
 
   return {
     total_android_apis: totalAndroid,
+    total_android_entries: totalAndroidEntries,
+    total_android_constants: totalAndroidConstants,
     total_android_types: totalTypes,
     total_android_packages: totalPkgs,
     total_oh_apis: totalOh,
+    total_oh_entries: totalOhEntries,
+    total_oh_constants: totalOhConstants,
     total_oh_types: totalOhTypes,
     total_oh_modules: totalOhMods,
     total_mappings: totalMappings,
@@ -60,6 +72,7 @@ export async function getCoverageBySubsystem(): Promise<SubsystemCoverage[]> {
       ROUND(100.0 * SUM(CASE WHEN m.score >= 5 THEN 1 ELSE 0 END) / COUNT(a.id), 1) as coverage_pct
     FROM android_apis a
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
+    WHERE a.kind IN ('method', 'constructor')
     GROUP BY a.subsystem
     ORDER BY total_apis DESC
   `);
@@ -67,17 +80,20 @@ export async function getCoverageBySubsystem(): Promise<SubsystemCoverage[]> {
 
 export async function getEffortBreakdown(): Promise<EffortItem[]> {
   const db = await getDb();
-  const total = queryOne(db, 'SELECT COUNT(*) as c FROM api_mappings')!.c;
+  const total = queryOne(db, "SELECT COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.kind IN ('method', 'constructor')")!.c;
   return queryAll(db, `
-    SELECT effort_level, COUNT(*) as count,
+    SELECT m.effort_level, COUNT(*) as count,
       ROUND(100.0 * COUNT(*) / ${total}, 1) as percentage
-    FROM api_mappings GROUP BY effort_level ORDER BY count DESC
+    FROM api_mappings m
+    JOIN android_apis a ON m.android_api_id = a.id
+    WHERE a.kind IN ('method', 'constructor')
+    GROUP BY m.effort_level ORDER BY count DESC
   `);
 }
 
 export async function getScoreDistribution(): Promise<ScoreDistItem[]> {
   const db = await getDb();
-  const total = queryOne(db, 'SELECT COUNT(*) as c FROM api_mappings')!.c;
+  const total = queryOne(db, "SELECT COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.kind IN ('method', 'constructor')")!.c;
   const buckets = [
     { bucket: 'Direct (9-10)', min: 9, max: 10 },
     { bucket: 'Good (7-8)', min: 7, max: 8.99 },
@@ -86,7 +102,7 @@ export async function getScoreDistribution(): Promise<ScoreDistItem[]> {
     { bucket: 'Gap (1-2)', min: 1, max: 2.99 },
   ];
   return buckets.map(b => {
-    const row = queryOne(db, 'SELECT COUNT(*) as c FROM api_mappings WHERE score >= ? AND score <= ?', [b.min, b.max]);
+    const row = queryOne(db, "SELECT COUNT(*) as c FROM api_mappings m JOIN android_apis a ON m.android_api_id = a.id WHERE a.kind IN ('method', 'constructor') AND m.score >= ? AND m.score <= ?", [b.min, b.max]);
     return { bucket: b.bucket, count: row!.c, percentage: Math.round(1000 * row!.c / total) / 10 };
   });
 }
