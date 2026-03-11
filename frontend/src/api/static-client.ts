@@ -51,7 +51,7 @@ export async function getStatsOverview(): Promise<StatsOverview> {
 export async function getCoverageBySubsystem(): Promise<SubsystemCoverage[]> {
   const db = await getDb();
   return queryAll(db, `
-    SELECT p.subsystem,
+    SELECT a.subsystem,
       COUNT(a.id) as total_apis,
       SUM(CASE WHEN m.score >= 7 THEN 1 ELSE 0 END) as well_mapped,
       SUM(CASE WHEN m.score >= 4 AND m.score < 7 THEN 1 ELSE 0 END) as partially_mapped,
@@ -59,10 +59,8 @@ export async function getCoverageBySubsystem(): Promise<SubsystemCoverage[]> {
       ROUND(AVG(m.score), 1) as avg_score,
       ROUND(100.0 * SUM(CASE WHEN m.score >= 5 THEN 1 ELSE 0 END) / COUNT(a.id), 1) as coverage_pct
     FROM android_apis a
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
-    GROUP BY p.subsystem
+    GROUP BY a.subsystem
     ORDER BY total_apis DESC
   `);
 }
@@ -269,11 +267,9 @@ export async function searchApis(paramsStr: string): Promise<SearchResponse> {
 export async function getSubsystems(): Promise<any[]> {
   const db = await getDb();
   return queryAll(db, `
-    SELECT DISTINCT p.subsystem as name, COUNT(a.id) as api_count
-    FROM android_packages p
-    JOIN android_types t ON t.package_id = p.id
-    JOIN android_apis a ON a.type_id = t.id
-    GROUP BY p.subsystem ORDER BY api_count DESC
+    SELECT subsystem as name, COUNT(*) as api_count
+    FROM android_apis
+    GROUP BY subsystem ORDER BY api_count DESC
   `);
 }
 
@@ -281,28 +277,21 @@ export async function getSubsystem(name: string): Promise<SubsystemDetail> {
   const db = await getDb();
 
   const apiCount = queryOne(db, `
-    SELECT COUNT(a.id) as c FROM android_apis a
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
-    WHERE p.subsystem = ?
+    SELECT COUNT(*) as c FROM android_apis WHERE subsystem = ?
   `, [name])!.c;
 
   const avgRow = queryOne(db, `
     SELECT AVG(m.score) as avg_score FROM api_mappings m
     JOIN android_apis a ON m.android_api_id = a.id
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
   `, [name]);
 
   const overall = avgRow?.avg_score || 0;
   const coverage = queryOne(db, `
     SELECT ROUND(100.0 * SUM(CASE WHEN m.score >= 5 THEN 1 ELSE 0 END) / COUNT(*), 1) as pct
     FROM android_apis a
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
   `, [name])?.pct || 0;
 
   const scoreDist = queryAll(db, `
@@ -315,29 +304,25 @@ export async function getSubsystem(name: string): Promise<SubsystemDetail> {
       COUNT(*) as count
     FROM api_mappings m
     JOIN android_apis a ON m.android_api_id = a.id
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
     GROUP BY bucket
   `, [name]);
 
   const effortDist = queryAll(db, `
     SELECT effort_level, COUNT(*) as count FROM api_mappings m
     JOIN android_apis a ON m.android_api_id = a.id
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
     GROUP BY effort_level ORDER BY count DESC
   `, [name]);
 
   const types = queryAll(db, `
     SELECT t.id, t.name, t.kind, p.name as package_name,
       COUNT(a.id) as api_count, ROUND(AVG(m.score), 1) as avg_score
-    FROM android_types t
+    FROM android_apis a
+    JOIN android_types t ON a.type_id = t.id
     JOIN android_packages p ON t.package_id = p.id
-    JOIN android_apis a ON a.type_id = t.id
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
     GROUP BY t.id ORDER BY api_count DESC LIMIT 50
   `, [name]);
 
@@ -348,7 +333,7 @@ export async function getSubsystem(name: string): Promise<SubsystemDetail> {
     JOIN android_types t ON a.type_id = t.id
     JOIN android_packages p ON t.package_id = p.id
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
-    WHERE p.subsystem = ?
+    WHERE a.subsystem = ?
     ORDER BY COALESCE(m.score, 0) ASC LIMIT 20
   `, [name]);
 
@@ -363,13 +348,11 @@ export async function getSubsystem(name: string): Promise<SubsystemDetail> {
 export async function getGaps(): Promise<any[]> {
   const db = await getDb();
   return queryAll(db, `
-    SELECT p.subsystem, COUNT(*) as gap_count
+    SELECT a.subsystem, COUNT(*) as gap_count
     FROM android_apis a
-    JOIN android_types t ON a.type_id = t.id
-    JOIN android_packages p ON t.package_id = p.id
     LEFT JOIN api_mappings m ON m.android_api_id = a.id
     WHERE m.score IS NULL OR m.score < 3
-    GROUP BY p.subsystem ORDER BY gap_count DESC
+    GROUP BY a.subsystem ORDER BY gap_count DESC
   `);
 }
 
