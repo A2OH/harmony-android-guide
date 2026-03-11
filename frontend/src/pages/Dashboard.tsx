@@ -16,7 +16,23 @@ export default function Dashboard() {
   const [coverage, setCoverage] = useState<SubsystemCoverage[]>([]);
   const [effort, setEffort] = useState<EffortItem[]>([]);
   const [scoreDist, setScoreDist] = useState<ScoreDistItem[]>([]);
+  const [sortKey, setSortKey] = useState<keyof SubsystemCoverage>('total_apis');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { t } = useLang();
+
+  const toggleSort = (key: keyof SubsystemCoverage) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('desc'); }
+  };
+
+  const sortedCoverage = [...coverage].sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number);
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  const sortIcon = (key: keyof SubsystemCoverage) =>
+    sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '';
 
   useEffect(() => {
     getStatsOverview().then(setStats);
@@ -88,17 +104,17 @@ export default function Dashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-gray-400 border-b border-gray-800">
-                <th className="text-left py-2 px-3">{t('table.subsystem')}</th>
-                <th className="text-right py-2 px-3">{t('table.apis')}</th>
-                <th className="text-right py-2 px-3">{t('table.wellMapped')}</th>
-                <th className="text-right py-2 px-3">{t('table.partial')}</th>
-                <th className="text-right py-2 px-3">{t('table.gaps')}</th>
-                <th className="text-right py-2 px-3">{t('table.avgScore')}</th>
-                <th className="text-left py-2 px-3 w-48">{t('table.coverage')}</th>
+                <th className="text-left py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('subsystem')}>{t('table.subsystem')}{sortIcon('subsystem')}</th>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('total_apis')}>{t('table.apis')}{sortIcon('total_apis')}</th>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('well_mapped')}>{t('table.wellMapped')}{sortIcon('well_mapped')}</th>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('partially_mapped')}>{t('table.partial')}{sortIcon('partially_mapped')}</th>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('gaps')}>{t('table.gaps')}{sortIcon('gaps')}</th>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('avg_score')}>{t('table.avgScore')}{sortIcon('avg_score')}</th>
+                <th className="text-left py-2 px-3 w-48 cursor-pointer hover:text-white select-none" onClick={() => toggleSort('coverage_pct')}>{t('table.coverage')}{sortIcon('coverage_pct')}</th>
               </tr>
             </thead>
             <tbody>
-              {coverage.map((row) => (
+              {sortedCoverage.map((row) => (
                 <tr key={row.subsystem} className="border-b border-gray-800/50 hover:bg-gray-800/30">
                   <td className="py-2 px-3">
                     <Link to={`/subsystem/${encodeURIComponent(row.subsystem)}`} className="text-blue-400 hover:underline">
