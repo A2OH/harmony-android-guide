@@ -12,9 +12,7 @@ const EFFORT_COLORS: Record<string, string> = {
   hard: '#ea580c', rewrite: '#dc2626', impossible: '#7f1d1d',
 };
 
-type TypeRow = SubsystemDetailType['types'][number];
 type TypeSortKey = 'name' | 'kind' | 'package_name' | 'api_count' | 'avg_score';
-type GapRow = SubsystemDetailType['top_gaps'][number];
 type GapSortKey = 'name' | 'type_name' | 'package_name' | 'compat_score';
 
 export default function SubsystemDetail() {
