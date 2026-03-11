@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { searchApis } from '../api/client';
 import type { SearchResponse } from '../api/client';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     if (!query) return;
@@ -23,7 +25,7 @@ export default function Search() {
   if (!query) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-12 text-center text-gray-500">
-        Enter a search query in the header to find APIs.
+        {t('search.emptyPrompt')}
       </div>
     );
   }
@@ -31,15 +33,15 @@ export default function Search() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Search Results</h1>
+        <h1 className="text-2xl font-bold">{t('search.title')}</h1>
         <p className="text-sm text-gray-400 mt-1">
-          {loading ? 'Searching...' : results ? `${results.total} results for "${results.query}"` : ''}
+          {loading ? t('search.searching') : results ? t('search.resultsFor', { count: results.total, query: results.query }) : ''}
         </p>
       </div>
 
       {results && results.results.length === 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500">
-          No results found for "{query}". Try a different search term.
+          {t('search.noResults', { query })}
         </div>
       )}
 

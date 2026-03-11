@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getMappings } from '../api/client';
 import type { MappingItem, PaginatedResponse } from '../api/client';
 import { ScoreBadge, EffortBadge } from '../components/ScoreBadge';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function Mappings() {
   const [data, setData] = useState<PaginatedResponse<MappingItem> | null>(null);
@@ -11,6 +12,7 @@ export default function Mappings() {
   const [effortFilter, setEffortFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
+  const { t } = useLang();
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -29,13 +31,13 @@ export default function Mappings() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-      <h1 className="text-2xl font-bold">API Mappings</h1>
+      <h1 className="text-2xl font-bold">{t('mappings.title')}</h1>
 
       {/* Filters */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-wrap gap-3 items-center">
         <input
           type="text"
-          placeholder="Search mappings..."
+          placeholder={t('mappings.searchPlaceholder')}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500"
@@ -45,38 +47,38 @@ export default function Mappings() {
           onChange={(e) => { setScoreFilter(e.target.value); setPage(1); }}
           className="px-2 py-1.5 bg-gray-800 border border-gray-700 rounded text-sm text-gray-200"
         >
-          <option value="">All Scores</option>
-          <option value="8-10">8-10 (Direct)</option>
-          <option value="5-7">5-7 (Partial)</option>
-          <option value="3-4">3-4 (Hard)</option>
-          <option value="1-2">1-2 (Gap)</option>
+          <option value="">{t('browse.allScores')}</option>
+          <option value="8-10">{t('score.8-10')}</option>
+          <option value="5-7">{t('score.5-7')}</option>
+          <option value="3-4">{t('score.3-4')}</option>
+          <option value="1-2">{t('score.1-2')}</option>
         </select>
         <select
           value={effortFilter}
           onChange={(e) => { setEffortFilter(e.target.value); setPage(1); }}
           className="px-2 py-1.5 bg-gray-800 border border-gray-700 rounded text-sm text-gray-200"
         >
-          <option value="">All Effort</option>
-          <option value="trivial">Trivial</option>
-          <option value="easy">Easy</option>
-          <option value="moderate">Moderate</option>
-          <option value="hard">Hard</option>
-          <option value="rewrite">Rewrite</option>
-          <option value="impossible">Impossible</option>
+          <option value="">{t('browse.allEffort')}</option>
+          <option value="trivial">{t('effort.trivial')}</option>
+          <option value="easy">{t('effort.easy')}</option>
+          <option value="moderate">{t('effort.moderate')}</option>
+          <option value="hard">{t('effort.hard')}</option>
+          <option value="rewrite">{t('effort.rewrite')}</option>
+          <option value="impossible">{t('effort.impossible')}</option>
         </select>
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
           className="px-2 py-1.5 bg-gray-800 border border-gray-700 rounded text-sm text-gray-200"
         >
-          <option value="">All Types</option>
-          <option value="direct">Direct</option>
-          <option value="near">Near</option>
-          <option value="partial">Partial</option>
-          <option value="composite">Composite</option>
-          <option value="none">None</option>
+          <option value="">{t('mappings.allTypes')}</option>
+          <option value="direct">{t('mappings.direct')}</option>
+          <option value="near">{t('mappings.near')}</option>
+          <option value="partial">{t('mappings.partial')}</option>
+          <option value="composite">{t('mappings.composite')}</option>
+          <option value="none">{t('mappings.none')}</option>
         </select>
-        {data && <span className="text-xs text-gray-500 ml-auto">{data.total.toLocaleString()} mappings</span>}
+        {data && <span className="text-xs text-gray-500 ml-auto">{t('mappings.count', { count: data.total.toLocaleString() })}</span>}
       </div>
 
       {/* Mapping list */}
@@ -86,12 +88,12 @@ export default function Mappings() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-800 text-left">
-                  <th className="py-2 px-3">Score</th>
-                  <th className="py-2 px-3">Android API</th>
-                  <th className="py-2 px-3">OH API</th>
-                  <th className="py-2 px-3">Type</th>
-                  <th className="py-2 px-3">Effort</th>
-                  <th className="py-2 px-3">Flags</th>
+                  <th className="py-2 px-3">{t('apiDetail.score')}</th>
+                  <th className="py-2 px-3">{t('mappings.androidApi')}</th>
+                  <th className="py-2 px-3">{t('mappings.ohApi')}</th>
+                  <th className="py-2 px-3">{t('mappings.type')}</th>
+                  <th className="py-2 px-3">{t('mappings.effort')}</th>
+                  <th className="py-2 px-3">{t('mappings.flags')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,7 +113,7 @@ export default function Mappings() {
                           <div className="text-xs text-gray-600">{m.oh_module}</div>
                         </>
                       ) : (
-                        <span className="text-gray-500 italic text-xs">No mapping</span>
+                        <span className="text-gray-500 italic text-xs">{t('mappings.noMapping')}</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
@@ -120,7 +122,7 @@ export default function Mappings() {
                     <td className="py-2 px-3"><EffortBadge effort={m.effort_level} /></td>
                     <td className="py-2 px-3">
                       <div className="flex gap-1">
-                        {m.paradigm_shift ? <span className="text-xs bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded">paradigm</span> : null}
+                        {m.paradigm_shift ? <span className="text-xs bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded">{t('apiDetail.paradigmShift')}</span> : null}
                         {m.needs_ui_rewrite ? <span className="text-xs bg-red-900 text-red-300 px-1.5 py-0.5 rounded">UI</span> : null}
                       </div>
                     </td>
@@ -137,15 +139,15 @@ export default function Mappings() {
                 disabled={page <= 1}
                 onClick={() => setPage(p => p - 1)}
                 className="px-3 py-1 bg-gray-800 rounded text-sm disabled:opacity-30"
-              >Prev</button>
+              >{t('pagination.prev')}</button>
               <span className="px-3 py-1 text-sm text-gray-400">
-                Page {page} of {data.total_pages}
+                {t('pagination.pageOf', { page, total: data.total_pages })}
               </span>
               <button
                 disabled={page >= data.total_pages}
                 onClick={() => setPage(p => p + 1)}
                 className="px-3 py-1 bg-gray-800 rounded text-sm disabled:opacity-30"
-              >Next</button>
+              >{t('pagination.next')}</button>
             </div>
           )}
         </div>

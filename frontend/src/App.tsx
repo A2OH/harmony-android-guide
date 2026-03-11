@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from './i18n/LanguageContext';
 import Header from './components/Header';
 import DbLoader from './components/DbLoader';
 import Dashboard from './pages/Dashboard';
@@ -12,23 +13,25 @@ import Docs from './pages/Docs';
 
 export default function App() {
   return (
-    <DbLoader>
-      <BrowserRouter basename={(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}>
-        <div className="min-h-screen bg-black text-white">
-          <Header />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/browse" element={<Browse />} />
-            <Route path="/api/:id" element={<ApiDetail />} />
-            <Route path="/mappings" element={<Mappings />} />
-            <Route path="/gaps" element={<Gaps />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/subsystem/:name" element={<SubsystemDetail />} />
-            <Route path="/docs" element={<Docs />} />
-            <Route path="/docs/*" element={<Docs />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </DbLoader>
+    <LanguageProvider>
+      <DbLoader>
+        <BrowserRouter basename={(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}>
+          <div className="min-h-screen bg-black text-white">
+            <Header />
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/browse" element={<Browse />} />
+              <Route path="/api/:id" element={<ApiDetail />} />
+              <Route path="/mappings" element={<Mappings />} />
+              <Route path="/gaps" element={<Gaps />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/subsystem/:name" element={<SubsystemDetail />} />
+              <Route path="/docs" element={<Docs />} />
+              <Route path="/docs/*" element={<Docs />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </DbLoader>
+    </LanguageProvider>
   );
 }

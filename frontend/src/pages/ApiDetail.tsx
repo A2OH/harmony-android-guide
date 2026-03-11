@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAndroidApi } from '../api/client';
 import { ScoreBadge, EffortBadge, ScoreBar } from '../components/ScoreBadge';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function ApiDetail() {
   const { id } = useParams();
   const [data, setData] = useState<any>(null);
+  const { t } = useLang();
 
   useEffect(() => {
     if (id) getAndroidApi(Number(id)).then(setData);
   }, [id]);
 
-  if (!data) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (!data) return <div className="p-8 text-center text-gray-500">{t('loading')}</div>;
 
   const mapping = data.mappings?.[0];
 
@@ -19,7 +21,7 @@ export default function ApiDetail() {
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500">
-        <Link to="/browse" className="hover:text-blue-400">Browse</Link>
+        <Link to="/browse" className="hover:text-blue-400">{t('nav.browse')}</Link>
         {' → '}
         <Link to={`/browse?package=${data.package_name}`} className="hover:text-blue-400">{data.package_name}</Link>
         {' → '}
@@ -37,7 +39,7 @@ export default function ApiDetail() {
               <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">{data.kind}</span>
               <span className="text-xs text-gray-500">{data.package_name}</span>
               {data.subsystem && <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">{data.subsystem}</span>}
-              {data.is_deprecated && <span className="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded">Deprecated</span>}
+              {data.is_deprecated && <span className="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded">{t('apiDetail.deprecated')}</span>}
             </div>
           </div>
           <div className="text-right">
@@ -61,18 +63,18 @@ export default function ApiDetail() {
             </div>
             <div className="space-y-2">
               <div>
-                <div className="text-xs text-gray-500">Class</div>
+                <div className="text-xs text-gray-500">{t('apiDetail.class')}</div>
                 <div className="text-sm">{data.type_name}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">Signature</div>
+                <div className="text-xs text-gray-500">{t('apiDetail.signature')}</div>
                 <div className="font-mono text-xs text-green-300 bg-gray-800 p-2 rounded overflow-x-auto">
                   {data.signature}
                 </div>
               </div>
               {data.return_type && (
                 <div>
-                  <div className="text-xs text-gray-500">Returns</div>
+                  <div className="text-xs text-gray-500">{t('apiDetail.returns')}</div>
                   <div className="text-sm font-mono">{data.return_type}</div>
                 </div>
               )}
@@ -89,19 +91,19 @@ export default function ApiDetail() {
               <div className="space-y-2">
                 {mapping.oh_type_name && (
                   <div>
-                    <div className="text-xs text-gray-500">Type</div>
+                    <div className="text-xs text-gray-500">{t('apiDetail.type')}</div>
                     <div className="text-sm">{mapping.oh_type_name}</div>
                   </div>
                 )}
                 <div>
-                  <div className="text-xs text-gray-500">Signature</div>
+                  <div className="text-xs text-gray-500">{t('apiDetail.signature')}</div>
                   <div className="font-mono text-xs text-blue-300 bg-gray-800 p-2 rounded overflow-x-auto">
                     {mapping.oh_signature}
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-gray-500 text-sm italic">No OpenHarmony equivalent found</div>
+              <div className="text-gray-500 text-sm italic">{t('apiDetail.noEquivalent')}</div>
             )}
           </div>
         </div>
@@ -110,37 +112,37 @@ export default function ApiDetail() {
       {/* Mapping details */}
       {mapping && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
-          <h2 className="font-semibold">Mapping Details</h2>
+          <h2 className="font-semibold">{t('apiDetail.mappingDetails')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <div className="text-xs text-gray-500">Score</div>
+              <div className="text-xs text-gray-500">{t('apiDetail.score')}</div>
               <ScoreBadge score={mapping.score} />
             </div>
             <div>
-              <div className="text-xs text-gray-500">Mapping Type</div>
+              <div className="text-xs text-gray-500">{t('apiDetail.mappingType')}</div>
               <div>{mapping.mapping_type}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Effort</div>
+              <div className="text-xs text-gray-500">{t('apiDetail.effort')}</div>
               <EffortBadge effort={mapping.effort_level} />
             </div>
             <div>
-              <div className="text-xs text-gray-500">Flags</div>
+              <div className="text-xs text-gray-500">{t('apiDetail.flags')}</div>
               <div className="flex gap-1">
-                {mapping.paradigm_shift ? <span className="text-xs bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded">paradigm shift</span> : null}
-                {mapping.needs_ui_rewrite ? <span className="text-xs bg-red-900 text-red-300 px-1.5 py-0.5 rounded">UI rewrite</span> : null}
+                {mapping.paradigm_shift ? <span className="text-xs bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded">{t('apiDetail.paradigmShift')}</span> : null}
+                {mapping.needs_ui_rewrite ? <span className="text-xs bg-red-900 text-red-300 px-1.5 py-0.5 rounded">{t('apiDetail.uiRewrite')}</span> : null}
               </div>
             </div>
           </div>
           {mapping.gap_description && (
             <div>
-              <div className="text-xs text-gray-500 mb-1">Gap Analysis</div>
+              <div className="text-xs text-gray-500 mb-1">{t('apiDetail.gapAnalysis')}</div>
               <div className="text-sm text-gray-300 bg-gray-800 p-3 rounded">{mapping.gap_description}</div>
             </div>
           )}
           {mapping.migration_guide && (
             <div>
-              <div className="text-xs text-gray-500 mb-1">Migration Guide</div>
+              <div className="text-xs text-gray-500 mb-1">{t('apiDetail.migrationGuide')}</div>
               <div className="text-sm text-gray-300 bg-gray-800 p-3 rounded whitespace-pre-wrap">{mapping.migration_guide}</div>
             </div>
           )}
@@ -150,7 +152,7 @@ export default function ApiDetail() {
       {/* All mappings for this API */}
       {data.mappings?.length > 1 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold mb-3">Alternative Mappings ({data.mappings.length})</h2>
+          <h2 className="font-semibold mb-3">{t('apiDetail.alternativeMappings')} ({data.mappings.length})</h2>
           <div className="space-y-2">
             {data.mappings.map((m: any, i: number) => (
               <div key={i} className="flex items-center gap-3 text-sm bg-gray-800 rounded px-3 py-2">

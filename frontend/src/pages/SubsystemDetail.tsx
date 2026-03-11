@@ -5,6 +5,7 @@ import type { SubsystemDetail as SubsystemDetailType } from '../api/client';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { scoreBarColor } from '../utils/colors';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useLang } from '../i18n/LanguageContext';
 
 const EFFORT_COLORS: Record<string, string> = {
   trivial: '#059669', easy: '#16a34a', moderate: '#ca8a04',
@@ -14,18 +15,19 @@ const EFFORT_COLORS: Record<string, string> = {
 export default function SubsystemDetail() {
   const { name } = useParams();
   const [data, setData] = useState<SubsystemDetailType | null>(null);
+  const { t } = useLang();
 
   useEffect(() => {
     if (name) getSubsystem(name).then(setData);
   }, [name]);
 
-  if (!data) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (!data) return <div className="p-8 text-center text-gray-500">{t('loading')}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500">
-        <Link to="/" className="hover:text-blue-400">Dashboard</Link>
+        <Link to="/" className="hover:text-blue-400">{t('nav.dashboard')}</Link>
         {' → '}
         <span className="text-white">{data.name}</span>
       </div>
@@ -35,15 +37,15 @@ export default function SubsystemDetail() {
         <h1 className="text-2xl font-bold">{data.name}</h1>
         <div className="flex items-center gap-6 mt-3 text-sm">
           <div>
-            <span className="text-gray-500">APIs: </span>
+            <span className="text-gray-500">{t('subsystem.apis')}: </span>
             <span className="font-bold">{data.api_count_android.toLocaleString()}</span>
           </div>
           <div>
-            <span className="text-gray-500">Avg Score: </span>
+            <span className="text-gray-500">{t('subsystem.avgScore')}: </span>
             <span className="font-bold">{data.overall_score.toFixed(1)}/10</span>
           </div>
           <div>
-            <span className="text-gray-500">Coverage: </span>
+            <span className="text-gray-500">{t('subsystem.coverage')}: </span>
             <span className="font-bold">{data.coverage_pct}%</span>
           </div>
         </div>
@@ -59,7 +61,7 @@ export default function SubsystemDetail() {
         {/* Score Distribution */}
         {data.score_distribution && data.score_distribution.length > 0 && (
           <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-            <h2 className="text-lg font-semibold mb-3">Score Distribution</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('subsystem.scoreDistribution')}</h2>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={data.score_distribution}>
                 <XAxis dataKey="bucket" stroke="#9ca3af" fontSize={11} />
@@ -74,7 +76,7 @@ export default function SubsystemDetail() {
         {/* Effort Distribution */}
         {data.effort_distribution && data.effort_distribution.length > 0 && (
           <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-            <h2 className="text-lg font-semibold mb-3">Effort Distribution</h2>
+            <h2 className="text-lg font-semibold mb-3">{t('subsystem.effortDistribution')}</h2>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={data.effort_distribution} layout="vertical">
                 <XAxis type="number" stroke="#9ca3af" fontSize={11} />
@@ -94,26 +96,26 @@ export default function SubsystemDetail() {
       {/* Types in this subsystem */}
       {data.types && data.types.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold mb-3">Types ({data.types.length})</h2>
+          <h2 className="font-semibold mb-3">{t('subsystem.types')} ({data.types.length})</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-800">
-                  <th className="text-left py-2 px-3">Type</th>
-                  <th className="text-left py-2 px-3">Kind</th>
-                  <th className="text-left py-2 px-3">Package</th>
-                  <th className="text-right py-2 px-3">APIs</th>
-                  <th className="text-right py-2 px-3">Avg Score</th>
+                  <th className="text-left py-2 px-3">{t('apiDetail.type')}</th>
+                  <th className="text-left py-2 px-3">{t('subsystem.kind')}</th>
+                  <th className="text-left py-2 px-3">{t('subsystem.package')}</th>
+                  <th className="text-right py-2 px-3">{t('subsystem.apis')}</th>
+                  <th className="text-right py-2 px-3">{t('subsystem.avgScore')}</th>
                 </tr>
               </thead>
               <tbody>
-                {data.types.map((t) => (
-                  <tr key={t.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
-                    <td className="py-2 px-3 font-mono text-blue-300">{t.name}</td>
-                    <td className="py-2 px-3 text-gray-400">{t.kind}</td>
-                    <td className="py-2 px-3 text-gray-500 text-xs">{t.package_name}</td>
-                    <td className="text-right py-2 px-3">{t.api_count}</td>
-                    <td className="text-right py-2 px-3"><ScoreBadge score={t.avg_score} /></td>
+                {data.types.map((tp) => (
+                  <tr key={tp.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                    <td className="py-2 px-3 font-mono text-blue-300">{tp.name}</td>
+                    <td className="py-2 px-3 text-gray-400">{tp.kind}</td>
+                    <td className="py-2 px-3 text-gray-500 text-xs">{tp.package_name}</td>
+                    <td className="text-right py-2 px-3">{tp.api_count}</td>
+                    <td className="text-right py-2 px-3"><ScoreBadge score={tp.avg_score} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -125,7 +127,7 @@ export default function SubsystemDetail() {
       {/* Top Gaps */}
       {data.top_gaps && data.top_gaps.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold mb-3">Top Gaps (Lowest Scores)</h2>
+          <h2 className="font-semibold mb-3">{t('subsystem.topGaps')}</h2>
           <div className="space-y-1">
             {data.top_gaps.map((gap) => (
               <Link

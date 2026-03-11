@@ -1,4 +1,5 @@
 import { scoreColor, effortColor } from '../utils/colors';
+import { useLang } from '../i18n/LanguageContext';
 
 export function ScoreBadge({ score }: { score: number | null | undefined }) {
   const display = score != null ? score.toFixed(1) : '—';
@@ -10,9 +11,10 @@ export function ScoreBadge({ score }: { score: number | null | undefined }) {
 }
 
 export function EffortBadge({ effort }: { effort: string | null | undefined }) {
+  const { t } = useLang();
   return (
     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${effortColor(effort)}`}>
-      {effort || 'unknown'}
+      {effort || t('badge.unknown')}
     </span>
   );
 }

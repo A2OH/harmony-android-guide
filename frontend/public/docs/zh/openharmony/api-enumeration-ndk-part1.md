@@ -1,0 +1,15211 @@
+# OpenHarmony C/NDK SDK API 枚举 — 第1部分
+
+**子系统：** ai, ark_runtime, arkui, bundlemanager, commonlibrary, distributeddatamgr, drivers, global, graphic
+
+**文件数：** 52 | **API 元素总计：** 14550
+
+
+## ai (3 个头文件)
+
+
+### ai/neural_network_runtime/neural_network_core.h
+#### 函数
+- `OH_NN_ReturnCode OH_NNCompilation_ExportCacheToBuffer(OH_NNCompilation *compilation,
+                                                      const void *buffer,
+               )`
+- `OH_NN_ReturnCode OH_NNCompilation_ImportCacheFromBuffer(OH_NNCompilation *compilation,
+                                                        const void *buffer,
+             )`
+- `OH_NN_ReturnCode OH_NNCompilation_AddExtensionConfig(OH_NNCompilation *compilation,
+                                                     const char *configName,
+            )`
+- `OH_NN_ReturnCode OH_NNCompilation_SetDevice(OH_NNCompilation *compilation, size_t deviceID)`
+- `OH_NN_ReturnCode OH_NNCompilation_SetCache(OH_NNCompilation *compilation, const char *cachePath, uint32_t version)`
+- `OH_NN_ReturnCode OH_NNCompilation_SetPerformanceMode(OH_NNCompilation *compilation,
+                                                     OH_NN_PerformanceMode performanceMod)`
+- `OH_NN_ReturnCode OH_NNCompilation_SetPriority(OH_NNCompilation *compilation, OH_NN_Priority priority)`
+- `OH_NN_ReturnCode OH_NNCompilation_EnableFloat16(OH_NNCompilation *compilation, bool enableFloat16)`
+- `OH_NN_ReturnCode OH_NNCompilation_Build(OH_NNCompilation *compilation)`
+- `void OH_NNCompilation_Destroy(OH_NNCompilation **compilation)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_Destroy(NN_TensorDesc **tensorDesc)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_SetName(NN_TensorDesc *tensorDesc, const char *name)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetName(const NN_TensorDesc *tensorDesc, const char **name)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_SetDataType(NN_TensorDesc *tensorDesc, OH_NN_DataType dataType)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetDataType(const NN_TensorDesc *tensorDesc, OH_NN_DataType *dataType)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_SetShape(NN_TensorDesc *tensorDesc, const int32_t *shape, size_t shapeLength)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetShape(const NN_TensorDesc *tensorDesc, int32_t **shape, size_t *shapeLength)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_SetFormat(NN_TensorDesc *tensorDesc, OH_NN_Format format)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetFormat(const NN_TensorDesc *tensorDesc, OH_NN_Format *format)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetElementCount(const NN_TensorDesc *tensorDesc, size_t *elementCount)`
+- `OH_NN_ReturnCode OH_NNTensorDesc_GetByteSize(const NN_TensorDesc *tensorDesc, size_t *byteSize)`
+- `OH_NN_ReturnCode OH_NNTensor_Destroy(NN_Tensor **tensor)`
+- `OH_NN_ReturnCode OH_NNTensor_GetFd(const NN_Tensor *tensor, int *fd)`
+- `OH_NN_ReturnCode OH_NNTensor_GetSize(const NN_Tensor *tensor, size_t *size)`
+- `OH_NN_ReturnCode OH_NNTensor_GetOffset(const NN_Tensor *tensor, size_t *offset)`
+- `OH_NN_ReturnCode OH_NNExecutor_GetOutputShape(OH_NNExecutor *executor,
+                                              uint32_t outputIndex,
+                           )`
+- `void OH_NNExecutor_Destroy(OH_NNExecutor **executor)`
+- `OH_NN_ReturnCode OH_NNExecutor_GetInputCount(const OH_NNExecutor *executor, size_t *inputCount)`
+- `OH_NN_ReturnCode OH_NNExecutor_GetOutputCount(const OH_NNExecutor *executor, size_t *outputCount)`
+- `OH_NN_ReturnCode OH_NNExecutor_GetInputDimRange(const OH_NNExecutor *executor,
+                                                size_t index,
+                           )`
+- `OH_NN_ReturnCode OH_NNExecutor_SetOnRunDone(OH_NNExecutor *executor, NN_OnRunDone onRunDone)`
+- `OH_NN_ReturnCode OH_NNExecutor_SetOnServiceDied(OH_NNExecutor *executor, NN_OnServiceDied onServiceDied)`
+- `OH_NN_ReturnCode OH_NNExecutor_RunSync(OH_NNExecutor *executor,
+                                       NN_Tensor *inputTensor[],
+                              )`
+- `OH_NN_ReturnCode OH_NNExecutor_RunAsync(OH_NNExecutor *executor,
+                                        NN_Tensor *inputTensor[],
+                             )`
+- `OH_NN_ReturnCode OH_NNDevice_GetAllDevicesID(const size_t **allDevicesID, uint32_t *deviceCount)`
+- `OH_NN_ReturnCode OH_NNDevice_GetName(size_t deviceID, const char **name)`
+- `OH_NN_ReturnCode OH_NNDevice_GetType(size_t deviceID, OH_NN_DeviceType *deviceType)`
+
+### ai/neural_network_runtime/neural_network_runtime.h
+#### 函数
+- `OH_NN_ReturnCode OH_NNQuantParam_SetScales(NN_QuantParam *quantParams, const double *scales, size_t quantCount)`
+- `OH_NN_ReturnCode OH_NNQuantParam_SetZeroPoints(NN_QuantParam *quantParams, const int32_t *zeroPoints, size_t quantCount)`
+- `OH_NN_ReturnCode OH_NNQuantParam_SetNumBits(NN_QuantParam *quantParams, const uint32_t *numBits, size_t quantCount)`
+- `OH_NN_ReturnCode OH_NNQuantParam_Destroy(NN_QuantParam **quantParams)`
+- `OH_NN_ReturnCode OH_NNModel_AddTensorToModel(OH_NNModel *model, const NN_TensorDesc *tensorDesc)`
+- `OH_NN_ReturnCode OH_NNModel_SetTensorData(OH_NNModel *model, uint32_t index, const void *dataBuffer, size_t length)`
+- `OH_NN_ReturnCode OH_NNModel_SetTensorQuantParams(OH_NNModel *model, uint32_t index, NN_QuantParam *quantParam)`
+- `OH_NN_ReturnCode OH_NNModel_SetTensorType(OH_NNModel *model, uint32_t index, OH_NN_TensorType tensorType)`
+- `OH_NN_ReturnCode OH_NNModel_AddOperation(OH_NNModel *model,
+                                         OH_NN_OperationType op,
+                                    )`
+- `OH_NN_ReturnCode OH_NNModel_SpecifyInputsAndOutputs(OH_NNModel *model,
+                                                    const OH_NN_UInt32Array *inputIndices,
+          )`
+- `OH_NN_ReturnCode OH_NNModel_Finish(OH_NNModel *model)`
+- `void OH_NNModel_Destroy(OH_NNModel **model)`
+- `OH_NN_ReturnCode OH_NNModel_GetAvailableOperations(OH_NNModel *model,
+                                                   size_t deviceID,
+                                 )`
+- `OH_NN_ReturnCode OH_NNModel_AddTensor(OH_NNModel *model, const OH_NN_Tensor *tensor)`
+- `OH_NN_ReturnCode OH_NNExecutor_SetInput(OH_NNExecutor *executor,
+                                        uint32_t inputIndex,
+                                  )`
+- `OH_NN_ReturnCode OH_NNExecutor_SetOutput(OH_NNExecutor *executor,
+                                         uint32_t outputIndex,
+                                )`
+- `OH_NN_ReturnCode OH_NNExecutor_Run(OH_NNExecutor *executor)`
+- `void OH_NNExecutor_DestroyInputMemory(OH_NNExecutor *executor, uint32_t inputIndex, OH_NN_Memory **memory)`
+- `void OH_NNExecutor_DestroyOutputMemory(OH_NNExecutor *executor, uint32_t outputIndex, OH_NN_Memory **memory)`
+- `OH_NN_ReturnCode OH_NNExecutor_SetInputWithMemory(OH_NNExecutor *executor,
+                                                  uint32_t inputIndex,
+                        )`
+- `OH_NN_ReturnCode OH_NNExecutor_SetOutputWithMemory(OH_NNExecutor *executor,
+                                                   uint32_t outputIndex,
+                      )`
+
+### ai/neural_network_runtime/neural_network_runtime_type.h
+#### 结构体
+- **OH_NN_UInt32Array**
+  - `uint32_t size`
+- **OH_NN_QuantParam**
+  - `uint32_t quantCount`
+- **OH_NN_Tensor**
+- **OH_NN_Memory**
+  - `void * const data`
+  - `const size_t length`
+#### 枚举
+- **OH_NN_PerformanceMode**
+  - `No`
+  - `performance`
+  - `mode`
+  - `preference`
+  - `OH_NN_PERFORMANCE_NONE` = 0
+  - `Low`
+  - `power`
+  - `consumption`
+  - `mode`
+  - `OH_NN_PERFORMANCE_LOW` = 1
+  - `Medium`
+  - `performance`
+  - `mode`
+  - `OH_NN_PERFORMANCE_MEDIUM` = 2
+  - `High`
+  - `performance`
+  - `mode`
+  - `OH_NN_PERFORMANCE_HIGH` = 3
+  - `Ultimate`
+  - `performance`
+  - `mode`
+  - `OH_NN_PERFORMANCE_EXTREME` = 4
+- **OH_NN_Priority**
+  - `No`
+  - `priority`
+  - `preference`
+  - `OH_NN_PRIORITY_NONE` = 0
+  - `Low`
+  - `priority`
+  - `OH_NN_PRIORITY_LOW` = 1
+  - `Medium`
+  - `priority`
+  - `OH_NN_PRIORITY_MEDIUM` = 2
+  - `High`
+  - `priority`
+  - `OH_NN_PRIORITY_HIGH` = 3
+- **anonymous**
+  - `The`
+  - `operation`
+  - `is`
+  - `successful`
+  - `OH_NN_SUCCESS` = 0
+  - `The`
+  - `operation`
+  - `failed`
+  - `OH_NN_FAILED` = 1
+  - `Invalid`
+  - `parameter`
+  - `OH_NN_INVALID_PARAMETER` = 2
+  - `Memory`
+  - `related`
+  - `error`
+  - `for`
+  - `example`
+  - `insufficient`
+  - `memory`
+  - `memory`
+  - `data`
+  - `copy`
+  - `failure`
+  - `or`
+  - `memory`
+  - `application`
+  - `failure`
+  - `OH_NN_MEMORY_ERROR` = 3
+  - `Invalid`
+  - `operation`
+  - `OH_NN_OPERATION_FORBIDDEN` = 4
+  - `Null`
+  - `pointer`
+  - `exception`
+  - `OH_NN_NULL_PTR` = 5
+  - `Invalid`
+  - `file`
+  - `OH_NN_INVALID_FILE` = 6
+  - `A`
+  - `hardware`
+  - `error`
+  - `occurs`
+  - `for`
+  - `example`
+  - `HDL`
+  - `service`
+  - `crash`
+  - `deprecated`
+  - `since`
+  - `11`
+  - `useinstead`
+  - `link`
+  - `OH_NN_UNAVAILABLE_DEVICE`
+- **OH_NN_Format**
+  - `The`
+  - `tensor`
+  - `does`
+  - `not`
+  - `have`
+  - `a`
+  - `specific`
+  - `layout`
+  - `type`
+  - `such`
+  - `as`
+  - `scalar`
+  - `or`
+  - `vector`
+  - `OH_NN_FORMAT_NONE` = 0
+  - `The`
+  - `tensor`
+  - `arranges`
+  - `data`
+  - `in`
+  - `NCHW`
+  - `format`
+  - `OH_NN_FORMAT_NCHW` = 1
+  - `The`
+  - `tensor`
+  - `arranges`
+  - `data`
+  - `in`
+  - `NHWC`
+  - `format`
+  - `OH_NN_FORMAT_NHWC` = 2
+  - `The`
+  - `tensor`
+  - `arranges`
+  - `data`
+  - `in`
+  - `ND`
+  - `format`
+  - `since`
+  - `11`
+  - `OH_NN_FORMAT_ND` = 3
+- **OH_NN_DeviceType**
+  - `Devices`
+  - `that`
+  - `are`
+  - `not`
+  - `CPU`
+  - `GPU`
+  - `or`
+  - `dedicated`
+  - `accelerator`
+  - `OH_NN_OTHERS` = 0
+  - `CPU`
+  - `device`
+  - `OH_NN_CPU` = 1
+  - `GPU`
+  - `device`
+  - `OH_NN_GPU` = 2
+  - `Dedicated`
+  - `hardware`
+  - `accelerator`
+  - `OH_NN_ACCELERATOR` = 3
+- **OH_NN_DataType**
+  - `Unknown`
+  - `type`
+  - `OH_NN_UNKNOWN` = 0
+  - `bool`
+  - `OH_NN_BOOL` = 1
+  - `int8`
+  - `OH_NN_INT8` = 2
+  - `int16`
+  - `OH_NN_INT16` = 3
+  - `int32`
+  - `OH_NN_INT32` = 4
+  - `int64`
+  - `OH_NN_INT64` = 5
+  - `uint8`
+  - `OH_NN_UINT8` = 6
+  - `uint16`
+  - `OH_NN_UINT16` = 7
+  - `uint32`
+  - `OH_NN_UINT32` = 8
+  - `uint64`
+  - `OH_NN_UINT64` = 9
+  - `float16`
+  - `OH_NN_FLOAT16` = 10
+  - `float32`
+  - `OH_NN_FLOAT32` = 11
+  - `float64`
+  - `OH_NN_FLOAT64` = 12
+- **OH_NN_OperationType**
+  - `Returns`
+  - `the`
+  - `tensor`
+  - `of`
+  - `the`
+  - `sum`
+  - `of`
+  - `the`
+  - `elements`
+  - `corresponding`
+  - `to`
+  - `two`
+  - `input`
+  - `tensors`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `first`
+  - `input`
+  - `tensor`
+  - `of`
+  - `the`
+  - `Boolean`
+  - `or`
+  - `number`
+  - `type`
+  - `b`
+  - `input2`
+  - `b`
+  - `second`
+  - `input`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `must`
+  - `be`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `first`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `sum`
+  - `of`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `The`
+  - `data`
+  - `shape`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `after`
+  - `broadcasting`
+  - `and`
+  - `the`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `with`
+  - `a`
+  - `higher`
+  - `precision`
+  - `OH_NN_OPS_ADD` = 1
+  - `Apply`
+  - `2D`
+  - `average`
+  - `pooling`
+  - `to`
+  - `the`
+  - `input`
+  - `tensor`
+  - `which`
+  - `now`
+  - `must`
+  - `be`
+  - `in`
+  - `NHWC`
+  - `format`
+  - `The`
+  - `int8`
+  - `quantization`
+  - `input`
+  - `is`
+  - `supported`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `kernelSize`
+  - `b`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `size`
+  - `used`
+  - `to`
+  - `obtain`
+  - `the`
+  - `average`
+  - `value`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `kernel_height`
+  - `kernel_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `width`
+  - `b`
+  - `strides`
+  - `b`
+  - `indicates`
+  - `the`
+  - `distance`
+  - `of`
+  - `kernel`
+  - `moving`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `stride_height`
+  - `stride_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `width`
+  - `b`
+  - `padMode`
+  - `b`
+  - `padding`
+  - `mode`
+  - `which`
+  - `is`
+  - `optional`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `or`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `nearest`
+  - `neighbor`
+  - `value`
+  - `is`
+  - `used`
+  - `for`
+  - `padding`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `The`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `total`
+  - `padding`
+  - `quantity`
+  - `is`
+  - `calculated`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `and`
+  - `evenly`
+  - `distributed`
+  - `to`
+  - `the`
+  - `top`
+  - `bottom`
+  - `left`
+  - `and`
+  - `right`
+  - `if`
+  - `possible`
+  - `Otherwise`
+  - `the`
+  - `last`
+  - `additional`
+  - `padding`
+  - `will`
+  - `be`
+  - `completed`
+  - `from`
+  - `the`
+  - `bottom`
+  - `and`
+  - `right`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `possible`
+  - `maximum`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `will`
+  - `be`
+  - `returned`
+  - `in`
+  - `case`
+  - `of`
+  - `no`
+  - `padding`
+  - `Excessive`
+  - `pixels`
+  - `will`
+  - `be`
+  - `discarded`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padList`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `kernelSize`
+  - `b`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `size`
+  - `used`
+  - `to`
+  - `obtain`
+  - `the`
+  - `average`
+  - `value`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `kernel_height`
+  - `kernel_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `width`
+  - `b`
+  - `strides`
+  - `b`
+  - `indicates`
+  - `the`
+  - `distance`
+  - `of`
+  - `kernel`
+  - `moving`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `stride_height`
+  - `stride_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `width`
+  - `b`
+  - `padList`
+  - `b`
+  - `padding`
+  - `around`
+  - `b`
+  - `input`
+  - `b`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `top`
+  - `bottom`
+  - `left`
+  - `right`
+  - `and`
+  - `the`
+  - `nearest`
+  - `neighbor`
+  - `values`
+  - `are`
+  - `used`
+  - `for`
+  - `padding`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `average`
+  - `pooling`
+  - `result`
+  - `of`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_AVG_POOL` = 2
+  - `Batch`
+  - `normalization`
+  - `is`
+  - `performed`
+  - `on`
+  - `a`
+  - `tensor`
+  - `to`
+  - `scale`
+  - `and`
+  - `shift`
+  - `tensor`
+  - `elements`
+  - `relieving`
+  - `potential`
+  - `covariate`
+  - `shift`
+  - `in`
+  - `a`
+  - `batch`
+  - `of`
+  - `data`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `of`
+  - `shape`
+  - `N`
+  - `C`
+  - `The`
+  - `i`
+  - `n`
+  - `i`
+  - `th`
+  - `dimension`
+  - `is`
+  - `the`
+  - `number`
+  - `of`
+  - `channels`
+  - `b`
+  - `scale`
+  - `b`
+  - `1D`
+  - `tensor`
+  - `of`
+  - `the`
+  - `scaling`
+  - `factor`
+  - `used`
+  - `to`
+  - `scale`
+  - `the`
+  - `first`
+  - `normalized`
+  - `tensor`
+  - `b`
+  - `offset`
+  - `b`
+  - `1D`
+  - `tensor`
+  - `used`
+  - `to`
+  - `move`
+  - `to`
+  - `the`
+  - `first`
+  - `normalized`
+  - `tensor`
+  - `b`
+  - `mean`
+  - `b`
+  - `1D`
+  - `tensor`
+  - `of`
+  - `the`
+  - `overall`
+  - `mean`
+  - `value`
+  - `It`
+  - `is`
+  - `used`
+  - `only`
+  - `for`
+  - `inference`
+  - `In`
+  - `case`
+  - `of`
+  - `training`
+  - `this`
+  - `parameter`
+  - `must`
+  - `be`
+  - `left`
+  - `empty`
+  - `b`
+  - `variance`
+  - `b`
+  - `1D`
+  - `tensor`
+  - `used`
+  - `for`
+  - `the`
+  - `overall`
+  - `variance`
+  - `It`
+  - `is`
+  - `used`
+  - `only`
+  - `for`
+  - `inference`
+  - `In`
+  - `case`
+  - `of`
+  - `training`
+  - `this`
+  - `parameter`
+  - `must`
+  - `be`
+  - `left`
+  - `empty`
+  - `Parameters`
+  - `b`
+  - `epsilon`
+  - `b`
+  - `fixed`
+  - `small`
+  - `additional`
+  - `value`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `output`
+  - `tensor`
+  - `whose`
+  - `shape`
+  - `and`
+  - `data`
+  - `type`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_BATCH_NORM` = 3
+  - `Divides`
+  - `the`
+  - `batch`
+  - `dimension`
+  - `of`
+  - `a`
+  - `4D`
+  - `tensor`
+  - `into`
+  - `small`
+  - `blocks`
+  - `by`
+  - `b`
+  - `block_shape`
+  - `b`
+  - `and`
+  - `interleaves`
+  - `these`
+  - `blocks`
+  - `back`
+  - `into`
+  - `the`
+  - `spatial`
+  - `dimension`
+  - `Parameters`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `The`
+  - `dimension`
+  - `will`
+  - `be`
+  - `divided`
+  - `into`
+  - `small`
+  - `blocks`
+  - `and`
+  - `these`
+  - `blocks`
+  - `will`
+  - `be`
+  - `interleaved`
+  - `into`
+  - `the`
+  - `spatial`
+  - `dimension`
+  - `Outputs`
+  - `b`
+  - `blockSize`
+  - `b`
+  - `size`
+  - `of`
+  - `each`
+  - `block`
+  - `to`
+  - `be`
+  - `interleaved`
+  - `into`
+  - `the`
+  - `spatial`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `array`
+  - `height_block`
+  - `width_block`
+  - `b`
+  - `crops`
+  - `b`
+  - `elements`
+  - `truncated`
+  - `from`
+  - `the`
+  - `spatial`
+  - `dimension`
+  - `of`
+  - `the`
+  - `output`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `2D`
+  - `array`
+  - `crop0_start`
+  - `crop0_end`
+  - `crop1_start`
+  - `crop1_end`
+  - `with`
+  - `the`
+  - `shape`
+  - `of`
+  - `2`
+  - `2`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `Assume`
+  - `that`
+  - `the`
+  - `shape`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `is`
+  - `n`
+  - `h`
+  - `w`
+  - `c`
+  - `and`
+  - `the`
+  - `shape`
+  - `of`
+  - `b`
+  - `output`
+  - `b`
+  - `is`
+  - `n`
+  - `h`
+  - `w`
+  - `c`
+  - `n`
+  - `n`
+  - `block_shape`
+  - `0`
+  - `block_shape`
+  - `1`
+  - `h`
+  - `h`
+  - `block_shape`
+  - `0`
+  - `crops`
+  - `0`
+  - `0`
+  - `crops`
+  - `0`
+  - `1`
+  - `w`
+  - `w`
+  - `block_shape`
+  - `1`
+  - `crops`
+  - `1`
+  - `0`
+  - `crops`
+  - `1`
+  - `1`
+  - `c`
+  - `c`
+  - `OH_NN_OPS_BATCH_TO_SPACE_ND` = 4
+  - `Offsets`
+  - `the`
+  - `data`
+  - `in`
+  - `each`
+  - `dimension`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `which`
+  - `can`
+  - `have`
+  - `two`
+  - `to`
+  - `five`
+  - `dimensions`
+  - `b`
+  - `bias`
+  - `b`
+  - `offset`
+  - `of`
+  - `the`
+  - `number`
+  - `of`
+  - `input`
+  - `dimensions`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `sum`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `and`
+  - `the`
+  - `bias`
+  - `in`
+  - `each`
+  - `dimension`
+  - `OH_NN_OPS_BIAS_ADD` = 5
+  - `Converts`
+  - `the`
+  - `data`
+  - `type`
+  - `in`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `type`
+  - `b`
+  - `converted`
+  - `data`
+  - `type`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `converted`
+  - `tensor`
+  - `OH_NN_OPS_CAST` = 6
+  - `Connects`
+  - `tensors`
+  - `in`
+  - `a`
+  - `specified`
+  - `dimension`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `N`
+  - `i`
+  - `input`
+  - `tensors`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `for`
+  - `connecting`
+  - `tensors`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `result`
+  - `of`
+  - `connecting`
+  - `i`
+  - `N`
+  - `i`
+  - `tensors`
+  - `along`
+  - `the`
+  - `axis`
+  - `OH_NN_OPS_CONCAT` = 7
+  - `2D`
+  - `convolutional`
+  - `layer`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `inChannel`
+  - `group`
+  - `format`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `must`
+  - `be`
+  - `exactly`
+  - `divided`
+  - `by`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `group`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padMode`
+  - `b`
+  - `padding`
+  - `mode`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `or`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `The`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `total`
+  - `padding`
+  - `quantity`
+  - `is`
+  - `calculated`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `and`
+  - `evenly`
+  - `distributed`
+  - `to`
+  - `the`
+  - `top`
+  - `bottom`
+  - `left`
+  - `and`
+  - `right`
+  - `if`
+  - `possible`
+  - `Otherwise`
+  - `the`
+  - `last`
+  - `additional`
+  - `padding`
+  - `will`
+  - `be`
+  - `completed`
+  - `from`
+  - `the`
+  - `bottom`
+  - `and`
+  - `right`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `possible`
+  - `maximum`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `will`
+  - `be`
+  - `returned`
+  - `in`
+  - `case`
+  - `of`
+  - `no`
+  - `padding`
+  - `The`
+  - `excessive`
+  - `pixels`
+  - `will`
+  - `be`
+  - `discarded`
+  - `b`
+  - `group`
+  - `b`
+  - `number`
+  - `of`
+  - `groups`
+  - `in`
+  - `which`
+  - `the`
+  - `input`
+  - `is`
+  - `divided`
+  - `by`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `conventional`
+  - `convolution`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `greater`
+  - `than`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `less`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `group`
+  - `convolution`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padList`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `inChannel`
+  - `group`
+  - `format`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `must`
+  - `be`
+  - `exactly`
+  - `divided`
+  - `by`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `group`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padList`
+  - `b`
+  - `padding`
+  - `around`
+  - `b`
+  - `input`
+  - `b`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `top`
+  - `bottom`
+  - `left`
+  - `right`
+  - `b`
+  - `group`
+  - `b`
+  - `number`
+  - `of`
+  - `groups`
+  - `in`
+  - `which`
+  - `the`
+  - `input`
+  - `is`
+  - `divided`
+  - `by`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `conventional`
+  - `convolution`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `it`
+  - `is`
+  - `depthwiseConv2d`
+  - `In`
+  - `this`
+  - `case`
+  - `group` = =in_channel==out_channel.
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `greater`
+  - `than`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `less`
+  - `than`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `group`
+  - `convolution`
+  - `In`
+  - `this`
+  - `case`
+  - `out_channel` = =group.
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `convolution`
+  - `computing`
+  - `result`
+  - `OH_NN_OPS_CONV2D` = 8
+  - `2D`
+  - `convolution`
+  - `transposition`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `inChannel`
+  - `group`
+  - `format`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `must`
+  - `be`
+  - `exactly`
+  - `divided`
+  - `by`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `group`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `Parameters`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padMode`
+  - `b`
+  - `padding`
+  - `mode`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `or`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `The`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `total`
+  - `padding`
+  - `quantity`
+  - `is`
+  - `calculated`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `and`
+  - `evenly`
+  - `distributed`
+  - `to`
+  - `the`
+  - `top`
+  - `bottom`
+  - `left`
+  - `and`
+  - `right`
+  - `if`
+  - `possible`
+  - `Otherwise`
+  - `the`
+  - `last`
+  - `additional`
+  - `padding`
+  - `will`
+  - `be`
+  - `completed`
+  - `from`
+  - `the`
+  - `bottom`
+  - `and`
+  - `right`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `possible`
+  - `maximum`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `will`
+  - `be`
+  - `returned`
+  - `in`
+  - `case`
+  - `of`
+  - `no`
+  - `padding`
+  - `The`
+  - `excessive`
+  - `pixels`
+  - `will`
+  - `be`
+  - `discarded`
+  - `b`
+  - `group`
+  - `b`
+  - `number`
+  - `of`
+  - `groups`
+  - `in`
+  - `which`
+  - `the`
+  - `input`
+  - `is`
+  - `divided`
+  - `by`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `conventional`
+  - `convolution`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `greater`
+  - `than`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `less`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `group`
+  - `convolution`
+  - `b`
+  - `outputPads`
+  - `b`
+  - `padding`
+  - `along`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `tensor`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `or`
+  - `a`
+  - `tuple`
+  - `It`
+  - `can`
+  - `be`
+  - `a`
+  - `single`
+  - `integer`
+  - `to`
+  - `specify`
+  - `the`
+  - `same`
+  - `value`
+  - `for`
+  - `all`
+  - `spatial`
+  - `dimensions`
+  - `The`
+  - `amount`
+  - `of`
+  - `output`
+  - `padding`
+  - `along`
+  - `a`
+  - `dimension`
+  - `must`
+  - `be`
+  - `less`
+  - `than`
+  - `the`
+  - `stride`
+  - `along`
+  - `this`
+  - `dimension`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padList`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `inChannel`
+  - `group`
+  - `format`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `must`
+  - `be`
+  - `exactly`
+  - `divided`
+  - `by`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `group`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padList`
+  - `b`
+  - `padding`
+  - `around`
+  - `b`
+  - `input`
+  - `b`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `top`
+  - `bottom`
+  - `left`
+  - `right`
+  - `b`
+  - `group`
+  - `b`
+  - `number`
+  - `of`
+  - `groups`
+  - `in`
+  - `which`
+  - `the`
+  - `input`
+  - `is`
+  - `divided`
+  - `by`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `conventional`
+  - `convolution`
+  - `If`
+  - `b`
+  - `group`
+  - `b`
+  - `is`
+  - `greater`
+  - `than`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `less`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `in_channel`
+  - `b`
+  - `it`
+  - `is`
+  - `a`
+  - `group`
+  - `convolution`
+  - `b`
+  - `outputPads`
+  - `b`
+  - `padding`
+  - `along`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `tensor`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `or`
+  - `a`
+  - `tuple`
+  - `It`
+  - `can`
+  - `be`
+  - `a`
+  - `single`
+  - `integer`
+  - `to`
+  - `specify`
+  - `the`
+  - `same`
+  - `value`
+  - `for`
+  - `all`
+  - `spatial`
+  - `dimensions`
+  - `The`
+  - `amount`
+  - `of`
+  - `output`
+  - `padding`
+  - `along`
+  - `a`
+  - `dimension`
+  - `must`
+  - `be`
+  - `less`
+  - `than`
+  - `the`
+  - `stride`
+  - `along`
+  - `this`
+  - `dimension`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `computing`
+  - `result`
+  - `after`
+  - `convolution`
+  - `and`
+  - `transposition`
+  - `OH_NN_OPS_CONV2D_TRANSPOSE` = 9
+  - `2D`
+  - `depthwise`
+  - `separable`
+  - `convolution`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `1`
+  - `format`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `is`
+  - `equal`
+  - `to`
+  - `b`
+  - `channelMultiplier`
+  - `b`
+  - `multiplied`
+  - `by`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padMode`
+  - `b`
+  - `padding`
+  - `mode`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `or`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `The`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `total`
+  - `padding`
+  - `quantity`
+  - `is`
+  - `calculated`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `and`
+  - `evenly`
+  - `distributed`
+  - `to`
+  - `the`
+  - `top`
+  - `bottom`
+  - `left`
+  - `and`
+  - `right`
+  - `if`
+  - `possible`
+  - `Otherwise`
+  - `the`
+  - `last`
+  - `additional`
+  - `padding`
+  - `will`
+  - `be`
+  - `completed`
+  - `from`
+  - `the`
+  - `bottom`
+  - `and`
+  - `right`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `possible`
+  - `maximum`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `will`
+  - `be`
+  - `returned`
+  - `in`
+  - `case`
+  - `of`
+  - `no`
+  - `padding`
+  - `The`
+  - `excessive`
+  - `pixels`
+  - `will`
+  - `be`
+  - `discarded`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padList`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `convolution`
+  - `weight`
+  - `in`
+  - `outChannel`
+  - `kernelHeight`
+  - `kernelWidth`
+  - `1`
+  - `format`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `is`
+  - `equal`
+  - `to`
+  - `b`
+  - `channelMultiplier`
+  - `b`
+  - `multiplied`
+  - `by`
+  - `b`
+  - `inChannel`
+  - `b`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `of`
+  - `the`
+  - `convolution`
+  - `It`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `b`
+  - `outChannel`
+  - `b`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `the`
+  - `b`
+  - `bias`
+  - `b`
+  - `parameter`
+  - `does`
+  - `not`
+  - `require`
+  - `quantization`
+  - `parameters`
+  - `The`
+  - `quantization`
+  - `version`
+  - `requires`
+  - `data`
+  - `input`
+  - `of`
+  - `the`
+  - `b`
+  - `OH_NN_INT32`
+  - `b`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `stride`
+  - `b`
+  - `movement`
+  - `stride`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `strideHeight`
+  - `strideWidth`
+  - `b`
+  - `dilation`
+  - `b`
+  - `dilation`
+  - `size`
+  - `of`
+  - `the`
+  - `convolution`
+  - `kernel`
+  - `in`
+  - `height`
+  - `and`
+  - `width`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `dilationHeight`
+  - `dilationWidth`
+  - `The`
+  - `value`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `and`
+  - `cannot`
+  - `exceed`
+  - `the`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `padList`
+  - `b`
+  - `padding`
+  - `around`
+  - `b`
+  - `input`
+  - `b`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `top`
+  - `bottom`
+  - `left`
+  - `right`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `convolution`
+  - `computing`
+  - `result`
+  - `OH_NN_OPS_DEPTHWISE_CONV2D_NATIVE` = 10
+  - `Divides`
+  - `two`
+  - `input`
+  - `scalars`
+  - `or`
+  - `tensors`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `first`
+  - `input`
+  - `which`
+  - `is`
+  - `a`
+  - `number`
+  - `a`
+  - `bool`
+  - `or`
+  - `a`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `number`
+  - `or`
+  - `Boolean`
+  - `b`
+  - `input2`
+  - `b`
+  - `second`
+  - `input`
+  - `which`
+  - `must`
+  - `meet`
+  - `the`
+  - `following`
+  - `requirements`
+  - `If`
+  - `the`
+  - `first`
+  - `input`
+  - `is`
+  - `a`
+  - `tensor`
+  - `the`
+  - `second`
+  - `input`
+  - `can`
+  - `be`
+  - `a`
+  - `real`
+  - `number`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `or`
+  - `a`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `real`
+  - `number`
+  - `or`
+  - `Boolean`
+  - `value`
+  - `If`
+  - `the`
+  - `first`
+  - `input`
+  - `is`
+  - `a`
+  - `real`
+  - `number`
+  - `or`
+  - `Boolean`
+  - `value`
+  - `the`
+  - `second`
+  - `input`
+  - `must`
+  - `be`
+  - `a`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `real`
+  - `number`
+  - `or`
+  - `Boolean`
+  - `value`
+  - `Parameters`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `result`
+  - `of`
+  - `dividing`
+  - `b`
+  - `input1`
+  - `b`
+  - `by`
+  - `b`
+  - `input2`
+  - `b`
+  - `OH_NN_OPS_DIV` = 11
+  - `Sets`
+  - `parameters`
+  - `to`
+  - `perform`
+  - `product`
+  - `dot`
+  - `product`
+  - `sum`
+  - `addition`
+  - `and`
+  - `subtraction`
+  - `or`
+  - `max`
+  - `larger`
+  - `value`
+  - `on`
+  - `the`
+  - `input`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `first`
+  - `input`
+  - `tensor`
+  - `b`
+  - `input2`
+  - `b`
+  - `second`
+  - `input`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `mode`
+  - `b`
+  - `operation`
+  - `mode`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `enumerated`
+  - `value`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `computing`
+  - `result`
+  - `which`
+  - `has`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `of`
+  - `b`
+  - `output`
+  - `b`
+  - `and`
+  - `b`
+  - `input1`
+  - `b`
+  - `OH_NN_OPS_ELTWISE` = 12
+  - `Adds`
+  - `an`
+  - `additional`
+  - `dimension`
+  - `to`
+  - `a`
+  - `tensor`
+  - `in`
+  - `the`
+  - `given`
+  - `dimension`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `tensor`
+  - `b`
+  - `axis`
+  - `b`
+  - `index`
+  - `of`
+  - `the`
+  - `dimension`
+  - `to`
+  - `be`
+  - `added`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int32_t`
+  - `type`
+  - `and`
+  - `must`
+  - `be`
+  - `a`
+  - `constant`
+  - `in`
+  - `the`
+  - `range`
+  - `dim`
+  - `1`
+  - `dim`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `tensor`
+  - `after`
+  - `dimension`
+  - `expansion`
+  - `OH_NN_OPS_EXPAND_DIMS` = 13
+  - `Creates`
+  - `a`
+  - `tensor`
+  - `of`
+  - `the`
+  - `specified`
+  - `dimensions`
+  - `and`
+  - `fills`
+  - `it`
+  - `with`
+  - `a`
+  - `scalar`
+  - `Inputs`
+  - `b`
+  - `value`
+  - `b`
+  - `scalar`
+  - `used`
+  - `to`
+  - `fill`
+  - `the`
+  - `tensor`
+  - `b`
+  - `shape`
+  - `b`
+  - `dimensions`
+  - `of`
+  - `the`
+  - `tensor`
+  - `to`
+  - `be`
+  - `created`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `generated`
+  - `tensor`
+  - `which`
+  - `has`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `value`
+  - `b`
+  - `The`
+  - `tensor`
+  - `shape`
+  - `is`
+  - `specified`
+  - `by`
+  - `the`
+  - `b`
+  - `shape`
+  - `b`
+  - `parameter`
+  - `OH_NN_OPS_FILL` = 14
+  - `Full`
+  - `connection`
+  - `The`
+  - `entire`
+  - `input`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `feature`
+  - `map`
+  - `for`
+  - `feature`
+  - `extraction`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `full`
+  - `connection`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `weight`
+  - `tensor`
+  - `for`
+  - `a`
+  - `full`
+  - `connection`
+  - `b`
+  - `bias`
+  - `b`
+  - `full`
+  - `connection`
+  - `bias`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `no`
+  - `quantized`
+  - `parameter`
+  - `is`
+  - `required`
+  - `for`
+  - `this`
+  - `parameter`
+  - `If`
+  - `quantization`
+  - `is`
+  - `required`
+  - `the`
+  - `data`
+  - `must`
+  - `be`
+  - `of`
+  - `the`
+  - `OH_NN_INT32`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `computed`
+  - `tensor`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `full`
+  - `connection`
+  - `input`
+  - `tensor`
+  - `b`
+  - `weight`
+  - `b`
+  - `weight`
+  - `tensor`
+  - `for`
+  - `a`
+  - `full`
+  - `connection`
+  - `b`
+  - `bias`
+  - `b`
+  - `full`
+  - `connection`
+  - `bias`
+  - `In`
+  - `quantization`
+  - `scenarios`
+  - `no`
+  - `quantized`
+  - `parameter`
+  - `is`
+  - `required`
+  - `for`
+  - `this`
+  - `parameter`
+  - `If`
+  - `quantization`
+  - `is`
+  - `required`
+  - `the`
+  - `data`
+  - `must`
+  - `be`
+  - `of`
+  - `the`
+  - `OH_NN_INT32`
+  - `type`
+  - `The`
+  - `actual`
+  - `quantization`
+  - `parameters`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `axis`
+  - `in`
+  - `which`
+  - `the`
+  - `full`
+  - `connection`
+  - `is`
+  - `applied`
+  - `The`
+  - `specified`
+  - `axis`
+  - `and`
+  - `its`
+  - `following`
+  - `axes`
+  - `are`
+  - `converted`
+  - `into`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `for`
+  - `applying`
+  - `the`
+  - `full`
+  - `connection`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `computed`
+  - `tensor`
+  - `OH_NN_OPS_FULL_CONNECTION` = 15
+  - `Returns`
+  - `the`
+  - `slice`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `based`
+  - `on`
+  - `the`
+  - `specified`
+  - `index`
+  - `and`
+  - `axis`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `tensor`
+  - `to`
+  - `be`
+  - `sliced`
+  - `b`
+  - `inputIndices`
+  - `b`
+  - `indices`
+  - `of`
+  - `the`
+  - `specified`
+  - `input`
+  - `on`
+  - `the`
+  - `axis`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `array`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `must`
+  - `be`
+  - `in`
+  - `the`
+  - `range`
+  - `0`
+  - `input`
+  - `shape`
+  - `axis`
+  - `b`
+  - `axis`
+  - `b`
+  - `axis`
+  - `on`
+  - `which`
+  - `b`
+  - `input`
+  - `b`
+  - `is`
+  - `sliced`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `array`
+  - `with`
+  - `one`
+  - `element`
+  - `of`
+  - `the`
+  - `int32_t`
+  - `type`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `sliced`
+  - `tensor`
+  - `OH_NN_OPS_GATHER` = 16
+  - `Calculate`
+  - `the`
+  - `b`
+  - `Hswish`
+  - `b`
+  - `activation`
+  - `value`
+  - `of`
+  - `the`
+  - `input`
+  - `Inputs`
+  - `An`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `b`
+  - `Hswish`
+  - `b`
+  - `activation`
+  - `value`
+  - `The`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `b`
+  - `shape`
+  - `b`
+  - `and`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_HSWISH` = 17
+  - `For`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `calculate`
+  - `the`
+  - `result`
+  - `of`
+  - `input1`
+  - `i`
+  - `input2`
+  - `i`
+  - `for`
+  - `each`
+  - `pair`
+  - `of`
+  - `elements`
+  - `where`
+  - `i`
+  - `is`
+  - `the`
+  - `index`
+  - `of`
+  - `each`
+  - `element`
+  - `in`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `which`
+  - `can`
+  - `be`
+  - `a`
+  - `real`
+  - `number`
+  - `Boolean`
+  - `value`
+  - `or`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `b`
+  - `input2`
+  - `b`
+  - `which`
+  - `can`
+  - `be`
+  - `a`
+  - `real`
+  - `number`
+  - `or`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `if`
+  - `b`
+  - `input1`
+  - `b`
+  - `is`
+  - `a`
+  - `tensor`
+  - `and`
+  - `must`
+  - `be`
+  - `a`
+  - `tensor`
+  - `with`
+  - `the`
+  - `data`
+  - `type`
+  - `of`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `if`
+  - `b`
+  - `input1`
+  - `b`
+  - `is`
+  - `not`
+  - `a`
+  - `tensor`
+  - `Outputs`
+  - `A`
+  - `tensor`
+  - `of`
+  - `the`
+  - `data`
+  - `type`
+  - `NN_BOOL`
+  - `When`
+  - `a`
+  - `quantization`
+  - `model`
+  - `is`
+  - `used`
+  - `the`
+  - `quantization`
+  - `parameters`
+  - `of`
+  - `the`
+  - `output`
+  - `cannot`
+  - `be`
+  - `omitted`
+  - `However`
+  - `values`
+  - `of`
+  - `the`
+  - `quantization`
+  - `parameters`
+  - `do`
+  - `not`
+  - `affect`
+  - `the`
+  - `result`
+  - `OH_NN_OPS_LESS_EQUAL` = 18
+  - `Calculate`
+  - `the`
+  - `inner`
+  - `product`
+  - `of`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `b`
+  - `input2`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `TransposeX`
+  - `b`
+  - `Boolean`
+  - `value`
+  - `indicating`
+  - `whether`
+  - `to`
+  - `transpose`
+  - `b`
+  - `input1`
+  - `b`
+  - `b`
+  - `TransposeY`
+  - `b`
+  - `Boolean`
+  - `value`
+  - `indicating`
+  - `whether`
+  - `to`
+  - `transpose`
+  - `b`
+  - `input2`
+  - `b`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `inner`
+  - `product`
+  - `obtained`
+  - `after`
+  - `calculation`
+  - `In`
+  - `case`
+  - `of`
+  - `type`
+  - `NN_UNKNOWN`
+  - `the`
+  - `output`
+  - `data`
+  - `type`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `type`
+  - `b`
+  - `In`
+  - `case`
+  - `of`
+  - `type` = =NN_UNKNOWN
+  - `the`
+  - `output`
+  - `data`
+  - `type`
+  - `depends`
+  - `on`
+  - `the`
+  - `data`
+  - `type`
+  - `converted`
+  - `during`
+  - `computing`
+  - `of`
+  - `b`
+  - `inputX`
+  - `b`
+  - `and`
+  - `b`
+  - `inputY`
+  - `b`
+  - `OH_NN_OPS_MATMUL` = 19
+  - `Calculates`
+  - `the`
+  - `maximum`
+  - `of`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `element`
+  - `wise`
+  - `The`
+  - `inputs`
+  - `of`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `comply`
+  - `with`
+  - `the`
+  - `implicit`
+  - `type`
+  - `conversion`
+  - `rules`
+  - `to`
+  - `make`
+  - `the`
+  - `data`
+  - `types`
+  - `consistent`
+  - `The`
+  - `inputs`
+  - `must`
+  - `be`
+  - `two`
+  - `tensors`
+  - `or`
+  - `one`
+  - `tensor`
+  - `and`
+  - `one`
+  - `scalar`
+  - `When`
+  - `the`
+  - `inputs`
+  - `are`
+  - `two`
+  - `tensors`
+  - `their`
+  - `data`
+  - `types`
+  - `cannot`
+  - `be`
+  - `both`
+  - `NN_BOOL`
+  - `Their`
+  - `shapes`
+  - `can`
+  - `be`
+  - `broadcast`
+  - `to`
+  - `the`
+  - `same`
+  - `size`
+  - `When`
+  - `the`
+  - `inputs`
+  - `are`
+  - `one`
+  - `tensor`
+  - `and`
+  - `one`
+  - `scalar`
+  - `the`
+  - `scalar`
+  - `must`
+  - `be`
+  - `a`
+  - `constant`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `of`
+  - `the`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `type`
+  - `b`
+  - `input2`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `of`
+  - `the`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `type`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `output`
+  - `tensor`
+  - `The`
+  - `b`
+  - `shape`
+  - `b`
+  - `and`
+  - `data`
+  - `type`
+  - `of`
+  - `b`
+  - `output`
+  - `b`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `two`
+  - `inputs`
+  - `with`
+  - `a`
+  - `higher`
+  - `precision`
+  - `OH_NN_OPS_MAXIMUM` = 20
+  - `Applies`
+  - `2D`
+  - `maximum`
+  - `pooling`
+  - `to`
+  - `the`
+  - `input`
+  - `tensor`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `kernelSize`
+  - `b`
+  - `kernel`
+  - `size`
+  - `used`
+  - `to`
+  - `obtain`
+  - `the`
+  - `maximum`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `kernel_height`
+  - `kernel_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `width`
+  - `b`
+  - `strides`
+  - `b`
+  - `indicates`
+  - `the`
+  - `distance`
+  - `of`
+  - `kernel`
+  - `moving`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `stride_height`
+  - `stride_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `width`
+  - `b`
+  - `padMode`
+  - `b`
+  - `padding`
+  - `mode`
+  - `which`
+  - `is`
+  - `optional`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `or`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `nearest`
+  - `neighbor`
+  - `value`
+  - `is`
+  - `used`
+  - `for`
+  - `padding`
+  - `b`
+  - `0`
+  - `b`
+  - `same`
+  - `The`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `total`
+  - `padding`
+  - `quantity`
+  - `is`
+  - `calculated`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `and`
+  - `evenly`
+  - `distributed`
+  - `to`
+  - `the`
+  - `top`
+  - `bottom`
+  - `left`
+  - `and`
+  - `right`
+  - `if`
+  - `possible`
+  - `Otherwise`
+  - `the`
+  - `last`
+  - `additional`
+  - `padding`
+  - `will`
+  - `be`
+  - `completed`
+  - `from`
+  - `the`
+  - `bottom`
+  - `and`
+  - `right`
+  - `b`
+  - `1`
+  - `b`
+  - `valid`
+  - `The`
+  - `possible`
+  - `maximum`
+  - `height`
+  - `and`
+  - `width`
+  - `of`
+  - `the`
+  - `output`
+  - `will`
+  - `be`
+  - `returned`
+  - `in`
+  - `case`
+  - `of`
+  - `no`
+  - `padding`
+  - `The`
+  - `excessive`
+  - `pixels`
+  - `will`
+  - `be`
+  - `discarded`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `If`
+  - `the`
+  - `input`
+  - `contains`
+  - `the`
+  - `b`
+  - `padList`
+  - `b`
+  - `parameter`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `kernelSize`
+  - `b`
+  - `kernel`
+  - `size`
+  - `used`
+  - `to`
+  - `obtain`
+  - `the`
+  - `maximum`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `kernel_height`
+  - `kernel_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `kernel`
+  - `width`
+  - `b`
+  - `strides`
+  - `b`
+  - `indicates`
+  - `the`
+  - `distance`
+  - `of`
+  - `kernel`
+  - `moving`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `stride_height`
+  - `stride_width`
+  - `The`
+  - `first`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `height`
+  - `and`
+  - `the`
+  - `second`
+  - `number`
+  - `indicates`
+  - `the`
+  - `moving`
+  - `step`
+  - `in`
+  - `width`
+  - `b`
+  - `padList`
+  - `b`
+  - `padding`
+  - `around`
+  - `b`
+  - `input`
+  - `b`
+  - `It`
+  - `is`
+  - `an`
+  - `int`
+  - `array`
+  - `top`
+  - `bottom`
+  - `left`
+  - `right`
+  - `and`
+  - `the`
+  - `nearest`
+  - `neighbor`
+  - `values`
+  - `are`
+  - `used`
+  - `for`
+  - `padding`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `tensor`
+  - `obtained`
+  - `after`
+  - `maximum`
+  - `pooling`
+  - `is`
+  - `applied`
+  - `to`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_MAX_POOL` = 21
+  - `Multiplies`
+  - `elements`
+  - `in`
+  - `the`
+  - `same`
+  - `positions`
+  - `of`
+  - `b`
+  - `inputX`
+  - `b`
+  - `and`
+  - `b`
+  - `inputY`
+  - `b`
+  - `to`
+  - `obtain`
+  - `the`
+  - `output`
+  - `If`
+  - `b`
+  - `inputX`
+  - `b`
+  - `and`
+  - `b`
+  - `inputY`
+  - `b`
+  - `have`
+  - `different`
+  - `shapes`
+  - `expand`
+  - `them`
+  - `to`
+  - `the`
+  - `same`
+  - `shape`
+  - `through`
+  - `broadcast`
+  - `and`
+  - `then`
+  - `perform`
+  - `multiplication`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `b`
+  - `input2`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `Product`
+  - `of`
+  - `each`
+  - `element`
+  - `of`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `OH_NN_OPS_MUL` = 22
+  - `Generates`
+  - `a`
+  - `one`
+  - `hot`
+  - `tensor`
+  - `based`
+  - `on`
+  - `the`
+  - `positions`
+  - `specified`
+  - `by`
+  - `b`
+  - `indices`
+  - `b`
+  - `The`
+  - `positions`
+  - `specified`
+  - `by`
+  - `b`
+  - `indices`
+  - `b`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `on_value`
+  - `b`
+  - `and`
+  - `other`
+  - `positions`
+  - `are`
+  - `determined`
+  - `by`
+  - `b`
+  - `off_value`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `indices`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Each`
+  - `element`
+  - `in`
+  - `b`
+  - `indices`
+  - `b`
+  - `determines`
+  - `the`
+  - `position`
+  - `of`
+  - `b`
+  - `on_value`
+  - `b`
+  - `in`
+  - `each`
+  - `one`
+  - `hot`
+  - `vector`
+  - `b`
+  - `depth`
+  - `b`
+  - `integer`
+  - `scalar`
+  - `that`
+  - `determines`
+  - `the`
+  - `depth`
+  - `of`
+  - `the`
+  - `one`
+  - `hot`
+  - `vector`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `depth`
+  - `b`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `b`
+  - `0`
+  - `b`
+  - `b`
+  - `on_value`
+  - `b`
+  - `scalar`
+  - `that`
+  - `specifies`
+  - `a`
+  - `valid`
+  - `value`
+  - `in`
+  - `the`
+  - `one`
+  - `hot`
+  - `vector`
+  - `b`
+  - `off_value`
+  - `b`
+  - `scalar`
+  - `that`
+  - `specifies`
+  - `the`
+  - `values`
+  - `of`
+  - `other`
+  - `posistions`
+  - `in`
+  - `the`
+  - `one`
+  - `hot`
+  - `vector`
+  - `except`
+  - `the`
+  - `valid`
+  - `value`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `integer`
+  - `scalar`
+  - `that`
+  - `specifies`
+  - `the`
+  - `dimension`
+  - `for`
+  - `inserting`
+  - `the`
+  - `one`
+  - `hot`
+  - `Assume`
+  - `that`
+  - `the`
+  - `shape`
+  - `of`
+  - `b`
+  - `indices`
+  - `b`
+  - `is`
+  - `N`
+  - `C`
+  - `and`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `depth`
+  - `b`
+  - `is`
+  - `D`
+  - `When`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `b`
+  - `0`
+  - `b`
+  - `the`
+  - `shape`
+  - `of`
+  - `the`
+  - `output`
+  - `is`
+  - `D`
+  - `N`
+  - `C`
+  - `When`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `the`
+  - `shape`
+  - `of`
+  - `the`
+  - `output`
+  - `is`
+  - `N`
+  - `C`
+  - `D`
+  - `When`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `the`
+  - `shape`
+  - `of`
+  - `the`
+  - `output`
+  - `is`
+  - `N`
+  - `D`
+  - `C`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `1`
+  - `dimensional`
+  - `tensor`
+  - `if`
+  - `b`
+  - `indices`
+  - `b`
+  - `is`
+  - `an`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `The`
+  - `output`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `indices`
+  - `b`
+  - `and`
+  - `b`
+  - `axis`
+  - `b`
+  - `OH_NN_OPS_ONE_HOT` = 23
+  - `Pads`
+  - `b`
+  - `inputX`
+  - `b`
+  - `in`
+  - `the`
+  - `specified`
+  - `dimensions`
+  - `Inputs`
+  - `b`
+  - `inputX`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `in`
+  - `BatchSize`
+  - `format`
+  - `b`
+  - `paddings`
+  - `b`
+  - `2D`
+  - `tensor`
+  - `that`
+  - `specifies`
+  - `the`
+  - `length`
+  - `to`
+  - `pad`
+  - `in`
+  - `each`
+  - `dimension`
+  - `The`
+  - `shape`
+  - `is`
+  - `n`
+  - `2`
+  - `For`
+  - `example`
+  - `b`
+  - `paddings`
+  - `i`
+  - `0`
+  - `b`
+  - `indicates`
+  - `the`
+  - `number`
+  - `of`
+  - `paddings`
+  - `to`
+  - `be`
+  - `added`
+  - `preceding`
+  - `b`
+  - `inputX`
+  - `b`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `b`
+  - `paddings`
+  - `i`
+  - `1`
+  - `b`
+  - `indicates`
+  - `the`
+  - `number`
+  - `of`
+  - `paddings`
+  - `to`
+  - `be`
+  - `added`
+  - `following`
+  - `b`
+  - `inputX`
+  - `b`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `Parameters`
+  - `b`
+  - `padValues`
+  - `b`
+  - `value`
+  - `to`
+  - `be`
+  - `added`
+  - `to`
+  - `the`
+  - `pad`
+  - `operation`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `constant`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `inputX`
+  - `b`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `after`
+  - `padding`
+  - `with`
+  - `the`
+  - `same`
+  - `dimensions`
+  - `and`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `inputX`
+  - `b`
+  - `The`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `inputX`
+  - `b`
+  - `and`
+  - `b`
+  - `paddings`
+  - `b`
+  - `output`
+  - `shape`
+  - `i`
+  - `input`
+  - `shape`
+  - `i`
+  - `paddings`
+  - `i`
+  - `0`
+  - `paddings`
+  - `i`
+  - `1`
+  - `OH_NN_OPS_PAD` = 24
+  - `Calculates`
+  - `the`
+  - `b`
+  - `y`
+  - `b`
+  - `power`
+  - `of`
+  - `each`
+  - `element`
+  - `in`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `inputs`
+  - `must`
+  - `be`
+  - `two`
+  - `tensors`
+  - `or`
+  - `one`
+  - `tensor`
+  - `and`
+  - `one`
+  - `scalar`
+  - `When`
+  - `the`
+  - `inputs`
+  - `are`
+  - `two`
+  - `tensors`
+  - `their`
+  - `data`
+  - `types`
+  - `cannot`
+  - `be`
+  - `both`
+  - `NN_BOOL`
+  - `and`
+  - `their`
+  - `shapes`
+  - `must`
+  - `be`
+  - `the`
+  - `same`
+  - `When`
+  - `the`
+  - `inputs`
+  - `are`
+  - `one`
+  - `tensor`
+  - `and`
+  - `one`
+  - `scalar`
+  - `the`
+  - `scalar`
+  - `must`
+  - `be`
+  - `a`
+  - `constant`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `real`
+  - `number`
+  - `Boolean`
+  - `value`
+  - `or`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `b`
+  - `y`
+  - `b`
+  - `real`
+  - `number`
+  - `Boolean`
+  - `value`
+  - `or`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `real`
+  - `number`
+  - `or`
+  - `NN_BOOL`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `tensor`
+  - `whose`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `the`
+  - `shape`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `y`
+  - `b`
+  - `after`
+  - `broadcasting`
+  - `OH_NN_OPS_POW` = 25
+  - `Scales`
+  - `a`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `b`
+  - `scale`
+  - `b`
+  - `scaling`
+  - `tensor`
+  - `b`
+  - `bias`
+  - `b`
+  - `bias`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimensions`
+  - `to`
+  - `be`
+  - `scaled`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `scaled`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `axis`
+  - `b`
+  - `OH_NN_OPS_SCALE` = 26
+  - `Calculates`
+  - `the`
+  - `shape`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `integer`
+  - `array`
+  - `representing`
+  - `the`
+  - `dimensions`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `OH_NN_OPS_SHAPE` = 27
+  - `Applies`
+  - `the`
+  - `b`
+  - `sigmoid`
+  - `b`
+  - `operation`
+  - `to`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `result`
+  - `of`
+  - `the`
+  - `b`
+  - `sigmoid`
+  - `b`
+  - `operation`
+  - `It`
+  - `is`
+  - `an`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_SIGMOID` = 28
+  - `Slices`
+  - `a`
+  - `tensor`
+  - `of`
+  - `the`
+  - `specified`
+  - `size`
+  - `from`
+  - `the`
+  - `input`
+  - `in`
+  - `each`
+  - `dimension`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `b`
+  - `begin`
+  - `b`
+  - `start`
+  - `of`
+  - `the`
+  - `slice`
+  - `which`
+  - `is`
+  - `an`
+  - `array`
+  - `of`
+  - `integers`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `0`
+  - `b`
+  - `size`
+  - `b`
+  - `slice`
+  - `length`
+  - `which`
+  - `is`
+  - `an`
+  - `array`
+  - `of`
+  - `integers`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `0`
+  - `Assume`
+  - `that`
+  - `a`
+  - `dimension`
+  - `is`
+  - `b`
+  - `i`
+  - `b`
+  - `and`
+  - `1`
+  - `size`
+  - `i`
+  - `input`
+  - `shape`
+  - `i`
+  - `begin`
+  - `i`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `obtained`
+  - `by`
+  - `slicing`
+  - `The`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `shape`
+  - `and`
+  - `size`
+  - `of`
+  - `the`
+  - `output`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_SLICE` = 29
+  - `Applies`
+  - `the`
+  - `b`
+  - `softmax`
+  - `b`
+  - `operation`
+  - `to`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `in`
+  - `which`
+  - `the`
+  - `b`
+  - `softmax`
+  - `b`
+  - `operation`
+  - `is`
+  - `performed`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `the`
+  - `int64`
+  - `type`
+  - `It`
+  - `is`
+  - `an`
+  - `integer`
+  - `in`
+  - `the`
+  - `range`
+  - `n`
+  - `n`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `result`
+  - `of`
+  - `the`
+  - `b`
+  - `softmax`
+  - `b`
+  - `operation`
+  - `It`
+  - `is`
+  - `an`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_SOFTMAX` = 30
+  - `Divides`
+  - `a`
+  - `4D`
+  - `tensor`
+  - `into`
+  - `small`
+  - `blocks`
+  - `and`
+  - `combines`
+  - `these`
+  - `blocks`
+  - `in`
+  - `the`
+  - `original`
+  - `batch`
+  - `The`
+  - `number`
+  - `of`
+  - `blocks`
+  - `is`
+  - `b`
+  - `blockShape`
+  - `0`
+  - `b`
+  - `multiplied`
+  - `by`
+  - `b`
+  - `blockShape`
+  - `1`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `4D`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `blockShape`
+  - `b`
+  - `a`
+  - `pair`
+  - `of`
+  - `integers`
+  - `Each`
+  - `of`
+  - `them`
+  - `is`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `b`
+  - `paddings`
+  - `b`
+  - `a`
+  - `pair`
+  - `of`
+  - `arrays`
+  - `Each`
+  - `of`
+  - `them`
+  - `consists`
+  - `of`
+  - `two`
+  - `integers`
+  - `The`
+  - `four`
+  - `integers`
+  - `that`
+  - `form`
+  - `b`
+  - `paddings`
+  - `b`
+  - `must`
+  - `be`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `b`
+  - `0`
+  - `b`
+  - `b`
+  - `paddings`
+  - `0`
+  - `0`
+  - `b`
+  - `and`
+  - `b`
+  - `paddings`
+  - `0`
+  - `1`
+  - `b`
+  - `specify`
+  - `the`
+  - `number`
+  - `of`
+  - `paddings`
+  - `in`
+  - `the`
+  - `third`
+  - `dimension`
+  - `and`
+  - `b`
+  - `paddings`
+  - `1`
+  - `0`
+  - `b`
+  - `and`
+  - `b`
+  - `paddings`
+  - `1`
+  - `1`
+  - `b`
+  - `specify`
+  - `the`
+  - `number`
+  - `of`
+  - `paddings`
+  - `in`
+  - `the`
+  - `fourth`
+  - `dimension`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `4D`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `input`
+  - `b`
+  - `b`
+  - `blockShape`
+  - `b`
+  - `and`
+  - `b`
+  - `paddings`
+  - `b`
+  - `Assume`
+  - `that`
+  - `the`
+  - `input`
+  - `shape`
+  - `is`
+  - `n`
+  - `c`
+  - `h`
+  - `w`
+  - `then`
+  - `output`
+  - `shape`
+  - `0`
+  - `n`
+  - `blockShape`
+  - `0`
+  - `blockShape`
+  - `1`
+  - `output`
+  - `shape`
+  - `1`
+  - `c`
+  - `output`
+  - `shape`
+  - `2`
+  - `h`
+  - `paddings`
+  - `0`
+  - `0`
+  - `paddings`
+  - `0`
+  - `1`
+  - `blockShape`
+  - `0`
+  - `output`
+  - `shape`
+  - `3`
+  - `w`
+  - `paddings`
+  - `1`
+  - `0`
+  - `paddings`
+  - `1`
+  - `1`
+  - `blockShape`
+  - `1`
+  - `h`
+  - `paddings`
+  - `0`
+  - `0`
+  - `paddings`
+  - `0`
+  - `1`
+  - `and`
+  - `w`
+  - `paddings`
+  - `1`
+  - `0`
+  - `paddings`
+  - `1`
+  - `1`
+  - `is`
+  - `exactly`
+  - `divisible`
+  - `by`
+  - `h`
+  - `paddings`
+  - `0`
+  - `0`
+  - `paddings`
+  - `0`
+  - `1`
+  - `and`
+  - `w`
+  - `paddings`
+  - `1`
+  - `0`
+  - `paddings`
+  - `1`
+  - `1`
+  - `OH_NN_OPS_SPACE_TO_BATCH_ND` = 31
+  - `Splits`
+  - `the`
+  - `input`
+  - `into`
+  - `multiple`
+  - `tensors`
+  - `along`
+  - `the`
+  - `axis`
+  - `dimension`
+  - `The`
+  - `number`
+  - `of`
+  - `tensors`
+  - `is`
+  - `specified`
+  - `by`
+  - `b`
+  - `outputNum`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `outputNum`
+  - `b`
+  - `number`
+  - `of`
+  - `output`
+  - `tensors`
+  - `The`
+  - `data`
+  - `type`
+  - `is`
+  - `long`
+  - `b`
+  - `size_splits`
+  - `b`
+  - `size`
+  - `of`
+  - `each`
+  - `tensor`
+  - `split`
+  - `from`
+  - `the`
+  - `input`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `If`
+  - `b`
+  - `size_splits`
+  - `b`
+  - `is`
+  - `empty`
+  - `the`
+  - `input`
+  - `will`
+  - `be`
+  - `evenly`
+  - `split`
+  - `into`
+  - `tensors`
+  - `of`
+  - `the`
+  - `same`
+  - `size`
+  - `In`
+  - `this`
+  - `case`
+  - `b`
+  - `input`
+  - `shape`
+  - `axis`
+  - `b`
+  - `can`
+  - `be`
+  - `exactly`
+  - `divisible`
+  - `by`
+  - `b`
+  - `outputNum`
+  - `b`
+  - `If`
+  - `b`
+  - `size_splits`
+  - `b`
+  - `is`
+  - `not`
+  - `empty`
+  - `the`
+  - `sum`
+  - `of`
+  - `all`
+  - `its`
+  - `elements`
+  - `must`
+  - `be`
+  - `equal`
+  - `to`
+  - `b`
+  - `input`
+  - `shape`
+  - `axis`
+  - `b`
+  - `b`
+  - `axis`
+  - `b`
+  - `splitting`
+  - `dimension`
+  - `of`
+  - `the`
+  - `int`
+  - `type`
+  - `Outputs`
+  - `b`
+  - `outputs`
+  - `b`
+  - `array`
+  - `of`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensors`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `dimensions`
+  - `The`
+  - `data`
+  - `type`
+  - `of`
+  - `each`
+  - `tensor`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_SPLIT` = 32
+  - `Calculates`
+  - `the`
+  - `square`
+  - `root`
+  - `of`
+  - `a`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `square`
+  - `root`
+  - `of`
+  - `the`
+  - `input`
+  - `It`
+  - `is`
+  - `an`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_SQRT` = 33
+  - `Calculates`
+  - `the`
+  - `square`
+  - `of`
+  - `the`
+  - `difference`
+  - `between`
+  - `two`
+  - `tensors`
+  - `The`
+  - `b`
+  - `SquaredDifference`
+  - `b`
+  - `operator`
+  - `supports`
+  - `tensor`
+  - `and`
+  - `tensor`
+  - `subtraction`
+  - `If`
+  - `two`
+  - `tensors`
+  - `have`
+  - `different`
+  - `b`
+  - `TensorTypes`
+  - `b`
+  - `the`
+  - `Sub`
+  - `operator`
+  - `converts`
+  - `the`
+  - `low`
+  - `precision`
+  - `tensor`
+  - `to`
+  - `a`
+  - `high`
+  - `precision`
+  - `one`
+  - `If`
+  - `two`
+  - `tensors`
+  - `have`
+  - `different`
+  - `shapes`
+  - `the`
+  - `two`
+  - `tensors`
+  - `can`
+  - `be`
+  - `extended`
+  - `to`
+  - `tensors`
+  - `with`
+  - `the`
+  - `same`
+  - `shape`
+  - `through`
+  - `broadcast`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `minuend`
+  - `which`
+  - `is`
+  - `a`
+  - `tensor`
+  - `of`
+  - `the`
+  - `NN_FLOAT16`
+  - `NN_FLOAT32`
+  - `NN_INT32`
+  - `or`
+  - `NN_BOOL`
+  - `type`
+  - `b`
+  - `input2`
+  - `b`
+  - `subtrahend`
+  - `which`
+  - `is`
+  - `a`
+  - `tensor`
+  - `of`
+  - `the`
+  - `NN_FLOAT16`
+  - `NN_FLOAT32`
+  - `NN_INT32`
+  - `or`
+  - `NN_BOOL`
+  - `type`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `square`
+  - `of`
+  - `the`
+  - `difference`
+  - `between`
+  - `two`
+  - `inputs`
+  - `The`
+  - `output`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `If`
+  - `they`
+  - `have`
+  - `the`
+  - `same`
+  - `shape`
+  - `the`
+  - `output`
+  - `tensor`
+  - `has`
+  - `the`
+  - `same`
+  - `shape`
+  - `as`
+  - `them`
+  - `If`
+  - `they`
+  - `have`
+  - `different`
+  - `shapes`
+  - `perform`
+  - `the`
+  - `broadcast`
+  - `operation`
+  - `on`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `and`
+  - `perform`
+  - `subtraction`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `of`
+  - `the`
+  - `output`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `with`
+  - `higher`
+  - `precision`
+  - `OH_NN_OPS_SQUARED_DIFFERENCE` = 34
+  - `Removes`
+  - `the`
+  - `dimension`
+  - `with`
+  - `a`
+  - `length`
+  - `of`
+  - `1`
+  - `from`
+  - `the`
+  - `specified`
+  - `axis`
+  - `The`
+  - `int8`
+  - `quantization`
+  - `input`
+  - `is`
+  - `supported`
+  - `Assume`
+  - `that`
+  - `the`
+  - `input`
+  - `shape`
+  - `is`
+  - `2`
+  - `1`
+  - `1`
+  - `2`
+  - `2`
+  - `and`
+  - `axis`
+  - `is`
+  - `0`
+  - `1`
+  - `the`
+  - `output`
+  - `shape`
+  - `is`
+  - `2`
+  - `1`
+  - `2`
+  - `2`
+  - `which`
+  - `means`
+  - `the`
+  - `dimension`
+  - `whose`
+  - `length`
+  - `is`
+  - `0`
+  - `between`
+  - `dimensions`
+  - `0`
+  - `and`
+  - `dimension`
+  - `1`
+  - `is`
+  - `removed`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `to`
+  - `be`
+  - `removed`
+  - `The`
+  - `value`
+  - `is`
+  - `of`
+  - `int64_t`
+  - `type`
+  - `and`
+  - `can`
+  - `be`
+  - `an`
+  - `integer`
+  - `in`
+  - `the`
+  - `range`
+  - `n`
+  - `n`
+  - `or`
+  - `an`
+  - `array`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `output`
+  - `tensor`
+  - `OH_NN_OPS_SQUEEZE` = 35
+  - `Stacks`
+  - `multiple`
+  - `tensors`
+  - `along`
+  - `the`
+  - `specified`
+  - `axis`
+  - `If`
+  - `each`
+  - `tensor`
+  - `has`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensions`
+  - `before`
+  - `stacking`
+  - `the`
+  - `output`
+  - `tensor`
+  - `will`
+  - `have`
+  - `i`
+  - `n`
+  - `i`
+  - `1`
+  - `dimensions`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `input`
+  - `for`
+  - `stacking`
+  - `which`
+  - `can`
+  - `contain`
+  - `multiple`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensors`
+  - `Each`
+  - `of`
+  - `them`
+  - `must`
+  - `have`
+  - `the`
+  - `same`
+  - `shape`
+  - `and`
+  - `type`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `for`
+  - `tensor`
+  - `stacking`
+  - `which`
+  - `is`
+  - `an`
+  - `integer`
+  - `The`
+  - `value`
+  - `range`
+  - `is`
+  - `n`
+  - `1`
+  - `n`
+  - `1`
+  - `which`
+  - `means`
+  - `a`
+  - `negative`
+  - `number`
+  - `is`
+  - `allowed`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `stacking`
+  - `result`
+  - `of`
+  - `the`
+  - `input`
+  - `along`
+  - `the`
+  - `axis`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `i`
+  - `n`
+  - `i`
+  - `1`
+  - `dimensional`
+  - `tensor`
+  - `and`
+  - `has`
+  - `the`
+  - `same`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `as`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_STACK` = 36
+  - `Slices`
+  - `a`
+  - `tensor`
+  - `with`
+  - `the`
+  - `specified`
+  - `stride`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `b`
+  - `begin`
+  - `b`
+  - `start`
+  - `of`
+  - `slicing`
+  - `which`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `length`
+  - `of`
+  - `b`
+  - `begin`
+  - `b`
+  - `is`
+  - `i`
+  - `n`
+  - `i`
+  - `b`
+  - `begin`
+  - `i`
+  - `b`
+  - `specifies`
+  - `the`
+  - `start`
+  - `of`
+  - `slicing`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `b`
+  - `end`
+  - `b`
+  - `end`
+  - `of`
+  - `slicing`
+  - `which`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `length`
+  - `of`
+  - `b`
+  - `end`
+  - `b`
+  - `is`
+  - `i`
+  - `n`
+  - `i`
+  - `b`
+  - `end`
+  - `i`
+  - `b`
+  - `specifies`
+  - `the`
+  - `end`
+  - `of`
+  - `slicing`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `b`
+  - `strides`
+  - `b`
+  - `slicing`
+  - `stride`
+  - `which`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `length`
+  - `of`
+  - `b`
+  - `strides`
+  - `b`
+  - `is`
+  - `i`
+  - `n`
+  - `i`
+  - `strides`
+  - `i`
+  - `specifies`
+  - `the`
+  - `stride`
+  - `at`
+  - `which`
+  - `the`
+  - `tensor`
+  - `is`
+  - `sliced`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `Parameters`
+  - `b`
+  - `beginMask`
+  - `b`
+  - `an`
+  - `integer`
+  - `used`
+  - `to`
+  - `mask`
+  - `b`
+  - `begin`
+  - `b`
+  - `b`
+  - `beginMask`
+  - `b`
+  - `is`
+  - `represented`
+  - `in`
+  - `binary`
+  - `code`
+  - `In`
+  - `case`
+  - `of`
+  - `binary`
+  - `beginMask`
+  - `i`
+  - `1`
+  - `for`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `elements`
+  - `are`
+  - `sliced`
+  - `from`
+  - `the`
+  - `first`
+  - `element`
+  - `at`
+  - `b`
+  - `strides`
+  - `i`
+  - `b`
+  - `until`
+  - `the`
+  - `end`
+  - `i`
+  - `1`
+  - `element`
+  - `b`
+  - `endMask`
+  - `b`
+  - `an`
+  - `integer`
+  - `used`
+  - `to`
+  - `mask`
+  - `b`
+  - `end`
+  - `b`
+  - `b`
+  - `endMask`
+  - `b`
+  - `is`
+  - `represented`
+  - `in`
+  - `binary`
+  - `code`
+  - `In`
+  - `case`
+  - `of`
+  - `binary`
+  - `endMask`
+  - `i`
+  - `1`
+  - `elements`
+  - `are`
+  - `sliced`
+  - `from`
+  - `the`
+  - `element`
+  - `at`
+  - `the`
+  - `b`
+  - `begin`
+  - `i`
+  - `b`
+  - `position`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `until`
+  - `the`
+  - `tensor`
+  - `boundary`
+  - `at`
+  - `b`
+  - `strides`
+  - `i`
+  - `b`
+  - `b`
+  - `ellipsisMask`
+  - `b`
+  - `integer`
+  - `used`
+  - `to`
+  - `mask`
+  - `b`
+  - `begin`
+  - `b`
+  - `and`
+  - `b`
+  - `end`
+  - `b`
+  - `b`
+  - `ellipsisMask`
+  - `b`
+  - `is`
+  - `represented`
+  - `in`
+  - `binary`
+  - `code`
+  - `In`
+  - `case`
+  - `of`
+  - `binary`
+  - `ellipsisMask`
+  - `i`
+  - `1`
+  - `elements`
+  - `are`
+  - `sliced`
+  - `from`
+  - `the`
+  - `first`
+  - `element`
+  - `at`
+  - `b`
+  - `strides`
+  - `i`
+  - `b`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `until`
+  - `the`
+  - `tensor`
+  - `boundary`
+  - `Only`
+  - `one`
+  - `bit`
+  - `of`
+  - `b`
+  - `binary`
+  - `ellipsisMask`
+  - `b`
+  - `can`
+  - `be`
+  - `a`
+  - `non`
+  - `zero`
+  - `value`
+  - `b`
+  - `newAxisMask`
+  - `b`
+  - `new`
+  - `dimension`
+  - `which`
+  - `is`
+  - `an`
+  - `integer`
+  - `b`
+  - `newAxisMask`
+  - `b`
+  - `is`
+  - `represented`
+  - `in`
+  - `binary`
+  - `code`
+  - `In`
+  - `case`
+  - `of`
+  - `binary`
+  - `newAxisMask`
+  - `i`
+  - `1`
+  - `a`
+  - `new`
+  - `dimension`
+  - `whose`
+  - `length`
+  - `is`
+  - `1`
+  - `is`
+  - `inserted`
+  - `into`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `b`
+  - `shrinkAxisMask`
+  - `b`
+  - `shrinking`
+  - `dimension`
+  - `which`
+  - `is`
+  - `an`
+  - `integer`
+  - `b`
+  - `shrinkAxisMask`
+  - `b`
+  - `is`
+  - `represented`
+  - `in`
+  - `binary`
+  - `code`
+  - `In`
+  - `the`
+  - `case`
+  - `of`
+  - `binary`
+  - `shrinkAxisMask`
+  - `i`
+  - `1`
+  - `all`
+  - `elements`
+  - `in`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `will`
+  - `be`
+  - `discarded`
+  - `and`
+  - `the`
+  - `length`
+  - `of`
+  - `the`
+  - `i`
+  - `i`
+  - `i`
+  - `th`
+  - `dimension`
+  - `is`
+  - `shrunk`
+  - `to`
+  - `b`
+  - `1`
+  - `b`
+  - `Outputs`
+  - `A`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `The`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `of`
+  - `the`
+  - `output`
+  - `tensor`
+  - `is`
+  - `rank`
+  - `input`
+  - `0`
+  - `1`
+  - `OH_NN_OPS_STRIDED_SLICE` = 37
+  - `Calculates`
+  - `the`
+  - `difference`
+  - `between`
+  - `two`
+  - `tensors`
+  - `Inputs`
+  - `b`
+  - `input1`
+  - `b`
+  - `minuend`
+  - `which`
+  - `is`
+  - `a`
+  - `tensor`
+  - `b`
+  - `input2`
+  - `b`
+  - `subtrahend`
+  - `which`
+  - `is`
+  - `a`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `activationType`
+  - `b`
+  - `is`
+  - `an`
+  - `integer`
+  - `constant`
+  - `which`
+  - `is`
+  - `contained`
+  - `in`
+  - `b`
+  - `FuseType`
+  - `b`
+  - `The`
+  - `specified`
+  - `activation`
+  - `function`
+  - `is`
+  - `called`
+  - `before`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `difference`
+  - `between`
+  - `the`
+  - `two`
+  - `tensors`
+  - `The`
+  - `output`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `If`
+  - `they`
+  - `have`
+  - `the`
+  - `same`
+  - `shape`
+  - `the`
+  - `output`
+  - `tensor`
+  - `has`
+  - `the`
+  - `same`
+  - `shape`
+  - `as`
+  - `them`
+  - `If`
+  - `they`
+  - `have`
+  - `different`
+  - `shapes`
+  - `perform`
+  - `the`
+  - `broadcast`
+  - `operation`
+  - `on`
+  - `b`
+  - `input1`
+  - `b`
+  - `and`
+  - `b`
+  - `input2`
+  - `b`
+  - `and`
+  - `perform`
+  - `subtraction`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `of`
+  - `the`
+  - `output`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `with`
+  - `higher`
+  - `precision`
+  - `OH_NN_OPS_SUB` = 38
+  - `Computes`
+  - `hyperbolic`
+  - `tangent`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `hyperbolic`
+  - `tangent`
+  - `of`
+  - `the`
+  - `input`
+  - `The`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `and`
+  - `tensor`
+  - `shape`
+  - `are`
+  - `the`
+  - `same`
+  - `as`
+  - `those`
+  - `of`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_TANH` = 39
+  - `Copies`
+  - `a`
+  - `tensor`
+  - `the`
+  - `specified`
+  - `times`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `b`
+  - `multiples`
+  - `b`
+  - `number`
+  - `of`
+  - `times`
+  - `that`
+  - `the`
+  - `input`
+  - `tensor`
+  - `is`
+  - `copied`
+  - `in`
+  - `each`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `length`
+  - `i`
+  - `m`
+  - `i`
+  - `is`
+  - `not`
+  - `less`
+  - `than`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `that`
+  - `is`
+  - `i`
+  - `n`
+  - `i`
+  - `Outputs`
+  - `An`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `whose`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `If`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `multiples`
+  - `b`
+  - `have`
+  - `the`
+  - `same`
+  - `length`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `output`
+  - `b`
+  - `have`
+  - `the`
+  - `same`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `If`
+  - `the`
+  - `length`
+  - `of`
+  - `b`
+  - `multiples`
+  - `b`
+  - `is`
+  - `greater`
+  - `than`
+  - `i`
+  - `n`
+  - `i`
+  - `1`
+  - `is`
+  - `used`
+  - `to`
+  - `fill`
+  - `the`
+  - `input`
+  - `dimension`
+  - `and`
+  - `then`
+  - `the`
+  - `input`
+  - `is`
+  - `copied`
+  - `in`
+  - `each`
+  - `dimension`
+  - `the`
+  - `specified`
+  - `times`
+  - `to`
+  - `obtain`
+  - `the`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `OH_NN_OPS_TILE` = 40
+  - `Transposes`
+  - `data`
+  - `of`
+  - `b`
+  - `input`
+  - `0`
+  - `b`
+  - `based`
+  - `on`
+  - `b`
+  - `permutation`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `to`
+  - `be`
+  - `transposed`
+  - `b`
+  - `permutation`
+  - `b`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `whose`
+  - `length`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `of`
+  - `b`
+  - `input`
+  - `0`
+  - `b`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `b`
+  - `TensorType`
+  - `b`
+  - `of`
+  - `b`
+  - `output`
+  - `0`
+  - `b`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `b`
+  - `input`
+  - `0`
+  - `b`
+  - `and`
+  - `the`
+  - `output`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `the`
+  - `shape`
+  - `and`
+  - `b`
+  - `permutation`
+  - `b`
+  - `of`
+  - `b`
+  - `input`
+  - `0`
+  - `b`
+  - `OH_NN_OPS_TRANSPOSE` = 41
+  - `Calculates`
+  - `the`
+  - `average`
+  - `value`
+  - `in`
+  - `the`
+  - `specified`
+  - `dimension`
+  - `If`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `set`
+  - `to`
+  - `b`
+  - `false`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `is`
+  - `reduced`
+  - `for`
+  - `the`
+  - `input`
+  - `if`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `set`
+  - `to`
+  - `b`
+  - `true`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `is`
+  - `retained`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `where`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `less`
+  - `than`
+  - `8`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `used`
+  - `to`
+  - `calculate`
+  - `the`
+  - `average`
+  - `value`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `value`
+  - `range`
+  - `of`
+  - `each`
+  - `element`
+  - `in`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `n`
+  - `n`
+  - `Parameters`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `indicates`
+  - `whether`
+  - `to`
+  - `retain`
+  - `the`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `output`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `If`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `b`
+  - `false`
+  - `b`
+  - `m` = =n. If <b>keepDims</b> is <b>true</b>
+  - `m`
+  - `n`
+  - `OH_NN_OPS_REDUCE_MEAN` = 42
+  - `The`
+  - `Bilinear`
+  - `method`
+  - `is`
+  - `used`
+  - `to`
+  - `deform`
+  - `the`
+  - `input`
+  - `based`
+  - `on`
+  - `the`
+  - `given`
+  - `parameters`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `4D`
+  - `input`
+  - `tensor`
+  - `Each`
+  - `element`
+  - `in`
+  - `the`
+  - `input`
+  - `cannot`
+  - `be`
+  - `less`
+  - `than`
+  - `0`
+  - `The`
+  - `input`
+  - `layout`
+  - `must`
+  - `be`
+  - `batchSize`
+  - `height`
+  - `width`
+  - `channels`
+  - `Parameters`
+  - `b`
+  - `newHeight`
+  - `b`
+  - `resized`
+  - `height`
+  - `of`
+  - `the`
+  - `4D`
+  - `tensor`
+  - `b`
+  - `newWidth`
+  - `b`
+  - `resized`
+  - `width`
+  - `of`
+  - `the`
+  - `4D`
+  - `tensor`
+  - `b`
+  - `preserveAspectRatio`
+  - `b`
+  - `indicates`
+  - `whether`
+  - `to`
+  - `maintain`
+  - `the`
+  - `height`
+  - `width`
+  - `ratio`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `after`
+  - `resizing`
+  - `b`
+  - `coordinateTransformMode`
+  - `b`
+  - `coordinate`
+  - `transformation`
+  - `method`
+  - `used`
+  - `by`
+  - `the`
+  - `resize`
+  - `operation`
+  - `The`
+  - `value`
+  - `is`
+  - `an`
+  - `int32`
+  - `integer`
+  - `Currently`
+  - `the`
+  - `following`
+  - `methods`
+  - `are`
+  - `supported`
+  - `b`
+  - `excludeOutside`
+  - `b`
+  - `an`
+  - `int64`
+  - `floating`
+  - `point`
+  - `number`
+  - `When`
+  - `its`
+  - `value`
+  - `is`
+  - `b`
+  - `1`
+  - `b`
+  - `the`
+  - `sampling`
+  - `weight`
+  - `of`
+  - `the`
+  - `part`
+  - `that`
+  - `exceeds`
+  - `the`
+  - `boundary`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `is`
+  - `set`
+  - `to`
+  - `b`
+  - `0`
+  - `b`
+  - `and`
+  - `other`
+  - `weights`
+  - `are`
+  - `normalized`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `shape`
+  - `and`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_RESIZE_BILINEAR` = 43
+  - `Calculates`
+  - `the`
+  - `reciprocal`
+  - `of`
+  - `the`
+  - `square`
+  - `root`
+  - `of`
+  - `a`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `where`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `less`
+  - `than`
+  - `8`
+  - `Each`
+  - `element`
+  - `of`
+  - `the`
+  - `tensor`
+  - `cannot`
+  - `be`
+  - `less`
+  - `than`
+  - `0`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `shape`
+  - `and`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `input`
+  - `b`
+  - `OH_NN_OPS_RSQRT` = 44
+  - `Reshapes`
+  - `a`
+  - `tensor`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `b`
+  - `InputShape`
+  - `b`
+  - `shape`
+  - `of`
+  - `the`
+  - `output`
+  - `tensor`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `constant`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `shape`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `InputShape`
+  - `b`
+  - `OH_NN_OPS_RESHAPE` = 45
+  - `Calculates`
+  - `the`
+  - `PReLU`
+  - `activation`
+  - `value`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `and`
+  - `b`
+  - `weight`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `If`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `greater`
+  - `than`
+  - `or`
+  - `equal`
+  - `to`
+  - `2`
+  - `b`
+  - `inputX`
+  - `b`
+  - `must`
+  - `be`
+  - `BatchSize`
+  - `Channels`
+  - `The`
+  - `second`
+  - `dimension`
+  - `is`
+  - `the`
+  - `number`
+  - `of`
+  - `channels`
+  - `b`
+  - `weight`
+  - `b`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `length`
+  - `of`
+  - `b`
+  - `weight`
+  - `b`
+  - `must`
+  - `be`
+  - `1`
+  - `or`
+  - `equal`
+  - `to`
+  - `the`
+  - `number`
+  - `of`
+  - `channels`
+  - `If`
+  - `the`
+  - `length`
+  - `of`
+  - `b`
+  - `weight`
+  - `b`
+  - `is`
+  - `1`
+  - `all`
+  - `channels`
+  - `share`
+  - `the`
+  - `same`
+  - `weight`
+  - `If`
+  - `the`
+  - `length`
+  - `of`
+  - `b`
+  - `weight`
+  - `b`
+  - `is`
+  - `equal`
+  - `to`
+  - `the`
+  - `number`
+  - `of`
+  - `channels`
+  - `each`
+  - `channel`
+  - `exclusively`
+  - `has`
+  - `a`
+  - `weight`
+  - `If`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `less`
+  - `than`
+  - `2`
+  - `for`
+  - `b`
+  - `inputX`
+  - `b`
+  - `the`
+  - `b`
+  - `weight`
+  - `b`
+  - `length`
+  - `must`
+  - `be`
+  - `1`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `PReLU`
+  - `activation`
+  - `value`
+  - `of`
+  - `b`
+  - `x`
+  - `b`
+  - `with`
+  - `the`
+  - `same`
+  - `shape`
+  - `and`
+  - `data`
+  - `type`
+  - `as`
+  - `b`
+  - `inputX`
+  - `b`
+  - `OH_NN_OPS_PRELU` = 46
+  - `Calculates`
+  - `the`
+  - `Relu`
+  - `activation`
+  - `value`
+  - `of`
+  - `b`
+  - `input`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `the`
+  - `input`
+  - `tensor`
+  - `OH_NN_OPS_RELU` = 47
+  - `Calculates`
+  - `the`
+  - `Relu6`
+  - `activation`
+  - `value`
+  - `of`
+  - `the`
+  - `input`
+  - `that`
+  - `is`
+  - `calculate`
+  - `min`
+  - `max`
+  - `x`
+  - `0`
+  - `6`
+  - `for`
+  - `each`
+  - `element`
+  - `x`
+  - `in`
+  - `the`
+  - `input`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `Relu6`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `the`
+  - `input`
+  - `tensor`
+  - `OH_NN_OPS_RELU6` = 48
+  - `Applies`
+  - `layer`
+  - `normalization`
+  - `for`
+  - `a`
+  - `tensor`
+  - `from`
+  - `the`
+  - `specified`
+  - `axis`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `b`
+  - `gamma`
+  - `b`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `The`
+  - `dimensions`
+  - `of`
+  - `b`
+  - `gamma`
+  - `b`
+  - `must`
+  - `be`
+  - `the`
+  - `same`
+  - `as`
+  - `the`
+  - `shape`
+  - `of`
+  - `the`
+  - `part`
+  - `of`
+  - `the`
+  - `input`
+  - `tensor`
+  - `to`
+  - `normalize`
+  - `b`
+  - `beta`
+  - `b`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `shape`
+  - `as`
+  - `b`
+  - `gamma`
+  - `b`
+  - `Parameters`
+  - `b`
+  - `beginAxis`
+  - `b`
+  - `is`
+  - `an`
+  - `NN_INT32`
+  - `scalar`
+  - `that`
+  - `specifies`
+  - `the`
+  - `axis`
+  - `from`
+  - `which`
+  - `normalization`
+  - `starts`
+  - `The`
+  - `value`
+  - `range`
+  - `is`
+  - `1`
+  - `rank`
+  - `input`
+  - `b`
+  - `epsilon`
+  - `b`
+  - `is`
+  - `a`
+  - `scalar`
+  - `of`
+  - `NN_FLOAT32`
+  - `It`
+  - `is`
+  - `a`
+  - `tiny`
+  - `amount`
+  - `in`
+  - `the`
+  - `normalization`
+  - `formula`
+  - `The`
+  - `common`
+  - `value`
+  - `is`
+  - `1e`
+  - `7`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `the`
+  - `input`
+  - `tensor`
+  - `OH_NN_OPS_LAYER_NORM` = 49
+  - `Calculates`
+  - `the`
+  - `accumulated`
+  - `value`
+  - `for`
+  - `a`
+  - `tensor`
+  - `along`
+  - `the`
+  - `specified`
+  - `dimension`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `where`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `less`
+  - `than`
+  - `8`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `used`
+  - `to`
+  - `calculate`
+  - `the`
+  - `product`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `1D`
+  - `tensor`
+  - `The`
+  - `value`
+  - `range`
+  - `of`
+  - `each`
+  - `element`
+  - `in`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `n`
+  - `n`
+  - `Parameters`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `indicates`
+  - `whether`
+  - `to`
+  - `retain`
+  - `the`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `When`
+  - `its`
+  - `value`
+  - `is`
+  - `b`
+  - `true`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `output`
+  - `dimensions`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `When`
+  - `its`
+  - `value`
+  - `is`
+  - `b`
+  - `false`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `output`
+  - `dimensions`
+  - `is`
+  - `reduced`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `output`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `If`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `b`
+  - `false`
+  - `b`
+  - `m` = =n. If <b>keepDims</b> is <b>true</b>
+  - `m`
+  - `n`
+  - `OH_NN_OPS_REDUCE_PROD` = 50
+  - `Operates`
+  - `the`
+  - `logical`
+  - `OR`
+  - `in`
+  - `the`
+  - `specified`
+  - `dimension`
+  - `If`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `set`
+  - `to`
+  - `b`
+  - `false`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `is`
+  - `reduced`
+  - `for`
+  - `the`
+  - `input`
+  - `if`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `set`
+  - `to`
+  - `b`
+  - `true`
+  - `b`
+  - `the`
+  - `number`
+  - `of`
+  - `dimensions`
+  - `is`
+  - `retained`
+  - `Inputs`
+  - `A`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `where`
+  - `i`
+  - `n`
+  - `i`
+  - `is`
+  - `less`
+  - `than`
+  - `8`
+  - `A`
+  - `1D`
+  - `tensor`
+  - `specifying`
+  - `the`
+  - `dimension`
+  - `used`
+  - `to`
+  - `operate`
+  - `the`
+  - `logical`
+  - `OR`
+  - `The`
+  - `value`
+  - `range`
+  - `of`
+  - `each`
+  - `element`
+  - `in`
+  - `b`
+  - `axis`
+  - `b`
+  - `is`
+  - `n`
+  - `n`
+  - `Parameters`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `indicates`
+  - `whether`
+  - `to`
+  - `retain`
+  - `the`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `m`
+  - `i`
+  - `dimensional`
+  - `output`
+  - `tensor`
+  - `whose`
+  - `data`
+  - `type`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `that`
+  - `of`
+  - `the`
+  - `input`
+  - `If`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `is`
+  - `b`
+  - `false`
+  - `b`
+  - `m` = =n. If <b>keepDims</b> is <b>true</b>
+  - `m`
+  - `n`
+  - `OH_NN_OPS_REDUCE_ALL` = 51
+  - `Converts`
+  - `the`
+  - `data`
+  - `type`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `src_t`
+  - `b`
+  - `data`
+  - `type`
+  - `of`
+  - `the`
+  - `input`
+  - `b`
+  - `dst_t`
+  - `b`
+  - `data`
+  - `type`
+  - `of`
+  - `the`
+  - `output`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `The`
+  - `data`
+  - `type`
+  - `is`
+  - `determined`
+  - `by`
+  - `b`
+  - `input2`
+  - `b`
+  - `The`
+  - `output`
+  - `shape`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `the`
+  - `input`
+  - `shape`
+  - `OH_NN_OPS_QUANT_DTYPE_CAST` = 52
+  - `Obtains`
+  - `the`
+  - `values`
+  - `and`
+  - `indices`
+  - `of`
+  - `the`
+  - `largest`
+  - `i`
+  - `k`
+  - `i`
+  - `entries`
+  - `in`
+  - `the`
+  - `last`
+  - `dimension`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `k`
+  - `i`
+  - `first`
+  - `i`
+  - `k`
+  - `i`
+  - `records`
+  - `of`
+  - `data`
+  - `and`
+  - `their`
+  - `indices`
+  - `Parameters`
+  - `b`
+  - `sorted`
+  - `b`
+  - `order`
+  - `of`
+  - `sorting`
+  - `The`
+  - `value`
+  - `b`
+  - `true`
+  - `b`
+  - `means`
+  - `descending`
+  - `and`
+  - `b`
+  - `false`
+  - `b`
+  - `means`
+  - `ascending`
+  - `Outputs`
+  - `b`
+  - `output0`
+  - `b`
+  - `largest`
+  - `i`
+  - `k`
+  - `i`
+  - `elements`
+  - `in`
+  - `each`
+  - `slice`
+  - `of`
+  - `the`
+  - `last`
+  - `dimension`
+  - `b`
+  - `output1`
+  - `b`
+  - `index`
+  - `of`
+  - `the`
+  - `value`
+  - `in`
+  - `the`
+  - `last`
+  - `dimension`
+  - `of`
+  - `the`
+  - `input`
+  - `OH_NN_OPS_TOP_K` = 53
+  - `Returns`
+  - `the`
+  - `index`
+  - `of`
+  - `the`
+  - `maximum`
+  - `tensor`
+  - `value`
+  - `across`
+  - `axes`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `N`
+  - `where`
+  - `means`
+  - `any`
+  - `number`
+  - `of`
+  - `additional`
+  - `dimensions`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `for`
+  - `calculating`
+  - `the`
+  - `index`
+  - `of`
+  - `the`
+  - `maximum`
+  - `b`
+  - `keep_dims`
+  - `b`
+  - `indicates`
+  - `whether`
+  - `to`
+  - `maintain`
+  - `the`
+  - `input`
+  - `tensor`
+  - `dimension`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `Boolean`
+  - `value`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `index`
+  - `of`
+  - `the`
+  - `maximum`
+  - `input`
+  - `tensor`
+  - `on`
+  - `the`
+  - `axis`
+  - `The`
+  - `value`
+  - `is`
+  - `a`
+  - `tensor`
+  - `OH_NN_OPS_ARG_MAX` = 54
+  - `Adds`
+  - `a`
+  - `dimension`
+  - `based`
+  - `on`
+  - `the`
+  - `value`
+  - `of`
+  - `b`
+  - `axis`
+  - `b`
+  - `Inputs`
+  - `b`
+  - `input`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `Parameters`
+  - `b`
+  - `axis`
+  - `b`
+  - `dimension`
+  - `to`
+  - `be`
+  - `added`
+  - `The`
+  - `value`
+  - `of`
+  - `b`
+  - `axis`
+  - `b`
+  - `can`
+  - `be`
+  - `an`
+  - `integer`
+  - `or`
+  - `an`
+  - `array`
+  - `of`
+  - `integers`
+  - `The`
+  - `value`
+  - `range`
+  - `of`
+  - `the`
+  - `integer`
+  - `is`
+  - `n`
+  - `n`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `output`
+  - `tensor`
+  - `OH_NN_OPS_UNSQUEEZE` = 55
+  - `Gaussian`
+  - `error`
+  - `linear`
+  - `unit`
+  - `activation`
+  - `function`
+  - `The`
+  - `int`
+  - `quantization`
+  - `input`
+  - `is`
+  - `not`
+  - `supported`
+  - `output` = 0.5∗input∗(1+tanh(input/2))
+  - `Inputs`
+  - `An`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `input`
+  - `tensor`
+  - `Outputs`
+  - `b`
+  - `output`
+  - `b`
+  - `i`
+  - `n`
+  - `i`
+  - `dimensional`
+  - `tensor`
+  - `with`
+  - `the`
+  - `same`
+  - `data`
+  - `type`
+  - `and`
+  - `shape`
+  - `as`
+  - `the`
+  - `input`
+  - `tensor`
+  - `OH_NN_OPS_GELU` = 56
+- **OH_NN_TensorType**
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `input`
+  - `or`
+  - `output`
+  - `of`
+  - `a`
+  - `model`
+  - `or`
+  - `operator`
+  - `OH_NN_TENSOR` = 0
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Add`
+  - `operator`
+  - `OH_NN_ADD_ACTIVATIONTYPE` = 1
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `kernel_size`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `AvgPool`
+  - `operator`
+  - `OH_NN_AVG_POOL_KERNEL_SIZE` = 2
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `stride`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `AvgPool`
+  - `operator`
+  - `OH_NN_AVG_POOL_STRIDE` = 3
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad_mode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `AvgPool`
+  - `operator`
+  - `OH_NN_AVG_POOL_PAD_MODE` = 4
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `AvgPool`
+  - `operator`
+  - `OH_NN_AVG_POOL_PAD` = 5
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activation_type`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `AvgPool`
+  - `operator`
+  - `OH_NN_AVG_POOL_ACTIVATION_TYPE` = 6
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `eosilon`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `BatchNorm`
+  - `operator`
+  - `OH_NN_BATCH_NORM_EPSILON` = 7
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `blockSize`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `BatchToSpaceND`
+  - `operator`
+  - `OH_NN_BATCH_TO_SPACE_ND_BLOCKSIZE` = 8
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `crops`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `BatchToSpaceND`
+  - `operator`
+  - `OH_NN_BATCH_TO_SPACE_ND_CROPS` = 9
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Concat`
+  - `operator`
+  - `OH_NN_CONCAT_AXIS` = 10
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `strides`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_STRIDES` = 11
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_PAD` = 12
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `dilation`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_DILATION` = 13
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_PAD_MODE` = 14
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_ACTIVATION_TYPE` = 15
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `group`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2D`
+  - `operator`
+  - `OH_NN_CONV2D_GROUP` = 16
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `strides`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_STRIDES` = 17
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_PAD` = 18
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `dilation`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_DILATION` = 19
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `outputPaddings`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_OUTPUT_PADDINGS` = 20
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_PAD_MODE` = 21
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_ACTIVATION_TYPE` = 22
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `group`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Conv2DTranspose`
+  - `operator`
+  - `OH_NN_CONV2D_TRANSPOSE_GROUP` = 23
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `strides`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `DepthwiseConv2dNative`
+  - `operator`
+  - `OH_NN_DEPTHWISE_CONV2D_NATIVE_STRIDES` = 24
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `DepthwiseConv2dNative`
+  - `operator`
+  - `OH_NN_DEPTHWISE_CONV2D_NATIVE_PAD` = 25
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `dilation`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `DepthwiseConv2dNative`
+  - `operator`
+  - `OH_NN_DEPTHWISE_CONV2D_NATIVE_DILATION` = 26
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `padMode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `DepthwiseConv2dNative`
+  - `operator`
+  - `OH_NN_DEPTHWISE_CONV2D_NATIVE_PAD_MODE` = 27
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `DepthwiseConv2dNative`
+  - `operator`
+  - `OH_NN_DEPTHWISE_CONV2D_NATIVE_ACTIVATION_TYPE` = 28
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Div`
+  - `operator`
+  - `OH_NN_DIV_ACTIVATIONTYPE` = 29
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `mode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Eltwise`
+  - `operator`
+  - `OH_NN_ELTWISE_MODE` = 30
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `FullConnection`
+  - `operator`
+  - `OH_NN_FULL_CONNECTION_AXIS` = 31
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `FullConnection`
+  - `operator`
+  - `OH_NN_FULL_CONNECTION_ACTIVATIONTYPE` = 32
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `transposeA`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Matmul`
+  - `operator`
+  - `OH_NN_MATMUL_TRANSPOSE_A` = 33
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `transposeB`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Matmul`
+  - `operator`
+  - `OH_NN_MATMUL_TRANSPOSE_B` = 34
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Matmul`
+  - `operator`
+  - `OH_NN_MATMUL_ACTIVATION_TYPE` = 35
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `kernel_size`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `MaxPool`
+  - `operator`
+  - `OH_NN_MAX_POOL_KERNEL_SIZE` = 36
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `stride`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `MaxPool`
+  - `operator`
+  - `OH_NN_MAX_POOL_STRIDE` = 37
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad_mode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `MaxPool`
+  - `operator`
+  - `OH_NN_MAX_POOL_PAD_MODE` = 38
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `pad`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `MaxPool`
+  - `operator`
+  - `OH_NN_MAX_POOL_PAD` = 39
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activation_type`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `MaxPool`
+  - `operator`
+  - `OH_NN_MAX_POOL_ACTIVATION_TYPE` = 40
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Mul`
+  - `operator`
+  - `OH_NN_MUL_ACTIVATION_TYPE` = 41
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `OneHot`
+  - `operator`
+  - `OH_NN_ONE_HOT_AXIS` = 42
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `constant_value`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Pad`
+  - `operator`
+  - `OH_NN_PAD_CONSTANT_VALUE` = 43
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `activationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Scale`
+  - `operator`
+  - `OH_NN_SCALE_ACTIVATIONTYPE` = 44
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Scale`
+  - `operator`
+  - `OH_NN_SCALE_AXIS` = 45
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Softmax`
+  - `operator`
+  - `OH_NN_SOFTMAX_AXIS` = 46
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `BlockShape`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `SpaceToBatchND`
+  - `operator`
+  - `OH_NN_SPACE_TO_BATCH_ND_BLOCK_SHAPE` = 47
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Paddings`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `SpaceToBatchND`
+  - `operator`
+  - `OH_NN_SPACE_TO_BATCH_ND_PADDINGS` = 48
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Split`
+  - `operator`
+  - `OH_NN_SPLIT_AXIS` = 49
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `OutputNum`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Split`
+  - `operator`
+  - `OH_NN_SPLIT_OUTPUT_NUM` = 50
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `SizeSplits`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Split`
+  - `operator`
+  - `OH_NN_SPLIT_SIZE_SPLITS` = 51
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Squeeze`
+  - `operator`
+  - `OH_NN_SQUEEZE_AXIS` = 52
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Stack`
+  - `operator`
+  - `OH_NN_STACK_AXIS` = 53
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `BeginMask`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `StridedSlice`
+  - `operator`
+  - `OH_NN_STRIDED_SLICE_BEGIN_MASK` = 54
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `EndMask`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `StridedSlice`
+  - `operator`
+  - `OH_NN_STRIDED_SLICE_END_MASK` = 55
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `EllipsisMask`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `StridedSlice`
+  - `operator`
+  - `OH_NN_STRIDED_SLICE_ELLIPSIS_MASK` = 56
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `NewAxisMask`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `StridedSlice`
+  - `operator`
+  - `OH_NN_STRIDED_SLICE_NEW_AXIS_MASK` = 57
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `ShrinkAxisMask`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `StridedSlice`
+  - `operator`
+  - `OH_NN_STRIDED_SLICE_SHRINK_AXIS_MASK` = 58
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `ActivationType`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Sub`
+  - `operator`
+  - `OH_NN_SUB_ACTIVATIONTYPE` = 59
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `keep_dims`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ReduceMean`
+  - `operator`
+  - `OH_NN_REDUCE_MEAN_KEEP_DIMS` = 60
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `new_height`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ResizeBilinear`
+  - `operator`
+  - `OH_NN_RESIZE_BILINEAR_NEW_HEIGHT` = 61
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `new_width`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ResizeBilinear`
+  - `operator`
+  - `OH_NN_RESIZE_BILINEAR_NEW_WIDTH` = 62
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `preserve_aspect_ratio`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ResizeBilinear`
+  - `operator`
+  - `OH_NN_RESIZE_BILINEAR_PRESERVE_ASPECT_RATIO` = 63
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `coordinate_transform_mode`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ResizeBilinear`
+  - `operator`
+  - `OH_NN_RESIZE_BILINEAR_COORDINATE_TRANSFORM_MODE` = 64
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `exclude_outside`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ResizeBilinear`
+  - `operator`
+  - `OH_NN_RESIZE_BILINEAR_EXCLUDE_OUTSIDE` = 65
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `beginNormAxis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `LayerNorm`
+  - `operator`
+  - `OH_NN_LAYER_NORM_BEGIN_NORM_AXIS` = 66
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `epsilon`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `LayerNorm`
+  - `operator`
+  - `OH_NN_LAYER_NORM_EPSILON` = 67
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `beginParamsAxis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `LayerNorm`
+  - `operator`
+  - `OH_NN_LAYER_NORM_BEGIN_PARAM_AXIS` = 68
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `elementwiseAffine`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `LayerNorm`
+  - `operator`
+  - `OH_NN_LAYER_NORM_ELEMENTWISE_AFFINE` = 69
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `keep_dims`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ReduceProd`
+  - `operator`
+  - `OH_NN_REDUCE_PROD_KEEP_DIMS` = 70
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `keep_dims`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ReduceAll`
+  - `operator`
+  - `OH_NN_REDUCE_ALL_KEEP_DIMS` = 71
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `src_t`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `QuantDTypeCast`
+  - `operator`
+  - `OH_NN_QUANT_DTYPE_CAST_SRC_T` = 72
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `dst_t`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `QuantDTypeCast`
+  - `operator`
+  - `OH_NN_QUANT_DTYPE_CAST_DST_T` = 73
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Sorted`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Topk`
+  - `operator`
+  - `OH_NN_TOP_K_SORTED` = 74
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ArgMax`
+  - `operator`
+  - `OH_NN_ARG_MAX_AXIS` = 75
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `keepDims`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `ArgMax`
+  - `operator`
+  - `OH_NN_ARG_MAX_KEEPDIMS` = 76
+  - `This`
+  - `enumerated`
+  - `value`
+  - `is`
+  - `used`
+  - `when`
+  - `the`
+  - `tensor`
+  - `is`
+  - `used`
+  - `as`
+  - `the`
+  - `b`
+  - `Axis`
+  - `b`
+  - `parameter`
+  - `of`
+  - `the`
+  - `Unsqueeze`
+  - `operator`
+  - `OH_NN_UNSQUEEZE_AXIS` = 77
+#### 类型定义
+
+## ark_runtime (2 个头文件)
+
+
+### ark_runtime/jsvm/jsvm.h
+#### 函数
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Init(const JSVM_InitOptions* options)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateVM(const JSVM_CreateVMOptions* options,
+                                         JSVM_VM* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DestroyVM(JSVM_VM vm)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_OpenVMScope(JSVM_VM vm,
+                                            JSVM_VMScope* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CloseVMScope(JSVM_VM vm,
+                                             JSVM_VMScope scope)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateEnv(JSVM_VM vm,
+                                          size_t propertyCount,
+                                          co)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateEnvFromSnapshot(JSVM_VM vm,
+                                                      size_t index,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DestroyEnv(JSVM_Env env)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_OpenEnvScope(JSVM_Env env,
+                                             JSVM_EnvScope* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CloseEnvScope(JSVM_Env env,
+                                              JSVM_EnvScope scope)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CompileScript(JSVM_Env env,
+                                              JSVM_Value script,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateCodeCache(JSVM_Env env,
+                                                JSVM_Script script,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_RunScript(JSVM_Env env,
+                                          JSVM_Script script,
+                                          JS)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_SetInstanceData(JSVM_Env env,
+                                                void* data,
+                                              )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetInstanceData(JSVM_Env env,
+                                                void** data)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetLastErrorInfo(JSVM_Env env,
+                                                 const JSVM_ExtendedErrorInfo** result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Throw(JSVM_Env env,
+                                      JSVM_Value error)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ThrowError(JSVM_Env env,
+                                           const char* code,
+                                           co)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ThrowTypeError(JSVM_Env env,
+                                               const char* code,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ThrowRangeError(JSVM_Env env,
+                                                const char* code,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ThrowSyntaxError(JSVM_Env env,
+                                                 const char* code,
+                                       )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsError(JSVM_Env env,
+                                        JSVM_Value value,
+                                        bool* re)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateError(JSVM_Env env,
+                                            JSVM_Value code,
+                                            J)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateTypeError(JSVM_Env env,
+                                                JSVM_Value code,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateRangeError(JSVM_Env env,
+                                                 JSVM_Value code,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateSyntaxError(JSVM_Env env,
+                                                  JSVM_Value code,
+                                       )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetAndClearLastException(JSVM_Env env,
+                                                         JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsExceptionPending(JSVM_Env env,
+                                                   bool* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_OpenHandleScope(JSVM_Env env,
+                                                JSVM_HandleScope* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CloseHandleScope(JSVM_Env env,
+                                                 JSVM_HandleScope scope)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_OpenEscapableHandleScope(JSVM_Env env,
+                                                         JSVM_EscapableHandleScope* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CloseEscapableHandleScope(JSVM_Env env,
+                                                          JSVM_EscapableHandleScope scope)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_EscapeHandle(JSVM_Env env,
+                                             JSVM_EscapableHandleScope scope,
+                            )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateReference(JSVM_Env env,
+                                                JSVM_Value value,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DeleteReference(JSVM_Env env,
+                                                JSVM_Ref ref)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ReferenceRef(JSVM_Env env,
+                                             JSVM_Ref ref,
+                                             ui)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ReferenceUnref(JSVM_Env env,
+                                               JSVM_Ref ref,
+                                             )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetReferenceValue(JSVM_Env env,
+                                                  JSVM_Ref ref,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateArray(JSVM_Env env,
+                                            JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateArrayWithLength(JSVM_Env env,
+                                                      size_t length,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateArraybuffer(JSVM_Env env,
+                                                  size_t byteLength,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateDate(JSVM_Env env,
+                                           double time,
+                                           JSVM_Va)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateExternal(JSVM_Env env,
+                                               void* data,
+                                               )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateObject(JSVM_Env env,
+                                             JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateSymbol(JSVM_Env env,
+                                             JSVM_Value description,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_SymbolFor(JSVM_Env env,
+                                          const char* utf8description,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateTypedarray(JSVM_Env env,
+                                                 JSVM_TypedarrayType type,
+                               )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateDataview(JSVM_Env env,
+                                               size_t length,
+                                            )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateInt32(JSVM_Env env,
+                                            int32_t value,
+                                            JSV)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateUint32(JSVM_Env env,
+                                             uint32_t value,
+                                             )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateInt64(JSVM_Env env,
+                                            int64_t value,
+                                            JSV)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateDouble(JSVM_Env env,
+                                             double value,
+                                             JS)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateBigintInt64(JSVM_Env env,
+                                                  int64_t value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateBigintUint64(JSVM_Env env,
+                                                   uint64_t value,
+                                       )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateBigintWords(JSVM_Env env,
+                                                  int signBit,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateStringLatin1(JSVM_Env env,
+                                                   const char* str,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateStringUtf16(JSVM_Env env,
+                                                  const char16_t* str,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateStringUtf8(JSVM_Env env,
+                                                 const char* str,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetArrayLength(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetArraybufferInfo(JSVM_Env env,
+                                                   JSVM_Value arraybuffer,
+                               )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetPrototype(JSVM_Env env,
+                                             JSVM_Value object,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetTypedarrayInfo(JSVM_Env env,
+                                                  JSVM_Value typedarray,
+                                 )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetDataviewInfo(JSVM_Env env,
+                                                JSVM_Value dataview,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetDateValue(JSVM_Env env,
+                                             JSVM_Value value,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueBool(JSVM_Env env,
+                                             JSVM_Value value,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueDouble(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueBigintInt64(JSVM_Env env,
+                                                    JSVM_Value value,
+                                    )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueBigintUint64(JSVM_Env env,
+                                                     JSVM_Value value,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueBigintWords(JSVM_Env env,
+                                                    JSVM_Value value,
+                                    )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueExternal(JSVM_Env env,
+                                                 JSVM_Value value,
+                                       )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueInt32(JSVM_Env env,
+                                              JSVM_Value value,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueInt64(JSVM_Env env,
+                                              JSVM_Value value,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueStringLatin1(JSVM_Env env,
+                                                     JSVM_Value value,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueStringUtf8(JSVM_Env env,
+                                                   JSVM_Value value,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueStringUtf16(JSVM_Env env,
+                                                    JSVM_Value value,
+                                    )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetValueUint32(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetBoolean(JSVM_Env env,
+                                           bool value,
+                                           JSVM_Val)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetGlobal(JSVM_Env env,
+                                          JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetNull(JSVM_Env env,
+                                        JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetUndefined(JSVM_Env env,
+                                             JSVM_Value* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CoerceToBool(JSVM_Env env,
+                                             JSVM_Value value,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CoerceToNumber(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CoerceToObject(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CoerceToString(JSVM_Env env,
+                                               JSVM_Value value,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Typeof(JSVM_Env env,
+                                       JSVM_Value value,
+                                       JSVM_Value)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Instanceof(JSVM_Env env,
+                                           JSVM_Value object,
+                                           J)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsArray(JSVM_Env env,
+                                        JSVM_Value value,
+                                        bool* re)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsArraybuffer(JSVM_Env env,
+                                              JSVM_Value value,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsDate(JSVM_Env env,
+                                       JSVM_Value value,
+                                       bool* isDa)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsTypedarray(JSVM_Env env,
+                                             JSVM_Value value,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsDataview(JSVM_Env env,
+                                           JSVM_Value value,
+                                           bo)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_StrictEquals(JSVM_Env env,
+                                             JSVM_Value lhs,
+                                             )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DetachArraybuffer(JSVM_Env env,
+                                                  JSVM_Value arraybuffer)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsDetachedArraybuffer(JSVM_Env env,
+                                                      JSVM_Value value,
+                                  )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetPropertyNames(JSVM_Env env,
+                                                 JSVM_Value object,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetAllPropertyNames(JSVM_Env env,
+                                                    JSVM_Value object,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_SetProperty(JSVM_Env env,
+                                            JSVM_Value object,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetProperty(JSVM_Env env,
+                                            JSVM_Value object,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_HasProperty(JSVM_Env env,
+                                            JSVM_Value object,
+                                           )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DeleteProperty(JSVM_Env env,
+                                               JSVM_Value object,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_HasOwnProperty(JSVM_Env env,
+                                               JSVM_Value object,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_SetNamedProperty(JSVM_Env env,
+                                                 JSVM_Value object,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetNamedProperty(JSVM_Env env,
+                                                 JSVM_Value object,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_HasNamedProperty(JSVM_Env env,
+                                                 JSVM_Value object,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_SetElement(JSVM_Env env,
+                                           JSVM_Value object,
+                                           u)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetElement(JSVM_Env env,
+                                           JSVM_Value object,
+                                           u)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_HasElement(JSVM_Env env,
+                                           JSVM_Value object,
+                                           u)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DeleteElement(JSVM_Env env,
+                                              JSVM_Value object,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DefineProperties(JSVM_Env env,
+                                                 JSVM_Value object,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ObjectFreeze(JSVM_Env env,
+                                             JSVM_Value object)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ObjectSeal(JSVM_Env env,
+                                           JSVM_Value object)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CallFunction(JSVM_Env env,
+                                             JSVM_Value recv,
+                                            )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateFunction(JSVM_Env env,
+                                               const char* utf8name,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetCbInfo(JSVM_Env env,
+                                          JSVM_CallbackInfo cbinfo,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetNewTarget(JSVM_Env env,
+                                             JSVM_CallbackInfo cbinfo,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_NewInstance(JSVM_Env env,
+                                            JSVM_Value constructor,
+                                      )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_DefineClass(JSVM_Env env,
+                                            const char* utf8name,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Wrap(JSVM_Env env,
+                                     JSVM_Value jsObject,
+                                     void* nativ)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_Unwrap(JSVM_Env env,
+                                       JSVM_Value jsObject,
+                                       void** )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_RemoveWrap(JSVM_Env env,
+                                           JSVM_Value jsObject,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_TypeTagObject(JSVM_Env env,
+                                              JSVM_Value value,
+                                          )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CheckObjectTypeTag(JSVM_Env env,
+                                                   JSVM_Value value,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_AddFinalizer(JSVM_Env env,
+                                             JSVM_Value jsObject,
+                                        )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetVersion(JSVM_Env env,
+                                           uint32_t* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_GetVMInfo(JSVM_VMInfo* result)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_AdjustExternalMemory(JSVM_Env env,
+                                                     int64_t changeInBytes,
+                              )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_MemoryPressureNotification(JSVM_Env env,
+                                                           JSVM_MemoryPressureLevel level)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreatePromise(JSVM_Env env,
+                                              JSVM_Deferred* deferred,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_ResolveDeferred(JSVM_Env env,
+                                                JSVM_Deferred deferred,
+                                  )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_RejectDeferred(JSVM_Env env,
+                                               JSVM_Deferred deferred,
+                                   )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_IsPromise(JSVM_Env env,
+                                          JSVM_Value value,
+                                          bool)`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_JsonParse(JSVM_Env env,
+                                          JSVM_Value jsonString,
+                                         )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_JsonStringify(JSVM_Env env,
+                                              JSVM_Value jsonObject,
+                                     )`
+- `JSVM_EXTERN JSVM_Status OH_JSVM_CreateSnapshot(JSVM_VM vm,
+                                               size_t contextCount,
+                                        )`
+#### 宏定义
+- `JSVM_VERSION_EXPERIMENTAL` = 2147483647
+- `JSVM_VERSION` = JSVM_VERSION_EXPERIMENTAL
+- `JSVM_VERSION` = 8
+- `JSVM_EXTERN` = __declspec(dllexport)
+- `JSVM_EXTERN` = \
+- `JSVM_EXTERN` = __attribute__((visibility("default")))
+- `JSVM_AUTO_LENGTH` = SIZE_MAX
+- `EXTERN_C_START` = extern "C" {
+- `EXTERN_C_END` = }
+- `EXTERN_C_START` = #define EXTERN_C_END
+
+### ark_runtime/jsvm/jsvm_types.h
+#### 枚举
+- **JSVM_PropertyAttributes**
+  - `No`
+  - `explicit`
+  - `attributes`
+  - `are`
+  - `set`
+  - `on`
+  - `the`
+  - `property`
+  - `JSVM_DEFAULT` = 0
+  - `The`
+  - `property`
+  - `is`
+  - `writable`
+  - `JSVM_WRITABLE` = 1 << 0
+  - `The`
+  - `property`
+  - `is`
+  - `enumeable`
+  - `JSVM_ENUMERABLE` = 1 << 1
+  - `The`
+  - `property`
+  - `is`
+  - `configurable`
+  - `JSVM_CONFIGURABLE` = 1 << 2
+  - `Used`
+  - `with`
+  - `OH_JSVM_DefineClass`
+  - `to`
+  - `distinguish`
+  - `static`
+  - `properties`
+  - `from`
+  - `instance`
+  - `properties`
+  - `JSVM_STATIC` = 1 << 10
+  - `Default`
+  - `for`
+  - `class`
+  - `methods`
+  - `JSVM_DEFAULT_METHOD` = JSVM_WRITABLE | JSVM_CONFIGURABLE
+  - `Default`
+  - `for`
+  - `object`
+  - `properties`
+  - `like`
+  - `in`
+  - `JS`
+  - `obj`
+  - `prop`
+  - `JSVM_DEFAULT_JSPROPERTY` = JSVM_WRITABLE | JSVM_ENUMERABLE | JSVM_CONFIGURABLE
+- **JSVM_ValueType**
+  - `undefined`
+  - `type`
+  - `JSVM_UNDEFINED`
+  - `null`
+  - `type`
+  - `JSVM_NULL`
+  - `boolean`
+  - `type`
+  - `JSVM_BOOLEAN`
+  - `number`
+  - `type`
+  - `JSVM_NUMBER`
+  - `string`
+  - `type`
+  - `JSVM_STRING`
+  - `symbol`
+  - `type`
+  - `JSVM_SYMBOL`
+  - `object`
+  - `type`
+  - `JSVM_OBJECT`
+  - `function`
+  - `type`
+  - `JSVM_FUNCTION`
+  - `external`
+  - `type`
+  - `JSVM_EXTERNAL`
+  - `bigint`
+  - `type`
+  - `JSVM_BIGINT`
+- **JSVM_TypedarrayType**
+  - `int8`
+  - `type`
+  - `JSVM_INT8_ARRAY`
+  - `uint8`
+  - `type`
+  - `JSVM_UINT8_ARRAY`
+  - `uint8`
+  - `clamped`
+  - `type`
+  - `JSVM_UINT8_CLAMPED_ARRAY`
+  - `int16`
+  - `type`
+  - `JSVM_INT16_ARRAY`
+  - `uint16`
+  - `type`
+  - `JSVM_UINT16_ARRAY`
+  - `int32`
+  - `type`
+  - `JSVM_INT32_ARRAY`
+  - `uint32`
+  - `type`
+  - `JSVM_UINT32_ARRAY`
+  - `float32`
+  - `type`
+  - `JSVM_FLOAT32_ARRAY`
+  - `float64`
+  - `type`
+  - `JSVM_FLOAT64_ARRAY`
+  - `bigint64`
+  - `type`
+  - `JSVM_BIGINT64_ARRAY`
+  - `biguint64`
+  - `type`
+  - `JSVM_BIGUINT64_ARRAY`
+- **JSVM_Status**
+  - `success`
+  - `status`
+  - `JSVM_OK`
+  - `invalidarg`
+  - `status`
+  - `JSVM_INVALID_ARG`
+  - `object`
+  - `expected`
+  - `status`
+  - `JSVM_OBJECT_EXPECTED`
+  - `string`
+  - `expected`
+  - `status`
+  - `JSVM_STRING_EXPECTED`
+  - `name`
+  - `expected`
+  - `status`
+  - `JSVM_NAME_EXPECTED`
+  - `function`
+  - `expected`
+  - `status`
+  - `JSVM_FUNCTION_EXPECTED`
+  - `number`
+  - `expected`
+  - `status`
+  - `JSVM_NUMBER_EXPECTED`
+  - `boolean`
+  - `expected`
+  - `status`
+  - `JSVM_BOOLEAN_EXPECTED`
+  - `array`
+  - `expected`
+  - `status`
+  - `JSVM_ARRAY_EXPECTED`
+  - `generic`
+  - `failure`
+  - `status`
+  - `JSVM_GENERIC_FAILURE`
+  - `pending`
+  - `exception`
+  - `status`
+  - `JSVM_PENDING_EXCEPTION`
+  - `cancelled`
+  - `status`
+  - `JSVM_CANCELLED`
+  - `escape`
+  - `called`
+  - `twice`
+  - `status`
+  - `JSVM_ESCAPE_CALLED_TWICE`
+  - `handle`
+  - `scope`
+  - `mismatch`
+  - `status`
+  - `JSVM_HANDLE_SCOPE_MISMATCH`
+  - `callback`
+  - `scope`
+  - `mismatch`
+  - `status`
+  - `JSVM_CALLBACK_SCOPE_MISMATCH`
+  - `queue`
+  - `full`
+  - `status`
+  - `JSVM_QUEUE_FULL`
+  - `closing`
+  - `status`
+  - `JSVM_CLOSING`
+  - `bigint`
+  - `expected`
+  - `status`
+  - `JSVM_BIGINT_EXPECTED`
+  - `date`
+  - `expected`
+  - `status`
+  - `JSVM_DATE_EXPECTED`
+  - `arraybuffer`
+  - `expected`
+  - `status`
+  - `JSVM_ARRAYBUFFER_EXPECTED`
+  - `detachable`
+  - `arraybuffer`
+  - `expected`
+  - `status`
+  - `JSVM_DETACHABLE_ARRAYBUFFER_EXPECTED`
+  - `would`
+  - `deadlock`
+  - `status`
+  - `JSVM_WOULD_DEADLOCK`
+  - `no`
+  - `external`
+  - `buffers`
+  - `allowed`
+  - `status`
+  - `JSVM_NO_EXTERNAL_BUFFERS_ALLOWED`
+  - `cannot`
+  - `run`
+  - `js`
+  - `status`
+  - `JSVM_CANNOT_RUN_JS`
+- **JSVM_KeyCollectionMode**
+  - `will`
+  - `include`
+  - `all`
+  - `keys`
+  - `of`
+  - `the`
+  - `objects`
+  - `s`
+  - `prototype`
+  - `chain`
+  - `as`
+  - `well`
+  - `JSVM_KEY_INCLUDE_PROTOTYPES`
+  - `limits`
+  - `the`
+  - `collected`
+  - `properties`
+  - `to`
+  - `the`
+  - `given`
+  - `object`
+  - `only`
+  - `JSVM_KEY_OWN_ONLY`
+- **JSVM_KeyFilter**
+  - `key`
+  - `all`
+  - `properties`
+  - `JSVM_KEY_ALL_PROPERTIES` = 0
+  - `key`
+  - `writable`
+  - `JSVM_KEY_WRITABLE` = 1
+  - `key`
+  - `enumerable`
+  - `JSVM_KEY_ENUMERABLE` = 1 << 1
+  - `key`
+  - `configurable`
+  - `JSVM_KEY_CONFIGURABLE` = 1 << 2
+  - `key`
+  - `skip`
+  - `strings`
+  - `JSVM_KEY_SKIP_STRINGS` = 1 << 3
+  - `key`
+  - `skip`
+  - `symbols`
+  - `JSVM_KEY_SKIP_SYMBOLS` = 1 << 4
+- **JSVM_KeyConversion**
+  - `will`
+  - `return`
+  - `numbers`
+  - `for`
+  - `integer`
+  - `indices`
+  - `JSVM_KEY_KEEP_NUMBERS`
+  - `will`
+  - `convert`
+  - `integer`
+  - `indices`
+  - `to`
+  - `strings`
+  - `JSVM_KEY_NUMBERS_TO_STRINGS`
+- **JSVM_MemoryPressureLevel**
+  - `none`
+  - `pressure`
+  - `JSVM_MEMORY_PRESSURE_LEVEL_NONE`
+  - `moderate`
+  - `pressure`
+  - `JSVM_MEMORY_PRESSURE_LEVEL_MODERATE`
+  - `critical`
+  - `pressure`
+  - `JSVM_MEMORY_PRESSURE_LEVEL_CRITICAL`
+#### 类型定义
+- `char16_t` = uint16_t
+- `JSVM_Callback` = JSVM_CallbackStruct*
+#### 宏定义
+- `JSVM_CDECL` = __cdecl
+- `JSVM_CDECL` = #endif
+
+## arkui (4 个头文件)
+
+
+### arkui/ace_engine/native/native_interface_xcomponent.h
+#### 函数
+- `int32_t OH_NativeXComponent_GetXComponentId(OH_NativeXComponent* component, char* id, uint64_t* size)`
+- `int32_t OH_NativeXComponent_GetXComponentSize(OH_NativeXComponent* component, const void* window, uint64_t* width, uint64_t* height)`
+- `int32_t OH_NativeXComponent_GetXComponentOffset(OH_NativeXComponent* component, const void* window, double* x, double* y)`
+- `int32_t OH_NativeXComponent_GetTouchEvent(OH_NativeXComponent* component, const void* window, OH_NativeXComponent_TouchEvent* touchEvent)`
+- `int32_t OH_NativeXComponent_GetTouchPointToolType(OH_NativeXComponent* component, uint32_t pointIndex, OH_NativeXComponent_TouchPointToolType* toolType)`
+- `int32_t OH_NativeXComponent_GetTouchPointTiltX(OH_NativeXComponent* component, uint32_t pointIndex, float* tiltX)`
+- `int32_t OH_NativeXComponent_GetTouchPointTiltY(OH_NativeXComponent* component, uint32_t pointIndex, float* tiltY)`
+- `int32_t OH_NativeXComponent_GetHistoricalPoints(OH_NativeXComponent* component, const void* window,
+    int32_t* size, OH_NativeXComponent_HistoricalPoint** historicalP)`
+- `int32_t OH_NativeXComponent_GetMouseEvent(OH_NativeXComponent* component, const void* window, OH_NativeXComponent_MouseEvent* mouseEvent)`
+- `int32_t OH_NativeXComponent_RegisterCallback(OH_NativeXComponent* component, OH_NativeXComponent_Callback* callback)`
+- `int32_t OH_NativeXComponent_RegisterMouseEventCallback(OH_NativeXComponent* component, OH_NativeXComponent_MouseEvent_Callback* callback)`
+- `int32_t OH_NativeXComponent_GetKeyEvent(OH_NativeXComponent* component, OH_NativeXComponent_KeyEvent** keyEvent)`
+- `int32_t OH_NativeXComponent_GetKeyEventAction(OH_NativeXComponent_KeyEvent* keyEvent, OH_NativeXComponent_KeyAction* action)`
+- `int32_t OH_NativeXComponent_GetKeyEventCode(OH_NativeXComponent_KeyEvent* keyEvent, OH_NativeXComponent_KeyCode* code)`
+- `int32_t OH_NativeXComponent_GetKeyEventSourceType(OH_NativeXComponent_KeyEvent* keyEvent, OH_NativeXComponent_EventSourceType* sourceType)`
+- `int32_t OH_NativeXComponent_GetKeyEventDeviceId(OH_NativeXComponent_KeyEvent* keyEvent, int64_t* deviceId)`
+- `int32_t OH_NativeXComponent_GetKeyEventTimestamp(OH_NativeXComponent_KeyEvent* keyEvent, int64_t* timestamp)`
+- `int32_t OH_NativeXComponent_SetExpectedFrameRateRange(OH_NativeXComponent* component, OH_NativeXComponent_ExpectedRateRange* range)`
+- `int32_t OH_NativeXComponent_UnregisterOnFrameCallback(OH_NativeXComponent* component)`
+#### 结构体
+- **OH_NativeXComponent_Callback**
+- **OH_NativeXComponent_MouseEvent_Callback**
+#### 枚举
+- **anonymous**
+  - `Successful`
+  - `OH_NATIVEXCOMPONENT_RESULT_SUCCESS` = 0
+  - `Failed`
+  - `OH_NATIVEXCOMPONENT_RESULT_FAILED` = -1
+  - `Invalid`
+  - `parameters`
+  - `OH_NATIVEXCOMPONENT_RESULT_BAD_PARAMETER` = -2
+- **OH_NativeXComponent_TouchEventType**
+  - `Trigger`
+  - `a`
+  - `touch`
+  - `event`
+  - `when`
+  - `a`
+  - `finger`
+  - `is`
+  - `pressed`
+  - `OH_NATIVEXCOMPONENT_DOWN` = 0
+  - `Trigger`
+  - `a`
+  - `touch`
+  - `event`
+  - `when`
+  - `a`
+  - `finger`
+  - `is`
+  - `lifted`
+  - `OH_NATIVEXCOMPONENT_UP`
+  - `Trigger`
+  - `a`
+  - `touch`
+  - `event`
+  - `when`
+  - `a`
+  - `finger`
+  - `moves`
+  - `on`
+  - `the`
+  - `screen`
+  - `in`
+  - `pressed`
+  - `state`
+  - `OH_NATIVEXCOMPONENT_MOVE`
+  - `Trigger`
+  - `an`
+  - `event`
+  - `when`
+  - `a`
+  - `touch`
+  - `event`
+  - `is`
+  - `canceled`
+  - `OH_NATIVEXCOMPONENT_CANCEL`
+  - `Invalid`
+  - `touch`
+  - `type`
+  - `OH_NATIVEXCOMPONENT_UNKNOWN`
+- **OH_NativeXComponent_TouchPointToolType**
+  - `Indicates`
+  - `invalid`
+  - `tool`
+  - `type`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN` = 0
+  - `Indicates`
+  - `a`
+  - `finger`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_FINGER`
+  - `Indicates`
+  - `a`
+  - `stylus`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_PEN`
+  - `Indicates`
+  - `a`
+  - `eraser`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_RUBBER`
+  - `Indicates`
+  - `a`
+  - `brush`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_BRUSH`
+  - `Indicates`
+  - `a`
+  - `pencil`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_PENCIL`
+  - `Indicates`
+  - `a`
+  - `brush`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_AIRBRUSH`
+  - `Indicates`
+  - `a`
+  - `mouse`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_MOUSE`
+  - `Indicates`
+  - `a`
+  - `lens`
+  - `OH_NATIVEXCOMPONENT_TOOL_TYPE_LENS`
+- **OH_NativeXComponent_EventSourceType**
+  - `Indicates`
+  - `an`
+  - `unknown`
+  - `input`
+  - `source`
+  - `type`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN` = 0
+  - `Indicates`
+  - `that`
+  - `the`
+  - `input`
+  - `source`
+  - `generates`
+  - `a`
+  - `mouse`
+  - `multi`
+  - `touch`
+  - `event`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_MOUSE`
+  - `Indicates`
+  - `that`
+  - `the`
+  - `input`
+  - `source`
+  - `generates`
+  - `a`
+  - `touchscreen`
+  - `multi`
+  - `touch`
+  - `event`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_TOUCHSCREEN`
+  - `Indicates`
+  - `that`
+  - `the`
+  - `input`
+  - `source`
+  - `generates`
+  - `a`
+  - `touchpad`
+  - `multi`
+  - `touch`
+  - `event`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_TOUCHPAD`
+  - `Indicates`
+  - `that`
+  - `the`
+  - `input`
+  - `source`
+  - `generates`
+  - `a`
+  - `joystick`
+  - `multi`
+  - `touch`
+  - `event`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_JOYSTICK`
+  - `brief`
+  - `Indicates`
+  - `that`
+  - `the`
+  - `input`
+  - `source`
+  - `generates`
+  - `a`
+  - `keyboard`
+  - `event`
+  - `since`
+  - `10`
+  - `version`
+  - `1`
+  - `0`
+  - `OH_NATIVEXCOMPONENT_SOURCE_TYPE_KEYBOARD`
+- **OH_NativeXComponent_MouseEventAction**
+  - `OH_NATIVEXCOMPONENT_MOUSE_NONE` = 0
+  - `OH_NATIVEXCOMPONENT_MOUSE_PRESS`
+  - `OH_NATIVEXCOMPONENT_MOUSE_RELEASE`
+  - `OH_NATIVEXCOMPONENT_MOUSE_MOVE`
+- **OH_NativeXComponent_MouseEventButton**
+  - `OH_NATIVEXCOMPONENT_NONE_BUTTON` = 0
+  - `OH_NATIVEXCOMPONENT_LEFT_BUTTON` = 0x01
+  - `OH_NATIVEXCOMPONENT_RIGHT_BUTTON` = 0x02
+  - `OH_NATIVEXCOMPONENT_MIDDLE_BUTTON` = 0x04
+  - `OH_NATIVEXCOMPONENT_BACK_BUTTON` = 0x08
+  - `OH_NATIVEXCOMPONENT_FORWARD_BUTTON` = 0x10
+- **OH_NativeXComponent_TouchEvent_SourceTool**
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_UNKNOWN` = 0
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_FINGER` = 1
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_PEN` = 2
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_RUBBER` = 3
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_BRUSH` = 4
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_PENCIL` = 5
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_AIRBRUSH` = 6
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_MOUSE` = 7
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_LENS` = 8
+  - `OH_NATIVEXCOMPONENT_SOURCETOOL_TOUCHPAD` = 9
+#### 类型定义
+#### 宏定义
+- `OH_NATIVE_XCOMPONENT_OBJ` = ("__NATIVE_XCOMPONENT_OBJ__")
+
+### arkui/ace_engine/native/native_xcomponent_key_event.h
+#### 枚举
+- **OH_NativeXComponent_KeyCode**
+  - `KEY_UNKNOWN` = -1
+  - `KEY_FN` = 0
+  - `KEY_HOME` = 1
+  - `KEY_BACK` = 2
+  - `KEY_MEDIA_PLAY_PAUSE` = 10
+  - `KEY_MEDIA_STOP` = 11
+  - `KEY_MEDIA_NEXT` = 12
+  - `KEY_MEDIA_PREVIOUS` = 13
+  - `KEY_MEDIA_REWIND` = 14
+  - `KEY_MEDIA_FAST_FORWARD` = 15
+  - `KEY_VOLUME_UP` = 16
+  - `KEY_VOLUME_DOWN` = 17
+  - `KEY_POWER` = 18
+  - `KEY_CAMERA` = 19
+  - `KEY_VOLUME_MUTE` = 22
+  - `KEY_MUTE` = 23
+  - `KEY_BRIGHTNESS_UP` = 40
+  - `KEY_BRIGHTNESS_DOWN` = 41
+  - `KEY_0` = 2000
+  - `KEY_1` = 2001
+  - `KEY_2` = 2002
+  - `KEY_3` = 2003
+  - `KEY_4` = 2004
+  - `KEY_5` = 2005
+  - `KEY_6` = 2006
+  - `KEY_7` = 2007
+  - `KEY_8` = 2008
+  - `KEY_9` = 2009
+  - `KEY_STAR` = 2010
+  - `KEY_POUND` = 2011
+  - `KEY_DPAD_UP` = 2012
+  - `KEY_DPAD_DOWN` = 2013
+  - `KEY_DPAD_LEFT` = 2014
+  - `KEY_DPAD_RIGHT` = 2015
+  - `KEY_DPAD_CENTER` = 2016
+  - `KEY_A` = 2017
+  - `KEY_B` = 2018
+  - `KEY_C` = 2019
+  - `KEY_D` = 2020
+  - `KEY_E` = 2021
+  - `KEY_F` = 2022
+  - `KEY_G` = 2023
+  - `KEY_H` = 2024
+  - `KEY_I` = 2025
+  - `KEY_J` = 2026
+  - `KEY_K` = 2027
+  - `KEY_L` = 2028
+  - `KEY_M` = 2029
+  - `KEY_N` = 2030
+  - `KEY_O` = 2031
+  - `KEY_P` = 2032
+  - `KEY_Q` = 2033
+  - `KEY_R` = 2034
+  - `KEY_S` = 2035
+  - `KEY_T` = 2036
+  - `KEY_U` = 2037
+  - `KEY_V` = 2038
+  - `KEY_W` = 2039
+  - `KEY_X` = 2040
+  - `KEY_Y` = 2041
+  - `KEY_Z` = 2042
+  - `KEY_COMMA` = 2043
+  - `KEY_PERIOD` = 2044
+  - `KEY_ALT_LEFT` = 2045
+  - `KEY_ALT_RIGHT` = 2046
+  - `KEY_SHIFT_LEFT` = 2047
+  - `KEY_SHIFT_RIGHT` = 2048
+  - `KEY_TAB` = 2049
+  - `KEY_SPACE` = 2050
+  - `KEY_SYM` = 2051
+  - `KEY_EXPLORER` = 2052
+  - `KEY_ENVELOPE` = 2053
+  - `KEY_ENTER` = 2054
+  - `KEY_DEL` = 2055
+  - `KEY_GRAVE` = 2056
+  - `KEY_MINUS` = 2057
+  - `KEY_EQUALS` = 2058
+  - `KEY_LEFT_BRACKET` = 2059
+  - `KEY_RIGHT_BRACKET` = 2060
+  - `KEY_BACKSLASH` = 2061
+  - `KEY_SEMICOLON` = 2062
+  - `KEY_APOSTROPHE` = 2063
+  - `KEY_SLASH` = 2064
+  - `KEY_AT` = 2065
+  - `KEY_PLUS` = 2066
+  - `KEY_MENU` = 2067
+  - `KEY_PAGE_UP` = 2068
+  - `KEY_PAGE_DOWN` = 2069
+  - `KEY_ESCAPE` = 2070
+  - `KEY_FORWARD_DEL` = 2071
+  - `KEY_CTRL_LEFT` = 2072
+  - `KEY_CTRL_RIGHT` = 2073
+  - `KEY_CAPS_LOCK` = 2074
+  - `KEY_SCROLL_LOCK` = 2075
+  - `KEY_META_LEFT` = 2076
+  - `KEY_META_RIGHT` = 2077
+  - `KEY_FUNCTION` = 2078
+  - `KEY_SYSRQ` = 2079
+  - `KEY_BREAK` = 2080
+  - `KEY_MOVE_HOME` = 2081
+  - `KEY_MOVE_END` = 2082
+  - `KEY_INSERT` = 2083
+  - `KEY_FORWARD` = 2084
+  - `KEY_MEDIA_PLAY` = 2085
+  - `KEY_MEDIA_PAUSE` = 2086
+  - `KEY_MEDIA_CLOSE` = 2087
+  - `KEY_MEDIA_EJECT` = 2088
+  - `KEY_MEDIA_RECORD` = 2089
+  - `KEY_F1` = 2090
+  - `KEY_F2` = 2091
+  - `KEY_F3` = 2092
+  - `KEY_F4` = 2093
+  - `KEY_F5` = 2094
+  - `KEY_F6` = 2095
+  - `KEY_F7` = 2096
+  - `KEY_F8` = 2097
+  - `KEY_F9` = 2098
+  - `KEY_F10` = 2099
+  - `KEY_F11` = 2100
+  - `KEY_F12` = 2101
+  - `KEY_NUM_LOCK` = 2102
+  - `KEY_NUMPAD_0` = 2103
+  - `KEY_NUMPAD_1` = 2104
+  - `KEY_NUMPAD_2` = 2105
+  - `KEY_NUMPAD_3` = 2106
+  - `KEY_NUMPAD_4` = 2107
+  - `KEY_NUMPAD_5` = 2108
+  - `KEY_NUMPAD_6` = 2109
+  - `KEY_NUMPAD_7` = 2110
+  - `KEY_NUMPAD_8` = 2111
+  - `KEY_NUMPAD_9` = 2112
+  - `KEY_NUMPAD_DIVIDE` = 2113
+  - `KEY_NUMPAD_MULTIPLY` = 2114
+  - `KEY_NUMPAD_SUBTRACT` = 2115
+  - `KEY_NUMPAD_ADD` = 2116
+  - `KEY_NUMPAD_DOT` = 2117
+  - `KEY_NUMPAD_COMMA` = 2118
+  - `KEY_NUMPAD_ENTER` = 2119
+  - `KEY_NUMPAD_EQUALS` = 2120
+  - `KEY_NUMPAD_LEFT_PAREN` = 2121
+  - `KEY_NUMPAD_RIGHT_PAREN` = 2122
+  - `KEY_VIRTUAL_MULTITASK` = 2210
+  - `KEY_SLEEP` = 2600
+  - `KEY_ZENKAKU_HANKAKU` = 2601
+  - `KEY_102ND` = 2602
+  - `KEY_RO` = 2603
+  - `KEY_KATAKANA` = 2604
+  - `KEY_HIRAGANA` = 2605
+  - `KEY_HENKAN` = 2606
+  - `KEY_KATAKANA_HIRAGANA` = 2607
+  - `KEY_MUHENKAN` = 2608
+  - `KEY_LINEFEED` = 2609
+  - `KEY_MACRO` = 2610
+  - `KEY_NUMPAD_PLUSMINUS` = 2611
+  - `KEY_SCALE` = 2612
+  - `KEY_HANGUEL` = 2613
+  - `KEY_HANJA` = 2614
+  - `KEY_YEN` = 2615
+  - `KEY_STOP` = 2616
+  - `KEY_AGAIN` = 2617
+  - `KEY_PROPS` = 2618
+  - `KEY_UNDO` = 2619
+  - `KEY_COPY` = 2620
+  - `KEY_OPEN` = 2621
+  - `KEY_PASTE` = 2622
+  - `KEY_FIND` = 2623
+  - `KEY_CUT` = 2624
+  - `KEY_HELP` = 2625
+  - `KEY_CALC` = 2626
+  - `KEY_FILE` = 2627
+  - `KEY_BOOKMARKS` = 2628
+  - `KEY_NEXT` = 2629
+  - `KEY_PLAYPAUSE` = 2630
+  - `KEY_PREVIOUS` = 2631
+  - `KEY_STOPCD` = 2632
+  - `KEY_CONFIG` = 2634
+  - `KEY_REFRESH` = 2635
+  - `KEY_EXIT` = 2636
+  - `KEY_EDIT` = 2637
+  - `KEY_SCROLLUP` = 2638
+  - `KEY_SCROLLDOWN` = 2639
+  - `KEY_NEW` = 2640
+  - `KEY_REDO` = 2641
+  - `KEY_CLOSE` = 2642
+  - `KEY_PLAY` = 2643
+  - `KEY_BASSBOOST` = 2644
+  - `KEY_PRINT` = 2645
+  - `KEY_CHAT` = 2646
+  - `KEY_FINANCE` = 2647
+  - `KEY_CANCEL` = 2648
+  - `KEY_KBDILLUM_TOGGLE` = 2649
+  - `KEY_KBDILLUM_DOWN` = 2650
+  - `KEY_KBDILLUM_UP` = 2651
+  - `KEY_SEND` = 2652
+  - `KEY_REPLY` = 2653
+  - `KEY_FORWARDMAIL` = 2654
+  - `KEY_SAVE` = 2655
+  - `KEY_DOCUMENTS` = 2656
+  - `KEY_VIDEO_NEXT` = 2657
+  - `KEY_VIDEO_PREV` = 2658
+  - `KEY_BRIGHTNESS_CYCLE` = 2659
+  - `KEY_BRIGHTNESS_ZERO` = 2660
+  - `KEY_DISPLAY_OFF` = 2661
+  - `KEY_BTN_MISC` = 2662
+  - `KEY_GOTO` = 2663
+  - `KEY_INFO` = 2664
+  - `KEY_PROGRAM` = 2665
+  - `KEY_PVR` = 2666
+  - `KEY_SUBTITLE` = 2667
+  - `KEY_FULL_SCREEN` = 2668
+  - `KEY_KEYBOARD` = 2669
+  - `KEY_ASPECT_RATIO` = 2670
+  - `KEY_PC` = 2671
+  - `KEY_TV` = 2672
+  - `KEY_TV2` = 2673
+  - `KEY_VCR` = 2674
+  - `KEY_VCR2` = 2675
+  - `KEY_SAT` = 2676
+  - `KEY_CD` = 2677
+  - `KEY_TAPE` = 2678
+  - `KEY_TUNER` = 2679
+  - `KEY_PLAYER` = 2680
+  - `KEY_DVD` = 2681
+  - `KEY_AUDIO` = 2682
+  - `KEY_VIDEO` = 2683
+  - `KEY_MEMO` = 2684
+  - `KEY_CALENDAR` = 2685
+  - `KEY_RED` = 2686
+  - `KEY_GREEN` = 2687
+  - `KEY_YELLOW` = 2688
+  - `KEY_BLUE` = 2689
+  - `KEY_CHANNELUP` = 2690
+  - `KEY_CHANNELDOWN` = 2691
+  - `KEY_LAST` = 2692
+  - `KEY_RESTART` = 2693
+  - `KEY_SLOW` = 2694
+  - `KEY_SHUFFLE` = 2695
+  - `KEY_VIDEOPHONE` = 2696
+  - `KEY_GAMES` = 2697
+  - `KEY_ZOOMIN` = 2698
+  - `KEY_ZOOMOUT` = 2699
+  - `KEY_ZOOMRESET` = 2700
+  - `KEY_WORDPROCESSOR` = 2701
+  - `KEY_EDITOR` = 2702
+  - `KEY_SPREADSHEET` = 2703
+  - `KEY_GRAPHICSEDITOR` = 2704
+  - `KEY_PRESENTATION` = 2705
+  - `KEY_DATABASE` = 2706
+  - `KEY_NEWS` = 2707
+  - `KEY_VOICEMAIL` = 2708
+  - `KEY_ADDRESSBOOK` = 2709
+  - `KEY_MESSENGER` = 2710
+  - `KEY_BRIGHTNESS_TOGGLE` = 2711
+  - `KEY_SPELLCHECK` = 2712
+  - `KEY_COFFEE` = 2713
+  - `KEY_MEDIA_REPEAT` = 2714
+  - `KEY_IMAGES` = 2715
+  - `KEY_BUTTONCONFIG` = 2716
+  - `KEY_TASKMANAGER` = 2717
+  - `KEY_JOURNAL` = 2718
+  - `KEY_CONTROLPANEL` = 2719
+  - `KEY_APPSELECT` = 2720
+  - `KEY_SCREENSAVER` = 2721
+  - `KEY_ASSISTANT` = 2722
+  - `KEY_KBD_LAYOUT_NEXT` = 2723
+  - `KEY_BRIGHTNESS_MIN` = 2724
+  - `KEY_BRIGHTNESS_MAX` = 2725
+  - `KEY_KBDINPUTASSIST_PREV` = 2726
+  - `KEY_KBDINPUTASSIST_NEXT` = 2727
+  - `KEY_KBDINPUTASSIST_PREVGROUP` = 2728
+  - `KEY_KBDINPUTASSIST_NEXTGROUP` = 2729
+  - `KEY_KBDINPUTASSIST_ACCEPT` = 2730
+  - `KEY_KBDINPUTASSIST_CANCEL` = 2731
+  - `KEY_FRONT` = 2800
+  - `KEY_SETUP` = 2801
+  - `KEY_WAKEUP` = 2802
+  - `KEY_SENDFILE` = 2803
+  - `KEY_DELETEFILE` = 2804
+  - `KEY_XFER` = 2805
+  - `KEY_PROG1` = 2806
+  - `KEY_PROG2` = 2807
+  - `KEY_MSDOS` = 2808
+  - `KEY_SCREENLOCK` = 2809
+  - `KEY_DIRECTION_ROTATE_DISPLAY` = 2810
+  - `KEY_CYCLEWINDOWS` = 2811
+  - `KEY_COMPUTER` = 2812
+  - `KEY_EJECTCLOSECD` = 2813
+  - `KEY_ISO` = 2814
+  - `KEY_MOVE` = 2815
+  - `KEY_F13` = 2816
+  - `KEY_F14` = 2817
+  - `KEY_F15` = 2818
+  - `KEY_F16` = 2819
+  - `KEY_F17` = 2820
+  - `KEY_F18` = 2821
+  - `KEY_F19` = 2822
+  - `KEY_F20` = 2823
+  - `KEY_F21` = 2824
+  - `KEY_F22` = 2825
+  - `KEY_F23` = 2826
+  - `KEY_F24` = 2827
+  - `KEY_PROG3` = 2828
+  - `KEY_PROG4` = 2829
+  - `KEY_DASHBOARD` = 2830
+  - `KEY_SUSPEND` = 2831
+  - `KEY_HP` = 2832
+  - `KEY_SOUND` = 2833
+  - `KEY_QUESTION` = 2834
+  - `KEY_CONNECT` = 2836
+  - `KEY_SPORT` = 2837
+  - `KEY_SHOP` = 2838
+  - `KEY_ALTERASE` = 2839
+  - `KEY_SWITCHVIDEOMODE` = 2841
+  - `KEY_BATTERY` = 2842
+  - `KEY_BLUETOOTH` = 2843
+  - `KEY_WLAN` = 2844
+  - `KEY_UWB` = 2845
+  - `KEY_WWAN_WIMAX` = 2846
+  - `KEY_RFKILL` = 2847
+  - `KEY_CHANNEL` = 3001
+  - `KEY_BTN_0` = 3100
+  - `KEY_BTN_1` = 3101
+  - `KEY_BTN_2` = 3102
+  - `KEY_BTN_3` = 3103
+  - `KEY_BTN_4` = 3104
+  - `KEY_BTN_5` = 3105
+  - `KEY_BTN_6` = 3106
+  - `KEY_BTN_7` = 3107
+  - `KEY_BTN_8` = 3108
+  - `KEY_BTN_9` = 3109
+- **OH_NativeXComponent_KeyAction**
+  - `OH_NATIVEXCOMPONENT_KEY_ACTION_UNKNOWN` = -1
+  - `OH_NATIVEXCOMPONENT_KEY_ACTION_DOWN` = 0
+  - `OH_NATIVEXCOMPONENT_KEY_ACTION_UP`
+
+### arkui/napi/common.h
+#### 枚举
+- **napi_qos_t**
+  - `napi_qos_background` = 0
+  - `napi_qos_utility` = 1
+  - `napi_qos_default` = 2
+  - `napi_qos_user_initiated` = 3
+
+### arkui/napi/native_api.h
+#### 函数
+- `NAPI_INNER_EXTERN napi_status napi_fatal_exception(napi_env env, napi_value err)`
+- `NAPI_EXTERN napi_status napi_create_string_utf16(napi_env env,
+                                                 const char16_t* str,
+                                    )`
+- `NAPI_EXTERN napi_status napi_get_value_string_utf16(napi_env env,
+                                                    napi_value value,
+                                    )`
+- `NAPI_EXTERN napi_status napi_type_tag_object(napi_env env,
+                                             napi_value value,
+                                           )`
+- `NAPI_EXTERN napi_status napi_check_object_type_tag(napi_env env,
+                                                   napi_value value,
+                                     )`
+- `NAPI_INNER_EXTERN napi_status napi_adjust_external_memory(napi_env env,
+                                                          int64_t change_in_bytes,
+                       )`
+- `NAPI_EXTERN napi_status napi_run_script_path(napi_env env, const char* path, napi_value* result)`
+- `NAPI_EXTERN napi_status napi_queue_async_work_with_qos(napi_env env, napi_async_work work, napi_qos_t qos)`
+- `NAPI_EXTERN napi_status napi_load_module(napi_env env, const char* path, napi_value* result)`
+- `NAPI_EXTERN napi_status napi_get_instance_data(napi_env env, void** data)`
+- `NAPI_EXTERN napi_status napi_set_instance_data(napi_env env,
+                                               void* data,
+                                               )`
+- `NAPI_EXTERN napi_status napi_remove_async_cleanup_hook(napi_async_cleanup_hook_handle remove_handle)`
+- `NAPI_EXTERN napi_status napi_add_async_cleanup_hook(napi_env env,
+                                                    napi_async_cleanup_hook hook,
+                        )`
+- `NAPI_EXTERN napi_status napi_async_destroy(napi_env env,
+                                           napi_async_context async_context)`
+- `NAPI_EXTERN napi_status napi_async_init(napi_env env,
+                                        napi_value async_resource,
+                                       )`
+- `NAPI_EXTERN napi_status napi_close_callback_scope(napi_env env, napi_callback_scope scope)`
+- `NAPI_EXTERN napi_status napi_open_callback_scope(napi_env env,
+                                                 napi_value resource_object,
+                             )`
+- `NAPI_EXTERN napi_status node_api_get_module_file_name(napi_env env, const char** result)`
+- `NAPI_EXTERN napi_status napi_create_object_with_properties(napi_env env,
+                                                           napi_value* result,
+                           )`
+- `NAPI_EXTERN napi_status napi_create_object_with_named_properties(napi_env env,
+                                                                 napi_value* result,
+                     )`
+- `NAPI_EXTERN napi_status napi_coerce_to_native_binding_object(napi_env env,
+                                                             napi_value js_object,
+                       )`
+- `NAPI_EXTERN napi_status napi_add_finalizer(napi_env env,
+                                           napi_value js_object,
+                                         )`
+#### 宏定义
+- `NAPI_VERSION` = 8
+- `NAPI_EXPERIMENTAL` = #endif
+- `NAPI_INNER_EXTERN` = __declspec(dllexport)
+- `NAPI_INNER_EXTERN` = __attribute__((visibility("default")))
+- `NAPI_INNER_EXTERN` = __declspec(deprecated)
+- `NAPI_INNER_EXTERN` = __attribute__((__deprecated__))
+
+## bundlemanager (1 个头文件)
+
+
+### bundlemanager/bundle_framework/bundle/include/native_interface_bundle.h
+#### 函数
+- `OH_NativeBundle_ApplicationInfo OH_NativeBundle_GetCurrentApplicationInfo()`
+- `char* OH_NativeBundle_GetAppId()`
+- `char* OH_NativeBundle_GetAppIdentifier()`
+#### 结构体
+- **OH_NativeBundle_ApplicationInfo**
+  - `char* bundleName`
+  - `char* fingerprint`
+#### 类型定义
+
+## commonlibrary (1 个头文件)
+
+
+### commonlibrary/memory_utils/libpurgeablemem/purgeable_memory.h
+#### 函数
+- `bool OH_PurgeableMemory_Destroy(OH_PurgeableMemory *purgObj)`
+- `bool OH_PurgeableMemory_BeginRead(OH_PurgeableMemory *purgObj)`
+- `void OH_PurgeableMemory_EndRead(OH_PurgeableMemory *purgObj)`
+- `bool OH_PurgeableMemory_BeginWrite(OH_PurgeableMemory *purgObj)`
+- `void OH_PurgeableMemory_EndWrite(OH_PurgeableMemory *purgObj)`
+- `size_t OH_PurgeableMemory_ContentSize(OH_PurgeableMemory *purgObj)`
+- `bool OH_PurgeableMemory_AppendModify(OH_PurgeableMemory *purgObj,
+    OH_PurgeableMemory_ModifyFunc func, void *funcPara)`
+#### 类型定义
+
+## distributeddatamgr (7 个头文件)
+
+
+### distributeddatamgr/relational_store/include/data_asset.h
+#### 函数
+- `int OH_Data_Asset_SetName(Data_Asset *asset, const char *name)`
+- `int OH_Data_Asset_SetUri(Data_Asset *asset, const char *uri)`
+- `int OH_Data_Asset_SetPath(Data_Asset *asset, const char *path)`
+- `int OH_Data_Asset_SetCreateTime(Data_Asset *asset, int64_t createTime)`
+- `int OH_Data_Asset_SetModifyTime(Data_Asset *asset, int64_t modifyTime)`
+- `int OH_Data_Asset_SetSize(Data_Asset *asset, size_t size)`
+- `int OH_Data_Asset_SetStatus(Data_Asset *asset, Data_AssetStatus status)`
+- `int OH_Data_Asset_GetName(Data_Asset *asset, char *name, size_t *length)`
+- `int OH_Data_Asset_GetUri(Data_Asset *asset, char *uri, size_t *length)`
+- `int OH_Data_Asset_GetPath(Data_Asset *asset, char *path, size_t *length)`
+- `int OH_Data_Asset_GetCreateTime(Data_Asset *asset, int64_t *createTime)`
+- `int OH_Data_Asset_GetModifyTime(Data_Asset *asset, int64_t *modifyTime)`
+- `int OH_Data_Asset_GetSize(Data_Asset *asset, size_t *size)`
+- `int OH_Data_Asset_GetStatus(Data_Asset *asset, Data_AssetStatus *status)`
+- `int OH_Data_Asset_DestroyOne(Data_Asset *asset)`
+- `int OH_Data_Asset_DestroyMultiple(Data_Asset **assets, uint32_t count)`
+#### 枚举
+- **Data_AssetStatus**
+  - `brief`
+  - `Means`
+  - `the`
+  - `status`
+  - `of`
+  - `asset`
+  - `is`
+  - `null`
+  - `ASSET_NULL` = 0
+  - `brief`
+  - `Means`
+  - `the`
+  - `status`
+  - `of`
+  - `asset`
+  - `is`
+  - `normal`
+  - `ASSET_NORMAL`
+  - `brief`
+  - `Means`
+  - `the`
+  - `asset`
+  - `needs`
+  - `to`
+  - `be`
+  - `inserted`
+  - `ASSET_INSERT`
+  - `brief`
+  - `Means`
+  - `the`
+  - `asset`
+  - `needs`
+  - `to`
+  - `be`
+  - `updated`
+  - `ASSET_UPDATE`
+  - `brief`
+  - `Means`
+  - `the`
+  - `asset`
+  - `needs`
+  - `to`
+  - `be`
+  - `deleted`
+  - `ASSET_DELETE`
+  - `brief`
+  - `Means`
+  - `the`
+  - `status`
+  - `of`
+  - `asset`
+  - `is`
+  - `abnormal`
+  - `ASSET_ABNORMAL`
+  - `brief`
+  - `Means`
+  - `the`
+  - `status`
+  - `of`
+  - `asset`
+  - `is`
+  - `downloading`
+  - `ASSET_DOWNLOADING`
+#### 类型定义
+
+### distributeddatamgr/relational_store/include/oh_cursor.h
+#### 结构体
+- **OH_Cursor**
+  - `int64_t id`
+#### 枚举
+- **anonymous**
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `NULL`
+  - `TYPE_NULL` = 0
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `INT64`
+  - `TYPE_INT64`
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `REAL`
+  - `TYPE_REAL`
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `TEXT`
+  - `TYPE_TEXT`
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `BLOB`
+  - `TYPE_BLOB`
+  - `Indicates`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `link`
+  - `Data_Asset`
+
+### distributeddatamgr/relational_store/include/oh_predicates.h
+#### 结构体
+- **OH_Predicates**
+  - `int64_t id`
+#### 枚举
+- **OH_OrderType**
+  - `Ascend`
+  - `order`
+  - `ASC` = 0
+  - `Descend`
+  - `order`
+  - `DESC` = 1
+
+### distributeddatamgr/relational_store/include/oh_value_object.h
+#### 结构体
+- **OH_VObject**
+  - `int64_t id`
+
+### distributeddatamgr/relational_store/include/oh_values_bucket.h
+#### 函数
+- `int OH_VBucket_PutAsset(OH_VBucket *bucket, const char *field, Data_Asset *value)`
+- `int OH_VBucket_PutAssets(OH_VBucket *bucket, const char *field, Data_Asset **value, uint32_t count)`
+#### 结构体
+- **OH_VBucket**
+  - `int64_t id`
+  - `uint16_t capability`
+
+### distributeddatamgr/relational_store/include/relational_store.h
+#### 函数
+- `int OH_Rdb_CloseStore(OH_Rdb_Store *store)`
+- `int OH_Rdb_DeleteStore(const OH_Rdb_Config *config)`
+- `int OH_Rdb_Insert(OH_Rdb_Store *store, const char *table, OH_VBucket *valuesBucket)`
+- `int OH_Rdb_Update(OH_Rdb_Store *store, OH_VBucket *valuesBucket, OH_Predicates *predicates)`
+- `int OH_Rdb_Delete(OH_Rdb_Store *store, OH_Predicates *predicates)`
+- `int OH_Rdb_Execute(OH_Rdb_Store *store, const char *sql)`
+- `int OH_Rdb_BeginTransaction(OH_Rdb_Store *store)`
+- `int OH_Rdb_RollBack(OH_Rdb_Store *store)`
+- `int OH_Rdb_Commit(OH_Rdb_Store *store)`
+- `int OH_Rdb_Backup(OH_Rdb_Store *store, const char *databasePath)`
+- `int OH_Rdb_Restore(OH_Rdb_Store *store, const char *databasePath)`
+- `int OH_Rdb_GetVersion(OH_Rdb_Store *store, int *version)`
+- `int OH_Rdb_SetVersion(OH_Rdb_Store *store, int version)`
+- `int OH_Rdb_SetDistributedTables(OH_Rdb_Store *store, const char *tables[], uint32_t count, Rdb_DistributedType type,
+    const Rdb_DistributedConfig *co)`
+- `int OH_Rdb_Subscribe(OH_Rdb_Store *store, Rdb_SubscribeType type, const Rdb_DataObserver *observer)`
+- `int OH_Rdb_Unsubscribe(OH_Rdb_Store *store, Rdb_SubscribeType type, const Rdb_DataObserver *observer)`
+- `int OH_Rdb_CloudSync(OH_Rdb_Store *store, Rdb_SyncMode mode, const char *tables[], uint32_t count,
+    const Rdb_ProgressObserver *observer)`
+- `int OH_Rdb_SubscribeAutoSyncProgress(OH_Rdb_Store *store, const Rdb_ProgressObserver *observer)`
+- `int OH_Rdb_UnsubscribeAutoSyncProgress(OH_Rdb_Store *store, const Rdb_ProgressObserver *observer)`
+#### 结构体
+- **Rdb_DistributedConfig**
+  - `int version`
+  - `bool isAutoSync`
+- **Rdb_KeyInfo**
+  - `int count`
+- **Rdb_ChangeInfo**
+  - `int version`
+- **Rdb_DataObserver**
+  - `Rdb_SubscribeCallback callback`
+- **Rdb_Statistic**
+  - `int total`
+  - `int successful`
+  - `int failed`
+  - `int remained`
+- **Rdb_TableDetails**
+- **Rdb_ProgressDetails**
+  - `int version`
+- **Rdb_ProgressObserver**
+  - `Rdb_ProgressCallback callback`
+#### 枚举
+- **OH_Rdb_SecurityLevel**
+  - `brief`
+  - `Low`
+  - `level`
+  - `security`
+  - `Data`
+  - `leaks`
+  - `have`
+  - `a`
+  - `minor`
+  - `impact`
+  - `S1` = 1
+  - `brief`
+  - `Medium`
+  - `level`
+  - `security`
+  - `Data`
+  - `leaks`
+  - `have`
+  - `a`
+  - `major`
+  - `impact`
+  - `S2`
+  - `brief`
+  - `High`
+  - `level`
+  - `security`
+  - `Data`
+  - `leaks`
+  - `have`
+  - `a`
+  - `severe`
+  - `impact`
+  - `S3`
+  - `brief`
+  - `Critical`
+  - `level`
+  - `security`
+  - `Data`
+  - `leaks`
+  - `have`
+  - `a`
+  - `critical`
+  - `impact`
+  - `S4`
+- **Rdb_SecurityArea**
+  - `brief`
+  - `Security`
+  - `Area`
+  - `1`
+  - `RDB_SECURITY_AREA_EL1` = 1
+  - `brief`
+  - `Security`
+  - `Area`
+  - `2`
+  - `RDB_SECURITY_AREA_EL2`
+  - `brief`
+  - `Security`
+  - `Area`
+  - `3`
+  - `RDB_SECURITY_AREA_EL3`
+  - `brief`
+  - `Security`
+  - `Area`
+  - `4`
+  - `RDB_SECURITY_AREA_EL4`
+- **Rdb_DistributedType**
+  - `brief`
+  - `Indicates`
+  - `the`
+  - `table`
+  - `is`
+  - `distributed`
+  - `among`
+  - `the`
+  - `devices`
+  - `RDB_DISTRIBUTED_CLOUD`
+- **Rdb_ChangeType**
+  - `brief`
+  - `Means`
+  - `the`
+  - `change`
+  - `type`
+  - `is`
+  - `data`
+  - `change`
+  - `RDB_DATA_CHANGE`
+  - `brief`
+  - `Means`
+  - `the`
+  - `change`
+  - `type`
+  - `is`
+  - `asset`
+  - `change`
+  - `RDB_ASSET_CHANGE`
+- **Rdb_SubscribeType**
+  - `brief`
+  - `Subscription`
+  - `to`
+  - `cloud`
+  - `data`
+  - `changes`
+  - `RDB_SUBSCRIBE_TYPE_CLOUD`
+  - `brief`
+  - `Subscription`
+  - `to`
+  - `cloud`
+  - `data`
+  - `change`
+  - `details`
+  - `RDB_SUBSCRIBE_TYPE_CLOUD_DETAILS`
+- **Rdb_SyncMode**
+  - `brief`
+  - `Indicates`
+  - `that`
+  - `data`
+  - `is`
+  - `synchronized`
+  - `from`
+  - `the`
+  - `end`
+  - `with`
+  - `the`
+  - `closest`
+  - `modification`
+  - `time`
+  - `to`
+  - `the`
+  - `end`
+  - `with`
+  - `a`
+  - `more`
+  - `distant`
+  - `modification`
+  - `time`
+  - `RDB_SYNC_MODE_TIME_FIRST`
+  - `brief`
+  - `Indicates`
+  - `that`
+  - `data`
+  - `is`
+  - `synchronized`
+  - `from`
+  - `local`
+  - `to`
+  - `cloud`
+  - `RDB_SYNC_MODE_NATIVE_FIRST`
+  - `brief`
+  - `Indicates`
+  - `that`
+  - `data`
+  - `is`
+  - `synchronized`
+  - `from`
+  - `cloud`
+  - `to`
+  - `local`
+  - `RDB_SYNC_MODE_CLOUD_FIRST`
+- **Rdb_Progress**
+  - `brief`
+  - `Means`
+  - `the`
+  - `sync`
+  - `process`
+  - `begin`
+  - `RDB_SYNC_BEGIN`
+  - `brief`
+  - `Means`
+  - `the`
+  - `sync`
+  - `process`
+  - `is`
+  - `in`
+  - `progress`
+  - `RDB_SYNC_IN_PROGRESS`
+  - `brief`
+  - `Means`
+  - `the`
+  - `sync`
+  - `process`
+  - `is`
+  - `finished`
+  - `RDB_SYNC_FINISH`
+- **Rdb_ProgressCode**
+  - `brief`
+  - `Means`
+  - `the`
+  - `status`
+  - `of`
+  - `progress`
+  - `is`
+  - `success`
+  - `RDB_SUCCESS`
+  - `brief`
+  - `Means`
+  - `the`
+  - `progress`
+  - `meets`
+  - `unknown`
+  - `error`
+  - `RDB_UNKNOWN_ERROR`
+  - `brief`
+  - `Means`
+  - `the`
+  - `progress`
+  - `meets`
+  - `network`
+  - `error`
+  - `RDB_NETWORK_ERROR`
+  - `brief`
+  - `Means`
+  - `cloud`
+  - `is`
+  - `disabled`
+  - `RDB_CLOUD_DISABLED`
+  - `brief`
+  - `Means`
+  - `the`
+  - `progress`
+  - `is`
+  - `locked`
+  - `by`
+  - `others`
+  - `RDB_LOCKED_BY_OTHERS`
+  - `brief`
+  - `Means`
+  - `the`
+  - `record`
+  - `exceeds`
+  - `the`
+  - `limit`
+  - `RDB_RECORD_LIMIT_EXCEEDED`
+  - `Means`
+  - `the`
+  - `cloud`
+  - `has`
+  - `no`
+  - `space`
+  - `for`
+  - `the`
+  - `asset`
+  - `RDB_NO_SPACE_FOR_ASSET`
+#### 宏定义
+- `DISTRIBUTED_CONFIG_VERSION` = 1
+- `DISTRIBUTED_CHANGE_INFO_VERSION` = 1
+- `DISTRIBUTED_PROGRESS_DETAIL_VERSION` = 1
+
+### distributeddatamgr/relational_store/include/relational_store_error_code.h
+#### 枚举
+- **OH_Rdb_ErrCode**
+  - `Indicates`
+  - `that`
+  - `the`
+  - `function`
+  - `execution`
+  - `exception`
+  - `RDB_ERR` = -1
+  - `The`
+  - `error`
+  - `code`
+  - `in`
+  - `the`
+  - `correct`
+  - `case`
+  - `RDB_OK` = 0
+  - `brief`
+  - `The`
+  - `base`
+  - `code`
+  - `of`
+  - `the`
+  - `exception`
+  - `error`
+  - `code`
+  - `E_BASE` = 14800000
+  - `brief`
+  - `The`
+  - `error`
+  - `when`
+  - `the`
+  - `capability`
+  - `not`
+  - `supported`
+  - `RDB_E_NOT_SUPPORTED` = 801
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `common`
+  - `exceptions`
+  - `RDB_E_ERROR` = E_BASE
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `common`
+  - `invalid`
+  - `args`
+  - `RDB_E_INVALID_ARGS` = (E_BASE + 1)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `upgrade`
+  - `the`
+  - `read`
+  - `only`
+  - `store`
+  - `RDB_E_CANNOT_UPDATE_READONLY` = (E_BASE + 2)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `deleting`
+  - `a`
+  - `file`
+  - `fails`
+  - `RDB_E_REMOVE_FILE` = (E_BASE + 3)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `a`
+  - `table`
+  - `name`
+  - `is`
+  - `empty`
+  - `RDB_E_EMPTY_TABLE_NAME` = (E_BASE + 5)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `a`
+  - `values`
+  - `bucket`
+  - `is`
+  - `empty`
+  - `RDB_E_EMPTY_VALUES_BUCKET` = (E_BASE + 6)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `the`
+  - `sql`
+  - `is`
+  - `not`
+  - `select`
+  - `RDB_E_EXECUTE_IN_STEP_QUERY` = (E_BASE + 7)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `column`
+  - `index`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_COLUMN_INDEX` = (E_BASE + 8)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `column`
+  - `type`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_COLUMN_TYPE` = (E_BASE + 9)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `a`
+  - `file`
+  - `name`
+  - `is`
+  - `empty`
+  - `RDB_E_EMPTY_FILE_NAME` = (E_BASE + 10)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `the`
+  - `current`
+  - `file`
+  - `path`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_FILE_PATH` = (E_BASE + 11)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `using`
+  - `transactions`
+  - `RDB_E_TRANSACTION_IN_EXECUTE` = (E_BASE + 12)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `current`
+  - `status`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_STATEMENT` = (E_BASE + 13)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `execute`
+  - `write`
+  - `operation`
+  - `in`
+  - `read`
+  - `connection`
+  - `RDB_E_EXECUTE_WRITE_IN_READ_CONNECTION` = (E_BASE + 14)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `execute`
+  - `begin`
+  - `transaction`
+  - `operation`
+  - `in`
+  - `read`
+  - `connection`
+  - `RDB_E_BEGIN_TRANSACTION_IN_READ_CONNECTION` = (E_BASE + 15)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `there`
+  - `are`
+  - `no`
+  - `transactions`
+  - `in`
+  - `this`
+  - `connection`
+  - `RDB_E_NO_TRANSACTION_IN_SESSION` = (E_BASE + 16)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `begin`
+  - `more`
+  - `step`
+  - `query`
+  - `in`
+  - `one`
+  - `session`
+  - `RDB_E_MORE_STEP_QUERY_IN_ONE_SESSION` = (E_BASE + 17)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `the`
+  - `current`
+  - `statement`
+  - `doesn`
+  - `t`
+  - `contains`
+  - `one`
+  - `row`
+  - `result`
+  - `data`
+  - `RDB_E_NO_ROW_IN_QUERY` = (E_BASE + 18)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `bind`
+  - `arguments`
+  - `count`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_BIND_ARGS_COUNT` = (E_BASE + 19)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `object`
+  - `type`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_OBJECT_TYPE` = (E_BASE + 20)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `conflict`
+  - `flag`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_CONFLICT_FLAG` = (E_BASE + 21)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `having`
+  - `clause`
+  - `not`
+  - `in`
+  - `group`
+  - `RDB_E_HAVING_CLAUSE_NOT_IN_GROUP_BY` = (E_BASE + 22)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `not`
+  - `supported`
+  - `by`
+  - `step`
+  - `result`
+  - `set`
+  - `RDB_E_NOT_SUPPORTED_BY_STEP_RESULT_SET` = (E_BASE + 23)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `step`
+  - `result`
+  - `current`
+  - `tid`
+  - `not`
+  - `equal`
+  - `to`
+  - `object`
+  - `s`
+  - `tid`
+  - `RDB_E_STEP_RESULT_SET_CROSS_THREADS` = (E_BASE + 24)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `the`
+  - `result`
+  - `query`
+  - `was`
+  - `not`
+  - `executed`
+  - `RDB_E_STEP_RESULT_QUERY_NOT_EXECUTED` = (E_BASE + 25)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `result`
+  - `set`
+  - `cursor`
+  - `is`
+  - `after`
+  - `the`
+  - `last`
+  - `row`
+  - `RDB_E_STEP_RESULT_IS_AFTER_LAST` = (E_BASE + 26)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `result`
+  - `set`
+  - `query`
+  - `exceeded`
+  - `RDB_E_STEP_RESULT_QUERY_EXCEEDED` = (E_BASE + 27)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `statement`
+  - `not`
+  - `prepared`
+  - `RDB_E_STATEMENT_NOT_PREPARED` = (E_BASE + 28)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `result`
+  - `set`
+  - `is`
+  - `incorrect`
+  - `RDB_E_EXECUTE_RESULT_INCORRECT` = (E_BASE + 29)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `the`
+  - `result`
+  - `set`
+  - `is`
+  - `closed`
+  - `RDB_E_STEP_RESULT_CLOSED` = (E_BASE + 30)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `input`
+  - `relative`
+  - `path`
+  - `RDB_E_RELATIVE_PATH` = (E_BASE + 31)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `new`
+  - `encrypt`
+  - `key`
+  - `is`
+  - `empty`
+  - `RDB_E_EMPTY_NEW_ENCRYPT_KEY` = (E_BASE + 32)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `change`
+  - `unencrypted`
+  - `to`
+  - `encrypted`
+  - `RDB_E_CHANGE_UNENCRYPTED_TO_ENCRYPTED` = (E_BASE + 33)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `change`
+  - `encrypt`
+  - `in`
+  - `busy`
+  - `RDB_E_CHANGE_ENCRYPT_KEY_IN_BUSY` = (E_BASE + 34)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `the`
+  - `statement`
+  - `not`
+  - `initialized`
+  - `RDB_E_STEP_STATEMENT_NOT_INIT` = (E_BASE + 35)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `for`
+  - `the`
+  - `attach`
+  - `is`
+  - `not`
+  - `supported`
+  - `in`
+  - `WAL`
+  - `journal`
+  - `mode`
+  - `RDB_E_NOT_SUPPORTED_ATTACH_IN_WAL_MODE` = (E_BASE + 36)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `create`
+  - `folder`
+  - `failed`
+  - `RDB_E_CREATE_FOLDER_FAIL` = (E_BASE + 37)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `SQL`
+  - `builder`
+  - `normalize`
+  - `failed`
+  - `RDB_E_SQLITE_SQL_BUILDER_NORMALIZE_FAIL` = (E_BASE + 38)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `store`
+  - `session`
+  - `not`
+  - `give`
+  - `connection`
+  - `temporarily`
+  - `RDB_E_STORE_SESSION_NOT_GIVE_CONNECTION_TEMPORARILY` = (E_BASE + 39)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `store`
+  - `session`
+  - `not`
+  - `current`
+  - `transaction`
+  - `RDB_E_STORE_SESSION_NO_CURRENT_TRANSACTION` = (E_BASE + 40)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `not`
+  - `supported`
+  - `the`
+  - `current`
+  - `operation`
+  - `RDB_E_NOT_SUPPORT` = (E_BASE + 41)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `the`
+  - `current`
+  - `parcel`
+  - `is`
+  - `invalid`
+  - `RDB_E_INVALID_PARCEL` = (E_BASE + 42)
+  - `brief`
+  - `The`
+  - `error`
+  - `code`
+  - `when`
+  - `using`
+  - `sqlite3_step`
+  - `function`
+  - `failed`
+  - `RDB_E_QUERY_IN_EXECUTE` = (E_BASE + 43)
+  - `brief`
+  - `The`
+  - `error`
+  - `for`
+  - `set`
+  - `persist`
+  - `WAL`
+  - `RDB_E_SET_PERSIST_WAL` = (E_BASE + 44)
+  - `brief`
+  - `The`
+  - `error`
+  - `when`
+  - `the`
+  - `database`
+  - `does`
+  - `not`
+  - `exist`
+  - `RDB_E_DB_NOT_EXIST` = (E_BASE + 45)
+  - `brief`
+  - `The`
+  - `error`
+  - `when`
+  - `the`
+  - `read`
+  - `connection`
+  - `count`
+  - `is`
+  - `overload`
+  - `RDB_E_ARGS_READ_CON_OVERLOAD` = (E_BASE + 46)
+  - `brief`
+  - `The`
+  - `error`
+  - `when`
+  - `the`
+  - `wal`
+  - `file`
+  - `size`
+  - `over`
+  - `default`
+  - `limit`
+  - `RDB_E_WAL_SIZE_OVER_LIMIT` = (E_BASE + 47)
+  - `brief`
+  - `The`
+  - `error`
+  - `when`
+  - `the`
+  - `connection`
+  - `count`
+  - `is`
+  - `used`
+  - `up`
+  - `RDB_E_CON_OVER_LIMIT` = (E_BASE + 48)
+
+## drivers (4 个头文件)
+
+
+### drivers/external_device_manager/hid/hid_ddk_api.h
+#### 函数
+- `int32_t OH_Hid_CreateDevice(Hid_Device *hidDevice, Hid_EventProperties *hidEventProperties)`
+- `int32_t OH_Hid_EmitEvent(int32_t deviceId, const Hid_EmitItem items[], uint16_t length)`
+- `int32_t OH_Hid_DestroyDevice(int32_t deviceId)`
+
+### drivers/external_device_manager/hid/hid_ddk_types.h
+#### 结构体
+- **Hid_EmitItem**
+  - `uint16_t type`
+  - `uint16_t code`
+  - `uint32_t value`
+- **Hid_Device**
+  - `uint16_t vendorId`
+  - `uint16_t productId`
+  - `uint16_t version`
+  - `uint16_t bustype`
+  - `uint16_t propLength`
+- **Hid_EventTypeArray**
+  - `uint16_t length`
+- **Hid_KeyCodeArray**
+  - `uint16_t length`
+- **Hid_AbsAxesArray**
+  - `uint16_t length`
+- **Hid_RelAxesArray**
+  - `uint16_t length`
+- **Hid_MscEventArray**
+  - `uint16_t length`
+- **Hid_EventProperties**
+  - `struct Hid_EventTypeArray hidEventTypes`
+  - `struct Hid_KeyCodeArray hidKeys`
+  - `struct Hid_AbsAxesArray hidAbs`
+  - `struct Hid_RelAxesArray hidRelBits`
+  - `struct Hid_MscEventArray hidMiscellaneous`
+  - `int32_t hidAbsMax`
+  - `int32_t hidAbsMin`
+  - `int32_t hidAbsFuzz`
+  - `int32_t hidAbsFlat`
+#### 枚举
+- **Hid_DeviceProp**
+  - `Pointer`
+  - `device`
+  - `HID_PROP_POINTER` = 0x00
+  - `Direct`
+  - `input`
+  - `device`
+  - `HID_PROP_DIRECT` = 0x01
+  - `Touch`
+  - `device`
+  - `with`
+  - `bottom`
+  - `keys`
+  - `HID_PROP_BUTTON_PAD` = 0x02
+  - `Full`
+  - `multi`
+  - `touch`
+  - `device`
+  - `HID_PROP_SEMI_MT` = 0x03
+  - `Touch`
+  - `device`
+  - `with`
+  - `top`
+  - `soft`
+  - `keys`
+  - `HID_PROP_TOP_BUTTON_PAD` = 0x04
+  - `Pointing`
+  - `stick`
+  - `HID_PROP_POINTING_STICK` = 0x05
+  - `Accelerometer`
+  - `HID_PROP_ACCELEROMETER` = 0x06
+- **Hid_EventType**
+  - `Synchronization`
+  - `event`
+  - `HID_EV_SYN` = 0x00
+  - `Key`
+  - `event`
+  - `HID_EV_KEY` = 0x01
+  - `Relative`
+  - `coordinate`
+  - `event`
+  - `HID_EV_REL` = 0x02
+  - `Absolute`
+  - `coordinate`
+  - `event`
+  - `HID_EV_ABS` = 0x03
+  - `Other`
+  - `special`
+  - `event`
+  - `HID_EV_MSC` = 0x04
+- **Hid_SynEvent**
+  - `Indicates`
+  - `the`
+  - `end`
+  - `of`
+  - `an`
+  - `event`
+  - `HID_SYN_REPORT` = 0
+  - `Indicates`
+  - `configuration`
+  - `synchronization`
+  - `HID_SYN_CONFIG` = 1
+  - `Indicates`
+  - `the`
+  - `end`
+  - `of`
+  - `a`
+  - `multi`
+  - `touch`
+  - `ABS`
+  - `data`
+  - `packet`
+  - `HID_SYN_MT_REPORT` = 2
+  - `Indicates`
+  - `that`
+  - `the`
+  - `event`
+  - `is`
+  - `discarded`
+  - `HID_SYN_DROPPED` = 3
+- **Hid_KeyCode**
+  - `Key`
+  - `A`
+  - `HID_KEY_A` = 30
+  - `Key`
+  - `B`
+  - `HID_KEY_B` = 48
+  - `Key`
+  - `C`
+  - `HID_KEY_C` = 46
+  - `Key`
+  - `D`
+  - `HID_KEY_D` = 32
+  - `Key`
+  - `E`
+  - `HID_KEY_E` = 18
+  - `Key`
+  - `F`
+  - `HID_KEY_F` = 33
+  - `Key`
+  - `G`
+  - `HID_KEY_G` = 34
+  - `Key`
+  - `H`
+  - `HID_KEY_H` = 35
+  - `Key`
+  - `I`
+  - `HID_KEY_I` = 23
+  - `Key`
+  - `J`
+  - `HID_KEY_J` = 36
+  - `Key`
+  - `K`
+  - `HID_KEY_K` = 37
+  - `Key`
+  - `L`
+  - `HID_KEY_L` = 38
+  - `Key`
+  - `M`
+  - `HID_KEY_M` = 50
+  - `Key`
+  - `N`
+  - `HID_KEY_N` = 49
+  - `Key`
+  - `O`
+  - `HID_KEY_O` = 24
+  - `Key`
+  - `P`
+  - `HID_KEY_P` = 25
+  - `Key`
+  - `Q`
+  - `HID_KEY_Q` = 16
+  - `Key`
+  - `R`
+  - `HID_KEY_R` = 19
+  - `Key`
+  - `S`
+  - `HID_KEY_S` = 31
+  - `Key`
+  - `T`
+  - `HID_KEY_T` = 20
+  - `Key`
+  - `U`
+  - `HID_KEY_U` = 22
+  - `Key`
+  - `V`
+  - `HID_KEY_V` = 47
+  - `Key`
+  - `W`
+  - `HID_KEY_W` = 17
+  - `Key`
+  - `X`
+  - `HID_KEY_X` = 45
+  - `Key`
+  - `Y`
+  - `HID_KEY_Y` = 21
+  - `Key`
+  - `Z`
+  - `HID_KEY_Z` = 44
+  - `Key`
+  - `Esc`
+  - `HID_KEY_ESC` = 1
+  - `Key`
+  - `0`
+  - `HID_KEY_0` = 11
+  - `Key`
+  - `1`
+  - `HID_KEY_1` = 2
+  - `Key`
+  - `2`
+  - `HID_KEY_2` = 3
+  - `Key`
+  - `3`
+  - `HID_KEY_3` = 4
+  - `Key`
+  - `4`
+  - `HID_KEY_4` = 5
+  - `Key`
+  - `5`
+  - `HID_KEY_5` = 6
+  - `Key`
+  - `6`
+  - `HID_KEY_6` = 7
+  - `Key`
+  - `7`
+  - `HID_KEY_7` = 8
+  - `Key`
+  - `8`
+  - `HID_KEY_8` = 9
+  - `Key`
+  - `9`
+  - `HID_KEY_9` = 10
+  - `Key`
+  - `grave`
+  - `HID_KEY_GRAVE` = 41
+  - `Key`
+  - `minum`
+  - `HID_KEY_MINUS` = 12
+  - `Key`
+  - `equals`
+  - `HID_KEY_EQUALS` = 13
+  - `Key`
+  - `backspace`
+  - `HID_KEY_BACKSPACE` = 14
+  - `Key`
+  - `left`
+  - `bracket`
+  - `HID_KEY_LEFT_BRACKET` = 26
+  - `Key`
+  - `right`
+  - `bracket`
+  - `HID_KEY_RIGHT_BRACKET` = 27
+  - `Key`
+  - `Enter`
+  - `HID_KEY_ENTER` = 28
+  - `Key`
+  - `left`
+  - `Shift`
+  - `HID_KEY_LEFT_SHIFT` = 42
+  - `Key`
+  - `backslash`
+  - `HID_KEY_BACKSLASH` = 43
+  - `Key`
+  - `semicolon`
+  - `HID_KEY_SEMICOLON` = 39
+  - `Key`
+  - `apostrophe`
+  - `HID_KEY_APOSTROPHE` = 40
+  - `Key`
+  - `space`
+  - `HID_KEY_SPACE` = 57
+  - `Key`
+  - `slash`
+  - `HID_KEY_SLASH` = 53
+  - `Key`
+  - `comma`
+  - `HID_KEY_COMMA` = 51
+  - `Key`
+  - `period`
+  - `HID_KEY_PERIOD` = 52
+  - `Key`
+  - `right`
+  - `Shift`
+  - `HID_KEY_RIGHT_SHIFT` = 54
+  - `Numeral`
+  - `0`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_0` = 82
+  - `Numeral`
+  - `1`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_1` = 79
+  - `Numeral`
+  - `2`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_2` = 80
+  - `Numeral`
+  - `3`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_3` = 81
+  - `Numeral`
+  - `4`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_4` = 75
+  - `Numeral`
+  - `5`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_5` = 76
+  - `Numeral`
+  - `6`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_6` = 77
+  - `Numeral`
+  - `7`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_7` = 71
+  - `Numeral`
+  - `8`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_8` = 72
+  - `Numeral`
+  - `9`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_9` = 73
+  - `Arithmetic`
+  - `operator`
+  - `division`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_DIVIDE` = 70
+  - `Arithmetic`
+  - `operator`
+  - `multiplication`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_MULTIPLY` = 55
+  - `Arithmetic`
+  - `operator`
+  - `subtraction`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_SUBTRACT` = 74
+  - `Arithmetic`
+  - `operator`
+  - `addition`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_ADD` = 78
+  - `Decimal`
+  - `point`
+  - `on`
+  - `the`
+  - `numeric`
+  - `keypad`
+  - `HID_KEY_NUMPAD_DOT` = 83
+  - `Key`
+  - `Print`
+  - `Screen`
+  - `HID_KEY_SYSRQ` = 99
+  - `Key`
+  - `Delete`
+  - `HID_KEY_DELETE` = 111
+  - `Key`
+  - `Mute`
+  - `HID_KEY_MUTE` = 113
+  - `Key`
+  - `for`
+  - `volume`
+  - `down`
+  - `HID_KEY_VOLUME_DOWN` = 114
+  - `Key`
+  - `for`
+  - `volume`
+  - `up`
+  - `HID_KEY_VOLUME_UP` = 115
+  - `Key`
+  - `for`
+  - `decreasing`
+  - `brightness`
+  - `HID_KEY_BRIGHTNESS_DOWN` = 224
+  - `Key`
+  - `for`
+  - `increasing`
+  - `brightness`
+  - `HID_KEY_BRIGHTNESS_UP` = 225
+  - `Button`
+  - `0`
+  - `HID_BTN_0` = 0x100
+  - `Button`
+  - `1`
+  - `HID_BTN_1` = 0x101
+  - `Button`
+  - `2`
+  - `HID_BTN_2` = 0x102
+  - `Button`
+  - `3`
+  - `HID_BTN_3` = 0x103
+  - `Button`
+  - `4`
+  - `HID_BTN_4` = 0x104
+  - `Button`
+  - `5`
+  - `HID_BTN_5` = 0x105
+  - `Button`
+  - `6`
+  - `HID_BTN_6` = 0x106
+  - `Button`
+  - `7`
+  - `HID_BTN_7` = 0x107
+  - `Button`
+  - `8`
+  - `HID_BTN_8` = 0x108
+  - `Button`
+  - `9`
+  - `HID_BTN_9` = 0x109
+  - `Left`
+  - `mouse`
+  - `button`
+  - `HID_BTN_LEFT` = 0x110
+  - `Right`
+  - `mouse`
+  - `button`
+  - `HID_BTN_RIGHT` = 0x111
+  - `Middle`
+  - `mouse`
+  - `button`
+  - `HID_BTN_MIDDLE` = 0x112
+  - `Side`
+  - `mouse`
+  - `button`
+  - `HID_BTN_SIDE` = 0x113
+  - `Extra`
+  - `mouse`
+  - `button`
+  - `HID_BTN_EXTRA` = 0x114
+  - `Mouse`
+  - `forward`
+  - `button`
+  - `HID_BTN_FORWARD` = 0x115
+  - `Mouse`
+  - `backward`
+  - `button`
+  - `HID_BTN_BACKWARD` = 0x116
+  - `Mouse`
+  - `task`
+  - `button`
+  - `HID_BTN_TASK` = 0x117
+  - `Pen`
+  - `HID_BTN_TOOL_PEN` = 0x140
+  - `Rubber`
+  - `HID_BTN_TOOL_RUBBER` = 0x141
+  - `Brush`
+  - `HID_BTN_TOOL_BRUSH` = 0x142
+  - `Pencil`
+  - `HID_BTN_TOOL_PENCIL` = 0x143
+  - `Air`
+  - `brush`
+  - `HID_BTN_TOOL_AIRBRUSH` = 0x144
+  - `Finger`
+  - `HID_BTN_TOOL_FINGER` = 0x145
+  - `Mouse`
+  - `HID_BTN_TOOL_MOUSE` = 0x146
+  - `Lens`
+  - `HID_BTN_TOOL_LENS` = 0x147
+  - `Five`
+  - `finger`
+  - `touch`
+  - `HID_BTN_TOOL_QUINT_TAP` = 0x148
+  - `Stylus`
+  - `3`
+  - `HID_BTN_STYLUS3` = 0x149
+  - `Touch`
+  - `HID_BTN_TOUCH` = 0x14a
+  - `Stylus`
+  - `HID_BTN_STYLUS` = 0x14b
+  - `Stylus`
+  - `2`
+  - `HID_BTN_STYLUS2` = 0x14c
+  - `Two`
+  - `finger`
+  - `touch`
+  - `HID_BTN_TOOL_DOUBLE_TAP` = 0x14d
+  - `Three`
+  - `finger`
+  - `touch`
+  - `HID_BTN_TOOL_TRIPLE_TAP` = 0x14e
+  - `Four`
+  - `finger`
+  - `touch`
+  - `HID_BTN_TOOL_QUAD_TAP` = 0x14f
+  - `Scroll`
+  - `wheel`
+  - `HID_BTN_WHEEL` = 0x150
+- **Hid_AbsAxes**
+  - `X`
+  - `axis`
+  - `HID_ABS_X` = 0x00
+  - `Y`
+  - `axis`
+  - `HID_ABS_Y` = 0x01
+  - `Z`
+  - `axis`
+  - `HID_ABS_Z` = 0x02
+  - `X`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_ABS_RX` = 0x03
+  - `Y`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_ABS_RY` = 0x04
+  - `Z`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_ABS_RZ` = 0x05
+  - `Throttle`
+  - `HID_ABS_THROTTLE` = 0x06
+  - `Rudder`
+  - `HID_ABS_RUDDER` = 0x07
+  - `Scroll`
+  - `wheel`
+  - `HID_ABS_WHEEL` = 0x08
+  - `Gas`
+  - `HID_ABS_GAS` = 0x09
+  - `Brake`
+  - `HID_ABS_BRAKE` = 0x0a
+  - `HAT0X`
+  - `HID_ABS_HAT0X` = 0x10
+  - `HAT0Y`
+  - `HID_ABS_HAT0Y` = 0x11
+  - `HAT1X`
+  - `HID_ABS_HAT1X` = 0x12
+  - `HAT1Y`
+  - `HID_ABS_HAT1Y` = 0x13
+  - `HAT2X`
+  - `HID_ABS_HAT2X` = 0x14
+  - `HAT2Y`
+  - `HID_ABS_HAT2Y` = 0x15
+  - `HAT3X`
+  - `HID_ABS_HAT3X` = 0x16
+  - `HAT3Y`
+  - `HID_ABS_HAT3Y` = 0x17
+  - `Pressure`
+  - `HID_ABS_PRESSURE` = 0x18
+  - `Distance`
+  - `HID_ABS_DISTANCE` = 0x19
+  - `Inclination`
+  - `of`
+  - `X`
+  - `axis`
+  - `HID_ABS_TILT_X` = 0x1a
+  - `Inclination`
+  - `of`
+  - `Y`
+  - `axis`
+  - `HID_ABS_TILT_Y` = 0x1b
+  - `Width`
+  - `of`
+  - `the`
+  - `touch`
+  - `tool`
+  - `HID_ABS_TOOL_WIDTH` = 0x1c
+  - `Volume`
+  - `HID_ABS_VOLUME` = 0x20
+  - `Others`
+  - `HID_ABS_MISC` = 0x28
+- **Hid_RelAxes**
+  - `X`
+  - `axis`
+  - `HID_REL_X` = 0x00
+  - `Y`
+  - `axis`
+  - `HID_REL_Y` = 0x01
+  - `Z`
+  - `axis`
+  - `HID_REL_Z` = 0x02
+  - `X`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_REL_RX` = 0x03
+  - `Y`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_REL_RY` = 0x04
+  - `Z`
+  - `axis`
+  - `of`
+  - `the`
+  - `right`
+  - `analog`
+  - `stick`
+  - `HID_REL_RZ` = 0x05
+  - `Horizontal`
+  - `scroll`
+  - `wheel`
+  - `HID_REL_HWHEEL` = 0x06
+  - `Scale`
+  - `HID_REL_DIAL` = 0x07
+  - `Scroll`
+  - `wheel`
+  - `HID_REL_WHEEL` = 0x08
+  - `Others`
+  - `HID_REL_MISC` = 0x09
+  - `Reserved`
+  - `HID_REL_RESERVED` = 0x0a
+  - `High`
+  - `resolution`
+  - `scroll`
+  - `wheel`
+  - `HID_REL_WHEEL_HI_RES` = 0x0b
+  - `High`
+  - `resolution`
+  - `horizontal`
+  - `scroll`
+  - `wheel`
+  - `HID_REL_HWHEEL_HI_RES` = 0x0c
+- **Hid_MscEvent**
+  - `Serial`
+  - `number`
+  - `HID_MSC_SERIAL` = 0x00
+  - `Pulse`
+  - `HID_MSC_PULSE_LED` = 0x01
+  - `Gesture`
+  - `HID_MSC_GESTURE` = 0x02
+  - `Start`
+  - `event`
+  - `HID_MSC_RAW` = 0x03
+  - `Scan`
+  - `HID_MSC_SCAN` = 0x04
+  - `Timestamp`
+  - `HID_MSC_TIMESTAMP` = 0x05
+- **Hid_DdkErrCode**
+  - `Operation`
+  - `successful`
+  - `HID_DDK_SUCCESS` = 0
+  - `Operation`
+  - `failed`
+  - `HID_DDK_FAILURE` = -1
+  - `Invalid`
+  - `parameter`
+  - `HID_DDK_INVALID_PARAMETER` = -2
+  - `Invalid`
+  - `operation`
+  - `HID_DDK_INVALID_OPERATION` = -3
+  - `Null`
+  - `pointer`
+  - `exception`
+  - `HID_DDK_NULL_PTR` = -4
+  - `Timeout`
+  - `HID_DDK_TIMEOUT` = -5
+  - `Permission`
+  - `denied`
+  - `HID_DDK_NO_PERM` = -6
+
+### drivers/external_device_manager/usb/usb_ddk_api.h
+#### 函数
+- `int32_t OH_Usb_Init(void)`
+- `void OH_Usb_Release(void)`
+- `int32_t OH_Usb_GetDeviceDescriptor(uint64_t deviceId, struct UsbDeviceDescriptor *desc)`
+- `int32_t OH_Usb_GetConfigDescriptor(uint64_t deviceId, uint8_t configIndex, struct UsbDdkConfigDescriptor ** const config)`
+- `void OH_Usb_FreeConfigDescriptor(struct UsbDdkConfigDescriptor * const config)`
+- `int32_t OH_Usb_ClaimInterface(uint64_t deviceId, uint8_t interfaceIndex, uint64_t *interfaceHandle)`
+- `int32_t OH_Usb_ReleaseInterface(uint64_t interfaceHandle)`
+- `int32_t OH_Usb_SelectInterfaceSetting(uint64_t interfaceHandle, uint8_t settingIndex)`
+- `int32_t OH_Usb_GetCurrentInterfaceSetting(uint64_t interfaceHandle, uint8_t *settingIndex)`
+- `int32_t OH_Usb_SendControlReadRequest(uint64_t interfaceHandle, const struct UsbControlRequestSetup *setup,
+    uint32_t timeout, uint8_t *data, uint32_t *dat)`
+- `int32_t OH_Usb_SendControlWriteRequest(uint64_t interfaceHandle, const struct UsbControlRequestSetup *setup,
+    uint32_t timeout, const uint8_t *data, uint32_)`
+- `int32_t OH_Usb_SendPipeRequest(const struct UsbRequestPipe *pipe, UsbDeviceMemMap *devMmap)`
+- `int32_t OH_Usb_CreateDeviceMemMap(uint64_t deviceId, size_t size, UsbDeviceMemMap **devMmap)`
+- `void OH_Usb_DestroyDeviceMemMap(UsbDeviceMemMap *devMmap)`
+
+### drivers/external_device_manager/usb/usb_ddk_types.h
+#### 结构体
+- **UsbControlRequestSetup**
+  - `uint8_t bmRequestType`
+  - `uint8_t bRequest`
+  - `uint16_t wValue`
+  - `uint16_t wIndex`
+  - `uint16_t wLength`
+- **UsbDeviceDescriptor**
+  - `uint8_t bLength`
+  - `uint8_t bDescriptorType`
+  - `uint16_t bcdUSB`
+  - `uint8_t bDeviceClass`
+  - `uint8_t bDeviceSubClass`
+  - `uint8_t bDeviceProtocol`
+  - `uint8_t bMaxPacketSize0`
+  - `uint16_t idVendor`
+  - `uint16_t idProduct`
+  - `uint16_t bcdDevice`
+  - `uint8_t iManufacturer`
+  - `uint8_t iProduct`
+  - `uint8_t iSerialNumber`
+  - `uint8_t bNumConfigurations`
+- **UsbConfigDescriptor**
+  - `uint8_t bLength`
+  - `uint8_t bDescriptorType`
+  - `uint16_t wTotalLength`
+  - `uint8_t bNumInterfaces`
+  - `uint8_t bConfigurationValue`
+  - `uint8_t iConfiguration`
+  - `uint8_t bmAttributes`
+  - `uint8_t bMaxPower`
+- **UsbInterfaceDescriptor**
+  - `uint8_t bLength`
+  - `uint8_t bDescriptorType`
+  - `uint8_t bInterfaceNumber`
+  - `uint8_t bAlternateSetting`
+  - `uint8_t bNumEndpoints`
+  - `uint8_t bInterfaceClass`
+  - `uint8_t bInterfaceSubClass`
+  - `uint8_t bInterfaceProtocol`
+  - `uint8_t iInterface`
+- **UsbEndpointDescriptor**
+  - `uint8_t bLength`
+  - `uint8_t bDescriptorType`
+  - `uint8_t bEndpointAddress`
+  - `uint8_t bmAttributes`
+  - `uint16_t wMaxPacketSize`
+  - `uint8_t bInterval`
+  - `uint8_t bRefresh`
+  - `uint8_t bSynchAddress`
+- **UsbDdkEndpointDescriptor**
+  - `struct UsbEndpointDescriptor endpointDescriptor`
+  - `uint32_t extraLength`
+- **UsbDdkInterfaceDescriptor**
+  - `struct UsbInterfaceDescriptor interfaceDescriptor`
+  - `uint32_t extraLength`
+- **UsbDdkInterface**
+  - `uint8_t numAltsetting`
+- **UsbDdkConfigDescriptor**
+  - `struct UsbConfigDescriptor configDescriptor`
+  - `uint32_t extraLength`
+- **UsbRequestPipe**
+  - `uint64_t interfaceHandle`
+  - `uint32_t timeout`
+  - `uint8_t endpoint`
+- **UsbDeviceMemMap**
+  - `uint8_t * const address`
+  - `const size_t size`
+  - `uint32_t offset`
+  - `uint32_t bufferLength`
+  - `uint32_t transferedLength`
+#### 枚举
+- **UsbDdkErrCode**
+  - `The`
+  - `operation`
+  - `is`
+  - `successful`
+  - `USB_DDK_SUCCESS` = 0
+  - `The`
+  - `operation`
+  - `failed`
+  - `USB_DDK_FAILED` = -1
+  - `Invalid`
+  - `parameter`
+  - `USB_DDK_INVALID_PARAMETER` = -2
+  - `Memory`
+  - `related`
+  - `error`
+  - `for`
+  - `example`
+  - `insufficient`
+  - `memory`
+  - `memory`
+  - `data`
+  - `copy`
+  - `failure`
+  - `or`
+  - `memory`
+  - `application`
+  - `failure`
+  - `USB_DDK_MEMORY_ERROR` = -3
+  - `Invalid`
+  - `operation`
+  - `USB_DDK_INVALID_OPERATION` = -4
+  - `Null`
+  - `pointer`
+  - `exception`
+  - `USB_DDK_NULL_PTR` = -5
+  - `Device`
+  - `busy`
+  - `USB_DDK_DEVICE_BUSY` = -6
+  - `Transmission`
+  - `timeout`
+  - `USB_DDK_TIMEOUT` = -7
+
+## global (3 个头文件)
+
+
+### global/resource_management/include/raw_dir.h
+#### 函数
+- `int OH_ResourceManager_GetRawFileCount(RawDir *rawDir)`
+- `void OH_ResourceManager_CloseRawDir(RawDir *rawDir)`
+#### 类型定义
+
+### global/resource_management/include/raw_file.h
+#### 函数
+- `int OH_ResourceManager_ReadRawFile(const RawFile *rawFile, void *buf, size_t length)`
+- `int OH_ResourceManager_SeekRawFile(const RawFile *rawFile, long offset, int whence)`
+- `long OH_ResourceManager_GetRawFileSize(RawFile *rawFile)`
+- `long OH_ResourceManager_GetRawFileRemainingLength(const RawFile *rawFile)`
+- `void OH_ResourceManager_CloseRawFile(RawFile *rawFile)`
+- `long OH_ResourceManager_GetRawFileOffset(const RawFile *rawFile)`
+- `bool OH_ResourceManager_GetRawFileDescriptor(const RawFile *rawFile, RawFileDescriptor &descriptor)`
+- `bool OH_ResourceManager_ReleaseRawFileDescriptor(const RawFileDescriptor &descriptor)`
+- `int64_t OH_ResourceManager_ReadRawFile64(const RawFile64 *rawFile, void *buf, int64_t length)`
+- `int OH_ResourceManager_SeekRawFile64(const RawFile64 *rawFile, int64_t offset, int whence)`
+- `int64_t OH_ResourceManager_GetRawFileSize64(RawFile64 *rawFile)`
+- `int64_t OH_ResourceManager_GetRawFileRemainingLength64(const RawFile64 *rawFile)`
+- `void OH_ResourceManager_CloseRawFile64(RawFile64 *rawFile)`
+- `int64_t OH_ResourceManager_GetRawFileOffset64(const RawFile64 *rawFile)`
+- `bool OH_ResourceManager_GetRawFileDescriptor64(const RawFile64 *rawFile, RawFileDescriptor64 *descriptor)`
+- `bool OH_ResourceManager_ReleaseRawFileDescriptor64(const RawFileDescriptor64 *descriptor)`
+#### 类型定义
+
+### global/resource_management/include/raw_file_manager.h
+#### 函数
+- `void OH_ResourceManager_ReleaseNativeResourceManager(NativeResourceManager *resMgr)`
+#### 类型定义
+
+## graphic (27 个头文件)
+
+
+### graphic/graphic_2d/native_buffer/native_buffer.h
+#### 函数
+- `OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)`
+- `int32_t OH_NativeBuffer_Reference(OH_NativeBuffer *buffer)`
+- `int32_t OH_NativeBuffer_Unreference(OH_NativeBuffer *buffer)`
+- `void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* config)`
+- `int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)`
+- `int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)`
+- `uint32_t OH_NativeBuffer_GetSeqNum(OH_NativeBuffer *buffer)`
+- `int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace)`
+#### 枚举
+- **anonymous**
+  - `NATIVEBUFFER_USAGE_CPU_READ` = (1ULL << 0)
+  - `CPU`
+  - `read`
+  - `buffer`
+  - `NATIVEBUFFER_USAGE_CPU_WRITE` = (1ULL << 1)
+  - `CPU`
+  - `write`
+  - `memory`
+  - `NATIVEBUFFER_USAGE_MEM_DMA` = (1ULL << 3)
+  - `Direct`
+  - `memory`
+  - `access`
+  - `DMA`
+  - `buffer`
+- **anonymous**
+  - `NATIVEBUFFER_PIXEL_FMT_RGB_565` = 3
+  - `RGB565`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBA_5658`
+  - `RGBA5658`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBX_4444`
+  - `RGBX4444`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBA_4444`
+  - `RGBA4444`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGB_444`
+  - `RGB444`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBX_5551`
+  - `RGBX5551`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBA_5551`
+  - `RGBA5551`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGB_555`
+  - `RGB555`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBX_8888`
+  - `RGBX8888`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGBA_8888`
+  - `RGBA8888`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_RGB_888`
+  - `RGB888`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGR_565`
+  - `BGR565`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRX_4444`
+  - `BGRX4444`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRA_4444`
+  - `BGRA4444`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRX_5551`
+  - `BGRX5551`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRA_5551`
+  - `BGRA5551`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRX_8888`
+  - `BGRX8888`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BGRA_8888`
+  - `BGRA8888`
+  - `format`
+  - `NATIVEBUFFER_PIXEL_FMT_BUTT` = 0X7FFFFFFF          /// < Invalid pixel format */
+- **anonymous**
+  - `None`
+  - `color`
+  - `space`
+  - `OH_COLORSPACE_NONE`
+  - `COLORPRIMARIES_BT601_P`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT601_P`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_BT601_EBU_FULL`
+  - `COLORPRIMARIES_BT601_N`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT601_N`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_BT601_SMPTE_C_FULL`
+  - `COLORPRIMARIES_BT709`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT709`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_BT709_FULL`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_HLG`
+  - `8`
+  - `MATRIX_BT2020`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_BT2020_HLG_FULL`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_PQ`
+  - `8`
+  - `MATRIX_BT2020`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_BT2020_PQ_FULL`
+  - `COLORPRIMARIES_BT601_P`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT601_P`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_BT601_EBU_LIMIT`
+  - `COLORPRIMARIES_BT601_N`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT601_N`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_BT601_SMPTE_C_LIMIT`
+  - `COLORPRIMARIES_BT709`
+  - `TRANSFUNC_BT709`
+  - `8`
+  - `MATRIX_BT709`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_BT709_LIMIT`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_HLG`
+  - `8`
+  - `MATRIX_BT2020`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_BT2020_HLG_LIMIT`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_PQ`
+  - `8`
+  - `MATRIX_BT2020`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_BT2020_PQ_LIMIT`
+  - `COLORPRIMARIES_SRGB`
+  - `TRANSFUNC_SRGB`
+  - `8`
+  - `MATRIX_BT601_N`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_SRGB_FULL`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_SRGB`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_P3_FULL`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_HLG`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_P3_HLG_FULL`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_PQ`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_P3_PQ_FULL`
+  - `COLORPRIMARIES_ADOBERGB`
+  - `TRANSFUNC_ADOBERGB`
+  - `8`
+  - `MATRIX_ADOBERGB`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_ADOBERGB_FULL`
+  - `COLORPRIMARIES_SRGB`
+  - `TRANSFUNC_SRGB`
+  - `8`
+  - `MATRIX_BT601_N`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_SRGB_LIMIT`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_SRGB`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_P3_LIMIT`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_HLG`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_P3_HLG_LIMIT`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_PQ`
+  - `8`
+  - `MATRIX_P3`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_P3_PQ_LIMIT`
+  - `COLORPRIMARIES_ADOBERGB`
+  - `TRANSFUNC_ADOBERGB`
+  - `8`
+  - `MATRIX_ADOBERGB`
+  - `16`
+  - `RANGE_LIMITED`
+  - `21`
+  - `OH_COLORSPACE_ADOBERGB_LIMIT`
+  - `COLORPRIMARIES_SRGB`
+  - `TRANSFUNC_LINEAR`
+  - `8`
+  - `OH_COLORSPACE_LINEAR_SRGB`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_LINEAR_SRGB`
+  - `OH_COLORSPACE_LINEAR_BT709`
+  - `COLORPRIMARIES_P3_D65`
+  - `TRANSFUNC_LINEAR`
+  - `8`
+  - `OH_COLORSPACE_LINEAR_P3`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_LINEAR`
+  - `8`
+  - `OH_COLORSPACE_LINEAR_BT2020`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_SRGB_FULL`
+  - `OH_COLORSPACE_DISPLAY_SRGB`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_P3_FULL`
+  - `OH_COLORSPACE_DISPLAY_P3_SRGB`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_P3_HLG_FULL`
+  - `OH_COLORSPACE_DISPLAY_P3_HLG`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_P3_PQ_FULL`
+  - `OH_COLORSPACE_DISPLAY_P3_PQ`
+  - `COLORPRIMARIES_BT2020`
+  - `TRANSFUNC_SRGB`
+  - `8`
+  - `MATRIX_BT2020`
+  - `16`
+  - `RANGE_FULL`
+  - `21`
+  - `OH_COLORSPACE_DISPLAY_BT2020_SRGB`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_BT2020_HLG_FULL`
+  - `OH_COLORSPACE_DISPLAY_BT2020_HLG`
+  - `equal`
+  - `to`
+  - `OH_COLORSPACE_BT2020_PQ_FULL`
+  - `OH_COLORSPACE_DISPLAY_BT2020_PQ`
+#### 类型定义
+
+### graphic/graphic_2d/native_drawing/drawing_bitmap.h
+#### 函数
+- `OH_Drawing_Bitmap* OH_Drawing_BitmapCreate(void)`
+- `void OH_Drawing_BitmapDestroy(OH_Drawing_Bitmap*)`
+- `void OH_Drawing_BitmapBuild(OH_Drawing_Bitmap*, const uint32_t width, const uint32_t height, const OH_Drawing_BitmapFormat*)`
+- `uint32_t OH_Drawing_BitmapGetWidth(OH_Drawing_Bitmap*)`
+- `uint32_t OH_Drawing_BitmapGetHeight(OH_Drawing_Bitmap*)`
+- `void* OH_Drawing_BitmapGetPixels(OH_Drawing_Bitmap*)`
+
+### graphic/graphic_2d/native_drawing/drawing_brush.h
+#### 函数
+- `OH_Drawing_Brush* OH_Drawing_BrushCreate(void)`
+- `void OH_Drawing_BrushDestroy(OH_Drawing_Brush*)`
+- `bool OH_Drawing_BrushIsAntiAlias(const OH_Drawing_Brush*)`
+- `void OH_Drawing_BrushSetAntiAlias(OH_Drawing_Brush*, bool)`
+- `uint32_t OH_Drawing_BrushGetColor(const OH_Drawing_Brush*)`
+- `void OH_Drawing_BrushSetColor(OH_Drawing_Brush*, uint32_t color)`
+- `uint8_t OH_Drawing_BrushGetAlpha(const OH_Drawing_Brush*)`
+- `void OH_Drawing_BrushSetAlpha(OH_Drawing_Brush*, uint8_t alpha)`
+- `void OH_Drawing_BrushSetShaderEffect(OH_Drawing_Brush*, OH_Drawing_ShaderEffect*)`
+- `void OH_Drawing_BrushSetFilter(OH_Drawing_Brush*, OH_Drawing_Filter*)`
+
+### graphic/graphic_2d/native_drawing/drawing_canvas.h
+#### 函数
+- `OH_Drawing_Canvas* OH_Drawing_CanvasCreate(void)`
+- `void OH_Drawing_CanvasDestroy(OH_Drawing_Canvas*)`
+- `void OH_Drawing_CanvasBind(OH_Drawing_Canvas*, OH_Drawing_Bitmap*)`
+- `void OH_Drawing_CanvasAttachPen(OH_Drawing_Canvas*, const OH_Drawing_Pen*)`
+- `void OH_Drawing_CanvasDetachPen(OH_Drawing_Canvas*)`
+- `void OH_Drawing_CanvasAttachBrush(OH_Drawing_Canvas*, const OH_Drawing_Brush*)`
+- `void OH_Drawing_CanvasDetachBrush(OH_Drawing_Canvas*)`
+- `void OH_Drawing_CanvasSave(OH_Drawing_Canvas*)`
+- `void OH_Drawing_CanvasRestore(OH_Drawing_Canvas*)`
+- `uint32_t OH_Drawing_CanvasGetSaveCount(OH_Drawing_Canvas*)`
+- `void OH_Drawing_CanvasRestoreToCount(OH_Drawing_Canvas*, uint32_t saveCount)`
+- `void OH_Drawing_CanvasDrawLine(OH_Drawing_Canvas*, float x1, float y1, float x2, float y2)`
+- `void OH_Drawing_CanvasDrawPath(OH_Drawing_Canvas*, const OH_Drawing_Path*)`
+- `void OH_Drawing_CanvasDrawBitmap(OH_Drawing_Canvas*, const OH_Drawing_Bitmap*, float left, float top)`
+- `void OH_Drawing_CanvasDrawRect(OH_Drawing_Canvas*, const OH_Drawing_Rect*)`
+- `void OH_Drawing_CanvasDrawCircle(OH_Drawing_Canvas*, const OH_Drawing_Point*, float radius)`
+- `void OH_Drawing_CanvasDrawOval(OH_Drawing_Canvas*, const OH_Drawing_Rect*)`
+- `void OH_Drawing_CanvasDrawArc(OH_Drawing_Canvas*, const OH_Drawing_Rect*, float startAngle, float sweepAngle)`
+- `void OH_Drawing_CanvasDrawRoundRect(OH_Drawing_Canvas*, const OH_Drawing_RoundRect*)`
+- `void OH_Drawing_CanvasDrawTextBlob(OH_Drawing_Canvas*, const OH_Drawing_TextBlob*, float x, float y)`
+- `void OH_Drawing_CanvasClipRect(OH_Drawing_Canvas*, const OH_Drawing_Rect*,
+    OH_Drawing_CanvasClipOp clipOp, bool doAntiAlias)`
+- `void OH_Drawing_CanvasClipPath(OH_Drawing_Canvas*, const OH_Drawing_Path*,
+    OH_Drawing_CanvasClipOp clipOp, bool doAntiAlias)`
+- `void OH_Drawing_CanvasRotate(OH_Drawing_Canvas*, float degrees, float px, float py)`
+- `void OH_Drawing_CanvasTranslate(OH_Drawing_Canvas*, float dx, float dy)`
+- `void OH_Drawing_CanvasScale(OH_Drawing_Canvas*, float sx, float sy)`
+- `void OH_Drawing_CanvasClear(OH_Drawing_Canvas*, uint32_t color)`
+#### 枚举
+- **OH_Drawing_CanvasClipOp**
+  - `Clip`
+  - `with`
+  - `difference`
+  - `DIFFERENCE`
+  - `Clip`
+  - `with`
+  - `intersection`
+  - `INTERSECT`
+
+### graphic/graphic_2d/native_drawing/drawing_color.h
+#### 函数
+- `uint32_t OH_Drawing_ColorSetArgb(uint32_t alpha, uint32_t red, uint32_t green, uint32_t blue)`
+
+### graphic/graphic_2d/native_drawing/drawing_color_filter.h
+#### 函数
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateBlendMode(uint32_t color, OH_Drawing_BlendMode)`
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateCompose(OH_Drawing_ColorFilter* colorFilter1,
+    OH_Drawing_ColorFilter* colorFilter2)`
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateMatrix(const float matrix[20])`
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateLinearToSrgbGamma(void)`
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateSrgbGammaToLinear(void)`
+- `OH_Drawing_ColorFilter* OH_Drawing_ColorFilterCreateLuma(void)`
+- `void OH_Drawing_ColorFilterDestroy(OH_Drawing_ColorFilter*)`
+
+### graphic/graphic_2d/native_drawing/drawing_filter.h
+#### 函数
+- `OH_Drawing_Filter* OH_Drawing_FilterCreate(void)`
+- `void OH_Drawing_FilterSetMaskFilter(OH_Drawing_Filter*, OH_Drawing_MaskFilter*)`
+- `void OH_Drawing_FilterSetColorFilter(OH_Drawing_Filter*, OH_Drawing_ColorFilter*)`
+- `void OH_Drawing_FilterDestroy(OH_Drawing_Filter*)`
+
+### graphic/graphic_2d/native_drawing/drawing_font.h
+#### 函数
+- `OH_Drawing_Font* OH_Drawing_FontCreate(void)`
+- `void OH_Drawing_FontSetTypeface(OH_Drawing_Font*, OH_Drawing_Typeface*)`
+- `void OH_Drawing_FontSetTextSize(OH_Drawing_Font*, float textSize)`
+- `void OH_Drawing_FontSetLinearText(OH_Drawing_Font*, bool isLinearText)`
+- `void OH_Drawing_FontSetTextSkewX(OH_Drawing_Font*, float skewX)`
+- `void OH_Drawing_FontSetFakeBoldText(OH_Drawing_Font*, bool isFakeBoldText)`
+- `void OH_Drawing_FontDestroy(OH_Drawing_Font*)`
+
+### graphic/graphic_2d/native_drawing/drawing_font_collection.h
+#### 函数
+- `OH_Drawing_FontCollection* OH_Drawing_CreateFontCollection(void)`
+- `void OH_Drawing_DestroyFontCollection(OH_Drawing_FontCollection*)`
+
+### graphic/graphic_2d/native_drawing/drawing_mask_filter.h
+#### 函数
+- `OH_Drawing_MaskFilter* OH_Drawing_MaskFilterCreateBlur(OH_Drawing_BlurType blurType, float sigma, bool respectCTM)`
+- `void OH_Drawing_MaskFilterDestroy(OH_Drawing_MaskFilter*)`
+#### 枚举
+- **OH_Drawing_BlurType**
+  - `Fuzzy`
+  - `inside`
+  - `and`
+  - `outside`
+  - `NORMAL`
+  - `Solid`
+  - `inside`
+  - `fuzzy`
+  - `outside`
+  - `SOLID`
+  - `Nothing`
+  - `inside`
+  - `fuzzy`
+  - `outside`
+  - `OUTER`
+  - `Fuzzy`
+  - `inside`
+  - `nothing`
+  - `outside`
+  - `INNER`
+
+### graphic/graphic_2d/native_drawing/drawing_matrix.h
+#### 函数
+- `OH_Drawing_Matrix* OH_Drawing_MatrixCreate(void)`
+- `void OH_Drawing_MatrixSetMatrix(OH_Drawing_Matrix*, float scaleX, float skewX, float transX,
+    float skewY, float scaleY, float transY, float persp0, )`
+- `void OH_Drawing_MatrixDestroy(OH_Drawing_Matrix*)`
+
+### graphic/graphic_2d/native_drawing/drawing_path.h
+#### 函数
+- `OH_Drawing_Path* OH_Drawing_PathCreate(void)`
+- `void OH_Drawing_PathDestroy(OH_Drawing_Path*)`
+- `void OH_Drawing_PathMoveTo(OH_Drawing_Path*, float x, float y)`
+- `void OH_Drawing_PathLineTo(OH_Drawing_Path*, float x, float y)`
+- `void OH_Drawing_PathArcTo(OH_Drawing_Path*, float x1, float y1, float x2, float y2, float startDeg, float sweepDeg)`
+- `void OH_Drawing_PathQuadTo(OH_Drawing_Path*, float ctrlX, float ctrlY, float endX, float endY)`
+- `void OH_Drawing_PathCubicTo(OH_Drawing_Path*, float ctrlX1, float ctrlY1, float ctrlX2, float ctrlY2, float endX, float endY)`
+- `void OH_Drawing_PathClose(OH_Drawing_Path*)`
+- `void OH_Drawing_PathReset(OH_Drawing_Path*)`
+
+### graphic/graphic_2d/native_drawing/drawing_pen.h
+#### 函数
+- `OH_Drawing_Pen* OH_Drawing_PenCreate(void)`
+- `void OH_Drawing_PenDestroy(OH_Drawing_Pen*)`
+- `bool OH_Drawing_PenIsAntiAlias(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetAntiAlias(OH_Drawing_Pen*, bool)`
+- `uint32_t OH_Drawing_PenGetColor(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetColor(OH_Drawing_Pen*, uint32_t color)`
+- `uint8_t OH_Drawing_PenGetAlpha(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetAlpha(OH_Drawing_Pen*, uint8_t alpha)`
+- `float OH_Drawing_PenGetWidth(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetWidth(OH_Drawing_Pen*, float width)`
+- `float OH_Drawing_PenGetMiterLimit(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetMiterLimit(OH_Drawing_Pen*, float miter)`
+- `OH_Drawing_PenLineCapStyle OH_Drawing_PenGetCap(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetCap(OH_Drawing_Pen*, OH_Drawing_PenLineCapStyle)`
+- `OH_Drawing_PenLineJoinStyle OH_Drawing_PenGetJoin(const OH_Drawing_Pen*)`
+- `void OH_Drawing_PenSetJoin(OH_Drawing_Pen*, OH_Drawing_PenLineJoinStyle)`
+- `void OH_Drawing_PenSetShaderEffect(OH_Drawing_Pen*, OH_Drawing_ShaderEffect*)`
+- `void OH_Drawing_PenSetFilter(OH_Drawing_Pen*, OH_Drawing_Filter*)`
+#### 枚举
+- **OH_Drawing_PenLineCapStyle**
+  - `There`
+  - `is`
+  - `no`
+  - `cap`
+  - `style`
+  - `Both`
+  - `ends`
+  - `of`
+  - `the`
+  - `line`
+  - `segment`
+  - `are`
+  - `cut`
+  - `off`
+  - `square`
+  - `LINE_FLAT_CAP`
+  - `Square`
+  - `cap`
+  - `style`
+  - `Both`
+  - `ends`
+  - `have`
+  - `a`
+  - `square`
+  - `the`
+  - `height`
+  - `of`
+  - `which`
+  - `is`
+  - `half`
+  - `of`
+  - `the`
+  - `width`
+  - `of`
+  - `the`
+  - `line`
+  - `segment`
+  - `with`
+  - `the`
+  - `same`
+  - `width`
+  - `LINE_SQUARE_CAP`
+  - `Round`
+  - `cap`
+  - `style`
+  - `Both`
+  - `ends`
+  - `have`
+  - `a`
+  - `semicircle`
+  - `centered`
+  - `the`
+  - `diameter`
+  - `of`
+  - `which`
+  - `is`
+  - `the`
+  - `same`
+  - `as`
+  - `the`
+  - `width`
+  - `of`
+  - `the`
+  - `line`
+  - `segment`
+  - `LINE_ROUND_CAP`
+- **OH_Drawing_PenLineJoinStyle**
+  - `Mitered`
+  - `corner`
+  - `If`
+  - `the`
+  - `angle`
+  - `of`
+  - `a`
+  - `polyline`
+  - `is`
+  - `small`
+  - `its`
+  - `miter`
+  - `length`
+  - `may`
+  - `be`
+  - `inappropriate`
+  - `In`
+  - `this`
+  - `case`
+  - `you`
+  - `need`
+  - `to`
+  - `use`
+  - `the`
+  - `miter`
+  - `limit`
+  - `to`
+  - `limit`
+  - `the`
+  - `miter`
+  - `length`
+  - `LINE_MITER_JOIN`
+  - `Round`
+  - `corner`
+  - `LINE_ROUND_JOIN`
+  - `Beveled`
+  - `corner`
+  - `LINE_BEVEL_JOIN`
+
+### graphic/graphic_2d/native_drawing/drawing_point.h
+#### 函数
+- `OH_Drawing_Point* OH_Drawing_PointCreate(float x, float y)`
+- `void OH_Drawing_PointDestroy(OH_Drawing_Point*)`
+
+### graphic/graphic_2d/native_drawing/drawing_rect.h
+#### 函数
+- `OH_Drawing_Rect* OH_Drawing_RectCreate(float left, float top, float right, float bottom)`
+- `void OH_Drawing_RectDestroy(OH_Drawing_Rect*)`
+
+### graphic/graphic_2d/native_drawing/drawing_register_font.h
+#### 函数
+- `uint32_t OH_Drawing_RegisterFont(OH_Drawing_FontCollection*, const char* fontFamily, const char* familySrc)`
+- `uint32_t OH_Drawing_RegisterFontBuffer(OH_Drawing_FontCollection*, const char* fontFamily, uint8_t* fontBuffer,
+    size_t length)`
+
+### graphic/graphic_2d/native_drawing/drawing_round_rect.h
+#### 函数
+- `OH_Drawing_RoundRect* OH_Drawing_RoundRectCreate(const OH_Drawing_Rect*, float xRad, float yRad)`
+- `void OH_Drawing_RoundRectDestroy(OH_Drawing_RoundRect*)`
+
+### graphic/graphic_2d/native_drawing/drawing_shader_effect.h
+#### 函数
+- `OH_Drawing_ShaderEffect* OH_Drawing_ShaderEffectCreateLinearGradient(const OH_Drawing_Point* startPt,
+    const OH_Drawing_Point* endPt, const uint32_t* colors, const float* pos, uint32_t s)`
+- `OH_Drawing_ShaderEffect* OH_Drawing_ShaderEffectCreateRadialGradient(const OH_Drawing_Point* centerPt, float radius,
+    const uint32_t* colors, const float* pos, uint32_t size, OH_Drawing_)`
+- `OH_Drawing_ShaderEffect* OH_Drawing_ShaderEffectCreateSweepGradient(const OH_Drawing_Point* centerPt,
+    const uint32_t* colors, const float* pos, uint32_t size, OH_Drawing_TileMode)`
+- `void OH_Drawing_ShaderEffectDestroy(OH_Drawing_ShaderEffect*)`
+#### 枚举
+- **OH_Drawing_TileMode**
+  - `Replicate`
+  - `the`
+  - `edge`
+  - `color`
+  - `if`
+  - `the`
+  - `shader`
+  - `effect`
+  - `draws`
+  - `outside`
+  - `of`
+  - `its`
+  - `original`
+  - `bounds`
+  - `CLAMP`
+  - `Repeat`
+  - `the`
+  - `shader`
+  - `effect`
+  - `image`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `REPEAT`
+  - `Repeat`
+  - `the`
+  - `shader`
+  - `effect`
+  - `image`
+  - `horizontally`
+  - `and`
+  - `vertically`
+  - `alternating`
+  - `mirror`
+  - `images`
+  - `so`
+  - `that`
+  - `adjacent`
+  - `images`
+  - `always`
+  - `seam`
+  - `MIRROR`
+  - `Only`
+  - `draw`
+  - `within`
+  - `the`
+  - `original`
+  - `domain`
+  - `return`
+  - `transparent`
+  - `black`
+  - `everywhere`
+  - `else`
+  - `DECAL`
+
+### graphic/graphic_2d/native_drawing/drawing_text_blob.h
+#### 函数
+- `OH_Drawing_TextBlobBuilder* OH_Drawing_TextBlobBuilderCreate(void)`
+- `OH_Drawing_RunBuffer* OH_Drawing_TextBlobBuilderAllocRunPos(OH_Drawing_TextBlobBuilder*, const OH_Drawing_Font*,
+    int32_t count, const OH_Drawing_Rect*)`
+- `OH_Drawing_TextBlob* OH_Drawing_TextBlobBuilderMake(OH_Drawing_TextBlobBuilder*)`
+- `void OH_Drawing_TextBlobDestroy(OH_Drawing_TextBlob*)`
+- `void OH_Drawing_TextBlobBuilderDestroy(OH_Drawing_TextBlobBuilder*)`
+
+### graphic/graphic_2d/native_drawing/drawing_text_declaration.h
+#### 类型定义
+
+### graphic/graphic_2d/native_drawing/drawing_text_typography.h
+#### 函数
+- `OH_Drawing_TypographyStyle* OH_Drawing_CreateTypographyStyle(void)`
+- `void OH_Drawing_DestroyTypographyStyle(OH_Drawing_TypographyStyle*)`
+- `void OH_Drawing_SetTypographyTextDirection(OH_Drawing_TypographyStyle*, int /* OH_Drawing_TextDirection */)`
+- `void OH_Drawing_SetTypographyTextAlign(OH_Drawing_TypographyStyle*, int /* OH_Drawing_TextAlign */)`
+- `void OH_Drawing_SetTypographyTextMaxLines(OH_Drawing_TypographyStyle*, int /* maxLines */)`
+- `OH_Drawing_TextStyle* OH_Drawing_CreateTextStyle(void)`
+- `void OH_Drawing_DestroyTextStyle(OH_Drawing_TextStyle*)`
+- `void OH_Drawing_SetTextStyleColor(OH_Drawing_TextStyle*, uint32_t /* color */)`
+- `void OH_Drawing_SetTextStyleFontSize(OH_Drawing_TextStyle*, double /* fontSize */)`
+- `void OH_Drawing_SetTextStyleFontWeight(OH_Drawing_TextStyle*, int /* OH_Drawing_FontWeight */)`
+- `void OH_Drawing_SetTextStyleBaseLine(OH_Drawing_TextStyle*, int /* OH_Drawing_TextBaseline */)`
+- `void OH_Drawing_SetTextStyleDecoration(OH_Drawing_TextStyle*, int /* OH_Drawing_TextDecoration */)`
+- `void OH_Drawing_SetTextStyleDecorationColor(OH_Drawing_TextStyle*, uint32_t /* color */)`
+- `void OH_Drawing_SetTextStyleFontHeight(OH_Drawing_TextStyle*, double /* fontHeight */)`
+- `void OH_Drawing_SetTextStyleFontFamilies(OH_Drawing_TextStyle*,
+    int /* fontFamiliesNumber */, const char* fontFamilies[])`
+- `void OH_Drawing_SetTextStyleFontStyle(OH_Drawing_TextStyle*, int /* OH_Drawing_FontStyle */)`
+- `void OH_Drawing_SetTextStyleLocale(OH_Drawing_TextStyle*, const char*)`
+- `OH_Drawing_TypographyCreate* OH_Drawing_CreateTypographyHandler(OH_Drawing_TypographyStyle*,
+    OH_Drawing_FontCollection*)`
+- `void OH_Drawing_DestroyTypographyHandler(OH_Drawing_TypographyCreate*)`
+- `void OH_Drawing_TypographyHandlerPushTextStyle(OH_Drawing_TypographyCreate*, OH_Drawing_TextStyle*)`
+- `void OH_Drawing_TypographyHandlerAddText(OH_Drawing_TypographyCreate*, const char*)`
+- `void OH_Drawing_TypographyHandlerPopTextStyle(OH_Drawing_TypographyCreate*)`
+- `OH_Drawing_Typography* OH_Drawing_CreateTypography(OH_Drawing_TypographyCreate*)`
+- `void OH_Drawing_DestroyTypography(OH_Drawing_Typography*)`
+- `void OH_Drawing_TypographyLayout(OH_Drawing_Typography*, double /* maxWidth */)`
+- `void OH_Drawing_TypographyPaint(OH_Drawing_Typography*, OH_Drawing_Canvas*,
+    double /* potisionX */, double /* potisionY */)`
+- `double OH_Drawing_TypographyGetMaxWidth(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetHeight(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetLongestLine(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetMinIntrinsicWidth(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetMaxIntrinsicWidth(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetAlphabeticBaseline(OH_Drawing_Typography*)`
+- `double OH_Drawing_TypographyGetIdeographicBaseline(OH_Drawing_Typography*)`
+- `void OH_Drawing_TypographyHandlerAddPlaceholder(OH_Drawing_TypographyCreate*, OH_Drawing_PlaceholderSpan*)`
+- `bool OH_Drawing_TypographyDidExceedMaxLines(OH_Drawing_Typography*)`
+- `OH_Drawing_TextBox* OH_Drawing_TypographyGetRectsForRange(OH_Drawing_Typography*,
+    size_t, size_t, OH_Drawing_RectHeightStyle, OH_Drawing_RectWidthStyle)`
+- `OH_Drawing_TextBox* OH_Drawing_TypographyGetRectsForPlaceholders(OH_Drawing_Typography*)`
+- `float OH_Drawing_GetLeftFromTextBox(OH_Drawing_TextBox*, int)`
+- `float OH_Drawing_GetRightFromTextBox(OH_Drawing_TextBox*, int)`
+- `float OH_Drawing_GetTopFromTextBox(OH_Drawing_TextBox*, int)`
+- `float OH_Drawing_GetBottomFromTextBox(OH_Drawing_TextBox*, int)`
+- `int OH_Drawing_GetTextDirectionFromTextBox(OH_Drawing_TextBox*, int)`
+- `size_t OH_Drawing_GetSizeOfTextBox(OH_Drawing_TextBox*)`
+- `OH_Drawing_PositionAndAffinity* OH_Drawing_TypographyGetGlyphPositionAtCoordinate(OH_Drawing_Typography*,
+    double, double)`
+- `OH_Drawing_PositionAndAffinity* OH_Drawing_TypographyGetGlyphPositionAtCoordinateWithCluster(OH_Drawing_Typography*,
+    double, double)`
+- `size_t OH_Drawing_GetPositionFromPositionAndAffinity(OH_Drawing_PositionAndAffinity*)`
+- `int OH_Drawing_GetAffinityFromPositionAndAffinity(OH_Drawing_PositionAndAffinity*)`
+- `OH_Drawing_Range* OH_Drawing_TypographyGetWordBoundary(OH_Drawing_Typography*, size_t)`
+- `size_t OH_Drawing_GetStartFromRange(OH_Drawing_Range*)`
+- `size_t OH_Drawing_GetEndFromRange(OH_Drawing_Range*)`
+- `size_t OH_Drawing_TypographyGetLineCount(OH_Drawing_Typography*)`
+- `void OH_Drawing_SetTextStyleDecorationStyle(OH_Drawing_TextStyle*, int)`
+- `void OH_Drawing_SetTextStyleDecorationThicknessScale(OH_Drawing_TextStyle*, double)`
+- `void OH_Drawing_SetTextStyleLetterSpacing(OH_Drawing_TextStyle*, double)`
+- `void OH_Drawing_SetTextStyleWordSpacing(OH_Drawing_TextStyle*, double)`
+- `void OH_Drawing_SetTextStyleHalfLeading(OH_Drawing_TextStyle*, bool)`
+- `void OH_Drawing_SetTextStyleEllipsis(OH_Drawing_TextStyle*, const char*)`
+- `void OH_Drawing_SetTextStyleEllipsisModal(OH_Drawing_TextStyle*, int)`
+- `void OH_Drawing_SetTypographyTextBreakStrategy(OH_Drawing_TypographyStyle*, int)`
+- `void OH_Drawing_SetTypographyTextWordBreakType(OH_Drawing_TypographyStyle*, int)`
+- `void OH_Drawing_SetTypographyTextEllipsisModal(OH_Drawing_TypographyStyle*, int)`
+- `double OH_Drawing_TypographyGetLineHeight(OH_Drawing_Typography*, int)`
+- `double OH_Drawing_TypographyGetLineWidth(OH_Drawing_Typography*, int)`
+#### 枚举
+- **anonymous**
+  - `Right`
+  - `to`
+  - `left`
+  - `RTL`
+  - `TEXT_DIRECTION_RTL`
+  - `Left`
+  - `to`
+  - `right`
+  - `LTR`
+  - `TEXT_DIRECTION_LTR`
+- **anonymous**
+  - `Left`
+  - `aligned`
+  - `TEXT_ALIGN_LEFT`
+  - `Right`
+  - `aligned`
+  - `TEXT_ALIGN_RIGHT`
+  - `Center`
+  - `aligned`
+  - `TEXT_ALIGN_CENTER`
+  - `Justified`
+  - `which`
+  - `means`
+  - `that`
+  - `each`
+  - `line`
+  - `except`
+  - `the`
+  - `last`
+  - `line`
+  - `is`
+  - `stretched`
+  - `so`
+  - `that`
+  - `every`
+  - `line`
+  - `has`
+  - `equal`
+  - `width`
+  - `and`
+  - `the`
+  - `left`
+  - `and`
+  - `right`
+  - `margins`
+  - `are`
+  - `straight`
+  - `TEXT_ALIGN_JUSTIFY`
+  - `b`
+  - `TEXT_ALIGN_START`
+  - `b`
+  - `achieves`
+  - `the`
+  - `same`
+  - `effect`
+  - `as`
+  - `b`
+  - `TEXT_ALIGN_LEFT`
+  - `b`
+  - `when`
+  - `b`
+  - `OH_Drawing_TextDirection`
+  - `b`
+  - `is`
+  - `b`
+  - `TEXT_DIRECTION_LTR`
+  - `b`
+  - `it`
+  - `achieves`
+  - `the`
+  - `same`
+  - `effect`
+  - `as`
+  - `b`
+  - `TEXT_ALIGN_RIGHT`
+  - `b`
+  - `when`
+  - `b`
+  - `OH_Drawing_TextDirection`
+  - `b`
+  - `is`
+  - `b`
+  - `TEXT_DIRECTION_RTL`
+  - `b`
+  - `TEXT_ALIGN_START`
+  - `b`
+  - `TEXT_ALIGN_END`
+  - `b`
+  - `achieves`
+  - `the`
+  - `same`
+  - `effect`
+  - `as`
+  - `b`
+  - `TEXT_ALIGN_RIGHT`
+  - `b`
+  - `when`
+  - `b`
+  - `OH_Drawing_TextDirection`
+  - `b`
+  - `is`
+  - `b`
+  - `TEXT_DIRECTION_LTR`
+  - `b`
+  - `it`
+  - `achieves`
+  - `the`
+  - `same`
+  - `effect`
+  - `as`
+  - `b`
+  - `TEXT_ALIGN_LEFT`
+  - `b`
+  - `when`
+  - `b`
+  - `OH_Drawing_TextDirection`
+  - `b`
+  - `is`
+  - `b`
+  - `TEXT_DIRECTION_RTL`
+  - `b`
+  - `TEXT_ALIGN_END`
+- **anonymous**
+  - `Thin`
+  - `FONT_WEIGHT_100`
+  - `Extra`
+  - `light`
+  - `FONT_WEIGHT_200`
+  - `Light`
+  - `FONT_WEIGHT_300`
+  - `Normal`
+  - `Regular`
+  - `FONT_WEIGHT_400`
+  - `Medium`
+  - `FONT_WEIGHT_500`
+  - `Semi`
+  - `bold`
+  - `FONT_WEIGHT_600`
+  - `Bold`
+  - `FONT_WEIGHT_700`
+  - `Extra`
+  - `bold`
+  - `FONT_WEIGHT_800`
+  - `Black`
+  - `FONT_WEIGHT_900`
+- **anonymous**
+  - `Alphabetic`
+  - `where`
+  - `the`
+  - `letters`
+  - `in`
+  - `alphabets`
+  - `like`
+  - `English`
+  - `sit`
+  - `on`
+  - `TEXT_BASELINE_ALPHABETIC`
+  - `Ideographic`
+  - `The`
+  - `baseline`
+  - `is`
+  - `at`
+  - `the`
+  - `bottom`
+  - `of`
+  - `the`
+  - `text`
+  - `area`
+  - `TEXT_BASELINE_IDEOGRAPHIC`
+- **anonymous**
+  - `No`
+  - `decoration`
+  - `TEXT_DECORATION_NONE` = 0x0
+  - `A`
+  - `underline`
+  - `is`
+  - `used`
+  - `for`
+  - `decoration`
+  - `TEXT_DECORATION_UNDERLINE` = 0x1
+  - `An`
+  - `overline`
+  - `is`
+  - `used`
+  - `for`
+  - `decoration`
+  - `TEXT_DECORATION_OVERLINE` = 0x2
+  - `A`
+  - `strikethrough`
+  - `is`
+  - `used`
+  - `for`
+  - `decoration`
+  - `TEXT_DECORATION_LINE_THROUGH` = 0x4
+- **anonymous**
+  - `Normal`
+  - `style`
+  - `FONT_STYLE_NORMAL`
+  - `Italic`
+  - `style`
+  - `FONT_STYLE_ITALIC`
+- **OH_Drawing_PlaceholderVerticalAlignment**
+  - `Offset`
+  - `At`
+  - `Baseline`
+  - `ALIGNMENT_OFFSET_AT_BASELINE`
+  - `Above`
+  - `Baseline`
+  - `ALIGNMENT_ABOVE_BASELINE`
+  - `Below`
+  - `Baseline`
+  - `ALIGNMENT_BELOW_BASELINE`
+  - `Top`
+  - `of`
+  - `Row`
+  - `Box`
+  - `ALIGNMENT_TOP_OF_ROW_BOX`
+  - `Bottom`
+  - `of`
+  - `Row`
+  - `Box`
+  - `ALIGNMENT_BOTTOM_OF_ROW_BOX`
+  - `Center`
+  - `of`
+  - `Row`
+  - `Box`
+  - `ALIGNMENT_CENTER_OF_ROW_BOX`
+- **OH_Drawing_TextDecorationStyle**
+  - `Solid`
+  - `style`
+  - `TEXT_DECORATION_STYLE_SOLID`
+  - `Double`
+  - `style`
+  - `TEXT_DECORATION_STYLE_DOUBLE`
+  - `Dotted`
+  - `style`
+  - `TEXT_DECORATION_STYLE_DOTTED`
+  - `Dashed`
+  - `style`
+  - `TEXT_DECORATION_STYLE_DASHED`
+  - `Wavy`
+  - `style`
+  - `TEXT_DECORATION_STYLE_WAVY`
+- **OH_Drawing_EllipsisModal**
+  - `Head`
+  - `modal`
+  - `ELLIPSIS_MODAL_HEAD` = 0
+  - `Middle`
+  - `modal`
+  - `ELLIPSIS_MODAL_MIDDLE` = 1
+  - `Tail`
+  - `modal`
+  - `ELLIPSIS_MODAL_TAIL` = 2
+- **OH_Drawing_BreakStrategy**
+  - `Greedy`
+  - `strategy`
+  - `BREAK_STRATEGY_GREEDY` = 0
+  - `Quality`
+  - `strategy`
+  - `BREAK_STRATEGY_HIGH_QUALITY` = 1
+  - `Balanced`
+  - `strategy`
+  - `BREAK_STRATEGY_BALANCED` = 2
+- **OH_Drawing_WordBreakType**
+  - `Normal`
+  - `type`
+  - `WORD_BREAK_TYPE_NORMAL` = 0
+  - `Break`
+  - `All`
+  - `type`
+  - `WORD_BREAK_TYPE_BREAK_ALL` = 1
+  - `Break`
+  - `Word`
+  - `type`
+  - `WORD_BREAK_TYPE_BREAK_WORD` = 2
+- **OH_Drawing_RectHeightStyle**
+  - `Tight`
+  - `style`
+  - `RECT_HEIGHT_STYLE_TIGHT`
+  - `Max`
+  - `style`
+  - `RECT_HEIGHT_STYLE_MAX`
+  - `Includelinespacemiddle`
+  - `style`
+  - `RECT_HEIGHT_STYLE_INCLUDELINESPACEMIDDLE`
+  - `Includelinespacetop`
+  - `style`
+  - `RECT_HEIGHT_STYLE_INCLUDELINESPACETOP`
+  - `Includelinespacebottom`
+  - `style`
+  - `RECT_HEIGHT_STYLE_INCLUDELINESPACEBOTTOM`
+  - `Struct`
+  - `style`
+  - `RECT_HEIGHT_STYLE_STRUCT`
+- **OH_Drawing_RectWidthStyle**
+  - `Tight`
+  - `style`
+  - `RECT_WIDTH_STYLE_TIGHT`
+  - `Max`
+  - `style`
+  - `RECT_WIDTH_STYLE_MAX`
+
+### graphic/graphic_2d/native_drawing/drawing_typeface.h
+#### 函数
+- `OH_Drawing_Typeface* OH_Drawing_TypefaceCreateDefault(void)`
+- `void OH_Drawing_TypefaceDestroy(OH_Drawing_Typeface*)`
+
+### graphic/graphic_2d/native_drawing/drawing_types.h
+#### 枚举
+- **OH_Drawing_ColorFormat**
+  - `Unknown`
+  - `format`
+  - `COLOR_FORMAT_UNKNOWN`
+  - `Each`
+  - `pixel`
+  - `is`
+  - `represented`
+  - `by`
+  - `8`
+  - `bits`
+  - `which`
+  - `together`
+  - `indicate`
+  - `alpha`
+  - `COLOR_FORMAT_ALPHA_8`
+  - `Each`
+  - `pixel`
+  - `is`
+  - `represented`
+  - `by`
+  - `16`
+  - `bits`
+  - `From`
+  - `the`
+  - `most`
+  - `significant`
+  - `bit`
+  - `to`
+  - `the`
+  - `least`
+  - `significant`
+  - `bit`
+  - `the`
+  - `first`
+  - `5`
+  - `bits`
+  - `indicate`
+  - `red`
+  - `the`
+  - `subsequent`
+  - `6`
+  - `bits`
+  - `indicate`
+  - `green`
+  - `and`
+  - `the`
+  - `last`
+  - `5`
+  - `bits`
+  - `indicate`
+  - `blue`
+  - `COLOR_FORMAT_RGB_565`
+  - `Each`
+  - `pixel`
+  - `is`
+  - `represented`
+  - `by`
+  - `16`
+  - `bits`
+  - `From`
+  - `the`
+  - `most`
+  - `significant`
+  - `bit`
+  - `to`
+  - `the`
+  - `least`
+  - `significant`
+  - `bit`
+  - `every`
+  - `4`
+  - `bits`
+  - `indicate`
+  - `alpha`
+  - `red`
+  - `green`
+  - `and`
+  - `blue`
+  - `respectively`
+  - `COLOR_FORMAT_ARGB_4444`
+  - `Each`
+  - `pixel`
+  - `is`
+  - `represented`
+  - `by`
+  - `32`
+  - `bits`
+  - `From`
+  - `the`
+  - `most`
+  - `significant`
+  - `bit`
+  - `to`
+  - `the`
+  - `least`
+  - `significant`
+  - `bit`
+  - `every`
+  - `8`
+  - `bits`
+  - `indicate`
+  - `alpha`
+  - `red`
+  - `green`
+  - `and`
+  - `blue`
+  - `respectively`
+  - `COLOR_FORMAT_RGBA_8888`
+  - `Each`
+  - `pixel`
+  - `is`
+  - `represented`
+  - `by`
+  - `32`
+  - `bits`
+  - `From`
+  - `the`
+  - `most`
+  - `significant`
+  - `bit`
+  - `to`
+  - `the`
+  - `least`
+  - `significant`
+  - `bit`
+  - `every`
+  - `8`
+  - `bits`
+  - `indicate`
+  - `blue`
+  - `green`
+  - `red`
+  - `and`
+  - `alpha`
+  - `respectively`
+  - `COLOR_FORMAT_BGRA_8888`
+- **OH_Drawing_AlphaFormat**
+  - `Unknown`
+  - `format`
+  - `ALPHA_FORMAT_UNKNOWN`
+  - `The`
+  - `bitmap`
+  - `does`
+  - `not`
+  - `have`
+  - `the`
+  - `alpha`
+  - `component`
+  - `ALPHA_FORMAT_OPAQUE`
+  - `The`
+  - `color`
+  - `component`
+  - `of`
+  - `each`
+  - `pixel`
+  - `is`
+  - `premultiplied`
+  - `by`
+  - `the`
+  - `alpha`
+  - `component`
+  - `ALPHA_FORMAT_PREMUL`
+  - `The`
+  - `color`
+  - `component`
+  - `of`
+  - `each`
+  - `pixel`
+  - `is`
+  - `not`
+  - `premultiplied`
+  - `by`
+  - `the`
+  - `alpha`
+  - `component`
+  - `ALPHA_FORMAT_UNPREMUL`
+- **OH_Drawing_BlendMode**
+  - `r` = 0. */
+  - `BLEND_MODE_CLEAR`
+  - `r` = s. */
+  - `BLEND_MODE_SRC`
+  - `r` = d. */
+  - `BLEND_MODE_DST`
+  - `r` = s + (1-sa)*d. */
+  - `BLEND_MODE_SRC_OVER`
+  - `r` = d + (1-da)*s. */
+  - `BLEND_MODE_DST_OVER`
+  - `r` = s * da. */
+  - `BLEND_MODE_SRC_IN`
+  - `r` = d * sa. */
+  - `BLEND_MODE_DST_IN`
+  - `r` = s * (1-da). */
+  - `BLEND_MODE_SRC_OUT`
+  - `r` = d * (1-sa). */
+  - `BLEND_MODE_DST_OUT`
+  - `r` = s*da + d*(1-sa). */
+  - `BLEND_MODE_SRC_ATOP`
+  - `r` = d*sa + s*(1-da). */
+  - `BLEND_MODE_DST_ATOP`
+  - `r` = s*(1-da) + d*(1-sa). */
+  - `BLEND_MODE_XOR`
+  - `r` = min(s + d
+  - `1`
+  - `BLEND_MODE_PLUS`
+  - `r` = s*d. */
+  - `BLEND_MODE_MODULATE`
+  - `r` = s + d - s*d. */
+  - `BLEND_MODE_SCREEN`
+  - `multiply`
+  - `or`
+  - `screen`
+  - `depending`
+  - `on`
+  - `destination`
+  - `BLEND_MODE_OVERLAY`
+  - `rc` = s + d - max(s*da
+  - `d`
+  - `sa`
+  - `ra` = s + (1-sa)*d. */
+  - `BLEND_MODE_DARKEN`
+  - `rc` = s + d - min(s*da
+  - `d`
+  - `sa`
+  - `ra` = s + (1-sa)*d. */
+  - `BLEND_MODE_LIGHTEN`
+  - `brighten`
+  - `destination`
+  - `to`
+  - `reflect`
+  - `source`
+  - `BLEND_MODE_COLOR_DODGE`
+  - `darken`
+  - `destination`
+  - `to`
+  - `reflect`
+  - `source`
+  - `BLEND_MODE_COLOR_BURN`
+  - `multiply`
+  - `or`
+  - `screen`
+  - `depending`
+  - `on`
+  - `source`
+  - `BLEND_MODE_HARD_LIGHT`
+  - `lighten`
+  - `or`
+  - `darken`
+  - `depending`
+  - `on`
+  - `source`
+  - `BLEND_MODE_SOFT_LIGHT`
+  - `rc` = s + d - 2*(min(s*da
+  - `d`
+  - `sa`
+  - `ra` = s + (1-sa)*d. */
+  - `BLEND_MODE_DIFFERENCE`
+  - `rc` = s + d - two(s*d)
+  - `ra` = s + (1-sa)*d. */
+  - `BLEND_MODE_EXCLUSION`
+  - `r` = s*(1-da) + d*(1-sa) + s*d. */
+  - `BLEND_MODE_MULTIPLY`
+  - `hue`
+  - `of`
+  - `source`
+  - `with`
+  - `saturation`
+  - `and`
+  - `luminosity`
+  - `of`
+  - `destination`
+  - `BLEND_MODE_HUE`
+  - `saturation`
+  - `of`
+  - `source`
+  - `with`
+  - `hue`
+  - `and`
+  - `luminosity`
+  - `of`
+  - `destination`
+  - `BLEND_MODE_SATURATION`
+  - `hue`
+  - `and`
+  - `saturation`
+  - `of`
+  - `source`
+  - `with`
+  - `luminosity`
+  - `of`
+  - `destination`
+  - `BLEND_MODE_COLOR`
+  - `luminosity`
+  - `of`
+  - `source`
+  - `with`
+  - `hue`
+  - `and`
+  - `saturation`
+  - `of`
+  - `destination`
+  - `BLEND_MODE_LUMINOSITY`
+#### 类型定义
+
+### graphic/graphic_2d/native_image/native_image.h
+#### 函数
+- `OH_NativeImage* OH_NativeImage_Create(uint32_t textureId, uint32_t textureTarget)`
+- `OHNativeWindow* OH_NativeImage_AcquireNativeWindow(OH_NativeImage* image)`
+- `int32_t OH_NativeImage_AttachContext(OH_NativeImage* image, uint32_t textureId)`
+- `int32_t OH_NativeImage_DetachContext(OH_NativeImage* image)`
+- `int32_t OH_NativeImage_UpdateSurfaceImage(OH_NativeImage* image)`
+- `int64_t OH_NativeImage_GetTimestamp(OH_NativeImage* image)`
+- `int32_t OH_NativeImage_GetTransformMatrix(OH_NativeImage* image, float matrix[16])`
+- `int32_t OH_NativeImage_GetSurfaceId(OH_NativeImage* image, uint64_t* surfaceId)`
+- `int32_t OH_NativeImage_SetOnFrameAvailableListener(OH_NativeImage* image, OH_OnFrameAvailableListener listener)`
+- `int32_t OH_NativeImage_UnsetOnFrameAvailableListener(OH_NativeImage* image)`
+- `void OH_NativeImage_Destroy(OH_NativeImage** image)`
+#### 结构体
+- **OH_OnFrameAvailableListener**
+  - `OH_OnFrameAvailable onFrameAvailable`
+#### 类型定义
+
+### graphic/graphic_2d/native_vsync/native_vsync.h
+#### 函数
+- `OH_NativeVSync* OH_NativeVSync_Create(const char* name, unsigned int length)`
+- `void OH_NativeVSync_Destroy(OH_NativeVSync* nativeVsync)`
+- `int OH_NativeVSync_RequestFrame(OH_NativeVSync* nativeVsync, OH_NativeVSync_FrameCallback callback, void* data)`
+- `int OH_NativeVSync_GetPeriod(OH_NativeVSync* nativeVsync, long long* period)`
+#### 类型定义
+
+### graphic/graphic_2d/native_window/buffer_handle.h
+
+### graphic/graphic_2d/native_window/external_window.h
+#### 函数
+- `OHNativeWindow* OH_NativeWindow_CreateNativeWindow(void* pSurface)`
+- `void OH_NativeWindow_DestroyNativeWindow(OHNativeWindow* window)`
+- `OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(void* pSurfaceBuffer)`
+- `OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromNativeBuffer(OH_NativeBuffer* nativeBuffer)`
+- `void OH_NativeWindow_DestroyNativeWindowBuffer(OHNativeWindowBuffer* buffer)`
+- `int32_t OH_NativeWindow_NativeWindowRequestBuffer(OHNativeWindow *window,
+    OHNativeWindowBuffer **buffer, int *fenceFd)`
+- `int32_t OH_NativeWindow_NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer,
+    int fenceFd, Region region)`
+- `int32_t OH_NativeWindow_GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer,
+    int *fenceFd, float matrix[16])`
+- `int32_t OH_NativeWindow_NativeWindowAbortBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer)`
+- `int32_t OH_NativeWindow_NativeWindowHandleOpt(OHNativeWindow *window, int code, ...)`
+- `int32_t OH_NativeWindow_NativeObjectReference(void *obj)`
+- `int32_t OH_NativeWindow_NativeObjectUnreference(void *obj)`
+- `int32_t OH_NativeWindow_GetNativeObjectMagic(void *obj)`
+- `int32_t OH_NativeWindow_NativeWindowSetScalingMode(OHNativeWindow *window, uint32_t sequence,
+                                                   OHScalingMode scalingMode)`
+- `int32_t OH_NativeWindow_NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32_t size,
+                                                const OHHDRMeta)`
+- `int32_t OH_NativeWindow_NativeWindowSetMetaDataSet(OHNativeWindow *window, uint32_t sequence, OHHDRMetadataKey key,
+                                                   int3)`
+- `int32_t OH_NativeWindow_NativeWindowSetTunnelHandle(OHNativeWindow *window, const OHExtDataHandle *handle)`
+#### 结构体
+- **Region**
+  - `int32_t x`
+  - `int32_t y`
+  - `uint32_t w`
+  - `uint32_t h`
+- **OHExtDataHandle**
+  - `int32_t fd`
+  - `uint32_t reserveInts`
+  - `int32_t reserve`
+#### 枚举
+- **anonymous**
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `geometry`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `width`
+  - `in`
+  - `int32_t`
+  - `height`
+  - `SET_BUFFER_GEOMETRY`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `geometry`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `height`
+  - `out`
+  - `int32_t`
+  - `width`
+  - `GET_BUFFER_GEOMETRY`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `format`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `format`
+  - `GET_FORMAT`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `format`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `format`
+  - `SET_FORMAT`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `usage`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `usage`
+  - `GET_USAGE`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `usage`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `usage`
+  - `SET_USAGE`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `stride`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `stride`
+  - `SET_STRIDE`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `stride`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `stride`
+  - `GET_STRIDE`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `swap`
+  - `interval`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `interval`
+  - `SET_SWAP_INTERVAL`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `swap`
+  - `interval`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `interval`
+  - `GET_SWAP_INTERVAL`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `timeout`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `timeout`
+  - `SET_TIMEOUT`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `timeout`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `timeout`
+  - `GET_TIMEOUT`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `colorGamut`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `colorGamut`
+  - `SET_COLOR_GAMUT`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `colorGamut`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `colorGamut`
+  - `GET_COLOR_GAMUT`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `transform`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `int32_t`
+  - `transform`
+  - `SET_TRANSFORM`
+  - `get`
+  - `native`
+  - `window`
+  - `buffer`
+  - `transform`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `out`
+  - `int32_t`
+  - `transform`
+  - `GET_TRANSFORM`
+  - `set`
+  - `native`
+  - `window`
+  - `buffer`
+  - `uiTimestamp`
+  - `variable`
+  - `parameter`
+  - `in`
+  - `function`
+  - `is`
+  - `in`
+  - `uint64_t`
+  - `uiTimestamp`
+  - `SET_UI_TIMESTAMP`
+- **OHScalingMode**
+  - `the`
+  - `window`
+  - `content`
+  - `is`
+  - `not`
+  - `updated`
+  - `until`
+  - `a`
+  - `buffer`
+  - `of`
+  - `the`
+  - `window`
+  - `size`
+  - `is`
+  - `received`
+  - `OH_SCALING_MODE_FREEZE` = 0
+  - `the`
+  - `buffer`
+  - `is`
+  - `scaled`
+  - `in`
+  - `two`
+  - `dimensions`
+  - `to`
+  - `match`
+  - `the`
+  - `window`
+  - `size`
+  - `OH_SCALING_MODE_SCALE_TO_WINDOW`
+  - `the`
+  - `buffer`
+  - `is`
+  - `uniformly`
+  - `scaled`
+  - `so`
+  - `that`
+  - `the`
+  - `smaller`
+  - `size`
+  - `of`
+  - `the`
+  - `buffer`
+  - `matches`
+  - `the`
+  - `window`
+  - `size`
+  - `OH_SCALING_MODE_SCALE_CROP`
+  - `the`
+  - `window`
+  - `is`
+  - `clipped`
+  - `to`
+  - `the`
+  - `size`
+  - `of`
+  - `the`
+  - `buffer`
+  - `s`
+  - `clipping`
+  - `rectangle`
+  - `pixels`
+  - `outside`
+  - `the`
+  - `clipping`
+  - `rectangle`
+  - `are`
+  - `considered`
+  - `fully`
+  - `transparent`
+  - `OH_SCALING_MODE_NO_SCALE_CROP`
+- **OHHDRMetadataKey**
+  - `OH_METAKEY_RED_PRIMARY_X` = 0
+  - `OH_METAKEY_RED_PRIMARY_Y` = 1
+  - `OH_METAKEY_GREEN_PRIMARY_X` = 2
+  - `OH_METAKEY_GREEN_PRIMARY_Y` = 3
+  - `OH_METAKEY_BLUE_PRIMARY_X` = 4
+  - `OH_METAKEY_BLUE_PRIMARY_Y` = 5
+  - `OH_METAKEY_WHITE_PRIMARY_X` = 6
+  - `OH_METAKEY_WHITE_PRIMARY_Y` = 7
+  - `OH_METAKEY_MAX_LUMINANCE` = 8
+  - `OH_METAKEY_MIN_LUMINANCE` = 9
+  - `OH_METAKEY_MAX_CONTENT_LIGHT_LEVEL` = 10
+  - `OH_METAKEY_MAX_FRAME_AVERAGE_LIGHT_LEVEL` = 11
+  - `OH_METAKEY_HDR10_PLUS` = 12
+  - `OH_METAKEY_HDR_VIVID` = 13
+#### 类型定义
