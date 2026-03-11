@@ -11,10 +11,7 @@ const copy404Plugin = () => ({
   },
 });
 
-const isGHPages = process.env.GITHUB_ACTIONS === 'true';
-
 export default defineConfig({
-  base: isGHPages ? '/harmony-android-guide/' : '/',
   plugins: [react(), copy404Plugin()],
   server: {
     proxy: {
