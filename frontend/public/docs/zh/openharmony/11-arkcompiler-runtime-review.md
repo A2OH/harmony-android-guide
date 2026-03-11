@@ -1,140 +1,140 @@
-# ArkCompiler and Runtime 代码审查 - OpenHarmony 4.1
+# ArkCompiler 与运行时代码审查 - OpenHarmony 4.1
 
-## Table of Contents
+## 目录
 
-1. [Executive Summary](#executive-summary)
-2. [Architecture Overview](#architecture-overview)
-3. [Bytecode Format and Class Loading](#bytecode-format-and-class-loading)
-4. [GC Implementation](#gc-implementation)
-5. [JIT/AOT Compilation Pipeline](#jitaot-compilation-pipeline)
-6. [Interpreter and Fast Paths](#interpreter-and-fast-paths)
-7. [Inline Caches and Performance](#inline-caches-and-performance)
-8. [Built-in Object Implementations](#built-in-object-implementations)
-9. [FFI/NAPI Bridge](#ffinapi-bridge)
-10. [Security: Sandbox, Bytecode Verification, AOT File Integrity](#security)
-11. [Memory Safety in C++ Runtime Code](#memory-safety)
-12. [Error Handling and Crash Recovery](#error-handling)
-13. [Consolidated Findings](#consolidated-findings)
-
----
-
-## 执行摘要
-
-The ArkCompiler runtime (`arkcompiler/`) is OpenHarmony's equivalent of Android's ART -- the engine that executes ArkTS/JS bytecode. It comprises four major components:
-
-- **ets_runtime**: The core ECMAScript runtime -- heap, GC, interpreter, compiler (AOT/JIT), IC, builtins, NAPI
-- **runtime_core**: Lower-level infrastructure -- panda file format, assembler, bytecode optimizer, verifier
-- **ets_frontend**: ArkGuard code obfuscation tooling
-- **toolchain**: Debugger, inspector (Chrome DevTools Protocol), build infrastructure
-
-The runtime is a substantial C++ codebase (hundreds of thousands of lines). Overall quality is reasonable for a project of this scale, with systematic use of write barriers, GC verification, and checked memory operations (`memcpy_s`). However, several patterns raise concerns around memory safety, incomplete security hardening, and JIT maturity.
-
-**Key risk areas identified:**
-- JIT compiler loads an external `.so` via `dlopen` with minimal validation (HIGH)
-- Panda bytecode file format lacks cryptographic integrity verification (HIGH)
-- Write barrier has a subtle correctness assumption that could break under concurrent mutation (MEDIUM)
-- Heap `Destroy()` uses raw `delete` on 15+ individually allocated subsystems with no RAII (MEDIUM)
-- ELF/AOT file parsing relies heavily on `reinterpret_cast` with limited bounds checking (MEDIUM)
-- 171+ TODO/FIXME/HACK markers across the ecmascript directory indicate known tech debt (LOW)
+1. [概述](#概述)
+2. [架构概览](#架构概览)
+3. [字节码格式与类加载](#字节码格式与类加载)
+4. [GC 实现](#gc-实现)
+5. [JIT/AOT 编译流水线](#jitaot-编译流水线)
+6. [解释器与快速路径](#解释器与快速路径)
+7. [内联缓存与性能](#内联缓存与性能)
+8. [内置对象实现](#内置对象实现)
+9. [FFI/NAPI 桥接](#ffinapi-桥接)
+10. [安全性：沙箱、字节码验证、AOT 文件完整性](#安全性)
+11. [C++ 运行时代码的内存安全](#内存安全)
+12. [错误处理与崩溃恢复](#错误处理)
+13. [综合发现](#综合发现)
 
 ---
 
-## 架构 Overview
+## 概述
 
-### Component Breakdown
+ArkCompiler 运行时（`arkcompiler/`）是 OpenHarmony 中与 Android ART 对等的组件——负责执行 ArkTS/JS 字节码的引擎。它由四个主要组件构成：
+
+- **ets_runtime**：核心 ECMAScript 运行时——堆、GC、解释器、编译器（AOT/JIT）、IC、内置对象、NAPI
+- **runtime_core**：底层基础设施——Panda 文件格式、汇编器、字节码优化器、验证器
+- **ets_frontend**：ArkGuard 代码混淆工具
+- **toolchain**：调试器、检查器（Chrome DevTools Protocol）、构建基础设施
+
+该运行时是一个规模庞大的 C++ 代码库（数十万行代码）。对于这一规模的项目而言，整体质量尚可，系统性地使用了写屏障、GC 验证和受检内存操作（`memcpy_s`）。然而，在内存安全、安全加固不完善以及 JIT 成熟度方面，存在一些令人担忧的模式。
+
+**识别出的主要风险领域：**
+- JIT 编译器通过 `dlopen` 加载外部 `.so`，验证极少（高危）
+- Panda 字节码文件格式缺乏加密完整性验证（高危）
+- 写屏障存在微妙的正确性假设，在并发修改下可能被破坏（中危）
+- 堆的 `Destroy()` 对 15 个以上独立分配的子系统使用原始 `delete`，未使用 RAII（中危）
+- ELF/AOT 文件解析大量依赖 `reinterpret_cast`，边界检查有限（中危）
+- ecmascript 目录中有 171 个以上的 TODO/FIXME/HACK 标记，表明存在已知的技术债务（低危）
+
+---
+
+## 架构概览
+
+### 组件分解
 
 ```
 arkcompiler/
   ets_runtime/ecmascript/
-    mem/          -- Heap, GC (semi-space, partial, full, concurrent, incremental)
-    interpreter/  -- Bytecode interpreter (threaded dispatch), fast/slow runtime stubs
-    compiler/     -- AOT compiler (LLVM backend), stub builders, circuit IR
-    jit/          -- JIT compilation (loads libark_jsoptimizer.so dynamically)
-    ic/           -- Inline caches (monomorphic, polymorphic, megamorphic)
-    builtins/     -- All ES2021+ built-in objects (Array, Map, Promise, etc.)
-    napi/         -- JS Native API bridge (jsnapi.cpp, dfx_jsnapi.cpp)
-    deoptimizer/  -- Deoptimization from compiled to interpreted code
-    jspandafile/  -- Panda bytecode file loading and translation
-    module/       -- ES module system
-    snapshot/     -- Heap snapshot for startup optimization
+    mem/          -- 堆、GC（半空间、部分、完全、并发、增量）
+    interpreter/  -- 字节码解释器（线程化分发）、快速/慢速运行时桩
+    compiler/     -- AOT 编译器（LLVM 后端）、桩构建器、电路 IR
+    jit/          -- JIT 编译（动态加载 libark_jsoptimizer.so）
+    ic/           -- 内联缓存（单态、多态、超多态）
+    builtins/     -- 所有 ES2021+ 内置对象（Array、Map、Promise 等）
+    napi/         -- JS 原生 API 桥接（jsnapi.cpp、dfx_jsnapi.cpp）
+    deoptimizer/  -- 从编译代码到解释代码的去优化
+    jspandafile/  -- Panda 字节码文件加载和翻译
+    module/       -- ES 模块系统
+    snapshot/     -- 堆快照，用于启动优化
 
   runtime_core/
-    libpandafile/ -- Panda file format definition, reader, bytecode instruction encoding
-    assembler/    -- Panda assembly parser and emitter
-    bytecode_optimizer/ -- Register allocation, bytecode optimization passes
-    verifier/     -- Bytecode verification
+    libpandafile/ -- Panda 文件格式定义、读取器、字节码指令编码
+    assembler/    -- Panda 汇编解析器和发射器
+    bytecode_optimizer/ -- 寄存器分配、字节码优化传递
+    verifier/     -- 字节码验证
 
   ets_frontend/
-    arkguard/     -- Code obfuscation (rename identifiers, disable console/hilog)
+    arkguard/     -- 代码混淆（重命名标识符、禁用 console/hilog）
 
   toolchain/
-    inspector/    -- Chrome DevTools Protocol debugger bridge
+    inspector/    -- Chrome DevTools Protocol 调试器桥接
 ```
 
-### Memory Spaces
+### 内存空间
 
-The heap is divided into:
-- **SemiSpace** (young generation): Two semi-spaces for copying GC, configurable min/max capacity
-- **OldSpace**: For tenured objects, region-based with collection sets
-- **NonMovableSpace**: Objects that must not be relocated (e.g., HClass metadata)
-- **HugeObjectSpace**: Large objects allocated in dedicated regions
-- **MachineCodeSpace / HugeMachineCodeSpace**: JIT/AOT compiled code
-- **ReadOnlySpace**: Immutable objects (shared across contexts)
-- **AppSpawnSpace**: For objects created during app spawn (shared via zygote fork)
-- **SnapshotSpace**: Snapshot deserialization target
+堆被划分为以下区域：
+- **SemiSpace**（年轻代）：两个半空间用于复制 GC，最小/最大容量可配置
+- **OldSpace**：用于晋升对象，基于区域管理，配有收集集合
+- **NonMovableSpace**：不可重定位的对象（例如 HClass 元数据）
+- **HugeObjectSpace**：在专用区域中分配的大对象
+- **MachineCodeSpace / HugeMachineCodeSpace**：JIT/AOT 编译代码
+- **ReadOnlySpace**：不可变对象（跨上下文共享）
+- **AppSpawnSpace**：在应用孵化期间创建的对象（通过 zygote fork 共享）
+- **SnapshotSpace**：快照反序列化目标
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/heap.h`
-
----
-
-## Bytecode Format and Class Loading
-
-### Panda File Format
-
-**Files**: `/home/dspfac/openharmony/arkcompiler/runtime_core/libpandafile/file.h`, `file.cpp`
-
-The bytecode is packaged in `.abc` (Ark Bytecode) files using the "Panda" file format. The file has:
-
-- **Magic**: `PANDA\0\0\0` (8 bytes)
-- **Checksum**: `uint32_t` (CRC-style, not cryptographic)
-- **Version**: 4 bytes
-- **Class index**, **method index**, **field index**, **literal array index**
-- **Entity lookup via hash table**: `EntityPairHeader` with descriptor hash for O(1) class lookup
-
-The file can be loaded from:
-1. Standalone `.abc` files
-2. ZIP archives (HAP packages) -- extracted from `classes.abc` entry
-3. Anonymous memory maps (for zip-extracted content)
-
-### Findings
-
-**[MEDIUM] No cryptographic integrity on .abc files**: The panda file uses only a basic checksum (line 62 of `file.h`: `uint32_t checksum`). There is no digital signature or HMAC verification. A tampered `.abc` file with a valid checksum would be loaded and executed. While the bytecode verifier (`runtime_core/verifier/`) provides structural validation, it cannot detect semantically valid but malicious bytecode.
-
-**[LOW] Missing bytecode verification in hot path**: Searching `file.cpp` for "Verify" yields no results -- verification is not performed during file loading. The verifier exists as a separate component but appears to be an optional pass rather than a mandatory gate.
-
-**[INFO] Zip extraction allocates anonymous RWX-adjacent memory**: In `file.cpp` line 143, zip-extracted bytecode is mapped with `MapRWAnonymousRaw`. This is read-write; the content is then used as executable bytecode data. This is a standard pattern but worth noting for W^X policy considerations.
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/heap.h`
 
 ---
 
-## GC Implementation
+## 字节码格式与类加载
 
-### Architecture
+### Panda 文件格式
 
-**Files**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/heap.cpp`, `concurrent_marker.cpp`, `barriers-inl.h`, `verification.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/runtime_core/libpandafile/file.h`、`file.cpp`
 
-The GC is generational with multiple collection strategies:
+字节码打包在 `.abc`（Ark Bytecode）文件中，采用"Panda"文件格式。该文件包含：
 
-| GC Type | 描述 |
-|---------|-------------|
-| **STWYoungGC** | Stop-the-world young generation (semi-space copying) |
-| **PartialGC** | Young + selected old regions (CSet-based) |
-| **FullGC** | Full heap compaction |
-| **ConcurrentMarker** | Tri-color concurrent marking |
-| **IncrementalMarker** | Idle-time incremental marking |
-| **ConcurrentSweeper** | Background sweeping of old space |
-| **ParallelEvacuator** | Multi-threaded evacuation |
+- **魔数**：`PANDA\0\0\0`（8 字节）
+- **校验和**：`uint32_t`（CRC 风格，非加密）
+- **版本**：4 字节
+- **类索引**、**方法索引**、**字段索引**、**字面量数组索引**
+- **通过哈希表进行实体查找**：`EntityPairHeader` 使用描述符哈希实现 O(1) 类查找
 
-### Write Barrier Implementation
+文件可以从以下来源加载：
+1. 独立的 `.abc` 文件
+2. ZIP 归档文件（HAP 包）——从 `classes.abc` 条目中提取
+3. 匿名内存映射（用于 zip 提取的内容）
+
+### 发现
+
+**[中危] .abc 文件无加密完整性验证**：Panda 文件仅使用基本校验和（`file.h` 第 62 行：`uint32_t checksum`）。没有数字签名或 HMAC 验证。带有有效校验和的篡改 `.abc` 文件将被加载并执行。虽然字节码验证器（`runtime_core/verifier/`）提供结构性验证，但无法检测语义上有效但恶意的字节码。
+
+**[低危] 热路径中缺少字节码验证**：在 `file.cpp` 中搜索"Verify"未返回结果——文件加载期间不执行验证。验证器作为单独组件存在，但似乎是可选传递而非强制关卡。
+
+**[信息] Zip 提取分配匿名 RWX 相邻内存**：在 `file.cpp` 第 143 行，zip 提取的字节码通过 `MapRWAnonymousRaw` 映射。这是可读可写的；内容随后被用作可执行字节码数据。这是标准模式，但值得在 W^X 策略考量中注意。
+
+---
+
+## GC 实现
+
+### 架构
+
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/heap.cpp`、`concurrent_marker.cpp`、`barriers-inl.h`、`verification.cpp`
+
+GC 是分代式的，支持多种收集策略：
+
+| GC 类型 | 描述 |
+|---------|------|
+| **STWYoungGC** | 全停顿年轻代（半空间复制） |
+| **PartialGC** | 年轻代 + 选定的老年代区域（基于 CSet） |
+| **FullGC** | 全堆压缩 |
+| **ConcurrentMarker** | 三色并发标记 |
+| **IncrementalMarker** | 空闲时间增量标记 |
+| **ConcurrentSweeper** | 后台清扫老年代空间 |
+| **ParallelEvacuator** | 多线程疏散 |
+
+### 写屏障实现
 
 ```cpp
 // barriers-inl.h, line 28-49
@@ -154,70 +154,70 @@ static ARK_INLINE void WriteBarrier(const JSThread *thread, void *obj, size_t of
 }
 ```
 
-**[MEDIUM] Write barrier assertion on VALUE_UNDEFINED**: Line 30 asserts `value != JSTaggedValue::VALUE_UNDEFINED`. This means writing `undefined` to a heap slot is disallowed at the barrier level. If any code path writes undefined through `Barriers::SetObject` without checking, this will crash in debug builds and silently skip the barrier in release (since `ASSERT` is compiled out). The `SynchronizedSetObject` variant (line 68) has an `isPrimitive` bypass, which is the correct path for primitives, but the asymmetry is fragile.
+**[中危] 写屏障对 VALUE_UNDEFINED 的断言**：第 30 行断言 `value != JSTaggedValue::VALUE_UNDEFINED`。这意味着在屏障层面不允许向堆槽写入 `undefined`。如果任何代码路径在未检查的情况下通过 `Barriers::SetObject` 写入 undefined，在调试构建中将崩溃，在发布版本中将静默跳过屏障（因为 `ASSERT` 被编译掉）。`SynchronizedSetObject` 变体（第 68 行）有 `isPrimitive` 绕过，这是基本类型的正确路径，但这种不对称性很脆弱。
 
-**[INFO] Concurrent marking correctness**: The concurrent marker uses a snapshot-at-the-beginning (SATB) approach. The `WriteBarrier` checks `IsConcurrentMarkingOrFinished()` and forwards to `Barriers::Update`. The re-mark phase (`ConcurrentMarker::ReMark()` at line 74) processes roots and mark stack on the main thread after waiting for worker tasks. This is a well-established pattern.
+**[信息] 并发标记正确性**：并发标记器使用起始快照（SATB）方法。`WriteBarrier` 检查 `IsConcurrentMarkingOrFinished()` 并转发到 `Barriers::Update`。重新标记阶段（`ConcurrentMarker::ReMark()` 第 74 行）在等待工作线程任务后，在主线程上处理根和标记栈。这是一种经过验证的成熟模式。
 
-### GC Verification
+### GC 验证
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/verification.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/mem/verification.cpp`
 
-The runtime includes a thorough heap verification system that validates:
-- All root slots point to live objects
-- Old-to-new remembered set bits are correct
-- Mark bits are consistent with space membership
-- Forwarding addresses point to valid to-space objects
-- No dangling weak references
+运行时包含一个全面的堆验证系统，可验证：
+- 所有根槽指向存活对象
+- 老年代到年轻代的记忆集位正确
+- 标记位与空间归属一致
+- 转发地址指向有效的 to-space 对象
+- 无悬空弱引用
 
-This is excellent defensive engineering -- the verification covers pre-GC, post-GC, and per-phase invariants. However, it is gated behind `ShouldVerifyHeap()` which defaults to off.
+这是出色的防御性工程——验证覆盖了 GC 前、GC 后和每阶段的不变量。但是，它受 `ShouldVerifyHeap()` 控制，默认关闭。
 
-### Findings
+### 发现
 
-**[MEDIUM] Heap::Destroy() uses 15+ raw deletes with no RAII**:
+**[中危] Heap::Destroy() 使用 15 个以上的原始 delete，未使用 RAII**：
 
 ```cpp
 // heap.cpp lines 142-252
 void Heap::Destroy() {
     if (workManager_ != nullptr) { delete workManager_; workManager_ = nullptr; }
     if (activeSemiSpace_ != nullptr) { activeSemiSpace_->Destroy(); delete activeSemiSpace_; ... }
-    // ... 15 more of these
+    // ... 还有 15 个类似的
 }
 ```
 
-Every GC subsystem is individually `new`'d in `Initialize()` and `delete`'d in `Destroy()`. If any destructor throws or a delete is missed, resources leak. Using `std::unique_ptr` would eliminate this entire class of bugs and reduce the method from 110 lines to ~10.
+每个 GC 子系统在 `Initialize()` 中用 `new` 单独分配，在 `Destroy()` 中单独 `delete`。如果任何析构函数抛出异常或遗漏某个 delete，资源就会泄漏。使用 `std::unique_ptr` 可以消除这一整类 bug，并将方法从 110 行减少到约 10 行。
 
-**[LOW] SmartGC sensitive status uses relaxed memory ordering for read, seq_cst for CAS**: In `heap.h` lines 250-272, `sensitiveStatus_` uses `memory_order_relaxed` for loads and `memory_order_release` for stores, but `compare_exchange_strong` uses `memory_order_seq_cst`. This mixed ordering is not incorrect but suggests unclear intent about the required consistency guarantees.
+**[低危] SmartGC 敏感状态对读取使用 relaxed 内存排序，对 CAS 使用 seq_cst**：在 `heap.h` 第 250-272 行，`sensitiveStatus_` 对加载使用 `memory_order_relaxed`，对存储使用 `memory_order_release`，但 `compare_exchange_strong` 使用 `memory_order_seq_cst`。这种混合排序并非不正确，但暗示对所需一致性保证的意图不明确。
 
-**[INFO] Idle GC and app-lifecycle awareness**: The heap has first-class support for app lifecycle events (`NotifyPostFork`, `SetOnSerializeEvent`, `InSensitiveStatus`). GC is suppressed during high-sensitivity periods (UI animations, serialization). This is a sensible approach for a mobile runtime.
+**[信息] 空闲 GC 和应用生命周期感知**：堆对应用生命周期事件提供一流支持（`NotifyPostFork`、`SetOnSerializeEvent`、`InSensitiveStatus`）。在高敏感时段（UI 动画、序列化）期间抑制 GC。这是移动运行时的合理方法。
 
 ---
 
-## JIT/AOT Compilation Pipeline
+## JIT/AOT 编译流水线
 
-### AOT (Ahead-of-Time) Compilation
+### AOT（预编译）
 
-**Files**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/compiler/aot_file/aot_file_manager.cpp`, `elf_reader.cpp`, `elf_checker.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/compiler/aot_file/aot_file_manager.cpp`、`elf_reader.cpp`、`elf_checker.cpp`
 
-AOT compilation produces `.an` (Ark Native) files in ELF format containing:
-- Machine code sections (per-module)
-- Function entry descriptors
-- Stack maps (for GC and deoptimization)
-- Snapshot data (`.ai` files for constant pool pre-initialization)
+AOT 编译生成 ELF 格式的 `.an`（Ark Native）文件，包含：
+- 机器代码段（按模块）
+- 函数入口描述符
+- 栈映射（用于 GC 和去优化）
+- 快照数据（`.ai` 文件用于常量池预初始化）
 
-The AOT pipeline uses LLVM as the backend compiler. The IR is a custom "circuit" IR (`compiler/circuit.h`) that is lowered through multiple passes before codegen.
+AOT 流水线使用 LLVM 作为后端编译器。IR 是自定义的"电路"IR（`compiler/circuit.h`），在代码生成前经过多个传递进行降级。
 
-**ELF Loading**: The `ElfReader::VerifyELFHeader()` validates:
-1. ELF magic bytes
-2. Version number (strict or compatible match)
-3. Structural integrity via `ElfChecker::CheckValidElf()`
+**ELF 加载**：`ElfReader::VerifyELFHeader()` 验证：
+1. ELF 魔数字节
+2. 版本号（严格或兼容匹配）
+3. 通过 `ElfChecker::CheckValidElf()` 进行结构完整性验证
 
-The `ElfChecker` (added in 2024) performs thorough structural validation: section header bounds, string table integrity, byte order handling, and alignment checks.
+`ElfChecker`（2024 年添加）执行全面的结构验证：节头边界、字符串表完整性、字节序处理和对齐检查。
 
-### JIT (Just-in-Time) Compilation
+### JIT（即时编译）
 
-**Files**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/jit/jit.h`, `jit.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/jit/jit.h`、`jit.cpp`
 
-**[HIGH] JIT loads compiler via dlopen with no integrity check**:
+**[高危] JIT 通过 dlopen 加载编译器且无完整性检查**：
 
 ```cpp
 // jit.cpp lines 33-65
@@ -226,46 +226,46 @@ libHandle_ = LoadLib(LIBARK_JSOPTIMIZER);
 jitCompile_ = reinterpret_cast<bool(*)(void*, JitTask*)>(FindSymbol(libHandle_, JITCOMPILE.c_str()));
 ```
 
-The JIT compiler is loaded dynamically from `libark_jsoptimizer.so` using `dlopen`/`dlsym`. There is:
-- No path validation (relies on default library search path)
-- No signature/hash verification of the loaded library
-- No capability restriction on the loaded code
-- Function pointers are cast and invoked directly
+JIT 编译器通过 `dlopen`/`dlsym` 从 `libark_jsoptimizer.so` 动态加载。存在以下问题：
+- 无路径验证（依赖默认库搜索路径）
+- 无加载库的签名/哈希验证
+- 对加载代码无能力限制
+- 函数指针直接强制转换并调用
 
-If an attacker can place a malicious `libark_jsoptimizer.so` earlier in the library search path, they gain arbitrary code execution in the runtime process. On a device with proper SELinux policies this is mitigated, but it represents a fundamental trust boundary violation.
+如果攻击者能在库搜索路径的更前面放置恶意的 `libark_jsoptimizer.so`，即可在运行时进程中获得任意代码执行能力。在具有适当 SELinux 策略的设备上可以缓解此风险，但它代表了一个根本性的信任边界违规。
 
-**[MEDIUM] JIT bug: wrong variable checked after dlsym**:
+**[中危] JIT 缺陷：dlsym 后检查了错误的变量**：
 
 ```cpp
 // jit.cpp line 61
 deleteJitCompile_ = reinterpret_cast<void(*)(void*)>(FindSymbol(libHandle_, DELETEJITCOMPILE.c_str()));
-if (createJitCompiler_ == nullptr) {  // BUG: should check deleteJitCompile_
+if (createJitCompiler_ == nullptr) {  // 缺陷：应检查 deleteJitCompile_
     LOG_JIT(ERROR) << "jit can't find symbol deleteJitCompile";
     return;
 }
 ```
 
-Line 61 assigns to `deleteJitCompile_` but line 62 checks `createJitCompiler_` (which was already checked on line 53). This means if `FindSymbol` returns `nullptr` for `DeleteJitCompile`, the error goes undetected and `deleteJitCompile_` will be `nullptr`. Later calls to `DeleteJitCompile()` (line 93: `deleteJitCompile_(compiler)`) will dereference a null function pointer, causing a crash.
+第 61 行赋值给 `deleteJitCompile_`，但第 62 行检查了 `createJitCompiler_`（已在第 53 行检查过）。这意味着如果 `FindSymbol` 对 `DeleteJitCompile` 返回 `nullptr`，该错误将不会被检测到，`deleteJitCompile_` 将为 `nullptr`。后续调用 `DeleteJitCompile()`（第 93 行：`deleteJitCompile_(compiler)`）将解引用空函数指针，导致崩溃。
 
-**[LOW] JIT supports limited function kinds**: Only `NORMAL_FUNCTION`, `BASE_CONSTRUCTOR`, and `ARROW_FUNCTION` are JIT-compilable. Generators, async functions, and other kinds fall back to the interpreter. This is appropriate for an early-stage JIT but limits performance benefits.
+**[低危] JIT 仅支持有限的函数类型**：仅 `NORMAL_FUNCTION`、`BASE_CONSTRUCTOR` 和 `ARROW_FUNCTION` 可被 JIT 编译。生成器函数、异步函数和其他类型回退到解释器。这对于早期阶段的 JIT 是适当的，但限制了性能收益。
 
-**[INFO] JIT task lifecycle management**: JIT tasks are tracked in `compilingJitTasks_` and `installJitTasks_` deques. In async mode, tasks are posted to a background thread and code installation happens on the main thread. This avoids the need for fine-grained synchronization during code patching.
+**[信息] JIT 任务生命周期管理**：JIT 任务在 `compilingJitTasks_` 和 `installJitTasks_` 双端队列中跟踪。在异步模式下，任务被发送到后台线程，代码安装在主线程上进行。这避免了在代码修补期间需要细粒度同步。
 
-### Deoptimization
+### 去优化
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/deoptimizer/deoptimizer.h`, `deoptimizer.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/deoptimizer/deoptimizer.h`、`deoptimizer.cpp`
 
-The deoptimizer handles transitions from compiled (AOT/JIT) code back to the interpreter when assumptions are invalidated. It reconstructs interpreter frames from the compiled frame state using stack maps. This is a standard approach shared with V8 and HotSpot.
+去优化器处理当假设失效时从编译代码（AOT/JIT）回到解释器的转换。它使用栈映射从编译帧状态重建解释器帧。这是 V8 和 HotSpot 共用的标准方法。
 
 ---
 
-## Interpreter and Fast Paths
+## 解释器与快速路径
 
-### Threaded Interpreter
+### 线程化解释器
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/interpreter/interpreter-inl.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/interpreter/interpreter-inl.h`
 
-The interpreter uses **computed goto (threaded dispatch)**:
+解释器使用**计算跳转（线程化分发）**：
 
 ```cpp
 #define DISPATCH(curOpcode)                                       \
@@ -275,60 +275,60 @@ The interpreter uses **computed goto (threaded dispatch)**:
     } while (false)
 ```
 
-This is the fastest portable dispatch technique (used by CPython, LuaJIT, etc.). The interpreter has separate dispatch tables for:
-- Normal opcodes
-- Throw opcodes
-- Wide opcodes
-- Deprecated opcodes
-- CallRuntime opcodes
-- Debug mode opcodes
+这是最快的可移植分发技术（CPython、LuaJIT 等使用）。解释器为以下类型有单独的分发表：
+- 普通操作码
+- 抛出操作码
+- 宽操作码
+- 已弃用操作码
+- CallRuntime 操作码
+- 调试模式操作码
 
-The frame layout uses `InterpretedFrame`, `InterpretedEntryFrame`, and `InterpretedBuiltinFrame` with pointer arithmetic:
+帧布局使用 `InterpretedFrame`、`InterpretedEntryFrame` 和 `InterpretedBuiltinFrame`，配合指针算术：
 
 ```cpp
 #define GET_FRAME(CurrentSp) \
     (reinterpret_cast<InterpretedFrame *>(CurrentSp) - 1)
 ```
 
-### Fast Runtime Stubs
+### 快速运行时桩
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/interpreter/fast_runtime_stub-inl.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/interpreter/fast_runtime_stub-inl.h`
 
-Arithmetic operations have fast paths that check both operands are numbers and perform the operation directly, returning `Hole` to indicate fallback to the slow path:
+算术运算有快速路径，检查两个操作数是否都是数字并直接执行运算，返回 `Hole` 表示回退到慢速路径：
 
 ```cpp
 JSTaggedValue FastRuntimeStub::FastDiv(JSTaggedValue left, JSTaggedValue right)
 {
     if (left.IsNumber() && right.IsNumber()) {
-        // Handle division, including NaN and infinity edge cases
+        // 处理除法，包括 NaN 和无穷大边界情况
         return JSTaggedValue(dLeft / dRight);
     }
-    return JSTaggedValue::Hole();  // Slow path
+    return JSTaggedValue::Hole();  // 慢速路径
 }
 ```
 
-**[INFO] Division-by-zero handling is correct**: `FastDiv` properly handles division by zero, NaN propagation, and sign-of-infinity (line 57: XOR of sign bits). The modulo fast path (`FastMod`) also correctly handles all IEEE 754 edge cases.
+**[信息] 除零处理正确**：`FastDiv` 正确处理除零、NaN 传播和无穷大符号（第 57 行：符号位异或）。取模快速路径（`FastMod`）也正确处理了所有 IEEE 754 边界情况。
 
-**[INFO] Equality fast paths are thorough**: `FastEqual` and `FastStrictEqual` handle number-number, string-string (flat only), undefined/null, BigInt comparisons directly, falling back to the slow path for type coercion or tree-structured strings.
+**[信息] 相等性快速路径全面**：`FastEqual` 和 `FastStrictEqual` 直接处理数字-数字、字符串-字符串（仅扁平字符串）、undefined/null、BigInt 比较，对类型强制转换或树结构字符串回退到慢速路径。
 
 ---
 
-## Inline Caches and Performance
+## 内联缓存与性能
 
-### IC System
+### IC 系统
 
-**Files**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/ic/ic_runtime_stub-inl.h`, `ic_handler.h`, `profile_type_info.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/ic/ic_runtime_stub-inl.h`、`ic_handler.h`、`profile_type_info.h`
 
-The IC system supports:
-- **Monomorphic**: Single HClass match (weak reference to HClass + handler)
-- **Polymorphic**: Array of (HClass, handler) pairs (up to a configurable limit)
-- **Megamorphic**: Falls back to generic lookup
+IC 系统支持：
+- **单态**：单个 HClass 匹配（对 HClass 的弱引用 + 处理器）
+- **多态**：（HClass, 处理器）对数组（上限可配置）
+- **超多态**：回退到通用查找
 
-Property access patterns:
-- `TryLoadICByName`: Checks HClass match, loads via handler
-- `TryLoadICByValue`: Element access with typed array fast paths
-- `TryStoreICByName` / `TryStoreICByValue`: Corresponding store operations
-- `LoadGlobalICByName` / `StoreGlobalICByName`: Global variable access
+属性访问模式：
+- `TryLoadICByName`：检查 HClass 匹配，通过处理器加载
+- `TryLoadICByValue`：元素访问，带类型化数组快速路径
+- `TryStoreICByName` / `TryStoreICByValue`：对应的存储操作
+- `LoadGlobalICByName` / `StoreGlobalICByName`：全局变量访问
 
 ```cpp
 // ic_runtime_stub-inl.h line 86
@@ -340,54 +340,54 @@ ARK_INLINE JSTaggedValue ICRuntimeStub::TryLoadICByName(JSThread *thread, JSTagg
         if (LIKELY(firstValue.GetWeakReferentUnChecked() == hclass)) {
             return LoadICWithHandler(thread, receiver, receiver, secondValue);
         }
-        // Polymorphic check
+        // 多态检查
         JSTaggedValue cachedHandler = CheckPolyHClass(firstValue, hclass);
         ...
     }
 }
 ```
 
-**[INFO] Hidden class (HClass) system is V8-inspired**: Objects use `JSHClass` as their shape descriptor. Property transitions create new HClasses, enabling IC monomorphism. The `ObjectFastOperator` provides fast property lookup that checks dictionary mode vs. linear layout.
+**[信息] 隐藏类（HClass）系统受 V8 启发**：对象使用 `JSHClass` 作为其形状描述符。属性转换创建新的 HClass，实现 IC 单态性。`ObjectFastOperator` 提供快速属性查找，检查字典模式与线性布局。
 
-### Object Fast Operator
+### 对象快速操作符
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/object_fast_operator-inl.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/object_fast_operator-inl.h`
 
-The `ObjectFastOperator::GetPropertyByName` walks the prototype chain with fast paths for:
-- Non-dictionary objects (linear property scan via HClass layout)
-- Dictionary objects (hash table lookup)
-- String interning check before lookup (avoids false misses)
+`ObjectFastOperator::GetPropertyByName` 沿原型链遍历，为以下情况提供快速路径：
+- 非字典对象（通过 HClass 布局进行线性属性扫描）
+- 字典对象（哈希表查找）
+- 查找前的字符串驻留检查（避免误匹配）
 
-**[INFO] DisallowGarbageCollection scope**: Fast paths use `[[maybe_unused]] DisallowGarbageCollection noGc` to assert no GC occurs during raw pointer operations. This is a good defensive practice.
+**[信息] DisallowGarbageCollection 作用域**：快速路径使用 `[[maybe_unused]] DisallowGarbageCollection noGc` 来断言原始指针操作期间不发生 GC。这是良好的防御性实践。
 
 ---
 
-## Built-in Object Implementations
+## 内置对象实现
 
-**Directory**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/builtins/`
+**目录**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/builtins/`
 
-The runtime implements the full ES2021+ built-in set, including:
-- Standard: Array, Object, Function, String, Number, Boolean, Date, RegExp, JSON, Math, Promise
-- Collections: Map, Set, WeakMap, WeakSet
-- Typed Arrays: All Int/Uint/Float variants
-- Internationalization: Collator, DateTimeFormat, NumberFormat (behind `ARK_SUPPORT_INTL`)
-- Atomics: SharedArrayBuffer support
-- Generators and Async Functions
+运行时实现了完整的 ES2021+ 内置对象集，包括：
+- 标准对象：Array、Object、Function、String、Number、Boolean、Date、RegExp、JSON、Math、Promise
+- 集合类：Map、Set、WeakMap、WeakSet
+- 类型化数组：所有 Int/Uint/Float 变体
+- 国际化：Collator、DateTimeFormat、NumberFormat（在 `ARK_SUPPORT_INTL` 宏后）
+- 原子操作：SharedArrayBuffer 支持
+- 生成器和异步函数
 - BigInt
 
-Additionally, there are stub builder counterparts in `compiler/builtins/` that generate optimized machine code for common builtins (e.g., `builtins_array_stub_builder.cpp`, `builtins_string_stub_builder.cpp`). This allows AOT/JIT to inline common operations like `Array.prototype.forEach`.
+此外，`compiler/builtins/` 中有对应的桩构建器，为常见内置对象生成优化的机器代码（例如 `builtins_array_stub_builder.cpp`、`builtins_string_stub_builder.cpp`）。这允许 AOT/JIT 内联常见操作，如 `Array.prototype.forEach`。
 
-**[INFO] Lazy initialization of builtins**: `builtins_lazy_callback.cpp` suggests some builtins are initialized on first use, reducing startup cost.
+**[信息] 内置对象的延迟初始化**：`builtins_lazy_callback.cpp` 表明某些内置对象在首次使用时才初始化，减少了启动开销。
 
 ---
 
-## FFI/NAPI Bridge
+## FFI/NAPI 桥接
 
-**Files**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/napi/jsnapi.cpp`, `include/jsnapi.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/napi/jsnapi.cpp`、`include/jsnapi.h`
 
-The JSNAPI provides the bridge between native C/C++ code and the JavaScript runtime. Key observations:
+JSNAPI 提供原生 C/C++ 代码与 JavaScript 运行时之间的桥接。主要观察：
 
-**[INFO] Thread safety via CROSS_THREAD_AND_EXCEPTION_CHECK**: Most API entry points use a macro that validates the current thread context and checks for pending exceptions before proceeding:
+**[信息] 通过 CROSS_THREAD_AND_EXCEPTION_CHECK 实现线程安全**：大多数 API 入口点使用一个宏来验证当前线程上下文并在继续之前检查待处理异常：
 
 ```cpp
 Local<JSValueRef> JSON::Parse(const EcmaVM *vm, Local<StringRef> string)
@@ -397,30 +397,30 @@ Local<JSValueRef> JSON::Parse(const EcmaVM *vm, Local<StringRef> string)
 }
 ```
 
-**[INFO] Serialization/Deserialization support**: The `JSSerializer` (`js_serializer.h`) implements structured clone for cross-thread/cross-process object transfer. It handles a comprehensive set of types including TypedArrays, SharedArrayBuffers (transfer semantics), RegExp, Date, Map, Set, and native binding objects.
+**[信息] 序列化/反序列化支持**：`JSSerializer`（`js_serializer.h`）实现了跨线程/跨进程对象传输的结构化克隆。它处理全面的类型集，包括 TypedArray、SharedArrayBuffer（转移语义）、RegExp、Date、Map、Set 和原生绑定对象。
 
-**[LOW] Native binding objects in serializer**: The serializer supports `NATIVE_BINDING_OBJECT` with `DetachFunc`/`AttachFunc` callbacks (line 37-38 of `js_serializer.h`). These are raw function pointers with `void*` parameters, typical of C callback APIs but offering no type safety.
+**[低危] 序列化器中的原生绑定对象**：序列化器支持带有 `DetachFunc`/`AttachFunc` 回调的 `NATIVE_BINDING_OBJECT`（`js_serializer.h` 第 37-38 行）。这些是带 `void*` 参数的原始函数指针，是 C 回调 API 的典型做法，但不提供类型安全。
 
 ---
 
-## Security
+## 安全性
 
-### AOT/ELF File Integrity
+### AOT/ELF 文件完整性
 
-**[MEDIUM] ELF file parsing uses extensive reinterpret_cast**: The `elf_reader.cpp` performs unchecked `reinterpret_cast` on memory-mapped file content:
+**[中危] ELF 文件解析使用大量 reinterpret_cast**：`elf_reader.cpp` 对内存映射文件内容执行未检查的 `reinterpret_cast`：
 
 ```cpp
 llvm::ELF::Elf64_Ehdr *ehdr = reinterpret_cast<llvm::ELF::Elf64_Ehdr *>(fileMapMem_.GetOriginAddr());
 llvm::ELF::Elf64_Shdr *shdr = reinterpret_cast<llvm::ELF::Elf64_Shdr *>(addr + ehdr->e_shoff);
 ```
 
-While `ElfChecker` validates structural integrity, the parsing code in `ParseELFSections` trusts `e_shoff`, `e_shnum`, `sh_offset`, and `sh_size` from the file. A crafted `.an` file could potentially cause out-of-bounds reads if the checker misses an edge case. The checker was added in 2024, suggesting this was a recognized gap.
+虽然 `ElfChecker` 验证了结构完整性，但 `ParseELFSections` 中的解析代码信任文件中的 `e_shoff`、`e_shnum`、`sh_offset` 和 `sh_size`。精心构造的 `.an` 文件如果检查器遗漏了某个边界情况，可能导致越界读取。检查器在 2024 年添加，表明这是一个已被认识到的差距。
 
-### Panda File Loading
+### Panda 文件加载
 
-**[HIGH] No cryptographic verification of .abc files**: The panda file format (`runtime_core/libpandafile/file.h`) uses only a `uint32_t checksum` for integrity. There is no code signing or hash verification. On a device where an attacker can modify files in the app's data directory, they could replace `.abc` files with malicious bytecode that passes the basic checksum.
+**[高危] .abc 文件无加密验证**：Panda 文件格式（`runtime_core/libpandafile/file.h`）仅使用 `uint32_t checksum` 进行完整性验证。没有代码签名或哈希验证。在攻击者可以修改应用数据目录中文件的设备上，他们可以用通过基本校验和的恶意字节码替换 `.abc` 文件。
 
-The file header structure:
+文件头结构：
 ```cpp
 struct Header {
     std::array<uint8_t, MAGIC_SIZE> magic;
@@ -431,33 +431,33 @@ struct Header {
 };
 ```
 
-### Version Verification
+### 版本验证
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/base/file_header.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/base/file_header.h`
 
-The `FileHeaderBase::VerifyVersion` supports both strict and compatible matching. AOT files are verified against the runtime's expected version. This prevents loading incompatible compiled code but is not a security measure (version bytes are easily forged).
+`FileHeaderBase::VerifyVersion` 支持严格匹配和兼容匹配。AOT 文件根据运行时期望的版本进行验证。这可以防止加载不兼容的编译代码，但不是安全措施（版本字节很容易伪造）。
 
-### Debugger Security
+### 调试器安全
 
-**File**: `/home/dspfac/openharmony/arkcompiler/toolchain/inspector/ws_server.cpp`
+**文件**：`/home/dspfac/openharmony/arkcompiler/toolchain/inspector/ws_server.cpp`
 
-The debugger uses WebSocket connections. On iOS builds, the debugger is loaded via explicit `extern "C"` functions (`StartDebug`, `StopDebug`, `WaitForDebugger`). The toolchain code does not appear to implement authentication for debugger connections, relying instead on platform-level access control (ADB/USB only).
+调试器使用 WebSocket 连接。在 iOS 构建中，调试器通过显式的 `extern "C"` 函数（`StartDebug`、`StopDebug`、`WaitForDebugger`）加载。工具链代码似乎没有为调试器连接实现身份验证，而是依赖平台级别的访问控制（仅限 ADB/USB）。
 
 ---
 
-## Memory Safety
+## 内存安全
 
-### Raw Pointer Patterns
+### 原始指针模式
 
-**[MEDIUM] Extensive use of raw new/delete throughout the codebase**: The `Heap::Initialize()` allocates 15+ objects with `new` and `Heap::Destroy()` deletes them individually. Smart pointers are not used for GC subsystem ownership. This pattern is repeated in other managers.
+**[中危] 代码库中大量使用原始 new/delete**：`Heap::Initialize()` 用 `new` 分配 15 个以上的对象，`Heap::Destroy()` 逐个 `delete`。GC 子系统的所有权管理不使用智能指针。这种模式在其他管理器中也有重复。
 
-**[LOW] reinterpret_cast density in ELF/AOT code**: The `aot_file/` directory contains ~18 instances of `reinterpret_cast` on memory-mapped file content (as shown by grep results). Each is a potential type-safety violation, though the `ElfChecker` mitigates many risks.
+**[低危] ELF/AOT 代码中 reinterpret_cast 密度高**：`aot_file/` 目录包含约 18 个对内存映射文件内容的 `reinterpret_cast` 实例（根据 grep 结果）。每一个都是潜在的类型安全违规，尽管 `ElfChecker` 缓解了许多风险。
 
-### Concurrency Safety
+### 并发安全
 
-**[INFO] Atomic operations used correctly for sensitive status**: The `sensitiveStatus_` field in `Heap` uses `std::atomic` with appropriate memory orderings. The `ConcurrentMarker` uses mutex-protected condition variables for thread synchronization.
+**[信息] 敏感状态正确使用原子操作**：`Heap` 中的 `sensitiveStatus_` 字段使用 `std::atomic` 和适当的内存排序。`ConcurrentMarker` 使用互斥锁保护的条件变量进行线程同步。
 
-**[MEDIUM] Static mutable state in ConcurrentMarker**:
+**[中危] ConcurrentMarker 中的静态可变状态**：
 
 ```cpp
 // concurrent_marker.cpp line 33-34
@@ -465,21 +465,21 @@ size_t ConcurrentMarker::taskCounts_ = 0;
 Mutex ConcurrentMarker::taskCountMutex_;
 ```
 
-These static members are shared across all `ConcurrentMarker` instances (all VM instances in the process). If multiple `EcmaVM` instances run concurrently (e.g., in a multi-context scenario), the shared `taskCounts_` could cause incorrect task limit enforcement.
+这些静态成员在所有 `ConcurrentMarker` 实例（进程中所有 VM 实例）之间共享。如果多个 `EcmaVM` 实例并发运行（例如多上下文场景），共享的 `taskCounts_` 可能导致错误的任务限制执行。
 
-### ASAN Support
+### ASAN 支持
 
-**File**: `/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/base/asan_interface.h`
+**文件**：`/home/dspfac/openharmony/arkcompiler/ets_runtime/ecmascript/base/asan_interface.h`
 
-The runtime has AddressSanitizer integration, suggesting the team runs sanitizer builds during development. Region space flags are designed to avoid conflicting with ASAN's invalid value markers (comments in `region.h` lines 38-39, 58-59).
+运行时集成了 AddressSanitizer，表明团队在开发过程中运行了 sanitizer 构建。区域空间标志被设计为避免与 ASAN 的无效值标记冲突（`region.h` 第 38-39、58-59 行的注释）。
 
 ---
 
-## Error Handling
+## 错误处理
 
-### Exception Propagation
+### 异常传播
 
-The interpreter uses a consistent pattern for exception checking:
+解释器使用一致的异常检查模式：
 
 ```cpp
 #define HANDLE_EXCEPTION_IF_ABRUPT_COMPLETION(_thread)    \
@@ -490,59 +490,59 @@ The interpreter uses a consistent pattern for exception checking:
     } while (false)
 ```
 
-Exceptions are stored on the `JSThread` object and checked after each potentially-throwing operation. The `INTERPRETER_GOTO_EXCEPTION_HANDLER()` macro saves the PC and jumps to the exception dispatch table entry.
+异常存储在 `JSThread` 对象上，在每个可能抛出异常的操作之后进行检查。`INTERPRETER_GOTO_EXCEPTION_HANDLER()` 宏保存 PC 并跳转到异常分发表条目。
 
-### GC Failure Handling
+### GC 失败处理
 
-**[INFO] Fatal logging on heap init failure**: If the heap size is too small to initialize old space, the runtime logs a FATAL error and terminates (heap.cpp line 97: `LOG_ECMA_MEM(FATAL)`). This is appropriate -- continuing with an under-sized heap would cause unpredictable failures.
+**[信息] 堆初始化失败时的致命日志**：如果堆大小太小而无法初始化老年代空间，运行时记录 FATAL 错误并终止（heap.cpp 第 97 行：`LOG_ECMA_MEM(FATAL)`）。这是适当的——在堆大小不足的情况下继续运行会导致不可预测的故障。
 
-**[INFO] Verification failures are fatal**: The `Verification::VerifyAll()` logs FATAL if corruptions are detected (verification.cpp line 275-276). This fail-fast approach is correct for heap corruption -- continuing execution would likely cause worse failures.
+**[信息] 验证失败是致命的**：`Verification::VerifyAll()` 在检测到损坏时记录 FATAL（verification.cpp 第 275-276 行）。这种快速失败方法对于堆损坏是正确的——继续执行可能导致更严重的故障。
 
-### Crash Recovery
+### 崩溃恢复
 
-The runtime does not appear to have explicit crash recovery mechanisms beyond standard OS signal handling. There is no checkpoint/restart facility. This is typical for a JavaScript runtime -- crash recovery is expected to be handled at the framework level (app restart).
+运行时似乎没有除标准操作系统信号处理之外的显式崩溃恢复机制。没有检查点/重启设施。这对于 JavaScript 运行时来说是典型的——崩溃恢复预期在框架层面处理（应用重启）。
 
 ---
 
-## Consolidated Findings
+## 综合发现
 
-### Critical / High Severity
+### 严重/高危
 
-| # | Finding | Location | 影响 |
-|---|---------|----------|--------|
-| 1 | JIT loads `libark_jsoptimizer.so` via `dlopen` with no integrity verification | `jit/jit.cpp:35-38` | Code injection if attacker controls library search path |
-| 2 | Panda bytecode files use only CRC checksum, no cryptographic signing | `runtime_core/libpandafile/file.h:62` | Bytecode tampering if attacker has file write access |
+| # | 发现 | 位置 | 影响 |
+|---|------|------|------|
+| 1 | JIT 通过 `dlopen` 加载 `libark_jsoptimizer.so` 且无完整性验证 | `jit/jit.cpp:35-38` | 如果攻击者控制库搜索路径则可注入代码 |
+| 2 | Panda 字节码文件仅使用 CRC 校验和，无加密签名 | `runtime_core/libpandafile/file.h:62` | 如果攻击者有文件写入权限则可篡改字节码 |
 
-### Medium Severity
+### 中危
 
-| # | Finding | Location | 影响 |
-|---|---------|----------|--------|
-| 3 | JIT: wrong variable checked after `dlsym` (checks `createJitCompiler_` instead of `deleteJitCompile_`) | `jit/jit.cpp:61-63` | Null function pointer dereference crash |
-| 4 | `Heap::Destroy()` uses 15+ individual raw `delete` calls instead of RAII | `mem/heap.cpp:142-252` | Resource leak risk if destructor order matters or exception occurs |
-| 5 | ELF/AOT parsing uses `reinterpret_cast` on mmap'd data with limited bounds checking | `compiler/aot_file/elf_reader.cpp` | Potential OOB read from crafted `.an` file |
-| 6 | Write barrier asserts `value != VALUE_UNDEFINED` -- unclear if all callers comply | `mem/barriers-inl.h:30` | Silent barrier skip in release builds for undefined values |
-| 7 | Static `taskCounts_`/`taskCountMutex_` in `ConcurrentMarker` shared across VM instances | `mem/concurrent_marker.cpp:33-34` | Incorrect task limiting in multi-VM scenarios |
+| # | 发现 | 位置 | 影响 |
+|---|------|------|------|
+| 3 | JIT：`dlsym` 后检查了错误的变量（检查 `createJitCompiler_` 而非 `deleteJitCompile_`） | `jit/jit.cpp:61-63` | 空函数指针解引用崩溃 |
+| 4 | `Heap::Destroy()` 使用 15 个以上的原始 `delete` 调用而非 RAII | `mem/heap.cpp:142-252` | 如果析构函数顺序重要或发生异常则有资源泄漏风险 |
+| 5 | ELF/AOT 解析对 mmap 数据使用 `reinterpret_cast`，边界检查有限 | `compiler/aot_file/elf_reader.cpp` | 精心构造的 `.an` 文件可能导致越界读取 |
+| 6 | 写屏障断言 `value != VALUE_UNDEFINED`——不确定所有调用者是否遵守 | `mem/barriers-inl.h:30` | 发布版本中对 undefined 值静默跳过屏障 |
+| 7 | `ConcurrentMarker` 中的静态 `taskCounts_`/`taskCountMutex_` 在 VM 实例间共享 | `mem/concurrent_marker.cpp:33-34` | 多 VM 场景下任务限制不正确 |
 
-### Low Severity
+### 低危
 
-| # | Finding | Location | 影响 |
-|---|---------|----------|--------|
-| 8 | 171+ TODO/FIXME markers indicate unresolved technical debt | Various files across `ecmascript/` | Accumulated known issues |
-| 9 | 42 TODOs in `module_path_helper.cpp` alone | `module/module_path_helper.cpp` | Module path handling may have incomplete edge cases |
-| 10 | Mixed memory orderings on `sensitiveStatus_` atomic | `mem/heap.h:250-272` | Unclear consistency guarantees (not incorrect but confusing) |
-| 11 | JIT supports only 3 of 10+ function kinds | `jit/jit.cpp:78-89` | Limited JIT benefit; most code stays interpreted |
+| # | 发现 | 位置 | 影响 |
+|---|------|------|------|
+| 8 | 171 个以上的 TODO/FIXME 标记表明未解决的技术债务 | `ecmascript/` 中的各文件 | 累积的已知问题 |
+| 9 | 仅 `module_path_helper.cpp` 中就有 42 个 TODO | `module/module_path_helper.cpp` | 模块路径处理可能存在不完整的边界情况 |
+| 10 | `sensitiveStatus_` 原子操作的混合内存排序 | `mem/heap.h:250-272` | 一致性保证不明确（非错误但令人困惑） |
+| 11 | JIT 仅支持 10 种以上函数类型中的 3 种 | `jit/jit.cpp:78-89` | JIT 收益有限；大部分代码仍在解释执行 |
 
-### Positive Observations
+### 正面观察
 
-| # | Observation | Location |
-|---|-------------|----------|
-| P1 | Comprehensive GC verification system covering all GC phases | `mem/verification.cpp` |
-| P2 | ASAN integration with region flags designed to avoid conflict | `base/asan_interface.h`, `mem/region.h` |
-| P3 | Thorough IEEE 754 handling in arithmetic fast paths | `interpreter/fast_runtime_stub-inl.h` |
-| P4 | `DisallowGarbageCollection` scope guards in fast paths | `object_fast_operator-inl.h` |
-| P5 | ElfChecker added for structural validation of AOT files | `compiler/aot_file/elf_checker.cpp` |
-| P6 | Lifecycle-aware GC (suppressed during animations/serialization) | `mem/heap.h` SmartGC |
-| P7 | Consistent use of `memcpy_s` throughout AOT file handling | `compiler/aot_file/*.cpp` |
-| P8 | Concurrent marker uses proven SATB approach with re-marking | `mem/concurrent_marker.cpp` |
-| P9 | Thread safety macros on all NAPI entry points | `napi/jsnapi.cpp` |
-| P10 | Polymorphic IC with graceful degradation to megamorphic | `ic/ic_runtime_stub-inl.h` |
+| # | 观察 | 位置 |
+|---|------|------|
+| P1 | 覆盖所有 GC 阶段的全面 GC 验证系统 | `mem/verification.cpp` |
+| P2 | ASAN 集成，区域标志设计避免冲突 | `base/asan_interface.h`、`mem/region.h` |
+| P3 | 算术快速路径中全面的 IEEE 754 处理 | `interpreter/fast_runtime_stub-inl.h` |
+| P4 | 快速路径中的 `DisallowGarbageCollection` 作用域守卫 | `object_fast_operator-inl.h` |
+| P5 | 为 AOT 文件结构验证添加了 ElfChecker | `compiler/aot_file/elf_checker.cpp` |
+| P6 | 生命周期感知 GC（动画/序列化期间抑制） | `mem/heap.h` SmartGC |
+| P7 | 在整个 AOT 文件处理中一致使用 `memcpy_s` | `compiler/aot_file/*.cpp` |
+| P8 | 并发标记器使用经过验证的 SATB 方法和重新标记 | `mem/concurrent_marker.cpp` |
+| P9 | 所有 NAPI 入口点上的线程安全宏 | `napi/jsnapi.cpp` |
+| P10 | 多态 IC 优雅降级到超多态 | `ic/ic_runtime_stub-inl.h` |

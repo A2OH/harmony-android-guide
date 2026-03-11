@@ -1,61 +1,61 @@
-# Communication and Networking Subsystem - 代码审查
+# 通信与网络子系统——代码审查
 
-## OpenHarmony 4.1 Release
+## OpenHarmony 4.1 版本
 
-**Review Date:** 2026-03-10
-**Scope:** Network management (HTTP/Socket/WebSocket/TLS), WiFi, Bluetooth, NFC, Distributed Softbus, Telephony
-**Directories Reviewed:**
-- `/home/dspfac/openharmony/foundation/communication/` (netstack, wifi, bluetooth, nfc, dsoftbus)
-- `/home/dspfac/openharmony/base/telephony/` (call_manager, cellular_call, sms_mms, core_service)
-
----
-
-## Table of Contents
-
-1. [Executive Summary](#1-executive-summary)
-2. [CRITICAL: SSL/TLS Certificate Validation Disabled](#2-critical-ssltls-certificate-validation-disabled)
-3. [CRITICAL: WebSocket SSL Verification Completely Bypassed](#3-critical-websocket-ssl-verification-completely-bypassed)
-4. [HIGH: WiFi Permission Bypass via Build Configuration](#4-high-wifi-permission-bypass-via-build-configuration)
-5. [HIGH: WiFi Lite Permissions Always Granted](#5-high-wifi-lite-permissions-always-granted)
-6. [HIGH: Unsafe reinterpret_cast for Type-Erased Data in TLS NAPI](#6-high-unsafe-reinterpret_cast-for-type-erased-data-in-tls-napi)
-7. [HIGH: TLS Socket Memory Leak on Bind Failure](#7-high-tls-socket-memory-leak-on-bind-failure)
-8. [HIGH: WebSocket volatile bool Without Atomic Guarantees](#8-high-websocket-volatile-bool-without-atomic-guarantees)
-9. [MEDIUM: Hardcoded Public DNS Servers in WiFi State Machine](#9-medium-hardcoded-public-dns-servers-in-wifi-state-machine)
-10. [MEDIUM: Excessive Use of Detached Threads in Networking Stack](#10-medium-excessive-use-of-detached-threads-in-networking-stack)
-11. [MEDIUM: HTTP Builtin Fetch SSL Disabled by Default](#11-medium-http-builtin-fetch-ssl-disabled-by-default)
-12. [MEDIUM: DSoftBus Device Info Leaks Sensitive Identifiers](#12-medium-dsoftbus-device-info-leaks-sensitive-identifiers)
-13. [MEDIUM: WebSocket Logs Leak Connection Details](#13-medium-websocket-logs-leak-connection-details)
-14. [LOW: TLS Connect Context Silently Ignores Missing secureOptions](#14-low-tls-connect-context-silently-ignores-missing-secureoptions)
-15. [LOW: Certificate Property Name Typo](#15-low-certificate-property-name-typo)
-16. [LOW: Bluetooth BLE Scan Lacks Permission Check at NAPI Layer](#16-low-bluetooth-ble-scan-lacks-permission-check-at-napi-layer)
-17. [Positive Findings](#17-positive-findings)
-18. [Summary Table](#18-summary-table)
+**审查日期:** 2026-03-10
+**范围:** 网络管理（HTTP/Socket/WebSocket/TLS）、WiFi、蓝牙、NFC、分布式软总线、电话
+**审查目录:**
+- `/home/dspfac/openharmony/foundation/communication/`（netstack、wifi、bluetooth、nfc、dsoftbus）
+- `/home/dspfac/openharmony/base/telephony/`（call_manager、cellular_call、sms_mms、core_service）
 
 ---
 
-## 1. Executive Summary
+## 目录
 
-The Communication and Networking subsystem is one of the most security-sensitive parts of OpenHarmony. This review uncovered **multiple critical security issues** related to SSL/TLS certificate validation being disabled across several networking APIs, as well as permission bypass capabilities that could be enabled via build flags. The most alarming findings are:
-
-- **HTTP, Fetch, and WebSocket APIs all have paths where SSL certificate verification is completely disabled**, making them vulnerable to man-in-the-middle attacks.
-- **WiFi permission checks can be globally bypassed** via a build-time flag (`wifi_feature_with_auth_disable`).
-- **All WiFi permissions are unconditionally granted** on OHOS_ARCH_LITE builds.
-
-Code quality is generally acceptable, with consistent error handling patterns and proper use of NAPI lifecycle management. However, the pervasive use of detached threads and `reinterpret_cast` for type-erased data creates reliability and type-safety risks.
+1. [概要](#1-概要)
+2. [严重：SSL/TLS 证书验证被禁用](#2-严重ssltls-证书验证被禁用)
+3. [严重：WebSocket SSL 验证被完全绕过](#3-严重websocket-ssl-验证被完全绕过)
+4. [高：WiFi 权限通过构建配置被绕过](#4-高wifi-权限通过构建配置被绕过)
+5. [高：WiFi Lite 权限始终被授予](#5-高wifi-lite-权限始终被授予)
+6. [高：TLS NAPI 中类型擦除数据使用不安全的 reinterpret_cast](#6-高tls-napi-中类型擦除数据使用不安全的-reinterpret_cast)
+7. [高：TLS Socket 绑定失败时内存泄漏](#7-高tls-socket-绑定失败时内存泄漏)
+8. [高：WebSocket 使用 volatile bool 而无原子性保证](#8-高websocket-使用-volatile-bool-而无原子性保证)
+9. [中：WiFi 状态机中硬编码公共 DNS 服务器](#9-中wifi-状态机中硬编码公共-dns-服务器)
+10. [中：网络栈中过度使用分离线程](#10-中网络栈中过度使用分离线程)
+11. [中：HTTP 内置 Fetch SSL 默认禁用](#11-中http-内置-fetch-ssl-默认禁用)
+12. [中：DSoftBus 设备信息泄露敏感标识符](#12-中dsoftbus-设备信息泄露敏感标识符)
+13. [中：WebSocket 日志泄露连接详情](#13-中websocket-日志泄露连接详情)
+14. [低：TLS 连接上下文静默忽略缺少的 secureOptions](#14-低tls-连接上下文静默忽略缺少的-secureoptions)
+15. [低：证书属性名拼写错误](#15-低证书属性名拼写错误)
+16. [低：蓝牙 BLE 扫描在 NAPI 层缺少权限检查](#16-低蓝牙-ble-扫描在-napi-层缺少权限检查)
+17. [正面发现](#17-正面发现)
+18. [汇总表](#18-汇总表)
 
 ---
 
-## 2. CRITICAL: SSL/TLS Certificate Validation Disabled
+## 1. 概要
 
-**Severity:** CRITICAL
-**Files:**
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/http/http_exec/src/http_exec.cpp` (lines 774-775)
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/fetch/fetch_exec/src/fetch_exec.cpp` (lines 274-275)
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/http/http_client/http_client_task.cpp` (lines 174-175)
+通信与网络子系统是 OpenHarmony 中最安全敏感的部分之一。本次审查发现了**多个严重安全问题**，涉及 SSL/TLS 证书验证在多个网络 API 中被禁用，以及可通过构建标志启用的权限绕过能力。最令人警觉的发现包括：
 
-**Description:**
+- **HTTP、Fetch 和 WebSocket API 均存在完全禁用 SSL 证书验证的路径**，使其容易受到中间人攻击。
+- **WiFi 权限检查可通过构建时标志全局绕过**（`wifi_feature_with_auth_disable`）。
+- **在 OHOS_ARCH_LITE 构建中，所有 WiFi 权限均无条件授予**。
 
-When the build macro `NO_SSL_CERTIFICATION` is defined, the HTTP and Fetch APIs completely disable SSL verification:
+代码质量总体上可接受，具有一致的错误处理模式和正确的 NAPI 生命周期管理。然而，普遍使用分离线程和类型擦除数据的 `reinterpret_cast` 带来了可靠性和类型安全风险。
+
+---
+
+## 2. 严重：SSL/TLS 证书验证被禁用
+
+**严重性:** 严重
+**文件:**
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/http/http_exec/src/http_exec.cpp`（第 774-775 行）
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/fetch/fetch_exec/src/fetch_exec.cpp`（第 274-275 行）
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/http/http_client/http_client_task.cpp`（第 174-175 行）
+
+**描述:**
+
+当定义了构建宏 `NO_SSL_CERTIFICATION` 时，HTTP 和 Fetch API 完全禁用 SSL 验证：
 
 ```cpp
 // http_exec.cpp:773-775
@@ -66,63 +66,63 @@ When the build macro `NO_SSL_CERTIFICATION` is defined, the HTTP and Fetch APIs 
 #endif // NO_SSL_CERTIFICATION
 ```
 
-The comment "in real life, you should buy a ssl certification" suggests this was intended as a development-time workaround, but it is compiled into the builtin Fetch module by default:
+注释"in real life, you should buy a ssl certification"表明这原本是开发时的临时方案，但它被默认编译到了内置 Fetch 模块中：
 
 ```
 // frameworks/js/builtin/BUILD.gn:47
 defines = [ "NO_SSL_CERTIFICATION=1" ]
 ```
 
-This means the legacy builtin `fetch()` API **always** operates with SSL verification disabled, making every HTTPS request from that API vulnerable to MITM attacks.
+这意味着旧版内置 `fetch()` API **始终**在禁用 SSL 验证的状态下运行，使该 API 的每个 HTTPS 请求都容易受到中间人攻击。
 
-**Impact:** Any application using the builtin fetch API (or any build with `NO_SSL_CERTIFICATION`) has zero protection against MITM attacks on HTTPS connections. Attackers on the same network can intercept, modify, or inject data in all supposedly secure HTTP communications.
+**影响:** 任何使用内置 fetch API（或任何带有 `NO_SSL_CERTIFICATION` 的构建）的应用程序对 HTTPS 连接的中间人攻击没有任何保护。同一网络上的攻击者可以拦截、修改或注入所有原本应安全的 HTTP 通信中的数据。
 
-**Recommendation:** Remove the `NO_SSL_CERTIFICATION` build define from production builds. Provide a proper system CA bundle instead of disabling verification entirely. If a development-only override is needed, gate it behind a debuggable build type that cannot ship to production.
+**建议:** 从生产构建中移除 `NO_SSL_CERTIFICATION` 构建定义。提供适当的系统 CA 包，而非完全禁用验证。如果需要开发专用的覆盖选项，请将其限制在不可发布到生产环境的可调试构建类型中。
 
 ---
 
-## 3. CRITICAL: WebSocket SSL Verification Completely Bypassed
+## 3. 严重：WebSocket SSL 验证被完全绕过
 
-**Severity:** CRITICAL
-**Files:**
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp` (line 573)
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/websocket_client/websocket_client.cpp` (line 373)
+**严重性:** 严重
+**文件:**
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp`（第 573 行）
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/websocket_client/websocket_client.cpp`（第 373 行）
 
-**Description:**
+**描述:**
 
-Both the NAPI WebSocket and the native WebSocket client unconditionally skip server certificate hostname checks and allow self-signed certificates for all WSS connections:
+NAPI WebSocket 和原生 WebSocket 客户端均无条件跳过服务器证书主机名检查，并允许所有 WSS 连接使用自签名证书：
 
 ```cpp
-// websocket_exec.cpp:571-573 (NAPI layer)
+// websocket_exec.cpp:571-573（NAPI 层）
 if (strcmp(prefix, PREFIX_HTTPS) == 0 || strcmp(prefix, PREFIX_WSS) == 0) {
     connectInfo.ssl_connection =
         LCCSCF_USE_SSL | LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK | LCCSCF_ALLOW_SELFSIGNED;
 }
 
-// websocket_client.cpp:372-373 (native layer - even worse)
+// websocket_client.cpp:372-373（原生层——更严重）
     connectInfo.ssl_connection =
         LCCSCF_USE_SSL | LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK | LCCSCF_ALLOW_INSECURE | LCCSCF_ALLOW_SELFSIGNED;
 ```
 
-This is **not conditional** on any build flag -- it applies to all WebSocket connections unconditionally. The native layer additionally sets `LCCSCF_ALLOW_INSECURE`.
+这**不依赖于**任何构建标志——它无条件地应用于所有 WebSocket 连接。原生层还额外设置了 `LCCSCF_ALLOW_INSECURE`。
 
-**Impact:** All WSS (WebSocket Secure) connections in OpenHarmony are vulnerable to man-in-the-middle attacks. An attacker can present any certificate (self-signed, expired, wrong hostname) and it will be accepted. This defeats the entire purpose of using WSS.
+**影响:** OpenHarmony 中所有 WSS（安全 WebSocket）连接都容易受到中间人攻击。攻击者可以出示任何证书（自签名、过期、错误主机名），都会被接受。这完全违背了使用 WSS 的目的。
 
-**Recommendation:** Remove `LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK`, `LCCSCF_ALLOW_SELFSIGNED`, and `LCCSCF_ALLOW_INSECURE` flags. Use the system CA store for certificate validation. If an application needs to work with self-signed certificates (e.g., IoT), provide an explicit opt-in API parameter rather than disabling verification globally.
+**建议:** 移除 `LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK`、`LCCSCF_ALLOW_SELFSIGNED` 和 `LCCSCF_ALLOW_INSECURE` 标志。使用系统 CA 存储进行证书验证。如果应用程序需要使用自签名证书（例如物联网场景），请提供显式的可选 API 参数，而非全局禁用验证。
 
 ---
 
-## 4. HIGH: WiFi Permission Bypass via Build Configuration
+## 4. 高：WiFi 权限通过构建配置被绕过
 
-**Severity:** HIGH
-**Files:**
-- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/wifi_auth_center.cpp` (lines 30-34)
-- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/BUILD.gn` (line 107)
-- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/wifi_lite.gni` (line 27)
+**严重性:** 高
+**文件:**
+- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/wifi_auth_center.cpp`（第 30-34 行）
+- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/BUILD.gn`（第 107 行）
+- `/home/dspfac/openharmony/foundation/communication/wifi/wifi/wifi_lite.gni`（第 27 行）
 
-**Description:**
+**描述:**
 
-When `wifi_feature_with_auth_disable` is set to `true` in the build configuration, the macro `PERMISSION_ALWAYS_GRANT` is defined, which causes **all WiFi permission checks to return GRANTED unconditionally**:
+当构建配置中 `wifi_feature_with_auth_disable` 设为 `true` 时，宏 `PERMISSION_ALWAYS_GRANT` 被定义，导致**所有 WiFi 权限检查无条件返回 GRANTED**：
 
 ```cpp
 // wifi_auth_center.cpp:30-34
@@ -132,7 +132,7 @@ bool g_permissinAlwaysGrant = true;
 bool g_permissinAlwaysGrant = false;
 #endif
 
-// Every permission check then does:
+// 然后每个权限检查都会执行：
 int WifiAuthCenter::VerifySetWifiInfoPermission(const int &pid, const int &uid)
 {
     if (g_permissinAlwaysGrant) {
@@ -142,22 +142,22 @@ int WifiAuthCenter::VerifySetWifiInfoPermission(const int &pid, const int &uid)
 }
 ```
 
-While the default value is `false`, this build flag exists and could be inadvertently enabled or deliberately set by device manufacturers, completely disabling WiFi permission enforcement.
+虽然默认值为 `false`，但此构建标志的存在意味着它可能被无意启用或被设备制造商故意设置，从而完全禁用 WiFi 权限执行。
 
-**Impact:** If enabled, any application can scan WiFi networks, connect/disconnect, modify WiFi configuration, create hotspots, and access location-sensitive scan data without any permission checks.
+**影响:** 如果启用，任何应用程序都可以扫描 WiFi 网络、连接/断开、修改 WiFi 配置、创建热点，并访问位置敏感的扫描数据，而无需任何权限检查。
 
-**Recommendation:** Remove the `PERMISSION_ALWAYS_GRANT` mechanism entirely from production code. If needed for testing, restrict it to debug/test builds only and add compile-time assertions that prevent it from being set in release configurations. The variable name also contains a typo ("permissin" instead of "permission").
+**建议:** 从生产代码中完全移除 `PERMISSION_ALWAYS_GRANT` 机制。如果测试需要，仅限于调试/测试构建，并添加编译时断言防止在发布配置中设置。变量名也包含拼写错误（"permissin" 应为 "permission"）。
 
 ---
 
-## 5. HIGH: WiFi Lite Permissions Always Granted
+## 5. 高：WiFi Lite 权限始终被授予
 
-**Severity:** HIGH
-**File:** `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/common/wifi_permission_utils.cpp` (lines 23-87)
+**严重性:** 高
+**文件:** `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/common/wifi_permission_utils.cpp`（第 23-87 行）
 
-**Description:**
+**描述:**
 
-On `OHOS_ARCH_LITE` builds, **every single WiFi permission check returns `PERMISSION_GRANTED` unconditionally**:
+在 `OHOS_ARCH_LITE` 构建中，**每一个 WiFi 权限检查均无条件返回 `PERMISSION_GRANTED`**：
 
 ```cpp
 #ifdef OHOS_ARCH_LITE
@@ -169,45 +169,45 @@ int WifiPermissionUtils::VerifyGetScanInfosPermission()
 {
     return PERMISSION_GRANTED;
 }
-// ... all 13 permission methods return PERMISSION_GRANTED
+// ... 所有 13 个权限方法均返回 PERMISSION_GRANTED
 #endif
 ```
 
-**Impact:** On lightweight/IoT devices running OHOS_ARCH_LITE, all WiFi operations are unrestricted. Any process can access WiFi scan results (location-sensitive data), modify WiFi settings, create hotspots, and read MAC addresses of nearby peers.
+**影响:** 在运行 OHOS_ARCH_LITE 的轻量级/物联网设备上，所有 WiFi 操作都不受限制。任何进程都可以访问 WiFi 扫描结果（位置敏感数据）、修改 WiFi 设置、创建热点以及读取附近对等设备的 MAC 地址。
 
-**Recommendation:** Implement a lightweight permission system for OHOS_ARCH_LITE rather than blanket-granting all permissions. At minimum, sensitive operations like scan info access (which reveals location data) and MAC address access should require some form of authorization.
+**建议:** 为 OHOS_ARCH_LITE 实现轻量级权限系统，而非一揽子授予所有权限。至少，对扫描信息访问（会揭示位置数据）和 MAC 地址访问等敏感操作应要求某种形式的授权。
 
 ---
 
-## 6. HIGH: Unsafe reinterpret_cast for Type-Erased Data in TLS NAPI
+## 6. 高：TLS NAPI 中类型擦除数据使用不安全的 reinterpret_cast
 
-**Severity:** HIGH
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp` (multiple lines)
+**严重性:** 高
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp`（多处）
 
-**Description:**
+**描述:**
 
-Throughout the TLS socket NAPI bindings, `manager->GetData()` returns a `void*` which is cast to `TLSSocket*` via `reinterpret_cast` without any type verification:
+在整个 TLS socket NAPI 绑定中，`manager->GetData()` 返回 `void*`，通过 `reinterpret_cast` 转换为 `TLSSocket*` 而无任何类型验证：
 
 ```cpp
 auto tlsSocket = reinterpret_cast<TLSSocket *>(manager->GetData());
 ```
 
-This pattern appears 10 times in the file. If `manager->GetData()` ever returns data of the wrong type (due to a bug elsewhere, a race condition with `ExecBind` setting data, or a confused manager), undefined behavior results.
+此模式在文件中出现 10 次。如果 `manager->GetData()` 返回了错误类型的数据（由于其他地方的 bug、与 `ExecBind` 设置数据的竞态条件或管理器混乱），则会导致未定义行为。
 
-**Impact:** Type confusion bugs can lead to memory corruption, crashes, or potentially exploitable conditions. Since TLS sockets handle security-sensitive cryptographic operations, corruption could compromise encryption.
+**影响:** 类型混淆 bug 可导致内存损坏、崩溃或潜在的可利用条件。由于 TLS socket 处理安全敏感的加密操作，损坏可能危及加密安全。
 
-**Recommendation:** Use a typed wrapper or a tagged union pattern to store type information alongside the data pointer. At minimum, add a type tag check before the cast.
+**建议:** 使用类型化包装器或带标签联合模式来存储类型信息及数据指针。至少在转换前添加类型标签检查。
 
 ---
 
-## 7. HIGH: TLS Socket Memory Leak on Bind Failure
+## 7. 高：TLS Socket 绑定失败时内存泄漏
 
-**Severity:** HIGH
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp` (lines 230-239)
+**严重性:** 高
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp`（第 230-239 行）
 
-**Description:**
+**描述:**
 
-In `ExecBind`, a new `TLSSocket` is allocated with `new` and assigned to the manager regardless of whether `Bind` succeeds:
+在 `ExecBind` 中，使用 `new` 分配新的 `TLSSocket` 并无论 `Bind` 是否成功都赋值给管理器：
 
 ```cpp
 bool TLSSocketExec::ExecBind(TLSBindContext *context)
@@ -221,29 +221,29 @@ bool TLSSocketExec::ExecBind(TLSBindContext *context)
             context->SetError(errorNumber, errorString);
         }
     });
-    manager->SetData(tlsSocket);  // Set regardless of bind result
+    manager->SetData(tlsSocket);  // 无论绑定结果都设置
     return context->errorNumber_ == TLSSOCKET_SUCCESS;
 }
 ```
 
-If `Bind` fails, the function returns `false` but the `TLSSocket*` is still assigned to the manager. Depending on error handling upstream, this may lead to an orphaned socket object being used in a partially initialized state, or if the manager is cleaned up without calling `ExecClose`, the `TLSSocket` leaks.
+如果 `Bind` 失败，函数返回 `false`，但 `TLSSocket*` 仍然被赋值给管理器。取决于上游的错误处理，这可能导致一个孤立的 socket 对象在部分初始化状态下被使用，或者如果管理器在未调用 `ExecClose` 的情况下被清理，`TLSSocket` 就会泄漏。
 
-Additionally, in `ExecClose` (line 218), `delete tlsSocket` is called directly without any null check on the close callback completing successfully first -- the `Close` callback might fail, yet the object is still deleted.
+此外，在 `ExecClose`（第 218 行）中，`delete tlsSocket` 在未先进行空指针检查、也未确认关闭回调是否成功完成的情况下被直接调用——`Close` 回调可能失败，但对象仍然被删除。
 
-**Impact:** Memory leaks and potential use-after-free. Failed bind operations leave allocated but improperly initialized socket objects.
+**影响:** 内存泄漏和潜在的释放后使用。失败的绑定操作会留下已分配但未正确初始化的 socket 对象。
 
-**Recommendation:** Only assign the `TLSSocket*` to the manager if `Bind` succeeds. On failure, `delete tlsSocket` immediately. In `ExecClose`, ensure the delete only happens after confirming the close operation, and consider using `std::unique_ptr`.
+**建议:** 仅在 `Bind` 成功时将 `TLSSocket*` 赋值给管理器。失败时立即 `delete tlsSocket`。在 `ExecClose` 中，确保仅在确认关闭操作完成后才进行删除，并考虑使用 `std::unique_ptr`。
 
 ---
 
-## 8. HIGH: WebSocket volatile bool Without Atomic Guarantees
+## 8. 高：WebSocket 使用 volatile bool 而无原子性保证
 
-**Severity:** HIGH
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp` (line 181)
+**严重性:** 高
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp`（第 181 行）
 
-**Description:**
+**描述:**
 
-The `UserData` class uses `volatile bool closed_` for cross-thread state, but `volatile` does not provide atomicity or memory ordering guarantees in C++:
+`UserData` 类使用 `volatile bool closed_` 进行跨线程状态管理，但 `volatile` 在 C++ 中不提供原子性或内存排序保证：
 
 ```cpp
 class UserData {
@@ -260,274 +260,274 @@ class UserData {
         closed_ = true;
     }
 private:
-    volatile bool closed_;       // volatile is NOT sufficient for thread safety
-    std::atomic_bool threadStop_; // correctly uses atomic for threadStop_
+    volatile bool closed_;       // volatile 不足以保证线程安全
+    std::atomic_bool threadStop_; // threadStop_ 正确使用了 atomic
 };
 ```
 
-Notably, `threadStop_` correctly uses `std::atomic_bool`, but `closed_` uses `volatile` despite being accessed from multiple threads. The `IsClosed()` and `Close()` methods do use a mutex, but `closed_` is also read directly in `LwsCallbackClientWritable` via `userData->IsClosed()` while the LWS service thread runs concurrently.
+值得注意的是，`threadStop_` 正确使用了 `std::atomic_bool`，但 `closed_` 在被多个线程访问的情况下使用了 `volatile`。`IsClosed()` 和 `Close()` 方法确实使用了互斥锁，但 `closed_` 也在 `LwsCallbackClientWritable` 中通过 `userData->IsClosed()` 被直接读取，而 LWS 服务线程同时在运行。
 
-**Impact:** Potential data races on the `closed_` flag. The `volatile` keyword does not prevent compiler/CPU reordering and does not guarantee visibility across cores. While the mutex partially mitigates this, the `volatile` declaration suggests a misunderstanding of the threading model.
+**影响:** `closed_` 标志上可能存在数据竞争。`volatile` 关键字不能防止编译器/CPU 重排序，也不能保证跨核心的可见性。虽然互斥锁部分缓解了这个问题，但 `volatile` 声明表明对线程模型存在误解。
 
-**Recommendation:** Replace `volatile bool closed_` with `std::atomic_bool closed_` for consistency with `threadStop_`, or rely entirely on the mutex (removing `volatile`).
+**建议:** 将 `volatile bool closed_` 替换为 `std::atomic_bool closed_` 以与 `threadStop_` 保持一致，或者完全依赖互斥锁（移除 `volatile`）。
 
 ---
 
-## 9. MEDIUM: Hardcoded Public DNS Servers in WiFi State Machine
+## 9. 中：WiFi 状态机中硬编码公共 DNS 服务器
 
-**Severity:** MEDIUM
-**File:** `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/wifi_sta/sta_state_machine.cpp` (lines 48-49)
+**严重性:** 中
+**文件:** `/home/dspfac/openharmony/foundation/communication/wifi/wifi/services/wifi_standard/wifi_framework/wifi_manage/wifi_sta/sta_state_machine.cpp`（第 48-49 行）
 
-**Description:**
+**描述:**
 
-The WiFi state machine hardcodes Google's and Baidu's public DNS servers as fallbacks:
+WiFi 状态机硬编码了 Google 和百度的公共 DNS 服务器作为备用：
 
 ```cpp
 #define FIRST_DNS "8.8.8.8"
 #define SECOND_DNS "180.76.76.76"
 ```
 
-These are used as replacement DNS servers when DHCP-provided DNS servers match certain conditions (line 2199+).
+这些在 DHCP 提供的 DNS 服务器满足特定条件时用作替代 DNS 服务器（第 2199 行以后）。
 
-**Impact:**
-1. **Privacy:** DNS queries are sent to third-party servers (Google, Baidu) without user consent or awareness.
-2. **Regional concerns:** In some jurisdictions, routing DNS through foreign servers may violate data sovereignty requirements.
-3. **Reliability:** If these servers are blocked (e.g., in certain network environments), DNS resolution fails.
+**影响:**
+1. **隐私:** DNS 查询在未经用户同意或知情的情况下发送到第三方服务器（Google、百度）。
+2. **地区合规:** 在某些司法管辖区，将 DNS 路由通过外国服务器可能违反数据主权要求。
+3. **可靠性:** 如果这些服务器被封锁（例如在某些网络环境中），DNS 解析将失败。
 
-**Recommendation:** Make fallback DNS servers configurable rather than hardcoded. Consider using the DHCP-provided DNS or a device-manufacturer-configurable system property. At minimum, document that these fallbacks exist.
+**建议:** 使备用 DNS 服务器可配置而非硬编码。考虑使用 DHCP 提供的 DNS 或设备制造商可配置的系统属性。至少应记录这些备用服务器的存在。
 
 ---
 
-## 10. MEDIUM: Excessive Use of Detached Threads in Networking Stack
+## 10. 中：网络栈中过度使用分离线程
 
-**Severity:** MEDIUM
-**Files:**
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp` (line 670)
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/http/http_exec/src/http_exec.cpp` (line 188)
-- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/tls_socket/src/tls_socket.cpp` (line 410)
-- Multiple socket_exec.cpp files
+**严重性:** 中
+**文件:**
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp`（第 670 行）
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/http/http_exec/src/http_exec.cpp`（第 188 行）
+- `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/native/tls_socket/src/tls_socket.cpp`（第 410 行）
+- 多个 socket_exec.cpp 文件
 
-**Description:**
+**描述:**
 
-The networking stack uses `std::thread(...).detach()` extensively (10+ locations in netstack alone, plus WiFi). Detached threads:
+网络栈大量使用 `std::thread(...).detach()`（仅 netstack 中就有 10 处以上，WiFi 中也有）。分离线程存在以下问题：
 
-1. Cannot be joined on shutdown, leading to undefined behavior if the process exits while threads are still running.
-2. Make it impossible to propagate exceptions or errors from the thread back to the caller.
-3. Can access dangling pointers if the owning object is destroyed while the thread is still running.
+1. 在关闭时无法 join，如果进程在线程仍在运行时退出，则导致未定义行为。
+2. 无法将异常或错误从线程传播回调用者。
+3. 如果拥有者对象在线程仍在运行时被销毁，则可能访问悬空指针。
 
-Example from WebSocket:
+WebSocket 中的示例：
 ```cpp
 std::thread serviceThread(RunService, manager);
 serviceThread.detach();
 ```
 
-The TLS socket `StartReadMessage()` also detaches a reading thread that captures `this`, creating a potential use-after-free if the TLSSocket is destroyed while the thread is running.
+TLS socket 的 `StartReadMessage()` 也分离了一个捕获 `this` 的读取线程，如果 TLSSocket 在线程运行时被销毁，则会造成潜在的释放后使用。
 
-**Impact:** Resource leaks, potential crashes during shutdown, and use-after-free vulnerabilities.
+**影响:** 资源泄漏、关闭时可能崩溃以及释放后使用漏洞。
 
-**Recommendation:** Use managed thread pools, `std::jthread` (C++20), or ensure proper join-on-destruction semantics. For the TLS socket reading thread specifically, use a shared pointer to the socket or implement proper shutdown synchronization.
+**建议:** 使用受管理的线程池、`std::jthread`（C++20），或确保在析构时正确 join 的语义。特别是对于 TLS socket 读取线程，使用 shared pointer 指向 socket 或实现适当的关闭同步机制。
 
 ---
 
-## 11. MEDIUM: HTTP Builtin Fetch SSL Disabled by Default
+## 11. 中：HTTP 内置 Fetch SSL 默认禁用
 
-**Severity:** MEDIUM (overlaps with Finding #2 but specific to the builtin module)
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/builtin/BUILD.gn` (line 47)
+**严重性:** 中（与发现 #2 重叠，但特定于内置模块）
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/builtin/BUILD.gn`（第 47 行）
 
-**Description:**
+**描述:**
 
-The legacy builtin fetch module explicitly defines `NO_SSL_CERTIFICATION=1`:
+旧版内置 fetch 模块显式定义了 `NO_SSL_CERTIFICATION=1`：
 
 ```gn
 defines = [ "NO_SSL_CERTIFICATION=1" ]
 ```
 
-Unlike the NAPI fetch/http modules where this is a conditional build flag, the builtin module **always** disables SSL verification. The corresponding code in `http_request.cpp:93` disables peer verification:
+与 NAPI fetch/http 模块中这是条件构建标志不同，内置模块**始终**禁用 SSL 验证。`http_request.cpp:93` 中相应的代码禁用了对等验证：
 
 ```cpp
 ACE_CURL_EASY_SET_OPTION(handle.get(), CURLOPT_SSL_VERIFYPEER, 0L, responseData);
 ```
 
-Note that `CURLOPT_SSL_VERIFYHOST` is not even explicitly set here, meaning it may default to 2 (verify) -- but without peer verification, hostname verification is meaningless.
+请注意，这里甚至没有显式设置 `CURLOPT_SSL_VERIFYHOST`，意味着它可能默认为 2（验证）——但在没有对等验证的情况下，主机名验证毫无意义。
 
-**Impact:** Applications using the legacy fetch API have no SSL certificate validation.
+**影响:** 使用旧版 fetch API 的应用程序没有 SSL 证书验证。
 
-**Recommendation:** Ship a proper CA bundle for the builtin module or migrate all callers to the NAPI fetch/http APIs that support proper certificate validation.
-
----
-
-## 12. MEDIUM: DSoftBus Device Info Leaks Sensitive Identifiers
-
-**Severity:** MEDIUM
-**File:** `/home/dspfac/openharmony/foundation/communication/dsoftbus/core/authentication/src/auth_session_message.c`
-
-**Description:**
-
-The DSoftBus authentication session message handler exchanges extensive device information during the authentication handshake, including:
-
-- `DEVICE_UDID` -- Unique device identifier
-- `BT_MAC` / `BLE_MAC` -- Bluetooth MAC addresses
-- `BR_MAC_ADDR` -- Bluetooth Radio MAC
-- `P2P_MAC_ADDR` -- WiFi Direct MAC address
-- `IP_MAC` -- IP-associated MAC address
-- `ACCOUNT_ID` -- User account identifier
-- `NETWORK_ID` -- Network identifier
-- `DEVICE_NAME` -- Human-readable device name
-
-These identifiers are exchanged during the initial authentication phase. The `AUTH_LOGD` and `AUTH_LOGI` calls may also log some of these values.
-
-**Impact:** An attacker performing active discovery or intercepting DSoftBus authentication messages could harvest persistent device identifiers, enabling tracking across sessions and locations.
-
-**Recommendation:** Minimize the information exchanged before authentication is complete. Use ephemeral identifiers where possible. Ensure all sensitive identifiers are logged with anonymization (some calls do use `Anonymizer` but coverage is inconsistent).
+**建议:** 为内置模块提供适当的 CA 包，或将所有调用者迁移到支持正确证书验证的 NAPI fetch/http API。
 
 ---
 
-## 13. MEDIUM: WebSocket Logs Leak Connection Details
+## 12. 中：DSoftBus 设备信息泄露敏感标识符
 
-**Severity:** MEDIUM
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp`
+**严重性:** 中
+**文件:** `/home/dspfac/openharmony/foundation/communication/dsoftbus/core/authentication/src/auth_session_message.c`
 
-**Description:**
+**描述:**
 
-Several log statements in the WebSocket implementation leak connection details:
+DSoftBus 认证会话消息处理程序在认证握手期间交换大量设备信息，包括：
+
+- `DEVICE_UDID` —— 唯一设备标识符
+- `BT_MAC` / `BLE_MAC` —— 蓝牙 MAC 地址
+- `BR_MAC_ADDR` —— 蓝牙无线电 MAC
+- `P2P_MAC_ADDR` —— WiFi Direct MAC 地址
+- `IP_MAC` —— IP 关联 MAC 地址
+- `ACCOUNT_ID` —— 用户账户标识符
+- `NETWORK_ID` —— 网络标识符
+- `DEVICE_NAME` —— 人类可读设备名称
+
+这些标识符在初始认证阶段交换。`AUTH_LOGD` 和 `AUTH_LOGI` 调用也可能记录其中一些值。
+
+**影响:** 执行主动发现或拦截 DSoftBus 认证消息的攻击者可以收集持久设备标识符，实现跨会话和跨位置的追踪。
+
+**建议:** 最小化认证完成前交换的信息。尽可能使用临时标识符。确保所有敏感标识符在日志中进行匿名化处理（部分调用确实使用了 `Anonymizer`，但覆盖不一致）。
+
+---
+
+## 13. 中：WebSocket 日志泄露连接详情
+
+**严重性:** 中
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/websocket/websocket_exec/src/websocket_exec.cpp`
+
+**描述:**
+
+WebSocket 实现中多个日志语句泄露连接详情：
 
 ```cpp
-// Line 410: logs connection error details in plaintext
+// 第 410 行：以明文记录连接错误详情
 NETSTACK_LOGI("LwsCallbackClientConnectionError %{public}s",
               (in == nullptr) ? "null" : reinterpret_cast<char *>(in));
 
-// Line 839: logs open status and message
+// 第 839 行：记录打开状态和消息
 NETSTACK_LOGI("OnOpen %{public}u %{public}s", status, message.c_str());
 
-// Line 860: logs close status and reason
+// 第 860 行：记录关闭状态和原因
 NETSTACK_LOGI("OnClose %{public}u %{public}s", closeStatus, closeReason.c_str());
 ```
 
-Additionally, the CA path is logged at debug level (line 613):
+此外，CA 路径在调试级别被记录（第 613 行）：
 ```cpp
 NETSTACK_LOGD("caPath: %{public}s", info.client_ssl_ca_filepath);
 ```
 
-**Impact:** Connection error details, status messages, and certificate paths are logged and potentially accessible to other processes or via log collection, leaking server interaction details.
+**影响:** 连接错误详情、状态消息和证书路径被记录，可能被其他进程或通过日志收集访问，泄露服务器交互详情。
 
-**Recommendation:** Use `%{private}s` for connection-specific details and error messages that might reveal server infrastructure information.
+**建议:** 对连接特定的详情和可能揭示服务器基础设施信息的错误消息使用 `%{private}s`。
 
 ---
 
-## 14. LOW: TLS Connect Context Silently Ignores Missing secureOptions
+## 14. 低：TLS 连接上下文静默忽略缺少的 secureOptions
 
-**Severity:** LOW
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/context/tls_connect_context.cpp` (lines 159-169)
+**严重性:** 低
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/context/tls_connect_context.cpp`（第 159-169 行）
 
-**Description:**
+**描述:**
 
-If the `secureOptions` property is missing from the connection options, the function silently returns a default-constructed `TLSSecureOptions` object with no CA certificates, no client cert, and default verification mode:
+如果连接选项中缺少 `secureOptions` 属性，函数静默返回一个默认构造的 `TLSSecureOptions` 对象，其中没有 CA 证书、没有客户端证书，使用默认验证模式：
 
 ```cpp
 TLSSecureOptions TLSConnectContext::ReadTLSSecureOptions(napi_env env, napi_value *params)
 {
     TLSSecureOptions secureOption;
     if (!NapiUtils::HasNamedProperty(GetEnv(), params[ARG_INDEX_0], SECURE_OPTIONS)) {
-        return secureOption;  // Returns empty options silently
+        return secureOption;  // 静默返回空选项
     }
     // ...
 }
 ```
 
-Similarly, if `ReadNecessaryOptions` returns false (e.g., no CA certificate provided), the partially-constructed options are still returned.
+同样，如果 `ReadNecessaryOptions` 返回 false（例如未提供 CA 证书），部分构造的选项仍然被返回。
 
-**Impact:** Developers may accidentally create TLS connections without proper security configuration and receive no warning or error.
+**影响:** 开发者可能在没有适当安全配置的情况下意外创建 TLS 连接，且不会收到任何警告或错误。
 
-**Recommendation:** Return an error or log a warning when `secureOptions` is missing entirely from a TLS connect call.
+**建议:** 当 TLS 连接调用中完全缺少 `secureOptions` 时，返回错误或记录警告。
 
 ---
 
-## 15. LOW: Certificate Property Name Typo
+## 15. 低：证书属性名拼写错误
 
-**Severity:** LOW
-**File:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp` (lines 35-36)
+**严重性:** 低
+**文件:** `/home/dspfac/openharmony/foundation/communication/netstack/frameworks/js/napi/tls/src/tlssocket_exec.cpp`（第 35-36 行）
 
-**Description:**
+**描述:**
 
-The constant names contain a typo -- "CERTIFICATA" instead of "CERTIFICATE":
+常量名称包含拼写错误——"CERTIFICATA" 应为 "CERTIFICATE"：
 
 ```cpp
 constexpr const char *CERTIFICATA_DATA = "data";
 constexpr const char *CERTIFICATA_ENCODING_FORMAT = "encodingFormat";
 ```
 
-While this does not affect functionality (the constant values are correct), it indicates careless naming that could confuse developers maintaining the code.
+虽然这不影响功能（常量值是正确的），但表明命名不够严谨，可能会给维护代码的开发者带来困惑。
 
-**Recommendation:** Rename to `CERTIFICATE_DATA` and `CERTIFICATE_ENCODING_FORMAT`.
+**建议:** 重命名为 `CERTIFICATE_DATA` 和 `CERTIFICATE_ENCODING_FORMAT`。
 
 ---
 
-## 16. LOW: Bluetooth BLE Scan Lacks Permission Check at NAPI Layer
+## 16. 低：蓝牙 BLE 扫描在 NAPI 层缺少权限检查
 
-**Severity:** LOW
-**File:** `/home/dspfac/openharmony/foundation/communication/bluetooth/frameworks/js/napi/src/ble/napi_bluetooth_ble.cpp` (lines 105-131)
+**严重性:** 低
+**文件:** `/home/dspfac/openharmony/foundation/communication/bluetooth/frameworks/js/napi/src/ble/napi_bluetooth_ble.cpp`（第 105-131 行）
 
-**Description:**
+**描述:**
 
-The `SysStartBLEScan` function starts BLE scanning without any visible permission check at the NAPI layer:
+`SysStartBLEScan` 函数在 NAPI 层启动 BLE 扫描时没有可见的权限检查：
 
 ```cpp
 napi_value SysStartBLEScan(napi_env env, napi_callback_info info)
 {
-    // ... argument parsing ...
-    BleCentralManagerGetInstance()->StartScan(settinngs);  // No permission check
+    // ... 参数解析 ...
+    BleCentralManagerGetInstance()->StartScan(settinngs);  // 无权限检查
     return NapiGetNull(env);
 }
 ```
 
-BLE scan results can reveal nearby Bluetooth devices and their identifiers, which constitutes location-sensitive data. While permission checks may be enforced at a lower layer (in the BleCentralManager service), the NAPI layer performs no gating, meaning the permission error only surfaces asynchronously rather than being caught early.
+BLE 扫描结果可以揭示附近的蓝牙设备及其标识符，这构成位置敏感数据。虽然权限检查可能在底层执行（在 BleCentralManager 服务中），但 NAPI 层不进行拦截，意味着权限错误只能异步显现，而非被及早捕获。
 
-Additionally, note the typo in variable name: `settinngs` should be `settings`.
+此外，请注意变量名中的拼写错误：`settinngs` 应为 `settings`。
 
-**Recommendation:** Add an explicit permission check at the NAPI layer for immediate feedback to the caller, consistent with how the WiFi and Telephony subsystems handle permissions.
-
----
-
-## 17. Positive Findings
-
-1. **NFC Permission Enforcement:** The NFC `TagSessionStub` consistently checks `ExternalDepsProxy::GetInstance().IsGranted(OHOS::NFC::TAG_PERM)` before every IPC handler, demonstrating good permission enforcement practices.
-
-2. **Telephony Permission System:** The `TelephonyPermission::CheckPermission` implementation properly verifies access tokens, records permission usage via `PrivacyKit::AddPermissionUsedRecord`, and logs failed permission checks.
-
-3. **HTTP Error Handling:** The `RequestContext` class properly cleans up `curl_slist` and `curl_mime` resources in its destructor, preventing memory leaks on error paths.
-
-4. **HTTP Request Context Threading:** The HTTP module uses mutex-protected queues (`dlLenLock_`, `ulLenLock_`, `tempDataLock_`) for thread-safe data transfer between curl worker threads and the main thread.
-
-5. **WebSocket Send Queue:** The WebSocket `UserData::Push/Pop` operations use proper mutex synchronization for the send data queue.
-
-6. **DSoftBus Encryption:** The DSoftBus authentication module uses AES-GCM encryption for fast authentication tokens, with proper key management through the `AuthDeviceKeyInfo` structure.
-
-7. **HTTP DNS Validation:** The `ParseDnsServers` function in `request_context.cpp` properly validates that DNS server addresses are valid IPv4 or IPv6 before accepting them.
-
-8. **TLS Context Configuration:** The TLS socket implementation in `tls_context.cpp` properly sets `SSL_VERIFY_PEER` for one-way mode and `SSL_VERIFY_FAIL_IF_NO_PEER_CERT` for two-way mode, providing correct certificate verification behavior for the TLS socket API (as opposed to the WebSocket and HTTP APIs).
+**建议:** 在 NAPI 层添加显式权限检查以向调用者提供即时反馈，与 WiFi 和电话子系统处理权限的方式保持一致。
 
 ---
 
-## 18. Summary Table
+## 17. 正面发现
 
-| # | Finding | Severity | 分类 | 组件 |
-|---|---------|----------|----------|-----------|
-| 2 | SSL/TLS certificate validation disabled via NO_SSL_CERTIFICATION | CRITICAL | Security | netstack/http, fetch |
-| 3 | WebSocket SSL verification unconditionally bypassed | CRITICAL | Security | netstack/websocket |
-| 4 | WiFi permission bypass via PERMISSION_ALWAYS_GRANT | HIGH | Security | wifi |
-| 5 | WiFi Lite all permissions always granted | HIGH | Security | wifi |
-| 6 | Unsafe reinterpret_cast for TLS socket type-erased data | HIGH | Code Quality | netstack/tls |
-| 7 | TLS Socket memory leak on bind failure | HIGH | Resource Mgmt | netstack/tls |
-| 8 | WebSocket volatile bool threading issue | HIGH | Thread Safety | netstack/websocket |
-| 9 | Hardcoded public DNS servers (8.8.8.8, 180.76.76.76) | MEDIUM | Privacy | wifi |
-| 10 | Excessive detached thread usage | MEDIUM | Code Quality | netstack, wifi |
-| 11 | HTTP builtin fetch SSL always disabled | MEDIUM | Security | netstack/fetch |
-| 12 | DSoftBus auth exchanges sensitive device identifiers | MEDIUM | Privacy | dsoftbus |
-| 13 | WebSocket logs leak connection details | MEDIUM | Privacy | netstack/websocket |
-| 14 | TLS silently ignores missing secureOptions | LOW | Code Quality | netstack/tls |
-| 15 | Certificate property name typo (CERTIFICATA) | LOW | Code Quality | netstack/tls |
-| 16 | BLE scan lacks NAPI-layer permission check | LOW | Security | bluetooth |
+1. **NFC 权限执行:** NFC `TagSessionStub` 在每个 IPC 处理程序之前一致地检查 `ExternalDepsProxy::GetInstance().IsGranted(OHOS::NFC::TAG_PERM)`，展示了良好的权限执行实践。
 
-**Total: 2 CRITICAL, 5 HIGH, 5 MEDIUM, 3 LOW**
+2. **电话权限系统:** `TelephonyPermission::CheckPermission` 实现正确验证访问令牌，通过 `PrivacyKit::AddPermissionUsedRecord` 记录权限使用情况，并记录失败的权限检查。
 
-The two CRITICAL findings around SSL/TLS certificate validation represent the most urgent issues requiring immediate remediation. The WebSocket SSL bypass is particularly concerning because it is unconditional and affects all secure WebSocket connections across the entire platform.
+3. **HTTP 错误处理:** `RequestContext` 类在析构函数中正确清理 `curl_slist` 和 `curl_mime` 资源，防止错误路径上的内存泄漏。
+
+4. **HTTP 请求上下文线程安全:** HTTP 模块使用互斥锁保护的队列（`dlLenLock_`、`ulLenLock_`、`tempDataLock_`）在 curl 工作线程和主线程之间进行线程安全的数据传输。
+
+5. **WebSocket 发送队列:** WebSocket 的 `UserData::Push/Pop` 操作对发送数据队列使用适当的互斥锁同步。
+
+6. **DSoftBus 加密:** DSoftBus 认证模块使用 AES-GCM 加密进行快速认证令牌处理，通过 `AuthDeviceKeyInfo` 结构进行适当的密钥管理。
+
+7. **HTTP DNS 验证:** `request_context.cpp` 中的 `ParseDnsServers` 函数在接受 DNS 服务器地址前正确验证其为有效的 IPv4 或 IPv6 地址。
+
+8. **TLS 上下文配置:** `tls_context.cpp` 中的 TLS socket 实现为单向模式正确设置 `SSL_VERIFY_PEER`，为双向模式正确设置 `SSL_VERIFY_FAIL_IF_NO_PEER_CERT`，为 TLS socket API 提供了正确的证书验证行为（与 WebSocket 和 HTTP API 不同）。
+
+---
+
+## 18. 汇总表
+
+| # | 发现 | 严重性 | 类别 | 组件 |
+|---|------|--------|------|------|
+| 2 | 通过 NO_SSL_CERTIFICATION 禁用 SSL/TLS 证书验证 | 严重 | 安全 | netstack/http, fetch |
+| 3 | WebSocket SSL 验证被无条件绕过 | 严重 | 安全 | netstack/websocket |
+| 4 | WiFi 权限通过 PERMISSION_ALWAYS_GRANT 被绕过 | 高 | 安全 | wifi |
+| 5 | WiFi Lite 所有权限始终被授予 | 高 | 安全 | wifi |
+| 6 | TLS socket 类型擦除数据使用不安全的 reinterpret_cast | 高 | 代码质量 | netstack/tls |
+| 7 | TLS Socket 绑定失败时内存泄漏 | 高 | 资源管理 | netstack/tls |
+| 8 | WebSocket volatile bool 线程安全问题 | 高 | 线程安全 | netstack/websocket |
+| 9 | 硬编码公共 DNS 服务器（8.8.8.8, 180.76.76.76） | 中 | 隐私 | wifi |
+| 10 | 过度使用分离线程 | 中 | 代码质量 | netstack, wifi |
+| 11 | HTTP 内置 fetch SSL 始终禁用 | 中 | 安全 | netstack/fetch |
+| 12 | DSoftBus 认证交换敏感设备标识符 | 中 | 隐私 | dsoftbus |
+| 13 | WebSocket 日志泄露连接详情 | 中 | 隐私 | netstack/websocket |
+| 14 | TLS 静默忽略缺少的 secureOptions | 低 | 代码质量 | netstack/tls |
+| 15 | 证书属性名拼写错误（CERTIFICATA） | 低 | 代码质量 | netstack/tls |
+| 16 | BLE 扫描在 NAPI 层缺少权限检查 | 低 | 安全 | bluetooth |
+
+**总计：2 个严重、5 个高、5 个中、3 个低**
+
+围绕 SSL/TLS 证书验证的两个严重发现代表了需要立即修复的最紧急问题。WebSocket SSL 绕过尤其令人担忧，因为它是无条件的，影响整个平台上所有安全 WebSocket 连接。

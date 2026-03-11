@@ -1,27 +1,27 @@
-# Code 审查 Report 06: Android 11 System Services
+# 代码审查报告 06：Android 11 系统服务
 
-## Table of Contents
-1. [Overview and Architecture](#1-overview-and-architecture)
-2. [SystemServer Boot Sequence](#2-systemserver-boot-sequence)
-3. [ServiceManager and Binder IPC Bridge](#3-servicemanager-and-binder-ipc-bridge)
+## 目录
+1. [概述与架构](#1-概述与架构)
+2. [SystemServer 启动序列](#2-systemserver-启动序列)
+3. [ServiceManager 和 Binder IPC 桥接](#3-servicemanager-和-binder-ipc-桥接)
 4. [ActivityManagerService (AMS)](#4-activitymanagerservice-ams)
 5. [PackageManagerService (PMS)](#5-packagemanagerservice-pms)
 6. [WindowManagerService (WMS)](#6-windowmanagerservice-wms)
 7. [LocationManager / LocationManagerService](#7-locationmanager--locationmanagerservice)
 8. [SensorManager](#8-sensormanager)
 9. [Camera / CameraManager](#9-camera--cameramanager)
-10. [Accessibility Services](#10-accessibility-services)
+10. [无障碍服务](#10-无障碍服务)
 11. [NotificationListenerService](#11-notificationlistenerservice)
-12. [Service Registration and Access Patterns](#12-service-registration-and-access-patterns)
-13. [Permission Checks and Security Enforcement](#13-permission-checks-and-security-enforcement)
-14. [Hidden and System APIs](#14-hidden-and-system-apis)
-15. [Key Findings and Recommendations](#15-key-findings-and-recommendations)
+12. [服务注册和访问模式](#12-服务注册和访问模式)
+13. [权限检查和安全执行](#13-权限检查和安全执行)
+14. [隐藏和系统 API](#14-隐藏和系统-api)
+15. [关键发现和建议](#15-关键发现和建议)
 
 ---
 
-## 1. Overview and Architecture
+## 1. 概述与架构
 
-Android 11 system services form the backbone of the platform, providing the APIs that applications use to interact with the operating system. The architecture follows a strict client-server model mediated by Binder IPC:
+Android 11 系统服务构成了平台的骨干，提供应用程序与操作系统交互所使用的 API。其架构遵循严格的客户端-服务器模型，通过 Binder IPC 进行中介：
 
 ```
 App Process                          system_server Process
@@ -35,23 +35,23 @@ App Process                          system_server Process
 +-------------------+                +----------------------------+
 ```
 
-**Key Principle**: App developers interact with "Manager" classes (client-side proxies), which communicate via AIDL-generated Binder interfaces to the actual service implementations running in the `system_server` process.
+**关键原则**：应用开发者与"Manager"类（客户端代理）交互，这些类通过 AIDL 生成的 Binder 接口与运行在 `system_server` 进程中的实际服务实现通信。
 
-### Key Source Directories
-- **Service implementations**: `frameworks/base/services/core/java/com/android/server/`
-- **Client-side service APIs**: `frameworks/base/core/java/android/service/`
-- **Hardware abstractions**: `frameworks/base/core/java/android/hardware/`
-- **System boot**: `frameworks/base/services/java/com/android/server/SystemServer.java`
+### 关键源代码目录
+- **服务实现**：`frameworks/base/services/core/java/com/android/server/`
+- **客户端服务 API**：`frameworks/base/core/java/android/service/`
+- **硬件抽象**：`frameworks/base/core/java/android/hardware/`
+- **系统启动**：`frameworks/base/services/java/com/android/server/SystemServer.java`
 
 ---
 
-## 2. SystemServer Boot Sequence
+## 2. SystemServer 启动序列
 
-**File**: `frameworks/base/services/java/com/android/server/SystemServer.java` (2,567 lines)
+**文件**: `frameworks/base/services/java/com/android/server/SystemServer.java`（2,567 行）
 
-### 2.1 Entry Point
+### 2.1 入口点
 
-The system server is the first managed process started after Zygote. Its entry point is:
+系统服务器是 Zygote 之后启动的第一个托管进程。其入口点为：
 
 ```java
 // Line 413
@@ -60,151 +60,151 @@ public static void main(String[] args) {
 }
 ```
 
-### 2.2 The `run()` Method (Line 436)
+### 2.2 `run()` 方法（第 436 行）
 
-The `run()` method executes the complete boot sequence:
+`run()` 方法执行完整的启动序列：
 
-1. **Initialization** (lines 436-588): Sets timezone, configures Binder threading, prepares the main looper, loads native libraries (`android_servers`), creates the system context.
+1. **初始化**（第 436-588 行）：设置时区，配置 Binder 线程，准备主循环器，加载原生库（`android_servers`），创建系统上下文。
 
-2. **Binder Thread Configuration** (line 528):
+2. **Binder 线程配置**（第 528 行）：
    ```java
    BinderInternal.setMaxThreads(sMaxBinderThreads); // 31 threads
    ```
 
-3. **SystemServiceManager Creation** (line 562):
+3. **SystemServiceManager 创建**（第 562 行）：
    ```java
    mSystemServiceManager = new SystemServiceManager(mSystemContext);
    ```
 
-4. **Three-Phase Service Startup** (lines 594-604):
+4. **三阶段服务启动**（第 594-604 行）：
    ```java
-   startBootstrapServices(t);  // Line 596 - Critical interdependent services
-   startCoreServices(t);       // Line 597 - Essential but less tangled
-   startOtherServices(t);      // Line 598 - Everything else
+   startBootstrapServices(t);  // Line 596 - 关键的相互依赖服务
+   startCoreServices(t);       // Line 597 - 必需但较少纠缠的服务
+   startOtherServices(t);      // Line 598 - 其他所有服务
    ```
 
-5. **Main Loop** (line 628):
+5. **主循环**（第 628 行）：
    ```java
-   Looper.loop(); // Never returns
+   Looper.loop(); // 永不返回
    ```
 
-### 2.3 Bootstrap Services (Line 710)
+### 2.3 引导服务（第 710 行）
 
-These are started first due to complex mutual dependencies:
+由于复杂的相互依赖关系，这些服务首先启动：
 
-| Order | Service | Line | Purpose |
+| 顺序 | 服务 | 行号 | 用途 |
 |-------|---------|------|---------|
-| 1 | Watchdog | 716 | Deadlock detection |
-| 2 | PlatformCompat | 729 | API compatibility |
-| 3 | FileIntegrityService | 740 | File integrity verification |
-| 4 | Installer | 747 | Package installation daemon |
-| 5 | DeviceIdentifiersPolicyService | 753 | Device ID access control |
-| 6 | UriGrantsManagerService | 758 | URI permission grants |
-| 7 | **ActivityTaskManagerService** | 764 | Activity/task management |
-| 8 | **ActivityManagerService** | 766 | Process/component lifecycle |
-| 9 | DataLoaderManagerService | 775 | Data loading |
-| 10 | **PowerManagerService** | 789 | Power management |
-| 11 | ThermalManagerService | 793 | Thermal monitoring |
-| 12 | RecoverySystemService | 804 | OTA recovery |
-| 13 | LightsService | 815 | LED/backlight control |
-| 14 | **DisplayManagerService** | 828 | Display management |
-| 15 | **PackageManagerService** | 857 | Package management |
-| 16 | UserManagerService | 898 | Multi-user support |
-| 17 | OverlayManagerService | 923 | Runtime resource overlays |
-| 18 | SensorPrivacyService | 927 | Sensor access privacy |
+| 1 | Watchdog | 716 | 死锁检测 |
+| 2 | PlatformCompat | 729 | API 兼容性 |
+| 3 | FileIntegrityService | 740 | 文件完整性验证 |
+| 4 | Installer | 747 | 包安装守护进程 |
+| 5 | DeviceIdentifiersPolicyService | 753 | 设备 ID 访问控制 |
+| 6 | UriGrantsManagerService | 758 | URI 权限授予 |
+| 7 | **ActivityTaskManagerService** | 764 | Activity/任务管理 |
+| 8 | **ActivityManagerService** | 766 | 进程/组件生命周期 |
+| 9 | DataLoaderManagerService | 775 | 数据加载 |
+| 10 | **PowerManagerService** | 789 | 电源管理 |
+| 11 | ThermalManagerService | 793 | 温度监控 |
+| 12 | RecoverySystemService | 804 | OTA 恢复 |
+| 13 | LightsService | 815 | LED/背光控制 |
+| 14 | **DisplayManagerService** | 828 | 显示管理 |
+| 15 | **PackageManagerService** | 857 | 包管理 |
+| 16 | UserManagerService | 898 | 多用户支持 |
+| 17 | OverlayManagerService | 923 | 运行时资源覆盖 |
+| 18 | SensorPrivacyService | 927 | 传感器访问隐私 |
 
-**Critical dependency**: AMS is started before PMS. PMS requires the display to be ready (line 833: `PHASE_WAIT_FOR_DEFAULT_DISPLAY`).
+**关键依赖**：AMS 在 PMS 之前启动。PMS 要求显示就绪（第 833 行：`PHASE_WAIT_FOR_DEFAULT_DISPLAY`）。
 
-### 2.4 Core Services (Line 953)
+### 2.4 核心服务（第 953 行）
 
-| Service | Line | Purpose |
+| 服务 | 行号 | 用途 |
 |---------|------|---------|
-| BatteryService | 963 | Battery level tracking |
-| UsageStatsService | 968 | App usage statistics |
-| WebViewUpdateService | 976 | WebView readiness |
-| BinderCallsStatsService | 987 | Binder call profiling |
-| RollbackManagerService | 997 | APK rollback management |
-| BugreportManagerService | 1002 | Bug report capture |
-| GpuService | 1007 | GPU driver management |
+| BatteryService | 963 | 电池电量跟踪 |
+| UsageStatsService | 968 | 应用使用统计 |
+| WebViewUpdateService | 976 | WebView 就绪状态 |
+| BinderCallsStatsService | 987 | Binder 调用分析 |
+| RollbackManagerService | 997 | APK 回滚管理 |
+| BugreportManagerService | 1002 | Bug 报告捕获 |
+| GpuService | 1007 | GPU 驱动管理 |
 
-### 2.5 Other Services (Line 1016)
+### 2.5 其他服务（第 1016 行）
 
-This is the largest phase, starting 80+ services including:
+这是最大的阶段，启动 80 多个服务，包括：
 
-- **WindowManagerService** (line 1163)
-- **InputManagerService** (line 1156)
-- **NotificationManagerService** (line 1581)
-- **LocationManagerService** (via lifecycle)
-- **AccessibilityManagerService** (line 1277)
-- **ConnectivityService** (line 1541)
-- **AudioService** (line 1641)
-- **CameraServiceProxy** (line 2058)
-- **BiometricService** (line 1959)
-- And many more...
+- **WindowManagerService**（第 1163 行）
+- **InputManagerService**（第 1156 行）
+- **NotificationManagerService**（第 1581 行）
+- **LocationManagerService**（通过生命周期）
+- **AccessibilityManagerService**（第 1277 行）
+- **ConnectivityService**（第 1541 行）
+- **AudioService**（第 1641 行）
+- **CameraServiceProxy**（第 2058 行）
+- **BiometricService**（第 1959 行）
+- 以及更多...
 
-### 2.6 Boot Phases
+### 2.6 启动阶段
 
-Defined in `frameworks/base/services/core/java/com/android/server/SystemService.java`:
+定义在 `frameworks/base/services/core/java/com/android/server/SystemService.java` 中：
 
-| Constant | Value | Meaning |
+| 常量 | 值 | 含义 |
 |----------|-------|---------|
-| `PHASE_WAIT_FOR_DEFAULT_DISPLAY` | 100 | Display is ready |
-| `PHASE_LOCK_SETTINGS_READY` | 480 | Lock settings available |
-| `PHASE_SYSTEM_SERVICES_READY` | 500 | Core services operational |
-| `PHASE_DEVICE_SPECIFIC_SERVICES_READY` | 520 | OEM services ready |
-| `PHASE_ACTIVITY_MANAGER_READY` | 550 | AMS fully operational |
-| `PHASE_THIRD_PARTY_APPS_CAN_START` | 600 | Safe to launch apps |
-| `PHASE_BOOT_COMPLETED` | 1000 | Boot fully complete |
+| `PHASE_WAIT_FOR_DEFAULT_DISPLAY` | 100 | 显示就绪 |
+| `PHASE_LOCK_SETTINGS_READY` | 480 | 锁定设置可用 |
+| `PHASE_SYSTEM_SERVICES_READY` | 500 | 核心服务可操作 |
+| `PHASE_DEVICE_SPECIFIC_SERVICES_READY` | 520 | OEM 服务就绪 |
+| `PHASE_ACTIVITY_MANAGER_READY` | 550 | AMS 完全可操作 |
+| `PHASE_THIRD_PARTY_APPS_CAN_START` | 600 | 可安全启动应用 |
+| `PHASE_BOOT_COMPLETED` | 1000 | 启动完全完成 |
 
-### 2.7 The systemReady Callback (Line 2241)
+### 2.7 systemReady 回调（第 2241 行）
 
-After all services are started, `AMS.systemReady()` triggers a callback that:
-1. Starts the `PHASE_ACTIVITY_MANAGER_READY` boot phase (line 2244)
-2. Starts SystemUI (line 2278)
-3. Makes network services ready (lines 2297-2346)
-4. Starts the `PHASE_THIRD_PARTY_APPS_CAN_START` phase (line 2358)
-5. Starts the network stack (line 2368)
+所有服务启动后，`AMS.systemReady()` 触发一个回调，该回调：
+1. 启动 `PHASE_ACTIVITY_MANAGER_READY` 启动阶段（第 2244 行）
+2. 启动 SystemUI（第 2278 行）
+3. 使网络服务就绪（第 2297-2346 行）
+4. 启动 `PHASE_THIRD_PARTY_APPS_CAN_START` 阶段（第 2358 行）
+5. 启动网络栈（第 2368 行）
 
 ---
 
-## 3. ServiceManager and Binder IPC Bridge
+## 3. ServiceManager 和 Binder IPC 桥接
 
 ### 3.1 ServiceManager
 
-**File**: `frameworks/base/core/java/android/os/ServiceManager.java`
+**文件**: `frameworks/base/core/java/android/os/ServiceManager.java`
 
-ServiceManager is the central registry for all system services. It is a hidden API (`@hide`) that apps cannot call directly.
+ServiceManager 是所有系统服务的中央注册表。它是一个隐藏 API（`@hide`），应用不能直接调用。
 
-**Key Methods**:
+**关键方法**：
 
 ```java
-// Line 165 - Register a service
+// Line 165 - 注册一个服务
 public static void addService(String name, IBinder service)
 
-// Line 194 - Register with options
+// Line 194 - 带选项注册
 public static void addService(String name, IBinder service,
     boolean allowIsolated, int dumpPriority)
 
-// Line 128 - Retrieve a service (blocking)
+// Line 128 - 获取一个服务（阻塞）
 public static IBinder getService(String name)
 
-// Line 208 - Retrieve a service (non-blocking)
+// Line 208 - 获取一个服务（非阻塞）
 public static IBinder checkService(String name)
 
-// Line 245 - Wait for a service to become available (native)
+// Line 245 - 等待服务变为可用（原生）
 public static native IBinder waitForService(@NonNull String name)
 
-// Line 266 - List all running services
+// Line 266 - 列出所有运行中的服务
 public static String[] listServices()
 ```
 
-**Service Cache** (line 42):
+**服务缓存**（第 42 行）：
 ```java
 private static Map<String, IBinder> sCache = new ArrayMap<String, IBinder>();
 ```
-Well-known services (like WM and AM) are cached to avoid repeated lookups.
+知名服务（如 WM 和 AM）被缓存以避免重复查找。
 
-**IServiceManager Connection** (line 110):
+**IServiceManager 连接**（第 110 行）：
 ```java
 private static IServiceManager getIServiceManager() {
     sServiceManager = ServiceManagerNative
@@ -212,56 +212,56 @@ private static IServiceManager getIServiceManager() {
     return sServiceManager;
 }
 ```
-The native `getContextObject()` returns a handle to the kernel-level service manager (context manager).
+原生的 `getContextObject()` 返回内核级服务管理器（上下文管理器）的句柄。
 
 ### 3.2 Binder IPC
 
-**File**: `frameworks/base/core/java/android/os/Binder.java`
+**文件**: `frameworks/base/core/java/android/os/Binder.java`
 
-Binder is the core IPC mechanism. The `Binder` class (line 78) implements `IBinder`.
+Binder 是核心 IPC 机制。`Binder` 类（第 78 行）实现 `IBinder`。
 
-**Transaction Flow**:
-1. Client calls a method on the proxy (e.g., `IActivityManager.Stub.Proxy`)
-2. Proxy serializes arguments into a `Parcel`, calls `transact()`
-3. Kernel Binder driver delivers the transaction to the server process
-4. Server-side `execTransact()` (line 1116) is called by native code
-5. `execTransactInternal()` (line 1129) deserializes and calls `onTransact()`
-6. The Stub implementation dispatches to the concrete service method
+**事务流程**：
+1. 客户端调用代理上的方法（例如 `IActivityManager.Stub.Proxy`）
+2. 代理将参数序列化到 `Parcel` 中，调用 `transact()`
+3. 内核 Binder 驱动将事务传递到服务器进程
+4. 服务端的 `execTransact()`（第 1116 行）被原生代码调用
+5. `execTransactInternal()`（第 1129 行）反序列化并调用 `onTransact()`
+6. Stub 实现分发到具体的服务方法
 
-**Key Security Pattern** (used throughout services):
+**关键安全模式**（在各服务中广泛使用）：
 ```java
 final int callingUid = Binder.getCallingUid();
 final int callingPid = Binder.getCallingPid();
 final long origId = Binder.clearCallingIdentity();
 try {
-    // Perform privileged operations
+    // 执行特权操作
 } finally {
     Binder.restoreCallingIdentity(origId);
 }
 ```
 
-**Observer Interface** (line 682):
+**观察者接口**（第 682 行）：
 ```java
 interface Observer {
     Object onTransactStarted(@NonNull IBinder binder, int transactionCode, int flags);
     void onTransactEnded(@Nullable Object session);
 }
 ```
-Used for monitoring and profiling Binder calls.
+用于监控和分析 Binder 调用。
 
-### 3.3 How Apps Access System Services
+### 3.3 应用如何访问系统服务
 
-Apps do not use `ServiceManager` directly. Instead:
+应用不直接使用 `ServiceManager`。而是：
 
-1. **Context.getSystemService()** returns a Manager object
-2. **SystemServiceRegistry** maps service names to factory lambdas
-3. Each Manager internally holds a reference to the AIDL proxy
+1. **Context.getSystemService()** 返回一个 Manager 对象
+2. **SystemServiceRegistry** 将服务名称映射到工厂 lambda
+3. 每个 Manager 内部持有对 AIDL 代理的引用
 
-Example flow for `LocationManager`:
+`LocationManager` 的示例流程：
 ```
 context.getSystemService(Context.LOCATION_SERVICE)
-  -> SystemServiceRegistry looks up "location"
-  -> Creates LocationManager(context, ILocationManager.Stub.asInterface(
+  -> SystemServiceRegistry 查找 "location"
+  -> 创建 LocationManager(context, ILocationManager.Stub.asInterface(
        ServiceManager.getServiceOrThrow(Context.LOCATION_SERVICE)))
 ```
 
@@ -269,45 +269,45 @@ context.getSystemService(Context.LOCATION_SERVICE)
 
 ## 4. ActivityManagerService (AMS)
 
-**File**: `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` (20,423 lines)
+**文件**: `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java`（20,423 行）
 
-### 4.1 Class Declaration (Line 416)
+### 4.1 类声明（第 416 行）
 ```java
 public class ActivityManagerService extends IActivityManager.Stub
         implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback {
 ```
 
-AMS extends `IActivityManager.Stub` -- the server side of the AIDL interface.
+AMS 扩展 `IActivityManager.Stub` -- AIDL 接口的服务端。
 
-### 4.2 Purpose and Responsibility
+### 4.2 用途和职责
 
-AMS is the central manager of the Android application model:
-- **Process lifecycle management**: Starting, stopping, OOM adjustment of app processes
-- **Broadcast dispatch**: Ordered and unordered broadcast delivery
-- **Content provider management**: Publishing and resolving content providers
-- **Service management**: Starting, binding, and stopping services
-- **Instrumentation**: Test framework integration
-- **Battery stats**: Tracking power usage per UID
+AMS 是 Android 应用模型的中央管理器：
+- **进程生命周期管理**：启动、停止、OOM 调整应用进程
+- **广播分发**：有序和无序广播传递
+- **内容提供者管理**：发布和解析内容提供者
+- **服务管理**：启动、绑定和停止服务
+- **测试框架**：测试框架集成
+- **电池统计**：按 UID 跟踪电量使用
 
-**Note**: In Android 10+, activity/task management was moved to `ActivityTaskManagerService` (ATMS). AMS delegates activity-related calls to ATMS.
+**注意**：在 Android 10+ 中，Activity/任务管理已移至 `ActivityTaskManagerService`（ATMS）。AMS 将 Activity 相关调用委托给 ATMS。
 
-### 4.3 AIDL Interface
+### 4.3 AIDL 接口
 
-**File**: `frameworks/base/core/java/android/app/IActivityManager.aidl`
+**文件**: `frameworks/base/core/java/android/app/IActivityManager.aidl`
 
-Key methods exposed via Binder:
+通过 Binder 暴露的关键方法：
 
-| Method | Purpose |
+| 方法 | 用途 |
 |--------|---------|
-| `startActivity()` / `startActivityWithFeature()` | Launch activities |
-| `broadcastIntent()` / `broadcastIntentWithFeature()` | Send broadcasts |
-| `startService()` / `bindService()` | Manage services |
-| `getContentProvider()` | Resolve content providers |
-| `getRunningAppProcesses()` | List running processes |
-| `getProcessMemoryInfo()` | Process memory diagnostics |
-| `unbindService()` | Release service connections |
+| `startActivity()` / `startActivityWithFeature()` | 启动 Activity |
+| `broadcastIntent()` / `broadcastIntentWithFeature()` | 发送广播 |
+| `startService()` / `bindService()` | 管理服务 |
+| `getContentProvider()` | 解析内容提供者 |
+| `getRunningAppProcesses()` | 列出运行中的进程 |
+| `getProcessMemoryInfo()` | 进程内存诊断 |
+| `unbindService()` | 释放服务连接 |
 
-### 4.4 Service Registration (Line 2107)
+### 4.4 服务注册（第 2107 行）
 
 ```java
 public void setSystemProcess() {
@@ -327,9 +327,9 @@ public void setSystemProcess() {
 }
 ```
 
-AMS registers itself and several sub-services under different names. This demonstrates a pattern where one service object manages multiple related service endpoints.
+AMS 注册自身和多个子服务，使用不同的名称。这展示了一种模式，即一个服务对象管理多个相关的服务端点。
 
-### 4.5 Lifecycle (Line 2331)
+### 4.5 生命周期（第 2331 行）
 
 ```java
 public static final class Lifecycle extends SystemService {
@@ -349,21 +349,21 @@ public static final class Lifecycle extends SystemService {
 }
 ```
 
-AMS requires ATMS to be started first. They share a global lock (`mWindowManagerGlobalLock`).
+AMS 要求 ATMS 先启动。它们共享一个全局锁（`mWindowManagerGlobalLock`）。
 
-### 4.6 Key Constants
+### 4.6 关键常量
 
-| Constant | Value | Purpose |
+| 常量 | 值 | 用途 |
 |----------|-------|---------|
-| `PROC_START_TIMEOUT` | 10,000 ms | Max time for process to attach |
-| `BROADCAST_FG_TIMEOUT` | 10,000 ms | Foreground broadcast timeout |
-| `BROADCAST_BG_TIMEOUT` | 60,000 ms | Background broadcast timeout |
-| `MAX_RECEIVERS_ALLOWED_PER_APP` | 1,000 | Receiver registration limit |
-| `TOP_APP_PRIORITY_BOOST` | -10 | Thread priority for top app |
+| `PROC_START_TIMEOUT` | 10,000 ms | 进程附加的最大时间 |
+| `BROADCAST_FG_TIMEOUT` | 10,000 ms | 前台广播超时 |
+| `BROADCAST_BG_TIMEOUT` | 60,000 ms | 后台广播超时 |
+| `MAX_RECEIVERS_ALLOWED_PER_APP` | 1,000 | 接收器注册限制 |
+| `TOP_APP_PRIORITY_BOOST` | -10 | 顶部应用的线程优先级 |
 
-### 4.7 Permission Enforcement
+### 4.7 权限执行
 
-AMS enforces permissions extensively. Key permission check patterns:
+AMS 广泛执行权限检查。关键权限检查模式：
 
 ```java
 // Line 6225
@@ -377,21 +377,21 @@ void enforceCallingPermission(String permission, String func) {
     if (checkCallingPermission(permission) == PackageManager.PERMISSION_GRANTED) {
         return;
     }
-    // throws SecurityException
+    // 抛出 SecurityException
 }
 ```
 
-Commonly enforced permissions include:
-- `FORCE_STOP_PACKAGES` (lines 3724, 3739)
-- `KILL_BACKGROUND_PROCESSES` (lines 4349, 4393, 4431)
-- `SET_PROCESS_LIMIT` (lines 5917, 5955)
-- `SET_DEBUG_APP` (line 8402)
-- `DUMP` (line 8652)
-- `PACKAGE_USAGE_STATS` (lines 3282, 3291)
+常见的强制执行权限包括：
+- `FORCE_STOP_PACKAGES`（第 3724、3739 行）
+- `KILL_BACKGROUND_PROCESSES`（第 4349、4393、4431 行）
+- `SET_PROCESS_LIMIT`（第 5917、5955 行）
+- `SET_DEBUG_APP`（第 8402 行）
+- `DUMP`（第 8652 行）
+- `PACKAGE_USAGE_STATS`（第 3282、3291 行）
 
-### 4.8 App Developer Interaction
+### 4.8 应用开发者交互
 
-Developers use `ActivityManager`:
+开发者使用 `ActivityManager`：
 ```java
 ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 am.getRunningAppProcesses();
@@ -403,33 +403,33 @@ am.clearApplicationUserData(packageName, observer);
 
 ## 5. PackageManagerService (PMS)
 
-**File**: `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` (25,775 lines)
+**文件**: `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java`（25,775 行）
 
-### 5.1 Class Declaration (Line 470)
+### 5.1 类声明（第 470 行）
 ```java
 public class PackageManagerService extends IPackageManager.Stub
         implements PackageSender {
 ```
 
-### 5.2 Purpose and Responsibility
+### 5.2 用途和职责
 
-PMS manages all aspects of application packages:
-- **Package scanning and parsing**: Reading APK manifests
-- **Package installation/uninstallation**: Including verification
-- **Permission management**: Granting, revoking, checking permissions
-- **Intent resolution**: Matching intents to activities/services/receivers
-- **Package queries**: Package info, component info, feature queries
-- **Shared library management**: System shared libraries
-- **DEX optimization**: Triggering dexopt/dex2oat
-- **Signature verification**: APK signing and certificate management
+PMS 管理应用包的所有方面：
+- **包扫描和解析**：读取 APK 清单
+- **包安装/卸载**：包括验证
+- **权限管理**：授予、撤销、检查权限
+- **Intent 解析**：将 Intent 匹配到 Activity/Service/Receiver
+- **包查询**：包信息、组件信息、功能查询
+- **共享库管理**：系统共享库
+- **DEX 优化**：触发 dexopt/dex2oat
+- **签名验证**：APK 签名和证书管理
 
-### 5.3 Initialization (Line 2568)
+### 5.3 初始化（第 2568 行）
 
 ```java
 public static PackageManagerService main(Context context, Installer installer,
         boolean factoryTest, boolean onlyCore) {
     PackageManagerServiceCompilerMapping.checkProperties();
-    // Creates Injector with dependencies: UserManagerService,
+    // 使用依赖项创建 Injector：UserManagerService,
     // PermissionManagerService, ComponentResolver, Settings
     Injector injector = new Injector(context, lock, installer, installLock, ...);
     PackageManagerService m = new PackageManagerService(injector, ...);
@@ -437,37 +437,37 @@ public static PackageManagerService main(Context context, Installer installer,
 }
 ```
 
-PMS uses an `Injector` pattern for dependency injection, facilitating testing. It creates:
-- `ComponentResolver` - resolves intents to components
-- `PermissionManagerService` - manages permissions
-- `UserManagerService` - multi-user support
-- `Settings` - persistent package state in `/data/system/packages.xml`
+PMS 使用 `Injector` 模式进行依赖注入，便于测试。它创建：
+- `ComponentResolver` - 将 Intent 解析到组件
+- `PermissionManagerService` - 管理权限
+- `UserManagerService` - 多用户支持
+- `Settings` - 在 `/data/system/packages.xml` 中持久化包状态
 
-### 5.4 AIDL Interface
+### 5.4 AIDL 接口
 
-**File**: `frameworks/base/core/java/android/content/pm/IPackageManager.aidl`
+**文件**: `frameworks/base/core/java/android/content/pm/IPackageManager.aidl`
 
-Key methods:
+关键方法：
 
-| Method | Line | Purpose |
+| 方法 | 行号 | 用途 |
 |--------|------|---------|
-| `getPackageInfo()` | 70 | Full package metadata |
-| `getApplicationInfo()` | 83 | Application-level info |
-| `getPackageUid()` | 74 | Package UID lookup |
-| `queryIntentActivities()` | 136 | Intent resolution |
-| `checkPackageStartable()` | 66 | Startability check |
-| `isPackageAvailable()` | 68 | Availability check |
+| `getPackageInfo()` | 70 | 完整的包元数据 |
+| `getApplicationInfo()` | 83 | 应用级信息 |
+| `getPackageUid()` | 74 | 包 UID 查找 |
+| `queryIntentActivities()` | 136 | Intent 解析 |
+| `checkPackageStartable()` | 66 | 可启动性检查 |
+| `isPackageAvailable()` | 68 | 可用性检查 |
 
-### 5.5 Permission Imports
+### 5.5 权限导入
 
-PMS imports and checks an extensive set of permissions (lines 19-108):
-- `DELETE_PACKAGES`, `INSTALL_PACKAGES`
-- `MANAGE_DEVICE_ADMINS`, `MANAGE_PROFILE_AND_DEVICE_OWNERS`
-- `QUERY_ALL_PACKAGES` (new in Android 11 -- package visibility)
-- `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
+PMS 导入并检查大量权限（第 19-108 行）：
+- `DELETE_PACKAGES`、`INSTALL_PACKAGES`
+- `MANAGE_DEVICE_ADMINS`、`MANAGE_PROFILE_AND_DEVICE_OWNERS`
+- `QUERY_ALL_PACKAGES`（Android 11 新增——包可见性）
+- `READ_EXTERNAL_STORAGE`、`WRITE_EXTERNAL_STORAGE`
 - `SET_HARMFUL_APP_WARNINGS`
 
-### 5.6 App Developer Interaction
+### 5.6 应用开发者交互
 
 ```java
 PackageManager pm = context.getPackageManager();
@@ -476,33 +476,33 @@ List<ResolveInfo> activities = pm.queryIntentActivities(intent, 0);
 boolean granted = pm.checkPermission(permission, packageName) == PERMISSION_GRANTED;
 ```
 
-### 5.7 Package Visibility (Android 11)
+### 5.7 包可见性（Android 11）
 
-Android 11 introduced package visibility restrictions via `QUERY_ALL_PACKAGES` permission (line 23). Apps must declare `<queries>` in their manifest to see other packages, unless they hold this permission.
+Android 11 通过 `QUERY_ALL_PACKAGES` 权限（第 23 行）引入了包可见性限制。应用必须在清单中声明 `<queries>` 才能看到其他包，除非持有此权限。
 
 ---
 
 ## 6. WindowManagerService (WMS)
 
-**File**: `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java` (8,278 lines)
+**文件**: `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java`（8,278 行）
 
-### 6.1 Class Declaration (Line 317)
+### 6.1 类声明（第 317 行）
 ```java
 public class WindowManagerService extends IWindowManager.Stub
         implements Watchdog.Monitor, WindowManagerPolicy.WindowManagerFuncs {
 ```
 
-### 6.2 Purpose and Responsibility
+### 6.2 用途和职责
 
-WMS manages the window system:
-- **Window lifecycle**: Adding, removing, relaying out windows
-- **Display management**: Multi-display support
-- **Input dispatch**: Routing input events to the correct window
-- **Animations**: Window transitions and animations
-- **Screen orientation**: Rotation management
-- **Surface management**: Compositing via SurfaceFlinger
+WMS 管理窗口系统：
+- **窗口生命周期**：添加、移除、重新布局窗口
+- **显示管理**：多显示器支持
+- **输入分发**：将输入事件路由到正确的窗口
+- **动画**：窗口过渡和动画
+- **屏幕方向**：旋转管理
+- **Surface 管理**：通过 SurfaceFlinger 进行合成
 
-### 6.3 Initialization (Line 1104)
+### 6.3 初始化（第 1104 行）
 
 ```java
 public static WindowManagerService main(final Context context, final InputManagerService im,
@@ -515,33 +515,33 @@ public static WindowManagerService main(final Context context, final InputManage
 }
 ```
 
-WMS is created on the `DisplayThread` (not the main thread). The `runWithScissors()` call blocks the caller until the creation completes on the target thread.
+WMS 在 `DisplayThread` 上创建（不是主线程）。`runWithScissors()` 调用会阻塞调用者，直到在目标线程上创建完成。
 
-**Constructor** (line 1143): Initializes with `InputManagerService`, `ActivityTaskManagerService`, `WindowManagerPolicy` (PhoneWindowManager), and sets up the global lock shared with ATMS.
+**构造函数**（第 1143 行）：使用 `InputManagerService`、`ActivityTaskManagerService`、`WindowManagerPolicy`（PhoneWindowManager）进行初始化，并设置与 ATMS 共享的全局锁。
 
-### 6.4 Service Registration (SystemServer line 1165)
+### 6.4 服务注册（SystemServer 第 1165 行）
 
 ```java
 ServiceManager.addService(Context.WINDOW_SERVICE, wm, false,
     DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PROTO);
 ```
 
-### 6.5 AIDL Interface
+### 6.5 AIDL 接口
 
-**File**: `frameworks/base/core/java/android/view/IWindowManager.aidl`
+**文件**: `frameworks/base/core/java/android/view/IWindowManager.aidl`
 
-Key operations defined by the interface:
-- Window rotation control (fixed rotation constants at lines 78-87)
-- Display fold listener management
-- System gesture exclusion zones
-- Wallpaper visibility
-- Pinned stack (PiP) management
-- Scroll capture
-- IME (input method) control
+接口定义的关键操作：
+- 窗口旋转控制（第 78-87 行的固定旋转常量）
+- 显示折叠监听器管理
+- 系统手势排除区域
+- 壁纸可见性
+- 固定堆栈（画中画）管理
+- 滚动截取
+- IME（输入法）控制
 
-### 6.6 Key Window Operations
+### 6.6 关键窗口操作
 
-**addWindow()** (line 1374):
+**addWindow()**（第 1374 行）：
 ```java
 public int addWindow(Session session, IWindow client, int seq,
         LayoutParams attrs, int viewVisibility, int displayId, Rect outFrame,
@@ -558,25 +558,25 @@ public int addWindow(Session session, IWindow client, int seq,
 }
 ```
 
-Permission check via `WindowManagerPolicy.checkAddPermission()` is the first operation, verifying the caller has rights to add the specified window type.
+通过 `WindowManagerPolicy.checkAddPermission()` 进行权限检查是第一个操作，验证调用者是否有权添加指定的窗口类型。
 
-**relayoutWindow()** (line 2113): Handles window size/position changes with surface management.
+**relayoutWindow()**（第 2113 行）：处理带有 Surface 管理的窗口大小/位置变化。
 
-### 6.7 Permission Requirements
+### 6.7 权限要求
 
-WMS enforces several permissions (imported at lines 19-28):
-- `INTERNAL_SYSTEM_WINDOW` - For system-level window types
-- `MANAGE_APP_TOKENS` - Token management
-- `MANAGE_ACTIVITY_STACKS` - Activity stack control
-- `READ_FRAME_BUFFER` - Screenshot capability
-- `REGISTER_WINDOW_MANAGER_LISTENERS` - Event listeners
-- `STATUS_BAR_SERVICE` - Status bar window management
-- `CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS` - Transition animations
-- `INPUT_CONSUMER` - Input interception
+WMS 强制执行多种权限（第 19-28 行导入）：
+- `INTERNAL_SYSTEM_WINDOW` - 用于系统级窗口类型
+- `MANAGE_APP_TOKENS` - 令牌管理
+- `MANAGE_ACTIVITY_STACKS` - Activity 栈控制
+- `READ_FRAME_BUFFER` - 截屏能力
+- `REGISTER_WINDOW_MANAGER_LISTENERS` - 事件监听器
+- `STATUS_BAR_SERVICE` - 状态栏窗口管理
+- `CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS` - 过渡动画
+- `INPUT_CONSUMER` - 输入拦截
 
-### 6.8 App Developer Interaction
+### 6.8 应用开发者交互
 
-Apps interact with WMS indirectly through:
+应用通过以下方式间接与 WMS 交互：
 ```java
 WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 wm.addView(view, layoutParams);
@@ -588,47 +588,47 @@ wm.getDefaultDisplay().getMetrics(metrics);
 
 ## 7. LocationManager / LocationManagerService
 
-### 7.1 Client Side: LocationManager
+### 7.1 客户端：LocationManager
 
-**File**: `frameworks/base/location/java/android/location/LocationManager.java`
+**文件**: `frameworks/base/location/java/android/location/LocationManager.java`
 
-**Annotations** (line 85-86):
+**注解**（第 85-86 行）：
 ```java
 @SystemService(Context.LOCATION_SERVICE)
 @RequiresFeature(PackageManager.FEATURE_LOCATION)
 public class LocationManager {
 ```
 
-**Key APIs for Developers**:
+**面向开发者的关键 API**：
 
-| Method | Permission Required | Purpose |
+| 方法 | 所需权限 | 用途 |
 |--------|-------------------|---------|
-| `requestLocationUpdates()` | `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` | Continuous location updates |
-| `getLastKnownLocation()` | Same as above | Last cached location |
-| `getCurrentLocation()` | Same as above | One-shot location request |
-| `requestGeofence()` | Same + background location | Geofence monitoring |
-| `addGpsStatusListener()` | `ACCESS_FINE_LOCATION` | GPS satellite status |
+| `requestLocationUpdates()` | `ACCESS_FINE_LOCATION` 或 `ACCESS_COARSE_LOCATION` | 持续位置更新 |
+| `getLastKnownLocation()` | 同上 | 最后缓存的位置 |
+| `getCurrentLocation()` | 同上 | 一次性位置请求 |
+| `requestGeofence()` | 同上 + 后台位置 | 地理围栏监控 |
+| `addGpsStatusListener()` | `ACCESS_FINE_LOCATION` | GPS 卫星状态 |
 
-**Behavior Changes** (lines 107-114):
+**行为变更**（第 107-114 行）：
 ```java
 @ChangeId
 @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.Q)
 private static final long GET_PROVIDER_SECURITY_EXCEPTIONS = 150935354L;
 ```
-For apps targeting Android R+, `getProvider()` no longer throws security exceptions.
+对于目标为 Android R+ 的应用，`getProvider()` 不再抛出安全异常。
 
-**Property Cache** (lines 89-102): LocationManager uses `PropertyInvalidatedCache` for `isLocationEnabled` checks to reduce IPC calls.
+**属性缓存**（第 89-102 行）：LocationManager 使用 `PropertyInvalidatedCache` 进行 `isLocationEnabled` 检查以减少 IPC 调用。
 
-### 7.2 Server Side: LocationManagerService
+### 7.2 服务端：LocationManagerService
 
-**File**: `frameworks/base/services/core/java/com/android/server/location/LocationManagerService.java`
+**文件**: `frameworks/base/services/core/java/com/android/server/location/LocationManagerService.java`
 
-**Class Declaration** (line 132):
+**类声明**（第 132 行）：
 ```java
 public class LocationManagerService extends ILocationManager.Stub {
 ```
 
-**Lifecycle** (line 137):
+**生命周期**（第 137 行）：
 ```java
 public static class Lifecycle extends SystemService {
     @Override
@@ -648,178 +648,177 @@ public static class Lifecycle extends SystemService {
 }
 ```
 
-Location providers (GPS, Network, Fused, Passive) are initialized after `PHASE_THIRD_PARTY_APPS_CAN_START` because some rely on third-party code.
+位置提供者（GPS、网络、融合、被动）在 `PHASE_THIRD_PARTY_APPS_CAN_START` 之后初始化，因为某些提供者依赖第三方代码。
 
-### 7.3 AIDL Interface
+### 7.3 AIDL 接口
 
-**File**: `frameworks/base/location/java/android/location/ILocationManager.aidl`
+**文件**: `frameworks/base/location/java/android/location/ILocationManager.aidl`
 
-Key operations:
+关键操作：
 - `getLastLocation()` / `getCurrentLocation()` / `requestLocationUpdates()` / `removeUpdates()`
 - `requestGeofence()` / `removeGeofence()`
 - `registerGnssStatusCallback()` / `addGnssMeasurementsListener()`
 - `getAllProviders()` / `getBestProvider()` / `getProviderProperties()`
 - `isLocationEnabledForUser()` / `setLocationEnabledForUser()`
-- `addTestProvider()` / `setTestProviderLocation()` (for testing)
+- `addTestProvider()` / `setTestProviderLocation()`（用于测试）
 - `injectLocation()` / `injectGnssMeasurementCorrections()`
 
-**Hidden test APIs** (lines 114-118):
+**隐藏的测试 API**（第 114-118 行）：
 ```
 addTestProvider, removeTestProvider, setTestProviderLocation, setTestProviderEnabled
 ```
 
-### 7.4 Permission Model
+### 7.4 权限模型
 
-Location uses a layered permission model:
-- `ACCESS_COARSE_LOCATION` -- Cell/WiFi-based location
-- `ACCESS_FINE_LOCATION` -- GPS-based precise location
-- `ACCESS_BACKGROUND_LOCATION` -- Location access when app is backgrounded (Android 10+)
-- `LOCATION_HARDWARE` -- System-level location hardware access (system API)
-- `WRITE_SECURE_SETTINGS` -- Enabling/disabling location
+位置使用分层权限模型：
+- `ACCESS_COARSE_LOCATION` -- 基于基站/WiFi 的位置
+- `ACCESS_FINE_LOCATION` -- 基于 GPS 的精确位置
+- `ACCESS_BACKGROUND_LOCATION` -- 应用在后台时的位置访问（Android 10+）
+- `LOCATION_HARDWARE` -- 系统级位置硬件访问（系统 API）
+- `WRITE_SECURE_SETTINGS` -- 启用/禁用位置
 
 ---
 
 ## 8. SensorManager
 
-**File**: `frameworks/base/core/java/android/hardware/SensorManager.java`
+**文件**: `frameworks/base/core/java/android/hardware/SensorManager.java`
 
-### 8.1 Class Declaration (Line 83)
+### 8.1 类声明（第 83 行）
 ```java
 @SystemService(Context.SENSOR_SERVICE)
 public abstract class SensorManager {
 ```
 
-SensorManager is an **abstract class**. The concrete implementation is `SystemSensorManager` (`frameworks/base/core/java/android/hardware/SystemSensorManager.java`).
+SensorManager 是一个**抽象类**。具体实现是 `SystemSensorManager`（`frameworks/base/core/java/android/hardware/SystemSensorManager.java`）。
 
-### 8.2 Purpose
+### 8.2 用途
 
-SensorManager provides access to the device's hardware sensors (accelerometer, gyroscope, magnetometer, proximity, light, etc.).
+SensorManager 提供对设备硬件传感器（加速度计、陀螺仪、磁力计、接近、光线等）的访问。
 
-### 8.3 Key APIs
+### 8.3 关键 API
 
 ```java
-// Get a sensor by type (line 490)
+// 按类型获取传感器（第 490 行）
 public Sensor getDefaultSensor(int type)
 
-// Get all sensors of a type (line 418)
+// 获取某类型的所有传感器（第 418 行）
 public List<Sensor> getSensorList(int type)
 
-// Register for sensor events (abstract, line ~700+)
+// 注册传感器事件（抽象，约第 700+ 行）
 public boolean registerListener(SensorEventListener listener,
     Sensor sensor, int samplingPeriodUs)
 
-// Unregister (abstract, line ~640+)
+// 注销（抽象，约第 640+ 行）
 public void unregisterListener(SensorEventListener listener)
 ```
 
-### 8.4 Architecture
+### 8.4 架构
 
-Unlike most system services, sensor data flows through a **native sensor service** rather than a Java service in system_server:
-- `SensorManager` (Java abstract) -> `SystemSensorManager` (Java concrete)
-- -> JNI -> `SensorManager` (C++ in `frameworks/native/libs/sensor/`)
-- -> Binder -> `SensorService` (C++ native service)
+与大多数系统服务不同，传感器数据通过**原生传感器服务**流动，而不是 system_server 中的 Java 服务：
+- `SensorManager`（Java 抽象）-> `SystemSensorManager`（Java 具体）
+- -> JNI -> `SensorManager`（C++，位于 `frameworks/native/libs/sensor/`）
+- -> Binder -> `SensorService`（C++ 原生服务）
 
-The native sensor service is started in `SystemServer` (line 940-945):
+原生传感器服务在 `SystemServer` 中启动（第 940-945 行）：
 ```java
 mSensorServiceStart = SystemServerInitThreadPool.submit(() -> {
-    startSensorService(); // Native method
+    startSensorService(); // 原生方法
 }, START_SENSOR_SERVICE);
 ```
 
-### 8.5 Power Considerations
+### 8.5 电量注意事项
 
-From the Javadoc (lines 39-42):
-> Always make sure to disable sensors you don't need, especially when your
-> activity is paused. Failing to do so can drain the battery in just a few
-> hours. Note that the system will *not* disable sensors automatically when
-> the screen turns off.
+来自 Javadoc（第 39-42 行）：
+> 始终确保禁用不需要的传感器，尤其是在 Activity 暂停时。
+> 否则可能在几小时内耗尽电池。注意，当屏幕关闭时，
+> 系统*不会*自动禁用传感器。
 
-### 8.6 System APIs
+### 8.6 系统 API
 
 ```java
 @SystemApi
-// SensorManager includes hidden APIs for:
-// - Direct sensor channels (SensorDirectChannel)
-// - Additional sensor info (SensorAdditionalInfo)
-// - Sensor privacy management
+// SensorManager 包含以下隐藏 API：
+// - 直接传感器通道（SensorDirectChannel）
+// - 附加传感器信息（SensorAdditionalInfo）
+// - 传感器隐私管理
 ```
 
 ---
 
 ## 9. Camera / CameraManager
 
-### 9.1 Legacy Camera API
+### 9.1 旧版 Camera API
 
-**File**: `frameworks/base/core/java/android/hardware/Camera.java` (line 158)
+**文件**: `frameworks/base/core/java/android/hardware/Camera.java`（第 158 行）
 
 ```java
 public class Camera {
 ```
 
-The legacy `Camera` class (deprecated since API 21) communicates with the camera service through JNI. It is a direct, non-Binder API that uses native handles.
+旧版 `Camera` 类（自 API 21 起已弃用）通过 JNI 与摄像头服务通信。它是一个直接的、非 Binder 的 API，使用原生句柄。
 
 ### 9.2 Camera2 API: CameraManager
 
-**File**: `frameworks/base/core/java/android/hardware/camera2/CameraManager.java`
+**文件**: `frameworks/base/core/java/android/hardware/camera2/CameraManager.java`
 
-**Class Declaration** (line 72):
+**类声明**（第 72 行）：
 ```java
 @SystemService(Context.CAMERA_SERVICE)
 public final class CameraManager {
 ```
 
-### 9.3 Architecture
+### 9.3 架构
 
-CameraManager connects to the native `ICameraService` through Binder:
+CameraManager 通过 Binder 连接到原生 `ICameraService`：
 ```java
 import android.hardware.ICameraService;
 import android.hardware.ICameraServiceListener;
 ```
 
-The camera service itself is a native (C++) service, not a Java system service. `CameraServiceProxy` (started at SystemServer line 2058) is a Java-side proxy that assists with camera state management.
+摄像头服务本身是一个原生（C++）服务，不是 Java 系统服务。`CameraServiceProxy`（在 SystemServer 第 2058 行启动）是一个 Java 端代理，协助摄像头状态管理。
 
-### 9.4 Key APIs
+### 9.4 关键 API
 
 ```java
-// List cameras (line 114)
+// 列出摄像头（第 114 行）
 public String[] getCameraIdList() throws CameraAccessException
 
-// Open a camera device
+// 打开摄像头设备
 public void openCamera(@NonNull String cameraId,
     @NonNull final CameraDevice.StateCallback callback, @Nullable Handler handler)
 
-// Get camera characteristics
+// 获取摄像头特性
 public CameraCharacteristics getCameraCharacteristics(@NonNull String cameraId)
 
-// Camera availability callback
+// 摄像头可用性回调
 public abstract static class AvailabilityCallback {
     public void onCameraAvailable(@NonNull String cameraId) {}
     public void onCameraUnavailable(@NonNull String cameraId) {}
 }
 ```
 
-### 9.5 CameraManagerGlobal (Line 1090)
+### 9.5 CameraManagerGlobal（第 1090 行）
 
 ```java
 private static final class CameraManagerGlobal extends ICameraServiceListener.Stub
         implements IBinder.DeathRecipient {
 ```
 
-A singleton that manages the connection to the camera service and dispatches availability callbacks. It implements `ICameraServiceListener.Stub` to receive callbacks from the native camera service.
+一个单例，管理与摄像头服务的连接并分发可用性回调。它实现 `ICameraServiceListener.Stub` 以接收来自原生摄像头服务的回调。
 
-### 9.6 Permissions
+### 9.6 权限
 
-Camera access requires `android.permission.CAMERA`. CameraManager checks this implicitly through the camera service.
+摄像头访问需要 `android.permission.CAMERA`。CameraManager 通过摄像头服务隐式检查此权限。
 
 ---
 
-## 10. Accessibility Services
+## 10. 无障碍服务
 
 ### 10.1 AccessibilityManagerService
 
-**File**: `frameworks/base/services/accessibility/java/com/android/server/accessibility/AccessibilityManagerService.java`
+**文件**: `frameworks/base/services/accessibility/java/com/android/server/accessibility/AccessibilityManagerService.java`
 
-**Class Declaration** (line 147):
+**类声明**（第 147 行）：
 ```java
 public class AccessibilityManagerService extends IAccessibilityManager.Stub
         implements AbstractAccessibilityServiceConnection.SystemSupport,
@@ -829,31 +828,31 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         SystemActionPerformer.SystemActionsChangedListener {
 ```
 
-### 10.2 Purpose
+### 10.2 用途
 
-Manages accessibility services that assist users with disabilities:
-- Screen readers (TalkBack)
-- Switch access
-- Magnification
-- Voice Access
-- Braille display support
+管理帮助残障用户的无障碍服务：
+- 屏幕阅读器（TalkBack）
+- 开关控制
+- 放大
+- 语音控制
+- 盲文显示器支持
 
-### 10.3 Boot Sequence
+### 10.3 启动序列
 
-Started in SystemServer (line 1277):
+在 SystemServer 中启动（第 1277 行）：
 ```java
 t.traceBegin("StartAccessibilityManagerService");
 mSystemServiceManager.startService(ACCESSIBILITY_MANAGER_SERVICE_CLASS);
 ```
 
-Where `ACCESSIBILITY_MANAGER_SERVICE_CLASS` is defined as (line 301):
+其中 `ACCESSIBILITY_MANAGER_SERVICE_CLASS` 定义为（第 301 行）：
 ```java
 "com.android.server.accessibility.AccessibilityManagerService$Lifecycle"
 ```
 
-### 10.4 App Developer Integration
+### 10.4 应用开发者集成
 
-Accessibility services extend `AccessibilityService`:
+无障碍服务扩展 `AccessibilityService`：
 ```java
 public class MyAccessibilityService extends AccessibilityService {
     @Override
@@ -864,7 +863,7 @@ public class MyAccessibilityService extends AccessibilityService {
 }
 ```
 
-Manifest declaration:
+清单声明：
 ```xml
 <service android:name=".MyAccessibilityService"
     android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -876,35 +875,35 @@ Manifest declaration:
 </service>
 ```
 
-### 10.5 Security
+### 10.5 安全性
 
-- Services require `BIND_ACCESSIBILITY_SERVICE` permission (system-only binding)
-- User must explicitly enable accessibility services in Settings
-- `AccessibilitySecurityPolicy` (referenced at line 151) enforces access control
-- Accessibility services gain powerful capabilities: reading screen content, performing gestures, controlling other apps
+- 服务需要 `BIND_ACCESSIBILITY_SERVICE` 权限（仅系统绑定）
+- 用户必须在设置中显式启用无障碍服务
+- `AccessibilitySecurityPolicy`（在第 151 行引用）强制执行访问控制
+- 无障碍服务获得强大的能力：读取屏幕内容、执行手势、控制其他应用
 
 ---
 
 ## 11. NotificationListenerService
 
-**File**: `frameworks/base/core/java/android/service/notification/NotificationListenerService.java`
+**文件**: `frameworks/base/core/java/android/service/notification/NotificationListenerService.java`
 
-### 11.1 Class Declaration (Line 100)
+### 11.1 类声明（第 100 行）
 ```java
 public abstract class NotificationListenerService extends Service {
 ```
 
-### 11.2 Purpose
+### 11.2 用途
 
-Allows apps to receive and interact with all notifications posted to the system. This is a powerful capability used by:
-- Wearable companion apps
-- Notification management apps
-- Digital wellbeing tools
-- Accessibility services
+允许应用接收和与系统中发布的所有通知进行交互。这是一个强大的能力，用于：
+- 可穿戴设备伴侣应用
+- 通知管理应用
+- 数字健康工具
+- 无障碍服务
 
-### 11.3 Manifest Declaration
+### 11.3 清单声明
 
-From the Javadoc (lines 73-83):
+来自 Javadoc（第 73-83 行）：
 ```xml
 <service android:name=".NotificationListener"
     android:label="@string/service_name"
@@ -915,71 +914,71 @@ From the Javadoc (lines 73-83):
 </service>
 ```
 
-### 11.4 Key Callbacks
+### 11.4 关键回调
 
 ```java
-// Line 360 - Called when a notification is posted
+// Line 360 - 当通知被发布时调用
 public void onNotificationPosted(StatusBarNotification sbn)
 
-// Line 373 - With ranking information
+// Line 373 - 带排名信息
 public void onNotificationPosted(StatusBarNotification sbn, RankingMap rankingMap)
 
-// Line 394 - Called when a notification is removed
+// Line 394 - 当通知被移除时调用
 public void onNotificationRemoved(StatusBarNotification sbn)
 ```
 
-### 11.5 SERVICE_INTERFACE (Line 344)
+### 11.5 SERVICE_INTERFACE（第 344 行）
 ```java
 public static final String SERVICE_INTERFACE
     = "android.service.notification.NotificationListenerService";
 ```
 
-### 11.6 Server Side: NotificationManagerService
+### 11.6 服务端：NotificationManagerService
 
-Started in SystemServer (line 1581):
+在 SystemServer 中启动（第 1581 行）：
 ```java
 mSystemServiceManager.startService(NotificationManagerService.class);
 notification = INotificationManager.Stub.asInterface(
     ServiceManager.getService(Context.NOTIFICATION_SERVICE));
 ```
 
-### 11.7 Security Constraints
+### 11.7 安全约束
 
-- Requires `BIND_NOTIFICATION_LISTENER_SERVICE` (system-only)
-- User must explicitly grant notification access in Settings
-- On low-RAM devices running Android Q and below, notification listeners cannot be bound
-- Notification listeners running in a work profile are ignored by the system (line 93)
+- 需要 `BIND_NOTIFICATION_LISTENER_SERVICE`（仅系统级）
+- 用户必须在设置中显式授予通知访问权限
+- 在运行 Android Q 及以下版本的低内存设备上，无法绑定通知监听器
+- 在工作配置文件中运行的通知监听器被系统忽略（第 93 行）
 
 ---
 
-## 12. Service Registration and Access Patterns
+## 12. 服务注册和访问模式
 
-### 12.1 Two Registration Mechanisms
+### 12.1 两种注册机制
 
-Android 11 uses two complementary mechanisms for service registration:
+Android 11 使用两种互补的服务注册机制：
 
-**1. Direct ServiceManager Registration**:
+**1. 直接 ServiceManager 注册**：
 ```java
 ServiceManager.addService(Context.ACTIVITY_SERVICE, this);
 ServiceManager.addService(Context.WINDOW_SERVICE, wm);
 ServiceManager.addService(Context.CONNECTIVITY_SERVICE, connectivity);
 ```
 
-Used for services that need to be directly accessible via Binder name lookup.
+用于需要通过 Binder 名称查找直接访问的服务。
 
-**2. SystemServiceManager Lifecycle**:
+**2. SystemServiceManager 生命周期**：
 ```java
 mSystemServiceManager.startService(PowerManagerService.class);
 mSystemServiceManager.startService(NotificationManagerService.class);
 ```
 
-Used for services that follow the `SystemService` lifecycle pattern. These services use `publishBinderService()` internally to register with ServiceManager.
+用于遵循 `SystemService` 生命周期模式的服务。这些服务内部使用 `publishBinderService()` 向 ServiceManager 注册。
 
-### 12.2 Service Access from Apps
+### 12.2 应用的服务访问
 
-The `@SystemService` annotation maps Manager classes to service names:
+`@SystemService` 注解将 Manager 类映射到服务名称：
 
-| Annotation | Context Constant | Manager Class |
+| 注解 | Context 常量 | Manager 类 |
 |------------|-----------------|---------------|
 | `@SystemService(Context.ACTIVITY_SERVICE)` | `"activity"` | `ActivityManager` |
 | `@SystemService(Context.LOCATION_SERVICE)` | `"location"` | `LocationManager` |
@@ -987,119 +986,119 @@ The `@SystemService` annotation maps Manager classes to service names:
 | `@SystemService(Context.CAMERA_SERVICE)` | `"camera"` | `CameraManager` |
 | `@SystemService(Context.WINDOW_SERVICE)` | `"window"` | `WindowManager` |
 
-### 12.3 Internal (System-to-System) Access
+### 12.3 内部（系统间）访问
 
-System services access each other through `LocalServices`:
+系统服务之间通过 `LocalServices` 互相访问：
 ```java
 LocalServices.addService(SystemServiceManager.class, mSystemServiceManager);
-// Later...
+// 后续...
 PackageManagerInternal pmi = LocalServices.getService(PackageManagerInternal.class);
 ```
 
-This avoids Binder IPC overhead for intra-process communication within `system_server`.
+这避免了 `system_server` 内进程内通信的 Binder IPC 开销。
 
 ---
 
-## 13. Permission Checks and Security Enforcement
+## 13. 权限检查和安全执行
 
-### 13.1 Layered Permission Model
+### 13.1 分层权限模型
 
-Android 11 system services enforce security at multiple layers:
+Android 11 系统服务在多个层次强制执行安全性：
 
-**Layer 1 -- Binder-level identity**:
+**第 1 层 -- Binder 级身份**：
 ```java
 int callingUid = Binder.getCallingUid();
 int callingPid = Binder.getCallingPid();
 ```
 
-**Layer 2 -- Permission checks**:
+**第 2 层 -- 权限检查**：
 ```java
-// Direct permission check
+// 直接权限检查
 if (checkCallingPermission(permission) != PERMISSION_GRANTED) {
     throw new SecurityException("...");
 }
 
-// Or via enforceCallingPermission (throws automatically)
+// 或通过 enforceCallingPermission（自动抛出异常）
 enforceCallingPermission(android.Manifest.permission.DUMP, "requestBugReport");
 ```
 
-**Layer 3 -- AppOps enforcement**:
+**第 3 层 -- AppOps 执行**：
 ```java
 AppOpsManager appOps = context.getSystemService(AppOpsManager.class);
 int mode = appOps.checkOp(AppOpsManager.OP_SYSTEM_ALERT_WINDOW, uid, packageName);
 ```
 
-**Layer 4 -- UID-based checks**:
+**第 4 层 -- 基于 UID 的检查**：
 ```java
 if (callingUid != Process.SYSTEM_UID && callingUid != Process.ROOT_UID) {
     throw new SecurityException("Only system can call this");
 }
 ```
 
-### 13.2 Common Permission Patterns in AMS
+### 13.2 AMS 中常见的权限模式
 
-From the grep of AMS permission checks (20+ distinct patterns):
+从 AMS 权限检查的 grep 结果（20+ 种不同模式）：
 
-| Permission | Purpose | Lines (examples) |
+| 权限 | 用途 | 行号（示例） |
 |-----------|---------|-------|
-| `FORCE_STOP_PACKAGES` | Force-stopping apps | 3724, 3739, 4452 |
-| `KILL_BACKGROUND_PROCESSES` | Killing background apps | 4349, 4393, 4431 |
-| `PACKAGE_USAGE_STATS` | Usage statistics access | 3282, 3291, 8800, 8813 |
-| `SET_PROCESS_LIMIT` | Setting process limits | 5917, 5955 |
-| `SET_DEBUG_APP` | Debug app configuration | 8402 |
-| `SET_ALWAYS_FINISH` | "Always finish" setting | 8533 |
-| `SET_ACTIVITY_WATCHER` | Watching activity lifecycle | 8783 |
-| `DUMP` | Dumping debug info | 8652, 8764 |
-| `MANAGE_DEBUGGING` | Debug management | 8777 |
-| `SHUTDOWN` | Device shutdown | 8360 |
-| `GET_PROCESS_STATE_AND_OOM_SCORE` | Process state info | 6058 |
-| `GET_INTENT_SENDER_INTENT` | Intent sender info | 5863 |
+| `FORCE_STOP_PACKAGES` | 强制停止应用 | 3724, 3739, 4452 |
+| `KILL_BACKGROUND_PROCESSES` | 终止后台应用 | 4349, 4393, 4431 |
+| `PACKAGE_USAGE_STATS` | 使用统计访问 | 3282, 3291, 8800, 8813 |
+| `SET_PROCESS_LIMIT` | 设置进程限制 | 5917, 5955 |
+| `SET_DEBUG_APP` | 调试应用配置 | 8402 |
+| `SET_ALWAYS_FINISH` | "始终结束"设置 | 8533 |
+| `SET_ACTIVITY_WATCHER` | 监视 Activity 生命周期 | 8783 |
+| `DUMP` | 转储调试信息 | 8652, 8764 |
+| `MANAGE_DEBUGGING` | 调试管理 | 8777 |
+| `SHUTDOWN` | 设备关机 | 8360 |
+| `GET_PROCESS_STATE_AND_OOM_SCORE` | 进程状态信息 | 6058 |
+| `GET_INTENT_SENDER_INTENT` | Intent 发送者信息 | 5863 |
 
-### 13.3 WMS Security
+### 13.3 WMS 安全
 
-WMS enforces window-type-based permissions through `WindowManagerPolicy.checkAddPermission()` (line 1384):
-- `INTERNAL_SYSTEM_WINDOW` -- Required for system window types
-- `SYSTEM_ALERT_WINDOW` -- Required for overlay windows (TYPE_APPLICATION_OVERLAY)
-- The check happens before any window state is modified
+WMS 通过 `WindowManagerPolicy.checkAddPermission()`（第 1384 行）执行基于窗口类型的权限检查：
+- `INTERNAL_SYSTEM_WINDOW` -- 系统窗口类型所需
+- `SYSTEM_ALERT_WINDOW` -- 悬浮窗所需（TYPE_APPLICATION_OVERLAY）
+- 检查在任何窗口状态修改之前进行
 
-### 13.4 Identity Clearing Pattern
+### 13.4 身份清除模式
 
-A critical security pattern used throughout services:
+一种在各服务中广泛使用的关键安全模式：
 ```java
 final long token = Binder.clearCallingIdentity();
 try {
-    // Perform operations as system, not as caller
+    // 以系统身份而非调用者身份执行操作
 } finally {
     Binder.restoreCallingIdentity(token);
 }
 ```
 
-This is essential when a service needs to call other services on behalf of the caller. Without clearing, the downstream service would see the app's UID and potentially deny the operation.
+这在服务需要代表调用者调用其他服务时至关重要。如果不清除，下游服务将看到应用的 UID 并可能拒绝操作。
 
 ---
 
-## 14. Hidden and System APIs
+## 14. 隐藏和系统 API
 
-### 14.1 ServiceManager Itself
+### 14.1 ServiceManager 本身
 
-The entire `ServiceManager` class is `@hide` (line 30):
+整个 `ServiceManager` 类是 `@hide`（第 30 行）：
 ```java
 /** @hide */
 public final class ServiceManager {
 ```
 
-Apps cannot directly register or look up services. They must use `Context.getSystemService()`.
+应用不能直接注册或查找服务。它们必须使用 `Context.getSystemService()`。
 
-### 14.2 @SystemApi in LocationManager
+### 14.2 LocationManager 中的 @SystemApi
 
-LocationManager exposes system-only APIs (from API surface files):
-- `flushGnssBatch()` -- requires `LOCATION_HARDWARE`
-- `getCurrentLocation(LocationRequest, ...)` -- overloaded version with `LocationRequest`
+LocationManager 暴露仅限系统的 API（来自 API 表面文件）：
+- `flushGnssBatch()` -- 需要 `LOCATION_HARDWARE`
+- `getCurrentLocation(LocationRequest, ...)` -- 带 `LocationRequest` 的重载版本
 - `getExtraLocationControllerPackage()` / `setExtraLocationControllerPackage()`
 
-### 14.3 @UnsupportedAppUsage Annotations
+### 14.3 @UnsupportedAppUsage 注解
 
-Many hidden APIs are annotated with `@UnsupportedAppUsage` to track non-SDK interface usage:
+许多隐藏 API 使用 `@UnsupportedAppUsage` 注解来跟踪非 SDK 接口使用：
 ```java
 // ServiceManager, line 35
 @UnsupportedAppUsage
@@ -1110,11 +1109,11 @@ private static IServiceManager sServiceManager;
 public static IBinder getService(String name)
 ```
 
-Android 11 enforces restrictions on these APIs based on the `maxTargetSdk` parameter.
+Android 11 根据 `maxTargetSdk` 参数对这些 API 执行限制。
 
-### 14.4 ILocationManager Hidden Operations
+### 14.4 ILocationManager 隐藏操作
 
-The AIDL interface (lines 123-130) includes internal-only operations:
+AIDL 接口（第 123-130 行）包含仅供内部使用的操作：
 ```
 // --- internal ---
 void locationCallbackFinished(ILocationListener listener);
@@ -1122,10 +1121,10 @@ String[] getBackgroundThrottlingWhitelist();
 String[] getIgnoreSettingsWhitelist();
 ```
 
-### 14.5 Test APIs
+### 14.5 测试 API
 
 ```java
-// LocationManager @TestApi methods
+// LocationManager @TestApi 方法
 void addTestProvider(...)
 void removeTestProvider(...)
 void setTestProviderLocation(...)
@@ -1134,60 +1133,60 @@ void setTestProviderEnabled(...)
 
 ---
 
-## 15. Key Findings and Recommendations
+## 15. 关键发现和建议
 
-### 15.1 Architecture Observations
+### 15.1 架构观察
 
-1. **Massive File Sizes**: AMS (20,423 lines) and PMS (25,775 lines) are among the largest files in AOSP. While Android 10 began splitting AMS by moving activity management to ATMS, these files remain difficult to maintain and understand.
+1. **巨大的文件规模**：AMS（20,423 行）和 PMS（25,775 行）是 AOSP 中最大的文件之一。虽然 Android 10 开始通过将 Activity 管理移至 ATMS 来拆分 AMS，但这些文件仍然难以维护和理解。
 
-2. **Boot Order Dependencies**: The three-phase boot (bootstrap, core, other) with explicit boot phases provides structured initialization, but the comment at SystemServer line 342 acknowledges: "TODO: remove all of these references by improving dependency resolution and boot phases."
+2. **启动顺序依赖**：三阶段启动（引导、核心、其他）配合显式启动阶段提供了结构化的初始化，但 SystemServer 第 342 行的注释承认："TODO: 通过改进依赖解析和启动阶段来移除所有这些引用。"
 
-3. **Mixed Registration Patterns**: Some services use `ServiceManager.addService()` directly while others use `SystemServiceManager.startService()`. This inconsistency makes it harder to trace service initialization.
+3. **混合注册模式**：一些服务直接使用 `ServiceManager.addService()`，而其他服务使用 `SystemServiceManager.startService()`。这种不一致性使得追踪服务初始化变得更加困难。
 
-4. **Binder Thread Limit**: The system server uses 31 Binder threads (line 327). Under heavy load, this can become a bottleneck, causing `TransactionTooLargeException` or delayed service responses.
+4. **Binder 线程限制**：系统服务器使用 31 个 Binder 线程（第 327 行）。在高负载下，这可能成为瓶颈，导致 `TransactionTooLargeException` 或服务响应延迟。
 
-### 15.2 Security Observations
+### 15.2 安全观察
 
-1. **Permission Enforcement Consistency**: AMS has 30+ distinct `enforceCallingPermission()` / `checkCallingPermission()` call sites. The lack of a centralized permission policy makes auditing difficult.
+1. **权限执行一致性**：AMS 有 30 多个不同的 `enforceCallingPermission()` / `checkCallingPermission()` 调用点。缺乏集中的权限策略使审计变得困难。
 
-2. **Identity Clearing Risks**: The `clearCallingIdentity()` / `restoreCallingIdentity()` pattern is used extensively but is error-prone. If `restoreCallingIdentity()` is missed (e.g., due to an exception not caught in the finally block), subsequent operations would run with elevated privileges.
+2. **身份清除风险**：`clearCallingIdentity()` / `restoreCallingIdentity()` 模式被广泛使用，但容易出错。如果 `restoreCallingIdentity()` 被遗漏（例如，由于 finally 块中未捕获的异常），后续操作将以提升的权限运行。
 
-3. **Accessibility Service Power**: Accessibility services effectively gain full screen access once enabled. The security boundary is entirely the user's explicit enablement, with no runtime permission prompts.
+3. **无障碍服务的强大能力**：无障碍服务一旦启用就能有效获得完整的屏幕访问权限。安全边界完全依赖于用户的显式启用，没有运行时权限提示。
 
-4. **Notification Listener Access**: Similar to accessibility services, notification listeners get access to all notification content. The low-RAM device restriction (line 91) is a pragmatic limitation, not a security measure.
+4. **通知监听器访问**：与无障碍服务类似，通知监听器可以访问所有通知内容。低内存设备的限制（第 91 行）是一个务实的限制，而非安全措施。
 
-### 15.3 Developer-Facing Observations
+### 15.3 面向开发者的观察
 
-1. **Sensor Battery Drain**: The SensorManager documentation explicitly warns about battery drain (lines 39-42), but the system does not auto-unregister sensors when activities are paused. This remains a common source of battery issues in apps.
+1. **传感器电量消耗**：SensorManager 文档明确警告电量消耗（第 39-42 行），但系统不会在 Activity 暂停时自动注销传感器。这仍然是应用中电池问题的常见来源。
 
-2. **Camera Service Architecture**: The Camera2 API's `CameraManagerGlobal` singleton (line 1090) implements `IBinder.DeathRecipient` for camera service death handling. Developers must handle `CameraAccessException` gracefully since the camera service can be restarted independently.
+2. **摄像头服务架构**：Camera2 API 的 `CameraManagerGlobal` 单例（第 1090 行）实现 `IBinder.DeathRecipient` 用于摄像头服务死亡处理。开发者必须优雅地处理 `CameraAccessException`，因为摄像头服务可以独立重启。
 
-3. **Location Background Restrictions**: Android 11's location permission model requires careful handling. The `ACCESS_BACKGROUND_LOCATION` permission must be requested separately, and users are prompted to grant it via Settings, not a runtime dialog.
+3. **位置后台限制**：Android 11 的位置权限模型需要仔细处理。`ACCESS_BACKGROUND_LOCATION` 权限必须单独请求，用户通过设置而非运行时对话框授权。
 
-### 15.4 Key File Reference Table
+### 15.4 关键文件参考表
 
-| File | Path | Lines | Purpose |
+| 文件 | 路径 | 行数 | 用途 |
 |------|------|-------|---------|
-| SystemServer.java | `frameworks/base/services/java/com/android/server/SystemServer.java` | 2,567 | Boot orchestration |
-| ActivityManagerService.java | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` | 20,423 | Process/component lifecycle |
-| PackageManagerService.java | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 25,775 | Package management |
-| WindowManagerService.java | `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java` | 8,278 | Window management |
-| LocationManagerService.java | `frameworks/base/services/core/java/com/android/server/location/LocationManagerService.java` | ~2,500 | Location services |
-| LocationManager.java | `frameworks/base/location/java/android/location/LocationManager.java` | ~1,800 | Location client API |
-| SensorManager.java | `frameworks/base/core/java/android/hardware/SensorManager.java` | ~1,200 | Sensor client API |
-| CameraManager.java | `frameworks/base/core/java/android/hardware/camera2/CameraManager.java` | ~1,400 | Camera2 client API |
-| Camera.java | `frameworks/base/core/java/android/hardware/Camera.java` | ~2,400 | Legacy camera API |
-| AccessibilityManagerService.java | `frameworks/base/services/accessibility/java/com/android/server/accessibility/AccessibilityManagerService.java` | ~5,000 | Accessibility services |
-| NotificationListenerService.java | `frameworks/base/core/java/android/service/notification/NotificationListenerService.java` | ~1,400 | Notification listener API |
-| ServiceManager.java | `frameworks/base/core/java/android/os/ServiceManager.java` | ~300 | Service registry |
-| Binder.java | `frameworks/base/core/java/android/os/Binder.java` | ~1,200 | IPC base class |
-| IActivityManager.aidl | `frameworks/base/core/java/android/app/IActivityManager.aidl` | ~600 | AMS Binder interface |
-| IPackageManager.aidl | `frameworks/base/core/java/android/content/pm/IPackageManager.aidl` | ~800 | PMS Binder interface |
-| IWindowManager.aidl | `frameworks/base/core/java/android/view/IWindowManager.aidl` | ~400 | WMS Binder interface |
-| ILocationManager.aidl | `frameworks/base/location/java/android/location/ILocationManager.aidl` | 131 | Location Binder interface |
-| SystemService.java | `frameworks/base/services/core/java/com/android/server/SystemService.java` | ~200 | Boot phase definitions |
-| SystemServiceManager.java | `frameworks/base/services/core/java/com/android/server/SystemServiceManager.java` | ~400 | Service lifecycle management |
+| SystemServer.java | `frameworks/base/services/java/com/android/server/SystemServer.java` | 2,567 | 启动编排 |
+| ActivityManagerService.java | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` | 20,423 | 进程/组件生命周期 |
+| PackageManagerService.java | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 25,775 | 包管理 |
+| WindowManagerService.java | `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java` | 8,278 | 窗口管理 |
+| LocationManagerService.java | `frameworks/base/services/core/java/com/android/server/location/LocationManagerService.java` | ~2,500 | 位置服务 |
+| LocationManager.java | `frameworks/base/location/java/android/location/LocationManager.java` | ~1,800 | 位置客户端 API |
+| SensorManager.java | `frameworks/base/core/java/android/hardware/SensorManager.java` | ~1,200 | 传感器客户端 API |
+| CameraManager.java | `frameworks/base/core/java/android/hardware/camera2/CameraManager.java` | ~1,400 | Camera2 客户端 API |
+| Camera.java | `frameworks/base/core/java/android/hardware/Camera.java` | ~2,400 | 旧版摄像头 API |
+| AccessibilityManagerService.java | `frameworks/base/services/accessibility/java/com/android/server/accessibility/AccessibilityManagerService.java` | ~5,000 | 无障碍服务 |
+| NotificationListenerService.java | `frameworks/base/core/java/android/service/notification/NotificationListenerService.java` | ~1,400 | 通知监听器 API |
+| ServiceManager.java | `frameworks/base/core/java/android/os/ServiceManager.java` | ~300 | 服务注册表 |
+| Binder.java | `frameworks/base/core/java/android/os/Binder.java` | ~1,200 | IPC 基类 |
+| IActivityManager.aidl | `frameworks/base/core/java/android/app/IActivityManager.aidl` | ~600 | AMS Binder 接口 |
+| IPackageManager.aidl | `frameworks/base/core/java/android/content/pm/IPackageManager.aidl` | ~800 | PMS Binder 接口 |
+| IWindowManager.aidl | `frameworks/base/core/java/android/view/IWindowManager.aidl` | ~400 | WMS Binder 接口 |
+| ILocationManager.aidl | `frameworks/base/location/java/android/location/ILocationManager.aidl` | 131 | 位置 Binder 接口 |
+| SystemService.java | `frameworks/base/services/core/java/com/android/server/SystemService.java` | ~200 | 启动阶段定义 |
+| SystemServiceManager.java | `frameworks/base/services/core/java/com/android/server/SystemServiceManager.java` | ~400 | 服务生命周期管理 |
 
 ---
 
-*Report generated from Android 11 AOSP source code review. All line numbers reference the source files at `~/aosp-android-11/`.*
+*报告基于 Android 11 AOSP 源代码审查生成。所有行号引用位于 `~/aosp-android-11/` 的源文件。*

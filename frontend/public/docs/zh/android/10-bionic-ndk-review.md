@@ -1,219 +1,219 @@
-# Bionic C Library and NDK -- 代码审查 Report
+# Bionic C 库和 NDK -- 代码审查报告
 
-## Android 11 (AOSP) -- Comprehensive Architecture and API Surface Review
-
----
-
-## 1. Executive Summary
-
-Bionic is Android's custom C library, math library, and dynamic linker. Unlike desktop Linux distributions that use glibc or musl, Bionic is purpose-built for Android's constraints: smaller memory footprint, BSD-licensed where possible, tight integration with the Android security model, and support for the NDK stable API surface. This review covers the architecture of bionic's libc, libm, the dynamic linker, threading, memory allocation, security features, and the NDK API surface as found in the Android 11 AOSP source tree at `~/aosp-android-11/bionic/`.
+## Android 11 (AOSP) -- 综合架构和 API 接口审查
 
 ---
 
-## 2. Overall Architecture
+## 1. 概要
 
-### 2.1 Component Structure
+Bionic 是 Android 的自定义 C 库、数学库和动态链接器。与使用 glibc 或 musl 的桌面 Linux 发行版不同，Bionic 是专为 Android 的约束条件而构建的：更小的内存占用、尽可能使用 BSD 许可证、与 Android 安全模型紧密集成，以及支持 NDK 稳定 API 接口。本审查涵盖 bionic 的 libc 架构、libm、动态链接器、线程、内存分配、安全特性以及在 Android 11 AOSP 源码树 `~/aosp-android-11/bionic/` 中找到的 NDK API 接口。
 
-Bionic consists of five major components:
+---
 
-| 组件 | Output | 描述 |
+## 2. 总体架构
+
+### 2.1 组件结构
+
+Bionic 由五个主要组件组成：
+
+| 组件 | 输出 | 描述 |
 |-----------|--------|-------------|
-| `libc/` | `libc.so`, `libc.a` | Core C library (stdio, string, syscall wrappers) |
-| `libm/` | `libm.so`, `libm.a` | Math library (sin, cos, sqrt, etc.) |
-| `libdl/` | `libdl.so` | Dynamic linker interface stubs (dlopen, dlsym) |
-| `libstdc++/` | `libstdc++.so` | Minimal C++ ABI support (__cxa_guard_acquire, etc.) |
-| `linker/` | `/system/bin/linker`, `linker64` | Dynamic linker/loader |
+| `libc/` | `libc.so`, `libc.a` | 核心 C 库（stdio、string、系统调用包装器） |
+| `libm/` | `libm.so`, `libm.a` | 数学库（sin、cos、sqrt 等） |
+| `libdl/` | `libdl.so` | 动态链接器接口桩（dlopen、dlsym） |
+| `libstdc++/` | `libstdc++.so` | 最小 C++ ABI 支持（__cxa_guard_acquire 等） |
+| `linker/` | `/system/bin/linker`, `linker64` | 动态链接器/加载器 |
 
-Key source paths:
-- `/home/dspfac/aosp-android-11/bionic/libc/bionic/` -- Core C library implementations
-- `/home/dspfac/aosp-android-11/bionic/libc/include/` -- Public header files
-- `/home/dspfac/aosp-android-11/bionic/libc/kernel/` -- Scrubbed kernel UAPI headers
-- `/home/dspfac/aosp-android-11/bionic/libc/arch-arm/`, `arch-arm64/`, `arch-x86/`, `arch-x86_64/` -- Architecture-specific code
-- `/home/dspfac/aosp-android-11/bionic/libc/upstream-freebsd/`, `upstream-netbsd/`, `upstream-openbsd/` -- BSD-origin code
+关键源码路径：
+- `/home/dspfac/aosp-android-11/bionic/libc/bionic/` -- 核心 C 库实现
+- `/home/dspfac/aosp-android-11/bionic/libc/include/` -- 公共头文件
+- `/home/dspfac/aosp-android-11/bionic/libc/kernel/` -- 经过清理的内核 UAPI 头文件
+- `/home/dspfac/aosp-android-11/bionic/libc/arch-arm/`, `arch-arm64/`, `arch-x86/`, `arch-x86_64/` -- 架构特定代码
+- `/home/dspfac/aosp-android-11/bionic/libc/upstream-freebsd/`, `upstream-netbsd/`, `upstream-openbsd/` -- 来自 BSD 的代码
 
-### 2.2 Key Differences from glibc/musl
+### 2.2 与 glibc/musl 的主要区别
 
-| 功能 | Bionic | glibc | musl |
+| 特性 | Bionic | glibc | musl |
 |---------|--------|-------|------|
-| License | BSD | LGPL | MIT |
-| Size | ~1 MB | ~8 MB | ~1 MB |
-| `locale` support | Minimal (C/C.UTF-8 only) | Full ICU | Limited |
-| `pthread_mutex_t` size | 40 bytes (LP64) | 40 bytes | 40 bytes |
-| DNS resolver | NetBSD-derived | glibc-native | Minimal |
-| Allocator | Scudo (default) / jemalloc | ptmalloc2 | Simple bump |
-| `FORTIFY_SOURCE` | Clang-based with `__pass_object_size` | GCC `__builtin_object_size` | Not supported |
-| Symbol versioning | Supported (API 23+) | Full | Partial |
-| System call mechanism | Auto-generated stubs from `SYSCALLS.TXT` | Hand-written | Hand-written |
+| 许可证 | BSD | LGPL | MIT |
+| 大小 | ~1 MB | ~8 MB | ~1 MB |
+| `locale` 支持 | 最小（仅 C/C.UTF-8） | 完整 ICU | 有限 |
+| `pthread_mutex_t` 大小 | 40 字节 (LP64) | 40 字节 | 40 字节 |
+| DNS 解析器 | 源自 NetBSD | glibc 原生 | 最小 |
+| 分配器 | Scudo（默认）/ jemalloc | ptmalloc2 | 简单递增 |
+| `FORTIFY_SOURCE` | 基于 Clang 的 `__pass_object_size` | GCC `__builtin_object_size` | 不支持 |
+| 符号版本控制 | 支持（API 23+） | 完整 | 部分 |
+| 系统调用机制 | 从 `SYSCALLS.TXT` 自动生成桩 | 手写 | 手写 |
 
-Bionic deliberately omits many glibc-isms: no `LD_LIBRARY_PATH` for setuid binaries, no NSS, no `locale` infrastructure beyond basic C/UTF-8, and no backwards-compatible ABI cruft. This makes it smaller, faster to load, and more secure, but means NDK developers cannot rely on glibc-specific behavior.
+Bionic 有意省略了许多 glibc 特性：setuid 二进制文件不使用 `LD_LIBRARY_PATH`、没有 NSS、没有超出基本 C/UTF-8 的 `locale` 基础设施，也没有向后兼容的 ABI 历史包袱。这使其更小、加载更快、更安全，但意味着 NDK 开发者不能依赖 glibc 特定行为。
 
 ---
 
-## 3. Dynamic Linker (linker/linker64)
+## 3. 动态链接器（linker/linker64）
 
-### 3.1 Architecture
+### 3.1 架构
 
-The dynamic linker is a standalone executable (`/system/bin/linker` for 32-bit, `/system/bin/linker64` for 64-bit) specified in the ELF `DT_INTERP` header. Its entry point is `__linker_init()` in:
+动态链接器是一个独立的可执行文件（32 位为 `/system/bin/linker`，64 位为 `/system/bin/linker64`），在 ELF `DT_INTERP` 头中指定。其入口点是以下文件中的 `__linker_init()`：
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/linker/linker_main.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/linker/linker_main.cpp`
 
-The boot sequence:
-1. `__linker_init()` -- Initialize TLS, fix the linker's own relocations, call IFUNC resolvers
-2. `__linker_init_post_relocation()` -- Initialize main thread, protect RELRO, call constructors
-3. `linker_main()` -- Sanitize environment, initialize system properties, load executable and dependencies, resolve symbols, call constructors, return entry point
+启动序列：
+1. `__linker_init()` -- 初始化 TLS，修复链接器自身的重定位，调用 IFUNC 解析器
+2. `__linker_init_post_relocation()` -- 初始化主线程，保护 RELRO，调用构造函数
+3. `linker_main()` -- 清理环境变量，初始化系统属性，加载可执行文件和依赖项，解析符号，调用构造函数，返回入口点
 
-The linker self-bootstraps: it must relocate itself before it can use any global variables or call library functions. This is achieved by initially operating without GOT references, then linking itself as the first `soinfo` object.
+链接器自举：它必须在能够使用任何全局变量或调用库函数之前重定位自身。这是通过最初不使用 GOT 引用来实现的，然后将自身作为第一个 `soinfo` 对象进行链接。
 
-### 3.2 Linker Namespaces
+### 3.2 链接器命名空间
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/linker/linker_namespaces.h`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/linker/linker_namespaces.h`
 
-Android 7.0+ introduced linker namespaces (`android_namespace_t`) to isolate library visibility. Each namespace has:
-- `ld_library_paths_` -- Search paths for `dlopen`
-- `default_library_paths_` -- Default search paths
-- `permitted_paths_` -- Allowed paths for isolated namespaces
-- `whitelisted_libs_` -- Explicitly allowed libraries
-- `linked_namespaces_` -- Cross-namespace links with shared library allowlists
+Android 7.0+ 引入了链接器命名空间（`android_namespace_t`）来隔离库可见性。每个命名空间包含：
+- `ld_library_paths_` -- `dlopen` 的搜索路径
+- `default_library_paths_` -- 默认搜索路径
+- `permitted_paths_` -- 隔离命名空间的允许路径
+- `whitelisted_libs_` -- 明确允许的库
+- `linked_namespaces_` -- 跨命名空间链接及共享库允许列表
 
-This is the mechanism that enforces the **private API restriction** (API 24+): apps cannot load non-NDK platform libraries. The linker creates isolated namespaces for apps and links them only to the public NDK namespace.
+这是实施**私有 API 限制**（API 24+）的机制：应用无法加载非 NDK 平台库。链接器为应用创建隔离命名空间，仅将它们链接到公共 NDK 命名空间。
 
-Configuration is loaded from `/system/etc/ld.config.txt` (or architecture-specific variants) or the generated `/linkerconfig/ld.config.txt`.
+配置从 `/system/etc/ld.config.txt`（或架构特定变体）或生成的 `/linkerconfig/ld.config.txt` 加载。
 
-### 3.3 Library Loading (dlopen/dlsym)
+### 3.3 库加载（dlopen/dlsym）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/linker/dlfcn.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/linker/dlfcn.cpp`
 
-All `dlopen`/`dlsym`/`dlclose` calls are serialized behind a single recursive mutex (`g_dl_mutex`). The actual implementation functions (`__loader_dlopen`, `__loader_dlsym`, etc.) are exported with `__LINKER_PUBLIC__` visibility from the linker and patched into `libdl.so`'s stub table at runtime.
+所有 `dlopen`/`dlsym`/`dlclose` 调用都在单个递归互斥锁（`g_dl_mutex`）后面串行化。实际实现函数（`__loader_dlopen`、`__loader_dlsym` 等）从链接器以 `__LINKER_PUBLIC__` 可见性导出，并在运行时修补到 `libdl.so` 的桩表中。
 
-Key design decisions:
-- `dlopen` uses caller address to determine which namespace to search (via `caller_addr` parameter)
-- Symbol lookup uses GNU hash tables (API 23+) for faster resolution
-- Breadth-first dependency loading (API 22+, fixing earlier depth-first bugs)
-- `RTLD_LOCAL` properly implemented from API 23
-- Libraries can be loaded directly from APK/ZIP files (API 23+) if page-aligned and uncompressed
+关键设计决策：
+- `dlopen` 使用调用者地址来确定搜索哪个命名空间（通过 `caller_addr` 参数）
+- 符号查找使用 GNU 哈希表（API 23+）以加快解析速度
+- 广度优先依赖加载（API 22+，修复了早期深度优先的错误）
+- `RTLD_LOCAL` 从 API 23 起正确实现
+- 库可以直接从 APK/ZIP 文件加载（API 23+），前提是页对齐且未压缩
 
-### 3.4 Greylist for Backwards Compatibility
+### 3.4 灰名单向后兼容
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/linker/linker.cpp` (line ~192)
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/linker/linker.cpp`（约第 192 行）
 
-A hardcoded greylist allows certain private platform libraries to be loaded by apps targeting API < 24:
+硬编码的灰名单允许目标 API < 24 的应用加载某些私有平台库：
 ```
 libandroid_runtime.so, libbinder.so, libcrypto.so, libcutils.so,
 libexpat.so, libgui.so, libmedia.so, ...
 ```
 
-This is a transitional mechanism; apps should migrate to NDK-only APIs.
+这是一个过渡机制；应用应迁移到仅使用 NDK API。
 
-### 3.5 Impact on App Developers
+### 3.5 对应用开发者的影响
 
-- **Private API enforcement**: Native code must use only NDK-stable libraries. Linking against internal platform libraries will fail at load time on API 24+.
-- **Namespace isolation**: `System.loadLibrary()` automatically sets up the correct namespace. Direct `dlopen` calls from JNI should use relative paths.
-- **Library from APK**: Set `android:extractNativeLibs="false"` to load `.so` files directly from the APK without extraction, saving disk space.
-- **SONAME requirements**: Libraries must have a proper SONAME (API 23+) and no text relocations (API 23+).
+- **私有 API 执行**：原生代码必须仅使用 NDK 稳定库。在 API 24+ 上链接内部平台库将在加载时失败。
+- **命名空间隔离**：`System.loadLibrary()` 自动设置正确的命名空间。来自 JNI 的直接 `dlopen` 调用应使用相对路径。
+- **从 APK 加载库**：设置 `android:extractNativeLibs="false"` 可直接从 APK 加载 `.so` 文件而无需解压，节省磁盘空间。
+- **SONAME 要求**：库必须具有正确的 SONAME（API 23+）且不能有文本重定位（API 23+）。
 
 ---
 
-## 4. System Call Wrappers
+## 4. 系统调用包装器
 
-### 4.1 Auto-Generated Stubs
+### 4.1 自动生成的桩
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/SYSCALLS.TXT`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/SYSCALLS.TXT`
 
-Bionic generates system call stubs automatically from a declarative file (`SYSCALLS.TXT`). Each line specifies:
+Bionic 从声明式文件（`SYSCALLS.TXT`）自动生成系统调用桩。每行指定：
 ```
 return_type func_name[:syscall_name]([parameters]) arch_list
 ```
 
-For example:
+例如：
 ```
 uid_t   getuid:getuid32()         lp32
 uid_t   getuid:getuid()           lp64
 ```
 
-The `gensyscalls.py` script generates architecture-specific assembly stubs into `arch-{arm,arm64,x86,x86_64}/syscalls/`. This approach ensures consistency and makes adding new syscalls mechanical.
+`gensyscalls.py` 脚本将架构特定的汇编桩生成到 `arch-{arm,arm64,x86,x86_64}/syscalls/` 中。这种方法确保了一致性，使添加新系统调用成为机械性工作。
 
-### 4.2 VDSO Integration
+### 4.2 VDSO 集成
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/vdso.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/vdso.cpp`
 
-Bionic uses the kernel's Virtual Dynamic Shared Object (VDSO) to avoid system call overhead for frequently-used functions:
-- `clock_gettime()` -- Falls back to `__clock_gettime` syscall if VDSO unavailable
+Bionic 使用内核的虚拟动态共享对象（VDSO）来避免频繁使用函数的系统调用开销：
+- `clock_gettime()` -- 如果 VDSO 不可用则回退到 `__clock_gettime` 系统调用
 - `clock_getres()`
 - `gettimeofday()`
 - `time()`
 
-The VDSO function pointers are resolved during `__libc_init_vdso()` by walking the VDSO's ELF symbol table. This is transparent to app developers but provides measurable performance improvements for time-related calls.
+VDSO 函数指针在 `__libc_init_vdso()` 期间通过遍历 VDSO 的 ELF 符号表来解析。这对应用开发者是透明的，但为时间相关调用提供了可测量的性能改进。
 
-### 4.3 Impact on App Developers
+### 4.3 对应用开发者的影响
 
-- System calls are architecture-transparent; NDK code uses standard POSIX wrappers.
-- Not all Linux syscalls have libc wrappers. For unusual syscalls, use `syscall(3)`.
-- Certain syscalls are blocked by seccomp filters on app processes (see Section 8).
+- 系统调用对架构透明；NDK 代码使用标准 POSIX 包装器。
+- 并非所有 Linux 系统调用都有 libc 包装器。对于不常见的系统调用，使用 `syscall(3)`。
+- 某些系统调用被应用进程的 seccomp 过滤器阻止（参见第 8 节）。
 
 ---
 
-## 5. Thread Implementation (pthread)
+## 5. 线程实现（pthread）
 
-### 5.1 Thread Creation
+### 5.1 线程创建
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp`
 
-Thread creation in Bionic follows this sequence:
+Bionic 中的线程创建遵循以下序列：
 
-1. **Allocate thread mapping**: A single `mmap` call allocates stack + guard page + static TLS + trailing guard page (`__allocate_thread_mapping`). The entire region is initially `PROT_NONE`, then the writable portion is `mprotect`'d to `PROT_READ|PROT_WRITE`.
+1. **分配线程映射**：一次 `mmap` 调用分配栈 + 守护页 + 静态 TLS + 尾部守护页（`__allocate_thread_mapping`）。整个区域最初为 `PROT_NONE`，然后可写部分通过 `mprotect` 设为 `PROT_READ|PROT_WRITE`。
 
-2. **Initialize TLS**: The `bionic_tcb` (Thread Control Block) and `bionic_tls` structures are placed within the static TLS region. Stack guard canaries are copied to TLS.
+2. **初始化 TLS**：`bionic_tcb`（线程控制块）和 `bionic_tls` 结构放置在静态 TLS 区域内。栈守护金丝雀值被复制到 TLS。
 
-3. **Clone**: The thread is created via the `clone()` syscall with flags: `CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID`.
+3. **Clone**：通过 `clone()` 系统调用创建线程，标志为：`CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID`。
 
-4. **Startup handshake**: The new thread waits on `startup_handshake_lock` until the parent has registered it with the debugger and returned `pthread_t`.
+4. **启动握手**：新线程在 `startup_handshake_lock` 上等待，直到父线程将其注册到调试器并返回 `pthread_t`。
 
-5. **Signal stack**: Each thread gets a dedicated alternate signal stack (`sigaltstack`) and, on AArch64, a Shadow Call Stack (SCS).
+5. **信号栈**：每个线程获得一个专用的备用信号栈（`sigaltstack`），在 AArch64 上还有一个影子调用栈（SCS）。
 
-### 5.2 Mutex Implementation
+### 5.2 互斥锁实现
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_mutex.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_mutex.cpp`
 
-Mutexes are implemented using Linux futexes. The mutex state is packed into atomic integers:
-- Bits 0-3: type (normal, recursive, errorcheck)
-- Bit 4: process-shared flag
-- Bit 5: priority inheritance protocol
+互斥锁使用 Linux futex 实现。互斥锁状态打包在原子整数中：
+- 位 0-3：类型（normal、recursive、errorcheck）
+- 位 4：进程共享标志
+- 位 5：优先级继承协议
 
-The implementation uses futex operations directly rather than any higher-level kernel synchronization.
+实现直接使用 futex 操作，而不使用任何更高层的内核同步机制。
 
-### 5.3 Thread-Local Storage (TLS)
+### 5.3 线程本地存储（TLS）
 
-**Key files:**
+**关键文件：**
 - `/home/dspfac/aosp-android-11/bionic/libc/bionic/bionic_elf_tls.cpp`
 - `/home/dspfac/aosp-android-11/bionic/libc/private/bionic_tls.h`
 
-Bionic supports ELF TLS (Thread-Local Storage) with both static and dynamic TLS models. A generation counter tracks when new TLS modules are loaded (via `dlopen`), and `__tls_get_addr` uses a fast path when the generation hasn't changed. TLS slot allocation includes reserved slots for: thread self-pointer, stack guard, bionic TLS structure, and errno.
+Bionic 支持 ELF TLS（线程本地存储），包括静态和动态 TLS 模型。代计数器跟踪何时加载了新的 TLS 模块（通过 `dlopen`），`__tls_get_addr` 在代未变化时使用快速路径。TLS 槽分配包括保留槽，用于：线程自身指针、栈守护、bionic TLS 结构和 errno。
 
-### 5.4 Impact on App Developers
+### 5.4 对应用开发者的影响
 
-- `pthread_create` uses `clone()` directly, not `fork+exec`, making thread creation efficient.
-- Default stack size is 1 MB (adjustable via `pthread_attr_setstacksize`).
-- `pthread_gettid_np()` is an Android extension that returns the Linux thread ID (useful for logging).
-- `pthread_setname_np()` works on Android and sets the `/proc/[pid]/task/[tid]/comm` name.
-- Priority inheritance mutexes are available via `PTHREAD_PRIO_INHERIT`.
+- `pthread_create` 直接使用 `clone()`，而非 `fork+exec`，使线程创建高效。
+- 默认栈大小为 1 MB（可通过 `pthread_attr_setstacksize` 调整）。
+- `pthread_gettid_np()` 是 Android 扩展，返回 Linux 线程 ID（对日志记录有用）。
+- `pthread_setname_np()` 在 Android 上可用，设置 `/proc/[pid]/task/[tid]/comm` 名称。
+- 优先级继承互斥锁可通过 `PTHREAD_PRIO_INHERIT` 使用。
 
 ---
 
-## 6. Memory Allocation
+## 6. 内存分配
 
-### 6.1 Allocator Architecture
+### 6.1 分配器架构
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_common.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_common.cpp`
 
-Bionic uses a dispatch-table architecture for memory allocation. All standard functions (`malloc`, `free`, `calloc`, `realloc`, etc.) check a `dispatch_table` pointer:
-- If non-null, calls are forwarded to a debug/interceptor allocator
-- Otherwise, calls go to the default allocator via the `Malloc()` macro
+Bionic 使用分派表架构进行内存分配。所有标准函数（`malloc`、`free`、`calloc`、`realloc` 等）检查一个 `dispatch_table` 指针：
+- 如果非空，调用被转发到调试/拦截分配器
+- 否则，调用通过 `Malloc()` 宏进入默认分配器
 
-### 6.2 Default Allocator: Scudo vs jemalloc
+### 6.2 默认分配器：Scudo 与 jemalloc
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/Android.bp` (lines 94-120)
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/Android.bp`（第 94-120 行）
 
-Android 11 uses **Scudo** as the default allocator on non-svelte (non-low-memory) devices, falling back to **jemalloc5** on svelte devices:
+Android 11 在非精简（非低内存）设备上使用 **Scudo** 作为默认分配器，在精简设备上回退到 **jemalloc5**：
 
 ```
 libc_scudo_product_variables = {
@@ -225,94 +225,94 @@ libc_scudo_product_variables = {
 }
 ```
 
-Scudo is a hardened allocator designed to detect and mitigate heap-based vulnerabilities. It provides:
-- Chunk headers with checksums to detect corruption
-- Quarantine for recently freed memory
-- Randomized allocation patterns
-- Guard pages between size classes
+Scudo 是一个加固分配器，旨在检测和缓解基于堆的漏洞。它提供：
+- 带有校验和的块头以检测损坏
+- 最近释放内存的隔离区
+- 随机化的分配模式
+- 大小类之间的守护页
 
-### 6.3 GWP-ASan (Guarded With Probability - ASan)
+### 6.3 GWP-ASan（概率守护 - ASan）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/gwp_asan_wrappers.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/gwp_asan_wrappers.cpp`
 
-GWP-ASan is a sampling allocator integrated into bionic that probabilistically places allocations in guarded memory. Configuration:
-- `MaxSimultaneousAllocations`: 32
-- `SampleRate`: 2500 (1 in 2500 allocations are guarded)
-- Catches use-after-free and buffer overflows in production at minimal performance cost
+GWP-ASan 是集成到 bionic 中的采样分配器，以概率方式将分配放置在受保护的内存中。配置：
+- `MaxSimultaneousAllocations`：32
+- `SampleRate`：2500（每 2500 次分配中有 1 次被守护）
+- 在生产环境中以最小性能成本捕获释放后使用和缓冲区溢出
 
-### 6.4 Tagged Pointers (Heap Pointer Tagging)
+### 6.4 标记指针（堆指针标记）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_tagged_pointers.h`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_tagged_pointers.h`
 
-On AArch64, bionic uses ARM's Top Byte Ignore (TBI) feature to tag heap pointers with a fixed tag (`0xB4`). The `MaybeTagPointer()` function sets the top byte on every allocation, and `MaybeUntagAndCheckPointer()` validates and strips it on deallocation. This catches:
-- Use-after-free (freed memory has tag stripped)
-- Pointer truncation bugs (code that masks off the top byte)
+在 AArch64 上，bionic 使用 ARM 的高字节忽略（TBI）特性用固定标记（`0xB4`）标记堆指针。`MaybeTagPointer()` 函数在每次分配时设置高字节，`MaybeUntagAndCheckPointer()` 在释放时验证并去除标记。这可以捕获：
+- 释放后使用（已释放的内存标记被去除）
+- 指针截断错误（屏蔽高字节的代码）
 
-The tag `0xB4` was chosen to be: identifiable by developers, different from pattern-init (`0xAA`), always pointing to inaccessible memory if dereferenced as a raw address, and having a bitset-mirror nibble pattern.
+标记 `0xB4` 的选择标准：开发者可识别、与模式初始化（`0xAA`）不同、作为原始地址解引用时总是指向不可访问的内存，以及具有位集镜像半字节模式。
 
-### 6.5 Heap Tagging Levels
+### 6.5 堆标记级别
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/heap_tagging.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/heap_tagging.cpp`
 
-Three levels are supported:
-- `M_HEAP_TAGGING_LEVEL_NONE` -- No tagging
-- `M_HEAP_TAGGING_LEVEL_TBI` -- Top-Byte-Ignore pointer tagging
-- `M_HEAP_TAGGING_LEVEL_ASYNC` -- ARM MTE (Memory Tagging Extension) asynchronous mode (experimental in Android 11)
+支持三个级别：
+- `M_HEAP_TAGGING_LEVEL_NONE` -- 无标记
+- `M_HEAP_TAGGING_LEVEL_TBI` -- 高字节忽略指针标记
+- `M_HEAP_TAGGING_LEVEL_ASYNC` -- ARM MTE（内存标记扩展）异步模式（Android 11 中为实验性）
 
-### 6.6 Impact on App Developers
+### 6.6 对应用开发者的影响
 
-- NDK code should use standard `malloc`/`free`; the allocator is transparent.
-- `malloc_usable_size()` returns the usable size of an allocation, which may be larger than requested.
-- Debug malloc can be enabled via `libc.debug.malloc.options` system property.
-- On AArch64 devices, heap pointers will have non-zero top bytes. Code that assumes pointers fit in fewer bits will break.
-- GWP-ASan crash reports appear in tombstones and provide allocation/deallocation stack traces.
+- NDK 代码应使用标准 `malloc`/`free`；分配器是透明的。
+- `malloc_usable_size()` 返回分配的可用大小，可能大于请求的大小。
+- 可以通过 `libc.debug.malloc.options` 系统属性启用调试 malloc。
+- 在 AArch64 设备上，堆指针的高字节非零。假设指针占用较少位数的代码将会崩溃。
+- GWP-ASan 崩溃报告出现在 tombstone 中，并提供分配/释放堆栈跟踪。
 
 ---
 
-## 7. NDK Stable API Surface
+## 7. NDK 稳定 API 接口
 
-### 7.1 API Versioning Mechanism
+### 7.1 API 版本控制机制
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/include/android/versioning.h`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/include/android/versioning.h`
 
-The `__INTRODUCED_IN(api_level)` macro annotates every NDK API with the minimum API level at which it became available:
+`__INTRODUCED_IN(api_level)` 宏为每个 NDK API 标注其可用的最低 API 级别：
 ```c
 #define __INTRODUCED_IN(api_level) __attribute__((annotate("introduced_in=" #api_level)))
 ```
 
-The NDK build system uses these annotations to generate weak symbol references, ensuring that apps targeting older API levels get link-time errors rather than runtime crashes.
+NDK 构建系统使用这些注解生成弱符号引用，确保目标为较旧 API 级别的应用在链接时而非运行时获得错误。
 
-### 7.2 Symbol Map
+### 7.2 符号映射
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/libc.map.txt`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/libc.map.txt`
 
-The `libc.map.txt` file defines every exported symbol in `libc.so`, organized by version block (`LIBC`, `LIBC_N`, `LIBC_O`, etc.). Each symbol optionally has:
-- Architecture restrictions (`# arm`, `# x86`, etc.)
-- API level introduction (`# introduced=21`)
-- Architecture-specific introduction (`# introduced-arm=17`)
+`libc.map.txt` 文件定义了 `libc.so` 中导出的每个符号，按版本块组织（`LIBC`、`LIBC_N`、`LIBC_O` 等）。每个符号可选地包含：
+- 架构限制（`# arm`、`# x86` 等）
+- API 级别引入（`# introduced=21`）
+- 架构特定引入（`# introduced-arm=17`）
 
-This file controls the NDK stable API surface. Symbols not listed here are not available to NDK apps.
+此文件控制 NDK 稳定 API 接口。未在此列出的符号对 NDK 应用不可用。
 
-### 7.3 Public Headers
+### 7.3 公共头文件
 
-**Key directory:** `/home/dspfac/aosp-android-11/bionic/libc/include/`
+**关键目录：** `/home/dspfac/aosp-android-11/bionic/libc/include/`
 
-The public headers include standard POSIX headers (`stdio.h`, `stdlib.h`, `pthread.h`, etc.) plus Android-specific extensions:
-- `<android/fdsan.h>` -- File descriptor sanitizer
-- `<android/set_abort_message.h>` -- Set abort message for crash reporting
-- `<android/versioning.h>` -- API level macros
-- `<dlfcn.h>` -- Dynamic linking (with `dlvsym` from API 24)
+公共头文件包括标准 POSIX 头文件（`stdio.h`、`stdlib.h`、`pthread.h` 等）以及 Android 特定扩展：
+- `<android/fdsan.h>` -- 文件描述符清理器
+- `<android/set_abort_message.h>` -- 设置崩溃报告的中止消息
+- `<android/versioning.h>` -- API 级别宏
+- `<dlfcn.h>` -- 动态链接（API 24 起支持 `dlvsym`）
 
 ### 7.4 dlopen/dlsym API
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/include/dlfcn.h`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/include/dlfcn.h`
 
-The dynamic linking API provides:
-- `dlopen()`, `dlclose()`, `dlsym()`, `dlerror()`, `dladdr()`
-- `dlvsym()` (API 24+) -- Symbol lookup with version
-- Android extensions: `android_dlopen_ext()` with `android_dlextinfo` for namespace-aware loading
+动态链接 API 提供：
+- `dlopen()`、`dlclose()`、`dlsym()`、`dlerror()`、`dladdr()`
+- `dlvsym()`（API 24+）-- 带版本的符号查找
+- Android 扩展：`android_dlopen_ext()` 和 `android_dlextinfo` 用于命名空间感知加载
 
-Notable: LP32 (32-bit) has different `RTLD_NOW`/`RTLD_GLOBAL` values than LP64 for historical compatibility:
+值得注意的是：LP32（32 位）的 `RTLD_NOW`/`RTLD_GLOBAL` 值与 LP64 不同，这是为了历史兼容性：
 ```c
 #if !defined(__LP64__)
 #undef RTLD_NOW
@@ -322,275 +322,275 @@ Notable: LP32 (32-bit) has different `RTLD_NOW`/`RTLD_GLOBAL` values than LP64 f
 #endif
 ```
 
-### 7.5 Impact on App Developers
+### 7.5 对应用开发者的影响
 
-- Always set `minSdkVersion` correctly; APIs guarded by `__INTRODUCED_IN` will fail to link if unavailable.
-- Use `__builtin_available()` or weak symbol checks for runtime feature detection.
-- The NDK sysroot (`platforms/android-{N}/usr/lib/`) defines exactly which symbols are available at each API level.
-- Private symbols (not in `libc.map.txt`) are not part of the stable API and may change or disappear.
+- 始终正确设置 `minSdkVersion`；由 `__INTRODUCED_IN` 守护的 API 在不可用时将无法链接。
+- 使用 `__builtin_available()` 或弱符号检查进行运行时特性检测。
+- NDK sysroot（`platforms/android-{N}/usr/lib/`）精确定义了每个 API 级别可用的符号。
+- 私有符号（不在 `libc.map.txt` 中）不属于稳定 API，可能会更改或消失。
 
 ---
 
-## 8. Security Features
+## 8. 安全特性
 
-### 8.1 ASLR (Address Space Layout Randomization)
+### 8.1 ASLR（地址空间布局随机化）
 
-The linker enforces PIE (Position-Independent Executable) for all executables since Lollipop (API 21). Non-PIE executables are rejected at `linker_main.cpp` line 401:
+链接器自 Lollipop（API 21）起对所有可执行文件强制执行 PIE（位置无关可执行文件）。非 PIE 可执行文件在 `linker_main.cpp` 第 401 行被拒绝：
 ```cpp
 if (elf_hdr->e_type != ET_DYN) {
-    // error: Android 5.0 and later only support position-independent executables (-fPIE)
+    // 错误：Android 5.0 及更高版本仅支持位置无关可执行文件（-fPIE）
 }
 ```
 
-Library load addresses are randomized by the kernel's mmap randomization.
+库加载地址由内核的 mmap 随机化来随机化。
 
-### 8.2 Stack Canaries
+### 8.2 栈金丝雀
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/__stack_chk_fail.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/__stack_chk_fail.cpp`
 
-Stack canaries (`-fstack-protector`) are enabled by default. The canary value is stored in TLS (`TLS_SLOT_STACK_GUARD`) and initialized from `__stack_chk_guard` global. On corruption, `__stack_chk_fail()` calls `async_safe_fatal("stack corruption detected (-fstack-protector)")`.
+栈金丝雀（`-fstack-protector`）默认启用。金丝雀值存储在 TLS 中（`TLS_SLOT_STACK_GUARD`），从 `__stack_chk_guard` 全局变量初始化。检测到损坏时，`__stack_chk_fail()` 调用 `async_safe_fatal("stack corruption detected (-fstack-protector)")`。
 
 ### 8.3 FORTIFY_SOURCE
 
-**Key files:** `/home/dspfac/aosp-android-11/bionic/libc/include/bits/fortify/string.h` and sibling headers
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/include/bits/fortify/string.h` 及同级头文件
 
-Bionic implements `FORTIFY_SOURCE` using Clang-specific features:
-- `__pass_object_size` attribute for compile-time buffer size tracking
-- `__builtin___memcpy_chk`, `__builtin___strcpy_chk`, etc. for runtime bounds checking
-- `__clang_error_if` for compile-time error diagnostics
+Bionic 使用 Clang 特定特性实现 `FORTIFY_SOURCE`：
+- `__pass_object_size` 属性用于编译时缓冲区大小跟踪
+- `__builtin___memcpy_chk`、`__builtin___strcpy_chk` 等用于运行时边界检查
+- `__clang_error_if` 用于编译时错误诊断
 
-FORTIFY is applied to: `string.h` (memcpy, strcpy, strcat, strlen, etc.), `stdio.h` (fgets, sprintf, snprintf), `unistd.h` (read, write, readlink), `stdlib.h` (realpath), `poll.h`, `fcntl.h`, `sys/socket.h`.
+FORTIFY 应用于：`string.h`（memcpy、strcpy、strcat、strlen 等）、`stdio.h`（fgets、sprintf、snprintf）、`unistd.h`（read、write、readlink）、`stdlib.h`（realpath）、`poll.h`、`fcntl.h`、`sys/socket.h`。
 
-This is more advanced than glibc's FORTIFY because it leverages Clang's compiler support for `__builtin_object_size` with the `__pass_object_size` attribute, catching more bugs at compile time.
+这比 glibc 的 FORTIFY 更先进，因为它利用了 Clang 对 `__builtin_object_size` 配合 `__pass_object_size` 属性的编译器支持，在编译时捕获更多错误。
 
-### 8.4 Shadow Call Stack (SCS)
+### 8.4 影子调用栈（SCS）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp` (lines 109-133)
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp`（第 109-133 行）
 
-On AArch64, each thread gets a Shadow Call Stack -- a separate stack that stores only return addresses, using register `x18` as the SCS pointer. The SCS is placed at a random offset within a large guard region (`SCS_GUARD_REGION_SIZE`). This protects against ROP (Return-Oriented Programming) attacks by keeping return addresses in a location that cannot be overwritten by stack buffer overflows.
+在 AArch64 上，每个线程获得一个影子调用栈 -- 一个仅存储返回地址的独立栈，使用寄存器 `x18` 作为 SCS 指针。SCS 放置在大型守护区域（`SCS_GUARD_REGION_SIZE`）内的随机偏移处。这通过将返回地址保存在栈缓冲区溢出无法覆盖的位置来防护 ROP（面向返回的编程）攻击。
 
-### 8.5 Control Flow Integrity (CFI)
+### 8.5 控制流完整性（CFI）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/linker/linker_cfi.h`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/linker/linker_cfi.h`
 
-The linker maintains a CFI shadow map that tracks `__cfi_check` functions for each loaded DSO. When a CFI-enabled library is loaded, the shadow is updated to map code addresses to their CFI validation functions. This enables cross-DSO CFI checks.
+链接器维护一个 CFI 影子映射，跟踪每个加载的 DSO 的 `__cfi_check` 函数。当加载 CFI 启用的库时，影子会更新以将代码地址映射到其 CFI 验证函数。这实现了跨 DSO 的 CFI 检查。
 
-### 8.6 RELRO (RELocation Read-Only)
+### 8.6 RELRO（重定位只读）
 
-The linker protects relocation data after resolving symbols by marking it read-only (`protect_relro()`), preventing attackers from overwriting GOT entries.
+链接器在解析符号后通过将重定位数据标记为只读（`protect_relro()`）来保护它，防止攻击者覆盖 GOT 条目。
 
-### 8.7 Seccomp-BPF Filtering
+### 8.7 Seccomp-BPF 过滤
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/seccomp/seccomp_policy.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/seccomp/seccomp_policy.cpp`
 
-Bionic installs seccomp-BPF filters that restrict which system calls app processes can make. Three filter levels exist:
-- `APP` -- Regular app processes (most restrictive)
-- `APP_ZYGOTE` -- App zygote processes
-- `SYSTEM` -- System processes (least restrictive)
+Bionic 安装 seccomp-BPF 过滤器来限制应用进程可以进行的系统调用。存在三个过滤级别：
+- `APP` -- 普通应用进程（最严格）
+- `APP_ZYGOTE` -- 应用 zygote 进程
+- `SYSTEM` -- 系统进程（最宽松）
 
-Filters support dual-architecture mode (64-bit primary + 32-bit secondary) and validate both architecture and syscall number. Disallowed syscalls trigger `SECCOMP_RET_TRAP` (SIGSYS).
+过滤器支持双架构模式（64 位主 + 32 位辅），同时验证架构和系统调用号。不允许的系统调用触发 `SECCOMP_RET_TRAP`（SIGSYS）。
 
-The whitelist files define which syscalls are permitted:
-- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_APP.TXT` -- Additional syscalls for app compatibility
-- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_COMMON.TXT` -- Common whitelist
-- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_BLACKLIST_APP.TXT` -- Explicitly blocked syscalls
+白名单文件定义允许的系统调用：
+- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_APP.TXT` -- 用于应用兼容性的额外系统调用
+- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_COMMON.TXT` -- 通用白名单
+- `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_BLACKLIST_APP.TXT` -- 明确阻止的系统调用
 
-### 8.8 File Descriptor Sanitizer (fdsan)
+### 8.8 文件描述符清理器（fdsan）
 
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/bionic/fdsan.cpp`
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/bionic/fdsan.cpp`
 
-fdsan tracks file descriptor ownership using tagged close operations. Each fd has an associated 64-bit owner tag encoding the owner type (FILE*, DIR*, unique_fd, FileInputStream, ParcelFileDescriptor, SQLite, etc.) and an identifier. Common bugs detected:
-- Double-close: closing an fd that was already closed
-- Ownership violation: closing an fd owned by a different object (e.g., closing a FileInputStream's fd from native code)
+fdsan 使用标记关闭操作跟踪文件描述符所有权。每个 fd 有一个关联的 64 位所有者标记，编码所有者类型（FILE*、DIR*、unique_fd、FileInputStream、ParcelFileDescriptor、SQLite 等）和标识符。常见检测的错误：
+- 双重关闭：关闭已经关闭的 fd
+- 所有权违规：关闭属于不同对象的 fd（例如，从原生代码关闭 FileInputStream 的 fd）
 
-In Android 11, fdsan defaults to `ANDROID_FDSAN_ERROR_LEVEL_FATAL`, making fd misuse a fatal error. The `close()` function itself routes through `android_fdsan_close_with_tag()`.
+在 Android 11 中，fdsan 默认为 `ANDROID_FDSAN_ERROR_LEVEL_FATAL`，使 fd 误用成为致命错误。`close()` 函数本身通过 `android_fdsan_close_with_tag()` 路由。
 
-### 8.9 Impact on App Developers
+### 8.9 对应用开发者的影响
 
-- **PIE is mandatory**: All native executables must be position-independent.
-- **FORTIFY catches bugs at compile time**: Using NDK r21+ with default flags enables FORTIFY automatically.
-- **fdsan errors are fatal**: Code that double-closes fds or violates ownership will crash. Use RAII wrappers like `unique_fd`.
-- **Seccomp restrictions**: Certain system calls (especially 32-bit legacy calls) are blocked for app processes. Use standard libc wrappers rather than raw `syscall()`.
-- **Tagged heap pointers**: On AArch64, pointers returned by `malloc` have non-zero top bytes. Pointer arithmetic that strips the top byte will crash.
+- **PIE 是强制性的**：所有原生可执行文件必须是位置无关的。
+- **FORTIFY 在编译时捕获错误**：使用 NDK r21+ 和默认标志会自动启用 FORTIFY。
+- **fdsan 错误是致命的**：双重关闭 fd 或违反所有权的代码将崩溃。使用 RAII 包装器如 `unique_fd`。
+- **Seccomp 限制**：某些系统调用（特别是 32 位遗留调用）对应用进程被阻止。使用标准 libc 包装器而非原始 `syscall()`。
+- **标记堆指针**：在 AArch64 上，`malloc` 返回的指针高字节非零。去除高字节的指针运算将导致崩溃。
 
 ---
 
-## 9. Native Library Loading Mechanism
+## 9. 原生库加载机制
 
-### 9.1 Java to Native Bridge
+### 9.1 Java 到原生桥接
 
-When an Android app calls `System.loadLibrary("foo")`, the following chain executes:
-1. **Java layer**: `Runtime.loadLibrary0()` resolves the library path using the ClassLoader's native library directory
-2. **Native bridge**: `android_dlopen_ext()` is called with the appropriate `android_namespace_t`
-3. **Linker**: `do_dlopen()` loads the ELF file, resolves dependencies, applies relocations, calls constructors
-4. **JNI registration**: `JNI_OnLoad()` is called if present, allowing the library to register native methods
+当 Android 应用调用 `System.loadLibrary("foo")` 时，执行以下链条：
+1. **Java 层**：`Runtime.loadLibrary0()` 使用 ClassLoader 的原生库目录解析库路径
+2. **原生桥接**：使用适当的 `android_namespace_t` 调用 `android_dlopen_ext()`
+3. **链接器**：`do_dlopen()` 加载 ELF 文件，解析依赖项，应用重定位，调用构造函数
+4. **JNI 注册**：如果存在 `JNI_OnLoad()`，则调用它允许库注册原生方法
 
-### 9.2 Library Search Order
+### 9.2 库搜索顺序
 
-Since API 23, the linker divides libraries into:
-- **Global group**: main executable, `LD_PRELOAD`, libraries with `DF_1_GLOBAL`
-- **Local group**: breadth-first transitive closure of the library's `DT_NEEDED` entries
+自 API 23 起，链接器将库分为：
+- **全局组**：主可执行文件、`LD_PRELOAD`、带有 `DF_1_GLOBAL` 的库
+- **本地组**：库的 `DT_NEEDED` 条目的广度优先传递闭包
 
-Search order: global group first, then local group. This allows tools like ASAN to intercept any symbol.
+搜索顺序：先全局组，后本地组。这允许 ASAN 等工具拦截任何符号。
 
-### 9.3 Loading from APK
+### 9.3 从 APK 加载
 
-Since API 23, `.so` files can be loaded directly from APKs/ZIPs:
+自 API 23 起，`.so` 文件可以直接从 APK/ZIP 加载：
 ```
 dlopen("my_app.apk!/lib/arm64-v8a/libfoo.so", RTLD_NOW)
 ```
-Requirements: page-aligned (4096-byte boundary) and stored uncompressed.
+要求：页对齐（4096 字节边界）且未压缩存储。
 
-### 9.4 Impact on App Developers
+### 9.4 对应用开发者的影响
 
-- Use `System.loadLibrary()` rather than `System.load()` when possible -- it handles architecture directories automatically.
-- For complex dependency graphs, consider linking everything into a single `.so` to avoid load-order issues.
-- The linker logs can be enabled for debugging: `adb shell setprop debug.ld.app.com.example.myapp dlerror,dlopen,dlsym`
+- 尽可能使用 `System.loadLibrary()` 而非 `System.load()` -- 它自动处理架构目录。
+- 对于复杂的依赖关系图，考虑将所有内容链接到单个 `.so` 以避免加载顺序问题。
+- 可以启用链接器日志进行调试：`adb shell setprop debug.ld.app.com.example.myapp dlerror,dlopen,dlsym`
 
 ---
 
-## 10. JNI Interface and Java-Native Bridge
+## 10. JNI 接口和 Java 原生桥接
 
-### 10.1 JNI from Bionic's Perspective
+### 10.1 从 Bionic 角度看 JNI
 
-Bionic itself does not implement JNI -- that is the ART runtime's responsibility. However, bionic provides the infrastructure that JNI relies on:
+Bionic 本身不实现 JNI -- 那是 ART 运行时的职责。然而，bionic 提供了 JNI 依赖的基础设施：
 
-- **Thread model**: JNI's `AttachCurrentThread`/`DetachCurrentThread` depend on bionic's pthread implementation
-- **Dynamic linking**: `System.loadLibrary` uses bionic's linker with namespace isolation
-- **Signal handling**: Bionic's signal infrastructure coexists with ART's signal handlers for null pointer checks and stack overflow detection
-- **TLS**: JNI thread-local data uses bionic's TLS slot mechanism
+- **线程模型**：JNI 的 `AttachCurrentThread`/`DetachCurrentThread` 依赖于 bionic 的 pthread 实现
+- **动态链接**：`System.loadLibrary` 使用 bionic 的链接器和命名空间隔离
+- **信号处理**：bionic 的信号基础设施与 ART 的信号处理程序共存，用于空指针检查和栈溢出检测
+- **TLS**：JNI 线程本地数据使用 bionic 的 TLS 槽机制
 
 ### 10.2 `__BIONIC_WEAK_FOR_NATIVE_BRIDGE`
 
-Functions like `pthread_create` are marked with `__BIONIC_WEAK_FOR_NATIVE_BRIDGE`, allowing the native bridge (used for running ARM apps on x86 via translation) to intercept and wrap these calls.
+像 `pthread_create` 这样的函数被标记为 `__BIONIC_WEAK_FOR_NATIVE_BRIDGE`，允许原生桥接（用于通过翻译在 x86 上运行 ARM 应用）拦截和包装这些调用。
 
 ---
 
-## 11. libm -- Math Library
+## 11. libm -- 数学库
 
-### 11.1 Architecture
+### 11.1 架构
 
-**Key directory:** `/home/dspfac/aosp-android-11/bionic/libm/`
+**关键目录：** `/home/dspfac/aosp-android-11/bionic/libm/`
 
-libm is organized by architecture with upstream code from FreeBSD and NetBSD:
-- `upstream-freebsd/` -- Most math functions (sin, cos, exp, log, etc.)
-- `upstream-netbsd/` -- Some specialized functions
-- `arm64/`, `amd64/`, `arm/`, `x86/`, `x86_64/` -- Architecture-optimized implementations
-- `fake_long_double.c` -- On architectures where `long double` equals `double`, provides wrappers
+libm 按架构组织，上游代码来自 FreeBSD 和 NetBSD：
+- `upstream-freebsd/` -- 大多数数学函数（sin、cos、exp、log 等）
+- `upstream-netbsd/` -- 一些专门函数
+- `arm64/`、`amd64/`、`arm/`、`x86/`、`x86_64/` -- 架构优化实现
+- `fake_long_double.c` -- 在 `long double` 等于 `double` 的架构上提供包装器
 
-### 11.2 Impact on App Developers
+### 11.2 对应用开发者的影响
 
-- `libm.so` is automatically linked when using the NDK.
-- `long double` behavior differs by architecture: it is 64-bit on ARM and 80-bit on x86.
-- All standard C99/C11 math functions are available.
+- 使用 NDK 时 `libm.so` 自动链接。
+- `long double` 行为因架构而异：ARM 上为 64 位，x86 上为 80 位。
+- 所有标准 C99/C11 数学函数均可用。
 
 ---
 
-## 12. Notable Android-Specific APIs and Extensions
+## 12. 值得注意的 Android 特定 API 和扩展
 
-### 12.1 Android-Only APIs in libc
+### 12.1 libc 中的 Android 专有 API
 
-| API | Header | 描述 |
+| API | 头文件 | 描述 |
 |-----|--------|-------------|
-| `android_fdsan_*` | `<android/fdsan.h>` | File descriptor ownership tracking |
-| `android_set_abort_message()` | `<android/set_abort_message.h>` | Set message for crash reports |
-| `android_mallopt()` | Platform-internal | Control allocator behavior |
-| `pthread_gettid_np()` | `<pthread.h>` | Get Linux thread ID |
-| `__system_property_get()` | `<sys/system_properties.h>` | Read system properties |
-| `android_dlopen_ext()` | `<android/dlext.h>` | Extended dlopen with namespace support |
+| `android_fdsan_*` | `<android/fdsan.h>` | 文件描述符所有权跟踪 |
+| `android_set_abort_message()` | `<android/set_abort_message.h>` | 设置崩溃报告的消息 |
+| `android_mallopt()` | 平台内部 | 控制分配器行为 |
+| `pthread_gettid_np()` | `<pthread.h>` | 获取 Linux 线程 ID |
+| `__system_property_get()` | `<sys/system_properties.h>` | 读取系统属性 |
+| `android_dlopen_ext()` | `<android/dlext.h>` | 带命名空间支持的扩展 dlopen |
 
-### 12.2 Missing POSIX Features
+### 12.2 缺失的 POSIX 功能
 
-Bionic deliberately omits or stubs certain POSIX features:
-- No `locale` support beyond C/C.UTF-8
-- No user/group database functions (`getpwnam_r` works but only for the current user)
-- No `wordexp()`
-- Limited `regex` support
-- No `aio_*` (POSIX asynchronous I/O)
-
----
-
-## 13. Build System and Configuration
-
-### 13.1 Build Configuration
-
-**Key file:** `/home/dspfac/aosp-android-11/bionic/libc/Android.bp`
-
-The build uses the Soong build system with these notable configuration choices:
-- `-D_LIBC=1` -- Internal bionic builds
-- `-Werror=pointer-to-int-cast`, `-Werror=int-to-pointer-cast` -- Catch 32/64-bit porting bugs
-- `-Wframe-larger-than=2048` -- Prevent large stack frames
-- `-fno-emulated-tls` -- Required for GWP-ASan
-- MTE support via `experimental_mte` product variable
-
-### 13.2 Allocator Selection
-
-The default allocator is selected at build time:
-- **Non-svelte devices**: Scudo (security-hardened)
-- **Svelte (low-memory) devices**: jemalloc5 (memory-efficient)
-
-The `libc_jemalloc_wrapper` library provides functions not directly implemented by jemalloc.
+Bionic 有意省略或桩化了某些 POSIX 功能：
+- 不支持超出 C/C.UTF-8 的 `locale`
+- 无用户/组数据库函数（`getpwnam_r` 可用但仅适用于当前用户）
+- 无 `wordexp()`
+- 有限的 `regex` 支持
+- 无 `aio_*`（POSIX 异步 I/O）
 
 ---
 
-## 14. Key Concerns and Recommendations for App Developers
+## 13. 构建系统和配置
 
-### 14.1 Common Pitfalls
+### 13.1 构建配置
 
-1. **Pointer tagging on AArch64**: Do not assume pointers use only 48 bits. Heap pointers have `0xB4` in the top byte.
-2. **fdsan crashes**: Ensure all file descriptors are closed exactly once and through the correct owner.
-3. **Private API access**: Do not `dlopen` platform-internal libraries. Use NDK APIs only.
-4. **32-bit legacy syscalls**: Some 32-bit syscalls are blocked by seccomp. Use standard libc wrappers.
-5. **Thread stack size**: Default is 1 MB, which may be insufficient for deeply recursive native code.
-6. **`locale` limitations**: Do not rely on locale-dependent behavior in native code.
+**关键文件：** `/home/dspfac/aosp-android-11/bionic/libc/Android.bp`
 
-### 14.2 Debugging and Diagnostics
+构建使用 Soong 构建系统，具有以下值得注意的配置选择：
+- `-D_LIBC=1` -- bionic 内部构建
+- `-Werror=pointer-to-int-cast`、`-Werror=int-to-pointer-cast` -- 捕获 32/64 位移植错误
+- `-Wframe-larger-than=2048` -- 防止大栈帧
+- `-fno-emulated-tls` -- GWP-ASan 所需
+- 通过 `experimental_mte` 产品变量支持 MTE
 
-- Enable linker debug logging: `adb shell setprop debug.ld.app.<package> dlerror,dlopen,dlsym`
-- Enable malloc debugging: `adb shell setprop libc.debug.malloc.options "backtrace guard"`
-- Use fdsan: fatal by default on API 30+; check logcat for ownership violation messages
-- GWP-ASan crash reports include allocation and deallocation stack traces in tombstones
+### 13.2 分配器选择
 
-### 14.3 Performance Considerations
+默认分配器在构建时选择：
+- **非精简设备**：Scudo（安全加固）
+- **精简（低内存）设备**：jemalloc5（内存高效）
 
-- VDSO eliminates syscall overhead for time-related functions
-- Scudo is slightly slower than jemalloc but provides security guarantees
-- GNU hash tables (API 23+) significantly speed up symbol resolution
-- Loading libraries from APK avoids extraction overhead
+`libc_jemalloc_wrapper` 库提供 jemalloc 未直接实现的函数。
 
 ---
 
-## 15. File Reference Index
+## 14. 应用开发者的关键关注点和建议
 
-| Area | Key File(s) |
+### 14.1 常见陷阱
+
+1. **AArch64 上的指针标记**：不要假设指针仅使用 48 位。堆指针的高字节为 `0xB4`。
+2. **fdsan 崩溃**：确保所有文件描述符恰好关闭一次且通过正确的所有者关闭。
+3. **私有 API 访问**：不要 `dlopen` 平台内部库。仅使用 NDK API。
+4. **32 位遗留系统调用**：某些 32 位系统调用被 seccomp 阻止。使用标准 libc 包装器。
+5. **线程栈大小**：默认为 1 MB，对深度递归的原生代码可能不足。
+6. **`locale` 限制**：不要在原生代码中依赖区域设置相关行为。
+
+### 14.2 调试和诊断
+
+- 启用链接器调试日志：`adb shell setprop debug.ld.app.<package> dlerror,dlopen,dlsym`
+- 启用 malloc 调试：`adb shell setprop libc.debug.malloc.options "backtrace guard"`
+- 使用 fdsan：API 30+ 默认为致命错误；检查 logcat 中的所有权违规消息
+- GWP-ASan 崩溃报告在 tombstone 中包含分配和释放堆栈跟踪
+
+### 14.3 性能考虑
+
+- VDSO 消除了时间相关函数的系统调用开销
+- Scudo 比 jemalloc 略慢但提供安全保证
+- GNU 哈希表（API 23+）显著加速符号解析
+- 从 APK 加载库避免了解压开销
+
+---
+
+## 15. 文件参考索引
+
+| 领域 | 关键文件 |
 |------|-------------|
-| Bionic overview | `/home/dspfac/aosp-android-11/bionic/README.md` |
-| NDK changes guide | `/home/dspfac/aosp-android-11/bionic/android-changes-for-ndk-developers.md` |
-| Linker entry point | `/home/dspfac/aosp-android-11/bionic/linker/linker_main.cpp` |
-| Linker core logic | `/home/dspfac/aosp-android-11/bionic/linker/linker.cpp` |
-| dlopen/dlsym impl | `/home/dspfac/aosp-android-11/bionic/linker/dlfcn.cpp` |
-| Linker namespaces | `/home/dspfac/aosp-android-11/bionic/linker/linker_namespaces.h` |
-| soinfo structure | `/home/dspfac/aosp-android-11/bionic/linker/linker_soinfo.h` |
-| CFI shadow | `/home/dspfac/aosp-android-11/bionic/linker/linker_cfi.h` |
-| Syscall definitions | `/home/dspfac/aosp-android-11/bionic/libc/SYSCALLS.TXT` |
-| Thread creation | `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp` |
-| Mutex implementation | `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_mutex.cpp` |
+| Bionic 概述 | `/home/dspfac/aosp-android-11/bionic/README.md` |
+| NDK 变更指南 | `/home/dspfac/aosp-android-11/bionic/android-changes-for-ndk-developers.md` |
+| 链接器入口点 | `/home/dspfac/aosp-android-11/bionic/linker/linker_main.cpp` |
+| 链接器核心逻辑 | `/home/dspfac/aosp-android-11/bionic/linker/linker.cpp` |
+| dlopen/dlsym 实现 | `/home/dspfac/aosp-android-11/bionic/linker/dlfcn.cpp` |
+| 链接器命名空间 | `/home/dspfac/aosp-android-11/bionic/linker/linker_namespaces.h` |
+| soinfo 结构 | `/home/dspfac/aosp-android-11/bionic/linker/linker_soinfo.h` |
+| CFI 影子 | `/home/dspfac/aosp-android-11/bionic/linker/linker_cfi.h` |
+| 系统调用定义 | `/home/dspfac/aosp-android-11/bionic/libc/SYSCALLS.TXT` |
+| 线程创建 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_create.cpp` |
+| 互斥锁实现 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/pthread_mutex.cpp` |
 | ELF TLS | `/home/dspfac/aosp-android-11/bionic/libc/bionic/bionic_elf_tls.cpp` |
-| Malloc dispatch | `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_common.cpp` |
+| Malloc 分派 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_common.cpp` |
 | GWP-ASan | `/home/dspfac/aosp-android-11/bionic/libc/bionic/gwp_asan_wrappers.cpp` |
-| Tagged pointers | `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_tagged_pointers.h` |
-| Heap tagging | `/home/dspfac/aosp-android-11/bionic/libc/bionic/heap_tagging.cpp` |
-| VDSO integration | `/home/dspfac/aosp-android-11/bionic/libc/bionic/vdso.cpp` |
-| Stack canary | `/home/dspfac/aosp-android-11/bionic/libc/bionic/__stack_chk_fail.cpp` |
+| 标记指针 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/malloc_tagged_pointers.h` |
+| 堆标记 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/heap_tagging.cpp` |
+| VDSO 集成 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/vdso.cpp` |
+| 栈金丝雀 | `/home/dspfac/aosp-android-11/bionic/libc/bionic/__stack_chk_fail.cpp` |
 | FORTIFY string.h | `/home/dspfac/aosp-android-11/bionic/libc/include/bits/fortify/string.h` |
 | fdsan | `/home/dspfac/aosp-android-11/bionic/libc/bionic/fdsan.cpp` |
-| Seccomp policy | `/home/dspfac/aosp-android-11/bionic/libc/seccomp/seccomp_policy.cpp` |
-| Seccomp app whitelist | `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_APP.TXT` |
-| API versioning | `/home/dspfac/aosp-android-11/bionic/libc/include/android/versioning.h` |
-| Symbol map | `/home/dspfac/aosp-android-11/bionic/libc/libc.map.txt` |
-| dlfcn header | `/home/dspfac/aosp-android-11/bionic/libc/include/dlfcn.h` |
-| Build configuration | `/home/dspfac/aosp-android-11/bionic/libc/Android.bp` |
+| Seccomp 策略 | `/home/dspfac/aosp-android-11/bionic/libc/seccomp/seccomp_policy.cpp` |
+| Seccomp 应用白名单 | `/home/dspfac/aosp-android-11/bionic/libc/SECCOMP_WHITELIST_APP.TXT` |
+| API 版本控制 | `/home/dspfac/aosp-android-11/bionic/libc/include/android/versioning.h` |
+| 符号映射 | `/home/dspfac/aosp-android-11/bionic/libc/libc.map.txt` |
+| dlfcn 头文件 | `/home/dspfac/aosp-android-11/bionic/libc/include/dlfcn.h` |
+| 构建配置 | `/home/dspfac/aosp-android-11/bionic/libc/Android.bp` |
 
 ---
 
-*Report generated from Android 11 AOSP source code review.*
+*报告基于 Android 11 AOSP 源代码审查生成。*

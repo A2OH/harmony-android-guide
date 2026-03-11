@@ -1,911 +1,911 @@
-# Android 11 AOSP 代码审查: OS and System-Level APIs
+# Android 11 AOSP 代码审查：操作系统和系统级 API
 
-**Review Scope:**
-- `frameworks/base/core/java/android/os/` -- Threading, IPC, system utilities
-- `frameworks/base/core/java/android/permission/` -- Permission management
-- `frameworks/base/core/java/android/security/` -- Security and keystore APIs
+**审查范围：**
+- `frameworks/base/core/java/android/os/` -- 线程、IPC、系统实用工具
+- `frameworks/base/core/java/android/permission/` -- 权限管理
+- `frameworks/base/core/java/android/security/` -- 安全和密钥库 API
 
 ---
 
-## Table of Contents
+## 目录
 
-1. [Threading Model (Handler, Looper, MessageQueue)](#1-threading-model)
-2. [AsyncTask (Deprecated)](#2-asynctask)
-3. [IPC / Binder Architecture](#3-ipc--binder-architecture)
+1. [线程模型 (Handler, Looper, MessageQueue)](#1-线程模型)
+2. [AsyncTask（已废弃）](#2-asynctask)
+3. [IPC / Binder 架构](#3-ipc--binder-架构)
 4. [Bundle](#4-bundle)
-5. [Build Information](#5-build-information)
-6. [Environment (Filesystem Paths)](#6-environment)
-7. [PowerManager and BatteryManager](#7-powermanager-and-batterymanager)
+5. [构建信息](#5-构建信息)
+6. [Environment（文件系统路径）](#6-environment)
+7. [PowerManager 和 BatteryManager](#7-powermanager-和-batterymanager)
 8. [SystemClock](#8-systemclock)
-9. [Process Management](#9-process-management)
+9. [进程管理](#9-进程管理)
 10. [UserManager](#10-usermanager)
-11. [Permission Manager](#11-permission-manager)
-12. [Security APIs](#12-security-apis)
-13. [Architectural Patterns and Observations](#13-architectural-patterns)
+11. [权限管理器](#11-权限管理器)
+12. [安全 API](#12-安全-api)
+13. [架构模式与观察总结](#13-架构模式与观察总结)
 
 ---
 
-## 1. Threading Model
+## 1. 线程模型
 
-The Android threading model is built on three tightly coupled classes that implement a single-threaded event loop pattern.
+Android 线程模型建立在三个紧密耦合的类之上，实现了单线程事件循环模式。
 
 ### 1.1 Looper
 
-**File:** `frameworks/base/core/java/android/os/Looper.java` (476 lines)
+**文件：** `frameworks/base/core/java/android/os/Looper.java`（476 行）
 
-**Purpose:** Runs a message loop for a thread. Each thread can have at most one Looper. The main (UI) thread always has a Looper; worker threads must explicitly create one.
+**用途：** 为线程运行消息循环。每个线程最多只能有一个 Looper。主（UI）线程始终拥有一个 Looper；工作线程必须显式创建。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `prepare()` | 103 | Initialize current thread as a looper thread |
-| `loop()` | 154 | Start processing the message queue (blocks) |
-| `myLooper()` | 293 | Return Looper for current thread (may be null) |
-| `getMainLooper()` | 135 | Return the application's main looper |
-| `quit()` | 362 | Quit immediately (may drop pending messages) |
-| `quitSafely()` | 378 | Quit after processing pending due messages |
-| `getThread()` | 387 | Get the Thread associated with this Looper |
-| `getQueue()` | 396 | Get the MessageQueue |
-| `isCurrentThread()` | 314 | Check if caller is on this looper's thread |
-| `setMessageLogging(Printer)` | 327 | Enable/disable message dispatch logging |
+| `prepare()` | 103 | 将当前线程初始化为 Looper 线程 |
+| `loop()` | 154 | 开始处理消息队列（阻塞） |
+| `myLooper()` | 293 | 返回当前线程的 Looper（可能为 null） |
+| `getMainLooper()` | 135 | 返回应用程序的主 Looper |
+| `quit()` | 362 | 立即退出（可能丢弃待处理的消息） |
+| `quitSafely()` | 378 | 处理完待处理的到期消息后退出 |
+| `getThread()` | 387 | 获取与此 Looper 关联的线程 |
+| `getQueue()` | 396 | 获取 MessageQueue |
+| `isCurrentThread()` | 314 | 检查调用者是否在此 Looper 的线程上 |
+| `setMessageLogging(Printer)` | 327 | 启用/禁用消息分发日志 |
 
-**Architecture Details:**
+**架构细节：**
 
-- Uses `ThreadLocal<Looper>` storage (line 72) -- each thread gets its own Looper.
-- The main Looper is created with `quitAllowed=false` (line 123), preventing apps from accidentally quitting the main thread's event loop.
-- The `loop()` method (line 154) is an infinite `for(;;)` loop that:
-  1. Calls `queue.next()` which may block via native `epoll`
-  2. Dispatches via `msg.target.dispatchMessage(msg)` (line 223)
-  3. Clears and verifies Binder calling identity (line 263-270) -- a security check
-  4. Recycles the message after dispatch (line 272)
+- 使用 `ThreadLocal<Looper>` 存储（第 72 行）—— 每个线程拥有自己的 Looper。
+- 主 Looper 以 `quitAllowed=false` 创建（第 123 行），防止应用意外退出主线程的事件循环。
+- `loop()` 方法（第 154 行）是一个无限的 `for(;;)` 循环，执行以下操作：
+  1. 调用 `queue.next()`，可能通过原生 `epoll` 阻塞
+  2. 通过 `msg.target.dispatchMessage(msg)` 分发消息（第 223 行）
+  3. 清除并验证 Binder 调用身份（第 263-270 行）—— 安全检查
+  4. 分发后回收消息（第 272 行）
 
-**Hidden APIs:**
-- `setObserver(Observer)` (line 146, `@hide`) -- process-wide message dispatch observer for telemetry
-- `setSlowLogThresholdMs()` (line 341, `@hide`) -- configurable slow message detection
-- `prepareMainLooper()` (line 122, `@Deprecated`) -- only used by the system during app startup
+**隐藏 API：**
+- `setObserver(Observer)`（第 146 行，`@hide`）—— 进程级消息分发观察器，用于遥测
+- `setSlowLogThresholdMs()`（第 341 行，`@hide`）—— 可配置的慢消息检测
+- `prepareMainLooper()`（第 122 行，`@Deprecated`）—— 仅在应用启动期间由系统使用
 
-**Performance Monitoring:** The loop detects slow message delivery and dispatch via configurable thresholds (lines 89-95). System property `log.looper.<uid>.<thread>.slow` can override thresholds (line 174-178).
+**性能监控：** 循环通过可配置的阈值检测慢消息传递和分发（第 89-95 行）。系统属性 `log.looper.<uid>.<thread>.slow` 可以覆盖阈值（第 174-178 行）。
 
 ### 1.2 Handler
 
-**File:** `frameworks/base/core/java/android/os/Handler.java` (1001 lines)
+**文件：** `frameworks/base/core/java/android/os/Handler.java`（1001 行）
 
-**Purpose:** Sends and processes `Message` and `Runnable` objects on a specific thread's `MessageQueue`. The primary inter-thread communication mechanism in Android.
+**用途：** 在特定线程的 `MessageQueue` 上发送和处理 `Message` 和 `Runnable` 对象。Android 中主要的线程间通信机制。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `Handler(Looper)` | 161 | **Recommended constructor** -- explicit Looper |
-| `Handler(Looper, Callback)` | 172 | With Looper and callback |
-| `createAsync(Looper)` | 275 | Create handler exempt from sync barriers |
-| `post(Runnable)` | 426 | Post runnable to message queue |
-| `postDelayed(Runnable, long)` | 498 | Post with delay (uptimeMillis based) |
-| `postAtTime(Runnable, long)` | 448 | Post at absolute uptime |
-| `sendMessage(Message)` | 634 | Send a Message object |
-| `sendMessageDelayed(Message, long)` | 693 | Send with delay |
-| `sendEmptyMessage(int)` | 645 | Send message with only `what` code |
-| `removeCallbacks(Runnable)` | 612 | Remove pending runnable posts |
-| `removeMessages(int)` | 785 | Remove pending messages by `what` code |
-| `removeCallbacksAndMessages(Object)` | 814 | Remove all matching callbacks/messages |
-| `hasMessages(int)` | 832 | Check for pending messages |
-| `hasCallbacks(Runnable)` | 866 | Check for pending callbacks |
-| `obtainMessage(...)` | 354-413 | Obtain recycled Message from pool |
-| `getLooper()` | 873 | Get associated Looper |
-| `handleMessage(Message)` | 91 | Override to receive messages |
+| `Handler(Looper)` | 161 | **推荐的构造函数** —— 显式指定 Looper |
+| `Handler(Looper, Callback)` | 172 | 带 Looper 和回调 |
+| `createAsync(Looper)` | 275 | 创建不受同步屏障影响的 Handler |
+| `post(Runnable)` | 426 | 向消息队列发送 Runnable |
+| `postDelayed(Runnable, long)` | 498 | 延迟发送（基于 uptimeMillis） |
+| `postAtTime(Runnable, long)` | 448 | 在绝对 uptime 时间发送 |
+| `sendMessage(Message)` | 634 | 发送 Message 对象 |
+| `sendMessageDelayed(Message, long)` | 693 | 延迟发送消息 |
+| `sendEmptyMessage(int)` | 645 | 发送仅包含 `what` 代码的消息 |
+| `removeCallbacks(Runnable)` | 612 | 移除待处理的 Runnable |
+| `removeMessages(int)` | 785 | 按 `what` 代码移除待处理消息 |
+| `removeCallbacksAndMessages(Object)` | 814 | 移除所有匹配的回调/消息 |
+| `hasMessages(int)` | 832 | 检查是否有待处理消息 |
+| `hasCallbacks(Runnable)` | 866 | 检查是否有待处理回调 |
+| `obtainMessage(...)` | 354-413 | 从池中获取回收的 Message |
+| `getLooper()` | 873 | 获取关联的 Looper |
+| `handleMessage(Message)` | 91 | 重写以接收消息 |
 
-**Critical Design Decision -- Default Constructor Deprecated (Android 11):**
+**关键设计决策 —— 默认构造函数已废弃（Android 11）：**
 
-The no-argument `Handler()` constructor is `@Deprecated` as of this version (line 127-128). The deprecation reason (lines 117-125) is that implicitly choosing a Looper can cause:
-- Silent message loss if the Handler quits unexpectedly
-- Crashes when created on threads without a Looper
-- Race conditions about which thread the Handler is bound to
+无参 `Handler()` 构造函数在此版本中已标记为 `@Deprecated`（第 127-128 行）。废弃原因（第 117-125 行）是隐式选择 Looper 可能导致：
+- 如果 Handler 意外退出，消息会静默丢失
+- 在没有 Looper 的线程上创建时崩溃
+- 关于 Handler 绑定到哪个线程的竞态条件
 
-**Recommended pattern:**
+**推荐模式：**
 ```java
 Handler handler = new Handler(Looper.getMainLooper());
-// or
+// 或
 Handler handler = Handler.createAsync(Looper.getMainLooper());
 ```
 
-**Message Dispatch Priority (line 97-108):**
+**消息分发优先级（第 97-108 行）：**
 ```
-1. If msg.callback != null -> run the Runnable directly
-2. If Handler.Callback != null and returns true -> stop
-3. Otherwise -> Handler.handleMessage(msg)
+1. 如果 msg.callback != null -> 直接运行 Runnable
+2. 如果 Handler.Callback != null 且返回 true -> 停止
+3. 否则 -> Handler.handleMessage(msg)
 ```
 
-**Hidden APIs:**
-- `runWithScissors(Runnable, long)` (line 592, `@hide`) -- synchronous cross-thread execution. The Javadoc explicitly warns "This method is prone to abuse" and notes it could cause deadlocks. Internally uses `BlockingRunnable` with `wait()`/`notifyAll()`.
-- `executeOrSendMessage(Message)` (line 762, `@hide`) -- dispatch immediately if on same thread, else enqueue.
-- `getMain()` (line 302, `@hide`) -- cached main thread Handler singleton.
-- `Handler(boolean async)` (line 193, `@hide`) -- create handler with async message support.
+**隐藏 API：**
+- `runWithScissors(Runnable, long)`（第 592 行，`@hide`）—— 同步跨线程执行。Javadoc 明确警告"此方法容易被滥用"，并指出可能导致死锁。内部使用 `BlockingRunnable` 配合 `wait()`/`notifyAll()`。
+- `executeOrSendMessage(Message)`（第 762 行，`@hide`）—— 如果在同一线程则立即分发，否则入队。
+- `getMain()`（第 302 行，`@hide`）—— 缓存的主线程 Handler 单例。
+- `Handler(boolean async)`（第 193 行，`@hide`）—— 创建支持异步消息的 Handler。
 
-**Memory Leak Detection:** `FIND_POTENTIAL_LEAKS` flag (line 72) can detect non-static inner class Handlers that hold implicit references to outer Activity instances, but it is hardcoded to `false`.
+**内存泄漏检测：** `FIND_POTENTIAL_LEAKS` 标志（第 72 行）可以检测持有外部 Activity 实例隐式引用的非静态内部类 Handler，但它被硬编码为 `false`。
 
-**Async Messages and Sync Barriers:** Async handlers (created via `createAsync()` or the hidden `async` constructors) set `Message.setAsynchronous(true)` on all messages (line 775-777). These messages are not blocked by synchronization barriers, which the framework uses during VSYNC-driven rendering.
+**异步消息和同步屏障：** 异步 Handler（通过 `createAsync()` 或隐藏的 `async` 构造函数创建）会对所有消息设置 `Message.setAsynchronous(true)`（第 775-777 行）。这些消息不会被同步屏障阻塞，框架在 VSYNC 驱动的渲染期间使用同步屏障。
 
 ### 1.3 MessageQueue
 
-**File:** `frameworks/base/core/java/android/os/MessageQueue.java` (1045 lines)
+**文件：** `frameworks/base/core/java/android/os/MessageQueue.java`（1045 行）
 
-**Purpose:** Low-level priority queue of Messages, ordered by delivery time (`when` field). Uses native `epoll` for efficient blocking.
+**用途：** 低级消息优先级队列，按传递时间（`when` 字段）排序。使用原生 `epoll` 实现高效阻塞。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `addIdleHandler(IdleHandler)` | 124 | Register callback for queue idle events |
-| `removeIdleHandler(IdleHandler)` | 142 | Unregister idle callback |
-| `isIdle()` | 107 | Check if queue has no due messages |
-| `addOnFileDescriptorEventListener(...)` | 194 | Monitor file descriptor events |
-| `removeOnFileDescriptorEventListener(...)` | 221 | Stop monitoring file descriptor |
+| `addIdleHandler(IdleHandler)` | 124 | 注册队列空闲事件回调 |
+| `removeIdleHandler(IdleHandler)` | 142 | 取消注册空闲回调 |
+| `isIdle()` | 107 | 检查队列是否没有到期消息 |
+| `addOnFileDescriptorEventListener(...)` | 194 | 监控文件描述符事件 |
+| `removeOnFileDescriptorEventListener(...)` | 221 | 停止监控文件描述符 |
 
-**Internal Architecture:**
+**内部架构：**
 
-The `next()` method (line 319-423) is the heart of the message processing:
+`next()` 方法（第 319-423 行）是消息处理的核心：
 
-1. Calls `nativePollOnce(ptr, timeoutMillis)` (line 335) -- blocks in native `epoll_wait`
-2. Handles **sync barriers**: messages with `target == null` (line 342-347) block all synchronous messages but allow async messages through
-3. Calculates next wake-up time from message queue ordering
-4. Runs **IdleHandlers** when the queue is empty or all messages are in the future (lines 398-414)
-5. Flushes pending Binder commands before blocking (line 332)
+1. 调用 `nativePollOnce(ptr, timeoutMillis)`（第 335 行）—— 在原生 `epoll_wait` 中阻塞
+2. 处理**同步屏障**：`target == null` 的消息（第 342-347 行）会阻塞所有同步消息，但允许异步消息通过
+3. 根据消息队列排序计算下次唤醒时间
+4. 当队列为空或所有消息都在未来时，运行 **IdleHandler**（第 398-414 行）
+5. 在阻塞前刷新待处理的 Binder 命令（第 332 行）
 
-**Synchronization Barriers (`@hide`, `@TestApi`):**
-- `postSyncBarrier()` (line 472) -- stalls synchronous messages
-- `removeSyncBarrier(int token)` (line 517) -- removes a barrier
+**同步屏障（`@hide`、`@TestApi`）：**
+- `postSyncBarrier()`（第 472 行）—— 阻滞同步消息
+- `removeSyncBarrier(int token)`（第 517 行）—— 移除屏障
 
-These are used internally by the framework for VSYNC coordination. A barrier is a Message with `target == null` (line 342). When encountered, the queue skips all synchronous messages and only delivers async ones. This is how the framework ensures rendering messages get priority.
+这些在框架内部用于 VSYNC 协调。屏障是 `target == null` 的 Message（第 342 行）。遇到屏障时，队列跳过所有同步消息，只传递异步消息。这就是框架确保渲染消息获得优先级的方式。
 
-**Message Enqueueing (line 549-602):**
-Messages are inserted in `when`-order (sorted linked list). The queue wakes the native poll if:
-- New message is at the head (earlier than current head)
-- An async message is added while a sync barrier is active
+**消息入队（第 549-602 行）：**
+消息按 `when` 顺序插入（排序链表）。在以下情况下队列唤醒原生轮询：
+- 新消息在队列头部（比当前头部更早）
+- 在同步屏障活动时添加了异步消息
 
-**IdleHandler Interface (line 945-954):**
+**IdleHandler 接口（第 945-954 行）：**
 ```java
 public static interface IdleHandler {
-    boolean queueIdle(); // return true to keep, false to auto-remove
+    boolean queueIdle(); // 返回 true 保留，返回 false 自动移除
 }
 ```
-Useful for deferring work until the UI is idle. Only runs during the first idle iteration per pump cycle.
+适用于将工作推迟到 UI 空闲时执行。每次泵送周期仅在第一次空闲迭代时运行。
 
 ---
 
 ## 2. AsyncTask
 
-**File:** `frameworks/base/core/java/android/os/AsyncTask.java` (812 lines)
+**文件：** `frameworks/base/core/java/android/os/AsyncTask.java`（812 行）
 
-**Purpose:** Helper for running background work and publishing results on the UI thread.
+**用途：** 用于在后台运行工作并在 UI 线程上发布结果的辅助类。
 
-**DEPRECATED as of Android 11** (line 198). The class-level Javadoc (lines 41-46) explicitly documents the problems:
-- Context leaks
-- Missed callbacks on configuration changes
-- Crashes on configuration changes
-- Inconsistent behavior across platform versions
-- Swallows exceptions from `doInBackground`
+**在 Android 11 中已废弃**（第 198 行）。类级 Javadoc（第 41-46 行）明确记录了以下问题：
+- Context 泄漏
+- 配置更改时回调丢失
+- 配置更改时崩溃
+- 跨平台版本行为不一致
+- 吞没 `doInBackground` 中的异常
 
-**Recommended replacements:** `java.util.concurrent.Executor`, Kotlin coroutines.
+**推荐替代方案：** `java.util.concurrent.Executor`、Kotlin 协程。
 
-**Key APIs (all deprecated):**
+**关键 API（全部已废弃）：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `doInBackground(Params...)` | 468 | Abstract -- runs on background thread |
-| `onPreExecute()` | 478 | UI thread, before background work |
-| `onPostExecute(Result)` | 498 | UI thread, after completion |
-| `onProgressUpdate(Progress...)` | 514 | UI thread, progress callback |
-| `publishProgress(Progress...)` | 760 | Call from background to trigger progress |
-| `execute(Params...)` | 670 | Start task (serial by default) |
-| `executeOnExecutor(Executor, Params...)` | 708 | Start with custom executor |
-| `cancel(boolean)` | 601 | Cancel the task |
-| `isCancelled()` | 564 | Check cancellation state |
-| `getStatus()` | 443 | PENDING, RUNNING, or FINISHED |
+| `doInBackground(Params...)` | 468 | 抽象方法 —— 在后台线程运行 |
+| `onPreExecute()` | 478 | UI 线程，后台工作之前 |
+| `onPostExecute(Result)` | 498 | UI 线程，完成之后 |
+| `onProgressUpdate(Progress...)` | 514 | UI 线程，进度回调 |
+| `publishProgress(Progress...)` | 760 | 从后台调用以触发进度更新 |
+| `execute(Params...)` | 670 | 启动任务（默认串行执行） |
+| `executeOnExecutor(Executor, Params...)` | 708 | 使用自定义执行器启动 |
+| `cancel(boolean)` | 601 | 取消任务 |
+| `isCancelled()` | 564 | 检查取消状态 |
+| `getStatus()` | 443 | PENDING、RUNNING 或 FINISHED |
 
-**Thread Pool Architecture (lines 211-265):**
+**线程池架构（第 211-265 行）：**
 
 ```
-SERIAL_EXECUTOR (default) -- SerialExecutor with ArrayDeque
+SERIAL_EXECUTOR（默认）-- 使用 ArrayDeque 的 SerialExecutor
     |
     v
 THREAD_POOL_EXECUTOR -- ThreadPoolExecutor(core=1, max=20, keepAlive=3s)
     |
-    v (on rejection)
-sBackupExecutor -- ThreadPoolExecutor(core=5, max=5, unbounded queue)
+    v（拒绝时）
+sBackupExecutor -- ThreadPoolExecutor(core=5, max=5, 无界队列)
 ```
 
-The `SerialExecutor` (lines 297-321) wraps each task in a `Runnable` that calls `scheduleNext()` in a `finally` block, guaranteeing serial execution even if tasks throw exceptions.
+`SerialExecutor`（第 297-321 行）将每个任务包装在一个 `Runnable` 中，在 `finally` 块中调用 `scheduleNext()`，即使任务抛出异常也能保证串行执行。
 
-**Hidden APIs:**
-- `setDefaultExecutor(Executor)` (line 357, `@hide`) -- override the default serial executor process-wide
-- `AsyncTask(Handler)` / `AsyncTask(Looper)` (lines 373/382, `@hide`) -- use custom callback looper
+**隐藏 API：**
+- `setDefaultExecutor(Executor)`（第 357 行，`@hide`）—— 覆盖进程级默认串行执行器
+- `AsyncTask(Handler)` / `AsyncTask(Looper)`（第 373/382 行，`@hide`）—— 使用自定义回调 Looper
 
-**Notable Implementation Detail:** The worker callable (line 387-404) sets thread priority to `THREAD_PRIORITY_BACKGROUND` and calls `Binder.flushPendingCommands()` after completion, ensuring IPC resources are released.
+**值得注意的实现细节：** 工作 callable（第 387-404 行）将线程优先级设置为 `THREAD_PRIORITY_BACKGROUND`，并在完成后调用 `Binder.flushPendingCommands()`，确保释放 IPC 资源。
 
 ---
 
-## 3. IPC / Binder Architecture
+## 3. IPC / Binder 架构
 
-### 3.1 IBinder Interface
+### 3.1 IBinder 接口
 
-**File:** `frameworks/base/core/java/android/os/IBinder.java` (347 lines)
+**文件：** `frameworks/base/core/java/android/os/IBinder.java`（347 行）
 
-**Purpose:** The core interface for Android's lightweight remote procedure call (RPC) mechanism.
+**用途：** Android 轻量级远程过程调用（RPC）机制的核心接口。
 
-**Key Interface Methods:**
+**关键接口方法：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `transact(int, Parcel, Parcel, int)` | 289 | Perform a generic IPC operation |
-| `queryLocalInterface(String)` | 221 | Check for local implementation |
-| `getInterfaceDescriptor()` | 195 | Get canonical interface name |
-| `pingBinder()` | 205 | Check if remote process is alive |
-| `isBinderAlive()` | 213 | Check if hosting process exists |
-| `linkToDeath(DeathRecipient, int)` | 325 | Register death notification |
-| `unlinkToDeath(DeathRecipient, int)` | 346 | Unregister death notification |
-| `dump(FileDescriptor, String[])` | 229 | Dump state for debugging |
+| `transact(int, Parcel, Parcel, int)` | 289 | 执行通用 IPC 操作 |
+| `queryLocalInterface(String)` | 221 | 检查本地实现 |
+| `getInterfaceDescriptor()` | 195 | 获取规范接口名称 |
+| `pingBinder()` | 205 | 检查远程进程是否存活 |
+| `isBinderAlive()` | 213 | 检查宿主进程是否存在 |
+| `linkToDeath(DeathRecipient, int)` | 325 | 注册死亡通知 |
+| `unlinkToDeath(DeathRecipient, int)` | 346 | 取消注册死亡通知 |
+| `dump(FileDescriptor, String[])` | 229 | 转储状态用于调试 |
 
-**Transaction Code Ranges:**
-- `FIRST_CALL_TRANSACTION` (0x00000001) to `LAST_CALL_TRANSACTION` (0x00ffffff) -- user-defined codes
-- System codes: `PING_TRANSACTION`, `DUMP_TRANSACTION`, `INTERFACE_TRANSACTION`, `SHELL_COMMAND_TRANSACTION` (`@hide`)
+**事务代码范围：**
+- `FIRST_CALL_TRANSACTION`（0x00000001）到 `LAST_CALL_TRANSACTION`（0x00ffffff）—— 用户自定义代码
+- 系统代码：`PING_TRANSACTION`、`DUMP_TRANSACTION`、`INTERFACE_TRANSACTION`、`SHELL_COMMAND_TRANSACTION`（`@hide`）
 
-**IPC Size Limit:** `MAX_IPC_SIZE = 64 * 1024` bytes (line 182, `@hide`). The public API `getSuggestedMaxIpcSizeBytes()` (line 188) exposes this.
+**IPC 大小限制：** `MAX_IPC_SIZE = 64 * 1024` 字节（第 182 行，`@hide`）。公共 API `getSuggestedMaxIpcSizeBytes()`（第 188 行）暴露了此值。
 
-**One-way Flag:** `FLAG_ONEWAY = 0x00000001` (line 170) -- caller returns immediately without waiting for result. The system guarantees ordering for multiple oneway calls to the same IBinder.
+**单向标志：** `FLAG_ONEWAY = 0x00000001`（第 170 行）—— 调用者立即返回，无需等待结果。系统保证对同一 IBinder 的多个单向调用的顺序。
 
-**DeathRecipient (line 298-307):** Callback interface for process death notifications. Essential for service lifecycle management. The hidden `binderDied(IBinder who)` default method (line 304) provides the dying binder reference.
+**DeathRecipient（第 298-307 行）：** 进程死亡通知的回调接口。对于服务生命周期管理至关重要。隐藏的 `binderDied(IBinder who)` 默认方法（第 304 行）提供了即将死亡的 Binder 引用。
 
-**Easter Eggs:** `TWEET_TRANSACTION` (line 137) and `LIKE_TRANSACTION` (line 150) are humorous protocol codes with tongue-in-cheek Javadoc.
+**彩蛋：** `TWEET_TRANSACTION`（第 137 行）和 `LIKE_TRANSACTION`（第 150 行）是带有幽默 Javadoc 的搞笑协议代码。
 
 ### 3.2 Binder
 
-**File:** `frameworks/base/core/java/android/os/Binder.java` (1205 lines)
+**文件：** `frameworks/base/core/java/android/os/Binder.java`（1205 行）
 
-**Purpose:** Base class for remotable objects. The Java-side implementation of the Binder IPC mechanism.
+**用途：** 可远程对象的基类。Binder IPC 机制的 Java 端实现。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `Binder()` | 580 | Default constructor |
-| `Binder(String descriptor)` | 596 | Constructor with descriptor (for tokens) |
-| `getCallingPid()` | 289 | PID of current IPC caller |
-| `getCallingUid()` | 299 | UID of current IPC caller |
-| `getCallingUserHandle()` | 333 | UserHandle of caller |
-| `clearCallingIdentity()` | 354 | Reset caller identity (returns token) |
-| `restoreCallingIdentity(long)` | 366 | Restore saved identity |
-| `flushPendingCommands()` | 549 | Flush pending IPC commands to kernel |
-| `attachInterface(IInterface, String)` | 617 | Associate interface with Binder |
-| `onTransact(int, Parcel, Parcel, int)` | 782 | Override to handle IPC calls |
-| `getCallingWorkSourceUid()` | 485 | Get work source UID (untrusted) |
-| `setCallingWorkSourceUid(int)` | 473 | Set work source for attribution |
+| `Binder()` | 580 | 默认构造函数 |
+| `Binder(String descriptor)` | 596 | 带描述符的构造函数（用于令牌） |
+| `getCallingPid()` | 289 | 当前 IPC 调用者的 PID |
+| `getCallingUid()` | 299 | 当前 IPC 调用者的 UID |
+| `getCallingUserHandle()` | 333 | 调用者的 UserHandle |
+| `clearCallingIdentity()` | 354 | 重置调用者身份（返回令牌） |
+| `restoreCallingIdentity(long)` | 366 | 恢复已保存的身份 |
+| `flushPendingCommands()` | 549 | 将待处理的 IPC 命令刷新到内核 |
+| `attachInterface(IInterface, String)` | 617 | 将接口与 Binder 关联 |
+| `onTransact(int, Parcel, Parcel, int)` | 782 | 重写以处理 IPC 调用 |
+| `getCallingWorkSourceUid()` | 485 | 获取工作源 UID（不可信） |
+| `setCallingWorkSourceUid(int)` | 473 | 设置工作源以进行归因 |
 
-**Security-Critical Pattern -- Clearing Calling Identity:**
+**安全关键模式 —— 清除调用身份：**
 
 ```java
 long token = Binder.clearCallingIdentity();
 try {
-    // Calls here will use the local process identity,
-    // not the remote caller's identity
+    // 此处的调用将使用本地进程身份，
+    // 而不是远程调用者的身份
 } finally {
     Binder.restoreCallingIdentity(token);
 }
 ```
 
-This pattern (documented at line 337-365) is used extensively throughout system services when making calls to other services on behalf of a caller. Without it, nested permission checks would fail because they'd see the wrong caller UID.
+此模式（记录在第 337-365 行）在系统服务代表调用者调用其他服务时被广泛使用。如果不这样做，嵌套的权限检查将失败，因为它们会看到错误的调用者 UID。
 
-**Hidden Convenience Methods:**
-- `withCleanCallingIdentity(ThrowingRunnable)` (line 377, `@hide`) -- lambda-based version
-- `withCleanCallingIdentity(ThrowingSupplier<T>)` (line 401, `@hide`) -- with return value
+**隐藏便利方法：**
+- `withCleanCallingIdentity(ThrowingRunnable)`（第 377 行，`@hide`）—— 基于 lambda 的版本
+- `withCleanCallingIdentity(ThrowingSupplier<T>)`（第 401 行，`@hide`）—— 带返回值
 
-**Blocking Call Detection:**
-- `setWarnOnBlocking(boolean)` (line 197, `@hide`) -- system process uses this to detect blocking calls to untrusted external code
-- `allowBlocking(IBinder)` (line 213, `@hide`) -- override for known-safe system interfaces
+**阻塞调用检测：**
+- `setWarnOnBlocking(boolean)`（第 197 行，`@hide`）—— 系统进程使用此方法检测对不受信任外部代码的阻塞调用
+- `allowBlocking(IBinder)`（第 213 行，`@hide`）—— 覆盖已知安全的系统接口
 
-**ProxyTransactListener (`@SystemApi`, line 679-706):** An observer interface for monitoring all proxy-side binder calls. Used for:
-- Transaction tracing
-- Work source propagation (`PropagateWorkSourceTransactListener`, line 716)
+**ProxyTransactListener（`@SystemApi`，第 679-706 行）：** 用于监控所有代理端 Binder 调用的观察者接口。用于：
+- 事务追踪
+- 工作源传播（`PropagateWorkSourceTransactListener`，第 716 行）
 
-**onTransact Implementation (line 782):** The base implementation handles system transaction codes: `INTERFACE_TRANSACTION` returns the descriptor, `DUMP_TRANSACTION` calls `dump()`, `SHELL_COMMAND_TRANSACTION` delegates to `shellCommand()`.
+**onTransact 实现（第 782 行）：** 基础实现处理系统事务代码：`INTERFACE_TRANSACTION` 返回描述符，`DUMP_TRANSACTION` 调用 `dump()`，`SHELL_COMMAND_TRANSACTION` 委托给 `shellCommand()`。
 
 ### 3.3 Parcel
 
-**File:** `frameworks/base/core/java/android/os/Parcel.java` (3683 lines)
+**文件：** `frameworks/base/core/java/android/os/Parcel.java`（3683 行）
 
-**Purpose:** Container for marshalling data across IPC boundaries. High-performance serialization optimized for IPC, NOT for persistent storage.
+**用途：** 用于跨 IPC 边界编组数据的容器。针对 IPC 优化的高性能序列化，不适用于持久存储。
 
-**Key warning from Javadoc (lines 69-75):** "Parcel is **not** a general-purpose serialization mechanism... it is not appropriate to place any Parcel data in to persistent storage."
+**Javadoc 中的关键警告（第 69-75 行）：** "Parcel **不是**通用序列化机制……不适合将任何 Parcel 数据放入持久存储。"
 
-**Data Type Categories:**
+**数据类型类别：**
 
-1. **Primitives:** `writeInt`/`readInt`, `writeLong`/`readLong`, `writeFloat`/`readFloat`, `writeDouble`/`readDouble`, `writeString`/`readString`, `writeByte`/`readByte`
-2. **Primitive Arrays:** `writeIntArray`, `createIntArray`, `writeByteArray`, etc.
-3. **Parcelables:** `writeParcelable`/`readParcelable` (with class info), `writeTypedObject`/`readTypedObject` (without class info, more efficient)
-4. **Bundles:** `writeBundle`/`readBundle` -- type-safe key-value maps
-5. **Active Objects:** `writeStrongBinder`/`readStrongBinder` -- IBinder references, `writeFileDescriptor`/`readFileDescriptor`
-6. **Untyped Containers:** `writeValue`/`readValue`, `writeList`/`readList`
+1. **基本类型：** `writeInt`/`readInt`、`writeLong`/`readLong`、`writeFloat`/`readFloat`、`writeDouble`/`readDouble`、`writeString`/`readString`、`writeByte`/`readByte`
+2. **基本类型数组：** `writeIntArray`、`createIntArray`、`writeByteArray` 等
+3. **Parcelable：** `writeParcelable`/`readParcelable`（带类信息）、`writeTypedObject`/`readTypedObject`（不带类信息，更高效）
+4. **Bundle：** `writeBundle`/`readBundle` —— 类型安全的键值映射
+5. **活跃对象：** `writeStrongBinder`/`readStrongBinder` —— IBinder 引用、`writeFileDescriptor`/`readFileDescriptor`
+6. **无类型容器：** `writeValue`/`readValue`、`writeList`/`readList`
 
-**Object Pool:** `obtain()` / `recycle()` pattern for avoiding allocation overhead.
+**对象池：** `obtain()` / `recycle()` 模式，用于避免分配开销。
 
-### 3.4 Parcelable Interface
+### 3.4 Parcelable 接口
 
-**File:** `frameworks/base/core/java/android/os/Parcelable.java` (173 lines)
+**文件：** `frameworks/base/core/java/android/os/Parcelable.java`（173 行）
 
-**Purpose:** Interface for objects that can be serialized into a Parcel for IPC transport.
+**用途：** 可序列化到 Parcel 中进行 IPC 传输的对象接口。
 
-**Required Components:**
-1. `describeContents()` -- return `CONTENTS_FILE_DESCRIPTOR` if containing FDs
-2. `writeToParcel(Parcel, int)` -- serialize to Parcel
-3. Static `CREATOR` field implementing `Parcelable.Creator<T>` -- factory for deserialization
+**必需组件：**
+1. `describeContents()` —— 如果包含文件描述符则返回 `CONTENTS_FILE_DESCRIPTOR`
+2. `writeToParcel(Parcel, int)` —— 序列化到 Parcel
+3. 静态 `CREATOR` 字段，实现 `Parcelable.Creator<T>` —— 反序列化工厂
 
-**Write Flags:**
-- `PARCELABLE_WRITE_RETURN_VALUE` (0x0001) -- object is a return value, may release resources
-- `PARCELABLE_ELIDE_DUPLICATES` (0x0002, `@hide`) -- parent manages duplicate data
+**写入标志：**
+- `PARCELABLE_WRITE_RETURN_VALUE`（0x0001）—— 对象是返回值，可以释放资源
+- `PARCELABLE_ELIDE_DUPLICATES`（0x0002，`@hide`）—— 父对象管理重复数据
 
-**ClassLoaderCreator (line 160-172):** Extended `Creator` that receives a `ClassLoader`, useful for cross-process class loading.
+**ClassLoaderCreator（第 160-172 行）：** 接收 `ClassLoader` 的扩展 `Creator`，适用于跨进程类加载。
 
 ---
 
 ## 4. Bundle
 
-**File:** `frameworks/base/core/java/android/os/Bundle.java` (1363 lines)
+**文件：** `frameworks/base/core/java/android/os/Bundle.java`（1363 行）
 
-**Purpose:** Type-safe mapping from String keys to various `Parcelable` values. The primary mechanism for passing structured data between components (Activities, Fragments, Services).
+**用途：** 从 String 键到各种 `Parcelable` 值的类型安全映射。在组件（Activity、Fragment、Service）之间传递结构化数据的主要机制。
 
-**Class Hierarchy:** `Bundle extends BaseBundle implements Cloneable, Parcelable`
+**类层次结构：** `Bundle extends BaseBundle implements Cloneable, Parcelable`
 
-**Key Constants:**
-- `Bundle.EMPTY` (line 48) -- immutable empty Bundle singleton
-- `Bundle.STRIPPED` (line 54, `@hide`) -- sentinel for stripped extras
+**关键常量：**
+- `Bundle.EMPTY`（第 48 行）—— 不可变的空 Bundle 单例
+- `Bundle.STRIPPED`（第 54 行，`@hide`）—— 剥离的 extras 哨兵值
 
-**Internal Flags (lines 40-46):**
-- `FLAG_HAS_FDS` -- contains file descriptors
-- `FLAG_HAS_FDS_KNOWN` -- FD presence has been computed
-- `FLAG_ALLOW_FDS` -- whether FDs are permitted
+**内部标志（第 40-46 行）：**
+- `FLAG_HAS_FDS` —— 包含文件描述符
+- `FLAG_HAS_FDS_KNOWN` —— FD 存在性已计算
+- `FLAG_ALLOW_FDS` —— 是否允许 FD
 
-**Key Methods (inherited from BaseBundle + Bundle-specific):**
-- `putString(String, String)`, `getString(String)`, `getString(String, String)`
-- `putInt(String, int)`, `getInt(String)`, `getInt(String, int)`
-- `putParcelable(String, Parcelable)`, `getParcelable(String)`
-- `putBundle(String, Bundle)`, `getBundle(String)`
-- `putBinder(String, IBinder)`, `getBinder(String)` -- for passing Binder tokens
-- `deepCopy()` -- deep copy vs. shallow `Bundle(Bundle)` constructor
-- `hasFileDescriptors()` -- checks if Bundle contains FDs (lazy scan)
+**关键方法（继承自 BaseBundle + Bundle 特有）：**
+- `putString(String, String)`、`getString(String)`、`getString(String, String)`
+- `putInt(String, int)`、`getInt(String)`、`getInt(String, int)`
+- `putParcelable(String, Parcelable)`、`getParcelable(String)`
+- `putBundle(String, Bundle)`、`getBundle(String)`
+- `putBinder(String, IBinder)`、`getBinder(String)` —— 用于传递 Binder 令牌
+- `deepCopy()` —— 深拷贝，与浅拷贝的 `Bundle(Bundle)` 构造函数相对
+- `hasFileDescriptors()` —— 检查 Bundle 是否包含 FD（惰性扫描）
 
-**Lazy Unparcelling:** Bundle data from a Parcel is NOT immediately unparcelled. The raw `mParcelledData` is kept until first access, then unparcelled on demand. This is an important performance optimization for Intent extras that may never be read.
+**延迟反序列化：** 来自 Parcel 的 Bundle 数据不会立即反序列化。原始的 `mParcelledData` 会保留到首次访问时，然后按需反序列化。这是对可能永远不会被读取的 Intent extras 的重要性能优化。
 
 ---
 
-## 5. Build Information
+## 5. 构建信息
 
-**File:** `frameworks/base/core/java/android/os/Build.java` (1335 lines)
+**文件：** `frameworks/base/core/java/android/os/Build.java`（1335 行）
 
-**Purpose:** Static information about the current build, extracted from system properties (`ro.build.*`, `ro.product.*`).
+**用途：** 关于当前构建的静态信息，从系统属性（`ro.build.*`、`ro.product.*`）中提取。
 
-**Key Public Fields:**
+**关键公共字段：**
 
-| Field | Line | 描述 |
+| 字段 | 行号 | 描述 |
 |-------|------|-------------|
-| `DEVICE` | 60 | Device name (e.g., "walleye") |
-| `MODEL` | 88 | End-user-visible model name |
-| `MANUFACTURER` | 82 | Product manufacturer |
-| `BRAND` | 85 | Consumer-visible brand |
-| `PRODUCT` | 57 | Overall product name |
-| `BOARD` | 63 | Underlying board name |
-| `HARDWARE` | 106 | Hardware name from kernel |
-| `BOOTLOADER` | 91 | Bootloader version |
-| `DISPLAY` | 54 | Build ID for display |
-| `SUPPORTED_ABIS` | 188 | Ordered list of supported ABIs |
-| `SERIAL` | 126 | **DEPRECATED** -- always returns UNKNOWN |
+| `DEVICE` | 60 | 设备名称（例如 "walleye"） |
+| `MODEL` | 88 | 面向最终用户的型号名称 |
+| `MANUFACTURER` | 82 | 产品制造商 |
+| `BRAND` | 85 | 面向消费者的品牌 |
+| `PRODUCT` | 57 | 整体产品名称 |
+| `BOARD` | 63 | 底层主板名称 |
+| `HARDWARE` | 106 | 来自内核的硬件名称 |
+| `BOOTLOADER` | 91 | 引导加载程序版本 |
+| `DISPLAY` | 54 | 用于显示的构建 ID |
+| `SUPPORTED_ABIS` | 188 | 支持的 ABI 有序列表 |
+| `SERIAL` | 126 | **已废弃** —— 始终返回 UNKNOWN |
 
-**Build.VERSION (line 236):**
+**Build.VERSION（第 236 行）：**
 
-| Field | Line | 描述 |
+| 字段 | 行号 | 描述 |
 |-------|------|-------------|
-| `SDK_INT` | 288 | SDK version as integer (e.g., 30 for Android 11) |
-| `RELEASE` | 251 | User-visible version string (e.g., "11") |
-| `CODENAME` | 351 | "REL" for release builds, codename otherwise |
-| `SECURITY_PATCH` | 269 | Security patch date string |
-| `BASE_OS` | 263 | Base OS build string |
-| `PREVIEW_SDK_INT` | 324 | Preview SDK revision (0 for release) |
-| `INCREMENTAL` | 242 | Source control changelist/hash |
+| `SDK_INT` | 288 | SDK 版本整数（例如 Android 11 为 30） |
+| `RELEASE` | 251 | 面向用户的版本字符串（例如 "11"） |
+| `CODENAME` | 351 | 发布版为 "REL"，否则为代号 |
+| `SECURITY_PATCH` | 269 | 安全补丁日期字符串 |
+| `BASE_OS` | 263 | 基础 OS 构建字符串 |
+| `PREVIEW_SDK_INT` | 324 | 预览 SDK 修订号（发布版为 0） |
+| `INCREMENTAL` | 242 | 源代码控制变更列表/哈希 |
 
-**Build.VERSION_CODES (line 389):** Enumeration of all Android API levels from `BASE` (1) through `R` (30, Android 11).
+**Build.VERSION_CODES（第 389 行）：** 从 `BASE`（1）到 `R`（30，Android 11）的所有 Android API 级别枚举。
 
-**Security-Sensitive API -- `getSerial()` (line 169):**
-Requires `READ_PRIVILEGED_PHONE_STATE` permission. Starting with API 29, device identifiers are heavily restricted. The method delegates to `IDeviceIdentifiersPolicyService` via Binder IPC.
+**安全敏感 API —— `getSerial()`（第 169 行）：**
+需要 `READ_PRIVILEGED_PHONE_STATE` 权限。从 API 29 开始，设备标识符受到严格限制。该方法通过 Binder IPC 委托给 `IDeviceIdentifiersPolicyService`。
 
-**Hidden APIs:**
-- `IS_EMULATOR` (line 114, `@hide`, `@TestApi`) -- checks `ro.kernel.qemu`
-- `VERSION.FIRST_SDK_INT` (line 303, `@hide`, `@TestApi`) -- SDK version that originally shipped
-- `VERSION.RESOURCES_SDK_INT` (line 371, `@hide`, `@TestApi`) -- `SDK_INT + ACTIVE_CODENAMES.length`
-- `VERSION.MIN_SUPPORTED_TARGET_SDK_INT` (line 380, `@hide`) -- minimum target SDK
+**隐藏 API：**
+- `IS_EMULATOR`（第 114 行，`@hide`、`@TestApi`）—— 检查 `ro.kernel.qemu`
+- `VERSION.FIRST_SDK_INT`（第 303 行，`@hide`、`@TestApi`）—— 最初出厂的 SDK 版本
+- `VERSION.RESOURCES_SDK_INT`（第 371 行，`@hide`、`@TestApi`）—— `SDK_INT + ACTIVE_CODENAMES.length`
+- `VERSION.MIN_SUPPORTED_TARGET_SDK_INT`（第 380 行，`@hide`）—— 最低目标 SDK
 
 ---
 
 ## 6. Environment
 
-**File:** `frameworks/base/core/java/android/os/Environment.java` (1434 lines)
+**文件：** `frameworks/base/core/java/android/os/Environment.java`（1434 行）
 
-**Purpose:** Access to standard filesystem directories and external storage state.
+**用途：** 访问标准文件系统目录和外部存储状态。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `getRootDirectory()` | 218 | `/system` -- read-only system partition |
-| `getDataDirectory()` | 353 | `/data` -- internal data |
-| `getDownloadCacheDirectory()` | 1045 | `/cache` -- download cache |
-| `getExternalStorageDirectory()` | 677 | Primary external storage root |
-| `getExternalStoragePublicDirectory(type)` | 962 | Public directories by type |
-| `getExternalStorageState()` | 1142 | Storage mount state |
-| `getExternalStorageState(File)` | 1165 | State for specific path |
-| `isExternalStorageEmulated()` | ~1190 | Whether external storage is emulated |
-| `isExternalStorageRemovable()` | ~1210 | Whether storage is physically removable |
-| `getStorageDirectory()` | 227 | `/storage` -- mount point root |
+| `getRootDirectory()` | 218 | `/system` —— 只读系统分区 |
+| `getDataDirectory()` | 353 | `/data` —— 内部数据 |
+| `getDownloadCacheDirectory()` | 1045 | `/cache` —— 下载缓存 |
+| `getExternalStorageDirectory()` | 677 | 主外部存储根目录 |
+| `getExternalStoragePublicDirectory(type)` | 962 | 按类型的公共目录 |
+| `getExternalStorageState()` | 1142 | 存储挂载状态 |
+| `getExternalStorageState(File)` | 1165 | 特定路径的状态 |
+| `isExternalStorageEmulated()` | ~1190 | 外部存储是否为模拟的 |
+| `isExternalStorageRemovable()` | ~1210 | 存储是否物理可移除 |
+| `getStorageDirectory()` | 227 | `/storage` —— 挂载点根目录 |
 
-**Public Directory Type Constants:**
-- `DIRECTORY_MUSIC`, `DIRECTORY_PODCASTS`, `DIRECTORY_RINGTONES`
-- `DIRECTORY_ALARMS`, `DIRECTORY_NOTIFICATIONS`
-- `DIRECTORY_PICTURES`, `DIRECTORY_MOVIES`
-- `DIRECTORY_DOWNLOADS`, `DIRECTORY_DCIM`, `DIRECTORY_DOCUMENTS`
-- `DIRECTORY_SCREENSHOTS`, `DIRECTORY_AUDIOBOOKS`
+**公共目录类型常量：**
+- `DIRECTORY_MUSIC`、`DIRECTORY_PODCASTS`、`DIRECTORY_RINGTONES`
+- `DIRECTORY_ALARMS`、`DIRECTORY_NOTIFICATIONS`
+- `DIRECTORY_PICTURES`、`DIRECTORY_MOVIES`
+- `DIRECTORY_DOWNLOADS`、`DIRECTORY_DCIM`、`DIRECTORY_DOCUMENTS`
+- `DIRECTORY_SCREENSHOTS`、`DIRECTORY_AUDIOBOOKS`
 
-**Storage State Constants:**
-- `MEDIA_MOUNTED` -- read/write access
-- `MEDIA_MOUNTED_READ_ONLY` -- read-only access
-- `MEDIA_REMOVED`, `MEDIA_BAD_REMOVAL`, `MEDIA_UNMOUNTED`
-- `MEDIA_CHECKING`, `MEDIA_EJECTING`, `MEDIA_UNKNOWN`
+**存储状态常量：**
+- `MEDIA_MOUNTED` —— 读写访问
+- `MEDIA_MOUNTED_READ_ONLY` —— 只读访问
+- `MEDIA_REMOVED`、`MEDIA_BAD_REMOVAL`、`MEDIA_UNMOUNTED`
+- `MEDIA_CHECKING`、`MEDIA_EJECTING`、`MEDIA_UNKNOWN`
 
-**Scoped Storage (Android 10+/11):**
+**分区存储（Android 10+/11）：**
 
-Lines 94-132 define the Scoped Storage compatibility flags:
-- `DEFAULT_SCOPED_STORAGE` (ChangeId 149924527) -- enabled by default for all apps
-- `FORCE_ENABLE_SCOPED_STORAGE` (ChangeId 132649864) -- `@Disabled` by default, strictly enforces scoped storage
+第 94-132 行定义了分区存储兼容性标志：
+- `DEFAULT_SCOPED_STORAGE`（ChangeId 149924527）—— 默认对所有应用启用
+- `FORCE_ENABLE_SCOPED_STORAGE`（ChangeId 132649864）—— 默认 `@Disabled`，严格强制分区存储
 
-Opt-out mechanisms documented (lines 96-101):
-- Target SDK < Q
-- Target SDK = Q + `requestLegacyExternalStorage` manifest attribute
-- Target SDK > Q + upgrading + `preserveLegacyExternalStorage`
+退出机制文档（第 96-101 行）：
+- 目标 SDK < Q
+- 目标 SDK = Q + `requestLegacyExternalStorage` 清单属性
+- 目标 SDK > Q + 升级 + `preserveLegacyExternalStorage`
 
-**Hidden System APIs (`@SystemApi`):**
-- `getOemDirectory()` (line 239) -- `/oem` partition
-- `getOdmDirectory()` (line 251) -- `/odm` partition
-- `getVendorDirectory()` (line 262) -- `/vendor` partition
-- `getProductDirectory()` (line 274) -- `/product` partition
-- `getSystemExtDirectory()` (line 301) -- `/system_ext` partition
-- Numerous `getDataSystem*Directory()` methods for per-user system data
+**隐藏系统 API（`@SystemApi`）：**
+- `getOemDirectory()`（第 239 行）—— `/oem` 分区
+- `getOdmDirectory()`（第 251 行）—— `/odm` 分区
+- `getVendorDirectory()`（第 262 行）—— `/vendor` 分区
+- `getProductDirectory()`（第 274 行）—— `/product` 分区
+- `getSystemExtDirectory()`（第 301 行）—— `/system_ext` 分区
+- 大量 `getDataSystem*Directory()` 方法用于每用户系统数据
 
-**UserEnvironment (line 150, `@hide`):** Inner class providing per-user external storage paths. Each user gets isolated external storage via `StorageManager.getVolumeList()`.
+**UserEnvironment（第 150 行，`@hide`）：** 提供每用户外部存储路径的内部类。每个用户通过 `StorageManager.getVolumeList()` 获得隔离的外部存储。
 
 ---
 
-## 7. PowerManager and BatteryManager
+## 7. PowerManager 和 BatteryManager
 
 ### 7.1 PowerManager
 
-**File:** `frameworks/base/core/java/android/os/PowerManager.java` (2634 lines)
+**文件：** `frameworks/base/core/java/android/os/PowerManager.java`（2634 行）
 
-**Purpose:** Controls device power state, wake locks, and power-related queries.
+**用途：** 控制设备电源状态、唤醒锁和电源相关查询。
 
-**Obtained via:** `context.getSystemService(Context.POWER_SERVICE)` (`@SystemService`)
+**获取方式：** `context.getSystemService(Context.POWER_SERVICE)`（`@SystemService`）
 
-**Wake Lock Levels:**
+**唤醒锁级别：**
 
-| Constant | Line | CPU | Screen | Keyboard |
+| 常量 | 行号 | CPU | 屏幕 | 键盘 |
 |----------|------|-----|--------|----------|
-| `PARTIAL_WAKE_LOCK` | 80 | ON | off | off |
-| `SCREEN_DIM_WAKE_LOCK` | 97 | ON | dim | off |
-| `SCREEN_BRIGHT_WAKE_LOCK` | 114 | ON | bright | off |
-| `FULL_WAKE_LOCK` | 132 | ON | bright | bright |
-| `PROXIMITY_SCREEN_OFF_WAKE_LOCK` | 153 | ON | proximity | -- |
-| `DOZE_WAKE_LOCK` | 168 | -- | low power | -- |
-| `DRAW_WAKE_LOCK` | 182 | -- | draw only | -- |
+| `PARTIAL_WAKE_LOCK` | 80 | 开启 | 关闭 | 关闭 |
+| `SCREEN_DIM_WAKE_LOCK` | 97 | 开启 | 暗淡 | 关闭 |
+| `SCREEN_BRIGHT_WAKE_LOCK` | 114 | 开启 | 明亮 | 关闭 |
+| `FULL_WAKE_LOCK` | 132 | 开启 | 明亮 | 明亮 |
+| `PROXIMITY_SCREEN_OFF_WAKE_LOCK` | 153 | 开启 | 接近传感器 | -- |
+| `DOZE_WAKE_LOCK` | 168 | -- | 低功耗 | -- |
+| `DRAW_WAKE_LOCK` | 182 | -- | 仅绘制 | -- |
 
-All screen-level wake locks are `@Deprecated` in favor of `WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON`.
+所有屏幕级唤醒锁已 `@Deprecated`，推荐使用 `WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON`。
 
-**Wake Lock Flags:**
-- `ACQUIRE_CAUSES_WAKEUP` (line 202) -- turn screen on when acquired
-- `ON_AFTER_RELEASE` (line 214) -- poke user activity timer on release
+**唤醒锁标志：**
+- `ACQUIRE_CAUSES_WAKEUP`（第 202 行）—— 获取时点亮屏幕
+- `ON_AFTER_RELEASE`（第 214 行）—— 释放时触发用户活动计时器
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `newWakeLock(int, String)` | 1101 | Create a new WakeLock |
-| `isWakeLockLevelSupported(int)` | 1418 | Check if level is supported |
-| `isInteractive()` | ~1450 | Whether device is awake |
-| `isDeviceIdleMode()` | ~1500 | Whether in Doze mode |
-| `isPowerSaveMode()` | ~1480 | Whether battery saver is active |
-| `isScreenOn()` | ~deprecated | Use `isInteractive()` instead |
+| `newWakeLock(int, String)` | 1101 | 创建新的 WakeLock |
+| `isWakeLockLevelSupported(int)` | 1418 | 检查是否支持该级别 |
+| `isInteractive()` | ~1450 | 设备是否处于唤醒状态 |
+| `isDeviceIdleMode()` | ~1500 | 是否处于 Doze 模式 |
+| `isPowerSaveMode()` | ~1480 | 省电模式是否激活 |
+| `isScreenOn()` | ~已废弃 | 改用 `isInteractive()` |
 
-**WakeLock Inner Class (line 2320):**
-- `acquire()` / `acquire(long timeout)` -- acquire wake lock with optional auto-release
-- `release()` / `release(int flags)` -- release wake lock
-- `setReferenceCounted(boolean)` -- default true, must balance acquire/release
-- `setWorkSource(WorkSource)` -- attribute power usage to another UID
+**WakeLock 内部类（第 2320 行）：**
+- `acquire()` / `acquire(long timeout)` —— 获取唤醒锁，可选自动释放
+- `release()` / `release(int flags)` —— 释放唤醒锁
+- `setReferenceCounted(boolean)` —— 默认 true，必须平衡 acquire/release
+- `setWorkSource(WorkSource)` —— 将功耗归因到另一个 UID
 
-**Requires Permission:** `android.permission.WAKE_LOCK` for any WakeLock usage.
+**需要权限：** 使用任何 WakeLock 都需要 `android.permission.WAKE_LOCK`。
 
-**Hidden/System APIs (`@SystemApi`):**
-- User activity event types: `USER_ACTIVITY_EVENT_OTHER/BUTTON/TOUCH/ACCESSIBILITY` (lines 295-316)
-- Go-to-sleep reason codes: `GO_TO_SLEEP_REASON_APPLICATION/TIMEOUT/POWER_BUTTON/...` (lines 354-416)
-- `GO_TO_SLEEP_FLAG_NO_DOZE` (line 446) -- skip doze state
-- Various brightness constants (lines 240-285)
-- `DOZE_WAKE_LOCK` and `DRAW_WAKE_LOCK` require `DEVICE_POWER` permission
+**隐藏/系统 API（`@SystemApi`）：**
+- 用户活动事件类型：`USER_ACTIVITY_EVENT_OTHER/BUTTON/TOUCH/ACCESSIBILITY`（第 295-316 行）
+- 睡眠原因代码：`GO_TO_SLEEP_REASON_APPLICATION/TIMEOUT/POWER_BUTTON/...`（第 354-416 行）
+- `GO_TO_SLEEP_FLAG_NO_DOZE`（第 446 行）—— 跳过 Doze 状态
+- 各种亮度常量（第 240-285 行）
+- `DOZE_WAKE_LOCK` 和 `DRAW_WAKE_LOCK` 需要 `DEVICE_POWER` 权限
 
 ### 7.2 BatteryManager
 
-**File:** `frameworks/base/core/java/android/os/BatteryManager.java` (403 lines)
+**文件：** `frameworks/base/core/java/android/os/BatteryManager.java`（403 行）
 
-**Purpose:** Battery state information and querying properties.
+**用途：** 电池状态信息和属性查询。
 
-**Obtained via:** `context.getSystemService(Context.BATTERY_SERVICE)` (`@SystemService`)
+**获取方式：** `context.getSystemService(Context.BATTERY_SERVICE)`（`@SystemService`）
 
-**Intent Extras for `ACTION_BATTERY_CHANGED`:**
+**`ACTION_BATTERY_CHANGED` 的 Intent Extra：**
 
-| Extra | Line | Type | 描述 |
+| Extra | 行号 | 类型 | 描述 |
 |-------|------|------|-------------|
-| `EXTRA_STATUS` | 42 | int | Charging status constant |
-| `EXTRA_HEALTH` | 48 | int | Battery health constant |
-| `EXTRA_PRESENT` | 54 | boolean | Battery present |
-| `EXTRA_LEVEL` | 61 | int | Current level (0 to EXTRA_SCALE) |
-| `EXTRA_SCALE` | 75 | int | Maximum level |
-| `EXTRA_PLUGGED` | 90 | int | Power source type |
-| `EXTRA_VOLTAGE` | 96 | int | Current voltage |
-| `EXTRA_TEMPERATURE` | 102 | int | Current temperature |
-| `EXTRA_TECHNOLOGY` | 108 | String | Battery technology |
+| `EXTRA_STATUS` | 42 | int | 充电状态常量 |
+| `EXTRA_HEALTH` | 48 | int | 电池健康状态常量 |
+| `EXTRA_PRESENT` | 54 | boolean | 电池是否存在 |
+| `EXTRA_LEVEL` | 61 | int | 当前电量（0 到 EXTRA_SCALE） |
+| `EXTRA_SCALE` | 75 | int | 最大电量 |
+| `EXTRA_PLUGGED` | 90 | int | 电源类型 |
+| `EXTRA_VOLTAGE` | 96 | int | 当前电压 |
+| `EXTRA_TEMPERATURE` | 102 | int | 当前温度 |
+| `EXTRA_TECHNOLOGY` | 108 | String | 电池技术 |
 
-**Status Constants:** `BATTERY_STATUS_UNKNOWN/CHARGING/DISCHARGING/NOT_CHARGING/FULL` (lines 168-172)
+**状态常量：** `BATTERY_STATUS_UNKNOWN/CHARGING/DISCHARGING/NOT_CHARGING/FULL`（第 168-172 行）
 
-**Health Constants:** `BATTERY_HEALTH_UNKNOWN/GOOD/OVERHEAT/DEAD/OVER_VOLTAGE/UNSPECIFIED_FAILURE/COLD` (lines 175-181)
+**健康常量：** `BATTERY_HEALTH_UNKNOWN/GOOD/OVERHEAT/DEAD/OVER_VOLTAGE/UNSPECIFIED_FAILURE/COLD`（第 175-181 行）
 
-**Plug Types:** `BATTERY_PLUGGED_AC` (1), `BATTERY_PLUGGED_USB` (2), `BATTERY_PLUGGED_WIRELESS` (4) (lines 186-190)
+**插头类型：** `BATTERY_PLUGGED_AC`（1）、`BATTERY_PLUGGED_USB`（2）、`BATTERY_PLUGGED_WIRELESS`（4）（第 186-190 行）
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `isCharging()` | 285 | Whether battery level is increasing |
-| `getIntProperty(int)` | 329 | Query int battery property |
-| `getLongProperty(int)` | 349 | Query long battery property |
-| `computeChargeTimeRemaining()` | 373 | Estimated time to full charge |
+| `isCharging()` | 285 | 电池电量是否在增加 |
+| `getIntProperty(int)` | 329 | 查询 int 类型电池属性 |
+| `getLongProperty(int)` | 349 | 查询 long 类型电池属性 |
+| `computeChargeTimeRemaining()` | 373 | 预计充满电的剩余时间 |
 
-**Battery Property IDs:**
-- `BATTERY_PROPERTY_CHARGE_COUNTER` (1) -- capacity in microampere-hours
-- `BATTERY_PROPERTY_CURRENT_NOW` (2) -- instantaneous current in microamperes
-- `BATTERY_PROPERTY_CURRENT_AVERAGE` (3) -- average current
-- `BATTERY_PROPERTY_CAPACITY` (4) -- remaining percentage
-- `BATTERY_PROPERTY_ENERGY_COUNTER` (5) -- remaining energy in nanowatt-hours
-- `BATTERY_PROPERTY_STATUS` (6) -- charge status
+**电池属性 ID：**
+- `BATTERY_PROPERTY_CHARGE_COUNTER`（1）—— 容量，单位微安时
+- `BATTERY_PROPERTY_CURRENT_NOW`（2）—— 瞬时电流，单位微安
+- `BATTERY_PROPERTY_CURRENT_AVERAGE`（3）—— 平均电流
+- `BATTERY_PROPERTY_CAPACITY`（4）—— 剩余百分比
+- `BATTERY_PROPERTY_ENERGY_COUNTER`（5）—— 剩余能量，单位纳瓦时
+- `BATTERY_PROPERTY_STATUS`（6）—— 充电状态
 
-**Hidden APIs:**
-- `EXTRA_INVALID_CHARGER`, `EXTRA_MAX_CHARGING_CURRENT`, `EXTRA_MAX_CHARGING_VOLTAGE` (lines 117-133)
-- `setChargingStateUpdateDelayMillis(int)` (line 396, `@SystemApi`) -- ML/heuristic-based charging state delay
+**隐藏 API：**
+- `EXTRA_INVALID_CHARGER`、`EXTRA_MAX_CHARGING_CURRENT`、`EXTRA_MAX_CHARGING_VOLTAGE`（第 117-133 行）
+- `setChargingStateUpdateDelayMillis(int)`（第 396 行，`@SystemApi`）—— 基于机器学习/启发式的充电状态延迟
 
 ---
 
 ## 8. SystemClock
 
-**File:** `frameworks/base/core/java/android/os/SystemClock.java` (345 lines)
+**文件：** `frameworks/base/core/java/android/os/SystemClock.java`（345 行）
 
-**Purpose:** Core timekeeping facilities providing multiple clock sources for different use cases.
+**用途：** 核心计时工具，提供多个时钟源用于不同用途。
 
-**Three Clock Types (documented in class Javadoc, lines 36-72):**
+**三种时钟类型（记录在类 Javadoc 中，第 36-72 行）：**
 
-| Clock | Method | Stops in Sleep | Adjustable | Use Case |
+| 时钟 | 方法 | 休眠时停止 | 可调整 | 用途 |
 |-------|--------|---------------|------------|----------|
-| Wall clock | `System.currentTimeMillis()` | No | Yes (user/network) | Calendar, real-world dates |
-| Uptime | `uptimeMillis()` | Yes | No | Interval timing, Handler |
-| Elapsed realtime | `elapsedRealtime()` | No | No | General interval timing |
+| 挂钟 | `System.currentTimeMillis()` | 否 | 是（用户/网络） | 日历、真实世界日期 |
+| 运行时间 | `uptimeMillis()` | 是 | 否 | 间隔计时、Handler |
+| 经过的实时时间 | `elapsedRealtime()` | 否 | 否 | 通用间隔计时 |
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `sleep(long ms)` | 124 | Like `Thread.sleep()` but ignores `InterruptedException` |
-| `uptimeMillis()` | 178 | Milliseconds since boot (excludes deep sleep) |
-| `elapsedRealtime()` | 201 | Milliseconds since boot (includes deep sleep) |
-| `elapsedRealtimeNanos()` | 224 | Nanoseconds since boot (includes deep sleep) |
-| `currentThreadTimeMillis()` | 232 | Thread CPU time in milliseconds |
-| `setCurrentTimeMillis(long)` | 153 | Set wall clock (requires permission) |
-| `currentGnssTimeClock()` | 322 | GNSS-synchronized Clock |
+| `sleep(long ms)` | 124 | 类似 `Thread.sleep()` 但忽略 `InterruptedException` |
+| `uptimeMillis()` | 178 | 自启动以来的毫秒数（不包括深度睡眠） |
+| `elapsedRealtime()` | 201 | 自启动以来的毫秒数（包括深度睡眠） |
+| `elapsedRealtimeNanos()` | 224 | 自启动以来的纳秒数（包括深度睡眠） |
+| `currentThreadTimeMillis()` | 232 | 线程 CPU 时间（毫秒） |
+| `setCurrentTimeMillis(long)` | 153 | 设置挂钟（需要权限） |
+| `currentGnssTimeClock()` | 322 | GNSS 同步时钟 |
 
-**Important:** Most Android framework timing uses `uptimeMillis()` as the time base. Handler delays, animation timing, and touch event timestamps all use this clock. Deep sleep pauses this clock, so delayed messages will execute after wake-up with accumulated delay.
+**重要说明：** 大多数 Android 框架计时使用 `uptimeMillis()` 作为时间基准。Handler 延迟、动画计时和触摸事件时间戳都使用此时钟。深度睡眠会暂停此时钟，因此延迟的消息将在唤醒后以累积延迟执行。
 
-**Hidden APIs:**
-- `currentNetworkTimeMillis()` (line 273) -- NTP-synchronized time
-- `currentTimeMicro()` (line 254) -- wall time in microseconds
-- `currentThreadTimeMicro()` (line 243) -- thread CPU time in microseconds
+**隐藏 API：**
+- `currentNetworkTimeMillis()`（第 273 行）—— NTP 同步时间
+- `currentTimeMicro()`（第 254 行）—— 挂钟时间，微秒
+- `currentThreadTimeMicro()`（第 243 行）—— 线程 CPU 时间，微秒
 
-**Implementation of `sleep()` (lines 124-145):** Unlike `Thread.sleep()`, this preserves the interrupted state by re-interrupting the thread after completing the full sleep duration. Uses a loop to handle interruptions without losing sleep time.
+**`sleep()` 的实现（第 124-145 行）：** 与 `Thread.sleep()` 不同，此方法在完成完整的睡眠持续时间后通过重新中断线程来保留中断状态。使用循环来处理中断而不丢失睡眠时间。
 
 ---
 
-## 9. Process Management
+## 9. 进程管理
 
-**File:** `frameworks/base/core/java/android/os/Process.java` (1445 lines)
+**文件：** `frameworks/base/core/java/android/os/Process.java`（1445 行）
 
-**Purpose:** Tools for managing OS processes, including process creation, UID/GID definitions, thread priorities, and signals.
+**用途：** 管理操作系统进程的工具，包括进程创建、UID/GID 定义、线程优先级和信号。
 
-**Well-Known UID Constants:**
+**常用 UID 常量：**
 
-| Constant | Value | Line | 描述 |
+| 常量 | 值 | 行号 | 描述 |
 |----------|-------|------|-------------|
-| `ROOT_UID` | 0 | 56 | Root user |
-| `SYSTEM_UID` | 1000 | 61 | System server |
-| `PHONE_UID` | 1001 | 66 | Telephony |
-| `BLUETOOTH_UID` | 1002 | 141 | Bluetooth |
+| `ROOT_UID` | 0 | 56 | Root 用户 |
+| `SYSTEM_UID` | 1000 | 61 | 系统服务器 |
+| `PHONE_UID` | 1001 | 66 | 电话 |
+| `BLUETOOTH_UID` | 1002 | 141 | 蓝牙 |
 | `SHELL_UID` | 2000 | 71 | ADB shell |
-| `WIFI_UID` | 1010 | 84 | WiFi services |
-| `FIRST_APPLICATION_UID` | 10000 | 256 | First app UID |
-| `LAST_APPLICATION_UID` | 19999 | 262 | Last app UID |
-| `FIRST_ISOLATED_UID` | 99000 | 291 | First isolated process UID |
+| `WIFI_UID` | 1010 | 84 | WiFi 服务 |
+| `FIRST_APPLICATION_UID` | 10000 | 256 | 第一个应用 UID |
+| `LAST_APPLICATION_UID` | 19999 | 262 | 最后一个应用 UID |
+| `FIRST_ISOLATED_UID` | 99000 | 291 | 第一个隔离进程 UID |
 
-**Thread Priority Constants (lines 332-425):**
+**线程优先级常量（第 332-425 行）：**
 
-| Constant | Value | Line | 描述 |
+| 常量 | 值 | 行号 | 描述 |
 |----------|-------|------|-------------|
-| `THREAD_PRIORITY_DEFAULT` | 0 | 332 | Standard application |
-| `THREAD_PRIORITY_LOWEST` | 19 | 347 | Lowest priority |
-| `THREAD_PRIORITY_BACKGROUND` | 10 | 357 | Background threads |
-| `THREAD_PRIORITY_FOREGROUND` | -2 | 368 | Interactive UI |
-| `THREAD_PRIORITY_DISPLAY` | -4 | 378 | Display updates |
-| `THREAD_PRIORITY_URGENT_DISPLAY` | -8 | 388 | Compositing/input |
-| `THREAD_PRIORITY_AUDIO` | -16 | 406 | Audio processing |
-| `THREAD_PRIORITY_URGENT_AUDIO` | -19 | 415 | Critical audio |
+| `THREAD_PRIORITY_DEFAULT` | 0 | 332 | 标准应用 |
+| `THREAD_PRIORITY_LOWEST` | 19 | 347 | 最低优先级 |
+| `THREAD_PRIORITY_BACKGROUND` | 10 | 357 | 后台线程 |
+| `THREAD_PRIORITY_FOREGROUND` | -2 | 368 | 交互式 UI |
+| `THREAD_PRIORITY_DISPLAY` | -4 | 378 | 显示更新 |
+| `THREAD_PRIORITY_URGENT_DISPLAY` | -8 | 388 | 合成/输入 |
+| `THREAD_PRIORITY_AUDIO` | -16 | 406 | 音频处理 |
+| `THREAD_PRIORITY_URGENT_AUDIO` | -19 | 415 | 关键音频 |
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | 描述 |
+| 方法 | 描述 |
 |--------|-------------|
-| `myPid()` | Current process PID |
-| `myTid()` | Current thread TID |
-| `myUid()` | Current process UID |
-| `myUserHandle()` | Current user handle |
-| `setThreadPriority(int)` | Set calling thread's priority |
-| `setThreadPriority(int tid, int priority)` | Set specific thread's priority |
-| `getThreadPriority(int tid)` | Get thread's current priority |
-| `killProcess(int pid)` | Send SIGKILL to process |
-| `sendSignal(int pid, int signal)` | Send signal to process |
+| `myPid()` | 当前进程 PID |
+| `myTid()` | 当前线程 TID |
+| `myUid()` | 当前进程 UID |
+| `myUserHandle()` | 当前用户句柄 |
+| `setThreadPriority(int)` | 设置调用线程的优先级 |
+| `setThreadPriority(int tid, int priority)` | 设置特定线程的优先级 |
+| `getThreadPriority(int tid)` | 获取线程的当前优先级 |
+| `killProcess(int pid)` | 向进程发送 SIGKILL |
+| `sendSignal(int pid, int signal)` | 向进程发送信号 |
 
-**Signal Constants:** `SIGNAL_QUIT` (3), `SIGNAL_KILL` (9), `SIGNAL_USR1` (10) (lines 532-534)
+**信号常量：** `SIGNAL_QUIT`（3）、`SIGNAL_KILL`（9）、`SIGNAL_USR1`（10）（第 532-534 行）
 
-**Hidden Process Management:**
-- Zygote policy flags (lines 555-580): `ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE`, `ZYGOTE_POLICY_FLAG_BATCH_LAUNCH`, `ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS`
-- Thread groups (lines 467-530): `THREAD_GROUP_DEFAULT`, `THREAD_GROUP_BACKGROUND`, `THREAD_GROUP_TOP_APP`, etc.
-- Scheduling policies (lines 430-455): `SCHED_OTHER`, `SCHED_FIFO`, `SCHED_RR`, `SCHED_BATCH`, `SCHED_IDLE`
+**隐藏进程管理：**
+- Zygote 策略标志（第 555-580 行）：`ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE`、`ZYGOTE_POLICY_FLAG_BATCH_LAUNCH`、`ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS`
+- 线程组（第 467-530 行）：`THREAD_GROUP_DEFAULT`、`THREAD_GROUP_BACKGROUND`、`THREAD_GROUP_TOP_APP` 等
+- 调度策略（第 430-455 行）：`SCHED_OTHER`、`SCHED_FIFO`、`SCHED_RR`、`SCHED_BATCH`、`SCHED_IDLE`
 
 ---
 
 ## 10. UserManager
 
-**File:** `frameworks/base/core/java/android/os/UserManager.java` (4370 lines)
+**文件：** `frameworks/base/core/java/android/os/UserManager.java`（4370 行）
 
-**Purpose:** Manages users and user profiles on multi-user Android devices.
+**用途：** 管理多用户 Android 设备上的用户和用户配置文件。
 
-**Obtained via:** `context.getSystemService(Context.USER_SERVICE)` (`@SystemService`)
+**获取方式：** `context.getSystemService(Context.USER_SERVICE)`（`@SystemService`）
 
-**User Type Constants (`@SystemApi`, `@hide`):**
+**用户类型常量（`@SystemApi`、`@hide`）：**
 
-| Constant | Line | 描述 |
+| 常量 | 行号 | 描述 |
 |----------|------|-------------|
-| `USER_TYPE_FULL_SYSTEM` | 100 | System user (pre-existing) |
-| `USER_TYPE_FULL_SECONDARY` | 108 | Regular secondary user |
-| `USER_TYPE_FULL_GUEST` | 115 | Guest user |
-| `USER_TYPE_FULL_DEMO` | 121 | Demo user |
-| `USER_TYPE_FULL_RESTRICTED` | 128 | Restricted profile |
-| `USER_TYPE_PROFILE_MANAGED` | 137 | Work profile (DPC-managed) |
-| `USER_TYPE_SYSTEM_HEADLESS` | 146 | Non-human system user |
+| `USER_TYPE_FULL_SYSTEM` | 100 | 系统用户（预先存在） |
+| `USER_TYPE_FULL_SECONDARY` | 108 | 普通次要用户 |
+| `USER_TYPE_FULL_GUEST` | 115 | 访客用户 |
+| `USER_TYPE_FULL_DEMO` | 121 | 演示用户 |
+| `USER_TYPE_FULL_RESTRICTED` | 128 | 受限配置文件 |
+| `USER_TYPE_PROFILE_MANAGED` | 137 | 工作配置文件（DPC 管理） |
+| `USER_TYPE_SYSTEM_HEADLESS` | 146 | 非人类系统用户 |
 
-**Key Public APIs (selected):**
+**关键公共 API（精选）：**
 
-| Method | 描述 |
+| 方法 | 描述 |
 |--------|-------------|
-| `isUserAGoat()` | Easter egg -- checks for com.coffeestainstudios.goatsimulator |
-| `getUserCount()` | Number of users on device |
-| `isUserRunning(UserHandle)` | Whether user's process is started |
-| `isUserUnlocked()` | Whether user storage is unlocked |
-| `isSystemUser()` | Whether current user is system user |
-| `isManagedProfile()` | Whether running in a work profile |
-| `isGuestUser()` | Whether current user is a guest |
-| `isDemoUser()` | Whether current user is demo |
-| `isQuietModeEnabled(UserHandle)` | Whether quiet mode is active |
-| `requestQuietModeEnabled(boolean, UserHandle)` | Toggle quiet mode |
+| `isUserAGoat()` | 彩蛋 —— 检查是否安装了 com.coffeestainstudios.goatsimulator |
+| `getUserCount()` | 设备上的用户数量 |
+| `isUserRunning(UserHandle)` | 用户进程是否已启动 |
+| `isUserUnlocked()` | 用户存储是否已解锁 |
+| `isSystemUser()` | 当前用户是否为系统用户 |
+| `isManagedProfile()` | 是否在工作配置文件中运行 |
+| `isGuestUser()` | 当前用户是否为访客 |
+| `isDemoUser()` | 当前用户是否为演示用户 |
+| `isQuietModeEnabled(UserHandle)` | 静默模式是否激活 |
+| `requestQuietModeEnabled(boolean, UserHandle)` | 切换静默模式 |
 
-**User Restrictions System:** A large set of `DISALLOW_*` string constants (hundreds of them) that restrict user capabilities:
-- `DISALLOW_INSTALL_APPS`, `DISALLOW_UNINSTALL_APPS`
-- `DISALLOW_USB_FILE_TRANSFER`, `DISALLOW_MODIFY_ACCOUNTS`
-- `DISALLOW_CONFIG_WIFI`, `DISALLOW_CONFIG_BLUETOOTH`
-- `DISALLOW_CAMERA`, `DISALLOW_MICROPHONE`
-- `DISALLOW_OUTGOING_CALLS`, `DISALLOW_SMS`
-- etc.
+**用户限制系统：** 大量 `DISALLOW_*` 字符串常量（数百个），用于限制用户能力：
+- `DISALLOW_INSTALL_APPS`、`DISALLOW_UNINSTALL_APPS`
+- `DISALLOW_USB_FILE_TRANSFER`、`DISALLOW_MODIFY_ACCOUNTS`
+- `DISALLOW_CONFIG_WIFI`、`DISALLOW_CONFIG_BLUETOOTH`
+- `DISALLOW_CAMERA`、`DISALLOW_MICROPHONE`
+- `DISALLOW_OUTGOING_CALLS`、`DISALLOW_SMS`
+- 等等。
 
-These are set via `DevicePolicyManager` and queried via `getUserRestrictions()` / `hasUserRestriction(String)`.
+这些通过 `DevicePolicyManager` 设置，并通过 `getUserRestrictions()` / `hasUserRestriction(String)` 查询。
 
 ---
 
-## 11. Permission Manager
+## 11. 权限管理器
 
-**File:** `frameworks/base/core/java/android/permission/PermissionManager.java` (719 lines)
+**文件：** `frameworks/base/core/java/android/permission/PermissionManager.java`（719 行）
 
-**Purpose:** System-level service for accessing permission capabilities. Almost entirely `@hide` / `@SystemApi`.
+**用途：** 用于访问权限能力的系统级服务。几乎全部为 `@hide` / `@SystemApi`。
 
-**Obtained via:** `context.getSystemService(Context.PERMISSION_SERVICE)` (`@SystemService`)
+**获取方式：** `context.getSystemService(Context.PERMISSION_SERVICE)`（`@SystemService`）
 
-**The only public API:**
+**唯一的公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `getSplitPermissions()` | 170 | Get permissions that were split across API levels |
+| `getSplitPermissions()` | 170 | 获取跨 API 级别拆分的权限 |
 
-**Split Permissions (line 152-186):**
+**拆分权限（第 152-186 行）：**
 
-The `SplitPermissionInfo` class (line 386) represents permissions that were split in newer API levels. For example, `ACCESS_COARSE_LOCATION` was split: apps targeting < Q automatically receive `ACCESS_BACKGROUND_LOCATION` when granted the old permission.
+`SplitPermissionInfo` 类（第 386 行）表示在更新的 API 级别中被拆分的权限。例如，`ACCESS_COARSE_LOCATION` 被拆分：目标 < Q 的应用在被授予旧权限时会自动获得 `ACCESS_BACKGROUND_LOCATION`。
 
-Key methods on `SplitPermissionInfo`:
-- `getSplitPermission()` -- the original permission
-- `getNewPermissions()` -- the new granular permissions
-- `getTargetSdk()` -- the API level where the split occurred
+`SplitPermissionInfo` 的关键方法：
+- `getSplitPermission()` —— 原始权限
+- `getNewPermissions()` —— 新的细粒度权限
+- `getTargetSdk()` —— 发生拆分的 API 级别
 
-**System APIs (`@SystemApi`):**
+**系统 API（`@SystemApi`）：**
 
-| Method | Line | Permission Required | 描述 |
+| 方法 | 行号 | 所需权限 | 描述 |
 |--------|------|-------------------|-------------|
-| `getRuntimePermissionsVersion()` | 123 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | Get permission DB version |
-| `setRuntimePermissionsVersion(int)` | 144 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | Set permission DB version |
-| `getAutoRevokeExemptionRequestedPackages()` | 325 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | Auto-revoke exempt packages |
-| `getAutoRevokeExemptionGrantedPackages()` | 345 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | Granted auto-revoke exemptions |
-| `startOneTimePermissionSession(...)` | 475 | `MANAGE_ONE_TIME_PERMISSION_SESSIONS` | One-time permission tracking |
-| `stopOneTimePermissionSession(String)` | 496 | `MANAGE_ONE_TIME_PERMISSION_SESSIONS` | Stop one-time session |
-| `checkDeviceIdentifierAccess(...)` | 519 | -- | Check device ID access |
+| `getRuntimePermissionsVersion()` | 123 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | 获取权限数据库版本 |
+| `setRuntimePermissionsVersion(int)` | 144 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | 设置权限数据库版本 |
+| `getAutoRevokeExemptionRequestedPackages()` | 325 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | 自动撤销豁免请求的包 |
+| `getAutoRevokeExemptionGrantedPackages()` | 345 | `ADJUST_RUNTIME_PERMISSIONS_POLICY` | 已授予自动撤销豁免的包 |
+| `startOneTimePermissionSession(...)` | 475 | `MANAGE_ONE_TIME_PERMISSION_SESSIONS` | 一次性权限跟踪 |
+| `stopOneTimePermissionSession(String)` | 496 | `MANAGE_ONE_TIME_PERMISSION_SESSIONS` | 停止一次性会话 |
+| `checkDeviceIdentifierAccess(...)` | 519 | -- | 检查设备 ID 访问权限 |
 
-**One-Time Permissions (Android 11 Feature, lines 442-503):**
+**一次性权限（Android 11 特性，第 442-503 行）：**
 
-The `startOneTimePermissionSession()` method implements Android 11's one-time permission grants. Parameters control:
-- `timeoutMillis` -- how long the app can be inactive before revocation
-- `importanceToResetTimer` -- process importance level that resets the timer
-- `importanceToKeepSessionAlive` -- importance level that extends the session
+`startOneTimePermissionSession()` 方法实现了 Android 11 的一次性权限授予。参数控制：
+- `timeoutMillis` —— 应用不活跃多长时间后撤销
+- `importanceToResetTimer` —— 重置计时器的进程重要性级别
+- `importanceToKeepSessionAlive` —— 延长会话的重要性级别
 
-**Permission Cache (lines 605-630):**
+**权限缓存（第 605-630 行）：**
 
-`PermissionManager` maintains a `PropertyInvalidatedCache` for permission checks, keyed by `(permission, uid)` -- note that `pid` is included for tracking but NOT equality comparison (lines 555-602). This is an important security detail: permission checks are UID-based, not PID-based.
+`PermissionManager` 维护一个 `PropertyInvalidatedCache` 用于权限检查，以 `(permission, uid)` 为键 —— 注意 `pid` 包含用于追踪但不参与相等性比较（第 555-602 行）。这是一个重要的安全细节：权限检查基于 UID 而非 PID。
 
-**Hidden Telephony Permission Grants (lines 197-312):**
-Multiple methods for granting default permissions to telephony components:
+**隐藏电话权限授予（第 197-312 行）：**
+多个方法用于向电话组件授予默认权限：
 - `grantDefaultPermissionsToLuiApp()`
 - `grantDefaultPermissionsToEnabledImsServices()`
 - `grantDefaultPermissionsToEnabledTelephonyDataServices()`
 - `grantDefaultPermissionsToEnabledCarrierApps()`
 
-All require `GRANT_RUNTIME_PERMISSIONS_TO_TELEPHONY_DEFAULTS` permission.
+全部需要 `GRANT_RUNTIME_PERMISSIONS_TO_TELEPHONY_DEFAULTS` 权限。
 
-### Related Permission Files
+### 相关权限文件
 
-**File:** `frameworks/base/core/java/android/permission/PermissionControllerService.java`
-An abstract `Service` that permission controller apps must implement. Handles runtime permission UI and one-time permission timeouts.
+**文件：** `frameworks/base/core/java/android/permission/PermissionControllerService.java`
+权限控制器应用必须实现的抽象 `Service`。处理运行时权限 UI 和一次性权限超时。
 
-**File:** `frameworks/base/core/java/android/permission/PermissionControllerManager.java`
-Client-side interface for communicating with the PermissionControllerService.
+**文件：** `frameworks/base/core/java/android/permission/PermissionControllerManager.java`
+与 PermissionControllerService 通信的客户端接口。
 
 ---
 
-## 12. Security APIs
+## 12. 安全 API
 
 ### 12.1 NetworkSecurityPolicy
 
-**File:** `frameworks/base/core/java/android/security/NetworkSecurityPolicy.java` (119 lines)
+**文件：** `frameworks/base/core/java/android/security/NetworkSecurityPolicy.java`（119 行）
 
-**Purpose:** Controls cleartext (non-TLS) network traffic policy for the process.
+**用途：** 控制进程的明文（非 TLS）网络流量策略。
 
-**Key Public APIs:**
+**关键公共 API：**
 
-| Method | Line | 描述 |
+| 方法 | 行号 | 描述 |
 |--------|------|-------------|
-| `getInstance()` | 45 | Get singleton policy instance |
-| `isCleartextTrafficPermitted()` | 68 | Check if cleartext traffic is allowed process-wide |
-| `isCleartextTrafficPermitted(String hostname)` | 78 | Check for specific hostname |
+| `getInstance()` | 45 | 获取单例策略实例 |
+| `isCleartextTrafficPermitted()` | 68 | 检查进程级是否允许明文流量 |
+| `isCleartextTrafficPermitted(String hostname)` | 78 | 检查特定主机名 |
 
-Delegates to `libcore.net.NetworkSecurityPolicy` which is configured by the Network Security Configuration XML framework.
+委托给 `libcore.net.NetworkSecurityPolicy`，后者由网络安全配置 XML 框架配置。
 
-**Hidden APIs:**
-- `setCleartextTrafficPermitted(boolean)` (line 91) -- used during app initialization
-- `handleTrustStorageUpdate()` (line 100) -- refresh certificate trust store
-- `getApplicationConfigForPackage(Context, String)` (line 112) -- get security config for a package
+**隐藏 API：**
+- `setCleartextTrafficPermitted(boolean)`（第 91 行）—— 在应用初始化期间使用
+- `handleTrustStorageUpdate()`（第 100 行）—— 刷新证书信任存储
+- `getApplicationConfigForPackage(Context, String)`（第 112 行）—— 获取包的安全配置
 
 ### 12.2 ConfirmationPrompt
 
-**File:** `frameworks/base/core/java/android/security/ConfirmationPrompt.java`
+**文件：** `frameworks/base/core/java/android/security/ConfirmationPrompt.java`
 
-**Purpose:** Trusted UI confirmation dialog backed by Android Protected Confirmation (hardware-backed).
+**用途：** 由 Android 受保护确认（硬件支持）支持的可信 UI 确认对话框。
 
 ### 12.3 FileIntegrityManager
 
-**File:** `frameworks/base/core/java/android/security/FileIntegrityManager.java`
+**文件：** `frameworks/base/core/java/android/security/FileIntegrityManager.java`
 
-**Purpose:** Provides access to file integrity features (fs-verity).
+**用途：** 提供对文件完整性功能（fs-verity）的访问。
 
 ### 12.4 Android Keystore
 
-**Directory:** `frameworks/base/keystore/java/android/security/keystore/`
+**目录：** `frameworks/base/keystore/java/android/security/keystore/`
 
-**Key Files:**
-- `AndroidKeyStoreProvider.java` -- JCA Provider for Android Keystore
-- `AndroidKeyStoreSpi.java` -- `KeyStoreSpi` implementation
-- `AndroidKeyStoreKeyGeneratorSpi.java` -- Symmetric key generation
-- `AndroidKeyStoreKeyPairGeneratorSpi.java` -- Asymmetric key pair generation
-- `KeyGenParameterSpec.java` -- Key generation parameters
-- `KeyProtection.java` -- Import protection parameters
-- `KeyProperties.java` -- Key algorithm/purpose/mode constants
+**关键文件：**
+- `AndroidKeyStoreProvider.java` —— Android Keystore 的 JCA 提供程序
+- `AndroidKeyStoreSpi.java` —— `KeyStoreSpi` 实现
+- `AndroidKeyStoreKeyGeneratorSpi.java` —— 对称密钥生成
+- `AndroidKeyStoreKeyPairGeneratorSpi.java` —— 非对称密钥对生成
+- `KeyGenParameterSpec.java` —— 密钥生成参数
+- `KeyProtection.java` —— 导入保护参数
+- `KeyProperties.java` —— 密钥算法/用途/模式常量
 
-The Android Keystore is a JCA provider that stores cryptographic keys in hardware-backed storage (TEE/StrongBox). Keys are bound to the device and can require user authentication for use.
+Android Keystore 是一个 JCA 提供程序，将加密密钥存储在硬件支持的存储中（TEE/StrongBox）。密钥绑定到设备，可以要求用户认证后才能使用。
 
 ---
 
-## 13. Architectural Patterns and Observations
+## 13. 架构模式与观察总结
 
-### 13.1 The Handler/Looper/MessageQueue Threading Model
+### 13.1 Handler/Looper/MessageQueue 线程模型
 
-This trio implements a **single-threaded event loop** pattern. Key design properties:
+这三个类实现了**单线程事件循环**模式。关键设计特性：
 
-1. **Thread Affinity:** Each Handler is permanently bound to one Looper/thread. Messages posted to a Handler always execute on that thread.
-2. **Cooperative Multitasking:** Messages are processed one at a time. Long-running handlers block the entire queue.
-3. **Priority via Sync Barriers:** The framework uses sync barriers + async messages for rendering priority, not preemption.
-4. **Native Integration:** `MessageQueue.next()` blocks in native `epoll_wait`, making the event loop efficient when idle.
+1. **线程亲和性：** 每个 Handler 永久绑定到一个 Looper/线程。发送到 Handler 的消息始终在该线程上执行。
+2. **协作式多任务：** 消息逐个处理。长时间运行的处理程序会阻塞整个队列。
+3. **通过同步屏障实现优先级：** 框架使用同步屏障 + 异步消息来实现渲染优先级，而非抢占。
+4. **原生集成：** `MessageQueue.next()` 在原生 `epoll_wait` 中阻塞，使事件循环在空闲时高效运行。
 
-### 13.2 Binder IPC Security Model
+### 13.2 Binder IPC 安全模型
 
-1. **Caller Identity:** `getCallingUid()` and `getCallingPid()` provide the identity of the IPC caller for permission checks.
-2. **Identity Clearing:** `clearCallingIdentity()` / `restoreCallingIdentity()` is essential when a system service makes calls on behalf of a caller.
-3. **Death Notifications:** `linkToDeath()` enables cleanup when remote processes die.
-4. **Transaction Size Limit:** 64KB (`MAX_IPC_SIZE`). Large data must use `ashmem` or content providers.
-5. **One-Way Semantics:** `FLAG_ONEWAY` provides fire-and-forget IPC with ordering guarantees per-IBinder.
-6. **Work Source Attribution:** `setCallingWorkSourceUid()` allows battery usage attribution to the true originator.
+1. **调用者身份：** `getCallingUid()` 和 `getCallingPid()` 提供 IPC 调用者的身份用于权限检查。
+2. **身份清除：** 当系统服务代表调用者进行调用时，`clearCallingIdentity()` / `restoreCallingIdentity()` 至关重要。
+3. **死亡通知：** `linkToDeath()` 使得在远程进程死亡时进行清理成为可能。
+4. **事务大小限制：** 64KB（`MAX_IPC_SIZE`）。大数据必须使用 `ashmem` 或内容提供者。
+5. **单向语义：** `FLAG_ONEWAY` 提供即发即忘的 IPC，并保证每个 IBinder 的顺序。
+6. **工作源归因：** `setCallingWorkSourceUid()` 允许将电池使用归因到真正的发起者。
 
-### 13.3 Parcel/Parcelable vs. Serializable
+### 13.3 Parcel/Parcelable 与 Serializable
 
-Parcelable is Android's preferred serialization:
-- **Performance:** ~10x faster than Serializable (no reflection)
-- **Scope:** IPC only, not persistent storage
-- **Type Safety:** Compile-time checked via CREATOR pattern
-- **IBinder Support:** Can marshal live Binder references across processes
+Parcelable 是 Android 首选的序列化方式：
+- **性能：** 比 Serializable 快约 10 倍（无反射）
+- **范围：** 仅限 IPC，不适用于持久存储
+- **类型安全：** 通过 CREATOR 模式进行编译时检查
+- **IBinder 支持：** 可以跨进程编组活跃的 Binder 引用
 
-### 13.4 Hidden API Surface
+### 13.4 隐藏 API 表面
 
-A significant portion of the OS APIs are hidden from app developers:
+操作系统 API 的很大一部分对应用开发者是隐藏的：
 
-| Class | Total Lines | Hidden/System API Density |
+| 类 | 总行数 | 隐藏/系统 API 密度 |
 |-------|------------|--------------------------|
-| PowerManager | 2,634 | Very High -- most constants and methods are `@hide`/`@SystemApi` |
-| UserManager | 4,370 | Very High -- user types, restrictions heavily hidden |
-| PermissionManager | 719 | Almost entirely `@hide`/`@SystemApi` |
-| Process | 1,445 | High -- most UID constants and thread groups hidden |
-| Environment | 1,434 | Medium -- many partition directories are `@SystemApi` |
-| Build | 1,335 | Low -- most fields are public |
-| Handler | 1,001 | Low -- `runWithScissors` and async constructors hidden |
+| PowerManager | 2,634 | 非常高 —— 大多数常量和方法是 `@hide`/`@SystemApi` |
+| UserManager | 4,370 | 非常高 —— 用户类型、限制大量隐藏 |
+| PermissionManager | 719 | 几乎完全是 `@hide`/`@SystemApi` |
+| Process | 1,445 | 高 —— 大多数 UID 常量和线程组隐藏 |
+| Environment | 1,434 | 中等 —— 许多分区目录是 `@SystemApi` |
+| Build | 1,335 | 低 —— 大多数字段是公开的 |
+| Handler | 1,001 | 低 —— `runWithScissors` 和异步构造函数隐藏 |
 
-### 13.5 Deprecation Patterns in Android 11
+### 13.5 Android 11 废弃模式
 
-| API | Replacement |
+| API | 替代方案 |
 |-----|------------|
-| `Handler()` (no-arg) | `Handler(Looper.getMainLooper())` |
-| `AsyncTask` | `java.util.concurrent`, Kotlin coroutines |
+| `Handler()`（无参） | `Handler(Looper.getMainLooper())` |
+| `AsyncTask` | `java.util.concurrent`、Kotlin 协程 |
 | `SCREEN_DIM_WAKE_LOCK` | `FLAG_KEEP_SCREEN_ON` |
 | `SCREEN_BRIGHT_WAKE_LOCK` | `FLAG_KEEP_SCREEN_ON` |
 | `FULL_WAKE_LOCK` | `FLAG_KEEP_SCREEN_ON` |
-| `Build.SERIAL` | `Build.getSerial()` (with permission) |
-| `Environment.getExternalStorageDirectory()` | Scoped storage via `MediaStore` / `Context.getExternalFilesDir()` |
+| `Build.SERIAL` | `Build.getSerial()`（需要权限） |
+| `Environment.getExternalStorageDirectory()` | 通过 `MediaStore` / `Context.getExternalFilesDir()` 使用分区存储 |
 
-### 13.6 Android 11 Specific Features Visible in Code
+### 13.6 代码中可见的 Android 11 特定功能
 
-1. **One-Time Permissions** (PermissionManager, line 442) -- permissions that auto-revoke when app becomes inactive
-2. **Auto-Revoke** (PermissionManager, lines 315-352) -- unused permission auto-revocation with exemption mechanism
-3. **Scoped Storage enforcement** (Environment, lines 94-132) -- `DEFAULT_SCOPED_STORAGE` and `FORCE_ENABLE_SCOPED_STORAGE` change IDs
-4. **Handler default constructor deprecation** -- explicit Looper requirement
-5. **AsyncTask full deprecation** -- entire class marked `@Deprecated`
-6. **Process.ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE** (line 564) -- USAP (Unspecialized App Process) pool support
+1. **一次性权限**（PermissionManager，第 442 行）—— 应用不活跃时自动撤销的权限
+2. **自动撤销**（PermissionManager，第 315-352 行）—— 未使用权限的自动撤销及豁免机制
+3. **分区存储强制执行**（Environment，第 94-132 行）—— `DEFAULT_SCOPED_STORAGE` 和 `FORCE_ENABLE_SCOPED_STORAGE` 变更 ID
+4. **Handler 默认构造函数废弃** —— 要求显式指定 Looper
+5. **AsyncTask 完全废弃** —— 整个类标记为 `@Deprecated`
+6. **Process.ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE**（第 564 行）—— USAP（非专用应用进程）池支持
 
 ---
 
-*Report generated from Android 11 (API level 30) AOSP source code at `~/aosp-android-11/`.*
+*报告基于 `~/aosp-android-11/` 的 Android 11（API 级别 30）AOSP 源代码生成。*

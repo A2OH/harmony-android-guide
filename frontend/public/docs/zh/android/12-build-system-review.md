@@ -1,33 +1,33 @@
-# Android 11 AOSP Build System - 代码审查 Report
+# Android 11 AOSP 构建系统 - 代码审查报告
 
-## 执行摘要
+## 概述
 
-The Android 11 build system is a dual-architecture system comprising the **Soong** build system (Android.bp files, written in Go, backed by Blueprint/Ninja) and the **legacy Make** build system (Android.mk files). Soong is the primary build system for module definitions, while Make handles product configuration, image assembly, and orchestration. The build system manages compilation of Java/Kotlin, C/C++, AIDL, resources (aapt2), dexing (d8/r8), signing, and packaging across multiple architectures and build variants.
+Android 11 构建系统是一个双架构系统，由 **Soong** 构建系统（Android.bp 文件，使用 Go 编写，基于 Blueprint/Ninja）和**遗留 Make** 构建系统（Android.mk 文件）组成。Soong 是模块定义的主要构建系统，而 Make 处理产品配置、镜像组装和编排。构建系统管理 Java/Kotlin、C/C++、AIDL、资源（aapt2）、dex 化（d8/r8）、签名和打包的编译，支持多种架构和构建变体。
 
-**Key source locations:**
-- `/build/soong/` -- Soong build system (Go implementation)
-- `/build/make/` -- Make build system (Makefile infrastructure)
-- `/build/make/core/` -- Core Make rules and configuration
-- `/build/make/target/` -- Product and board definitions
-- `/build/blueprint/` -- Blueprint meta-build system (Soong's foundation)
+**关键源码位置：**
+- `/build/soong/` -- Soong 构建系统（Go 实现）
+- `/build/make/` -- Make 构建系统（Makefile 基础设施）
+- `/build/make/core/` -- 核心 Make 规则和配置
+- `/build/make/target/` -- 产品和板级定义
+- `/build/blueprint/` -- Blueprint 元构建系统（Soong 的基础）
 
 ---
 
-## 1. Build System Architecture Overview
+## 1. 构建系统架构概览
 
-### 1.1 Soong (Android.bp)
+### 1.1 Soong（Android.bp）
 
-Soong is a Go-based build system built on top of Google's Blueprint framework. It parses `Android.bp` files (a JSON-like declarative format), resolves dependencies, and generates Ninja build files.
+Soong 是基于 Go 的构建系统，建立在 Google 的 Blueprint 框架之上。它解析 `Android.bp` 文件（一种类 JSON 的声明式格式），解析依赖关系，并生成 Ninja 构建文件。
 
-**Entry point:** `build/soong/soong_ui.bash`
+**入口点：** `build/soong/soong_ui.bash`
 
-**Architecture layers:**
-1. **Blueprint** (`build/blueprint/`) -- Generic meta-build system that parses `.bp` files and manages module/dependency graphs
-2. **Soong Android package** (`build/soong/android/`) -- Android-specific module base types, configuration, mutators, and path handling
-3. **Language-specific packages** -- `build/soong/java/`, `build/soong/cc/`, `build/soong/python/`, `build/soong/rust/`
-4. **Module-specific packages** -- `build/soong/apex/`, `build/soong/genrule/`
+**架构层次：**
+1. **Blueprint**（`build/blueprint/`）-- 通用元构建系统，解析 `.bp` 文件并管理模块/依赖图
+2. **Soong Android 包**（`build/soong/android/`）-- Android 特定的模块基类型、配置、变换器和路径处理
+3. **语言特定包** -- `build/soong/java/`、`build/soong/cc/`、`build/soong/python/`、`build/soong/rust/`
+4. **模块特定包** -- `build/soong/apex/`、`build/soong/genrule/`
 
-**Key file:** `build/soong/android/register.go` -- Central module type registration:
+**关键文件：** `build/soong/android/register.go` -- 中央模块类型注册：
 ```go
 type ModuleFactory func() Module
 
@@ -36,70 +36,70 @@ func RegisterModuleType(name string, factory ModuleFactory) {
 }
 ```
 
-**Key file:** `build/soong/android/module.go` -- Defines `BuildParams`, `EarlyModuleContext`, `BaseModuleContext`, and the core module lifecycle interfaces. Every module flows through: parse properties -> run mutators -> resolve dependencies -> generate build actions.
+**关键文件：** `build/soong/android/module.go` -- 定义 `BuildParams`、`EarlyModuleContext`、`BaseModuleContext` 以及核心模块生命周期接口。每个模块的流程为：解析属性 -> 运行变换器 -> 解析依赖 -> 生成构建动作。
 
-### 1.2 Make (Android.mk)
+### 1.2 Make（Android.mk）
 
-The legacy Make system handles:
-- Product/device/board configuration
-- System image assembly
-- Build variant selection
-- Integration with Soong outputs
+遗留 Make 系统负责：
+- 产品/设备/板级配置
+- 系统镜像组装
+- 构建变体选择
+- 与 Soong 输出的集成
 
-**Entry point:** `build/make/core/config.mk` (loaded by Kati)
+**入口点：** `build/make/core/config.mk`（由 Kati 加载）
 
-**Key directories:**
-- `build/make/core/` -- Core build rules (~100+ .mk files)
-- `build/make/target/product/` -- Product definitions (aosp_arm64.mk, base_system.mk, etc.)
-- `build/make/target/board/` -- Board configurations (generic_arm64, etc.)
+**关键目录：**
+- `build/make/core/` -- 核心构建规则（约 100 多个 .mk 文件）
+- `build/make/target/product/` -- 产品定义（aosp_arm64.mk、base_system.mk 等）
+- `build/make/target/board/` -- 板级配置（generic_arm64 等）
 
-**Key file:** `build/make/core/clear_vars.mk` -- Resets all `LOCAL_*` variables between module definitions. Lists every variable the Make system uses (200+ variables including `LOCAL_CERTIFICATE`, `LOCAL_AIDL_INCLUDES`, `LOCAL_AAPT_FLAGS`, etc.).
+**关键文件：** `build/make/core/clear_vars.mk` -- 在模块定义之间重置所有 `LOCAL_*` 变量。列出了 Make 系统使用的每个变量（200 多个变量，包括 `LOCAL_CERTIFICATE`、`LOCAL_AIDL_INCLUDES`、`LOCAL_AAPT_FLAGS` 等）。
 
-### 1.3 Build Flow
+### 1.3 构建流程
 
 ```
 source build/envsetup.sh
     -> lunch <product>-<variant>
         -> soong_ui.bash
-            -> Blueprint parses Android.bp files
-            -> Soong mutators run (arch, SDK, VNDK, sanitizer, etc.)
-            -> Ninja files generated
-            -> Kati processes Android.mk files
-            -> Ninja executes combined build graph
+            -> Blueprint 解析 Android.bp 文件
+            -> Soong 变换器运行（arch、SDK、VNDK、sanitizer 等）
+            -> 生成 Ninja 文件
+            -> Kati 处理 Android.mk 文件
+            -> Ninja 执行合并的构建图
 ```
 
 ---
 
-## 2. Build Environment Setup
+## 2. 构建环境设置
 
 ### 2.1 envsetup.sh
 
-**File:** `build/make/envsetup.sh`
+**文件：** `build/make/envsetup.sh`
 
-Sources shell functions into the developer's environment. Key functions:
+将 Shell 函数加载到开发者的环境中。关键函数：
 
-| Function | Purpose |
+| 函数 | 用途 |
 |----------|---------|
-| `lunch` | Select product and build variant |
-| `m` | Build from tree top |
-| `mm` | Build modules in current directory and dependencies |
-| `mmm` | Build modules in specified directories |
-| `tapas` | Build specific apps: `tapas App1 App2 arm64 userdebug` |
-| `croot` | Navigate to tree top |
-| `gomod` | Go to directory containing a module |
-| `allmod` | List all modules |
+| `lunch` | 选择产品和构建变体 |
+| `m` | 从代码树顶层构建 |
+| `mm` | 构建当前目录中的模块及其依赖 |
+| `mmm` | 构建指定目录中的模块 |
+| `tapas` | 构建特定应用：`tapas App1 App2 arm64 userdebug` |
+| `croot` | 导航到代码树顶层 |
+| `gomod` | 转到包含某个模块的目录 |
+| `allmod` | 列出所有模块 |
 
-**Helper greps:** `cgrep` (C/C++), `jgrep` (Java), `resgrep` (resources), `mgrep` (Makefiles/bp), `sgrep` (all source).
+**辅助搜索命令：** `cgrep`（C/C++）、`jgrep`（Java）、`resgrep`（资源）、`mgrep`（Makefile/bp）、`sgrep`（所有源码）。
 
-### 2.2 lunch Function
+### 2.2 lunch 函数
 
-**File:** `build/make/envsetup.sh` (line 598)
+**文件：** `build/make/envsetup.sh`（第 598 行）
 
-The `lunch` function accepts a `<product>-<variant>` string, parses it into `TARGET_PRODUCT` and `TARGET_BUILD_VARIANT`, and configures the environment:
+`lunch` 函数接受 `<product>-<variant>` 字符串，将其解析为 `TARGET_PRODUCT` 和 `TARGET_BUILD_VARIANT`，并配置环境：
 
 ```bash
 function lunch() {
-    # Parse selection into product and variant
+    # 将选择解析为产品和变体
     product=${selection%%-*}
     variant_and_version=${selection#*-}
 
@@ -113,206 +113,206 @@ function lunch() {
 }
 ```
 
-### 2.3 Build Variants
+### 2.3 构建变体
 
-**File:** `build/make/envsetup.sh` (line 149)
+**文件：** `build/make/envsetup.sh`（第 149 行）
 
-Three build variants:
+三种构建变体：
 ```bash
 VARIANT_CHOICES=(user userdebug eng)
 ```
 
-| Variant | 描述 |
+| 变体 | 描述 |
 |---------|-------------|
-| `user` | Production build. Limited debugging, `ro.debuggable=0` |
-| `userdebug` | Like user but with root access and debugging enabled |
-| `eng` | Development build with additional debugging tools and relaxed security |
+| `user` | 生产构建。有限的调试功能，`ro.debuggable=0` |
+| `userdebug` | 类似 user 但启用了 root 访问和调试功能 |
+| `eng` | 开发构建，包含额外的调试工具和宽松的安全策略 |
 
 ---
 
-## 3. Soong Module Types
+## 3. Soong 模块类型
 
-### 3.1 Java Module Types
+### 3.1 Java 模块类型
 
-**File:** `build/soong/java/java.go` -- `RegisterJavaBuildComponents()`
+**文件：** `build/soong/java/java.go` -- `RegisterJavaBuildComponents()`
 
-| Module Type | Purpose |
+| 模块类型 | 用途 |
 |-------------|---------|
-| `java_library` | Compile Java sources into a jar |
-| `java_library_static` | Static Java library |
-| `java_library_host` | Host-only Java library |
-| `java_binary` | Java binary (device) |
-| `java_binary_host` | Java binary (host) |
-| `java_test` | Java test module |
-| `java_test_host` | Host Java test |
-| `java_import` | Prebuilt jar import |
-| `java_defaults` | Default properties for java modules |
-| `dex_import` | Prebuilt dex import |
+| `java_library` | 将 Java 源码编译为 jar |
+| `java_library_static` | 静态 Java 库 |
+| `java_library_host` | 仅主机端 Java 库 |
+| `java_binary` | Java 二进制文件（设备端） |
+| `java_binary_host` | Java 二进制文件（主机端） |
+| `java_test` | Java 测试模块 |
+| `java_test_host` | 主机端 Java 测试 |
+| `java_import` | 预构建 jar 导入 |
+| `java_defaults` | Java 模块的默认属性 |
+| `dex_import` | 预构建 dex 导入 |
 
-**Key `CompilerProperties`** (from `build/soong/java/java.go` line 142):
+**关键 `CompilerProperties`**（来自 `build/soong/java/java.go` 第 142 行）：
 ```
-srcs                 -- Source files (.java, .kt, .aidl, .proto, .logtags)
-exclude_srcs         -- Files to exclude
-libs                 -- Classpath dependencies (not compiled into jar)
-static_libs          -- Dependencies compiled into resulting jar
-plugins              -- Annotation processor modules
-java_version         -- Java source/target version
-javacflags           -- Additional javac flags
-kotlincflags         -- Kotlin compiler flags
-jarjar_rules         -- JarJar rules file for package renaming
-services             -- META-INF/services entries
+srcs                 -- 源文件（.java、.kt、.aidl、.proto、.logtags）
+exclude_srcs         -- 要排除的文件
+libs                 -- 类路径依赖（不编译到 jar 中）
+static_libs          -- 编译到结果 jar 中的依赖
+plugins              -- 注解处理器模块
+java_version         -- Java 源/目标版本
+javacflags           -- 额外的 javac 标志
+kotlincflags         -- Kotlin 编译器标志
+jarjar_rules         -- 用于包重命名的 JarJar 规则文件
+services             -- META-INF/services 条目
 ```
 
-### 3.2 Android App Module Types
+### 3.2 Android 应用模块类型
 
-**File:** `build/soong/java/app.go` -- `RegisterAppBuildComponents()`
+**文件：** `build/soong/java/app.go` -- `RegisterAppBuildComponents()`
 
-| Module Type | Purpose |
+| 模块类型 | 用途 |
 |-------------|---------|
-| `android_app` | Full Android application |
-| `android_test` | Android instrumentation test |
-| `android_test_helper_app` | Helper app for tests |
-| `android_app_certificate` | Signing certificate definition |
-| `override_android_app` | Override properties of an android_app |
-| `android_app_import` | Import prebuilt APK |
-| `android_app_set` | Import APK set (split APKs) |
-| `runtime_resource_overlay` | RRO package |
+| `android_app` | 完整的 Android 应用 |
+| `android_test` | Android 仪器测试 |
+| `android_test_helper_app` | 测试辅助应用 |
+| `android_app_certificate` | 签名证书定义 |
+| `override_android_app` | 覆盖 android_app 的属性 |
+| `android_app_import` | 导入预构建 APK |
+| `android_app_set` | 导入 APK 集（拆分 APK） |
+| `runtime_resource_overlay` | RRO 包 |
 
-**Key `appProperties`** (from `build/soong/java/app.go` line 187):
+**关键 `appProperties`**（来自 `build/soong/java/app.go` 第 187 行）：
 ```
-additional_certificates  -- Extra signing certificates
-privileged              -- Install to priv-app directory
-package_splits          -- Resource split labels
-overrides               -- Modules this overrides
-jni_libs                -- Native libraries to include
-use_embedded_native_libs -- Store JNI libs uncompressed in APK
-use_embedded_dex        -- Store dex uncompressed
-updatable               -- Whether app is mainline-updatable
-certificate             -- Signing certificate (overridable)
+additional_certificates  -- 额外的签名证书
+privileged              -- 安装到 priv-app 目录
+package_splits          -- 资源拆分标签
+overrides               -- 此模块覆盖的模块
+jni_libs                -- 要包含的原生库
+use_embedded_native_libs -- 在 APK 中以未压缩方式存储 JNI 库
+use_embedded_dex        -- 以未压缩方式存储 dex
+updatable               -- 应用是否可通过 Mainline 更新
+certificate             -- 签名证书（可覆盖）
 ```
 
-### 3.3 C/C++ Module Types
+### 3.3 C/C++ 模块类型
 
-**File:** `build/soong/cc/cc.go` -- `RegisterCCBuildComponents()` and related files
+**文件：** `build/soong/cc/cc.go` -- `RegisterCCBuildComponents()` 及相关文件
 
-| Module Type | Purpose |
+| 模块类型 | 用途 |
 |-------------|---------|
-| `cc_library` | Shared + static library (builds both) |
-| `cc_library_shared` | Shared library only |
-| `cc_library_static` | Static library only |
-| `cc_library_headers` | Header-only library |
-| `cc_binary` | Executable |
-| `cc_binary_host` | Host executable |
-| `cc_test` | Native test |
-| `cc_fuzz` | Fuzz test |
-| `cc_object` | Object file |
-| `cc_defaults` | Default properties |
-| `cc_prebuilt_library_shared` | Prebuilt shared library |
-| `cc_prebuilt_binary` | Prebuilt binary |
-| `ndk_library` | NDK stub library |
-| `llndk_library` | LL-NDK library |
-| `vndk_prebuilt_shared` | VNDK prebuilt |
+| `cc_library` | 共享库 + 静态库（两者都构建） |
+| `cc_library_shared` | 仅共享库 |
+| `cc_library_static` | 仅静态库 |
+| `cc_library_headers` | 仅头文件库 |
+| `cc_binary` | 可执行文件 |
+| `cc_binary_host` | 主机端可执行文件 |
+| `cc_test` | 原生测试 |
+| `cc_fuzz` | 模糊测试 |
+| `cc_object` | 目标文件 |
+| `cc_defaults` | 默认属性 |
+| `cc_prebuilt_library_shared` | 预构建共享库 |
+| `cc_prebuilt_binary` | 预构建二进制文件 |
+| `ndk_library` | NDK 桩库 |
+| `llndk_library` | LL-NDK 库 |
+| `vndk_prebuilt_shared` | VNDK 预构建 |
 
-**CC mutator pipeline** (from `build/soong/cc/cc.go` line 44):
+**CC 变换器管道**（来自 `build/soong/cc/cc.go` 第 44 行）：
 ```
 PreDepsMutators:  sdk -> vndk -> link -> ndk_api -> test_per_src -> version -> begin -> sysprop_cc -> vendor_snapshot
 PostDepsMutators: asan -> hwasan -> fuzzer -> cfi -> scs -> tsan -> sanitize_runtime -> coverage -> vndk_deps -> lto
 ```
 
-**Key `LibraryProperties`** (from `build/soong/cc/library.go` line 34):
+**关键 `LibraryProperties`**（来自 `build/soong/cc/library.go` 第 34 行）：
 ```
-stubs.symbol_file    -- Symbol map for stub generation
-stubs.versions       -- Stub versions to generate
-stem                 -- Output file name override
-suffix               -- Name suffix
-aidl.export_aidl_headers  -- Export AIDL-generated headers
+stubs.symbol_file    -- 用于桩生成的符号映射
+stubs.versions       -- 要生成的桩版本
+stem                 -- 输出文件名覆盖
+suffix               -- 名称后缀
+aidl.export_aidl_headers  -- 导出 AIDL 生成的头文件
 ```
 
-### 3.4 Other Module Types
+### 3.4 其他模块类型
 
-| Module Type | File | Purpose |
+| 模块类型 | 文件 | 用途 |
 |-------------|------|---------|
-| `genrule` | `build/soong/genrule/genrule.go` | Custom build rule with command |
-| `gensrcs` | `build/soong/genrule/genrule.go` | Generate sources per-file |
-| `filegroup` | `build/soong/android/filegroup.go` | Group source files for references |
-| `apex` | `build/soong/apex/apex.go` | APEX module (updatable package) |
-| `droiddoc` | `build/soong/java/droiddoc.go` | API documentation generation |
-| `droidstubs` | `build/soong/java/droiddoc.go` | API stub generation (metalava) |
-| `java_sdk_library` | `build/soong/java/sdk_library.go` | SDK library with API management |
-| `python_binary_host` | `build/soong/python/` | Host Python binary |
+| `genrule` | `build/soong/genrule/genrule.go` | 带命令的自定义构建规则 |
+| `gensrcs` | `build/soong/genrule/genrule.go` | 按文件生成源码 |
+| `filegroup` | `build/soong/android/filegroup.go` | 分组源文件以供引用 |
+| `apex` | `build/soong/apex/apex.go` | APEX 模块（可更新包） |
+| `droiddoc` | `build/soong/java/droiddoc.go` | API 文档生成 |
+| `droidstubs` | `build/soong/java/droiddoc.go` | API 桩生成（metalava） |
+| `java_sdk_library` | `build/soong/java/sdk_library.go` | 带 API 管理的 SDK 库 |
+| `python_binary_host` | `build/soong/python/` | 主机端 Python 二进制文件 |
 
 ---
 
-## 4. SDK and API Level Configuration
+## 4. SDK 和 API 级别配置
 
-### 4.1 Platform SDK Version
+### 4.1 平台 SDK 版本
 
-**File:** `build/make/core/version_defaults.mk`
+**文件：** `build/make/core/version_defaults.mk`
 
-Android 11 defines:
+Android 11 定义：
 ```makefile
 PLATFORM_VERSION_LAST_STABLE := 11
 PLATFORM_SDK_VERSION := 30
-PLATFORM_VERSION_CODENAME.RP1A := REL   # REL = released
+PLATFORM_VERSION_CODENAME.RP1A := REL   # REL = 已发布
 ```
 
-The `PLATFORM_SDK_VERSION` (30) is the canonical API level. `FutureApiLevel` is defined as 10000 in `build/soong/android/config.go` for unreleased APIs.
+`PLATFORM_SDK_VERSION`（30）是规范的 API 级别。`FutureApiLevel` 在 `build/soong/android/config.go` 中定义为 10000，用于未发布的 API。
 
-### 4.2 SDK Version Specification in Modules
+### 4.2 模块中的 SDK 版本指定
 
-**File:** `build/soong/java/sdk.go`
+**文件：** `build/soong/java/sdk.go`
 
-The `sdkSpec` system defines how modules target different API surfaces:
+`sdkSpec` 系统定义了模块如何针对不同的 API 表面：
 
 ```go
 type sdkKind int
 const (
     sdkInvalid sdkKind = iota
-    sdkNone            // no SDK (framework internal)
-    sdkCore            // core Java APIs only
-    sdkCorePlatform    // core platform APIs (unstable)
-    sdkPublic          // public SDK APIs
-    sdkSystem          // system APIs
-    sdkTest            // test APIs
-    sdkModule          // module APIs (for mainline modules)
-    sdkSystemServer    // system_server APIs
-    sdkPrivate         // platform internals (no sdk_version set)
+    sdkNone            // 无 SDK（框架内部）
+    sdkCore            // 仅核心 Java API
+    sdkCorePlatform    // 核心平台 API（不稳定）
+    sdkPublic          // 公共 SDK API
+    sdkSystem          // 系统 API
+    sdkTest            // 测试 API
+    sdkModule          // 模块 API（用于 Mainline 模块）
+    sdkSystemServer    // system_server API
+    sdkPrivate         // 平台内部（未设置 sdk_version）
 )
 ```
 
-**Module properties** (from `build/soong/java/java.go` line 261):
+**模块属性**（来自 `build/soong/java/java.go` 第 261 行）：
 
-| Property | Purpose |
+| 属性 | 用途 |
 |----------|---------|
-| `sdk_version` | SDK to compile against (e.g., `"current"`, `"system_current"`, `"30"`) |
-| `min_sdk_version` | Minimum SDK version for runtime |
-| `target_sdk_version` | Target SDK version in manifest |
-| `platform_apis` | Use platform (private) APIs instead of SDK |
-| `system_modules` | Java module system for Java 9+ |
+| `sdk_version` | 编译所针对的 SDK（例如 `"current"`、`"system_current"`、`"30"`） |
+| `min_sdk_version` | 运行时最低 SDK 版本 |
+| `target_sdk_version` | 清单中的目标 SDK 版本 |
+| `platform_apis` | 使用平台（私有）API 而非 SDK |
+| `system_modules` | Java 9+ 的 Java 模块系统 |
 
-**Validation rule** (line 120-131): `platform_apis` and `sdk_version` are mutually exclusive -- exactly one must be set for android_app modules.
+**验证规则**（第 120-131 行）：`platform_apis` 和 `sdk_version` 互斥 -- android_app 模块必须且只能设置其中一个。
 
-**SDK version strings:** `"current"` (public), `"system_current"` (system), `"test_current"` (test), `"core_current"` (core), `"module_current"` (module), or a numeric version like `"30"`.
+**SDK 版本字符串：** `"current"`（公共）、`"system_current"`（系统）、`"test_current"`（测试）、`"core_current"`（核心）、`"module_current"`（模块），或数字版本如 `"30"`。
 
-### 4.3 SDK Stability Enforcement
+### 4.3 SDK 稳定性强制执行
 
-Stable API surfaces (those with managed .txt files reviewed by API council):
-- `sdkNone`, `sdkCore`, `sdkPublic`, `sdkSystem`, `sdkModule`, `sdkSystemServer`
+稳定的 API 表面（具有由 API 委员会审查的托管 .txt 文件）：
+- `sdkNone`、`sdkCore`、`sdkPublic`、`sdkSystem`、`sdkModule`、`sdkSystemServer`
 
-Unstable surfaces:
-- `sdkCorePlatform`, `sdkTest`, `sdkPrivate`
+不稳定的表面：
+- `sdkCorePlatform`、`sdkTest`、`sdkPrivate`
 
-Modules on vendor/product partitions must specify `sdk_version` (cannot use platform APIs).
+vendor/product 分区上的模块必须指定 `sdk_version`（不能使用平台 API）。
 
-### 4.4 Product Variables for SDK
+### 4.4 SDK 的产品变量
 
-**File:** `build/soong/android/variable.go` (line 139)
+**文件：** `build/soong/android/variable.go`（第 139 行）
 
-Key product variables passed to Soong:
+传递给 Soong 的关键产品变量：
 ```go
 Platform_version_name                     *string
-Platform_sdk_version                      *int     // 30 for Android 11
-Platform_sdk_codename                     *string  // "REL" for release
+Platform_sdk_version                      *int     // Android 11 为 30
+Platform_sdk_codename                     *string  // 发布版为 "REL"
 Platform_sdk_final                        *bool
 Platform_version_active_codenames         []string
 Platform_vndk_version                     *string
@@ -322,18 +322,18 @@ Platform_min_supported_target_sdk_version *string
 
 ---
 
-## 5. Product, Device, and Board Configuration
+## 5. 产品、设备和板级配置
 
-### 5.1 Product Configuration Hierarchy
+### 5.1 产品配置层次结构
 
-**Key files:**
-- `build/make/core/product_config.mk` -- Product configuration loading logic
-- `build/make/core/product.mk` -- Product variable definitions
-- `build/make/target/product/` -- Product definition files
+**关键文件：**
+- `build/make/core/product_config.mk` -- 产品配置加载逻辑
+- `build/make/core/product.mk` -- 产品变量定义
+- `build/make/target/product/` -- 产品定义文件
 
-**Example product definition** (`build/make/target/product/aosp_arm64.mk`):
+**产品定义示例**（`build/make/target/product/aosp_arm64.mk`）：
 ```makefile
-# Inherit base configurations
+# 继承基础配置
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/mainline_system.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/handheld_system_ext.mk)
@@ -348,60 +348,60 @@ PRODUCT_BRAND := Android
 PRODUCT_MODEL := AOSP on ARM64
 ```
 
-**Key product variables:**
+**关键产品变量：**
 
-| Variable | Purpose |
+| 变量 | 用途 |
 |----------|---------|
-| `PRODUCT_NAME` | Build product name |
-| `PRODUCT_DEVICE` | Target device (maps to BoardConfig) |
-| `PRODUCT_BRAND` | Brand name for build.prop |
-| `PRODUCT_MODEL` | Model name for build.prop |
-| `PRODUCT_PACKAGES` | Modules to install |
-| `PRODUCT_COPY_FILES` | Files to copy to output |
-| `PRODUCT_ENFORCE_ARTIFACT_PATH_REQUIREMENTS` | Path validation |
+| `PRODUCT_NAME` | 构建产品名称 |
+| `PRODUCT_DEVICE` | 目标设备（映射到 BoardConfig） |
+| `PRODUCT_BRAND` | 用于 build.prop 的品牌名称 |
+| `PRODUCT_MODEL` | 用于 build.prop 的型号名称 |
+| `PRODUCT_PACKAGES` | 要安装的模块 |
+| `PRODUCT_COPY_FILES` | 要复制到输出的文件 |
+| `PRODUCT_ENFORCE_ARTIFACT_PATH_REQUIREMENTS` | 路径验证 |
 
-### 5.2 Board Configuration
+### 5.2 板级配置
 
-**File:** `build/make/core/board_config.mk`
+**文件：** `build/make/core/board_config.mk`
 
-Board configs define hardware-level properties. Read-only variables include:
+板级配置定义硬件级属性。只读变量包括：
 
-**Architecture:**
-- `TARGET_ARCH`, `TARGET_ARCH_VARIANT`, `TARGET_CPU_ABI`, `TARGET_CPU_VARIANT`
-- `TARGET_2ND_ARCH`, `TARGET_2ND_CPU_ABI` (for 32-bit support on 64-bit)
+**架构：**
+- `TARGET_ARCH`、`TARGET_ARCH_VARIANT`、`TARGET_CPU_ABI`、`TARGET_CPU_VARIANT`
+- `TARGET_2ND_ARCH`、`TARGET_2ND_CPU_ABI`（用于 64 位上的 32 位支持）
 
-**Hardware:**
-- `TARGET_BOARD_PLATFORM`, `TARGET_BOOTLOADER_BOARD_NAME`
-- `TARGET_NO_BOOTLOADER`, `TARGET_NO_KERNEL`, `TARGET_NO_RECOVERY`
+**硬件：**
+- `TARGET_BOARD_PLATFORM`、`TARGET_BOOTLOADER_BOARD_NAME`
+- `TARGET_NO_BOOTLOADER`、`TARGET_NO_KERNEL`、`TARGET_NO_RECOVERY`
 
-**Partitions:**
-- `BOARD_SYSTEMIMAGE_PARTITION_SIZE`, `BOARD_VENDORIMAGE_PARTITION_SIZE`
-- `BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE` (ext4, f2fs, etc.)
+**分区：**
+- `BOARD_SYSTEMIMAGE_PARTITION_SIZE`、`BOARD_VENDORIMAGE_PARTITION_SIZE`
+- `BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE`（ext4、f2fs 等）
 - `BOARD_FLASH_BLOCK_SIZE`
 
-**Dynamic partitions:**
+**动态分区：**
 - `BOARD_SYSTEMIMAGE_PARTITION_RESERVED_SIZE`
 - `BOARD_VENDORIMAGE_PARTITION_RESERVED_SIZE`
 
-### 5.3 Base System Package List
+### 5.3 基础系统包列表
 
-**File:** `build/make/target/product/base_system.mk`
+**文件：** `build/make/target/product/base_system.mk`
 
-Defines the minimal system image contents via `PRODUCT_PACKAGES`. Includes core components like `app_process`, `bootanimation`, `surfaceflinger`, `audioserver`, APEX modules (`com.android.conscrypt`, `com.android.media`, `com.android.wifi`, etc.), and essential apps (`DownloadProvider`, `ContactsProvider`, etc.).
+通过 `PRODUCT_PACKAGES` 定义最小系统镜像内容。包括核心组件如 `app_process`、`bootanimation`、`surfaceflinger`、`audioserver`、APEX 模块（`com.android.conscrypt`、`com.android.media`、`com.android.wifi` 等）以及必要应用（`DownloadProvider`、`ContactsProvider` 等）。
 
 ---
 
-## 6. AIDL Compilation
+## 6. AIDL 编译
 
-### 6.1 Java AIDL Compilation
+### 6.1 Java AIDL 编译
 
-**File:** `build/soong/java/gen.go` (line 47)
+**文件：** `build/soong/java/gen.go`（第 47 行）
 
-AIDL files in Java modules are compiled via the `genAidl()` function:
-1. AIDL sources are sharded into groups of 50
-2. Each shard is processed by the `aidl` host tool
-3. Generated .java files are packaged into srcjar files via `soong_zip`
-4. Srcjars are merged into the module's source compilation
+Java 模块中的 AIDL 文件通过 `genAidl()` 函数编译：
+1. AIDL 源文件被分片为每组 50 个
+2. 每个分片由 `aidl` 主机工具处理
+3. 生成的 .java 文件通过 `soong_zip` 打包为 srcjar 文件
+4. Srcjar 被合并到模块的源码编译中
 
 ```go
 func genAidl(ctx android.ModuleContext, aidlFiles android.Paths, aidlFlags string, deps android.Paths) android.Paths {
@@ -413,40 +413,40 @@ func genAidl(ctx android.ModuleContext, aidlFiles android.Paths, aidlFlags strin
 }
 ```
 
-### 6.2 AIDL Configuration Properties
+### 6.2 AIDL 配置属性
 
-**File:** `build/soong/java/java.go` (line 282, inside `CompilerDeviceProperties`)
+**文件：** `build/soong/java/java.go`（第 282 行，`CompilerDeviceProperties` 内）
 
 ```
-aidl.include_dirs           -- Top-level include directories
-aidl.local_include_dirs     -- Directories relative to Android.bp
-aidl.export_include_dirs    -- Directories exported to dependents
-aidl.generate_traces        -- Generate systrace support
-aidl.generate_get_transaction_name -- Generate GetTransaction name method
+aidl.include_dirs           -- 顶级包含目录
+aidl.local_include_dirs     -- 相对于 Android.bp 的目录
+aidl.export_include_dirs    -- 导出给依赖者的目录
+aidl.generate_traces        -- 生成 systrace 支持
+aidl.generate_get_transaction_name -- 生成 GetTransaction name 方法
 ```
 
-### 6.3 C++ AIDL Support
+### 6.3 C++ AIDL 支持
 
-**File:** `build/soong/cc/library.go` (line 45)
+**文件：** `build/soong/cc/library.go`（第 45 行）
 ```
-aidl.export_aidl_headers -- Export headers generated from .aidl sources in cc_library
+aidl.export_aidl_headers -- 在 cc_library 中导出从 .aidl 源生成的头文件
 ```
 
 ---
 
-## 7. Resource Compilation (aapt2)
+## 7. 资源编译（aapt2）
 
-### 7.1 aapt2 Compilation Pipeline
+### 7.1 aapt2 编译管道
 
-**File:** `build/soong/java/aapt2.go`
+**文件：** `build/soong/java/aapt2.go`
 
-Resource compilation uses aapt2 in a sharded pipeline (shard size = 100 files):
+资源编译使用 aapt2 进行分片管道处理（分片大小 = 100 个文件）：
 
-1. **Compile phase:** Individual resource files are compiled to `.flat` format
-   - Values XML files: `values-[config]/<file>.xml` -> `values-[config]_<file>.arsc.flat`
-   - Other resources: replaces last `/` with `_` and adds `.flat`
+1. **编译阶段：** 单个资源文件被编译为 `.flat` 格式
+   - Values XML 文件：`values-[config]/<file>.xml` -> `values-[config]_<file>.arsc.flat`
+   - 其他资源：替换最后一个 `/` 为 `_` 并添加 `.flat`
 
-2. **Link phase:** Flat files are linked into a single APK resource table
+2. **链接阶段：** Flat 文件被链接到单个 APK 资源表中
 
 ```go
 var aapt2CompileRule = pctx.AndroidStaticRule("aapt2Compile",
@@ -455,105 +455,105 @@ var aapt2CompileRule = pctx.AndroidStaticRule("aapt2Compile",
     }, "outDir", "cFlags")
 ```
 
-### 7.2 Resource Overlay System
+### 7.2 资源覆盖系统
 
-**File:** `build/soong/java/android_resources.go`
+**文件：** `build/soong/java/android_resources.go`
 
-- Overlay resolution uses `DEVICE_RESOURCE_OVERLAYS` and `PRODUCT_RESOURCE_OVERLAYS` product variables
-- Runtime Resource Overlays (RRO) are controlled by `PRODUCT_ENFORCE_RRO_TARGETS`
-- RRO packages are built as `runtime_resource_overlay` module type
+- 覆盖解析使用 `DEVICE_RESOURCE_OVERLAYS` 和 `PRODUCT_RESOURCE_OVERLAYS` 产品变量
+- 运行时资源覆盖（RRO）由 `PRODUCT_ENFORCE_RRO_TARGETS` 控制
+- RRO 包作为 `runtime_resource_overlay` 模块类型构建
 
-### 7.3 Ignored Files
+### 7.3 忽略的文件
 
-Resources automatically ignore: `.svn`, `.git`, `.ds_store`, `*.scc`, `.*`, `CVS`, `thumbs.db`, `picasa.ini`, `*~`
+资源自动忽略：`.svn`、`.git`、`.ds_store`、`*.scc`、`.*`、`CVS`、`thumbs.db`、`picasa.ini`、`*~`
 
 ---
 
-## 8. Dexing: d8 and r8
+## 8. Dex 化：d8 和 r8
 
-### 8.1 d8 (DEX Compiler)
+### 8.1 d8（DEX 编译器）
 
-**File:** `build/soong/java/dex.go`
+**文件：** `build/soong/java/dex.go`
 
-d8 converts Java bytecode to DEX format:
+d8 将 Java 字节码转换为 DEX 格式：
 ```
 d8 ${DexFlags} --output $outDir $d8Flags $in
 soong_zip $zipFlags -o $outDir/classes.dex.jar -C $outDir -f "$outDir/classes*.dex"
 merge_zips -D -stripFile "**/*.class" $out $outDir/classes.dex.jar $in
 ```
 
-### 8.2 r8 (Optimizer + Shrinker)
+### 8.2 r8（优化器 + 压缩器）
 
-r8 performs optimization, shrinking, and obfuscation (ProGuard replacement):
+r8 执行优化、压缩和混淆（ProGuard 的替代品）：
 ```
 r8 ${DexFlags} -injars $in --output $outDir \
     --force-proguard-compatibility --no-data-resources \
     -printmapping $outDict $r8Flags
 ```
 
-### 8.3 Optimization Properties
+### 8.3 优化属性
 
-**File:** `build/soong/java/java.go` (line 313)
+**文件：** `build/soong/java/java.go`（第 313 行）
 
 ```
-optimize.enabled     -- Enable optimization (default: true for apps, false for libraries)
-optimize.shrink      -- Remove unused code (default: true for apps)
-optimize.optimize    -- Optimize bytecode (default: false)
-optimize.obfuscate   -- Obfuscate code (default: false)
-optimize.proguard_flags       -- Inline ProGuard flags
-optimize.proguard_flags_files -- ProGuard flag files
-optimize.no_aapt_flags        -- Skip aapt-generated keep rules
+optimize.enabled     -- 启用优化（默认：应用为 true，库为 false）
+optimize.shrink      -- 移除未使用的代码（默认：应用为 true）
+optimize.optimize    -- 优化字节码（默认：false）
+optimize.obfuscate   -- 混淆代码（默认：false）
+optimize.proguard_flags       -- 内联 ProGuard 标志
+optimize.proguard_flags_files -- ProGuard 标志文件
+optimize.no_aapt_flags        -- 跳过 aapt 生成的保留规则
 ```
 
 ---
 
-## 9. Kotlin Support
+## 9. Kotlin 支持
 
-**File:** `build/soong/java/kotlin.go`
+**文件：** `build/soong/java/kotlin.go`
 
-Kotlin compilation is integrated directly into the Java build pipeline:
+Kotlin 编译直接集成到 Java 构建管道中：
 
-1. `.kt` and `.java` sources are compiled together by `kotlinc`
-2. Kotlin stdlib can be packaged into the jar (`static_kotlin_stdlib`, defaults to true)
-3. Kotlin compiler uses a build file generated by `GenKotlinBuildFileCmd`
-4. Module properties: `kotlincflags` for Kotlin-specific compiler flags
+1. `.kt` 和 `.java` 源文件由 `kotlinc` 一起编译
+2. Kotlin 标准库可以打包到 jar 中（`static_kotlin_stdlib`，默认为 true）
+3. Kotlin 编译器使用由 `GenKotlinBuildFileCmd` 生成的构建文件
+4. 模块属性：`kotlincflags` 用于 Kotlin 特定的编译器标志
 
-Dependencies: `KotlincCmd`, `KotlinCompilerJar`, `KotlinStdlibJar`, `KotlinReflectJar`, `KotlinAnnotationJar`
+依赖项：`KotlincCmd`、`KotlinCompilerJar`、`KotlinStdlibJar`、`KotlinReflectJar`、`KotlinAnnotationJar`
 
 ---
 
-## 10. Signing and Key Management
+## 10. 签名和密钥管理
 
-### 10.1 Default Signing Keys
+### 10.1 默认签名密钥
 
-**Directory:** `build/make/target/product/security/`
+**目录：** `build/make/target/product/security/`
 
-| Key | Purpose |
+| 密钥 | 用途 |
 |-----|---------|
-| `testkey` | Default signing key for development builds |
-| `platform` | Platform component signing (system apps) |
-| `shared` | Shared process signing |
-| `media` | Media/download system signing |
-| `networkstack` | Network stack module signing |
-| `verity` | Verified boot signing |
+| `testkey` | 开发构建的默认签名密钥 |
+| `platform` | 平台组件签名（系统应用） |
+| `shared` | 共享进程签名 |
+| `media` | 媒体/下载系统签名 |
+| `networkstack` | 网络堆栈模块签名 |
+| `verity` | 验证启动签名 |
 
-Each key pair consists of a `.pk8` (private key) and `.x509.pem` (certificate).
+每个密钥对由 `.pk8`（私钥）和 `.x509.pem`（证书）组成。
 
-### 10.2 Certificate Configuration in Modules
+### 10.2 模块中的证书配置
 
-**File:** `build/soong/java/app.go` (line 257)
+**文件：** `build/soong/java/app.go`（第 257 行）
 
 ```
-certificate         -- Certificate name, blank for default, or ":module" reference
-lineage             -- Signing certificate lineage file (for key rotation)
-additional_certificates -- Extra certificates for multi-signing
+certificate         -- 证书名称，空白使用默认值，或 ":module" 引用
+lineage             -- 签名证书传承文件（用于密钥轮换）
+additional_certificates -- 多签名的额外证书
 ```
 
-**Validation:** `build/make/core/app_certificate_validate.mk`
+**验证：** `build/make/core/app_certificate_validate.mk`
 
-### 10.3 APEX Signing
+### 10.3 APEX 签名
 
-APEX modules have their own key and certificate tags:
+APEX 模块有自己的密钥和证书标签：
 ```go
 keyTag         = dependencyTag{name: "key"}
 certificateTag = dependencyTag{name: "certificate"}
@@ -561,88 +561,88 @@ certificateTag = dependencyTag{name: "certificate"}
 
 ---
 
-## 11. Hidden API Management
+## 11. 隐藏 API 管理
 
-**File:** `build/soong/java/hiddenapi.go`
+**文件：** `build/soong/java/hiddenapi.go`
 
-The hidden API system classifies framework APIs into restriction categories:
+隐藏 API 系统将框架 API 分类为限制类别：
 
-1. **CSV Generation:** `Class2Greylist` tool generates flags CSV, metadata CSV, and index CSV from compiled classes against stub API flags
-2. **Boot DEX Jars:** Tracked via `bootDexJarPath` for hidden API enforcement
-3. **Singleton:** `build/soong/java/hiddenapi_singleton.go` manages global hidden API processing
+1. **CSV 生成：** `Class2Greylist` 工具根据编译类与桩 API 标志生成标志 CSV、元数据 CSV 和索引 CSV
+2. **Boot DEX Jars：** 通过 `bootDexJarPath` 跟踪以进行隐藏 API 强制执行
+3. **单例：** `build/soong/java/hiddenapi_singleton.go` 管理全局隐藏 API 处理
 
 ---
 
-## 12. APEX Modules
+## 12. APEX 模块
 
-**File:** `build/soong/apex/apex.go`
+**文件：** `build/soong/apex/apex.go`
 
-APEX (Android Pony EXpress) is the modular system component format:
+APEX（Android Pony EXpress）是模块化系统组件格式：
 
-**Payload types:** shared libraries, executables, Java libraries, prebuilts, tests, Android apps
+**载荷类型：** 共享库、可执行文件、Java 库、预构建文件、测试、Android 应用
 
-**APEX types:**
-- `image` (`.apex`) -- Production format with dm-verity
-- `zip` (`.zipapex`) -- Zip-based for testing
-- `flattened` (`.flattened`) -- Flattened into system partition
+**APEX 类型：**
+- `image`（`.apex`）-- 带 dm-verity 的生产格式
+- `zip`（`.zipapex`）-- 用于测试的 Zip 格式
+- `flattened`（`.flattened`）-- 展平到系统分区
 
-**Key dependency tags:**
+**关键依赖标签：**
 ```go
-sharedLibTag   -- Native shared libraries
-executableTag  -- Native executables
-javaLibTag     -- Java libraries
-androidAppTag  -- Android applications
-keyTag         -- APEX signing key
-certificateTag -- APEX certificate
+sharedLibTag   -- 原生共享库
+executableTag  -- 原生可执行文件
+javaLibTag     -- Java 库
+androidAppTag  -- Android 应用
+keyTag         -- APEX 签名密钥
+certificateTag -- APEX 证书
 ```
 
 ---
 
-## 13. Building Individual Modules
+## 13. 构建单个模块
 
-### 13.1 Using m/mm/mmm
+### 13.1 使用 m/mm/mmm
 
 ```bash
-# Build everything
+# 构建所有内容
 m
 
-# Build a specific module by name
+# 按名称构建特定模块
 m <module-name>
 
-# Build modules in current directory
+# 构建当前目录中的模块
 mm
 
-# Build modules in a specific directory
+# 构建特定目录中的模块
 mmm frameworks/base/services/
 
-# Build specific targets from a directory
+# 从目录构建特定目标
 mmm dir/:target1,target2
 ```
 
-### 13.2 Using tapas
+### 13.2 使用 tapas
 
-For building individual apps without a full product configuration:
+用于在没有完整产品配置的情况下构建单个应用：
 ```bash
 tapas <App1> <App2> [arm|arm64|x86|x86_64] [eng|userdebug|user]
 ```
 
-### 13.3 Soong UI Direct Commands
+### 13.3 Soong UI 直接命令
 
 ```bash
-# Dump a build variable
+# 导出构建变量
 build/soong/soong_ui.bash --dumpvar-mode TARGET_PRODUCT
 
-# Dump multiple variables
+# 导出多个变量
 build/soong/soong_ui.bash --dumpvars-mode --vars="TARGET_PRODUCT TARGET_BUILD_VARIANT"
 ```
 
 ---
 
-## 14. Android.bp Format Reference
+## 14. Android.bp 格式参考
 
-### 14.1 Basic Structure
+### 14.1 基本结构
 
-Android.bp uses a JSON-like syntax:
+Android.bp 使用类 JSON 语法：
 ```
 module_type {
     name: "module_name",
@@ -662,9 +662,9 @@ module_type {
 }
 ```
 
-### 14.2 Common Patterns
+### 14.2 常见模式
 
-**Defaults pattern:**
+**Defaults 模式：**
 ```
 java_defaults {
     name: "my_defaults",
@@ -679,7 +679,7 @@ java_library {
 }
 ```
 
-**Filegroup reference:**
+**Filegroup 引用：**
 ```
 filegroup {
     name: "my-sources",
@@ -693,7 +693,7 @@ java_library {
 }
 ```
 
-**Genrule pattern:**
+**Genrule 模式：**
 ```
 genrule {
     name: "my_generated",
@@ -704,27 +704,27 @@ genrule {
 }
 ```
 
-### 14.3 Subdirectory Inclusion
+### 14.3 子目录包含
 
 ```
 subdirs = ["subdir1", "subdir2"]
 ```
 
-### 14.4 Visibility Control
+### 14.4 可见性控制
 
 ```
 java_library {
     name: "internal_lib",
     visibility: ["//visibility:private"],
-    // or: visibility: ["//path/to/allowed:__subpackages__"],
+    // 或：visibility: ["//path/to/allowed:__subpackages__"],
 }
 ```
 
 ---
 
-## 15. Example Android.bp: Real-World Pattern
+## 15. 示例 Android.bp：实际模式
 
-**From `frameworks/base/services/Android.bp`:**
+**来自 `frameworks/base/services/Android.bp`：**
 ```
 java_defaults {
     name: "services_defaults",
@@ -736,7 +736,7 @@ filegroup {
     srcs: [
         ":services.core-sources",
         ":services.accessibility-sources",
-        // ... many more service source groups
+        // ... 更多服务源码组
     ],
     visibility: ["//visibility:private"],
 }
@@ -749,37 +749,37 @@ java_library {
         profile: "art-profile",
     },
     srcs: [":services-main-sources"],
-    static_libs: [/* service modules */],
+    static_libs: [/* 服务模块 */],
 }
 ```
 
 ---
 
-## 16. Practical Guidance for Developers
+## 16. 开发者实用指南
 
-### 16.1 Adding a New Java Library
+### 16.1 添加新的 Java 库
 
 ```
-// In your Android.bp:
+// 在你的 Android.bp 中：
 java_library {
     name: "my-library",
     srcs: ["src/**/*.java"],
-    sdk_version: "current",          // or "system_current" for system APIs
+    sdk_version: "current",          // 或使用 "system_current" 获取系统 API
     min_sdk_version: "28",
-    libs: ["framework"],             // compile-only dependency
-    static_libs: ["my-utils"],       // bundled dependency
+    libs: ["framework"],             // 仅编译时依赖
+    static_libs: ["my-utils"],       // 打包依赖
 }
 ```
 
-### 16.2 Adding a New System App
+### 16.2 添加新的系统应用
 
 ```
 android_app {
     name: "MySystemApp",
     srcs: ["src/**/*.java"],
-    platform_apis: true,             // use platform APIs
-    certificate: "platform",         // sign with platform key
-    privileged: true,                // install to priv-app
+    platform_apis: true,             // 使用平台 API
+    certificate: "platform",         // 使用平台密钥签名
+    privileged: true,                // 安装到 priv-app
     resource_dirs: ["res"],
     manifest: "AndroidManifest.xml",
     static_libs: ["my-library"],
@@ -787,7 +787,7 @@ android_app {
 }
 ```
 
-### 16.3 Adding a Native Library
+### 16.3 添加原生库
 
 ```
 cc_library_shared {
@@ -800,9 +800,9 @@ cc_library_shared {
 }
 ```
 
-### 16.4 Adding AIDL Interface Sources
+### 16.4 添加 AIDL 接口源码
 
-In a java_library or android_app:
+在 java_library 或 android_app 中：
 ```
 java_library {
     name: "my-service-lib",
@@ -818,48 +818,48 @@ java_library {
 }
 ```
 
-### 16.5 Converting Android.mk to Android.bp
+### 16.5 将 Android.mk 转换为 Android.bp
 
-Use the `androidmk` tool:
+使用 `androidmk` 工具：
 ```bash
 androidmk Android.mk > Android.bp
 ```
-Then manually verify and adjust the output. Not all Make patterns have direct Soong equivalents.
+然后手动验证并调整输出。并非所有 Make 模式都有直接的 Soong 等价物。
 
-### 16.6 Key Environment Variables
+### 16.6 关键环境变量
 
-| Variable | Purpose |
+| 变量 | 用途 |
 |----------|---------|
-| `TARGET_PRODUCT` | Product being built |
-| `TARGET_BUILD_VARIANT` | Build variant (user/userdebug/eng) |
-| `OUT_DIR` | Output directory (default: `out`) |
-| `ANDROID_PRODUCT_OUT` | Product-specific output directory |
-| `ANDROID_HOST_OUT` | Host tools output directory |
-| `SANITIZE_HOST` | Set to `address` for ASAN on host modules |
+| `TARGET_PRODUCT` | 正在构建的产品 |
+| `TARGET_BUILD_VARIANT` | 构建变体（user/userdebug/eng） |
+| `OUT_DIR` | 输出目录（默认：`out`） |
+| `ANDROID_PRODUCT_OUT` | 产品特定输出目录 |
+| `ANDROID_HOST_OUT` | 主机工具输出目录 |
+| `SANITIZE_HOST` | 设置为 `address` 以在主机模块上启用 ASAN |
 
 ---
 
-## 17. Architecture Observations and Recommendations
+## 17. 架构观察与建议
 
-### 17.1 Strengths
+### 17.1 优势
 
-1. **Soong's declarative model** eliminates many classes of Make-related build errors and enables better parallelism
-2. **SDK version system** provides fine-grained API surface control with clear enforcement boundaries
-3. **Mutator pipeline** in CC modules (sanitizers, VNDK, coverage, LTO) enables composable build transformations
-4. **Hidden API tracking** is well-integrated into the build, ensuring API surface compliance
-5. **APEX support** enables modular updates with proper signing and verification
+1. **Soong 的声明式模型**消除了许多类 Make 相关的构建错误，并实现了更好的并行化
+2. **SDK 版本系统**提供了细粒度的 API 表面控制，具有明确的强制执行边界
+3. **CC 模块中的变换器管道**（sanitizer、VNDK、coverage、LTO）支持可组合的构建转换
+4. **隐藏 API 跟踪**与构建系统良好集成，确保 API 表面合规性
+5. **APEX 支持**通过适当的签名和验证实现模块化更新
 
-### 17.2 Complexity Concerns
+### 17.2 复杂性问题
 
-1. **Dual build system** -- The coexistence of Soong and Make creates cognitive overhead. Product config remains entirely in Make while module definitions are in Soong
-2. **SDK version parsing** -- The `sdkSpec` system with 9 different `sdkKind` values and multiple string formats (`"current"`, `"system_current"`, `"30"`, `""`) creates complexity for module authors
-3. **Mutator ordering** -- The CC module has 15+ mutators with specific ordering requirements; incorrect ordering can cause subtle build issues
+1. **双构建系统** -- Soong 和 Make 的共存增加了认知负担。产品配置完全在 Make 中，而模块定义在 Soong 中
+2. **SDK 版本解析** -- 具有 9 种不同 `sdkKind` 值和多种字符串格式（`"current"`、`"system_current"`、`"30"`、`""`）的 `sdkSpec` 系统为模块作者带来了复杂性
+3. **变换器排序** -- CC 模块有 15 个以上的变换器，具有特定的排序要求；不正确的排序可能导致微妙的构建问题
 
-### 17.3 Developer Recommendations
+### 17.3 开发者建议
 
-1. **Always prefer Android.bp** over Android.mk for new modules -- the Make system is in maintenance mode
-2. **Set `sdk_version` explicitly** for all app and library modules to avoid accidentally depending on private APIs
-3. **Use `java_defaults`/`cc_defaults`** to share common configuration and reduce duplication
-4. **Use filegroups** to organize large source sets rather than complex glob patterns
-5. **Test with `m checkbuild`** to validate build rules without running full builds
-6. **Use `m <module>-check-aidl-api`** to verify AIDL interface compatibility
+1. **新模块始终优先使用 Android.bp** 而非 Android.mk -- Make 系统处于维护模式
+2. **为所有应用和库模块显式设置 `sdk_version`**，以避免意外依赖私有 API
+3. **使用 `java_defaults`/`cc_defaults`** 共享通用配置并减少重复
+4. **使用 filegroup** 组织大型源码集，而不是复杂的 glob 模式
+5. **使用 `m checkbuild` 测试**以在不运行完整构建的情况下验证构建规则
+6. **使用 `m <module>-check-aidl-api`** 验证 AIDL 接口兼容性

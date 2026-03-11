@@ -1,974 +1,974 @@
-# ART (Android Runtime) -- 代码审查 Report
+# ART（Android Runtime）-- 代码审查报告
 
-## Source Paths
-- **ART Runtime**: `~/aosp-android-11/art/`
-- **Java Core Libraries**: `~/aosp-android-11/libcore/`
-- **Dalvik Tools**: `~/aosp-android-11/dalvik/`
+## 源码路径
+- **ART 运行时**: `~/aosp-android-11/art/`
+- **Java 核心库**: `~/aosp-android-11/libcore/`
+- **Dalvik 工具**: `~/aosp-android-11/dalvik/`
 
 ---
 
-## 1. ART Runtime Architecture Overview
+## 1. ART 运行时架构概述
 
-### 1.1 Top-Level Organization
+### 1.1 顶层组织结构
 
-The ART runtime (`art/`) is structured into several major subsystems:
+ART 运行时（`art/`）由以下几个主要子系统组成：
 
-| Directory | Purpose |
+| 目录 | 用途 |
 |-----------|---------|
-| `art/runtime/` | Core runtime (class loading, GC, threading, JNI, interpreter) |
-| `art/compiler/` | Optimizing compiler backend (AOT and JIT) |
-| `art/dex2oat/` | Ahead-of-time compilation tool |
-| `art/libdexfile/` | DEX file parsing and representation library |
-| `art/libprofile/` | Profile data formats for PGO |
-| `art/profman/` | Profile management tool |
-| `art/dexdump/` | DEX file inspection tool |
-| `art/dexlayout/` | DEX file layout optimization |
-| `art/oatdump/` | OAT/VDEX file inspection tool |
-| `art/openjdkjvm/` | OpenJDK JVM interface layer |
-| `art/openjdkjvmti/` | JVMTI agent interface |
-| `art/libnativebridge/` | Native bridge for running non-native-ISA code |
-| `art/libnativeloader/` | Native library loading infrastructure |
-| `art/sigchainlib/` | Signal chaining library |
+| `art/runtime/` | 核心运行时（类加载、GC、线程、JNI、解释器） |
+| `art/compiler/` | 优化编译器后端（AOT 和 JIT） |
+| `art/dex2oat/` | 预编译（AOT）工具 |
+| `art/libdexfile/` | DEX 文件解析和表示库 |
+| `art/libprofile/` | PGO 配置文件数据格式 |
+| `art/profman/` | 配置文件管理工具 |
+| `art/dexdump/` | DEX 文件检查工具 |
+| `art/dexlayout/` | DEX 文件布局优化 |
+| `art/oatdump/` | OAT/VDEX 文件检查工具 |
+| `art/openjdkjvm/` | OpenJDK JVM 接口层 |
+| `art/openjdkjvmti/` | JVMTI 代理接口 |
+| `art/libnativebridge/` | 用于运行非原生 ISA 代码的 Native Bridge |
+| `art/libnativeloader/` | 原生库加载基础设施 |
+| `art/sigchainlib/` | 信号链库 |
 
-### 1.2 Key Source Files
+### 1.2 关键源文件
 
-| File | Lines | Role |
+| 文件 | 行数 | 作用 |
 |------|-------|------|
-| `art/runtime/runtime.cc` | ~3,068 | Runtime initialization, singleton lifecycle |
-| `art/runtime/class_linker.cc` | ~9,883 | Class loading, linking, verification |
-| `art/runtime/gc/heap.cc` | ~4,321 | Heap management and GC orchestration |
-| `art/runtime/gc/collector/concurrent_copying.cc` | ~3,870 | Default (CC) garbage collector |
-| `art/runtime/jni/jni_internal.cc` | ~3,364 | JNI function implementations |
-| `art/dex2oat/dex2oat.cc` | ~3,313 | AOT compilation driver |
+| `art/runtime/runtime.cc` | ~3,068 | 运行时初始化，单例生命周期 |
+| `art/runtime/class_linker.cc` | ~9,883 | 类加载、链接、验证 |
+| `art/runtime/gc/heap.cc` | ~4,321 | 堆管理和 GC 编排 |
+| `art/runtime/gc/collector/concurrent_copying.cc` | ~3,870 | 默认（CC）垃圾收集器 |
+| `art/runtime/jni/jni_internal.cc` | ~3,364 | JNI 函数实现 |
+| `art/dex2oat/dex2oat.cc` | ~3,313 | AOT 编译驱动 |
 
-### 1.3 Runtime Initialization (`Runtime::Init`)
+### 1.3 运行时初始化（`Runtime::Init`）
 
-**File**: `art/runtime/runtime.h`, `art/runtime/runtime.cc` (line 1186)
+**文件**: `art/runtime/runtime.h`, `art/runtime/runtime.cc`（第 1186 行）
 
-The `Runtime` class is a process-wide singleton. `Runtime::Init()` performs initialization in this order:
+`Runtime` 类是进程范围的单例。`Runtime::Init()` 按以下顺序执行初始化：
 
-1. **Environment snapshot** -- protects subprocesses from LD_LIBRARY_PATH modifications.
-2. **MemMap initialization** -- sets up memory-mapped region management.
-3. **OatFileManager creation** -- manages OAT file discovery and loading.
-4. **Monitor and Thread infrastructure** -- `MonitorList`, `MonitorPool`, `ThreadList`.
-5. **InternTable** -- string interning for deduplication.
-6. **Heap construction** -- creates GC heap with all configured spaces (see Section 3).
-7. **ClassLinker initialization** -- boots the class loading infrastructure.
-8. **JIT creation** -- initializes JIT compiler if enabled.
-9. **Signal handlers** -- installs fault handlers for NullPointerException, StackOverflow.
+1. **环境快照** -- 保护子进程免受 LD_LIBRARY_PATH 修改的影响。
+2. **MemMap 初始化** -- 设置内存映射区域管理。
+3. **OatFileManager 创建** -- 管理 OAT 文件的发现和加载。
+4. **Monitor 和线程基础设施** -- `MonitorList`、`MonitorPool`、`ThreadList`。
+5. **InternTable** -- 用于去重的字符串驻留。
+6. **堆构建** -- 创建包含所有配置空间的 GC 堆（参见第 3 节）。
+7. **ClassLinker 初始化** -- 引导类加载基础设施。
+8. **JIT 创建** -- 如果启用，初始化 JIT 编译器。
+9. **信号处理** -- 安装用于 NullPointerException、StackOverflow 的故障处理程序。
 
-Key configuration knobs set during init:
-- `is_zygote_` / `is_primary_zygote_` -- affects GC strategy and fork behavior.
-- `is_concurrent_gc_enabled_` -- defaults to `true`.
-- `is_explicit_gc_disabled_` -- can disable `System.gc()`.
-- `hidden_api_policy_` -- controls enforcement of hidden API restrictions.
-- `target_sdk_version_` -- affects behavioral compatibility.
-- `is_low_memory_mode_` -- triggers conservative GC tuning.
+初始化期间设置的关键配置项：
+- `is_zygote_` / `is_primary_zygote_` -- 影响 GC 策略和 fork 行为。
+- `is_concurrent_gc_enabled_` -- 默认为 `true`。
+- `is_explicit_gc_disabled_` -- 可以禁用 `System.gc()`。
+- `hidden_api_policy_` -- 控制隐藏 API 限制的执行。
+- `target_sdk_version_` -- 影响行为兼容性。
+- `is_low_memory_mode_` -- 触发保守的 GC 调优。
 
-**App Developer Impact**: Runtime options (e.g., heap sizes, GC mode) are set by the system for apps. Developers influence them indirectly through manifest attributes like `android:largeHeap="true"` and the `targetSdkVersion` which governs hidden API enforcement.
+**应用开发者影响**: 运行时选项（如堆大小、GC 模式）由系统为应用设置。开发者通过清单属性（如 `android:largeHeap="true"`）和 `targetSdkVersion`（控制隐藏 API 执行）间接影响这些选项。
 
 ---
 
-## 2. Code Execution: Compiler, Interpreter, and JIT
+## 2. 代码执行：编译器、解释器和 JIT
 
-### 2.1 Execution Modes
+### 2.1 执行模式
 
-ART supports three execution modes that coexist:
+ART 支持三种共存的执行模式：
 
-| Mode | 描述 | When Used |
+| 模式 | 描述 | 使用时机 |
 |------|-------------|-----------|
-| **Interpreter** | Bytecode-by-bytecode execution | Debugging, uncompiled methods, first-run |
-| **AOT (dex2oat)** | Ahead-of-time compilation to native code | Install time or background dexopt |
-| **JIT** | Just-in-time compilation of hot methods | Runtime, based on invocation counts |
+| **解释器** | 逐条字节码执行 | 调试、未编译方法、首次运行 |
+| **AOT (dex2oat)** | 预编译为原生代码 | 安装时或后台 dexopt |
+| **JIT** | 热方法的即时编译 | 运行时，基于调用计数 |
 
-### 2.2 Interpreter
+### 2.2 解释器
 
-**Directory**: `art/runtime/interpreter/`
+**目录**: `art/runtime/interpreter/`
 
-The interpreter has multiple implementation strategies:
+解释器有多种实现策略：
 
-- **Switch interpreter** (`interpreter_switch_impl*.cc`) -- Standard C++ switch-based dispatch. The implementation is split across 4 files (`interpreter_switch_impl0.cc` through `interpreter_switch_impl3.cc`) to reduce compile times.
-- **Mterp** (`interpreter/mterp/`) -- Assembly-optimized interpreter with per-architecture implementations (`arm/`, `arm64/`, `x86/`, `x86_64/`). Generated via `gen_mterp.py`.
-- **Nterp** (`interpreter/mterp/nterp.cc`) -- Next-generation interpreter, a more efficient replacement for mterp that uses the same infrastructure but with improved dispatch.
+- **Switch 解释器**（`interpreter_switch_impl*.cc`）-- 标准 C++ 基于 switch 的分派。实现分布在 4 个文件中（`interpreter_switch_impl0.cc` 到 `interpreter_switch_impl3.cc`），以减少编译时间。
+- **Mterp**（`interpreter/mterp/`）-- 汇编优化的解释器，按架构提供实现（`arm/`、`arm64/`、`x86/`、`x86_64/`）。通过 `gen_mterp.py` 生成。
+- **Nterp**（`interpreter/mterp/nterp.cc`）-- 下一代解释器，使用相同基础设施但改进了分派效率，是 mterp 的高效替代。
 
-The interpreter function `InterpreterJni()` (in `interpreter.cc`, line 48) handles direct JNI calls from interpreted code by casting to typed function pointers based on method shorty descriptors, avoiding the full JNI compiler overhead for simple cases.
+解释器函数 `InterpreterJni()`（在 `interpreter.cc` 第 48 行）通过基于方法简短描述符的类型函数指针转换来处理来自解释代码的直接 JNI 调用，避免了简单场景下完整 JNI 编译器的开销。
 
-**App Developer Impact**: Interpreted execution is 10-100x slower than compiled code. Apps experience this during:
-- First launch before JIT warms up
-- Debugging sessions (forced interpretation)
-- Methods that never reach JIT compilation thresholds
+**应用开发者影响**: 解释执行比编译代码慢 10-100 倍。应用在以下场景会遇到解释执行：
+- JIT 预热前的首次启动
+- 调试会话（强制解释执行）
+- 从未达到 JIT 编译阈值的方法
 
-### 2.3 AOT Compilation (dex2oat)
+### 2.3 AOT 编译（dex2oat）
 
-**File**: `art/dex2oat/dex2oat.cc`
+**文件**: `art/dex2oat/dex2oat.cc`
 
-The `dex2oat` tool compiles DEX bytecode into native code stored in OAT files. It runs during:
-- System image creation (boot image compilation)
-- App installation (with appropriate compiler filter)
-- Background optimization by the system (`bg-dexopt-job`)
+`dex2oat` 工具将 DEX 字节码编译为存储在 OAT 文件中的原生代码。运行时机包括：
+- 系统镜像创建（引导镜像编译）
+- 应用安装（使用适当的编译过滤器）
+- 系统后台优化（`bg-dexopt-job`）
 
-#### Compiler Filters
+#### 编译过滤器
 
-**File**: `art/runtime/compiler_filter.cc`
+**文件**: `art/runtime/compiler_filter.cc`
 
-Compiler filters control how much compilation happens:
+编译过滤器控制编译程度：
 
-| Filter | AOT | JNI | Quicken | 描述 |
+| 过滤器 | AOT | JNI | Quicken | 描述 |
 |--------|-----|-----|---------|-------------|
-| `kAssumeVerified` | No | No | No | Skip verification, no compilation |
-| `kExtract` | No | No | No | Extract DEX only |
-| `kVerify` | No | No | No | Verify bytecode only |
-| `kQuicken` | No | Yes | Yes | Quicken bytecodes + compile JNI stubs |
-| `kSpaceProfile` | Yes | Yes | Yes | Profile-guided, optimize for size |
-| `kSpace` | Yes | Yes | Yes | Optimize for size |
-| `kSpeedProfile` | Yes | Yes | Yes | Profile-guided, optimize for speed |
-| `kSpeed` | Yes | Yes | Yes | Compile everything, optimize for speed |
-| `kEverythingProfile` | Yes | Yes | Yes | Profile-guided, compile everything |
-| `kEverything` | Yes | Yes | Yes | Compile absolutely everything |
+| `kAssumeVerified` | 否 | 否 | 否 | 跳过验证，不编译 |
+| `kExtract` | 否 | 否 | 否 | 仅提取 DEX |
+| `kVerify` | 否 | 否 | 否 | 仅验证字节码 |
+| `kQuicken` | 否 | 是 | 是 | 快化字节码 + 编译 JNI 桩 |
+| `kSpaceProfile` | 是 | 是 | 是 | 配置文件引导，优化空间 |
+| `kSpace` | 是 | 是 | 是 | 优化空间 |
+| `kSpeedProfile` | 是 | 是 | 是 | 配置文件引导，优化速度 |
+| `kSpeed` | 是 | 是 | 是 | 编译所有内容，优化速度 |
+| `kEverythingProfile` | 是 | 是 | 是 | 配置文件引导，编译所有内容 |
+| `kEverything` | 是 | 是 | 是 | 编译全部内容 |
 
-**App Developer Impact**: The default for app install on Android 11 is typically `speed-profile`, meaning only methods seen in profiles are AOT compiled. Cold methods run in the interpreter or are JIT-compiled on demand. Developers can influence this through `dexopt` flags in certain build configurations but have no direct API control.
+**应用开发者影响**: Android 11 上应用安装的默认过滤器通常是 `speed-profile`，这意味着只有在配置文件中出现的方法才会进行 AOT 编译。冷方法在解释器中运行或按需进行 JIT 编译。开发者可以在某些构建配置中通过 `dexopt` 标志来影响这一行为，但没有直接的 API 控制。
 
-### 2.4 Optimizing Compiler
+### 2.4 优化编译器
 
-**Directory**: `art/compiler/optimizing/`
+**目录**: `art/compiler/optimizing/`
 
-The optimizing compiler is a full SSA-based compiler with the following passes:
+优化编译器是一个完整的基于 SSA 的编译器，包含以下阶段：
 
-- **Builder** (`builder.cc`, `block_builder.cc`) -- Converts DEX bytecode to HGraph (SSA IR).
-- **Optimization passes** -- Including:
-  - `bounds_check_elimination.cc` -- Eliminates redundant array bounds checks
-  - `code_sinking.cc` -- Moves code closer to its use
-  - `cha_guard_optimization.cc` -- Class Hierarchy Analysis optimizations
-  - Dead code elimination, constant folding, inlining, etc.
-- **Code generators** -- Per-architecture backends:
-  - `code_generator_arm_vixl.cc` -- ARM 32-bit (via VIXL assembler)
-  - `code_generator_arm64.cc` -- ARM 64-bit
-  - `code_generator_x86.cc` -- x86 32-bit
-  - `code_generator_x86_64.cc` -- x86 64-bit
-  - Vector extensions for each architecture (`code_generator_vector_*.cc`)
+- **构建器**（`builder.cc`、`block_builder.cc`）-- 将 DEX 字节码转换为 HGraph（SSA IR）。
+- **优化阶段** -- 包括：
+  - `bounds_check_elimination.cc` -- 消除冗余的数组边界检查
+  - `code_sinking.cc` -- 将代码移到更靠近使用位置
+  - `cha_guard_optimization.cc` -- 类层次分析优化
+  - 死代码消除、常量折叠、内联等。
+- **代码生成器** -- 按架构的后端：
+  - `code_generator_arm_vixl.cc` -- ARM 32 位（通过 VIXL 汇编器）
+  - `code_generator_arm64.cc` -- ARM 64 位
+  - `code_generator_x86.cc` -- x86 32 位
+  - `code_generator_x86_64.cc` -- x86 64 位
+  - 每个架构的向量扩展（`code_generator_vector_*.cc`）
 
-### 2.5 JIT Compiler
+### 2.5 JIT 编译器
 
-**Files**: `art/runtime/jit/jit.h`, `art/runtime/jit/jit.cc`, `art/runtime/jit/jit_code_cache.h`
+**文件**: `art/runtime/jit/jit.h`, `art/runtime/jit/jit.cc`, `art/runtime/jit/jit_code_cache.h`
 
-The JIT compiler operates concurrently with app execution:
+JIT 编译器与应用执行并发运行：
 
-#### Compilation Thresholds
+#### 编译阈值
 
 ```
-Default compile threshold:   20 * 512 = 10,240 invocations
-Default warmup threshold:    10,240 / 2 = 5,120
-OSR threshold:               configurable (for on-stack replacement)
-Sample batch size:           512 (must be power of 2)
+默认编译阈值：   20 * 512 = 10,240 次调用
+默认预热阈值：   10,240 / 2 = 5,120
+OSR 阈值：       可配置（用于栈上替换）
+采样批次大小：   512（必须是 2 的幂）
 ```
 
-#### JIT Options (`JitOptions` class)
+#### JIT 选项（`JitOptions` 类）
 
-| Option | 描述 |
+| 选项 | 描述 |
 |--------|-------------|
-| `compile_threshold_` | Invocations before JIT compilation triggers |
-| `warmup_threshold_` | Invocations before profiling begins |
-| `osr_threshold_` | Threshold for On-Stack Replacement |
-| `code_cache_initial_capacity_` | Starting size of JIT code cache |
-| `code_cache_max_capacity_` | Maximum JIT code cache size |
-| `priority_thread_weight_` | Extra weight for UI thread invocations |
-| `invoke_transition_weight_` | Weight for call transitions |
-| `use_tiered_jit_compilation_` | Enable tiered compilation (baseline then optimized) |
-| `use_baseline_compiler_` | Use simpler baseline compiler |
+| `compile_threshold_` | 触发 JIT 编译前的调用次数 |
+| `warmup_threshold_` | 开始分析前的调用次数 |
+| `osr_threshold_` | 栈上替换的阈值 |
+| `code_cache_initial_capacity_` | JIT 代码缓存的初始大小 |
+| `code_cache_max_capacity_` | JIT 代码缓存的最大大小 |
+| `priority_thread_weight_` | UI 线程调用的额外权重 |
+| `invoke_transition_weight_` | 调用转换的权重 |
+| `use_tiered_jit_compilation_` | 启用分层编译（基线然后优化） |
+| `use_baseline_compiler_` | 使用更简单的基线编译器 |
 
-#### JIT Execution Flow
+#### JIT 执行流程
 
-1. Method executes in interpreter; invocation counter increments in batches of 512.
-2. At warmup threshold, profiling data begins collecting (inline caches, branch profiles).
-3. At compile threshold, the JIT thread picks up the method for compilation.
-4. `JitCompilerInterface::CompileMethod()` runs the optimizing compiler.
-5. Compiled code is placed in the `JitCodeCache`.
-6. The method's entry point is atomically updated to point to native code.
-7. **OSR (On-Stack Replacement)**: Long-running loops can transition from interpreted to compiled mid-execution.
+1. 方法在解释器中执行；调用计数器以 512 为批次递增。
+2. 达到预热阈值时，开始收集分析数据（内联缓存、分支配置文件）。
+3. 达到编译阈值时，JIT 线程接管该方法进行编译。
+4. `JitCompilerInterface::CompileMethod()` 运行优化编译器。
+5. 编译后的代码放入 `JitCodeCache`。
+6. 方法的入口点被原子更新为指向原生代码。
+7. **OSR（栈上替换）**：长时间运行的循环可以在执行过程中从解释切换到编译。
 
-#### JIT Thread Priority
+#### JIT 线程优先级
 
-JIT compilation threads run at priority 9 (lowest foreground priority) to avoid competing with the UI thread.
+JIT 编译线程以优先级 9（最低前台优先级）运行，以避免与 UI 线程竞争。
 
-**App Developer Impact**: JIT compilation means apps get progressively faster as hot code is compiled. However:
-- First launch is always slower (cold start).
-- JIT code cache is memory-bounded; under memory pressure, compiled code may be evicted.
-- The `priority_thread_weight_` gives the UI thread 1000x more weight in compilation decisions, ensuring the methods it calls are compiled first.
+**应用开发者影响**: JIT 编译意味着应用随着热代码的编译会逐渐变快。但是：
+- 首次启动总是较慢（冷启动）。
+- JIT 代码缓存受内存限制；在内存压力下，编译后的代码可能被驱逐。
+- `priority_thread_weight_` 给予 UI 线程在编译决策中 1000 倍的权重，确保其调用的方法优先被编译。
 
 ---
 
-## 3. Garbage Collection
+## 3. 垃圾收集
 
-### 3.1 GC Architecture
+### 3.1 GC 架构
 
-**Files**: `art/runtime/gc/heap.h`, `art/runtime/gc/heap.cc`
+**文件**: `art/runtime/gc/heap.h`, `art/runtime/gc/heap.cc`
 
-The GC subsystem is organized into:
+GC 子系统的组织结构：
 
-| 组件 | Directory/File | Purpose |
+| 组件 | 目录/文件 | 用途 |
 |-----------|----------------|---------|
-| Heap | `gc/heap.cc` | Central orchestrator for all GC operations |
-| Collectors | `gc/collector/` | GC algorithm implementations |
-| Spaces | `gc/space/` | Memory region management |
-| Accounting | `gc/accounting/` | Card tables, bitmaps, remembered sets |
+| 堆 | `gc/heap.cc` | 所有 GC 操作的中央编排器 |
+| 收集器 | `gc/collector/` | GC 算法实现 |
+| 空间 | `gc/space/` | 内存区域管理 |
+| 记账 | `gc/accounting/` | 卡表、位图、记忆集 |
 
-### 3.2 Collector Types
+### 3.2 收集器类型
 
-**File**: `art/runtime/gc/collector_type.h`
+**文件**: `art/runtime/gc/collector_type.h`
 
-| Collector | Constant | 描述 |
+| 收集器 | 常量 | 描述 |
 |-----------|----------|-------------|
-| **CMS** | `kCollectorTypeCMS` | Concurrent Mark-Sweep (legacy default) |
-| **CC** | `kCollectorTypeCC` | Concurrent Copying (default with read barriers) |
-| **CC Background** | `kCollectorTypeCCBackground` | Background compaction for CC |
-| **MS** | `kCollectorTypeMS` | Non-concurrent Mark-Sweep |
-| **SS** | `kCollectorTypeSS` | Semi-space (compacting) |
-| **Homogeneous Compact** | `kCollectorTypeHomogeneousSpaceCompact` | Background compaction for CMS |
+| **CMS** | `kCollectorTypeCMS` | 并发标记-清除（旧默认值） |
+| **CC** | `kCollectorTypeCC` | 并发复制（带读屏障的默认值） |
+| **CC 后台** | `kCollectorTypeCCBackground` | CC 的后台压缩 |
+| **MS** | `kCollectorTypeMS` | 非并发标记-清除 |
+| **SS** | `kCollectorTypeSS` | 半空间（压缩） |
+| **同构紧凑** | `kCollectorTypeHomogeneousSpaceCompact` | CMS 的后台压缩 |
 
-The default collector in Android 11 is **Concurrent Copying (CC)** when read barriers are enabled (which is the standard configuration):
+Android 11 中的默认收集器是**并发复制（CC）**（当读屏障启用时，这是标准配置）：
 
 ```cpp
-// From runtime.cc line 1394-1397:
+// 来自 runtime.cc 第 1394-1397 行：
 kUseReadBarrier ? gc::kCollectorTypeCC : xgc_option.collector_type_,
 kUseReadBarrier ? BackgroundGcOption(gc::kCollectorTypeCCBackground)
                 : runtime_options.GetOrDefault(Opt::BackgroundGc),
 ```
 
-### 3.3 Concurrent Copying Collector
+### 3.3 并发复制收集器
 
-**File**: `art/runtime/gc/collector/concurrent_copying.h`, `concurrent_copying.cc`
+**文件**: `art/runtime/gc/collector/concurrent_copying.h`, `concurrent_copying.cc`
 
-The CC collector is ART's primary GC in Android 11. Key design features:
+CC 收集器是 Android 11 中 ART 的主要 GC。关键设计特性：
 
-- **Generational collection** -- Supports young-gen-only collections when `use_generational_cc` is true. This is enabled by default when Baker read barriers are available.
-- **Read barriers** -- Uses Baker-style read barriers for concurrent object copying. Each object reference read includes a barrier check.
-- **Region-based** -- Operates on `RegionSpace` which divides the heap into fixed-size regions.
-- **Low pause times** -- Most work happens concurrently. The pause is limited to root scanning and reference processing.
+- **分代收集** -- 当 `use_generational_cc` 为 true 时支持仅年轻代收集。当 Baker 读屏障可用时默认启用。
+- **读屏障** -- 使用 Baker 风格的读屏障进行并发对象复制。每次对象引用读取都包含屏障检查。
+- **基于区域** -- 在 `RegionSpace` 上操作，将堆划分为固定大小的区域。
+- **低暂停时间** -- 大部分工作并发进行。暂停仅限于根扫描和引用处理。
 
-Configuration constants:
+配置常量：
 ```cpp
 kDefaultGcMarkStackSize = 2 * MB
-kGrayDirtyImmuneObjects = true  // Gray dirty objects in pause to prevent dirty pages
+kGrayDirtyImmuneObjects = true  // 在暂停期间灰化脏对象以防止脏页
 ```
 
-### 3.4 Other Collectors
+### 3.4 其他收集器
 
-- **Mark-Sweep** (`mark_sweep.cc`) -- Traditional mark-sweep. Variants include:
-  - `partial_mark_sweep.cc` -- Only collects application heap, not zygote space
-  - `sticky_mark_sweep.cc` -- Only collects objects allocated since last GC
-- **Semi-Space** (`semi_space.cc`) -- Copying collector that compacts by copying live objects between two spaces.
+- **标记-清除**（`mark_sweep.cc`）-- 传统标记-清除。变体包括：
+  - `partial_mark_sweep.cc` -- 仅收集应用堆，不收集 zygote 空间
+  - `sticky_mark_sweep.cc` -- 仅收集自上次 GC 以来分配的对象
+- **半空间**（`semi_space.cc`）-- 通过在两个空间之间复制存活对象来压缩的复制收集器。
 
-### 3.5 Heap Spaces
+### 3.5 堆空间
 
-**Directory**: `art/runtime/gc/space/`
+**目录**: `art/runtime/gc/space/`
 
-| Space | File | Purpose |
+| 空间 | 文件 | 用途 |
 |-------|------|---------|
-| **RegionSpace** | `region_space.cc` | Main allocation space for CC collector |
-| **RosAllocSpace** | `rosalloc_space.cc` | Runs-of-Slots allocator for CMS mode |
-| **DlMallocSpace** | `dlmalloc_space.cc` | dlmalloc-based allocation space |
-| **BumpPointerSpace** | `bump_pointer_space.cc` | Fast bump-pointer allocation (semi-space) |
-| **LargeObjectSpace** | `large_object_space.cc` | For objects exceeding threshold |
-| **ImageSpace** | `image_space.cc` | Memory-mapped boot/app image |
-| **ZygoteSpace** | `zygote_space.cc` | Frozen zygote heap (shared across apps) |
+| **RegionSpace** | `region_space.cc` | CC 收集器的主分配空间 |
+| **RosAllocSpace** | `rosalloc_space.cc` | CMS 模式的 Runs-of-Slots 分配器 |
+| **DlMallocSpace** | `dlmalloc_space.cc` | 基于 dlmalloc 的分配空间 |
+| **BumpPointerSpace** | `bump_pointer_space.cc` | 快速指针递增分配（半空间） |
+| **LargeObjectSpace** | `large_object_space.cc` | 用于超过阈值的对象 |
+| **ImageSpace** | `image_space.cc` | 内存映射的引导/应用镜像 |
+| **ZygoteSpace** | `zygote_space.cc` | 冻结的 zygote 堆（跨应用共享） |
 
-### 3.6 Heap Configuration Constants
+### 3.6 堆配置常量
 
-**File**: `art/runtime/gc/heap.h` (line 130+)
+**文件**: `art/runtime/gc/heap.h`（第 130+ 行）
 
 ```
-Default initial size:       2 MB
-Default maximum size:       256 MB
-Default TLAB size:          32 KB
-Partial TLAB size:          16 KB
-Non-moving space capacity:  64 MB
-Default min free:           512 KB
-Default max free:           2 MB
-Target utilization:         0.75 (75%)
-Heap growth multiplier:     2.0 (4.0 with read barriers due to +1.0 extra)
-Large object threshold:     3 * page_size (12 KB)
-Long pause log threshold:   5 ms
-Long GC log threshold:      100 ms
-Heap trim wait:             5 seconds
-Collector transition wait:  5 seconds
+默认初始大小：       2 MB
+默认最大大小：       256 MB
+默认 TLAB 大小：     32 KB
+部分 TLAB 大小：     16 KB
+非移动空间容量：     64 MB
+默认最小空闲：       512 KB
+默认最大空闲：       2 MB
+目标利用率：         0.75（75%）
+堆增长乘数：         2.0（带读屏障时为 4.0，因为额外 +1.0）
+大对象阈值：         3 * page_size（12 KB）
+长暂停日志阈值：     5 ms
+长 GC 日志阈值：     100 ms
+堆修剪等待：         5 秒
+收集器转换等待：     5 秒
 ```
 
-### 3.7 GC Causes
+### 3.7 GC 触发原因
 
-**File**: `art/runtime/gc/gc_cause.h`
+**文件**: `art/runtime/gc/gc_cause.h`
 
-GC can be triggered by:
-- `kGcCauseForAlloc` -- Allocation failure (blocking)
-- `kGcCauseBackground` -- Proactive background collection
-- `kGcCauseExplicit` -- `System.gc()` call
-- `kGcCauseForNativeAlloc` -- Native allocation watermark exceeded
-- `kGcCauseCollectorTransition` -- Foreground/background transition
+GC 可由以下原因触发：
+- `kGcCauseForAlloc` -- 分配失败（阻塞）
+- `kGcCauseBackground` -- 主动后台收集
+- `kGcCauseExplicit` -- `System.gc()` 调用
+- `kGcCauseForNativeAlloc` -- 原生分配水位线超出
+- `kGcCauseCollectorTransition` -- 前台/后台切换
 
-### 3.8 Accounting Infrastructure
+### 3.8 记账基础设施
 
-**Directory**: `art/runtime/gc/accounting/`
+**目录**: `art/runtime/gc/accounting/`
 
-- **Card Table** (`card_table.cc`) -- Tracks dirty pages for generational collection. Each card covers 128 bytes of heap.
-- **Space Bitmap** (`space_bitmap.cc`) -- Marks live objects within continuous spaces.
-- **Mod Union Table** (`mod_union_table.cc`) -- Tracks cross-space references for partial collections.
-- **Read Barrier Table** (`read_barrier_table.h`) -- Supports CC collector's read barriers.
-- **Remembered Set** (`remembered_set.cc`) -- Tracks references from non-moving to moving spaces.
+- **卡表**（`card_table.cc`）-- 跟踪分代收集的脏页。每张卡覆盖 128 字节的堆。
+- **空间位图**（`space_bitmap.cc`）-- 在连续空间内标记存活对象。
+- **Mod Union 表**（`mod_union_table.cc`）-- 跟踪部分收集的跨空间引用。
+- **读屏障表**（`read_barrier_table.h`）-- 支持 CC 收集器的读屏障。
+- **记忆集**（`remembered_set.cc`）-- 跟踪从非移动空间到移动空间的引用。
 
-**App Developer Impact**:
-- `System.gc()` is honored by default but can be disabled (`is_explicit_gc_disabled_`). Apps should not rely on it for correctness.
-- Large allocations (>12KB primitive arrays) go to the large object space, which uses a different allocation strategy.
-- The CC collector provides sub-5ms pause times, making GC largely transparent to apps.
-- The 256MB default heap is adjustable via `android:largeHeap="true"` (typically increases to 512MB, device-dependent).
-- Thread-Local Allocation Buffers (TLABs) of 32KB enable lock-free small object allocation.
-- Low memory mode (triggered by system property) uses a 1.0x heap growth multiplier instead of the default 2.0-4.0x, causing more frequent GC.
+**应用开发者影响**：
+- `System.gc()` 默认被执行，但可以禁用（`is_explicit_gc_disabled_`）。应用不应依赖它来保证正确性。
+- 大分配（>12KB 原始数组）进入大对象空间，使用不同的分配策略。
+- CC 收集器提供低于 5ms 的暂停时间，使 GC 对应用基本透明。
+- 256MB 的默认堆大小可通过 `android:largeHeap="true"` 调整（通常增加到 512MB，取决于设备）。
+- 32KB 的线程本地分配缓冲区（TLAB）实现了无锁小对象分配。
+- 低内存模式（由系统属性触发）使用 1.0 倍堆增长乘数，而非默认的 2.0-4.0 倍，导致更频繁的 GC。
 
 ---
 
-## 4. DEX File Format and Loading
+## 4. DEX 文件格式和加载
 
-### 4.1 DEX File Structure
+### 4.1 DEX 文件结构
 
-**File**: `art/libdexfile/dex/dex_file.h`
+**文件**: `art/libdexfile/dex/dex_file.h`
 
-The DEX file header structure:
+DEX 文件头结构：
 
-| Field | 描述 |
+| 字段 | 描述 |
 |-------|-------------|
-| `magic_[8]` | DEX magic number ("dex\n035\0" or "dex\n039\0") |
-| `checksum_` | Adler32 checksum of file (after magic and checksum fields) |
-| `signature_[20]` | SHA-1 hash of file contents |
-| `file_size_` | Total file size in bytes |
-| `string_ids_size/off` | String constant pool |
-| `type_ids_size/off` | Type descriptors |
-| `proto_ids_size/off` | Method prototypes |
-| `field_ids_size/off` | Field declarations |
-| `method_ids_size/off` | Method declarations |
-| `class_defs_size/off` | Class definitions |
-| `data_size/off` | Data section |
+| `magic_[8]` | DEX 魔数（"dex\n035\0" 或 "dex\n039\0"） |
+| `checksum_` | 文件的 Adler32 校验和（在魔数和校验和字段之后） |
+| `signature_[20]` | 文件内容的 SHA-1 哈希 |
+| `file_size_` | 文件总大小（字节） |
+| `string_ids_size/off` | 字符串常量池 |
+| `type_ids_size/off` | 类型描述符 |
+| `proto_ids_size/off` | 方法原型 |
+| `field_ids_size/off` | 字段声明 |
+| `method_ids_size/off` | 方法声明 |
+| `class_defs_size/off` | 类定义 |
+| `data_size/off` | 数据段 |
 
-Map item types enumerate all sections: `kDexTypeCodeItem` (bytecode), `kDexTypeStringDataItem`, `kDexTypeClassDataItem`, `kDexTypeAnnotationItem`, `kDexTypeHiddenapiClassData`, etc.
+映射项类型枚举所有段：`kDexTypeCodeItem`（字节码）、`kDexTypeStringDataItem`、`kDexTypeClassDataItem`、`kDexTypeAnnotationItem`、`kDexTypeHiddenapiClassData` 等。
 
-### 4.2 Compact DEX
+### 4.2 紧凑 DEX
 
-**Files**: `art/libdexfile/dex/compact_dex_file.h`, `compact_dex_file.cc`
+**文件**: `art/libdexfile/dex/compact_dex_file.h`, `compact_dex_file.cc`
 
-Compact DEX is an ART-internal optimized representation that reduces DEX size through:
-- Shared data sections across multiple DEX files in a VDEX
-- Compact offset tables (`compact_offset_table.cc`)
-- More efficient encoding of debug info
+紧凑 DEX 是 ART 内部的优化表示，通过以下方式减小 DEX 大小：
+- VDEX 中多个 DEX 文件共享数据段
+- 紧凑偏移表（`compact_offset_table.cc`）
+- 更高效的调试信息编码
 
-### 4.3 OAT Files
+### 4.3 OAT 文件
 
-**File**: `art/runtime/oat_file.h`
+**文件**: `art/runtime/oat_file.h`
 
-OAT files contain AOT-compiled native code alongside their source DEX files. Three class states tracked per OAT class:
+OAT 文件包含 AOT 编译的原生代码及其源 DEX 文件。每个 OAT 类跟踪三种类状态：
 
 ```cpp
-kOatClassAllCompiled = 0   // All methods compiled, OatMethodOffsets for each
-kOatClassSomeCompiled = 1  // Bitmap indicates which methods are compiled
-kOatClassNoneCompiled = 2  // All methods interpreted
+kOatClassAllCompiled = 0   // 所有方法已编译，每个方法都有 OatMethodOffsets
+kOatClassSomeCompiled = 1  // 位图指示哪些方法已编译
+kOatClassNoneCompiled = 2  // 所有方法在解释器中运行
 ```
 
-### 4.4 VDEX Files
+### 4.4 VDEX 文件
 
-**File**: `art/runtime/vdex_file.h`
+**文件**: `art/runtime/vdex_file.h`
 
-VDEX files contain the DEX files extracted from APKs plus verification metadata. They avoid re-extraction and re-verification on subsequent loads.
+VDEX 文件包含从 APK 中提取的 DEX 文件以及验证元数据。它们避免了后续加载时的重新提取和重新验证。
 
-**App Developer Impact**:
-- Apps ship DEX bytecode in APKs. ART transparently handles compilation to OAT/VDEX.
-- Multidex is handled transparently; each DEX file in an APK gets its own entry in the OAT file.
-- The 65,536 method limit per DEX file is a format constraint. The `type_ids` limit is also 65,535.
-- DEX format version 37+ enforces class definition ordering rules.
+**应用开发者影响**：
+- 应用在 APK 中发布 DEX 字节码。ART 透明地处理到 OAT/VDEX 的编译。
+- Multidex 被透明处理；APK 中的每个 DEX 文件在 OAT 文件中都有自己的条目。
+- 每个 DEX 文件 65,536 方法限制是格式约束。`type_ids` 限制也是 65,535。
+- DEX 格式版本 37+ 强制执行类定义排序规则。
 
 ---
 
-## 5. Class Loading Mechanism
+## 5. 类加载机制
 
 ### 5.1 ClassLinker
 
-**File**: `art/runtime/class_linker.cc` (~9,883 lines)
+**文件**: `art/runtime/class_linker.cc`（约 9,883 行）
 
-The `ClassLinker` is the central class loading engine. Its primary method `FindClass()` (line 2963) implements the following lookup algorithm:
+`ClassLinker` 是核心类加载引擎。其主要方法 `FindClass()`（第 2963 行）实现以下查找算法：
 
-1. **Primitive type check** -- Single-character descriptors are handled directly.
-2. **Loaded class table lookup** -- Check if the class is already loaded via `LookupClass()`.
-3. **Boot classpath search** -- For null class loader, search `boot_class_path_` entries.
-4. **Array class creation** -- For descriptors starting with `[`, create array classes via `CreateArrayClass()`.
-5. **Base DEX class loader search** -- For known class loader types (PathClassLoader, DexClassLoader), search directly via `FindClassInBaseDexClassLoader()`.
-6. **Java-side fallback** -- For unknown class loader types, delegate to `ClassLoader.loadClass()` in Java.
+1. **原始类型检查** -- 单字符描述符直接处理。
+2. **已加载类表查找** -- 通过 `LookupClass()` 检查类是否已加载。
+3. **引导类路径搜索** -- 对于空类加载器，搜索 `boot_class_path_` 条目。
+4. **数组类创建** -- 对于以 `[` 开头的描述符，通过 `CreateArrayClass()` 创建数组类。
+5. **Base DEX 类加载器搜索** -- 对于已知的类加载器类型（PathClassLoader、DexClassLoader），通过 `FindClassInBaseDexClassLoader()` 直接搜索。
+6. **Java 端回退** -- 对于未知的类加载器类型，委托给 Java 中的 `ClassLoader.loadClass()`。
 
-The `DefineClass()` method (line 3194) handles the actual class creation from DEX data:
-1. Allocate class object
-2. Load fields and methods from DEX
-3. Run runtime callbacks (`ClassPreDefine`)
-4. Verify the class
-5. Resolve superclass and interfaces
-6. Link the class (compute vtable, IMT, field offsets)
+`DefineClass()` 方法（第 3194 行）处理从 DEX 数据创建类的实际过程：
+1. 分配类对象
+2. 从 DEX 加载字段和方法
+3. 运行运行时回调（`ClassPreDefine`）
+4. 验证类
+5. 解析超类和接口
+6. 链接类（计算虚方法表、IMT、字段偏移）
 
-### 5.2 Class Loader Hierarchy
+### 5.2 类加载器层次结构
 
-**Directory**: `libcore/dalvik/src/main/java/dalvik/system/`
+**目录**: `libcore/dalvik/src/main/java/dalvik/system/`
 
 #### BaseDexClassLoader
 
-**File**: `libcore/dalvik/src/main/java/dalvik/system/BaseDexClassLoader.java`
+**文件**: `libcore/dalvik/src/main/java/dalvik/system/BaseDexClassLoader.java`
 
-Base class for all DEX-based class loaders. Key features:
-- `pathList` (`DexPathList`) -- Contains the list of DEX files to search.
-- `sharedLibraryLoaders` -- Array of class loaders for Android's `<uses-library>` feature. Searched before `pathList`.
-- `findClass()` implementation: shared libraries -> pathList search -> ClassNotFoundException.
-- Supports `ByteBuffer[]` constructor for in-memory DEX loading.
-- `computeClassLoaderContextsNative()` -- Native method that computes the class loader context string for each classpath entry (used by dex2oat).
+所有基于 DEX 的类加载器的基类。关键特性：
+- `pathList`（`DexPathList`）-- 包含要搜索的 DEX 文件列表。
+- `sharedLibraryLoaders` -- 用于 Android `<uses-library>` 功能的类加载器数组。在 `pathList` 之前搜索。
+- `findClass()` 实现：共享库 -> pathList 搜索 -> ClassNotFoundException。
+- 支持 `ByteBuffer[]` 构造函数用于内存中 DEX 加载。
+- `computeClassLoaderContextsNative()` -- 原生方法，为每个类路径条目计算类加载器上下文字符串（供 dex2oat 使用）。
 
 #### PathClassLoader
 
-**File**: `libcore/dalvik/src/main/java/dalvik/system/PathClassLoader.java`
+**文件**: `libcore/dalvik/src/main/java/dalvik/system/PathClassLoader.java`
 
-Used by the system for loading installed applications. Delegates to `BaseDexClassLoader` with `optimizedDirectory = null` (deprecated since API 26).
+系统用于加载已安装应用的类加载器。委托给 `BaseDexClassLoader`，`optimizedDirectory = null`（自 API 26 起已弃用）。
 
 #### DexClassLoader
 
-**File**: `libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java`
+**文件**: `libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java`
 
-Used for loading code from JAR/APK files not installed as part of an application. Since API 26, the `optimizedDirectory` parameter is ignored (passed as `null`).
+用于从非应用组成部分的 JAR/APK 文件加载代码。自 API 26 起，`optimizedDirectory` 参数被忽略（传递为 `null`）。
 
 #### InMemoryDexClassLoader
 
-**File**: `libcore/dalvik/src/main/java/dalvik/system/InMemoryDexClassLoader.java`
+**文件**: `libcore/dalvik/src/main/java/dalvik/system/InMemoryDexClassLoader.java`
 
-Loads classes from `ByteBuffer` objects containing DEX data. No file system access required. Used for dynamically generated or network-loaded code.
+从包含 DEX 数据的 `ByteBuffer` 对象加载类。不需要文件系统访问。用于动态生成或网络加载的代码。
 
 #### DelegateLastClassLoader
 
-**File**: `libcore/dalvik/src/main/java/dalvik/system/DelegateLastClassLoader.java`
+**文件**: `libcore/dalvik/src/main/java/dalvik/system/DelegateLastClassLoader.java`
 
-Implements **delegate-last** lookup order:
-1. Boot classpath
-2. Own DEX files
-3. Parent class loader
+实现**委托后置**查找顺序：
+1. 引导类路径
+2. 自身 DEX 文件
+3. 父类加载器
 
-This is the reverse of the standard Java parent-first delegation. Useful for plugin architectures where loaded code should override parent classes.
+这与标准 Java 的父优先委托相反。适用于已加载代码应覆盖父类的插件架构。
 
-### 5.3 Class Loader Context
+### 5.3 类加载器上下文
 
-**File**: `art/runtime/class_loader_context.cc`
+**文件**: `art/runtime/class_loader_context.cc`
 
-The class loader context encodes the entire class loader hierarchy as a string for dex2oat:
+类加载器上下文将整个类加载器层次结构编码为字符串，供 dex2oat 使用：
 - `PCL` = PathClassLoader
 - `DLC` = DelegateLastClassLoader
 - `IMC` = InMemoryDexClassLoader
 
-Format: `PCL[foo.jar:bar.jar]{shared_lib.jar#shared_lib2.jar};PCL[parent.jar]`
+格式：`PCL[foo.jar:bar.jar]{shared_lib.jar#shared_lib2.jar};PCL[parent.jar]`
 
-This context is critical for:
-- Ensuring OAT files are valid for the current class loader configuration
-- Detecting when re-compilation is needed due to classpath changes
+此上下文对以下方面至关重要：
+- 确保 OAT 文件对当前类加载器配置有效
+- 检测因类路径变更而需要重新编译的情况
 
-### 5.4 Native Class Loader Support
+### 5.4 原生类加载器支持
 
-**File**: `art/runtime/native/dalvik_system_DexFile.cc`, `dalvik_system_BaseDexClassLoader.cc`
+**文件**: `art/runtime/native/dalvik_system_DexFile.cc`, `dalvik_system_BaseDexClassLoader.cc`
 
-The native implementations bridge Java class loader APIs to the ART runtime:
-- `DexFile_openDexFileNative` -- Opens and verifies DEX files
-- `DexFile_defineClassNative` -- Calls `ClassLinker::DefineClass()`
-- `BaseDexClassLoader_computeClassLoaderContextsNative` -- Computes context strings
+原生实现将 Java 类加载器 API 桥接到 ART 运行时：
+- `DexFile_openDexFileNative` -- 打开和验证 DEX 文件
+- `DexFile_defineClassNative` -- 调用 `ClassLinker::DefineClass()`
+- `BaseDexClassLoader_computeClassLoaderContextsNative` -- 计算上下文字符串
 
-**App Developer Impact**:
-- `PathClassLoader` is used automatically for app loading. Using `DexClassLoader` or `InMemoryDexClassLoader` for dynamic code loading can bypass Play Protect scanning.
-- The class loader context must be stable between installation and execution; classpath changes invalidate compiled OAT files.
-- `DelegateLastClassLoader` enables class shadowing but can cause subtle bugs if the boot classpath changes across OS updates.
-- Class loading involves verification, which can be significant on first run (mitigated by VDEX caching).
+**应用开发者影响**：
+- `PathClassLoader` 自动用于应用加载。使用 `DexClassLoader` 或 `InMemoryDexClassLoader` 进行动态代码加载可以绕过 Play Protect 扫描。
+- 类加载器上下文必须在安装和执行之间保持稳定；类路径变更会使已编译的 OAT 文件失效。
+- `DelegateLastClassLoader` 支持类覆盖，但如果引导类路径在系统更新中发生变化，可能会导致微妙的错误。
+- 类加载涉及验证，首次运行时可能很显著（通过 VDEX 缓存缓解）。
 
 ---
 
-## 6. JNI Bridge
+## 6. JNI 桥接
 
-### 6.1 Architecture
+### 6.1 架构
 
-**Directory**: `art/runtime/jni/`
+**目录**: `art/runtime/jni/`
 
-| File | Purpose |
+| 文件 | 用途 |
 |------|---------|
-| `jni_internal.cc` | Full JNI function table implementation (~3,364 lines) |
-| `jni_env_ext.cc` | Per-thread JNI environment extensions |
-| `java_vm_ext.cc` | JavaVM interface extensions |
-| `jni_id_manager.cc` | Manages JNI method/field ID mapping |
-| `check_jni.cc` | Debug mode JNI validation |
+| `jni_internal.cc` | 完整的 JNI 函数表实现（约 3,364 行） |
+| `jni_env_ext.cc` | 每线程 JNI 环境扩展 |
+| `java_vm_ext.cc` | JavaVM 接口扩展 |
+| `jni_id_manager.cc` | 管理 JNI 方法/字段 ID 映射 |
+| `check_jni.cc` | 调试模式 JNI 验证 |
 
-### 6.2 JNI ID Management
+### 6.2 JNI ID 管理
 
-**File**: `art/runtime/jni/jni_id_manager.cc`
+**文件**: `art/runtime/jni/jni_id_manager.cc`
 
-Android 11 introduces configurable JNI ID management (`jni_ids_indirection_`):
-- **Direct mode** -- JNI method/field IDs are direct pointers to `ArtMethod`/`ArtField`. Fast but prevents structural class redefinition.
-- **Opaque/indirect mode** -- IDs are indices into a table. Enables class redefinition but adds indirection overhead.
+Android 11 引入了可配置的 JNI ID 管理（`jni_ids_indirection_`）：
+- **直接模式** -- JNI 方法/字段 ID 是指向 `ArtMethod`/`ArtField` 的直接指针。速度快但阻止结构性类重定义。
+- **不透明/间接模式** -- ID 是表中的索引。支持类重定义但增加间接开销。
 
-### 6.3 Hidden API Enforcement at JNI Layer
+### 6.3 JNI 层的隐藏 API 执行
 
-**File**: `art/runtime/hidden_api.h`
+**文件**: `art/runtime/hidden_api.h`
 
-JNI access to non-SDK APIs is checked via `AccessMethod::kJNI`. The enforcement policy has three levels:
-- `kDisabled` -- No restrictions
-- `kJustWarn` -- Log warnings but allow access
-- `kEnabled` -- Block access to dark-greylist and blacklisted APIs
+通过 `AccessMethod::kJNI` 检查对非 SDK API 的 JNI 访问。执行策略有三个级别：
+- `kDisabled` -- 无限制
+- `kJustWarn` -- 记录警告但允许访问
+- `kEnabled` -- 阻止对深灰名单和黑名单 API 的访问
 
-**App Developer Impact**:
-- JNI is the primary way to call native (C/C++) code from Java. Each JNI call involves thread state transitions (`ScopedThreadStateChange`) which add overhead.
-- JNI local references are tracked per-thread and must be managed carefully to avoid leaks. The `indirect_reference_table` tracks these.
-- `CheckJNI` mode (enabled in debug builds) catches common JNI errors like using stale references, passing wrong types, or missing exception checks.
-- Hidden API enforcement applies at the JNI layer -- `GetMethodID`/`GetFieldID` calls to restricted APIs will fail with `NoSuchMethodError`/`NoSuchFieldError`.
-- JNI critical sections (`GetPrimitiveArrayCritical`) disable moving GC, which can cause GC pauses if held too long.
-
----
-
-## 7. Profile-Guided Optimization (PGO)
-
-### 7.1 Profile Collection
-
-**File**: `art/runtime/jit/profile_saver.h`
-
-The `ProfileSaver` runs as a background thread collecting profile data:
-- **What is profiled**: Hot methods, inline cache data, class usage patterns.
-- **When saved**: Periodically, on JIT activity notifications, and at startup completion.
-- **Where saved**: Per-app profile files (typically in `/data/misc/profiles/`).
-
-Key operations:
-- `Start()` -- Begins profiling, tracking `(output_filename, code_paths)`.
-- `NotifyJitActivity()` -- Triggers profile processing on JIT events.
-- `NotifyStartupCompleted()` -- Signals transition from startup to steady-state profiling.
-- `ForceProcessProfiles()` -- Manual trigger (SIGUSR1).
-
-### 7.2 Profile Management Tool
-
-**Directory**: `art/profman/`
-
-The `profman` tool manages profile data:
-- `profile_assistant.cc` -- Merges profiles from multiple sources.
-- `boot_image_profile.cc` -- Generates boot image profiles.
-
-### 7.3 Profile-Guided Compilation Flow
-
-1. App runs with JIT; `ProfileSaver` records hot methods and classes.
-2. Profile is saved to disk as a `.prof` file.
-3. On idle maintenance, `bg-dexopt-job` runs `dex2oat` with `--compiler-filter=speed-profile`.
-4. `dex2oat` reads the profile and compiles only profiled methods.
-5. On next app launch, compiled code is loaded from the OAT file.
-
-**App Developer Impact**:
-- PGO means apps automatically get faster after repeated use without developer intervention.
-- Baseline profiles (introduced conceptually here, formalized later) let developers ship profiles with their APKs for day-one compilation.
-- The `speed-profile` filter typically compiles 10-30% of methods, balancing code size vs. performance.
-- Startup methods are prioritized in profiling through `NotifyStartupCompleted()`.
+**应用开发者影响**：
+- JNI 是从 Java 调用原生（C/C++）代码的主要方式。每次 JNI 调用都涉及线程状态转换（`ScopedThreadStateChange`），这会增加开销。
+- JNI 本地引用按线程跟踪，必须仔细管理以避免泄漏。`indirect_reference_table` 跟踪这些引用。
+- `CheckJNI` 模式（在调试构建中启用）捕获常见的 JNI 错误，如使用过期引用、传递错误类型或缺少异常检查。
+- 隐藏 API 执行适用于 JNI 层 -- 对受限 API 的 `GetMethodID`/`GetFieldID` 调用将以 `NoSuchMethodError`/`NoSuchFieldError` 失败。
+- JNI 临界区（`GetPrimitiveArrayCritical`）禁用移动 GC，如果持有时间过长可能导致 GC 暂停。
 
 ---
 
-## 8. App Startup Optimization
+## 7. 配置文件引导优化（PGO）
 
-### 8.1 Boot Image
+### 7.1 配置文件收集
 
-**File**: `art/runtime/gc/space/image_space.cc`
+**文件**: `art/runtime/jit/profile_saver.h`
 
-The boot image contains pre-compiled and pre-initialized core framework classes. It is memory-mapped into every app process via the Zygote:
-- Pre-linked classes (no runtime linking needed)
-- Pre-initialized static fields
-- Pre-allocated commonly used objects (e.g., boxed integers, empty arrays)
+`ProfileSaver` 作为后台线程运行，收集配置文件数据：
+- **分析内容**: 热方法、内联缓存数据、类使用模式。
+- **保存时机**: 定期、在 JIT 活动通知时、以及启动完成时。
+- **保存位置**: 每个应用的配置文件（通常在 `/data/misc/profiles/` 中）。
 
-### 8.2 App Images
+关键操作：
+- `Start()` -- 开始分析，跟踪 `(output_filename, code_paths)`。
+- `NotifyJitActivity()` -- 在 JIT 事件上触发配置文件处理。
+- `NotifyStartupCompleted()` -- 发信号从启动阶段过渡到稳态分析。
+- `ForceProcessProfiles()` -- 手动触发（SIGUSR1）。
 
-Similar to boot images but per-app. Contain classes from the app's DEX files that were resolved at compile time. Loaded as `ImageSpace` in the heap.
+### 7.2 配置文件管理工具
 
-### 8.3 Zygote Optimization
+**目录**: `art/profman/`
 
-- **ZygoteSpace** (`gc/space/zygote_space.cc`) -- Heap created by Zygote is frozen and shared copy-on-write across all forked app processes.
-- **Zygote Hooks** (`native/dalvik_system_ZygoteHooks.cc`) -- Native methods called during Zygote fork:
-  - Pre-fork: GC, dump heap regions
-  - Post-fork: Re-initialize thread pools, adjust GC for app process
+`profman` 工具管理配置文件数据：
+- `profile_assistant.cc` -- 合并来自多个来源的配置文件。
+- `boot_image_profile.cc` -- 生成引导镜像配置文件。
 
-### 8.4 Startup-Aware JIT
+### 7.3 配置文件引导编译流程
 
-The JIT has startup awareness:
-- Higher weight for the UI thread via `priority_thread_weight_` (1000x default).
-- `NotifyStartupCompleted()` transitions from aggressive compilation to steady-state.
-- On-stack replacement allows long-running startup loops to benefit from JIT mid-execution.
+1. 应用使用 JIT 运行；`ProfileSaver` 记录热方法和类。
+2. 配置文件作为 `.prof` 文件保存到磁盘。
+3. 在空闲维护期间，`bg-dexopt-job` 使用 `--compiler-filter=speed-profile` 运行 `dex2oat`。
+4. `dex2oat` 读取配置文件并仅编译被分析过的方法。
+5. 在下次应用启动时，从 OAT 文件加载编译后的代码。
 
-### 8.5 Image Space Loading Order
-
-**File**: `art/runtime/gc/space/image_space_loading_order.h`
-
-Controls whether system or data (updated) images are loaded first, affecting which pre-compiled code is used.
-
-**App Developer Impact**:
-- Cold start time is dominated by class loading and verification. Using fewer classes at startup helps.
-- The Zygote fork model means framework classes are already loaded -- app startup cost is primarily app-specific class loading.
-- Profile data from previous runs improves subsequent startup times through PGO.
-- Large static initializers (`<clinit>`) execute synchronously and block class loading.
+**应用开发者影响**：
+- PGO 意味着应用在反复使用后会自动变快，无需开发者干预。
+- 基线配置文件（概念在此引入，后来正式化）让开发者可以随 APK 一起发布配置文件，实现首日编译优化。
+- `speed-profile` 过滤器通常编译 10-30% 的方法，在代码大小和性能之间取得平衡。
+- 启动方法通过 `NotifyStartupCompleted()` 在分析中被优先处理。
 
 ---
 
-## 9. Runtime Configuration and Tuning
+## 8. 应用启动优化
 
-### 9.1 Heap Tuning Parameters
+### 8.1 引导镜像
 
-From `Runtime::Init()` (line 1381):
+**文件**: `art/runtime/gc/space/image_space.cc`
 
-| Parameter | Option Key | Default | Effect |
+引导镜像包含预编译和预初始化的核心框架类。它通过 Zygote 内存映射到每个应用进程：
+- 预链接的类（无需运行时链接）
+- 预初始化的静态字段
+- 预分配的常用对象（如装箱整数、空数组）
+
+### 8.2 应用镜像
+
+类似于引导镜像但针对每个应用。包含在编译时解析的应用 DEX 文件中的类。作为 `ImageSpace` 加载到堆中。
+
+### 8.3 Zygote 优化
+
+- **ZygoteSpace**（`gc/space/zygote_space.cc`）-- Zygote 创建的堆被冻结，并通过写时复制在所有 fork 的应用进程间共享。
+- **Zygote Hooks**（`native/dalvik_system_ZygoteHooks.cc`）-- Zygote fork 期间调用的原生方法：
+  - Fork 前：GC、转储堆区域
+  - Fork 后：重新初始化线程池、为应用进程调整 GC
+
+### 8.4 启动感知 JIT
+
+JIT 具有启动感知能力：
+- 通过 `priority_thread_weight_`（默认 1000 倍）给予 UI 线程更高权重。
+- `NotifyStartupCompleted()` 从积极编译过渡到稳态。
+- 栈上替换允许长时间运行的启动循环在执行过程中从 JIT 获益。
+
+### 8.5 镜像空间加载顺序
+
+**文件**: `art/runtime/gc/space/image_space_loading_order.h`
+
+控制是先加载系统镜像还是数据（更新）镜像，影响使用哪个预编译代码。
+
+**应用开发者影响**：
+- 冷启动时间主要由类加载和验证决定。在启动时使用更少的类有助于改善。
+- Zygote fork 模型意味着框架类已经加载 -- 应用启动成本主要是特定于应用的类加载。
+- 来自之前运行的配置文件数据通过 PGO 改善后续启动时间。
+- 大型静态初始化器（`<clinit>`）同步执行并阻塞类加载。
+
+---
+
+## 9. 运行时配置和调优
+
+### 9.1 堆调优参数
+
+来自 `Runtime::Init()`（第 1381 行）：
+
+| 参数 | 选项键 | 默认值 | 效果 |
 |-----------|-----------|---------|--------|
-| Initial heap size | `MemoryInitialSize` | 2 MB | Starting heap size |
-| Growth limit | `HeapGrowthLimit` | Device-dependent | Soft limit for non-largeHeap apps |
-| Maximum size | `MemoryMaximumSize` | 256 MB | Hard limit (or `largeHeap` limit) |
-| Min free | `HeapMinFree` | 512 KB | Minimum free bytes after GC |
-| Max free | `HeapMaxFree` | 2 MB | Maximum free bytes before GC |
-| Target utilization | `HeapTargetUtilization` | 0.75 | Target ratio of live data to heap size |
-| Foreground growth multiplier | `ForegroundHeapGrowthMultiplier` | 2.0 (+1.0 for CC) | How aggressively heap grows |
-| TLAB usage | `UseTLAB` | true | Thread-local allocation buffers |
-| Parallel GC threads | `ParallelGCThreads` | Device-dependent | GC worker threads |
-| Concurrent GC threads | `ConcGCThreads` | Device-dependent | Concurrent GC threads |
+| 初始堆大小 | `MemoryInitialSize` | 2 MB | 起始堆大小 |
+| 增长限制 | `HeapGrowthLimit` | 设备相关 | 非 largeHeap 应用的软限制 |
+| 最大大小 | `MemoryMaximumSize` | 256 MB | 硬限制（或 `largeHeap` 限制） |
+| 最小空闲 | `HeapMinFree` | 512 KB | GC 后最小空闲字节数 |
+| 最大空闲 | `HeapMaxFree` | 2 MB | GC 前最大空闲字节数 |
+| 目标利用率 | `HeapTargetUtilization` | 0.75 | 存活数据与堆大小的目标比率 |
+| 前台增长乘数 | `ForegroundHeapGrowthMultiplier` | 2.0（CC 为 +1.0） | 堆增长的激进程度 |
+| TLAB 使用 | `UseTLAB` | true | 线程本地分配缓冲区 |
+| 并行 GC 线程 | `ParallelGCThreads` | 设备相关 | GC 工作线程 |
+| 并发 GC 线程 | `ConcGCThreads` | 设备相关 | 并发 GC 线程 |
 
-### 9.2 GC Tuning
+### 9.2 GC 调优
 
-The `XGcOption` structure controls:
-- `collector_type_` -- Foreground collector (overridden to CC when read barriers enabled)
-- `generational_cc` -- Enable generational CC (default true with Baker read barriers)
-- `verify_pre_gc_heap_` / `verify_post_gc_heap_` -- Debug verification (costly)
-- `gcstress_` -- Continuous GC for testing
-- `measure_` -- Measure GC performance metrics
+`XGcOption` 结构控制：
+- `collector_type_` -- 前台收集器（启用读屏障时覆盖为 CC）
+- `generational_cc` -- 启用分代 CC（Baker 读屏障时默认为 true）
+- `verify_pre_gc_heap_` / `verify_post_gc_heap_` -- 调试验证（开销大）
+- `gcstress_` -- 持续 GC 用于测试
+- `measure_` -- 测量 GC 性能指标
 
-### 9.3 Low Memory Mode
+### 9.3 低内存模式
 
-When `is_low_memory_mode_` is set:
-- Foreground heap growth multiplier defaults to 1.0 (instead of 2.0-4.0).
-- Class loading uses tighter hash table load factors (0.5-0.8 vs 0.4-0.7).
-- More aggressive GC behavior.
+当设置 `is_low_memory_mode_` 时：
+- 前台堆增长乘数默认为 1.0（而非 2.0-4.0）。
+- 类加载使用更紧凑的哈希表负载因子（0.5-0.8 对比 0.4-0.7）。
+- 更积极的 GC 行为。
 
-### 9.4 Compiler Tuning
+### 9.4 编译器调优
 
 ```cpp
-// From runtime.cc constructor:
-is_concurrent_gc_enabled_ = true    // Concurrent GC enabled by default
-is_explicit_gc_disabled_ = false    // System.gc() honored by default
-image_dex2oat_enabled_ = true       // Allow dex2oat for images
+// 来自 runtime.cc 构造函数：
+is_concurrent_gc_enabled_ = true    // 默认启用并发 GC
+is_explicit_gc_disabled_ = false    // 默认执行 System.gc()
+image_dex2oat_enabled_ = true       // 允许为镜像运行 dex2oat
 ```
 
 ---
 
-## 10. Java Core Libraries (libcore)
+## 10. Java 核心库（libcore）
 
-### 10.1 Organization
+### 10.1 组织结构
 
-**Root**: `~/aosp-android-11/libcore/`
+**根目录**: `~/aosp-android-11/libcore/`
 
-| Directory | 描述 |
+| 目录 | 描述 |
 |-----------|-------------|
-| `ojluni/` | OpenJDK-derived classes (java.lang, java.util, java.io, java.net, etc.) |
-| `dalvik/` | Dalvik/Android-specific classes (dalvik.system, dalvik.annotation) |
-| `luni/` | Android-specific internal libraries (libcore.io, libcore.net, etc.) |
-| `libart/` | ART-specific JNI implementations |
-| `json/` | org.json implementation |
-| `xml/` | XML parsing (org.xml.sax, javax.xml) |
-| `dom/` | DOM XML implementation |
-| `apex/` | APEX module integration |
+| `ojluni/` | 源自 OpenJDK 的类（java.lang、java.util、java.io、java.net 等） |
+| `dalvik/` | Dalvik/Android 特定类（dalvik.system、dalvik.annotation） |
+| `luni/` | Android 特定内部库（libcore.io、libcore.net 等） |
+| `libart/` | ART 特定的 JNI 实现 |
+| `json/` | org.json 实现 |
+| `xml/` | XML 解析（org.xml.sax、javax.xml） |
+| `dom/` | DOM XML 实现 |
+| `apex/` | APEX 模块集成 |
 
-### 10.2 Key Packages
+### 10.2 关键包
 
-#### java.lang (106 files)
-Source: `libcore/ojluni/src/main/java/java/lang/`
+#### java.lang（106 个文件）
+来源：`libcore/ojluni/src/main/java/java/lang/`
 
-Core runtime types including `Object`, `Class`, `String`, `Thread`, `ClassLoader`, `System`, `Runtime`, all wrapper types (`Integer`, `Boolean`, etc.), and exception hierarchy.
+核心运行时类型，包括 `Object`、`Class`、`String`、`Thread`、`ClassLoader`、`System`、`Runtime`、所有包装类型（`Integer`、`Boolean` 等）和异常层次结构。
 
-Notable Android-specific modifications:
-- `ClassLoader.java` -- Modified to use DEX-based class loaders.
-- `Thread.java` -- Integrated with ART's thread management.
-- `System.java` -- Android-specific property and security implementations.
+值得注意的 Android 特定修改：
+- `ClassLoader.java` -- 修改为使用基于 DEX 的类加载器。
+- `Thread.java` -- 与 ART 的线程管理集成。
+- `System.java` -- Android 特定的属性和安全实现。
 
-#### java.util (128 files)
-Source: `libcore/ojluni/src/main/java/java/util/`
+#### java.util（128 个文件）
+来源：`libcore/ojluni/src/main/java/java/util/`
 
-Collections framework, concurrent utilities, date/time, and utility classes. Largely unchanged from OpenJDK.
+集合框架、并发工具、日期/时间和实用类。基本未修改自 OpenJDK。
 
-#### java.io (88 files)
-Source: `libcore/ojluni/src/main/java/java/io/`
+#### java.io（88 个文件）
+来源：`libcore/ojluni/src/main/java/java/io/`
 
-I/O streams, readers/writers, serialization. Android adds interception via `BlockGuard` for detecting I/O on the main thread.
+I/O 流、读写器、序列化。Android 通过 `BlockGuard` 添加拦截，用于检测主线程上的 I/O 操作。
 
-### 10.3 dalvik.system Package
+### 10.3 dalvik.system 包
 
-**Directory**: `libcore/dalvik/src/main/java/dalvik/system/`
+**目录**: `libcore/dalvik/src/main/java/dalvik/system/`
 
-| Class | Purpose |
+| 类 | 用途 |
 |-------|---------|
-| `BaseDexClassLoader` | Base for all DEX class loaders |
-| `PathClassLoader` | System/app class loader |
-| `DexClassLoader` | Dynamic code loading |
-| `InMemoryDexClassLoader` | In-memory DEX loading |
-| `DelegateLastClassLoader` | Delegate-last loading policy |
-| `DexFile` | Low-level DEX file access |
-| `DexPathList` | Ordered list of DEX/native paths |
-| `VMRuntime` | Runtime configuration access |
-| `VMDebug` | Debug and profiling utilities |
-| `BlockGuard` | Policy-based I/O blocking detection |
-| `CloseGuard` | Resource leak detection |
-| `ZygoteHooks` | Zygote lifecycle callbacks |
+| `BaseDexClassLoader` | 所有 DEX 类加载器的基类 |
+| `PathClassLoader` | 系统/应用类加载器 |
+| `DexClassLoader` | 动态代码加载 |
+| `InMemoryDexClassLoader` | 内存中 DEX 加载 |
+| `DelegateLastClassLoader` | 委托后置加载策略 |
+| `DexFile` | 底层 DEX 文件访问 |
+| `DexPathList` | DEX/原生路径的有序列表 |
+| `VMRuntime` | 运行时配置访问 |
+| `VMDebug` | 调试和分析工具 |
+| `BlockGuard` | 基于策略的 I/O 阻塞检测 |
+| `CloseGuard` | 资源泄漏检测 |
+| `ZygoteHooks` | Zygote 生命周期回调 |
 
-### 10.4 libcore Internal Libraries
+### 10.4 libcore 内部库
 
-**Directory**: `libcore/luni/src/main/java/libcore/`
+**目录**: `libcore/luni/src/main/java/libcore/`
 
-| Package | Purpose |
+| 包 | 用途 |
 |---------|---------|
-| `libcore.io` | Low-level I/O (Linux syscall wrappers, `Os` class) |
-| `libcore.net` | Network internals (MIME types, URI parsing) |
-| `libcore.reflect` | Reflection utilities |
-| `libcore.util` | Internal utilities (NativeAllocationRegistry, etc.) |
-| `libcore.timezone` | Timezone data management |
-| `libcore.content` | Content type utilities |
-| `libcore.icu` | ICU integration for internationalization |
+| `libcore.io` | 底层 I/O（Linux 系统调用包装器、`Os` 类） |
+| `libcore.net` | 网络内部（MIME 类型、URI 解析） |
+| `libcore.reflect` | 反射工具 |
+| `libcore.util` | 内部工具（NativeAllocationRegistry 等） |
+| `libcore.timezone` | 时区数据管理 |
+| `libcore.content` | 内容类型工具 |
+| `libcore.icu` | ICU 国际化集成 |
 
-**App Developer Impact**:
-- `BlockGuard` enforces `StrictMode` disk/network policies. Apps see `NetworkOnMainThreadException` because `BlockGuard` intercepts socket operations.
-- `CloseGuard` logs warnings when resources (streams, cursors, connections) are garbage collected without being closed.
-- `NativeAllocationRegistry` (in `libcore.util`) enables correct accounting of native memory associated with Java objects, triggering GC appropriately.
-- The `dalvik.system.VMRuntime` class exposes heap statistics and controls like `setTargetHeapUtilization()`, `getTargetSdkVersion()`, and `newNonMovableArray()`.
+**应用开发者影响**：
+- `BlockGuard` 执行 `StrictMode` 磁盘/网络策略。应用看到 `NetworkOnMainThreadException` 是因为 `BlockGuard` 拦截了套接字操作。
+- `CloseGuard` 在资源（流、游标、连接）被垃圾收集而未关闭时记录警告。
+- `NativeAllocationRegistry`（在 `libcore.util` 中）支持正确统计与 Java 对象关联的原生内存，适时触发 GC。
+- `dalvik.system.VMRuntime` 类暴露堆统计信息和控制功能，如 `setTargetHeapUtilization()`、`getTargetSdkVersion()` 和 `newNonMovableArray()`。
 
 ---
 
-## 11. Dalvik Tools
+## 11. Dalvik 工具
 
-### 11.1 Organization
+### 11.1 组织结构
 
-**Root**: `~/aosp-android-11/dalvik/`
+**根目录**: `~/aosp-android-11/dalvik/`
 
-| Directory | Purpose |
+| 目录 | 用途 |
 |-----------|---------|
-| `dx/` | Legacy DEX compiler (Java bytecode to DEX bytecode) |
-| `dexgen/` | DEX file generation utilities |
-| `tools/` | Miscellaneous tools |
-| `opcode-gen/` | Dalvik/ART opcode definition generation |
+| `dx/` | 旧版 DEX 编译器（Java 字节码到 DEX 字节码） |
+| `dexgen/` | DEX 文件生成工具 |
+| `tools/` | 杂项工具 |
+| `opcode-gen/` | Dalvik/ART 操作码定义生成 |
 
-Note: `dx` is the legacy tool; D8/R8 (in external build tools) is the modern replacement for DEX compilation.
+注：`dx` 是旧版工具；D8/R8（在外部构建工具中）是 DEX 编译的现代替代。
 
 ---
 
-## 12. Hidden API Enforcement
+## 12. 隐藏 API 执行
 
-### 12.1 Architecture
+### 12.1 架构
 
-**File**: `art/runtime/hidden_api.h`
+**文件**: `art/runtime/hidden_api.h`
 
-Android 11 enforces restrictions on non-SDK ("hidden") APIs to maintain platform stability:
+Android 11 对非 SDK（"隐藏"）API 实施限制以维护平台稳定性：
 
 ```cpp
 enum class EnforcementPolicy {
-    kDisabled = 0,    // No checks
-    kJustWarn = 1,    // Log but allow
-    kEnabled  = 2,    // Block dark grey & blacklist
+    kDisabled = 0,    // 不检查
+    kJustWarn = 1,    // 记录但允许
+    kEnabled  = 2,    // 阻止深灰名单和黑名单
 };
 
 enum class AccessMethod {
-    kNone       = 0,  // Internal test
-    kReflection = 1,  // Java reflection
-    kJNI        = 2,  // JNI access
-    kLinking    = 3,  // Class linking
+    kNone       = 0,  // 内部测试
+    kReflection = 1,  // Java 反射
+    kJNI        = 2,  // JNI 访问
+    kLinking    = 3,  // 类链接
 };
 ```
 
-### 12.2 Domain System
+### 12.2 域系统
 
-**File**: `art/runtime/base/hiddenapi_domain.h`
+**文件**: `art/runtime/base/hiddenapi_domain.h`
 
-Classes are assigned to domains:
-- **Platform domain** -- System framework code (unrestricted access)
-- **Core platform domain** -- Core libraries (restricted even for platform code)
-- **Application domain** -- App code (subject to hidden API restrictions)
+类被分配到不同的域：
+- **平台域** -- 系统框架代码（无限制访问）
+- **核心平台域** -- 核心库（即使对平台代码也有限制）
+- **应用域** -- 应用代码（受隐藏 API 限制）
 
-**App Developer Impact**:
-- Apps targeting Android 11+ are blocked from accessing blacklisted and dark-greylist APIs via reflection, JNI, or direct linking.
-- The `targetSdkVersion` determines which APIs are restricted; higher targets face stricter enforcement.
-- Violations are logged even in `kJustWarn` mode, appearing in logcat as `Accessing hidden method/field`.
-- Developers should migrate to public SDK alternatives or use `@UnsupportedAppUsage`-annotated alternatives where available.
-
----
-
-## 13. Performance Implications Summary
-
-### 13.1 Memory
-
-| Factor | 影响 | Mitigation |
-|--------|--------|------------|
-| Default 256MB heap limit | Apps hitting limit get OOM | Use `largeHeap`, optimize allocations |
-| TLAB overhead (32KB per thread) | Memory per thread | ART auto-sizes TLABs |
-| JIT code cache | Additional memory for compiled code | Bounded, GC'd when full |
-| Boot image sharing | Significant memory savings via Zygote | Automatic |
-| Profile data | Small disk overhead per app | Managed by system |
-
-### 13.2 CPU/Performance
-
-| Factor | 影响 | Mitigation |
-|--------|--------|------------|
-| JIT warmup | First-launch slower | Profile-guided compilation |
-| GC pauses (CC) | Sub-5ms typically | Generational CC reduces frequency |
-| Class verification | Startup overhead | VDEX caching avoids re-verification |
-| JNI transitions | Per-call overhead | Minimize JNI crossings, use `@CriticalNative` |
-| Read barriers | ~1-2% runtime overhead | Enables concurrent GC with much lower pauses |
-
-### 13.3 Best Practices for App Developers
-
-1. **Minimize class count at startup** -- Each class loaded requires verification and linking.
-2. **Avoid JNI for hot paths** -- Thread state transitions add overhead. Use `@FastNative` or `@CriticalNative` for simple JNI methods.
-3. **Don't call System.gc()** -- ART's GC is well-tuned; explicit GC rarely helps and can cause unnecessary pauses.
-4. **Avoid excessive allocation in loops** -- While TLAB allocation is fast, it still creates GC pressure.
-5. **Use android:largeHeap judiciously** -- Increases heap but also increases GC times.
-6. **Minimize static initializers** -- `<clinit>` blocks class loading and can form initialization cycles.
-7. **Ship baseline profiles** -- Provide profile data with your APK for day-one optimized performance.
-8. **Avoid reflection on hidden APIs** -- Will break on current and future Android versions.
-9. **Close resources explicitly** -- `CloseGuard` will log warnings, and finalization is expensive.
-10. **Prefer primitive arrays for large data** -- Objects >12KB go to large object space with different allocation patterns.
+**应用开发者影响**：
+- 目标为 Android 11+ 的应用被阻止通过反射、JNI 或直接链接访问黑名单和深灰名单 API。
+- `targetSdkVersion` 决定哪些 API 受到限制；目标值越高，执行越严格。
+- 即使在 `kJustWarn` 模式下也会记录违规，在 logcat 中显示为 `Accessing hidden method/field`。
+- 开发者应迁移到公共 SDK 替代方案，或在可用时使用标记了 `@UnsupportedAppUsage` 的替代方案。
 
 ---
 
-## 14. Key Architecture Diagrams (Textual)
+## 13. 性能影响总结
 
-### 14.1 Method Execution Flow
+### 13.1 内存
+
+| 因素 | 影响 | 缓解措施 |
+|--------|--------|------------|
+| 默认 256MB 堆限制 | 应用达到限制会 OOM | 使用 `largeHeap`，优化分配 |
+| TLAB 开销（每线程 32KB） | 每线程内存 | ART 自动调整 TLAB 大小 |
+| JIT 代码缓存 | 编译代码的额外内存 | 有上限，满时被 GC |
+| 引导镜像共享 | 通过 Zygote 显著节省内存 | 自动 |
+| 配置文件数据 | 每应用少量磁盘开销 | 由系统管理 |
+
+### 13.2 CPU/性能
+
+| 因素 | 影响 | 缓解措施 |
+|--------|--------|------------|
+| JIT 预热 | 首次启动较慢 | 配置文件引导编译 |
+| GC 暂停（CC） | 通常低于 5ms | 分代 CC 减少频率 |
+| 类验证 | 启动开销 | VDEX 缓存避免重新验证 |
+| JNI 转换 | 每次调用开销 | 最小化 JNI 调用，使用 `@CriticalNative` |
+| 读屏障 | 约 1-2% 运行时开销 | 支持并发 GC，暂停时间更低 |
+
+### 13.3 应用开发者最佳实践
+
+1. **最小化启动时的类数量** -- 每个加载的类都需要验证和链接。
+2. **避免在热路径使用 JNI** -- 线程状态转换增加开销。对简单 JNI 方法使用 `@FastNative` 或 `@CriticalNative`。
+3. **不要调用 System.gc()** -- ART 的 GC 已经过良好调优；显式 GC 很少有帮助，反而可能导致不必要的暂停。
+4. **避免在循环中过度分配** -- 虽然 TLAB 分配很快，但仍会产生 GC 压力。
+5. **谨慎使用 android:largeHeap** -- 增加堆大小但也增加 GC 时间。
+6. **最小化静态初始化器** -- `<clinit>` 阻塞类加载，可能形成初始化循环。
+7. **发布基线配置文件** -- 随 APK 提供配置文件数据以获得首日优化性能。
+8. **避免对隐藏 API 使用反射** -- 在当前和未来的 Android 版本中会中断。
+9. **显式关闭资源** -- `CloseGuard` 会记录警告，终结操作开销大。
+10. **大数据优先使用原始数组** -- 大于 12KB 的对象进入大对象空间，具有不同的分配模式。
+
+---
+
+## 14. 关键架构图（文本描述）
+
+### 14.1 方法执行流程
 
 ```
-App calls method
+应用调用方法
     |
     v
-[Entry point check]
+[入口点检查]
     |
-    +-- Already compiled (AOT/JIT)?
+    +-- 已编译（AOT/JIT）？
     |       |
     |       v
-    |   Execute native code
+    |   执行原生代码
     |       |
     |       v
-    |   [Read barriers for GC]
+    |   [GC 读屏障]
     |
-    +-- Not compiled?
+    +-- 未编译？
             |
             v
-        [Interpreter (mterp/nterp/switch)]
+        [解释器（mterp/nterp/switch）]
             |
-            +-- Increment hotness counter
+            +-- 递增热度计数器
             |       |
             |       v
-            |   Counter >= warmup_threshold?
+            |   计数器 >= warmup_threshold？
             |       |
-            |       +-- Start profiling (inline caches)
-            |       |
-            |       v
-            |   Counter >= compile_threshold?
+            |       +-- 开始分析（内联缓存）
             |       |
             |       v
-            |   [JIT thread: Optimizing Compiler]
+            |   计数器 >= compile_threshold？
             |       |
             |       v
-            |   Store in JitCodeCache
+            |   [JIT 线程：优化编译器]
             |       |
             |       v
-            |   Update method entry point
+            |   存储到 JitCodeCache
+            |       |
+            |       v
+            |   更新方法入口点
             |
-            +-- In hot loop?
+            +-- 在热循环中？
                     |
                     v
-                [OSR: On-Stack Replacement]
+                [OSR：栈上替换]
 ```
 
-### 14.2 Class Loading Flow
+### 14.2 类加载流程
 
 ```
 ClassLinker::FindClass(descriptor, class_loader)
     |
-    +-- Primitive type? --> Return cached primitive class
+    +-- 原始类型？ --> 返回缓存的原始类
     |
-    +-- Already loaded? --> LookupClass() in class table
+    +-- 已加载？ --> 在类表中 LookupClass()
     |       |
     |       v
-    |   EnsureResolved() --> Return
+    |   EnsureResolved() --> 返回
     |
-    +-- Boot class path? (class_loader == null)
+    +-- 引导类路径？（class_loader == null）
     |       |
     |       v
     |   FindInClassPath() --> DefineClass()
     |
-    +-- Array type? (descriptor starts with '[')
+    +-- 数组类型？（描述符以 '[' 开头）
     |       |
     |       v
     |   CreateArrayClass()
     |
-    +-- Known class loader type? (PCL/DLC)
+    +-- 已知类加载器类型？（PCL/DLC）
     |       |
     |       v
     |   FindClassInBaseDexClassLoader()
     |       |
-    |       +-- Check shared libraries
-    |       +-- Search parent (parent-first or delegate-last)
-    |       +-- Search own DexPathList
+    |       +-- 检查共享库
+    |       +-- 搜索父加载器（父优先或委托后置）
+    |       +-- 搜索自身 DexPathList
     |       |
     |       v
-    |   DefineClass() --> Verify --> Link --> Initialize
+    |   DefineClass() --> 验证 --> 链接 --> 初始化
     |
-    +-- Unknown class loader type?
+    +-- 未知类加载器类型？
             |
             v
-        Call ClassLoader.loadClass() in Java
+        在 Java 中调用 ClassLoader.loadClass()
 ```
 
 ---
 
-## 15. File Reference Index
+## 15. 文件参考索引
 
-### Core Runtime
-- `art/runtime/runtime.h` / `runtime.cc` -- Runtime singleton
-- `art/runtime/class_linker.h` / `class_linker.cc` -- Class loading engine
-- `art/runtime/class_loader_context.cc` -- Class loader context serialization
-- `art/runtime/art_method.h` / `art_method.cc` -- Method representation
-- `art/runtime/art_field.h` / `art_field.cc` -- Field representation
-- `art/runtime/compiler_filter.cc` -- Compiler filter definitions
+### 核心运行时
+- `art/runtime/runtime.h` / `runtime.cc` -- 运行时单例
+- `art/runtime/class_linker.h` / `class_linker.cc` -- 类加载引擎
+- `art/runtime/class_loader_context.cc` -- 类加载器上下文序列化
+- `art/runtime/art_method.h` / `art_method.cc` -- 方法表示
+- `art/runtime/art_field.h` / `art_field.cc` -- 字段表示
+- `art/runtime/compiler_filter.cc` -- 编译过滤器定义
 
 ### GC
-- `art/runtime/gc/heap.h` / `heap.cc` -- Heap management
-- `art/runtime/gc/collector_type.h` -- Collector type enumeration
-- `art/runtime/gc/gc_cause.h` -- GC trigger causes
-- `art/runtime/gc/collector/concurrent_copying.cc` -- CC collector
-- `art/runtime/gc/collector/mark_sweep.cc` -- Mark-sweep collector
-- `art/runtime/gc/space/region_space.cc` -- Region-based allocation space
-- `art/runtime/gc/accounting/card_table.cc` -- Write barrier tracking
+- `art/runtime/gc/heap.h` / `heap.cc` -- 堆管理
+- `art/runtime/gc/collector_type.h` -- 收集器类型枚举
+- `art/runtime/gc/gc_cause.h` -- GC 触发原因
+- `art/runtime/gc/collector/concurrent_copying.cc` -- CC 收集器
+- `art/runtime/gc/collector/mark_sweep.cc` -- 标记-清除收集器
+- `art/runtime/gc/space/region_space.cc` -- 基于区域的分配空间
+- `art/runtime/gc/accounting/card_table.cc` -- 写屏障跟踪
 
 ### JIT
-- `art/runtime/jit/jit.h` / `jit.cc` -- JIT compiler driver
-- `art/runtime/jit/jit_code_cache.h` -- JIT code storage
-- `art/runtime/jit/profile_saver.h` -- Profile collection
+- `art/runtime/jit/jit.h` / `jit.cc` -- JIT 编译器驱动
+- `art/runtime/jit/jit_code_cache.h` -- JIT 代码存储
+- `art/runtime/jit/profile_saver.h` -- 配置文件收集
 
-### Interpreter
-- `art/runtime/interpreter/interpreter.cc` -- Interpreter entry point
-- `art/runtime/interpreter/mterp/` -- Assembly-optimized interpreter
+### 解释器
+- `art/runtime/interpreter/interpreter.cc` -- 解释器入口点
+- `art/runtime/interpreter/mterp/` -- 汇编优化的解释器
 
-### Compiler
-- `art/compiler/optimizing/` -- Optimizing compiler
-- `art/dex2oat/dex2oat.cc` -- AOT compilation tool
+### 编译器
+- `art/compiler/optimizing/` -- 优化编译器
+- `art/dex2oat/dex2oat.cc` -- AOT 编译工具
 
 ### DEX
-- `art/libdexfile/dex/dex_file.h` -- DEX file format definition
-- `art/libdexfile/dex/compact_dex_file.h` -- Compact DEX format
+- `art/libdexfile/dex/dex_file.h` -- DEX 文件格式定义
+- `art/libdexfile/dex/compact_dex_file.h` -- 紧凑 DEX 格式
 
 ### JNI
-- `art/runtime/jni/jni_internal.cc` -- JNI implementation
-- `art/runtime/jni/java_vm_ext.cc` -- JavaVM extensions
-- `art/runtime/jni/check_jni.cc` -- JNI debugging
+- `art/runtime/jni/jni_internal.cc` -- JNI 实现
+- `art/runtime/jni/java_vm_ext.cc` -- JavaVM 扩展
+- `art/runtime/jni/check_jni.cc` -- JNI 调试
 
-### Class Loaders (Java)
+### 类加载器（Java）
 - `libcore/dalvik/src/main/java/dalvik/system/BaseDexClassLoader.java`
 - `libcore/dalvik/src/main/java/dalvik/system/PathClassLoader.java`
 - `libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java`
 - `libcore/dalvik/src/main/java/dalvik/system/InMemoryDexClassLoader.java`
 - `libcore/dalvik/src/main/java/dalvik/system/DelegateLastClassLoader.java`
 
-### Hidden API
-- `art/runtime/hidden_api.h` -- Hidden API enforcement
+### 隐藏 API
+- `art/runtime/hidden_api.h` -- 隐藏 API 执行
 
-### Core Libraries
-- `libcore/ojluni/src/main/java/java/lang/` -- java.lang package (106 files)
-- `libcore/ojluni/src/main/java/java/util/` -- java.util package (128 files)
-- `libcore/ojluni/src/main/java/java/io/` -- java.io package (88 files)
-- `libcore/dalvik/src/main/java/dalvik/system/` -- Dalvik system classes
+### 核心库
+- `libcore/ojluni/src/main/java/java/lang/` -- java.lang 包（106 个文件）
+- `libcore/ojluni/src/main/java/java/util/` -- java.util 包（128 个文件）
+- `libcore/ojluni/src/main/java/java/io/` -- java.io 包（88 个文件）
+- `libcore/dalvik/src/main/java/dalvik/system/` -- Dalvik 系统类

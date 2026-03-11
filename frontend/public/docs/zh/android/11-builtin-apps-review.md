@@ -1,26 +1,26 @@
-# Android 11 AOSP 代码审查: Built-in Apps and SystemUI
+# Android 11 AOSP 代码审查：内置应用与 SystemUI
 
-## 1. Executive Summary
+## 1. 概述
 
-This report reviews the architecture, patterns, and API usage of AOSP Android 11's built-in applications and SystemUI. These apps serve as reference implementations demonstrating how Google engineers use the Android framework APIs. The review covers SystemUI (status bar, notifications, quick settings, lock screen), the Settings app, Launcher3, and select other built-in apps. Key architectural patterns include Dagger dependency injection in SystemUI, the PreferenceController pattern in Settings, and the state machine architecture in Launcher3.
+本报告审查了 AOSP Android 11 内置应用和 SystemUI 的架构、模式和 API 使用情况。这些应用作为参考实现，展示了 Google 工程师如何使用 Android 框架 API。审查内容涵盖 SystemUI（状态栏、通知、快捷设置、锁屏）、设置应用、Launcher3 以及其他精选内置应用。主要架构模式包括 SystemUI 中的 Dagger 依赖注入、设置中的 PreferenceController 模式以及 Launcher3 中的状态机架构。
 
 ---
 
-## 2. SystemUI Architecture
+## 2. SystemUI 架构
 
-**Source:** `frameworks/base/packages/SystemUI/`
+**源码位置：** `frameworks/base/packages/SystemUI/`
 
-SystemUI is the most architecturally sophisticated AOSP app. It manages the status bar, notification shade, quick settings panel, lock screen, volume controls, screen recording, bubbles, device controls, and more.
+SystemUI 是 AOSP 中架构最复杂的应用。它管理状态栏、通知面板、快捷设置面板、锁屏、音量控制、屏幕录制、气泡、设备控制等功能。
 
-### 2.1 Application Bootstrap
+### 2.1 应用引导启动
 
-**Key file:** `SystemUIApplication.java`
+**关键文件：** `SystemUIApplication.java`
 
-SystemUI runs as a persistent system process with `android.uid.systemui` shared UID. The application bootstraps through:
+SystemUI 作为持久系统进程运行，使用 `android.uid.systemui` 共享 UID。应用通过以下方式引导启动：
 
-1. `SystemUIAppComponentFactory` initializes the Dagger dependency graph before `Application.onCreate()`
-2. `SystemUIApplication.onCreate()` obtains `SystemUIRootComponent` from `SystemUIFactory`
-3. `startServicesIfNeeded()` loads service components from a resource array, instantiates them via reflection or Dagger, and calls `start()` on each
+1. `SystemUIAppComponentFactory` 在 `Application.onCreate()` 之前初始化 Dagger 依赖图
+2. `SystemUIApplication.onCreate()` 从 `SystemUIFactory` 获取 `SystemUIRootComponent`
+3. `startServicesIfNeeded()` 从资源数组中加载服务组件，通过反射或 Dagger 实例化它们，并对每个组件调用 `start()`
 
 ```
 SystemUIAppComponentFactory -> SystemUIApplication.onCreate()
@@ -28,113 +28,113 @@ SystemUIAppComponentFactory -> SystemUIApplication.onCreate()
     -> startServicesIfNeeded() -> instantiate SystemUI[] services -> start()
 ```
 
-Each service extends the abstract `SystemUI` base class, which provides:
-- `start()` -- initialization entry point
-- `onBootCompleted()` -- post-boot callback
-- `onConfigurationChanged()` -- config change handling
-- `dump()` -- dumpsys integration via `Dumpable` interface
+每个服务都继承抽象基类 `SystemUI`，该基类提供：
+- `start()` -- 初始化入口点
+- `onBootCompleted()` -- 启动完成后的回调
+- `onConfigurationChanged()` -- 配置变更处理
+- `dump()` -- 通过 `Dumpable` 接口集成 dumpsys
 
-### 2.2 Dependency Injection with Dagger
+### 2.2 使用 Dagger 进行依赖注入
 
-**Key files:**
+**关键文件：**
 - `dagger/SystemUIRootComponent.java`
 - `dagger/SystemUIModule.java`
 - `dagger/DependencyProvider.java`
 - `dagger/DependencyBinder.java`
 - `Dependency.java`
 
-SystemUI uses Dagger 2 for dependency injection. The root component `SystemUIRootComponent` is annotated `@Singleton` and composed of multiple modules:
+SystemUI 使用 Dagger 2 进行依赖注入。根组件 `SystemUIRootComponent` 标注了 `@Singleton` 注解，由多个模块组成：
 
-| 模块 | Purpose |
+| 模块 | 用途 |
 |--------|---------|
-| `SystemUIModule` | Core bindings (boot cache, component helper, concurrency) |
-| `SystemUIDefaultModule` | Default implementations of interfaces |
-| `SystemServicesModule` | Android system service bindings (WindowManager, PackageManager, etc.) |
-| `DependencyProvider` | Legacy provider-style bindings (`@Provides`) |
-| `DependencyBinder` | Interface-to-implementation bindings (`@Binds`) |
-| `SystemUIBinder` | Bindings for SystemUI service components |
-| `PipModule` | Picture-in-picture subcomponents |
+| `SystemUIModule` | 核心绑定（启动缓存、组件辅助、并发） |
+| `SystemUIDefaultModule` | 接口的默认实现 |
+| `SystemServicesModule` | Android 系统服务绑定（WindowManager、PackageManager 等） |
+| `DependencyProvider` | 遗留的 Provider 风格绑定（`@Provides`） |
+| `DependencyBinder` | 接口到实现的绑定（`@Binds`） |
+| `SystemUIBinder` | SystemUI 服务组件的绑定 |
+| `PipModule` | 画中画子组件 |
 
-Subcomponents for scoped injection:
-- `StatusBarComponent` -- scoped to StatusBar lifecycle
-- `NotificationRowComponent` -- per-notification row
-- `ExpandableNotificationRowComponent` -- expandable notification rows
+作用域注入的子组件：
+- `StatusBarComponent` -- 作用域限定于 StatusBar 生命周期
+- `NotificationRowComponent` -- 每个通知行
+- `ExpandableNotificationRowComponent` -- 可展开的通知行
 
-The legacy `Dependency.java` acts as a service locator (pre-Dagger migration artifact) using an `ArrayMap` of lazy initializers. New code uses `@Inject` constructor injection.
+遗留的 `Dependency.java` 充当服务定位器（Dagger 迁移前的产物），使用 `ArrayMap` 存储懒初始化器。新代码使用 `@Inject` 构造函数注入。
 
-**Lesson for app developers:** SystemUI's migration from service locator (`Dependency.java`) to constructor injection demonstrates the recommended Dagger adoption path for large apps.
+**对应用开发者的启示：** SystemUI 从服务定位器（`Dependency.java`）到构造函数注入的迁移过程，展示了大型应用推荐的 Dagger 采用路径。
 
-### 2.3 Status Bar (`StatusBar.java`)
+### 2.3 状态栏（`StatusBar.java`）
 
-**Key file:** `statusbar/phone/StatusBar.java` (4,411 lines)
+**关键文件：** `statusbar/phone/StatusBar.java`（4,411 行）
 
-`StatusBar` extends `SystemUI` and is the central coordinator for the phone's status bar UI. It implements multiple interfaces:
+`StatusBar` 继承 `SystemUI`，是手机状态栏 UI 的中央协调器。它实现了多个接口：
 
-- `ActivityStarter` -- launching activities from system UI context
-- `KeyguardStateController.Callback` -- lock screen state changes
-- `CommandQueue.Callbacks` -- IPC commands from system_server
-- `ColorExtractor.OnColorsChangedListener` -- wallpaper color changes
-- `ConfigurationListener` -- configuration (rotation, density) changes
-- `StatusBarStateController.StateListener` -- shade/keyguard state transitions
-- `BatteryController.BatteryStateChangeCallback` -- battery status
-- `LifecycleOwner` -- AndroidX lifecycle integration
+- `ActivityStarter` -- 从系统 UI 上下文启动 Activity
+- `KeyguardStateController.Callback` -- 锁屏状态变化
+- `CommandQueue.Callbacks` -- 来自 system_server 的 IPC 命令
+- `ColorExtractor.OnColorsChangedListener` -- 壁纸颜色变化
+- `ConfigurationListener` -- 配置（旋转、密度）变化
+- `StatusBarStateController.StateListener` -- 通知面板/锁屏状态转换
+- `BatteryController.BatteryStateChangeCallback` -- 电池状态
+- `LifecycleOwner` -- AndroidX 生命周期集成
 
-The status bar manages three visual states via `StatusBarState`:
-1. **SHADE** -- normal status bar with pull-down notification shade
-2. **KEYGUARD** -- lock screen
-3. **SHADE_LOCKED** -- notification shade pulled down on lock screen
+状态栏通过 `StatusBarState` 管理三种视觉状态：
+1. **SHADE** -- 正常状态栏，可下拉通知面板
+2. **KEYGUARD** -- 锁屏
+3. **SHADE_LOCKED** -- 锁屏上下拉的通知面板
 
-Key injected dependencies include: `NotificationsController`, `BubbleController`, `NavigationBarController`, `BrightnessMirrorController`, `KeyguardViewMediator`, `BiometricUnlockController`, `NotificationPanelViewController`.
+关键注入依赖包括：`NotificationsController`、`BubbleController`、`NavigationBarController`、`BrightnessMirrorController`、`KeyguardViewMediator`、`BiometricUnlockController`、`NotificationPanelViewController`。
 
-### 2.4 Notification Shade
+### 2.4 通知面板
 
-**Key file:** `statusbar/phone/NotificationPanelViewController.java`
+**关键文件：** `statusbar/phone/NotificationPanelViewController.java`
 
-The notification panel is managed by `NotificationPanelViewController`, which handles:
-- Touch event processing for swipe-to-expand/collapse
-- Coordinating QS panel expansion with notification list scrolling
-- Keyguard clock and status display
-- Biometric unlock animations
-- Media player integration
+通知面板由 `NotificationPanelViewController` 管理，负责处理：
+- 滑动展开/收起的触摸事件处理
+- 协调快捷设置面板展开与通知列表滚动
+- 锁屏时钟和状态显示
+- 生物识别解锁动画
+- 媒体播放器集成
 
-The notification system uses a complex pipeline:
+通知系统使用一个复杂的管道：
 ```
-NotificationListener (receives from system_server)
-    -> NotificationEntryManager (manages notification entries)
-    -> NotificationFilter (visibility filtering)
-    -> NotificationGroupManager (grouping logic)
-    -> VisualStabilityManager (prevents reordering during interaction)
-    -> NotificationViewHierarchyManager (view binding)
+NotificationListener (从 system_server 接收)
+    -> NotificationEntryManager (管理通知条目)
+    -> NotificationFilter (可见性过滤)
+    -> NotificationGroupManager (分组逻辑)
+    -> VisualStabilityManager (防止交互时重新排序)
+    -> NotificationViewHierarchyManager (视图绑定)
 ```
 
-### 2.5 Quick Settings
+### 2.5 快捷设置
 
-**Key files:**
-- `qs/QSTileHost.java` -- tile management and lifecycle
-- `qs/tileimpl/QSTileImpl.java` -- abstract base for all tiles
-- `qs/tiles/` -- 20 built-in tile implementations
+**关键文件：**
+- `qs/QSTileHost.java` -- 磁贴管理和生命周期
+- `qs/tileimpl/QSTileImpl.java` -- 所有磁贴的抽象基类
+- `qs/tiles/` -- 20 个内置磁贴实现
 
-#### QSTileImpl Architecture
+#### QSTileImpl 架构
 
-`QSTileImpl<TState extends State>` is the base class for all quick settings tiles. It uses a generic state pattern:
+`QSTileImpl<TState extends State>` 是所有快捷设置磁贴的基类。它使用泛型状态模式：
 
-- State management runs on a background `Looper` via inner `Handler H`
-- UI updates are posted to the main thread via `mUiHandler`
-- Each tile implements `handleUpdateState(TState state, Object arg)` to populate its state
-- State changes trigger callbacks to registered `QSTile.Callback` listeners
-- Tiles implement `LifecycleOwner` for lifecycle-aware observation
+- 状态管理通过内部 `Handler H` 在后台 `Looper` 上运行
+- UI 更新通过 `mUiHandler` 发布到主线程
+- 每个磁贴实现 `handleUpdateState(TState state, Object arg)` 来填充其状态
+- 状态变化触发已注册 `QSTile.Callback` 监听器的回调
+- 磁贴实现 `LifecycleOwner` 以支持生命周期感知的观察
 
-Tile lifecycle:
+磁贴生命周期：
 ```
 QSTileHost.createTile(spec) -> QSFactory.createTile(spec)
     -> tile.initialize() -> tile.handleSetListening(true)
     -> tile.refreshState() -> tile.handleUpdateState()
 ```
 
-**Built-in tiles** (in `qs/tiles/`):
-`WifiTile`, `BluetoothTile`, `CellularTile`, `BatterySaverTile`, `DndTile`, `FlashlightTile`, `RotationLockTile`, `LocationTile`, `CastTile`, `HotspotTile`, `AirplaneModeTile`, `NfcTile`, `DataSaverTile`, `NightDisplayTile`, `ColorInversionTile`, `UiModeNightTile`, `ScreenRecordTile`, `UserTile`
+**内置磁贴**（在 `qs/tiles/` 中）：
+`WifiTile`、`BluetoothTile`、`CellularTile`、`BatterySaverTile`、`DndTile`、`FlashlightTile`、`RotationLockTile`、`LocationTile`、`CastTile`、`HotspotTile`、`AirplaneModeTile`、`NfcTile`、`DataSaverTile`、`NightDisplayTile`、`ColorInversionTile`、`UiModeNightTile`、`ScreenRecordTile`、`UserTile`
 
-**Example -- WifiTile pattern:**
+**示例 -- WifiTile 模式：**
 ```java
 public class WifiTile extends QSTileImpl<SignalState> {
     @Inject
@@ -142,185 +142,185 @@ public class WifiTile extends QSTileImpl<SignalState> {
             ActivityStarter activityStarter) {
         super(host);
         mController = networkController;
-        mController.observe(getLifecycle(), mSignalCallback);  // lifecycle-aware
+        mController.observe(getLifecycle(), mSignalCallback);  // 生命周期感知
     }
 }
 ```
 
-The `QSTileHost` reads tile specs from `Settings.Secure.QS_TILES` and uses `TunerService` to observe changes. Third-party tiles use the `TileService` API through `CustomTile` and `TileLifecycleManager`.
+`QSTileHost` 从 `Settings.Secure.QS_TILES` 读取磁贴规格，并使用 `TunerService` 来观察变化。第三方磁贴通过 `CustomTile` 和 `TileLifecycleManager` 使用 `TileService` API。
 
-### 2.6 Lock Screen (Keyguard)
+### 2.6 锁屏（Keyguard）
 
-**Key file:** `keyguard/KeyguardViewMediator.java`
+**关键文件：** `keyguard/KeyguardViewMediator.java`
 
-`KeyguardViewMediator` extends `SystemUI` and coordinates the lock screen:
-- Listens to `KeyguardUpdateMonitor` for biometric events, SIM state, trust agents
-- Manages lock/unlock transitions with `KeyguardViewController`
-- Handles lock timeout via `AlarmManager`
-- Coordinates with `BiometricUnlockController` for fingerprint/face unlock
-- Uses `LockPatternUtils` for credential verification
-- Integrates with `DeviceConfig` for feature flags
+`KeyguardViewMediator` 继承 `SystemUI` 并协调锁屏：
+- 监听 `KeyguardUpdateMonitor` 的生物识别事件、SIM 卡状态、信任代理
+- 使用 `KeyguardViewController` 管理锁定/解锁过渡
+- 通过 `AlarmManager` 处理锁定超时
+- 与 `BiometricUnlockController` 协调指纹/面部解锁
+- 使用 `LockPatternUtils` 进行凭据验证
+- 与 `DeviceConfig` 集成以支持功能开关
 
-### 2.7 New Android 11 Features in SystemUI
+### 2.7 Android 11 中 SystemUI 的新功能
 
-#### Device Controls (`controls/`)
-- `ControlsController` interface manages favorites and communicates with `ControlsProviderService` implementations
-- Uses binding pattern with `ControlsBindingController` for service communication
-- UI handled by `ControlsUiController`
+#### 设备控制（`controls/`）
+- `ControlsController` 接口管理收藏夹，并与 `ControlsProviderService` 实现进行通信
+- 使用 `ControlsBindingController` 的绑定模式进行服务通信
+- UI 由 `ControlsUiController` 处理
 
-#### Media Controls (`media/`)
-Android 11 introduced the redesigned media player in notification shade:
-- `MediaDataManager` -- central data manager for media sessions (Kotlin)
-- `MediaControlPanel` -- UI for individual media controls
-- `MediaCarouselController` -- scrollable carousel of media players
-- `MediaHierarchyManager` -- manages media player placement across QS/notification/keyguard
-- `SeekBarViewModel` / `SeekBarObserver` -- MVVM pattern for seek bar
-- `MediaResumeListener` -- resumable media session tracking
+#### 媒体控制（`media/`）
+Android 11 引入了通知面板中重新设计的媒体播放器：
+- `MediaDataManager` -- 媒体会话的中央数据管理器（Kotlin）
+- `MediaControlPanel` -- 单个媒体控制的 UI
+- `MediaCarouselController` -- 可滚动的媒体播放器轮播
+- `MediaHierarchyManager` -- 管理媒体播放器在快捷设置/通知/锁屏之间的位置
+- `SeekBarViewModel` / `SeekBarObserver` -- 进度条的 MVVM 模式
+- `MediaResumeListener` -- 可恢复媒体会话跟踪
 
-#### Bubbles (`bubbles/`)
-- `BubbleController` -- main controller for bubble management
-- `BubbleData` -- data model for active bubbles
-- `BubbleExpandedView` -- expanded bubble view
-- `BubbleDataRepository` (Kotlin) -- persistence layer
+#### 气泡（`bubbles/`）
+- `BubbleController` -- 气泡管理的主控制器
+- `BubbleData` -- 活跃气泡的数据模型
+- `BubbleExpandedView` -- 展开的气泡视图
+- `BubbleDataRepository`（Kotlin）-- 持久化层
 
-### 2.8 SystemUI AndroidManifest Permissions
+### 2.8 SystemUI AndroidManifest 权限
 
-SystemUI declares over 100 permissions in its manifest, including privileged system permissions:
+SystemUI 在其清单中声明了超过 100 个权限，包括特权系统权限：
 
-| 分类 | Example Permissions |
+| 类别 | 示例权限 |
 |----------|-------------------|
-| Status bar | `STATUS_BAR_SERVICE`, `STATUS_BAR`, `EXPAND_STATUS_BAR` |
-| Networking | `BLUETOOTH_PRIVILEGED`, `NETWORK_SETTINGS`, `TETHER_PRIVILEGED` |
-| Hardware | `DEVICE_POWER`, `CONTROL_DISPLAY_BRIGHTNESS`, `MANAGE_USB` |
-| Activity management | `REAL_GET_TASKS`, `REMOVE_TASKS`, `START_ACTIVITIES_FROM_BACKGROUND` |
-| User management | `MANAGE_USERS`, `INTERACT_ACROSS_USERS_FULL` |
-| Security | `MANAGE_BIOMETRIC`, `CONTROL_KEYGUARD_SECURE_NOTIFICATIONS` |
+| 状态栏 | `STATUS_BAR_SERVICE`、`STATUS_BAR`、`EXPAND_STATUS_BAR` |
+| 网络 | `BLUETOOTH_PRIVILEGED`、`NETWORK_SETTINGS`、`TETHER_PRIVILEGED` |
+| 硬件 | `DEVICE_POWER`、`CONTROL_DISPLAY_BRIGHTNESS`、`MANAGE_USB` |
+| Activity 管理 | `REAL_GET_TASKS`、`REMOVE_TASKS`、`START_ACTIVITIES_FROM_BACKGROUND` |
+| 用户管理 | `MANAGE_USERS`、`INTERACT_ACROSS_USERS_FULL` |
+| 安全 | `MANAGE_BIOMETRIC`、`CONTROL_KEYGUARD_SECURE_NOTIFICATIONS` |
 
-The `coreApp="true"` flag and `android.uid.systemui` shared UID grant SystemUI elevated privileges unavailable to third-party apps.
+`coreApp="true"` 标志和 `android.uid.systemui` 共享 UID 赋予 SystemUI 第三方应用无法获得的提升权限。
 
 ---
 
-## 3. Settings App Architecture
+## 3. 设置应用架构
 
-**Source:** `packages/apps/Settings/`
+**源码位置：** `packages/apps/Settings/`
 
-### 3.1 App Structure Overview
+### 3.1 应用结构概览
 
-The Settings app uses a fragment-based architecture with two entry points:
+设置应用使用基于 Fragment 的架构，有两个入口点：
 
-1. **SettingsHomepageActivity** (`FragmentActivity`) -- the main settings screen
-   - Hosts `TopLevelSettings` fragment in `main_content` container
-   - Hosts `ContextualCardsFragment` for contextual suggestions (high-RAM devices only)
-   - Uses `AvatarViewMixin` as a lifecycle observer for user avatar
+1. **SettingsHomepageActivity**（`FragmentActivity`）-- 设置主界面
+   - 在 `main_content` 容器中承载 `TopLevelSettings` Fragment
+   - 承载 `ContextualCardsFragment` 用于上下文建议（仅限高内存设备）
+   - 使用 `AvatarViewMixin` 作为用户头像的生命周期观察者
 
-2. **SettingsActivity** (`SettingsBaseActivity`) -- hosts sub-setting screens
-   - Supports `EXTRA_SHOW_FRAGMENT` to directly launch specific preference fragments
-   - Manages fragment back stack with `FragmentManager.OnBackStackChangedListener`
-   - Integrates with setup wizard via `WizardManagerHelper`
+2. **SettingsActivity**（`SettingsBaseActivity`）-- 承载子设置界面
+   - 支持 `EXTRA_SHOW_FRAGMENT` 以直接启动特定偏好设置 Fragment
+   - 使用 `FragmentManager.OnBackStackChangedListener` 管理 Fragment 返回栈
+   - 通过 `WizardManagerHelper` 与设置向导集成
 
-### 3.2 DashboardFragment Pattern
+### 3.2 DashboardFragment 模式
 
-**Key file:** `dashboard/DashboardFragment.java`
+**关键文件：** `dashboard/DashboardFragment.java`
 
-`DashboardFragment` is the base class for most Settings screens. It extends `SettingsPreferenceFragment` and introduces a two-source preference system:
+`DashboardFragment` 是大多数设置界面的基类。它继承 `SettingsPreferenceFragment` 并引入了双源偏好设置系统：
 
-1. **Static preferences** defined in XML (`getPreferenceScreenResId()`)
-2. **Dynamic preferences** injected at runtime from `DashboardCategory` tiles
+1. **静态偏好设置** -- 在 XML 中定义（`getPreferenceScreenResId()`）
+2. **动态偏好设置** -- 在运行时从 `DashboardCategory` 磁贴注入
 
-The preference controller loading is a key pattern:
+偏好设置控制器加载是一个关键模式：
 ```java
-// In DashboardFragment.onAttach():
-// 1. Load controllers from code
+// 在 DashboardFragment.onAttach() 中：
+// 1. 从代码加载控制器
 List<AbstractPreferenceController> controllersFromCode = createPreferenceControllers(context);
-// 2. Load controllers from XML (android:controller attribute)
+// 2. 从 XML 加载控制器（android:controller 属性）
 List<BasePreferenceController> controllersFromXml =
     PreferenceControllerListHelper.getPreferenceControllersFromXml(context, getPreferenceScreenResId());
-// 3. Filter duplicates, merge, and bind to preferences
+// 3. 过滤重复项，合并，并绑定到偏好设置
 ```
 
-### 3.3 BasePreferenceController Hierarchy
+### 3.3 BasePreferenceController 层次结构
 
-**Key file:** `core/BasePreferenceController.java`
+**关键文件：** `core/BasePreferenceController.java`
 
-The controller hierarchy provides a clean separation of UI logic from preference display:
+控制器层次结构提供了 UI 逻辑与偏好设置显示的清晰分离：
 
 ```
 AbstractPreferenceController (settingslib)
     |
-    +-- BasePreferenceController (implements Sliceable)
+    +-- BasePreferenceController (实现 Sliceable)
         |
-        +-- TogglePreferenceController  -- for boolean settings
-        +-- SliderPreferenceController   -- for slider/seekbar settings
-        +-- LiveDataController           -- for LiveData-backed settings
+        +-- TogglePreferenceController  -- 用于布尔设置
+        +-- SliderPreferenceController   -- 用于滑块/拖动条设置
+        +-- LiveDataController           -- 用于 LiveData 支持的设置
 ```
 
-`BasePreferenceController` defines availability status constants that control both visibility and searchability:
-- `AVAILABLE` (0) -- visible and searchable
-- `AVAILABLE_UNSEARCHABLE` (1) -- visible but not searchable
-- `CONDITIONALLY_UNAVAILABLE` (2) -- temporarily hidden
-- `UNSUPPORTED_ON_DEVICE` (3) -- never available on this device
-- `DISABLED_FOR_USER` (4) -- blocked by user restrictions
-- `DISABLED_DEPENDENT_SETTING` (5) -- blocked by dependent setting
+`BasePreferenceController` 定义了控制可见性和可搜索性的可用状态常量：
+- `AVAILABLE` (0) -- 可见且可搜索
+- `AVAILABLE_UNSEARCHABLE` (1) -- 可见但不可搜索
+- `CONDITIONALLY_UNAVAILABLE` (2) -- 暂时隐藏
+- `UNSUPPORTED_ON_DEVICE` (3) -- 在此设备上永不可用
+- `DISABLED_FOR_USER` (4) -- 被用户限制阻止
+- `DISABLED_DEPENDENT_SETTING` (5) -- 被依赖设置阻止
 
-**TogglePreferenceController** demonstrates the template method pattern:
+**TogglePreferenceController** 演示了模板方法模式：
 ```java
 public abstract class TogglePreferenceController extends BasePreferenceController {
-    public abstract boolean isChecked();       // read current state
-    public abstract boolean setChecked(boolean isChecked);  // write state
-    // updateState() automatically syncs UI with isChecked()
+    public abstract boolean isChecked();       // 读取当前状态
+    public abstract boolean setChecked(boolean isChecked);  // 写入状态
+    // updateState() 自动将 UI 与 isChecked() 同步
 }
 ```
 
-### 3.4 FeatureFactory Pattern
+### 3.4 FeatureFactory 模式
 
-**Key file:** `overlay/FeatureFactory.java`
+**关键文件：** `overlay/FeatureFactory.java`
 
-Settings uses an abstract factory pattern for OEM customization. `FeatureFactory` is loaded at runtime from a resource-configured class name (`R.string.config_featureFactory`):
+设置使用抽象工厂模式进行 OEM 定制。`FeatureFactory` 在运行时从资源配置的类名（`R.string.config_featureFactory`）加载：
 
 ```java
 sFactory = (FeatureFactory) context.getClassLoader()
     .loadClass(clsName).newInstance();
 ```
 
-Feature providers include:
-- `DashboardFeatureProvider` -- dashboard tile handling
-- `SearchFeatureProvider` -- settings search
-- `MetricsFeatureProvider` -- analytics logging
-- `SecurityFeatureProvider` -- security settings
-- `PowerUsageFeatureProvider` -- battery stats
-- `SuggestionFeatureProvider` -- setup suggestions
-- `PanelFeatureProvider` -- Settings panels (Android 10+)
-- `ContextualCardFeatureProvider` -- contextual cards
+功能提供者包括：
+- `DashboardFeatureProvider` -- 仪表盘磁贴处理
+- `SearchFeatureProvider` -- 设置搜索
+- `MetricsFeatureProvider` -- 分析日志记录
+- `SecurityFeatureProvider` -- 安全设置
+- `PowerUsageFeatureProvider` -- 电池统计
+- `SuggestionFeatureProvider` -- 设置建议
+- `PanelFeatureProvider` -- 设置面板（Android 10+）
+- `ContextualCardFeatureProvider` -- 上下文卡片
 
-**Lesson for app developers:** This pattern enables clean product-line engineering where OEMs override behavior without forking the codebase.
+**对应用开发者的启示：** 此模式支持清晰的产品线工程，OEM 可以在不分叉代码库的情况下覆盖行为。
 
-### 3.5 Settings Slices
+### 3.5 设置 Slices
 
-**Key files:**
+**关键文件：**
 - `slices/SettingsSliceProvider.java`
 - `slices/SliceData.java`
 - `slices/SlicesDatabaseHelper.java`
 
-Settings implements `SliceProvider` to expose settings as Android Slices for inline display in other apps:
+设置实现了 `SliceProvider`，将设置项作为 Android Slices 暴露，以便在其他应用中内联显示：
 
-1. `SlicesIndexer` indexes all `BasePreferenceController` instances into a SQLite database
-2. `SettingsSliceProvider` serves Slice content by looking up controllers by URI key
-3. `SliceBroadcastReceiver` handles user actions on Slices
-4. Controllers implement `Sliceable` to define slice type and background worker
+1. `SlicesIndexer` 将所有 `BasePreferenceController` 实例索引到 SQLite 数据库中
+2. `SettingsSliceProvider` 通过 URI 键查找控制器来提供 Slice 内容
+3. `SliceBroadcastReceiver` 处理用户在 Slices 上的操作
+4. 控制器实现 `Sliceable` 以定义 Slice 类型和后台工作器
 
-The Slice pipeline:
+Slice 管道：
 ```
 SliceProvider.onBindSlice(uri)
     -> SlicesDatabaseAccessor.getSliceDataFromUri(uri)
     -> SliceBuilderUtils.buildSlice(sliceData)
-    -> BasePreferenceController (handles toggle/slider actions)
+    -> BasePreferenceController (处理开关/滑块操作)
 ```
 
-### 3.6 Search Indexing
+### 3.6 搜索索引
 
-**Key file:** `search/BaseSearchIndexProvider.java`
+**关键文件：** `search/BaseSearchIndexProvider.java`
 
-Settings implements `SearchIndexableResource` for each preference screen, enabling the settings search feature:
+设置为每个偏好设置界面实现了 `SearchIndexableResource`，以支持设置搜索功能：
 
 ```java
 @SearchIndexable(forTarget = MOBILE)
@@ -330,134 +330,134 @@ public class TopLevelSettings extends DashboardFragment {
 }
 ```
 
-`BaseSearchIndexProvider` automatically:
-- Parses XML preference screens for indexable keys
-- Filters non-indexable keys via controllers' `getAvailabilityStatus()`
-- Supports dynamic raw data indexing
+`BaseSearchIndexProvider` 自动完成以下工作：
+- 解析 XML 偏好设置界面以获取可索引的键
+- 通过控制器的 `getAvailabilityStatus()` 过滤不可索引的键
+- 支持动态原始数据索引
 
-### 3.7 Settings Manifest Highlights
+### 3.7 设置清单要点
 
-The Settings app uses `android.uid.system` shared UID and declares 100+ permissions. Notable patterns:
+设置应用使用 `android.uid.system` 共享 UID 并声明了 100 多个权限。值得注意的模式：
 
-- Multiple `<activity-alias>` entries for different entry points (WiFi settings, Bluetooth, etc.)
-- Use of `android:exported="true"` with specific intent filters
-- `READ_SEARCH_INDEXABLES` permission for search integration
-- `WRITE_SECURE_SETTINGS` for modifying system settings
+- 多个 `<activity-alias>` 条目用于不同入口点（WiFi 设置、蓝牙等）
+- 使用 `android:exported="true"` 配合特定的 Intent 过滤器
+- `READ_SEARCH_INDEXABLES` 权限用于搜索集成
+- `WRITE_SECURE_SETTINGS` 用于修改系统设置
 
 ---
 
-## 4. Launcher3 Architecture
+## 4. Launcher3 架构
 
-**Source:** `packages/apps/Launcher3/`
+**源码位置：** `packages/apps/Launcher3/`
 
-### 4.1 Core Architecture
+### 4.1 核心架构
 
-Launcher3 uses a Model-View-Controller variant with a state machine:
+Launcher3 使用 MVC 变体配合状态机：
 
 ```
-LauncherAppState (singleton) -- holds app-level state
-    -> LauncherModel -- data model, background loading
-    -> IconCache -- app icon caching
-    -> InvariantDeviceProfile -- device profile calculations
-    -> WidgetPreviewLoader -- widget preview caching
+LauncherAppState (单例) -- 持有应用级状态
+    -> LauncherModel -- 数据模型，后台加载
+    -> IconCache -- 应用图标缓存
+    -> InvariantDeviceProfile -- 设备配置计算
+    -> WidgetPreviewLoader -- 小部件预览缓存
 
-Launcher (StatefulActivity) -- main activity
-    -> StateManager<LauncherState> -- state machine
-    -> DragController -- drag and drop
-    -> Workspace (ViewGroup) -- home screen pages
-    -> AllAppsContainerView -- app drawer
-    -> Hotseat -- bottom dock
+Launcher (StatefulActivity) -- 主 Activity
+    -> StateManager<LauncherState> -- 状态机
+    -> DragController -- 拖放
+    -> Workspace (ViewGroup) -- 主屏幕页面
+    -> AllAppsContainerView -- 应用抽屉
+    -> Hotseat -- 底部快捷栏
 ```
 
-### 4.2 State Machine
+### 4.2 状态机
 
-**Key files:**
+**关键文件：**
 - `statemanager/StateManager.java`
 - `LauncherState.java`
 
-Launcher3's state management is a sophisticated finite state machine. `StateManager<STATE_TYPE>` manages transitions between states with animated property changes:
+Launcher3 的状态管理是一个精密的有限状态机。`StateManager<STATE_TYPE>` 管理状态之间的转换，并带有动画属性变化：
 
-**Defined states:**
-| State | Ordinal | 描述 |
+**定义的状态：**
+| 状态 | 序号 | 描述 |
 |-------|---------|-------------|
-| `NORMAL` | 0 | Home screen, workspace visible |
-| `SPRING_LOADED` | 1 | Drag-to-place mode |
-| `ALL_APPS` | 2 | App drawer open |
-| `OVERVIEW` | 3 | Recent apps view |
-| `OVERVIEW_PEEK` | 4 | Overview hint on home button hold |
-| `BACKGROUND_APP` | 5 | App is in foreground |
-| `HINT` | 6 | Navigation hint state |
-| `QUICK_SWITCH` | 7 | Quick switch gesture |
-| `OVERVIEW_MODAL_TASK` | 8 | Modal task in overview |
+| `NORMAL` | 0 | 主屏幕，工作区可见 |
+| `SPRING_LOADED` | 1 | 拖放放置模式 |
+| `ALL_APPS` | 2 | 应用抽屉打开 |
+| `OVERVIEW` | 3 | 最近应用视图 |
+| `OVERVIEW_PEEK` | 4 | 长按 Home 键时的概览提示 |
+| `BACKGROUND_APP` | 5 | 应用在前台 |
+| `HINT` | 6 | 导航提示状态 |
+| `QUICK_SWITCH` | 7 | 快速切换手势 |
+| `OVERVIEW_MODAL_TASK` | 8 | 概览中的模态任务 |
 
-Each `LauncherState` defines visibility flags as bitmasks:
+每个 `LauncherState` 使用位掩码定义可见性标志：
 ```java
 public static final int HOTSEAT_ICONS = 1 << 0;
 public static final int ALL_APPS_CONTENT = 1 << 4;
 public static final int OVERVIEW_BUTTONS = 1 << 6;
 ```
 
-And behavioral flags:
+以及行为标志：
 ```java
 public static final int FLAG_MULTI_PAGE = BaseState.getFlag(0);
 public static final int FLAG_WORKSPACE_ICONS_CAN_BE_DRAGGED = BaseState.getFlag(2);
 public static final int FLAG_CLOSE_POPUPS = BaseState.getFlag(6);
 ```
 
-`StateHandler` implementations animate components during transitions (workspace, all apps, overview).
+`StateHandler` 实现在转换期间为组件（工作区、所有应用、概览）添加动画。
 
-### 4.3 LauncherModel -- Data Loading
+### 4.3 LauncherModel -- 数据加载
 
-**Key file:** `LauncherModel.java`
+**关键文件：** `LauncherModel.java`
 
-`LauncherModel` extends `LauncherApps.Callback` to receive package change events and manages all data loading:
+`LauncherModel` 继承 `LauncherApps.Callback` 以接收包变更事件，并管理所有数据加载：
 
-- `LoaderTask` runs on `MODEL_EXECUTOR` (background thread) and loads workspace items, all apps, widgets, and shortcuts from the database
-- `BgDataModel` holds all in-memory data: `itemsIdMap`, `workspaceItems`, `appWidgets`, `folders`
-- `Callbacks` interface pushes loaded data back to the UI thread
-- Model update tasks (`BaseModelUpdateTask`, `PackageUpdatedTask`, `CacheDataUpdatedTask`) process changes incrementally
+- `LoaderTask` 在 `MODEL_EXECUTOR`（后台线程）上运行，从数据库加载工作区项目、所有应用、小部件和快捷方式
+- `BgDataModel` 持有所有内存数据：`itemsIdMap`、`workspaceItems`、`appWidgets`、`folders`
+- `Callbacks` 接口将加载的数据推送回 UI 线程
+- 模型更新任务（`BaseModelUpdateTask`、`PackageUpdatedTask`、`CacheDataUpdatedTask`）增量处理变更
 
-Threading model:
+线程模型：
 ```
-MODEL_EXECUTOR (background) -- data loading, DB operations
-MAIN_EXECUTOR (UI thread)   -- callback delivery, UI updates
+MODEL_EXECUTOR (后台) -- 数据加载、数据库操作
+MAIN_EXECUTOR (UI 线程) -- 回调传递、UI 更新
 ```
 
-### 4.4 LauncherProvider -- Content Provider
+### 4.4 LauncherProvider -- 内容提供者
 
-**Key file:** `LauncherProvider.java`
+**关键文件：** `LauncherProvider.java`
 
-`LauncherProvider` is a `ContentProvider` managing the launcher database (schema version 28):
+`LauncherProvider` 是一个管理启动器数据库（架构版本 28）的 `ContentProvider`：
 
-- Stores workspace items (shortcuts, folders, widgets) in `favorites` table
-- Supports batch `ContentProviderOperation` for atomic workspace updates
-- Implements grid migration (`GridSizeMigrationTask`) when device profile changes
-- Handles backup/restore via `BackupManager` notifications
-- `LauncherDbUtils` provides utility methods including `SQLiteTransaction` for safe transactions
+- 在 `favorites` 表中存储工作区项目（快捷方式、文件夹、小部件）
+- 支持批量 `ContentProviderOperation` 以实现原子化工作区更新
+- 当设备配置文件变更时实现网格迁移（`GridSizeMigrationTask`）
+- 通过 `BackupManager` 通知处理备份/恢复
+- `LauncherDbUtils` 提供实用方法，包括用于安全事务的 `SQLiteTransaction`
 
-Database schema includes: `_id`, `title`, `intent`, `container`, `screen`, `cellX`, `cellY`, `spanX`, `spanY`, `itemType`, `appWidgetId`, `appWidgetProvider`, `profileId`, and more.
+数据库架构包括：`_id`、`title`、`intent`、`container`、`screen`、`cellX`、`cellY`、`spanX`、`spanY`、`itemType`、`appWidgetId`、`appWidgetProvider`、`profileId` 等。
 
-### 4.5 Widget System
+### 4.5 小部件系统
 
-**Key files in `widget/`:**
-- `WidgetsFullSheet.java` -- full-screen widget picker
-- `WidgetsListAdapter.java` -- adapter for widget list
-- `WidgetCell.java` -- individual widget preview cell
-- `LauncherAppWidgetHostView.java` -- hosting widget views
-- `WidgetManagerHelper.java` -- wrapper around `AppWidgetManager`
-- `WidgetHostViewLoader.java` -- async widget view inflation
+**`widget/` 中的关键文件：**
+- `WidgetsFullSheet.java` -- 全屏小部件选择器
+- `WidgetsListAdapter.java` -- 小部件列表适配器
+- `WidgetCell.java` -- 单个小部件预览单元格
+- `LauncherAppWidgetHostView.java` -- 承载小部件视图
+- `WidgetManagerHelper.java` -- `AppWidgetManager` 的包装器
+- `WidgetHostViewLoader.java` -- 异步小部件视图膨胀
 
-Widget lifecycle:
+小部件生命周期：
 ```
-User picks widget -> PendingAddWidgetInfo created
+用户选择小部件 -> 创建 PendingAddWidgetInfo
     -> WidgetAddFlowHandler.startBindFlow()
     -> AppWidgetHost.allocateAppWidgetId()
     -> AppWidgetManager.bindAppWidgetIdIfAllowed()
-    -> LauncherAppWidgetHostView added to workspace
-    -> ModelWriter persists to database
+    -> LauncherAppWidgetHostView 添加到工作区
+    -> ModelWriter 持久化到数据库
 ```
 
-### 4.6 Launcher3 Manifest
+### 4.6 Launcher3 清单
 
 ```xml
 <activity android:name="com.android.launcher3.Launcher"
@@ -474,252 +474,252 @@ User picks widget -> PendingAddWidgetInfo created
 </activity>
 ```
 
-Notable attributes:
-- `singleTask` launch mode -- only one instance
-- `clearTaskOnLaunch` -- fresh state on return
-- `stateNotNeeded` -- no state saving needed (model reloads from DB)
-- `taskAffinity=""` -- separate task from launched apps
-- `resumeWhilePausing` -- faster return to home
+值得注意的属性：
+- `singleTask` 启动模式 -- 只有一个实例
+- `clearTaskOnLaunch` -- 返回时恢复初始状态
+- `stateNotNeeded` -- 不需要状态保存（模型从数据库重新加载）
+- `taskAffinity=""` -- 与已启动应用分开的任务
+- `resumeWhilePausing` -- 更快地返回主屏幕
 
-### 4.7 Plugin System
+### 4.7 插件系统
 
-Launcher3 integrates with SystemUI's plugin system:
+Launcher3 与 SystemUI 的插件系统集成：
 ```java
 public class Launcher extends StatefulActivity<LauncherState>
     implements PluginListener<OverlayPlugin> { ... }
 ```
 
-This allows dynamic UI extensions (e.g., Google Feed panel) through `LauncherOverlayManager` and `OverlayPlugin` interfaces without modifying the launcher binary.
+这允许通过 `LauncherOverlayManager` 和 `OverlayPlugin` 接口进行动态 UI 扩展（例如 Google Feed 面板），无需修改启动器二进制文件。
 
 ---
 
-## 5. Other Built-in Apps
+## 5. 其他内置应用
 
-### 5.1 Contacts App
+### 5.1 通讯录应用
 
-**Source:** `packages/apps/Contacts/`
+**源码位置：** `packages/apps/Contacts/`
 
-Architecture:
-- `ContactsApplication` -- custom Application class with `ContactPhotoManager` initialization
-- `PeopleActivity` -- main activity with contact list (tab-based UI)
-- **Loader pattern**: Uses `CursorLoader` and `AsyncTaskLoader` extensively for `ContactsProvider2` queries
-- `ContactSaveService` -- `IntentService` for background save operations
-- `DynamicShortcuts` -- publishes launcher shortcuts for frequent contacts
-- Directory structure follows feature-based organization: `activities/`, `editor/`, `detail/`, `list/`, `group/`, `quickcontact/`
+架构：
+- `ContactsApplication` -- 自定义 Application 类，包含 `ContactPhotoManager` 初始化
+- `PeopleActivity` -- 带有联系人列表的主 Activity（基于标签页的 UI）
+- **Loader 模式**：广泛使用 `CursorLoader` 和 `AsyncTaskLoader` 进行 `ContactsProvider2` 查询
+- `ContactSaveService` -- 用于后台保存操作的 `IntentService`
+- `DynamicShortcuts` -- 为常用联系人发布启动器快捷方式
+- 目录结构遵循基于功能的组织方式：`activities/`、`editor/`、`detail/`、`list/`、`group/`、`quickcontact/`
 
-Key API usage:
-- `ContactsContract` content provider for all contact data
-- `AccountManager` for multi-account support
-- NFC beam for contact sharing (`NfcHandler`)
-- `ShortcutManager` for dynamic shortcuts
+关键 API 使用：
+- `ContactsContract` 内容提供者用于所有联系人数据
+- `AccountManager` 用于多账户支持
+- NFC beam 用于联系人共享（`NfcHandler`）
+- `ShortcutManager` 用于动态快捷方式
 
 ### 5.2 DocumentsUI
 
-**Source:** `packages/apps/DocumentsUI/`
+**源码位置：** `packages/apps/DocumentsUI/`
 
-Reference implementation for the Storage Access Framework:
-- `AbstractActionHandler` / `ActionHandler` -- command pattern for user actions
-- `DirectoryLoader` -- `AsyncTaskLoader` for directory contents
-- `DocsSelectionHelper` -- multi-select support
-- `DragAndDropManager` -- cross-app drag and drop
-- Implements both picker and file manager modes
+存储访问框架的参考实现：
+- `AbstractActionHandler` / `ActionHandler` -- 用户操作的命令模式
+- `DirectoryLoader` -- 目录内容的 `AsyncTaskLoader`
+- `DocsSelectionHelper` -- 多选支持
+- `DragAndDropManager` -- 跨应用拖放
+- 实现了选择器和文件管理器两种模式
 
-### 5.3 Calendar, Camera2, Gallery2
+### 5.3 日历、Camera2、Gallery2
 
-These apps demonstrate standard Android patterns:
-- **Calendar**: Content provider queries against `CalendarContract`, sync adapter pattern
-- **Camera2**: Camera2 API usage with `CameraCaptureSession`, surface-based preview
-- **Gallery2**: `MediaStore` content provider integration, bitmap memory management
+这些应用展示了标准的 Android 模式：
+- **日历**：对 `CalendarContract` 的内容提供者查询、同步适配器模式
+- **Camera2**：Camera2 API 的使用，包括 `CameraCaptureSession`、基于 Surface 的预览
+- **Gallery2**：`MediaStore` 内容提供者集成、位图内存管理
 
 ---
 
-## 6. Common Patterns Across AOSP Apps
+## 6. AOSP 应用中的通用模式
 
-### 6.1 Architecture Patterns
+### 6.1 架构模式
 
-| Pattern | Used In | 描述 |
+| 模式 | 使用位置 | 描述 |
 |---------|---------|-------------|
-| **Dependency Injection (Dagger)** | SystemUI | Full Dagger 2 with component hierarchy |
-| **Service Locator** | SystemUI (legacy) | `Dependency.java` -- being migrated to DI |
-| **Abstract Factory** | Settings | `FeatureFactory` for OEM customization |
-| **State Machine** | Launcher3 | `StateManager` with `LauncherState` |
-| **Controller Pattern** | Settings | `BasePreferenceController` hierarchy |
-| **Observer/Callback** | All apps | Extensive use of listener interfaces |
-| **Template Method** | Settings, SystemUI | `TogglePreferenceController`, `QSTileImpl` |
-| **Command Pattern** | DocumentsUI | `ActionHandler` for user actions |
-| **MVC Variant** | Launcher3 | `LauncherModel` + `Launcher` + Views |
+| **依赖注入（Dagger）** | SystemUI | 完整的 Dagger 2 组件层次结构 |
+| **服务定位器** | SystemUI（遗留） | `Dependency.java` -- 正在迁移到 DI |
+| **抽象工厂** | 设置 | `FeatureFactory` 用于 OEM 定制 |
+| **状态机** | Launcher3 | `StateManager` 配合 `LauncherState` |
+| **控制器模式** | 设置 | `BasePreferenceController` 层次结构 |
+| **观察者/回调** | 所有应用 | 广泛使用监听器接口 |
+| **模板方法** | 设置、SystemUI | `TogglePreferenceController`、`QSTileImpl` |
+| **命令模式** | DocumentsUI | `ActionHandler` 用于用户操作 |
+| **MVC 变体** | Launcher3 | `LauncherModel` + `Launcher` + Views |
 
-### 6.2 Threading Patterns
+### 6.2 线程模式
 
-All AOSP apps follow strict threading discipline:
+所有 AOSP 应用都遵循严格的线程规范：
 
-- **Named executors**: `MODEL_EXECUTOR`, `MAIN_EXECUTOR` (Launcher3), `BG_LOOPER` (SystemUI)
-- **Background handlers**: Custom `Handler`/`Looper` pairs for specific subsystems
-- **AsyncTask**: Still used in Settings and older code (deprecated in API 30)
-- **ThreadUtils**: Utility class in settingslib for executor management
-- **@WorkerThread / @UiThread annotations**: Used for enforcement
+- **命名执行器**：`MODEL_EXECUTOR`、`MAIN_EXECUTOR`（Launcher3）、`BG_LOOPER`（SystemUI）
+- **后台 Handler**：用于特定子系统的自定义 `Handler`/`Looper` 对
+- **AsyncTask**：在设置和较旧代码中仍在使用（在 API 30 中已弃用）
+- **ThreadUtils**：settingslib 中用于执行器管理的工具类
+- **@WorkerThread / @UiThread 注解**：用于强制执行线程约束
 
-### 6.3 Content Provider Patterns
+### 6.3 内容提供者模式
 
-| App | Provider | URI Authority | Purpose |
+| 应用 | 提供者 | URI Authority | 用途 |
 |-----|----------|---------------|---------|
-| Launcher3 | `LauncherProvider` | `com.android.launcher3.settings` | Workspace persistence |
-| Settings | `SettingsSliceProvider` | `com.android.settings.slices` | Settings as Slices |
-| Settings | Search indexing | `com.android.settings` | Search results |
+| Launcher3 | `LauncherProvider` | `com.android.launcher3.settings` | 工作区持久化 |
+| 设置 | `SettingsSliceProvider` | `com.android.settings.slices` | 设置作为 Slices |
+| 设置 | 搜索索引 | `com.android.settings` | 搜索结果 |
 
-Common content provider patterns in AOSP:
-- `SQLiteTransaction` wrapper for safe transaction handling (Launcher3)
-- `ContentProviderOperation` batch operations for atomicity
-- `ContentObserver` for change notification
-- URI-based routing with `UriMatcher`
+AOSP 中常见的内容提供者模式：
+- `SQLiteTransaction` 包装器用于安全事务处理（Launcher3）
+- `ContentProviderOperation` 批量操作用于原子性
+- `ContentObserver` 用于变更通知
+- 基于 URI 的路由，使用 `UriMatcher`
 
-### 6.4 Lifecycle Integration
+### 6.4 生命周期集成
 
-AOSP apps demonstrate progressive adoption of AndroidX lifecycle:
+AOSP 应用展示了 AndroidX 生命周期的渐进式采用：
 
-- **SystemUI QSTileImpl**: Implements `LifecycleOwner` with `LifecycleRegistry` for lifecycle-aware component observation
-- **Settings**: `DashboardFragment` uses `Lifecycle` from settingslib for controller lifecycle management; `SettingsHomepageActivity` uses `getLifecycle().addObserver()` for mixins
-- **Launcher3**: Custom state lifecycle via `StateManager.StateListener`
+- **SystemUI QSTileImpl**：使用 `LifecycleRegistry` 实现 `LifecycleOwner`，用于生命周期感知的组件观察
+- **设置**：`DashboardFragment` 使用 settingslib 中的 `Lifecycle` 进行控制器生命周期管理；`SettingsHomepageActivity` 使用 `getLifecycle().addObserver()` 处理 mixin
+- **Launcher3**：通过 `StateManager.StateListener` 自定义状态生命周期
 
-### 6.5 Configuration Change Handling
+### 6.5 配置变更处理
 
 ```xml
-<!-- Launcher3 approach: handle everything in-process -->
+<!-- Launcher3 方法：在进程内处理所有变更 -->
 android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|
     orientation|screenSize|screenLayout|smallestScreenSize"
 ```
 
-- Launcher3 handles most config changes itself to avoid recreation
-- Settings uses standard activity recreation with fragment save/restore
-- SystemUI handles config changes via `ConfigurationController` broadcasting to all listeners
+- Launcher3 自行处理大多数配置变更以避免重建
+- 设置使用标准的 Activity 重建配合 Fragment 保存/恢复
+- SystemUI 通过 `ConfigurationController` 向所有监听器广播来处理配置变更
 
-### 6.6 Permission Patterns
+### 6.6 权限模式
 
-System apps use the `android:sharedUserId` mechanism for elevated access:
+系统应用使用 `android:sharedUserId` 机制获取提升的访问权限：
 
-| App | Shared UID | Effect |
+| 应用 | 共享 UID | 效果 |
 |-----|-----------|--------|
-| SystemUI | `android.uid.systemui` | SystemUI-level privileges |
-| Settings | `android.uid.system` | System-level privileges |
-| Launcher3 | (none) | Standard app permissions |
-| Contacts | (none) | Standard + dangerous permissions |
+| SystemUI | `android.uid.systemui` | SystemUI 级别权限 |
+| 设置 | `android.uid.system` | 系统级别权限 |
+| Launcher3 | （无） | 标准应用权限 |
+| 通讯录 | （无） | 标准 + 危险权限 |
 
-System apps can use `@SystemApi` and `@hide` APIs not available to third-party developers. Launcher3 is notable for operating mostly with standard app permissions, making it a better reference for third-party developers.
-
----
-
-## 7. Key API Usage Patterns for App Developers
-
-### 7.1 From SystemUI
-
-- **Custom View with WindowManager**: SystemUI adds views directly to the window via `WindowManager.addView()` with `TYPE_STATUS_BAR` -- shows how system overlay UIs work
-- **Notification Listener**: `NotificationListenerService` integration for processing notifications
-- **MediaSession observation**: Media controls demonstrate `MediaController` and `MediaSession.Callback` usage
-- **Lifecycle-aware components**: QS tiles show how to build lifecycle-aware controllers that clean up resources automatically
-
-### 7.2 From Settings
-
-- **Preference-based UI**: `DashboardFragment` + `BasePreferenceController` is the canonical pattern for settings screens
-- **SliceProvider**: `SettingsSliceProvider` shows how to expose app data as Slices
-- **Search indexing**: `BaseSearchIndexProvider` demonstrates making content searchable
-- **Deferred binding from XML**: Controllers declared in preference XML via `android:controller` attribute
-
-### 7.3 From Launcher3
-
-- **AppWidgetHost**: Complete widget hosting implementation with allocation, binding, and view management
-- **LauncherApps API**: `LauncherModel` shows proper use of `LauncherApps.Callback` for package monitoring
-- **ShortcutManager**: Shortcut pinning, querying, and display
-- **Drag and Drop**: Full drag-and-drop framework with `DragController`, `DragLayer`, `DropTarget`
-- **Content Provider with migration**: `LauncherProvider` demonstrates database schema versioning and grid migration
-
-### 7.4 From Contacts
-
-- **ContentResolver patterns**: Efficient use of `CursorLoader` with `ContactsContract`
-- **IntentService for writes**: `ContactSaveService` for background data persistence
-- **Dynamic Shortcuts**: `DynamicShortcuts` for frequently-contacted people
+系统应用可以使用第三方开发者无法获得的 `@SystemApi` 和 `@hide` API。值得注意的是 Launcher3 主要使用标准应用权限运行，使其成为第三方开发者更好的参考。
 
 ---
 
-## 8. Architectural Observations and Takeaways
+## 7. 面向应用开发者的关键 API 使用模式
 
-### 8.1 Evolution of Patterns
+### 7.1 来自 SystemUI
 
-The codebase shows clear evolution across Android versions:
-- **Old pattern**: `AsyncTask`, manual threading, service locator (`Dependency.java`)
-- **Current pattern**: Dagger injection, Kotlin coroutines/flows (in media code), lifecycle-aware components
-- **Mixed state**: Some classes (e.g., `StatusBar.java` at 4,400+ lines) are legacy monoliths being gradually decomposed
+- **自定义 View 与 WindowManager**：SystemUI 通过 `WindowManager.addView()` 使用 `TYPE_STATUS_BAR` 直接向窗口添加视图 -- 展示了系统覆盖层 UI 的工作方式
+- **通知监听器**：`NotificationListenerService` 集成用于处理通知
+- **MediaSession 观察**：媒体控制展示了 `MediaController` 和 `MediaSession.Callback` 的使用
+- **生命周期感知组件**：快捷设置磁贴展示了如何构建自动清理资源的生命周期感知控制器
 
-### 8.2 Code Organization
+### 7.2 来自设置
 
-- **Feature-based packaging**: Settings organizes by feature (`wifi/`, `bluetooth/`, `notification/`)
-- **Layer-based packaging**: SystemUI organizes by architectural layer (`statusbar/`, `qs/`, `keyguard/`)
-- **Hybrid**: Launcher3 uses both (`model/`, `widget/`, `allapps/`)
+- **基于偏好设置的 UI**：`DashboardFragment` + `BasePreferenceController` 是设置界面的标准模式
+- **SliceProvider**：`SettingsSliceProvider` 展示了如何将应用数据作为 Slices 暴露
+- **搜索索引**：`BaseSearchIndexProvider` 演示了如何使内容可搜索
+- **从 XML 延迟绑定**：通过 `android:controller` 属性在偏好设置 XML 中声明控制器
 
-### 8.3 Testability Considerations
+### 7.3 来自 Launcher3
 
-- `@VisibleForTesting` annotations are used extensively across all apps
-- SystemUI's Dagger setup enables dependency substitution in tests
-- Settings' `FeatureFactory` and controller pattern support mocking
-- Launcher3's `TestProtocol` class defines constants for UI automation tests
+- **AppWidgetHost**：完整的小部件托管实现，包括分配、绑定和视图管理
+- **LauncherApps API**：`LauncherModel` 展示了 `LauncherApps.Callback` 的正确使用方法，用于包监控
+- **ShortcutManager**：快捷方式固定、查询和显示
+- **拖放**：完整的拖放框架，包含 `DragController`、`DragLayer`、`DropTarget`
+- **带迁移的内容提供者**：`LauncherProvider` 演示了数据库架构版本控制和网格迁移
 
-### 8.4 Areas of Concern
+### 7.4 来自通讯录
 
-- `StatusBar.java` at 4,400+ lines violates single-responsibility principle (ongoing decomposition via `StatusBarComponent`)
-- `Dependency.java` service locator is a known anti-pattern (migration to Dagger ongoing)
-- Mix of Java and Kotlin across SystemUI may cause friction (media package is Kotlin, most others Java)
-- Some controllers in Settings still use deprecated `AsyncTask`
+- **ContentResolver 模式**：高效使用 `CursorLoader` 配合 `ContactsContract`
+- **IntentService 用于写入**：`ContactSaveService` 用于后台数据持久化
+- **动态快捷方式**：`DynamicShortcuts` 用于常联系人
 
 ---
 
-## 9. File Reference Index
+## 8. 架构观察与要点总结
+
+### 8.1 模式演进
+
+代码库展示了跨 Android 版本的明显演进：
+- **旧模式**：`AsyncTask`、手动线程管理、服务定位器（`Dependency.java`）
+- **当前模式**：Dagger 注入、Kotlin 协程/流（在媒体代码中）、生命周期感知组件
+- **混合状态**：某些类（例如 4,400 多行的 `StatusBar.java`）是正在逐步分解的遗留单体
+
+### 8.2 代码组织
+
+- **基于功能的包结构**：设置按功能组织（`wifi/`、`bluetooth/`、`notification/`）
+- **基于层的包结构**：SystemUI 按架构层组织（`statusbar/`、`qs/`、`keyguard/`）
+- **混合方式**：Launcher3 两种都使用（`model/`、`widget/`、`allapps/`）
+
+### 8.3 可测试性考虑
+
+- `@VisibleForTesting` 注解在所有应用中被广泛使用
+- SystemUI 的 Dagger 设置支持测试中的依赖替换
+- 设置的 `FeatureFactory` 和控制器模式支持模拟
+- Launcher3 的 `TestProtocol` 类定义了 UI 自动化测试的常量
+
+### 8.4 关注领域
+
+- 4,400 多行的 `StatusBar.java` 违反了单一职责原则（正在通过 `StatusBarComponent` 进行分解）
+- `Dependency.java` 服务定位器是已知的反模式（正在迁移到 Dagger）
+- SystemUI 中 Java 和 Kotlin 的混合可能导致摩擦（media 包是 Kotlin，大多数其他包是 Java）
+- 设置中的一些控制器仍然使用已弃用的 `AsyncTask`
+
+---
+
+## 9. 文件参考索引
 
 ### SystemUI
-| File | Path |
+| 文件 | 路径 |
 |------|------|
-| Application bootstrap | `frameworks/base/packages/SystemUI/src/com/android/systemui/SystemUIApplication.java` |
-| Base SystemUI class | `frameworks/base/packages/SystemUI/src/com/android/systemui/SystemUI.java` |
-| Status bar | `frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java` |
-| Notification panel | `frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelViewController.java` |
-| QS tile host | `frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTileHost.java` |
-| QS tile base | `frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileImpl.java` |
-| Dagger root | `frameworks/base/packages/SystemUI/src/com/android/systemui/dagger/SystemUIRootComponent.java` |
-| Dagger module | `frameworks/base/packages/SystemUI/src/com/android/systemui/dagger/SystemUIModule.java` |
-| Keyguard mediator | `frameworks/base/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java` |
-| Legacy DI | `frameworks/base/packages/SystemUI/src/com/android/systemui/Dependency.java` |
-| Device controls | `frameworks/base/packages/SystemUI/src/com/android/systemui/controls/controller/ControlsController.kt` |
-| Media controls | `frameworks/base/packages/SystemUI/src/com/android/systemui/media/MediaControlPanel.java` |
-| Manifest | `frameworks/base/packages/SystemUI/AndroidManifest.xml` |
+| 应用引导启动 | `frameworks/base/packages/SystemUI/src/com/android/systemui/SystemUIApplication.java` |
+| 基础 SystemUI 类 | `frameworks/base/packages/SystemUI/src/com/android/systemui/SystemUI.java` |
+| 状态栏 | `frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java` |
+| 通知面板 | `frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelViewController.java` |
+| 快捷设置磁贴宿主 | `frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSTileHost.java` |
+| 快捷设置磁贴基类 | `frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileImpl.java` |
+| Dagger 根组件 | `frameworks/base/packages/SystemUI/src/com/android/systemui/dagger/SystemUIRootComponent.java` |
+| Dagger 模块 | `frameworks/base/packages/SystemUI/src/com/android/systemui/dagger/SystemUIModule.java` |
+| Keyguard 中介 | `frameworks/base/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java` |
+| 遗留 DI | `frameworks/base/packages/SystemUI/src/com/android/systemui/Dependency.java` |
+| 设备控制 | `frameworks/base/packages/SystemUI/src/com/android/systemui/controls/controller/ControlsController.kt` |
+| 媒体控制 | `frameworks/base/packages/SystemUI/src/com/android/systemui/media/MediaControlPanel.java` |
+| 清单 | `frameworks/base/packages/SystemUI/AndroidManifest.xml` |
 
-### Settings
-| File | Path |
+### 设置
+| 文件 | 路径 |
 |------|------|
-| Homepage | `packages/apps/Settings/src/com/android/settings/homepage/SettingsHomepageActivity.java` |
-| Top-level settings | `packages/apps/Settings/src/com/android/settings/homepage/TopLevelSettings.java` |
-| Settings activity | `packages/apps/Settings/src/com/android/settings/SettingsActivity.java` |
-| Dashboard fragment | `packages/apps/Settings/src/com/android/settings/dashboard/DashboardFragment.java` |
-| Base controller | `packages/apps/Settings/src/com/android/settings/core/BasePreferenceController.java` |
-| Toggle controller | `packages/apps/Settings/src/com/android/settings/core/TogglePreferenceController.java` |
-| Feature factory | `packages/apps/Settings/src/com/android/settings/overlay/FeatureFactory.java` |
-| Slice provider | `packages/apps/Settings/src/com/android/settings/slices/SettingsSliceProvider.java` |
-| Search index | `packages/apps/Settings/src/com/android/settings/search/BaseSearchIndexProvider.java` |
-| Manifest | `packages/apps/Settings/AndroidManifest.xml` |
+| 主页 | `packages/apps/Settings/src/com/android/settings/homepage/SettingsHomepageActivity.java` |
+| 顶级设置 | `packages/apps/Settings/src/com/android/settings/homepage/TopLevelSettings.java` |
+| Settings Activity | `packages/apps/Settings/src/com/android/settings/SettingsActivity.java` |
+| Dashboard Fragment | `packages/apps/Settings/src/com/android/settings/dashboard/DashboardFragment.java` |
+| 基础控制器 | `packages/apps/Settings/src/com/android/settings/core/BasePreferenceController.java` |
+| 开关控制器 | `packages/apps/Settings/src/com/android/settings/core/TogglePreferenceController.java` |
+| 功能工厂 | `packages/apps/Settings/src/com/android/settings/overlay/FeatureFactory.java` |
+| Slice 提供者 | `packages/apps/Settings/src/com/android/settings/slices/SettingsSliceProvider.java` |
+| 搜索索引 | `packages/apps/Settings/src/com/android/settings/search/BaseSearchIndexProvider.java` |
+| 清单 | `packages/apps/Settings/AndroidManifest.xml` |
 
 ### Launcher3
-| File | Path |
+| 文件 | 路径 |
 |------|------|
-| Main activity | `packages/apps/Launcher3/src/com/android/launcher3/Launcher.java` |
-| App state | `packages/apps/Launcher3/src/com/android/launcher3/LauncherAppState.java` |
-| Data model | `packages/apps/Launcher3/src/com/android/launcher3/LauncherModel.java` |
-| BG data model | `packages/apps/Launcher3/src/com/android/launcher3/model/BgDataModel.java` |
-| State manager | `packages/apps/Launcher3/src/com/android/launcher3/statemanager/StateManager.java` |
-| Launcher state | `packages/apps/Launcher3/src/com/android/launcher3/LauncherState.java` |
-| Content provider | `packages/apps/Launcher3/src/com/android/launcher3/LauncherProvider.java` |
-| DB utilities | `packages/apps/Launcher3/src/com/android/launcher3/provider/LauncherDbUtils.java` |
-| Manifest | `packages/apps/Launcher3/AndroidManifest.xml` |
+| 主 Activity | `packages/apps/Launcher3/src/com/android/launcher3/Launcher.java` |
+| 应用状态 | `packages/apps/Launcher3/src/com/android/launcher3/LauncherAppState.java` |
+| 数据模型 | `packages/apps/Launcher3/src/com/android/launcher3/LauncherModel.java` |
+| 后台数据模型 | `packages/apps/Launcher3/src/com/android/launcher3/model/BgDataModel.java` |
+| 状态管理器 | `packages/apps/Launcher3/src/com/android/launcher3/statemanager/StateManager.java` |
+| 启动器状态 | `packages/apps/Launcher3/src/com/android/launcher3/LauncherState.java` |
+| 内容提供者 | `packages/apps/Launcher3/src/com/android/launcher3/LauncherProvider.java` |
+| 数据库工具 | `packages/apps/Launcher3/src/com/android/launcher3/provider/LauncherDbUtils.java` |
+| 清单 | `packages/apps/Launcher3/AndroidManifest.xml` |
 
-### Other Apps
-| File | Path |
+### 其他应用
+| 文件 | 路径 |
 |------|------|
-| Contacts manifest | `packages/apps/Contacts/AndroidManifest.xml` |
+| 通讯录清单 | `packages/apps/Contacts/AndroidManifest.xml` |
 
-All paths are relative to `~/aosp-android-11/`.
+所有路径相对于 `~/aosp-android-11/`。
