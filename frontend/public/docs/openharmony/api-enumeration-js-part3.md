@@ -1,0 +1,10462 @@
+# OpenHarmony JS/TS SDK API Enumeration — Part 3
+
+**Files covered:** 142
+
+**Total API elements:** 6392
+
+
+### cameraPicker (@ohos.multimedia.cameraPicker.d.ts)
+#### Enums
+- **PickerMediaType**
+  - `PHOTO` = 'photo'
+  - `VIDEO` = 'video'
+#### Functions
+- `pick(context: Context, mediaTypes: Array<PickerMediaType>, pickerProfile: PickerProfile): Promise<PickerResult>`
+#### Classes
+- **PickerProfile**
+  - `cameraPosition`: camera.CameraPosition
+  - `saveUri?`: string
+  - `videoDuration?`: number
+- **PickerResult**
+  - `resultCode`: number
+  - `resultUri`: string
+  - `mediaType`: PickerMediaType
+
+### drm (@ohos.multimedia.drm.d.ts)
+#### Interfaces
+- **ProvisionRequest**
+  - `data`: Uint8Array
+  - `defaultURL`: string
+- **OptionsData**
+  - `name`: string
+  - `value`: string
+- **MediaKeyRequest**
+  - `mediaKeyRequestType`: MediaKeyRequestType
+  - `data`: Uint8Array
+  - `defaultURL`: string
+- **EventInfo**
+  - `info`: Uint8Array
+  - `extraInfo`: string
+- **StatisticKeyValue**
+  - `name`: string
+  - `value`: string
+- **MediaKeyStatus**
+  - `name`: string
+  - `value`: string
+- **KeysInfo**
+  - `keyId`: Uint8Array
+  - `value`: string
+- **MediaKeySystemInfo**
+  - `uuid`: string
+  - `pssh`: Uint8Array
+- **MediaKeySystem**
+  - `getConfigurationString`: string
+  - `setConfigurationString`: void
+  - `getConfigurationByteArray`: Uint8Array
+  - `setConfigurationByteArray`: void
+  - `getStatistics`: StatisticKeyValue[]
+  - `getMaxContentProtectionLevel`: ContentProtectionLevel
+  - `generateKeySystemRequest`: Promise<ProvisionRequest>
+  - `processKeySystemResponse`: Promise<void>
+  - `getCertificateStatus`: CertificateStatus
+  - `createMediaKeySession`: MediaKeySession
+  - `createMediaKeySession`: MediaKeySession
+  - `getOfflineMediaKeyIds`: Uint8Array[]
+  - `getOfflineMediaKeyStatus`: OfflineMediaKeyStatus
+  - `clearOfflineMediaKeys`: void
+  - `destroy`: void
+- **MediaKeySession**
+  - `generateMediaKeyRequest`: Promise<MediaKeyRequest>
+  - `processMediaKeyResponse`: Promise<Uint8Array>
+  - `checkMediaKeyStatus`: MediaKeyStatus[]
+  - `clearMediaKeys`: void
+  - `generateOfflineReleaseRequest`: Promise<Uint8Array>
+  - `processOfflineReleaseResponse`: Promise<void>
+  - `restoreOfflineMediaKeys`: Promise<void>
+  - `getContentProtectionLevel`: ContentProtectionLevel
+  - `requireSecureDecoderModule`: boolean
+  - `destroy`: void
+#### Enums
+- **DrmErrorCode**
+  - `ERROR_UNKNOWN` = 24700101
+  - `MAX_SYSTEM_NUM_REACHED` = 24700103
+  - `MAX_SESSION_NUM_REACHED` = 24700104
+  - `SERVICE_FATAL_ERROR` = 24700201
+- **PreDefinedConfigName**
+  - `CONFIG_DEVICE_VENDOR` = 'vendor'
+  - `CONFIG_DEVICE_VERSION` = 'version'
+  - `CONFIG_DEVICE_DESCRIPTION` = 'description'
+  - `CONFIG_DEVICE_ALGORITHMS` = 'algorithms'
+  - `CONFIG_DEVICE_UNIQUE_ID` = 'deviceUniqueId'
+  - `CONFIG_SESSION_MAX` = 'maxSessionNum'
+  - `CONFIG_SESSION_CURRENT` = 'currentSessionNum'
+- **MediaKeyType**
+  - `MEDIA_KEY_TYPE_OFFLINE` = 0
+- **OfflineMediaKeyStatus**
+  - `OFFLINE_MEDIA_KEY_STATUS_UNKNOWN` = 0
+  - `OFFLINE_MEDIA_KEY_STATUS_USABLE` = 1
+  - `OFFLINE_MEDIA_KEY_STATUS_INACTIVE` = 2
+- **CertificateStatus**
+  - `CERT_STATUS_PROVISIONED` = 0
+- **MediaKeyRequestType**
+  - `MEDIA_KEY_REQUEST_TYPE_UNKNOWN` = 0
+  - `MEDIA_KEY_REQUEST_TYPE_INITIAL` = 1
+  - `MEDIA_KEY_REQUEST_TYPE_RENEWAL` = 2
+  - `MEDIA_KEY_REQUEST_TYPE_RELEASE` = 3
+  - `MEDIA_KEY_REQUEST_TYPE_NONE` = 4
+  - `MEDIA_KEY_REQUEST_TYPE_UPDATE` = 5
+- **ContentProtectionLevel**
+  - `CONTENT_PROTECTION_LEVEL_UNKNOWN` = 0
+#### Functions
+- `createMediaKeySystem(name: string): MediaKeySystem`
+- `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean`
+- `isMediaKeySystemSupported(name: string, mimeType: string): boolean`
+- `isMediaKeySystemSupported(name: string): boolean`
+
+### image (@ohos.multimedia.image.d.ts)
+#### Interfaces
+- **Size**
+  - `height`: number
+  - `width`: number
+- **Region**
+  - `size`: Size
+  - `x`: number
+  - `y`: number
+- **PositionArea**
+  - `pixels`: ArrayBuffer
+  - `offset`: number
+  - `stride`: number
+  - `region`: Region
+- **ImageInfo**
+  - `size`: Size
+  - `density`: number
+  - `stride`: number
+- **PackingOption**
+  - `format`: string
+  - `quality`: number
+  - `bufferSize?`: number
+- **GetImagePropertyOptions**
+  - `index?`: number
+  - `defaultValue?`: string
+- **ImagePropertyOptions**
+  - `index?`: number
+  - `defaultValue?`: string
+- **DecodingOptions**
+  - `index?`: number
+  - `sampleSize?`: number
+  - `rotate?`: number
+  - `editable?`: boolean
+  - `desiredSize?`: Size
+  - `desiredRegion?`: Region
+  - `desiredPixelFormat?`: PixelMapFormat
+  - `fitDensity?`: number
+  - `desiredColorSpace?`: colorSpaceManager.ColorSpaceManager
+- **Component**
+  - `readonly componentType`: ComponentType
+  - `readonly rowStride`: number
+  - `readonly pixelStride`: number
+  - `readonly byteBuffer`: ArrayBuffer
+- **InitializationOptions**
+  - `size`: Size
+  - `pixelFormat?`: PixelMapFormat
+  - `editable?`: boolean
+  - `alphaType?`: AlphaType
+  - `scaleMode?`: ScaleMode
+- **SourceOptions**
+  - `sourceDensity`: number
+  - `sourcePixelFormat?`: PixelMapFormat
+  - `sourceSize?`: Size
+- **PixelMap**
+  - `readonly isEditable`: boolean
+  - `readPixelsToBuffer`: Promise<void>
+  - `readPixelsToBuffer`: void
+  - `readPixels`: Promise<void>
+  - `readPixels`: void
+  - `writePixels`: Promise<void>
+  - `writePixels`: void
+  - `writeBufferToPixels`: Promise<void>
+  - `writeBufferToPixels`: void
+  - `getImageInfo`: Promise<ImageInfo>
+  - `getImageInfo`: void
+  - `getBytesNumberPerRow`: number
+  - `getPixelBytesNumber`: number
+  - `getDensity`: number
+  - `opacity`: void
+  - `opacity`: Promise<void>
+  - `createAlphaPixelmap`: Promise<PixelMap>
+  - `createAlphaPixelmap`: void
+  - `scale`: void
+  - `scale`: Promise<void>
+  - `translate`: void
+  - `translate`: Promise<void>
+  - `rotate`: void
+  - `rotate`: Promise<void>
+  - `flip`: void
+  - `flip`: Promise<void>
+  - `crop`: void
+  - `crop`: Promise<void>
+  - `getColorSpace`: colorSpaceManager.ColorSpaceManager
+  - `marshalling`: void
+  - `unmarshalling`: Promise<PixelMap>
+  - `setColorSpace`: void
+  - `readonly isStrideAlignment`: boolean
+  - `applyColorSpace`: void
+  - `applyColorSpace`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+- **ImageSource**
+  - `getImageInfo`: void
+  - `getImageInfo`: void
+  - `getImageInfo`: Promise<ImageInfo>
+  - `createPixelMap`: Promise<PixelMap>
+  - `createPixelMap`: void
+  - `createPixelMap`: void
+  - `createPixelMapList`: Promise<Array<PixelMap>>
+  - `createPixelMapList`: void
+  - `createPixelMapList`: void
+  - `getDelayTimeList`: Promise<Array<number>>
+  - `getDelayTimeList`: void
+  - `getFrameCount`: Promise<number>
+  - `getFrameCount`: void
+  - `getImageProperty`: Promise<string>
+  - `getImageProperty`: Promise<string>
+  - `getImageProperty`: void
+  - `getImageProperty`: void
+  - `modifyImageProperty`: Promise<void>
+  - `modifyImageProperty`: Promise<void>
+  - `modifyImageProperty`: void
+  - `updateData`: Promise<void>
+  - `updateData`: void
+  - `release`: void
+  - `release`: Promise<void>
+  - `readonly supportedFormats`: Array<string>
+- **ImagePacker**
+  - `packing`: void
+  - `packing`: Promise<ArrayBuffer>
+  - `packing`: void
+  - `packing`: Promise<ArrayBuffer>
+  - `packToFile`: void
+  - `packToFile`: Promise<void>
+  - `packToFile`: void
+  - `packToFile`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+  - `readonly supportedFormats`: Array<string>
+- **Image**
+  - `clipRect`: Region
+  - `readonly size`: Size
+  - `readonly format`: number
+  - `getComponent`: void
+  - `getComponent`: Promise<Component>
+  - `release`: void
+  - `release`: Promise<void>
+- **ImageReceiver**
+  - `readonly size`: Size
+  - `readonly capacity`: number
+  - `readonly format`: ImageFormat
+  - `getReceivingSurfaceId`: void
+  - `getReceivingSurfaceId`: Promise<string>
+  - `readLatestImage`: void
+  - `readLatestImage`: Promise<Image>
+  - `readNextImage`: void
+  - `readNextImage`: Promise<Image>
+  - `on`: void
+  - `release`: void
+  - `release`: Promise<void>
+- **ImageCreator**
+  - `readonly capacity`: number
+  - `readonly format`: ImageFormat
+  - `dequeueImage`: void
+  - `dequeueImage`: Promise<Image>
+  - `queueImage`: void
+  - `queueImage`: Promise<void>
+  - `on`: void
+  - `release`: void
+  - `release`: Promise<void>
+#### Enums
+- **PixelMapFormat**
+  - `UNKNOWN` = 0
+  - `RGB_565` = 2
+  - `RGBA_8888` = 3
+  - `BGRA_8888` = 4
+  - `RGB_888` = 5
+  - `ALPHA_8` = 6
+  - `RGBA_F16` = 7
+  - `NV21` = 8
+  - `NV12` = 9
+- **PropertyKey**
+  - `BITS_PER_SAMPLE` = 'BitsPerSample'
+  - `ORIENTATION` = 'Orientation'
+  - `IMAGE_LENGTH` = 'ImageLength'
+  - `IMAGE_WIDTH` = 'ImageWidth'
+  - `GPS_LATITUDE` = 'GPSLatitude'
+  - `GPS_LONGITUDE` = 'GPSLongitude'
+  - `GPS_LATITUDE_REF` = 'GPSLatitudeRef'
+  - `GPS_LONGITUDE_REF` = 'GPSLongitudeRef'
+  - `DATE_TIME_ORIGINAL` = 'DateTimeOriginal'
+  - `EXPOSURE_TIME` = 'ExposureTime'
+  - `SCENE_TYPE` = 'SceneType'
+  - `ISO_SPEED_RATINGS` = 'ISOSpeedRatings'
+  - `F_NUMBER` = 'FNumber'
+  - `DATE_TIME` = 'DateTime'
+  - `GPS_TIME_STAMP` = 'GPSTimeStamp'
+  - `GPS_DATE_STAMP` = 'GPSDateStamp'
+  - `IMAGE_DESCRIPTION` = 'ImageDescription'
+  - `MAKE` = 'Make'
+  - `MODEL` = 'Model'
+  - `PHOTO_MODE` = 'PhotoMode'
+  - `SENSITIVITY_TYPE` = 'SensitivityType'
+  - `STANDARD_OUTPUT_SENSITIVITY` = 'StandardOutputSensitivity'
+  - `RECOMMENDED_EXPOSURE_INDEX` = 'RecommendedExposureIndex'
+  - `ISO_SPEED` = 'ISOSpeedRatings'
+  - `APERTURE_VALUE` = 'ApertureValue'
+  - `EXPOSURE_BIAS_VALUE` = 'ExposureBiasValue'
+  - `METERING_MODE` = 'MeteringMode'
+  - `LIGHT_SOURCE` = 'LightSource'
+  - `FLASH` = 'Flash'
+  - `FOCAL_LENGTH` = 'FocalLength'
+  - `USER_COMMENT` = 'UserComment'
+  - `PIXEL_X_DIMENSION` = 'PixelXDimension'
+  - `PIXEL_Y_DIMENSION` = 'PixelYDimension'
+  - `WHITE_BALANCE` = 'WhiteBalance'
+  - `FOCAL_LENGTH_IN_35_MM_FILM` = 'FocalLengthIn35mmFilm'
+  - `CAPTURE_MODE` = 'HwMnoteCaptureMode'
+  - `PHYSICAL_APERTURE` = 'HwMnotePhysicalAperture'
+  - `ROLL_ANGLE` = 'HwMnoteRollAngle'
+  - `PITCH_ANGLE` = 'HwMnotePitchAngle'
+  - `SCENE_FOOD_CONF` = 'HwMnoteSceneFoodConf'
+  - `SCENE_STAGE_CONF` = 'HwMnoteSceneStageConf'
+  - `SCENE_BLUE_SKY_CONF` = 'HwMnoteSceneBlueSkyConf'
+  - `SCENE_GREEN_PLANT_CONF` = 'HwMnoteSceneGreenPlantConf'
+  - `SCENE_BEACH_CONF` = 'HwMnoteSceneBeachConf'
+  - `SCENE_SNOW_CONF` = 'HwMnoteSceneSnowConf'
+  - `SCENE_SUNSET_CONF` = 'HwMnoteSceneSunsetConf'
+  - `SCENE_FLOWERS_CONF` = 'HwMnoteSceneFlowersConf'
+  - `SCENE_NIGHT_CONF` = 'HwMnoteSceneNightConf'
+  - `SCENE_TEXT_CONF` = 'HwMnoteSceneTextConf'
+  - `FACE_COUNT` = 'HwMnoteFaceCount'
+  - `FOCUS_MODE` = 'HwMnoteFocusMode'
+- **ImageFormat**
+  - `YCBCR_422_SP` = 1000
+  - `JPEG` = 2000
+- **AlphaType**
+  - `UNKNOWN` = 0
+  - `OPAQUE` = 1
+  - `PREMUL` = 2
+  - `UNPREMUL` = 3
+- **ScaleMode**
+  - `FIT_TARGET_SIZE` = 0
+  - `CENTER_CROP` = 1
+- **ComponentType**
+  - `YUV_Y` = 1
+  - `YUV_U` = 2
+  - `YUV_V` = 3
+  - `JPEG` = 4
+#### Functions
+- `createPixelMap(colors: ArrayBuffer, options: InitializationOptions, callback: AsyncCallback<PixelMap>): void`
+- `createPixelMap(colors: ArrayBuffer, options: InitializationOptions): Promise<PixelMap>`
+- `createPixelMapFromParcel(sequence: rpc.MessageSequence): PixelMap`
+- `createPixelMapFromSurface(surfaceId: string, region: Region): Promise<PixelMap>`
+- `createImageSource(uri: string): ImageSource`
+- `createImageSource(uri: string, options: SourceOptions): ImageSource`
+- `createImageSource(fd: number): ImageSource`
+- `createImageSource(fd: number, options: SourceOptions): ImageSource`
+- `createImageSource(buf: ArrayBuffer): ImageSource`
+- `createImageSource(buf: ArrayBuffer, options: SourceOptions): ImageSource`
+- `createImageSource(rawfile: resourceManager.RawFileDescriptor, options?: SourceOptions): ImageSource`
+- `CreateIncrementalSource(buf: ArrayBuffer): ImageSource`
+- `CreateIncrementalSource(buf: ArrayBuffer, options?: SourceOptions): ImageSource`
+- `createImagePacker(): ImagePacker`
+- `createImageReceiver(width: number, height: number, format: number, capacity: number): ImageReceiver`
+- `createImageReceiver(size: Size, format: ImageFormat, capacity: number): ImageReceiver`
+- `createImageCreator(width: number, height: number, format: number, capacity: number): ImageCreator`
+- `createImageCreator(size: Size, format: ImageFormat, capacity: number): ImageCreator`
+
+### media (@ohos.multimedia.media.d.ts)
+#### Interfaces
+- **AVMetadataExtractor**
+  - `fetchMetadata`: void
+  - `fetchMetadata`: Promise<AVMetadata>
+  - `fetchAlbumCover`: void
+  - `fetchAlbumCover`: Promise<image.PixelMap>
+  - `release`: void
+  - `release`: Promise<void>
+- **AVMetadata**
+  - `album?`: string
+  - `albumArtist?`: string
+  - `artist?`: string
+  - `author?`: string
+  - `dateTime?`: string
+  - `dateTimeFormat?`: string
+  - `composer?`: string
+  - `duration?`: string
+  - `genre?`: string
+  - `hasAudio?`: string
+  - `hasVideo?`: string
+  - `mimeType?`: string
+  - `trackCount?`: string
+  - `sampleRate?`: string
+  - `title?`: string
+  - `videoHeight?`: string
+  - `videoWidth?`: string
+  - `videoOrientation?`: string
+- **AVImageGenerator**
+  - `fetchFrameByTime`: void
+  - `fetchFrameByTime`: Promise<image.PixelMap>
+  - `release`: void
+  - `release`: Promise<void>
+- **PixelMapParams**
+  - `width?`: number
+  - `height?`: number
+  - `colorFormat?`: PixelFormat
+- **AVPlayer**
+  - `prepare`: void
+  - `prepare`: Promise<void>
+  - `play`: void
+  - `play`: Promise<void>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `stop`: void
+  - `stop`: Promise<void>
+  - `reset`: void
+  - `reset`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+  - `seek`: void
+  - `setVolume`: void
+  - `getTrackDescription`: void
+  - `getTrackDescription`: Promise<Array<MediaDescription>>
+  - `url?`: string
+  - `fdSrc?`: AVFileDescriptor
+  - `dataSrc?`: AVDataSrcDescriptor
+  - `loop`: boolean
+  - `audioInterruptMode?`: audio.InterruptMode
+  - `audioRendererInfo?`: audio.AudioRendererInfo
+  - `readonly currentTime`: number
+  - `readonly duration`: number
+  - `readonly state`: AVPlayerState
+  - `surfaceId?`: string
+  - `readonly width`: number
+  - `readonly height`: number
+  - `videoScaleType?`: VideoScaleType
+  - `setSpeed`: void
+  - `setBitrate`: void
+  - `setDecryptionConfig`: void
+  - `getMediaKeySystemInfos`: Array<drm.MediaKeySystemInfo>
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `off`: void
+  - `off`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **AVFileDescriptor**
+- **AVDataSrcDescriptor**
+  - `fileSize`: number
+  - `callback`: (buffer: ArrayBuffer, length: number, pos?: number) => number
+- **AudioPlayer**
+  - `play`: void
+  - `pause`: void
+  - `stop`: void
+  - `reset`: void
+  - `seek`: void
+  - `setVolume`: void
+  - `release`: void
+  - `getTrackDescription`: void
+  - `getTrackDescription`: Promise<Array<MediaDescription>>
+  - `src`: string
+  - `fdSrc`: AVFileDescriptor
+  - `loop`: boolean
+  - `audioInterruptMode?`: audio.InterruptMode
+  - `readonly currentTime`: number
+  - `readonly duration`: number
+  - `readonly state`: AudioState
+  - `on`: void
+  - `on`: void
+- **AVRecorder**
+  - `prepare`: void
+  - `prepare`: Promise<void>
+  - `getAVRecorderConfig`: void
+  - `getAVRecorderConfig`: Promise<AVRecorderConfig>
+  - `getInputSurface`: void
+  - `getInputSurface`: Promise<string>
+  - `start`: void
+  - `start`: Promise<void>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `resume`: void
+  - `resume`: Promise<void>
+  - `stop`: void
+  - `stop`: Promise<void>
+  - `reset`: void
+  - `reset`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+  - `getCurrentAudioCapturerInfo`: void
+  - `getCurrentAudioCapturerInfo`: Promise<audio.AudioCapturerChangeInfo>
+  - `getAudioCapturerMaxAmplitude`: void
+  - `getAudioCapturerMaxAmplitude`: Promise<number>
+  - `getAvailableEncoder`: void
+  - `getAvailableEncoder`: Promise<Array<EncoderInfo>>
+  - `readonly state`: AVRecorderState
+  - `on`: void
+  - `on`: void
+  - `off`: void
+  - `off`: void
+  - `off`: void
+- **Location**
+  - `latitude`: number
+  - `longitude`: number
+- **AudioRecorderConfig**
+  - `audioEncoder?`: AudioEncoder
+  - `audioEncodeBitRate?`: number
+  - `audioSampleRate?`: number
+  - `numberOfChannels?`: number
+  - `format?`: AudioOutputFormat
+  - `uri`: string
+  - `location?`: Location
+  - `audioEncoderMime?`: CodecMimeType
+  - `fileFormat?`: ContainerFormatType
+- **AudioRecorder**
+  - `prepare`: void
+  - `start`: void
+  - `pause`: void
+  - `resume`: void
+  - `stop`: void
+  - `release`: void
+  - `reset`: void
+  - `on`: void
+- **VideoRecorder**
+  - `prepare`: void
+  - `prepare`: Promise<void>
+  - `getInputSurface`: void
+  - `getInputSurface`: Promise<string>
+  - `start`: void
+  - `start`: Promise<void>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `resume`: void
+  - `resume`: Promise<void>
+  - `stop`: void
+  - `stop`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+  - `reset`: void
+  - `reset`: Promise<void>
+  - `on`: void
+  - `readonly state`: VideoRecordState
+- **VideoPlayer**
+  - `setDisplaySurface`: void
+  - `setDisplaySurface`: Promise<void>
+  - `prepare`: void
+  - `prepare`: Promise<void>
+  - `play`: void
+  - `play`: Promise<void>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `stop`: void
+  - `stop`: Promise<void>
+  - `reset`: void
+  - `reset`: Promise<void>
+  - `seek`: void
+  - `seek`: void
+  - `seek`: Promise<number>
+  - `setVolume`: void
+  - `setVolume`: Promise<void>
+  - `release`: void
+  - `release`: Promise<void>
+  - `getTrackDescription`: void
+  - `getTrackDescription`: Promise<Array<MediaDescription>>
+  - `url`: string
+  - `fdSrc`: AVFileDescriptor
+  - `loop`: boolean
+  - `readonly currentTime`: number
+  - `readonly duration`: number
+  - `readonly state`: VideoPlayState
+  - `readonly width`: number
+  - `readonly height`: number
+  - `audioInterruptMode?`: audio.InterruptMode
+  - `videoScaleType?`: VideoScaleType
+  - `setSpeed`: void
+  - `setSpeed`: Promise<number>
+  - `on`: void
+  - `on`: void
+  - `on`: void
+- **VideoRecorderProfile**
+  - `readonly audioBitrate`: number
+  - `readonly audioChannels`: number
+  - `readonly audioCodec`: CodecMimeType
+  - `readonly audioSampleRate`: number
+  - `readonly fileFormat`: ContainerFormatType
+  - `readonly videoBitrate`: number
+  - `readonly videoCodec`: CodecMimeType
+  - `readonly videoFrameWidth`: number
+  - `readonly videoFrameHeight`: number
+  - `readonly videoFrameRate`: number
+- **VideoRecorderConfig**
+  - `audioSourceType?`: AudioSourceType
+  - `videoSourceType`: VideoSourceType
+  - `profile`: VideoRecorderProfile
+  - `url`: string
+  - `rotation?`: number
+  - `location?`: Location
+- **EncoderInfo**
+  - `mimeType`: CodecMimeType
+  - `type`: string
+  - `bitRate?`: Range
+  - `frameRate?`: Range
+  - `width?`: Range
+  - `height?`: Range
+  - `channels?`: Range
+  - `sampleRate?`: Array<number>
+- **Range**
+  - `min`: number
+  - `max`: number
+- **AVRecorderProfile**
+  - `audioBitrate?`: number
+  - `audioChannels?`: number
+  - `audioCodec?`: CodecMimeType
+  - `audioSampleRate?`: number
+  - `fileFormat`: ContainerFormatType
+  - `videoBitrate?`: number
+  - `videoCodec?`: CodecMimeType
+  - `videoFrameWidth?`: number
+  - `videoFrameHeight?`: number
+  - `videoFrameRate?`: number
+  - `isHdr?`: boolean
+- **AVRecorderConfig**
+  - `audioSourceType?`: AudioSourceType
+  - `videoSourceType?`: VideoSourceType
+  - `profile`: AVRecorderProfile
+  - `url`: string
+  - `rotation?`: number
+  - `location?`: Location
+- **MediaDescription**
+#### Enums
+- **StateChangeReason**
+  - `USER` = 1
+  - `BACKGROUND` = 2
+- **AVImageQueryOptions**
+- **PixelFormat**
+  - `RGB_565` = 2
+  - `RGBA_8888` = 3
+  - `RGB_888` = 5
+- **AVErrorCode**
+  - `AVERR_OK` = 0
+  - `AVERR_NO_PERMISSION` = 201
+  - `AVERR_INVALID_PARAMETER` = 401
+  - `AVERR_UNSUPPORT_CAPABILITY` = 801
+  - `AVERR_NO_MEMORY` = 5400101
+  - `AVERR_OPERATE_NOT_PERMIT` = 5400102
+  - `AVERR_IO` = 5400103
+  - `AVERR_TIMEOUT` = 5400104
+  - `AVERR_SERVICE_DIED` = 5400105
+  - `AVERR_UNSUPPORT_FORMAT` = 5400106
+  - `AVERR_AUDIO_INTERRUPTED` = 5400107
+- **MediaErrorCode**
+  - `MSERR_OK` = 0
+  - `MSERR_NO_MEMORY` = 1
+  - `MSERR_OPERATION_NOT_PERMIT` = 2
+  - `MSERR_INVALID_VAL` = 3
+  - `MSERR_IO` = 4
+  - `MSERR_TIMEOUT` = 5
+  - `MSERR_UNKNOWN` = 6
+  - `MSERR_SERVICE_DIED` = 7
+  - `MSERR_INVALID_STATE` = 8
+  - `MSERR_UNSUPPORTED` = 9
+- **BufferingInfoType**
+  - `BUFFERING_START` = 1
+  - `BUFFERING_END` = 2
+  - `BUFFERING_PERCENT` = 3
+  - `CACHED_DURATION` = 4
+- **AudioEncoder**
+  - `DEFAULT` = 0
+  - `AMR_NB` = 1
+  - `AMR_WB` = 2
+  - `AAC_LC` = 3
+  - `HE_AAC` = 4
+- **AudioOutputFormat**
+  - `DEFAULT` = 0
+  - `MPEG_4` = 2
+  - `AMR_NB` = 3
+  - `AMR_WB` = 4
+  - `AAC_ADTS` = 6
+- **PlaybackSpeed**
+  - `SPEED_FORWARD_0_75_X` = 0
+  - `SPEED_FORWARD_1_00_X` = 1
+  - `SPEED_FORWARD_1_25_X` = 2
+  - `SPEED_FORWARD_1_75_X` = 3
+  - `SPEED_FORWARD_2_00_X` = 4
+- **VideoScaleType**
+  - `VIDEO_SCALE_TYPE_FIT` = 0
+  - `VIDEO_SCALE_TYPE_FIT_CROP` = 1
+- **ContainerFormatType**
+  - `CFT_MPEG_4` = 'mp4'
+  - `CFT_MPEG_4A` = 'm4a'
+- **MediaType**
+  - `MEDIA_TYPE_AUD` = 0
+  - `MEDIA_TYPE_VID` = 1
+- **MediaDescriptionKey**
+  - `MD_KEY_TRACK_INDEX` = 'track_index'
+  - `MD_KEY_TRACK_TYPE` = 'track_type'
+  - `MD_KEY_CODEC_MIME` = 'codec_mime'
+  - `MD_KEY_DURATION` = 'duration'
+  - `MD_KEY_BITRATE` = 'bitrate'
+  - `MD_KEY_WIDTH` = 'width'
+  - `MD_KEY_HEIGHT` = 'height'
+  - `MD_KEY_FRAME_RATE` = 'frame_rate'
+  - `MD_KEY_AUD_CHANNEL_COUNT` = 'channel_count'
+  - `MD_KEY_AUD_SAMPLE_RATE` = 'sample_rate'
+- **AudioSourceType**
+  - `AUDIO_SOURCE_TYPE_DEFAULT` = 0
+  - `AUDIO_SOURCE_TYPE_MIC` = 1
+- **VideoSourceType**
+  - `VIDEO_SOURCE_TYPE_SURFACE_YUV` = 0
+  - `VIDEO_SOURCE_TYPE_SURFACE_ES` = 1
+- **SeekMode**
+  - `SEEK_NEXT_SYNC` = 0
+  - `SEEK_PREV_SYNC` = 1
+- **CodecMimeType**
+  - `VIDEO_H263` = 'video/h263'
+  - `VIDEO_AVC` = 'video/avc'
+  - `VIDEO_MPEG2` = 'video/mpeg2'
+  - `VIDEO_MPEG4` = 'video/mp4v-es'
+  - `VIDEO_VP8` = 'video/x-vnd.on2.vp8'
+  - `AUDIO_AAC` = 'audio/mp4a-latm'
+  - `AUDIO_VORBIS` = 'audio/vorbis'
+  - `AUDIO_FLAC` = 'audio/flac'
+  - `VIDEO_HEVC` = 'video/hevc'
+#### Functions
+- `createAVPlayer(callback: AsyncCallback<AVPlayer>): void`
+- `createAVPlayer(): Promise<AVPlayer>`
+- `createAVRecorder(callback: AsyncCallback<AVRecorder>): void`
+- `createAVRecorder(): Promise<AVRecorder>`
+- `createAudioPlayer(): AudioPlayer`
+- `createAudioRecorder(): AudioRecorder`
+- `createVideoPlayer(callback: AsyncCallback<VideoPlayer>): void`
+- `createVideoPlayer(): Promise<VideoPlayer>`
+- `createVideoRecorder(callback: AsyncCallback<VideoRecorder>): void`
+- `createVideoRecorder(): Promise<VideoRecorder>`
+- `createSoundPool(
+    maxStreams: number,
+    audioRenderInfo: audio.AudioRendererInfo,
+    callback: AsyncCallback<SoundPool>
+  ): void`
+- `createSoundPool(maxStreams: number, audioRenderInfo: audio.AudioRendererInfo): Promise<SoundPool>`
+- `createAVMetadataExtractor(): Promise<AVMetadataExtractor>`
+- `createAVMetadataExtractor(callback: AsyncCallback<AVMetadataExtractor>): void`
+- `createAVImageGenerator(): Promise<AVImageGenerator>`
+- `createAVImageGenerator(callback: AsyncCallback<AVImageGenerator>): void`
+#### Type Aliases
+- `SoundPool` = _SoundPool
+- `PlayParameters` = _PlayParameters
+- `AVPlayerState` = 'idle' | 'initialized' | 'prepared' | 'playing' | 'paused' | 'completed' | 'stopped' | 'released' | 'error'
+- `AudioState` = 'idle' | 'playing' | 'paused' | 'stopped' | 'error'
+- `AVRecorderState` = 'idle' | 'prepared' | 'started' | 'paused' | 'stopped' | 'released' | 'error'
+- `VideoRecordState` = 'idle' | 'prepared' | 'playing' | 'paused' | 'stopped' | 'error'
+- `VideoPlayState` = 'idle' | 'prepared' | 'playing' | 'paused' | 'stopped' | 'error'
+
+### mediaLibrary (@ohos.multimedia.mediaLibrary.d.ts)
+#### Interfaces
+- **MediaAssetOption**
+  - `src`: string
+  - `mimeType`: string
+  - `relativePath?`: string
+- **MediaSelectOption**
+  - `type`: 'image' | 'video' | 'media'
+  - `count`: number
+- **FileAsset**
+  - `readonly id`: number
+  - `readonly uri`: string
+  - `readonly mimeType`: string
+  - `readonly mediaType`: MediaType
+  - `displayName`: string
+  - `title`: string
+  - `relativePath`: string
+  - `readonly parent`: number
+  - `readonly size`: number
+  - `readonly dateAdded`: number
+  - `readonly dateModified`: number
+  - `readonly dateTaken`: number
+  - `readonly artist`: string
+  - `readonly audioAlbum`: string
+  - `readonly width`: number
+  - `readonly height`: number
+  - `orientation`: number
+  - `readonly duration`: number
+  - `readonly albumId`: number
+  - `readonly albumUri`: string
+  - `readonly albumName`: string
+  - `isDirectory`: void
+  - `isDirectory`: Promise<boolean>
+  - `commitModify`: void
+  - `commitModify`: Promise<void>
+  - `open`: void
+  - `open`: Promise<number>
+  - `close`: void
+  - `close`: Promise<void>
+  - `getThumbnail`: void
+  - `getThumbnail`: void
+  - `getThumbnail`: Promise<image.PixelMap>
+  - `favorite`: void
+  - `favorite`: Promise<void>
+  - `isFavorite`: void
+  - `isFavorite`: Promise<boolean>
+  - `trash`: void
+  - `trash`: Promise<void>
+  - `isTrash`: void
+  - `isTrash`: Promise<boolean>
+- **MediaFetchOptions**
+  - `selections`: string
+  - `selectionArgs`: Array<string>
+  - `order?`: string
+  - `uri?`: string
+  - `networkId?`: string
+  - `extendArgs?`: string
+- **FetchFileResult**
+  - `getCount`: number
+  - `isAfterLast`: boolean
+  - `close`: void
+  - `getFirstObject`: void
+  - `getFirstObject`: Promise<FileAsset>
+  - `getNextObject`: void
+  - `getNextObject`: Promise<FileAsset>
+  - `getLastObject`: void
+  - `getLastObject`: Promise<FileAsset>
+  - `getPositionObject`: void
+  - `getPositionObject`: Promise<FileAsset>
+  - `getAllObject`: void
+  - `getAllObject`: Promise<Array<FileAsset>>
+- **Album**
+  - `readonly albumId`: number
+  - `albumName`: string
+  - `readonly albumUri`: string
+  - `readonly dateModified`: number
+  - `readonly count`: number
+  - `readonly relativePath`: string
+  - `readonly coverUri`: string
+  - `commitModify`: void
+  - `commitModify`: Promise<void>
+  - `getFileAssets`: void
+  - `getFileAssets`: void
+  - `getFileAssets`: Promise<FetchFileResult>
+- **MediaLibrary**
+  - `getPublicDirectory`: void
+  - `getPublicDirectory`: Promise<string>
+  - `getFileAssets`: void
+  - `getFileAssets`: Promise<FetchFileResult>
+  - `on`: void
+  - `off`: void
+  - `createAsset`: void
+  - `createAsset`: Promise<FileAsset>
+  - `deleteAsset`: void
+  - `deleteAsset`: Promise<void>
+  - `getAlbums`: void
+  - `getAlbums`: Promise<Array<Album>>
+  - `storeMediaAsset`: void
+  - `storeMediaAsset`: Promise<string>
+  - `startImagePreview`: void
+  - `startImagePreview`: void
+  - `startImagePreview`: Promise<void>
+  - `startMediaSelect`: void
+  - `startMediaSelect`: Promise<Array<string>>
+  - `getActivePeers`: void
+  - `getActivePeers`: Promise<Array<PeerInfo>>
+  - `getAllPeers`: void
+  - `getAllPeers`: Promise<Array<PeerInfo>>
+  - `release`: void
+  - `release`: Promise<void>
+- **Size**
+  - `width`: number
+  - `height`: number
+- **PeerInfo**
+  - `readonly deviceName`: string
+  - `readonly networkId`: string
+  - `readonly deviceType`: DeviceType
+  - `readonly isOnline`: boolean
+#### Enums
+- **MediaType**
+  - `FILE` = 0
+- **FileKey**
+  - `ID` = "file_id"
+  - `RELATIVE_PATH` = "relative_path"
+  - `DISPLAY_NAME` = "display_name"
+  - `PARENT` = "parent"
+  - `MIME_TYPE` = "mime_type"
+  - `MEDIA_TYPE` = "media_type"
+  - `SIZE` = "size"
+  - `DATE_ADDED` = "date_added"
+  - `DATE_MODIFIED` = "date_modified"
+  - `DATE_TAKEN` = "date_taken"
+  - `TITLE` = "title"
+  - `ARTIST` = "artist"
+  - `AUDIOALBUM` = "audio_album"
+  - `DURATION` = "duration"
+  - `WIDTH` = "width"
+  - `HEIGHT` = "height"
+  - `ORIENTATION` = "orientation"
+  - `ALBUM_ID` = "bucket_id"
+  - `ALBUM_NAME` = "bucket_display_name"
+- **DirectoryType**
+  - `DIR_CAMERA` = 0
+- **DeviceType**
+  - `TYPE_UNKNOWN` = 0
+#### Functions
+- `getMediaLibrary(): MediaLibrary`
+- `getMediaLibrary(context: Context): MediaLibrary`
+
+### systemSoundManager (@ohos.multimedia.systemSoundManager.d.ts)
+#### Interfaces
+- **SystemSoundManager**
+  - `setSystemRingtoneUri`: void
+  - `setSystemRingtoneUri`: Promise<void>
+  - `setRingtoneUri`: Promise<void>
+  - `getSystemRingtoneUri`: void
+  - `getSystemRingtoneUri`: Promise<string>
+  - `getRingtoneUri`: Promise<string>
+  - `getSystemRingtonePlayer`: void
+  - `getSystemRingtonePlayer`: Promise<RingtonePlayer>
+  - `getRingtonePlayer`: Promise<RingtonePlayer>
+  - `setSystemToneUri`: Promise<void>
+  - `getSystemToneUri`: Promise<string>
+  - `getSystemTonePlayer`: Promise<SystemTonePlayer>
+#### Enums
+- **RingtoneType**
+  - `RINGTONE_TYPE_DEFAULT` = 0
+  - `RINGTONE_TYPE_SIM_CARD_0` = 0
+  - `RINGTONE_TYPE_MULTISIM` = 1
+  - `RINGTONE_TYPE_SIM_CARD_1` = 1
+- **SystemToneType**
+  - `SYSTEM_TONE_TYPE_SIM_CARD_0` = 0
+  - `SYSTEM_TONE_TYPE_SIM_CARD_1` = 1
+  - `SYSTEM_TONE_TYPE_NOTIFICATION` = 32
+#### Functions
+- `getSystemSoundManager(): SystemSoundManager`
+#### Type Aliases
+- `RingtonePlayer` = _RingtonePlayer
+- `SystemTonePlayer` = _SystemTonePlayer
+- `RingtoneOptions` = _RingtoneOptions
+- `SystemToneOptions` = _SystemToneOptions
+
+### @ohos.multimodalInput.gestureEvent (@ohos.multimodalInput.gestureEvent.d.ts)
+#### Interfaces
+- **Pinch**
+  - `type`: ActionType
+  - `scale`: number
+- **Rotate**
+  - `type`: ActionType
+  - `angle`: number
+- **ThreeFingersSwipe**
+  - `type`: ActionType
+  - `x`: number
+  - `y`: number
+- **FourFingersSwipe**
+  - `type`: ActionType
+  - `x`: number
+  - `y`: number
+- **ThreeFingersTap**
+  - `type`: ActionType
+#### Enums
+- **ActionType**
+  - `CANCEL` = 0
+  - `BEGIN` = 1
+  - `UPDATE` = 2
+  - `END` = 3
+
+### inputConsumer (@ohos.multimodalInput.inputConsumer.d.ts)
+#### Interfaces
+- **KeyOptions**
+  - `preKeys`: Array<number>
+  - `finalKey`: number
+  - `isFinalKeyDown`: boolean
+  - `finalKeyDownDuration`: number
+#### Enums
+- **ShieldMode**
+#### Functions
+- `on(type: 'key', keyOptions: KeyOptions, callback: Callback<KeyOptions>): void`
+- `off(type: 'key', keyOptions: KeyOptions, callback?: Callback<KeyOptions>): void`
+- `setShieldStatus(shieldMode: ShieldMode, isShield: boolean): void`
+- `getShieldStatus(shieldMode: ShieldMode): boolean`
+
+### inputDevice (@ohos.multimodalInput.inputDevice.d.ts)
+#### Interfaces
+- **DeviceListener**
+  - `type`: ChangedType
+  - `deviceId`: number
+- **AxisRange**
+  - `source`: SourceType
+  - `axis`: AxisType
+  - `max`: number
+  - `min`: number
+  - `fuzz`: number
+  - `flat`: number
+  - `resolution`: number
+- **InputDeviceData**
+  - `id`: number
+  - `name`: string
+  - `sources`: Array<SourceType>
+  - `axisRanges`: Array<AxisRange>
+  - `bus`: number
+  - `product`: number
+  - `vendor`: number
+  - `version`: number
+  - `phys`: string
+  - `uniq`: string
+#### Enums
+- **KeyboardType**
+  - `NONE` = 0
+  - `UNKNOWN` = 1
+  - `ALPHABETIC_KEYBOARD` = 2
+  - `DIGITAL_KEYBOARD` = 3
+  - `HANDWRITING_PEN` = 4
+  - `REMOTE_CONTROL` = 5
+#### Functions
+- `on(type: 'change', listener: Callback<DeviceListener>): void`
+- `off(type: 'change', listener?: Callback<DeviceListener>): void`
+- `getDeviceIds(callback: AsyncCallback<Array<number>>): void`
+- `getDeviceIds(): Promise<Array<number>>`
+- `getDevice(deviceId: number, callback: AsyncCallback<InputDeviceData>): void`
+- `getDevice(deviceId: number): Promise<InputDeviceData>`
+- `getDeviceList(callback: AsyncCallback<Array<number>>): void`
+- `getDeviceList(): Promise<Array<number>>`
+- `getDeviceInfo(deviceId: number, callback: AsyncCallback<InputDeviceData>): void`
+- `getDeviceInfo(deviceId: number): Promise<InputDeviceData>`
+- `getDeviceInfoSync(deviceId: number): InputDeviceData`
+- `supportKeys(deviceId: number, keys: Array<KeyCode>, callback: AsyncCallback<Array<boolean>>): void`
+- `supportKeys(deviceId: number, keys: Array<KeyCode>): Promise<Array<boolean>>`
+- `supportKeysSync(deviceId: number, keys: Array<KeyCode>): Array<boolean>`
+- `getKeyboardType(deviceId: number, callback: AsyncCallback<KeyboardType>): void`
+- `getKeyboardType(deviceId: number): Promise<KeyboardType>`
+- `getKeyboardTypeSync(deviceId: number): KeyboardType`
+- `setKeyboardRepeatDelay(delay: number, callback: AsyncCallback<void>): void`
+- `setKeyboardRepeatDelay(delay: number): Promise<void>`
+- `getKeyboardRepeatDelay(callback: AsyncCallback<number>): void`
+- `getKeyboardRepeatDelay(): Promise<number>`
+- `setKeyboardRepeatRate(rate: number, callback: AsyncCallback<void>): void`
+- `setKeyboardRepeatRate(rate: number): Promise<void>`
+- `getKeyboardRepeatRate(callback: AsyncCallback<number>): void`
+- `getKeyboardRepeatRate(): Promise<number>`
+#### Type Aliases
+- `ChangedType` = 'add' | 'remove'
+- `SourceType` = 'keyboard' | 'mouse' | 'touchpad' | 'touchscreen' | 'joystick' | 'trackball'
+- `AxisType` = 'touchmajor'
+    | 'touchminor'
+    | 'orientation'
+    | 'x'
+    | 'y'
+    | 'pressure'
+    | 'toolminor'
+    | 'toolmajor'
+    | 'null'
+
+### inputDeviceCooperate (@ohos.multimodalInput.inputDeviceCooperate.d.ts)
+#### Enums
+- **EventMsg**
+  - `MSG_COOPERATE_INFO_START` = 200
+  - `MSG_COOPERATE_INFO_SUCCESS` = 201
+  - `MSG_COOPERATE_INFO_FAIL` = 202
+  - `MSG_COOPERATE_STATE_ON` = 500
+  - `MSG_COOPERATE_STATE_OFF` = 501
+#### Functions
+- `enable(enable: boolean, callback: AsyncCallback<void>): void`
+- `enable(enable: boolean): Promise<void>`
+- `start(sinkDeviceDescriptor: string, srcInputDeviceId: number, callback: AsyncCallback<void>): void`
+- `start(sinkDeviceDescriptor: string, srcInputDeviceId: number): Promise<void>`
+- `stop(callback: AsyncCallback<void>): void`
+- `stop(): Promise<void>`
+- `getState(deviceDescriptor: string, callback: AsyncCallback<{ state: boolean }>): void`
+- `getState(deviceDescriptor: string): Promise<{ state: boolean }>`
+- `on(type: 'cooperation', callback: AsyncCallback<{ deviceDescriptor: string, eventMsg: EventMsg }>): void`
+- `off(type: 'cooperation', callback?: AsyncCallback<void>): void`
+
+### @ohos.multimodalInput.inputEvent (@ohos.multimodalInput.inputEvent.d.ts)
+#### Interfaces
+- **InputEvent**
+  - `id`: number
+  - `deviceId`: number
+  - `actionTime`: number
+  - `screenId`: number
+  - `windowId`: number
+
+### inputEventClient (@ohos.multimodalInput.inputEventClient.d.ts)
+#### Interfaces
+- **KeyEvent**
+  - `isPressed`: boolean
+  - `keyCode`: number
+  - `keyDownDuration`: number
+  - `isIntercepted`: boolean
+- **MouseEventData**
+  - `mouseEvent`: MouseEvent
+- **TouchEventData**
+  - `touchEvent`: TouchEvent
+- **KeyEventData**
+  - `keyEvent`: KeyEvent
+#### Functions
+- `injectKeyEvent(keyEvent: KeyEventData): void`
+- `injectEvent({ KeyEvent: KeyEvent }): void`
+- `injectMouseEvent(mouseEvent: MouseEventData): void`
+- `injectTouchEvent(touchEvent: TouchEventData): void`
+
+### inputMonitor (@ohos.multimodalInput.inputMonitor.d.ts)
+#### Interfaces
+- **TouchEventReceiver**
+#### Functions
+- `on(type: 'touch', receiver: TouchEventReceiver): void`
+- `on(type: 'mouse', receiver: Callback<MouseEvent>): void`
+- `on(type: 'mouse', rect: display.Rect[], receiver: Callback<MouseEvent>): void`
+- `off(type: 'touch', receiver?: TouchEventReceiver): void`
+- `off(type: 'mouse', receiver?: Callback<MouseEvent>): void`
+- `on(type: 'pinch', receiver: Callback<Pinch>): void`
+- `off(type: 'pinch', receiver?: Callback<Pinch>): void`
+- `on(type: 'pinch', fingers: number, receiver: Callback<Pinch>): void`
+- `off(type: 'pinch', fingers: number, receiver?: Callback<Pinch>): void`
+- `on(type: 'rotate', fingers: number, receiver: Callback<Rotate>): void`
+- `off(type: 'rotate', fingers: number, receiver?: Callback<Rotate>): void`
+- `on(type: 'threeFingersSwipe', receiver: Callback<ThreeFingersSwipe>): void`
+- `off(type: 'threeFingersSwipe', receiver?: Callback<ThreeFingersSwipe>): void`
+- `on(type: 'fourFingersSwipe', receiver: Callback<FourFingersSwipe>): void`
+- `off(type: 'fourFingersSwipe', receiver?: Callback<FourFingersSwipe>): void`
+- `on(type: 'threeFingersTap', receiver: Callback<ThreeFingersTap>): void`
+- `off(type: 'threeFingersTap', receiver?: Callback<ThreeFingersTap>): void`
+
+### @ohos.multimodalInput.intentionCode (@ohos.multimodalInput.intentionCode.d.ts)
+#### Enums
+- **IntentionCode**
+  - `INTENTION_UNKNOWN` = -1
+  - `INTENTION_UP` = 1
+  - `INTENTION_DOWN` = 2
+  - `INTENTION_LEFT` = 3
+  - `INTENTION_RIGHT` = 4
+  - `INTENTION_SELECT` = 5
+  - `INTENTION_ESCAPE` = 6
+  - `INTENTION_BACK` = 7
+  - `INTENTION_FORWARD` = 8
+  - `INTENTION_MENU` = 9
+  - `INTENTION_PAGE_UP` = 11
+  - `INTENTION_PAGE_DOWN` = 12
+  - `INTENTION_ZOOM_OUT` = 13
+  - `INTENTION_ZOOM_IN` = 14
+
+### @ohos.multimodalInput.keyCode (@ohos.multimodalInput.keyCode.d.ts)
+#### Enums
+- **KeyCode**
+  - `KEYCODE_FN` = 0
+  - `KEYCODE_UNKNOWN` = -1
+  - `KEYCODE_HOME` = 1
+  - `KEYCODE_BACK` = 2
+  - `KEYCODE_MEDIA_PLAY_PAUSE` = 10
+  - `KEYCODE_MEDIA_STOP` = 11
+  - `KEYCODE_MEDIA_NEXT` = 12
+  - `KEYCODE_MEDIA_PREVIOUS` = 13
+  - `KEYCODE_MEDIA_REWIND` = 14
+  - `KEYCODE_MEDIA_FAST_FORWARD` = 15
+  - `KEYCODE_VOLUME_UP` = 16
+  - `KEYCODE_VOLUME_DOWN` = 17
+  - `KEYCODE_POWER` = 18
+  - `KEYCODE_CAMERA` = 19
+  - `KEYCODE_VOLUME_MUTE` = 22
+  - `KEYCODE_MUTE` = 23
+  - `KEYCODE_BRIGHTNESS_UP` = 40
+  - `KEYCODE_BRIGHTNESS_DOWN` = 41
+  - `KEYCODE_0` = 2000
+  - `KEYCODE_1` = 2001
+  - `KEYCODE_2` = 2002
+  - `KEYCODE_3` = 2003
+  - `KEYCODE_4` = 2004
+  - `KEYCODE_5` = 2005
+  - `KEYCODE_6` = 2006
+  - `KEYCODE_7` = 2007
+  - `KEYCODE_8` = 2008
+  - `KEYCODE_9` = 2009
+  - `KEYCODE_STAR` = 2010
+  - `KEYCODE_POUND` = 2011
+  - `KEYCODE_DPAD_UP` = 2012
+  - `KEYCODE_DPAD_DOWN` = 2013
+  - `KEYCODE_DPAD_LEFT` = 2014
+  - `KEYCODE_DPAD_RIGHT` = 2015
+  - `KEYCODE_DPAD_CENTER` = 2016
+  - `KEYCODE_A` = 2017
+  - `KEYCODE_B` = 2018
+  - `KEYCODE_C` = 2019
+  - `KEYCODE_D` = 2020
+  - `KEYCODE_E` = 2021
+  - `KEYCODE_F` = 2022
+  - `KEYCODE_G` = 2023
+  - `KEYCODE_H` = 2024
+  - `KEYCODE_I` = 2025
+  - `KEYCODE_J` = 2026
+  - `KEYCODE_K` = 2027
+  - `KEYCODE_L` = 2028
+  - `KEYCODE_M` = 2029
+  - `KEYCODE_N` = 2030
+  - `KEYCODE_O` = 2031
+  - `KEYCODE_P` = 2032
+  - `KEYCODE_Q` = 2033
+  - `KEYCODE_R` = 2034
+  - `KEYCODE_S` = 2035
+  - `KEYCODE_T` = 2036
+  - `KEYCODE_U` = 2037
+  - `KEYCODE_V` = 2038
+  - `KEYCODE_W` = 2039
+  - `KEYCODE_X` = 2040
+  - `KEYCODE_Y` = 2041
+  - `KEYCODE_Z` = 2042
+  - `KEYCODE_COMMA` = 2043
+  - `KEYCODE_PERIOD` = 2044
+  - `KEYCODE_ALT_LEFT` = 2045
+  - `KEYCODE_ALT_RIGHT` = 2046
+  - `KEYCODE_SHIFT_LEFT` = 2047
+  - `KEYCODE_SHIFT_RIGHT` = 2048
+  - `KEYCODE_TAB` = 2049
+  - `KEYCODE_SPACE` = 2050
+  - `KEYCODE_SYM` = 2051
+  - `KEYCODE_EXPLORER` = 2052
+  - `KEYCODE_ENVELOPE` = 2053
+  - `KEYCODE_ENTER` = 2054
+  - `KEYCODE_DEL` = 2055
+  - `KEYCODE_GRAVE` = 2056
+  - `KEYCODE_MINUS` = 2057
+  - `KEYCODE_EQUALS` = 2058
+  - `KEYCODE_LEFT_BRACKET` = 2059
+  - `KEYCODE_RIGHT_BRACKET` = 2060
+  - `KEYCODE_BACKSLASH` = 2061
+  - `KEYCODE_SEMICOLON` = 2062
+  - `KEYCODE_APOSTROPHE` = 2063
+  - `KEYCODE_SLASH` = 2064
+  - `KEYCODE_AT` = 2065
+  - `KEYCODE_PLUS` = 2066
+  - `KEYCODE_MENU` = 2067
+  - `KEYCODE_PAGE_UP` = 2068
+  - `KEYCODE_PAGE_DOWN` = 2069
+  - `KEYCODE_ESCAPE` = 2070
+  - `KEYCODE_FORWARD_DEL` = 2071
+  - `KEYCODE_CTRL_LEFT` = 2072
+  - `KEYCODE_CTRL_RIGHT` = 2073
+  - `KEYCODE_CAPS_LOCK` = 2074
+  - `KEYCODE_SCROLL_LOCK` = 2075
+  - `KEYCODE_META_LEFT` = 2076
+  - `KEYCODE_META_RIGHT` = 2077
+  - `KEYCODE_FUNCTION` = 2078
+  - `KEYCODE_SYSRQ` = 2079
+  - `KEYCODE_BREAK` = 2080
+  - `KEYCODE_MOVE_HOME` = 2081
+  - `KEYCODE_MOVE_END` = 2082
+  - `KEYCODE_INSERT` = 2083
+  - `KEYCODE_FORWARD` = 2084
+  - `KEYCODE_MEDIA_PLAY` = 2085
+  - `KEYCODE_MEDIA_PAUSE` = 2086
+  - `KEYCODE_MEDIA_CLOSE` = 2087
+  - `KEYCODE_MEDIA_EJECT` = 2088
+  - `KEYCODE_MEDIA_RECORD` = 2089
+  - `KEYCODE_F1` = 2090
+  - `KEYCODE_F2` = 2091
+  - `KEYCODE_F3` = 2092
+  - `KEYCODE_F4` = 2093
+  - `KEYCODE_F5` = 2094
+  - `KEYCODE_F6` = 2095
+  - `KEYCODE_F7` = 2096
+  - `KEYCODE_F8` = 2097
+  - `KEYCODE_F9` = 2098
+  - `KEYCODE_F10` = 2099
+  - `KEYCODE_F11` = 2100
+  - `KEYCODE_F12` = 2101
+  - `KEYCODE_NUM_LOCK` = 2102
+  - `KEYCODE_NUMPAD_0` = 2103
+  - `KEYCODE_NUMPAD_1` = 2104
+  - `KEYCODE_NUMPAD_2` = 2105
+  - `KEYCODE_NUMPAD_3` = 2106
+  - `KEYCODE_NUMPAD_4` = 2107
+  - `KEYCODE_NUMPAD_5` = 2108
+  - `KEYCODE_NUMPAD_6` = 2109
+  - `KEYCODE_NUMPAD_7` = 2110
+  - `KEYCODE_NUMPAD_8` = 2111
+  - `KEYCODE_NUMPAD_9` = 2112
+  - `KEYCODE_NUMPAD_DIVIDE` = 2113
+  - `KEYCODE_NUMPAD_MULTIPLY` = 2114
+  - `KEYCODE_NUMPAD_SUBTRACT` = 2115
+  - `KEYCODE_NUMPAD_ADD` = 2116
+  - `KEYCODE_NUMPAD_DOT` = 2117
+  - `KEYCODE_NUMPAD_COMMA` = 2118
+  - `KEYCODE_NUMPAD_ENTER` = 2119
+  - `KEYCODE_NUMPAD_EQUALS` = 2120
+  - `KEYCODE_NUMPAD_LEFT_PAREN` = 2121
+  - `KEYCODE_NUMPAD_RIGHT_PAREN` = 2122
+  - `KEYCODE_VIRTUAL_MULTITASK` = 2210
+  - `KEYCODE_SLEEP` = 2600
+  - `KEYCODE_ZENKAKU_HANKAKU` = 2601
+  - `KEYCODE_102ND` = 2602
+  - `KEYCODE_RO` = 2603
+  - `KEYCODE_KATAKANA` = 2604
+  - `KEYCODE_HIRAGANA` = 2605
+  - `KEYCODE_HENKAN` = 2606
+  - `KEYCODE_KATAKANA_HIRAGANA` = 2607
+  - `KEYCODE_MUHENKAN` = 2608
+  - `KEYCODE_LINEFEED` = 2609
+  - `KEYCODE_MACRO` = 2610
+  - `KEYCODE_NUMPAD_PLUSMINUS` = 2611
+  - `KEYCODE_SCALE` = 2612
+  - `KEYCODE_HANGUEL` = 2613
+  - `KEYCODE_HANJA` = 2614
+  - `KEYCODE_YEN` = 2615
+  - `KEYCODE_STOP` = 2616
+  - `KEYCODE_AGAIN` = 2617
+  - `KEYCODE_PROPS` = 2618
+  - `KEYCODE_UNDO` = 2619
+  - `KEYCODE_COPY` = 2620
+  - `KEYCODE_OPEN` = 2621
+  - `KEYCODE_PASTE` = 2622
+  - `KEYCODE_FIND` = 2623
+  - `KEYCODE_CUT` = 2624
+  - `KEYCODE_HELP` = 2625
+  - `KEYCODE_CALC` = 2626
+  - `KEYCODE_FILE` = 2627
+  - `KEYCODE_BOOKMARKS` = 2628
+  - `KEYCODE_NEXT` = 2629
+  - `KEYCODE_PLAYPAUSE` = 2630
+  - `KEYCODE_PREVIOUS` = 2631
+  - `KEYCODE_STOPCD` = 2632
+  - `KEYCODE_CONFIG` = 2634
+  - `KEYCODE_REFRESH` = 2635
+  - `KEYCODE_EXIT` = 2636
+  - `KEYCODE_EDIT` = 2637
+  - `KEYCODE_SCROLLUP` = 2638
+  - `KEYCODE_SCROLLDOWN` = 2639
+  - `KEYCODE_NEW` = 2640
+  - `KEYCODE_REDO` = 2641
+  - `KEYCODE_CLOSE` = 2642
+  - `KEYCODE_PLAY` = 2643
+  - `KEYCODE_BASSBOOST` = 2644
+  - `KEYCODE_PRINT` = 2645
+  - `KEYCODE_CHAT` = 2646
+  - `KEYCODE_FINANCE` = 2647
+  - `KEYCODE_CANCEL` = 2648
+  - `KEYCODE_KBDILLUM_TOGGLE` = 2649
+  - `KEYCODE_KBDILLUM_DOWN` = 2650
+  - `KEYCODE_KBDILLUM_UP` = 2651
+  - `KEYCODE_SEND` = 2652
+  - `KEYCODE_REPLY` = 2653
+  - `KEYCODE_FORWARDMAIL` = 2654
+  - `KEYCODE_SAVE` = 2655
+  - `KEYCODE_DOCUMENTS` = 2656
+  - `KEYCODE_VIDEO_NEXT` = 2657
+  - `KEYCODE_VIDEO_PREV` = 2658
+  - `KEYCODE_BRIGHTNESS_CYCLE` = 2659
+  - `KEYCODE_BRIGHTNESS_ZERO` = 2660
+  - `KEYCODE_DISPLAY_OFF` = 2661
+  - `KEYCODE_BTN_MISC` = 2662
+  - `KEYCODE_GOTO` = 2663
+  - `KEYCODE_INFO` = 2664
+  - `KEYCODE_PROGRAM` = 2665
+  - `KEYCODE_PVR` = 2666
+  - `KEYCODE_SUBTITLE` = 2667
+  - `KEYCODE_FULL_SCREEN` = 2668
+  - `KEYCODE_KEYBOARD` = 2669
+  - `KEYCODE_ASPECT_RATIO` = 2670
+  - `KEYCODE_PC` = 2671
+  - `KEYCODE_TV` = 2672
+  - `KEYCODE_TV2` = 2673
+  - `KEYCODE_VCR` = 2674
+  - `KEYCODE_VCR2` = 2675
+  - `KEYCODE_SAT` = 2676
+  - `KEYCODE_CD` = 2677
+  - `KEYCODE_TAPE` = 2678
+  - `KEYCODE_TUNER` = 2679
+  - `KEYCODE_PLAYER` = 2680
+  - `KEYCODE_DVD` = 2681
+  - `KEYCODE_AUDIO` = 2682
+  - `KEYCODE_VIDEO` = 2683
+  - `KEYCODE_MEMO` = 2684
+  - `KEYCODE_CALENDAR` = 2685
+  - `KEYCODE_RED` = 2686
+  - `KEYCODE_GREEN` = 2687
+  - `KEYCODE_YELLOW` = 2688
+  - `KEYCODE_BLUE` = 2689
+  - `KEYCODE_CHANNELUP` = 2690
+  - `KEYCODE_CHANNELDOWN` = 2691
+  - `KEYCODE_LAST` = 2692
+  - `KEYCODE_RESTART` = 2693
+  - `KEYCODE_SLOW` = 2694
+  - `KEYCODE_SHUFFLE` = 2695
+  - `KEYCODE_VIDEOPHONE` = 2696
+  - `KEYCODE_GAMES` = 2697
+  - `KEYCODE_ZOOMIN` = 2698
+  - `KEYCODE_ZOOMOUT` = 2699
+  - `KEYCODE_ZOOMRESET` = 2700
+  - `KEYCODE_WORDPROCESSOR` = 2701
+  - `KEYCODE_EDITOR` = 2702
+  - `KEYCODE_SPREADSHEET` = 2703
+  - `KEYCODE_GRAPHICSEDITOR` = 2704
+  - `KEYCODE_PRESENTATION` = 2705
+  - `KEYCODE_DATABASE` = 2706
+  - `KEYCODE_NEWS` = 2707
+  - `KEYCODE_VOICEMAIL` = 2708
+  - `KEYCODE_ADDRESSBOOK` = 2709
+  - `KEYCODE_MESSENGER` = 2710
+  - `KEYCODE_BRIGHTNESS_TOGGLE` = 2711
+  - `KEYCODE_SPELLCHECK` = 2712
+  - `KEYCODE_COFFEE` = 2713
+  - `KEYCODE_MEDIA_REPEAT` = 2714
+  - `KEYCODE_IMAGES` = 2715
+  - `KEYCODE_BUTTONCONFIG` = 2716
+  - `KEYCODE_TASKMANAGER` = 2717
+  - `KEYCODE_JOURNAL` = 2718
+  - `KEYCODE_CONTROLPANEL` = 2719
+  - `KEYCODE_APPSELECT` = 2720
+  - `KEYCODE_SCREENSAVER` = 2721
+  - `KEYCODE_ASSISTANT` = 2722
+  - `KEYCODE_KBD_LAYOUT_NEXT` = 2723
+  - `KEYCODE_BRIGHTNESS_MIN` = 2724
+  - `KEYCODE_BRIGHTNESS_MAX` = 2725
+  - `KEYCODE_KBDINPUTASSIST_PREV` = 2726
+  - `KEYCODE_KBDINPUTASSIST_NEXT` = 2727
+  - `KEYCODE_KBDINPUTASSIST_PREVGROUP` = 2728
+  - `KEYCODE_KBDINPUTASSIST_NEXTGROUP` = 2729
+  - `KEYCODE_KBDINPUTASSIST_ACCEPT` = 2730
+  - `KEYCODE_KBDINPUTASSIST_CANCEL` = 2731
+  - `KEYCODE_FRONT` = 2800
+  - `KEYCODE_SETUP` = 2801
+  - `KEYCODE_WAKEUP` = 2802
+  - `KEYCODE_SENDFILE` = 2803
+  - `KEYCODE_DELETEFILE` = 2804
+  - `KEYCODE_XFER` = 2805
+  - `KEYCODE_PROG1` = 2806
+  - `KEYCODE_PROG2` = 2807
+  - `KEYCODE_MSDOS` = 2808
+  - `KEYCODE_SCREENLOCK` = 2809
+  - `KEYCODE_DIRECTION_ROTATE_DISPLAY` = 2810
+  - `KEYCODE_CYCLEWINDOWS` = 2811
+  - `KEYCODE_COMPUTER` = 2812
+  - `KEYCODE_EJECTCLOSECD` = 2813
+  - `KEYCODE_ISO` = 2814
+  - `KEYCODE_MOVE` = 2815
+  - `KEYCODE_F13` = 2816
+  - `KEYCODE_F14` = 2817
+  - `KEYCODE_F15` = 2818
+  - `KEYCODE_F16` = 2819
+  - `KEYCODE_F17` = 2820
+  - `KEYCODE_F18` = 2821
+  - `KEYCODE_F19` = 2822
+  - `KEYCODE_F20` = 2823
+  - `KEYCODE_F21` = 2824
+  - `KEYCODE_F22` = 2825
+  - `KEYCODE_F23` = 2826
+  - `KEYCODE_F24` = 2827
+  - `KEYCODE_PROG3` = 2828
+  - `KEYCODE_PROG4` = 2829
+  - `KEYCODE_DASHBOARD` = 2830
+  - `KEYCODE_SUSPEND` = 2831
+  - `KEYCODE_HP` = 2832
+  - `KEYCODE_SOUND` = 2833
+  - `KEYCODE_QUESTION` = 2834
+  - `KEYCODE_CONNECT` = 2836
+  - `KEYCODE_SPORT` = 2837
+  - `KEYCODE_SHOP` = 2838
+  - `KEYCODE_ALTERASE` = 2839
+  - `KEYCODE_SWITCHVIDEOMODE` = 2841
+  - `KEYCODE_BATTERY` = 2842
+  - `KEYCODE_BLUETOOTH` = 2843
+  - `KEYCODE_WLAN` = 2844
+  - `KEYCODE_UWB` = 2845
+  - `KEYCODE_WWAN_WIMAX` = 2846
+  - `KEYCODE_RFKILL` = 2847
+  - `KEYCODE_CHANNEL` = 3001
+  - `KEYCODE_BTN_0` = 3100
+  - `KEYCODE_BTN_1` = 3101
+  - `KEYCODE_BTN_2` = 3102
+  - `KEYCODE_BTN_3` = 3103
+  - `KEYCODE_BTN_4` = 3104
+  - `KEYCODE_BTN_5` = 3105
+  - `KEYCODE_BTN_6` = 3106
+  - `KEYCODE_BTN_7` = 3107
+  - `KEYCODE_BTN_8` = 3108
+  - `KEYCODE_BTN_9` = 3109
+
+### @ohos.multimodalInput.keyEvent (@ohos.multimodalInput.keyEvent.d.ts)
+#### Interfaces
+- **Key**
+  - `code`: KeyCode
+  - `pressedTime`: number
+  - `deviceId`: number
+- **KeyEvent**
+  - `action`: Action
+  - `key`: Key
+  - `unicodeChar`: number
+  - `keys`: Key[]
+  - `ctrlKey`: boolean
+  - `altKey`: boolean
+  - `shiftKey`: boolean
+  - `logoKey`: boolean
+  - `fnKey`: boolean
+  - `capsLock`: boolean
+  - `numLock`: boolean
+  - `scrollLock`: boolean
+#### Enums
+- **Action**
+  - `CANCEL` = 0
+  - `DOWN` = 1
+  - `UP` = 2
+
+### @ohos.multimodalInput.mouseEvent (@ohos.multimodalInput.mouseEvent.d.ts)
+#### Interfaces
+- **AxisValue**
+  - `axis`: Axis
+  - `value`: number
+- **MouseEvent**
+  - `action`: Action
+  - `screenX`: number
+  - `screenY`: number
+  - `windowX`: number
+  - `windowY`: number
+  - `rawDeltaX`: number
+  - `rawDeltaY`: number
+  - `button`: Button
+  - `pressedButtons`: Button[]
+  - `axes`: AxisValue[]
+  - `pressedKeys`: KeyCode[]
+  - `ctrlKey`: boolean
+  - `altKey`: boolean
+  - `shiftKey`: boolean
+  - `logoKey`: boolean
+  - `fnKey`: boolean
+  - `capsLock`: boolean
+  - `numLock`: boolean
+  - `scrollLock`: boolean
+  - `toolType`: ToolType
+#### Enums
+- **Action**
+  - `CANCEL` = 0
+  - `MOVE` = 1
+  - `BUTTON_DOWN` = 2
+  - `BUTTON_UP` = 3
+  - `AXIS_BEGIN` = 4
+  - `AXIS_UPDATE` = 5
+  - `AXIS_END` = 6
+  - `ACTION_DOWN` = 7
+  - `ACTION_UP` = 8
+- **Button**
+  - `LEFT` = 0
+  - `MIDDLE` = 1
+  - `RIGHT` = 2
+  - `SIDE` = 3
+  - `EXTRA` = 4
+  - `FORWARD` = 5
+  - `BACK` = 6
+  - `TASK` = 7
+- **Axis**
+  - `SCROLL_VERTICAL` = 0
+  - `SCROLL_HORIZONTAL` = 1
+  - `PINCH` = 2
+- **ToolType**
+  - `UNKNOWN` = 0
+  - `MOUSE` = 1
+  - `JOYSTICK` = 2
+  - `TOUCHPAD` = 3
+
+### pointer (@ohos.multimodalInput.pointer.d.ts)
+#### Enums
+- **PointerStyle**
+- **PrimaryButton**
+  - `LEFT` = 0
+  - `RIGHT` = 1
+- **RightClickType**
+  - `TOUCHPAD_RIGHT_BUTTON` = 1
+  - `TOUCHPAD_LEFT_BUTTON` = 2
+  - `TOUCHPAD_TWO_FINGER_TAP` = 3
+#### Functions
+- `setPointerSpeed(speed: number, callback: AsyncCallback<void>): void`
+- `setPointerSpeed(speed: number): Promise<void>`
+- `setPointerSpeedSync(speed: number): void`
+- `getPointerSpeed(callback: AsyncCallback<number>): void`
+- `getPointerSpeed(): Promise<number>`
+- `getPointerSpeedSync(): number`
+- `setPointerStyle(windowId: number, pointerStyle: PointerStyle, callback: AsyncCallback<void>): void`
+- `setPointerStyle(windowId: number, pointerStyle: PointerStyle): Promise<void>`
+- `setPointerStyleSync(windowId: number, pointerStyle: PointerStyle): void`
+- `getPointerStyle(windowId: number, callback: AsyncCallback<PointerStyle>): void`
+- `getPointerStyle(windowId: number): Promise<PointerStyle>`
+- `getPointerStyleSync(windowId: number): PointerStyle`
+- `setPointerVisible(visible: boolean, callback: AsyncCallback<void>): void`
+- `setPointerVisible(visible: boolean): Promise<void>`
+- `setPointerVisibleSync(visible: boolean): void`
+- `isPointerVisible(callback: AsyncCallback<boolean>): void`
+- `isPointerVisible(): Promise<boolean>`
+- `isPointerVisibleSync(): boolean`
+- `setPointerColor(color: number, callback: AsyncCallback<void>): void`
+- `setPointerColor(color: number): Promise<void>`
+- `setPointerColorSync(color: number): void`
+- `getPointerColor(callback: AsyncCallback<number>): void`
+- `getPointerColor(): Promise<number>`
+- `getPointerColorSync(): number`
+- `setPointerSize(size: number, callback: AsyncCallback<void>): void`
+- `setPointerSize(size: number): Promise<void>`
+- `setPointerSizeSync(size: number): void`
+- `getPointerSize(callback: AsyncCallback<number>): void`
+- `getPointerSize(): Promise<number>`
+- `getPointerSizeSync(): number`
+- `setMousePrimaryButton(primary: PrimaryButton, callback: AsyncCallback<void>): void`
+- `setMousePrimaryButton(primary: PrimaryButton): Promise<void>`
+- `getMousePrimaryButton(callback: AsyncCallback<PrimaryButton>): void`
+- `getMousePrimaryButton(): Promise<PrimaryButton>`
+- `setHoverScrollState(state: boolean, callback: AsyncCallback<void>): void`
+- `setHoverScrollState(state: boolean): Promise<void>`
+- `getHoverScrollState(callback: AsyncCallback<boolean>): void`
+- `getHoverScrollState(): Promise<boolean>`
+- `setMouseScrollRows(rows: number, callback: AsyncCallback<void>): void`
+- `setMouseScrollRows(rows: number): Promise<void>`
+- `getMouseScrollRows(callback: AsyncCallback<number>): void`
+- `getMouseScrollRows(): Promise<number>`
+- `setTouchpadScrollSwitch(state: boolean, callback: AsyncCallback<void>): void`
+- `setTouchpadScrollSwitch(state: boolean): Promise<void>`
+- `getTouchpadScrollSwitch(callback: AsyncCallback<boolean>): void`
+- `getTouchpadScrollSwitch(): Promise<boolean>`
+- `setTouchpadScrollDirection(state: boolean, callback: AsyncCallback<void>): void`
+- `setTouchpadScrollDirection(state: boolean): Promise<void>`
+- `getTouchpadScrollDirection(callback: AsyncCallback<boolean>): void`
+- `getTouchpadScrollDirection(): Promise<boolean>`
+- `setTouchpadTapSwitch(state: boolean, callback: AsyncCallback<void>): void`
+- `setTouchpadTapSwitch(state: boolean): Promise<void>`
+- `getTouchpadTapSwitch(callback: AsyncCallback<boolean>): void`
+- `getTouchpadTapSwitch(): Promise<boolean>`
+- `setTouchpadPointerSpeed(speed: number, callback: AsyncCallback<void>): void`
+- `setTouchpadPointerSpeed(speed: number): Promise<void>`
+- `getTouchpadPointerSpeed(callback: AsyncCallback<number>): void`
+- `getTouchpadPointerSpeed(): Promise<number>`
+- `setTouchpadPinchSwitch(state: boolean, callback: AsyncCallback<void>): void`
+- `setTouchpadPinchSwitch(state: boolean): Promise<void>`
+- `getTouchpadPinchSwitch(callback: AsyncCallback<boolean>): void`
+- `getTouchpadPinchSwitch(): Promise<boolean>`
+- `setTouchpadSwipeSwitch(state: boolean, callback: AsyncCallback<void>): void`
+- `setTouchpadSwipeSwitch(state: boolean): Promise<void>`
+- `getTouchpadSwipeSwitch(callback: AsyncCallback<boolean>): void`
+- `getTouchpadSwipeSwitch(): Promise<boolean>`
+- `setTouchpadRightClickType(type: RightClickType, callback: AsyncCallback<void>): void`
+- `setTouchpadRightClickType(type: RightClickType): Promise<void>`
+- `getTouchpadRightClickType(callback: AsyncCallback<RightClickType>): void`
+- `getTouchpadRightClickType(): Promise<RightClickType>`
+- `setCustomCursor(windowId: number, pixelMap: image.PixelMap, focusX?: number, focusY?: number): Promise<void>`
+- `setCustomCursorSync(windowId: number, pixelMap: image.PixelMap, focusX?: number, focusY?: number): void`
+
+### shortKey (@ohos.multimodalInput.shortKey.d.ts)
+#### Functions
+- `setKeyDownDuration(businessKey: string, delay: number, callback: AsyncCallback<void>): void`
+- `setKeyDownDuration(businessKey: string, delay: number): Promise<void>`
+
+### @ohos.multimodalInput.touchEvent (@ohos.multimodalInput.touchEvent.d.ts)
+#### Interfaces
+- **Touch**
+  - `id`: number
+  - `pressedTime`: number
+  - `screenX`: number
+  - `screenY`: number
+  - `windowX`: number
+  - `windowY`: number
+  - `pressure`: number
+  - `width`: number
+  - `height`: number
+  - `tiltX`: number
+  - `tiltY`: number
+  - `toolX`: number
+  - `toolY`: number
+  - `toolWidth`: number
+  - `toolHeight`: number
+  - `rawX`: number
+  - `rawY`: number
+  - `toolType`: ToolType
+- **TouchEvent**
+  - `action`: Action
+  - `touch`: Touch
+  - `touches`: Touch[]
+  - `sourceType`: SourceType
+#### Enums
+- **Action**
+  - `CANCEL` = 0
+  - `DOWN` = 1
+  - `MOVE` = 2
+  - `UP` = 3
+- **ToolType**
+  - `FINGER` = 0
+  - `PEN` = 1
+  - `RUBBER` = 2
+  - `BRUSH` = 3
+  - `PENCIL` = 4
+  - `AIRBRUSH` = 5
+  - `MOUSE` = 6
+  - `LENS` = 7
+- **SourceType**
+  - `TOUCH_SCREEN` = 0
+  - `PEN` = 1
+  - `TOUCH_PAD` = 2
+
+### connection (@ohos.net.connection.d.ts)
+#### Interfaces
+- **NetConnection**
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `register`: void
+  - `unregister`: void
+- **NetSpecifier**
+  - `netCapabilities`: NetCapabilities
+  - `bearerPrivateIdentifier?`: string
+- **NetCapabilityInfo**
+  - `netHandle`: NetHandle
+  - `netCap`: NetCapabilities
+- **NetHandle**
+  - `netId`: number
+  - `bindSocket`: void
+  - `bindSocket`: Promise<void>
+  - `getAddressesByName`: void
+  - `getAddressesByName`: Promise<Array<NetAddress>>
+  - `getAddressByName`: void
+  - `getAddressByName`: Promise<NetAddress>
+- **NetCapabilities**
+  - `linkUpBandwidthKbps?`: number
+  - `linkDownBandwidthKbps?`: number
+  - `networkCap?`: Array<NetCap>
+  - `bearerTypes`: Array<NetBearType>
+- **NetConnectionPropertyInfo**
+  - `netHandle`: NetHandle
+  - `connectionProperties`: ConnectionProperties
+- **NetBlockStatusInfo**
+  - `netHandle`: NetHandle
+  - `blocked`: boolean
+- **ConnectionProperties**
+  - `interfaceName`: string
+  - `domains`: string
+  - `linkAddresses`: Array<LinkAddress>
+  - `dnses`: Array<NetAddress>
+  - `routes`: Array<RouteInfo>
+  - `mtu`: number
+- **RouteInfo**
+  - `interface`: string
+  - `destination`: LinkAddress
+  - `gateway`: NetAddress
+  - `hasGateway`: boolean
+  - `isDefaultRoute`: boolean
+- **LinkAddress**
+  - `address`: NetAddress
+  - `prefixLength`: number
+- **NetAddress**
+  - `address`: string
+  - `family?`: number
+  - `port?`: number
+- **HttpProxy**
+  - `host`: string
+  - `port`: number
+  - `exclusionList`: Array<string>
+#### Enums
+- **NetCap**
+  - `NET_CAPABILITY_MMS` = 0
+  - `NET_CAPABILITY_NOT_METERED` = 11
+  - `NET_CAPABILITY_INTERNET` = 12
+  - `NET_CAPABILITY_NOT_VPN` = 15
+  - `NET_CAPABILITY_VALIDATED` = 16
+- **NetBearType**
+  - `BEARER_CELLULAR` = 0
+  - `BEARER_WIFI` = 1
+  - `BEARER_ETHERNET` = 3
+#### Functions
+- `createNetConnection(netSpecifier?: NetSpecifier, timeout?: number): NetConnection`
+- `getDefaultNet(callback: AsyncCallback<NetHandle>): void`
+- `getDefaultNet(): Promise<NetHandle>`
+- `getDefaultNetSync(): NetHandle`
+- `getAllNets(callback: AsyncCallback<Array<NetHandle>>): void`
+- `getAllNets(): Promise<Array<NetHandle>>`
+- `getAllNetsSync(): Array<NetHandle>`
+- `getConnectionProperties(netHandle: NetHandle, callback: AsyncCallback<ConnectionProperties>): void`
+- `getConnectionProperties(netHandle: NetHandle): Promise<ConnectionProperties>`
+- `getConnectionPropertiesSync(netHandle: NetHandle): ConnectionProperties`
+- `getNetCapabilities(netHandle: NetHandle, callback: AsyncCallback<NetCapabilities>): void`
+- `getNetCapabilities(netHandle: NetHandle): Promise<NetCapabilities>`
+- `getNetCapabilitiesSync(netHandle: NetHandle): NetCapabilities`
+- `isDefaultNetMetered(callback: AsyncCallback<boolean>): void`
+- `isDefaultNetMetered(): Promise<boolean>`
+- `isDefaultNetMeteredSync(): boolean`
+- `hasDefaultNet(callback: AsyncCallback<boolean>): void`
+- `hasDefaultNet(): Promise<boolean>`
+- `hasDefaultNetSync(): boolean`
+- `enableAirplaneMode(callback: AsyncCallback<void>): void`
+- `enableAirplaneMode(): Promise<void>`
+- `disableAirplaneMode(callback: AsyncCallback<void>): void`
+- `disableAirplaneMode(): Promise<void>`
+- `reportNetConnected(netHandle: NetHandle, callback: AsyncCallback<void>): void`
+- `reportNetConnected(netHandle: NetHandle): Promise<void>`
+- `reportNetDisconnected(netHandle: NetHandle, callback: AsyncCallback<void>): void`
+- `reportNetDisconnected(netHandle: NetHandle): Promise<void>`
+- `getAddressesByName(host: string, callback: AsyncCallback<Array<NetAddress>>): void`
+- `getAddressesByName(host: string): Promise<Array<NetAddress>>`
+- `getAppNet(callback: AsyncCallback<NetHandle>): void`
+- `getAppNet(): Promise<NetHandle>`
+- `getAppNetSync(): NetHandle`
+- `setAppNet(netHandle: NetHandle, callback: AsyncCallback<void>): void`
+- `setAppNet(netHandle: NetHandle): Promise<void>`
+- `getDefaultHttpProxy(callback: AsyncCallback<HttpProxy>): void`
+- `getDefaultHttpProxy(): Promise<HttpProxy>`
+- `getGlobalHttpProxy(callback: AsyncCallback<HttpProxy>): void`
+- `getGlobalHttpProxy(): Promise<HttpProxy>`
+- `setAppHttpProxy(httpProxy: HttpProxy): void`
+- `setGlobalHttpProxy(httpProxy: HttpProxy, callback: AsyncCallback<void>): void`
+- `setGlobalHttpProxy(httpProxy: HttpProxy): Promise<void>`
+- `addCustomDnsRule(host: string, ip: Array<string>, callback: AsyncCallback<void>): void`
+- `addCustomDnsRule(host: string, ip: Array<string>): Promise<void>`
+- `removeCustomDnsRule(host: string, callback: AsyncCallback<void>): void`
+- `removeCustomDnsRule(host: string): Promise<void>`
+- `clearCustomDnsRules(callback: AsyncCallback<void>): void`
+- `clearCustomDnsRules(): Promise<void>`
+- `factoryReset(): Promise<void>`
+#### Type Aliases
+- `HttpRequest` = http.HttpRequest
+- `TCPSocket` = socket.TCPSocket
+- `UDPSocket` = socket.UDPSocket
+
+### ethernet (@ohos.net.ethernet.d.ts)
+#### Interfaces
+- **InterfaceConfiguration**
+  - `mode`: IPSetMode
+  - `ipAddr`: string
+  - `route`: string
+  - `gateway`: string
+  - `netMask`: string
+  - `dnsServers`: string
+  - `httpProxy?`: HttpProxy
+- **InterfaceStateInfo**
+  - `iface`: string
+  - `active`: boolean
+#### Enums
+- **IPSetMode**
+  - `STATIC` = 0
+  - `DHCP` = 1
+  - `LAN_STATIC` = 2
+  - `LAN_DHCP` = 3
+#### Functions
+- `getIfaceConfig(iface: string, callback: AsyncCallback<InterfaceConfiguration>): void`
+- `getIfaceConfig(iface: string): Promise<InterfaceConfiguration>`
+- `setIfaceConfig(iface: string, ic: InterfaceConfiguration, callback: AsyncCallback<void>): void`
+- `setIfaceConfig(iface: string, ic: InterfaceConfiguration): Promise<void>`
+- `isIfaceActive(iface: string, callback: AsyncCallback<number>): void`
+- `isIfaceActive(iface: string): Promise<number>`
+- `getAllActiveIfaces(callback: AsyncCallback<Array<string>>): void`
+- `getAllActiveIfaces(): Promise<Array<string>>`
+- `on(type: 'interfaceStateChange', callback: Callback<InterfaceStateInfo>): void`
+- `off(type: 'interfaceStateChange', callback?: Callback<InterfaceStateInfo>): void`
+#### Type Aliases
+- `HttpProxy` = connection.HttpProxy
+
+### http (@ohos.net.http.d.ts)
+#### Interfaces
+- **HttpRequestOptions**
+  - `method?`: RequestMethod
+  - `extraData?`: string | Object | ArrayBuffer
+  - `expectDataType?`: HttpDataType
+  - `usingCache?`: boolean
+  - `priority?`: number
+  - `header?`: Object
+  - `readTimeout?`: number
+  - `connectTimeout?`: number
+  - `usingProtocol?`: HttpProtocol
+  - `usingProxy?`: boolean | HttpProxy
+  - `caPath?`: string
+  - `resumeFrom?`: number
+  - `resumeTo?`: number
+  - `clientCert?`: ClientCert
+  - `dnsOverHttps?`: string
+  - `dnsServers?`: Array<string>
+  - `maxLimit?`: number
+  - `multiFormDataList?`: Array<MultiFormData>
+- **MultiFormData**
+  - `name`: string
+  - `contentType`: string
+  - `remoteFileName?`: string
+  - `data?`: string | Object | ArrayBuffer
+  - `filePath?`: string
+- **ClientCert**
+  - `certPath`: string
+  - `certType?`: CertType
+  - `keyPath`: string
+  - `keyPassword?`: string
+- **HttpRequest**
+  - `request`: void
+  - `request`: void
+  - `request`: Promise<HttpResponse>
+  - `requestInStream`: void
+  - `requestInStream`: void
+  - `requestInStream`: Promise<number>
+  - `destroy`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `once`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **HttpResponse**
+  - `result`: string | Object | ArrayBuffer
+  - `resultType`: HttpDataType
+  - `responseCode`: ResponseCode | number
+  - `header`: Object
+  - `cookies`: string
+  - `performanceTiming`: PerformanceTiming
+- **PerformanceTiming**
+  - `dnsTiming`: number
+  - `tcpTiming`: number
+  - `tlsTiming`: number
+  - `firstSendTiming`: number
+  - `firstReceiveTiming`: number
+  - `totalFinishTiming`: number
+  - `redirectTiming`: number
+  - `responseHeaderTiming`: number
+  - `responseBodyTiming`: number
+  - `totalTiming`: number
+- **DataReceiveProgressInfo**
+  - `receiveSize`: number
+  - `totalSize`: number
+- **DataSendProgressInfo**
+  - `sendSize`: number
+  - `totalSize`: number
+- **HttpResponseCache**
+  - `flush`: void
+  - `flush`: Promise<void>
+  - `delete`: void
+  - `delete`: Promise<void>
+#### Enums
+- **CertType**
+  - `PEM` = 'PEM'
+  - `DER` = 'DER'
+  - `P12` = 'P12'
+- **RequestMethod**
+  - `OPTIONS` = "OPTIONS"
+  - `GET` = "GET"
+  - `HEAD` = "HEAD"
+  - `POST` = "POST"
+  - `PUT` = "PUT"
+  - `DELETE` = "DELETE"
+  - `TRACE` = "TRACE"
+  - `CONNECT` = "CONNECT"
+- **ResponseCode**
+  - `OK` = 200
+  - `MULT_CHOICE` = 300
+  - `BAD_REQUEST` = 400
+  - `INTERNAL_ERROR` = 500
+- **HttpProtocol**
+- **HttpDataType**
+  - `OBJECT` = 1
+  - `ARRAY_BUFFER` = 2
+#### Functions
+- `createHttp(): HttpRequest`
+- `createHttpResponseCache(cacheSize?: number): HttpResponseCache`
+#### Type Aliases
+- `HttpProxy` = connection.HttpProxy
+
+### mdns (@ohos.net.mdns.d.ts)
+#### Interfaces
+- **DiscoveryService**
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `startSearchingMDNS`: void
+  - `stopSearchingMDNS`: void
+- **LocalServiceInfo**
+  - `serviceType`: string
+  - `serviceName`: string
+  - `port?`: number
+  - `host?`: NetAddress
+  - `serviceAttribute?`: Array<ServiceAttribute>
+- **ServiceAttribute**
+  - `key`: string
+  - `value`: Array<number>
+- **DiscoveryEventInfo**
+  - `serviceInfo`: LocalServiceInfo
+  - `errorCode?`: MdnsError
+#### Enums
+- **MdnsError**
+  - `INTERNAL_ERROR` = 0
+  - `ALREADY_ACTIVE` = 1
+  - `MAX_LIMIT` = 2
+#### Functions
+- `addLocalService(context: Context, serviceInfo: LocalServiceInfo,
+    callback: AsyncCallback<LocalServiceInfo>): void`
+- `addLocalService(context: Context, serviceInfo: LocalServiceInfo): Promise<LocalServiceInfo>`
+- `removeLocalService(context: Context, serviceInfo: LocalServiceInfo,
+    callback: AsyncCallback<LocalServiceInfo>): void`
+- `removeLocalService(context: Context, serviceInfo: LocalServiceInfo): Promise<LocalServiceInfo>`
+- `createDiscoveryService(context: Context, serviceType: string): DiscoveryService`
+- `resolveLocalService(context: Context, serviceInfo: LocalServiceInfo,
+    callback: AsyncCallback<LocalServiceInfo>): void`
+- `resolveLocalService(context: Context, serviceInfo: LocalServiceInfo): Promise<LocalServiceInfo>`
+#### Type Aliases
+- `NetAddress` = connection.NetAddress
+
+### networkSecurity (@ohos.net.networkSecurity.d.ts)
+#### Interfaces
+- **CertBlob**
+  - `type`: CertType
+  - `data`: string | ArrayBuffer
+#### Enums
+- **CertType**
+  - `CERT_TYPE_PEM` = 0
+  - `CERT_TYPE_DER` = 1
+#### Functions
+- `certVerification(cert: CertBlob, caCert?: CertBlob): Promise<number>`
+- `certVerificationSync(cert: CertBlob, caCert?: CertBlob): number`
+
+### policy (@ohos.net.policy.d.ts)
+#### Interfaces
+- **NetQuotaPolicy**
+  - `networkMatchRule`: NetworkMatchRule
+  - `quotaPolicy`: QuotaPolicy
+- **QuotaPolicy**
+  - `periodDuration`: string
+  - `warningBytes`: number
+  - `limitBytes`: number
+  - `metered`: boolean
+  - `limitAction`: LimitAction
+  - `lastWarningRemind?`: number
+  - `lastLimitRemind?`: number
+- **NetworkMatchRule**
+  - `netType`: NetBearType
+  - `identity`: string
+  - `simId`: string
+- **NetUidRuleInfo**
+  - `uid`: number
+  - `rule`: NetUidRule
+- **NetUidPolicyInfo**
+  - `uid`: number
+  - `policy`: NetUidPolicy
+#### Enums
+- **NetBackgroundPolicy**
+  - `NET_BACKGROUND_POLICY_NONE` = 0
+  - `NET_BACKGROUND_POLICY_ENABLE` = 1
+  - `NET_BACKGROUND_POLICY_DISABLE` = 2
+  - `NET_BACKGROUND_POLICY_TRUSTLIST` = 3
+- **LimitAction**
+  - `LIMIT_ACTION_NONE` = -1
+  - `LIMIT_ACTION_ACCESS_DISABLED` = 0
+  - `LIMIT_ACTION_ALERT_ONLY` = 1
+- **NetUidRule**
+  - `NET_RULE_NONE` = 0
+  - `NET_RULE_ALLOW_METERED_FOREGROUND` = 1 << 0
+  - `NET_RULE_ALLOW_METERED` = 1 << 1
+  - `NET_RULE_REJECT_METERED` = 1 << 2
+  - `NET_RULE_ALLOW_ALL` = 1 << 5
+  - `NET_RULE_REJECT_ALL` = 1 << 6
+- **RemindType**
+  - `REMIND_TYPE_WARNING` = 1
+  - `REMIND_TYPE_LIMIT` = 2
+- **NetUidPolicy**
+  - `NET_POLICY_NONE` = 0
+  - `NET_POLICY_ALLOW_METERED_BACKGROUND` = 1 << 0
+  - `NET_POLICY_REJECT_METERED_BACKGROUND` = 1 << 1
+#### Functions
+- `setBackgroundAllowed(isAllowed: boolean, callback: AsyncCallback<void>): void`
+- `setBackgroundAllowed(isAllowed: boolean): Promise<void>`
+- `isBackgroundAllowed(callback: AsyncCallback<boolean>): void`
+- `isBackgroundAllowed(): Promise<boolean>`
+- `getBackgroundPolicyByUid(uid: number, callback: AsyncCallback<NetBackgroundPolicy>): void`
+- `getBackgroundPolicyByUid(uid: number): Promise<NetBackgroundPolicy>`
+- `setPolicyByUid(uid: number, policy: NetUidPolicy, callback: AsyncCallback<void>): void`
+- `setPolicyByUid(uid: number, policy: NetUidPolicy): Promise<void>`
+- `getPolicyByUid(uid: number, callback: AsyncCallback<NetUidPolicy>): void`
+- `getPolicyByUid(uid: number): Promise<NetUidPolicy>`
+- `getUidsByPolicy(policy: NetUidPolicy, callback: AsyncCallback<Array<number>>): void`
+- `getUidsByPolicy(policy: NetUidPolicy): Promise<Array<number>>`
+- `isUidNetAllowed(uid: number, isMetered: boolean, callback: AsyncCallback<boolean>): void`
+- `isUidNetAllowed(uid: number, isMetered: boolean): Promise<boolean>`
+- `isUidNetAllowed(uid: number, iface: string, callback: AsyncCallback<boolean>): void`
+- `isUidNetAllowed(uid: number, iface: string): Promise<boolean>`
+- `setNetQuotaPolicies(quotaPolicies: Array<NetQuotaPolicy>, callback: AsyncCallback<void>): void`
+- `setNetQuotaPolicies(quotaPolicies: Array<NetQuotaPolicy>): Promise<void>`
+- `getNetQuotaPolicies(callback: AsyncCallback<Array<NetQuotaPolicy>>): void`
+- `getNetQuotaPolicies(): Promise<Array<NetQuotaPolicy>>`
+- `updateRemindPolicy(netType: NetBearType, simId: string, remindType: RemindType, callback: AsyncCallback<void>): void`
+- `updateRemindPolicy(netType: NetBearType, simId: string, remindType: RemindType): Promise<void>`
+- `setDeviceIdleTrustlist(uids: Array<number>, isAllowed: boolean, callback: AsyncCallback<void>): void`
+- `setDeviceIdleTrustlist(uids: Array<number>, isAllowed: boolean): Promise<void>`
+- `getDeviceIdleTrustlist(callback: AsyncCallback<Array<number>>): void`
+- `getDeviceIdleTrustlist(): Promise<Array<number>>`
+- `setPowerSaveTrustlist(uids: Array<number>, isAllowed: boolean, callback: AsyncCallback<void>): void`
+- `setPowerSaveTrustlist(uids: Array<number>, isAllowed: boolean): Promise<void>`
+- `getPowerSaveTrustlist(callback: AsyncCallback<Array<number>>): void`
+- `getPowerSaveTrustlist(): Promise<Array<number>>`
+- `resetPolicies(simId: string, callback: AsyncCallback<void>): void`
+- `resetPolicies(simId: string): Promise<void>`
+- `on(type: 'netUidPolicyChange', callback: Callback<NetUidPolicyInfo>): void`
+- `off(type: 'netUidPolicyChange', callback?: Callback<NetUidPolicyInfo>): void`
+- `on(type: 'netUidRuleChange', callback: Callback<NetUidRuleInfo>): void`
+- `off(type: 'netUidRuleChange', callback?: Callback<NetUidRuleInfo>): void`
+- `on(type: 'netMeteredIfacesChange', callback: Callback<Array<string>>): void`
+- `off(type: 'netMeteredIfacesChange', callback?: Callback<Array<string>>): void`
+- `on(type: 'netQuotaPolicyChange', callback: Callback<Array<NetQuotaPolicy>>): void`
+- `off(type: 'netQuotaPolicyChange', callback?: Callback<Array<NetQuotaPolicy>>): void`
+- `on(type: 'netBackgroundPolicyChange', callback: Callback<boolean>): void`
+- `off(type: 'netBackgroundPolicyChange', callback?: Callback<boolean>): void`
+#### Type Aliases
+- `NetBearType` = connection.NetBearType
+
+### sharing (@ohos.net.sharing.d.ts)
+#### Interfaces
+- **InterfaceSharingStateInfo**
+  - `type`: SharingIfaceType
+  - `iface`: string
+  - `state`: SharingIfaceState
+#### Enums
+- **SharingIfaceState**
+  - `SHARING_NIC_SERVING` = 1
+  - `SHARING_NIC_CAN_SERVER` = 2
+  - `SHARING_NIC_ERROR` = 3
+- **SharingIfaceType**
+  - `SHARING_WIFI` = 0
+  - `SHARING_USB` = 1
+  - `SHARING_BLUETOOTH` = 2
+#### Functions
+- `isSharingSupported(callback: AsyncCallback<boolean>): void`
+- `isSharingSupported(): Promise<boolean>`
+- `isSharing(callback: AsyncCallback<boolean>): void`
+- `isSharing(): Promise<boolean>`
+- `startSharing(type: SharingIfaceType, callback: AsyncCallback<void>): void`
+- `startSharing(type: SharingIfaceType): Promise<void>`
+- `stopSharing(type: SharingIfaceType, callback: AsyncCallback<void>): void`
+- `stopSharing(type: SharingIfaceType): Promise<void>`
+- `getStatsRxBytes(callback: AsyncCallback<number>): void`
+- `getStatsRxBytes(): Promise<number>`
+- `getStatsTxBytes(callback: AsyncCallback<number>): void`
+- `getStatsTxBytes(): Promise<number>`
+- `getStatsTotalBytes(callback: AsyncCallback<number>): void`
+- `getStatsTotalBytes(): Promise<number>`
+- `getSharingIfaces(state: SharingIfaceState, callback: AsyncCallback<Array<string>>): void`
+- `getSharingIfaces(state: SharingIfaceState): Promise<Array<string>>`
+- `getSharingState(type: SharingIfaceType, callback: AsyncCallback<SharingIfaceState>): void`
+- `getSharingState(type: SharingIfaceType): Promise<SharingIfaceState>`
+- `getSharableRegexes(type: SharingIfaceType, callback: AsyncCallback<Array<string>>): void`
+- `getSharableRegexes(type: SharingIfaceType): Promise<Array<string>>`
+- `on(type: 'sharingStateChange', callback: Callback<boolean>): void`
+- `off(type: 'sharingStateChange', callback?: Callback<boolean>): void`
+- `on(type: 'interfaceSharingStateChange', callback: Callback<InterfaceSharingStateInfo>): void`
+- `off(type: 'interfaceSharingStateChange', callback?: Callback<InterfaceSharingStateInfo>): void`
+- `on(type: 'sharingUpstreamChange', callback: Callback<NetHandle>): void`
+- `off(type: 'sharingUpstreamChange', callback?: Callback<NetHandle>): void`
+#### Type Aliases
+- `NetHandle` = connection.NetHandle
+
+### socket (@ohos.net.socket.d.ts)
+#### Interfaces
+- **UDPSendOptions**
+  - `data`: string | ArrayBuffer
+  - `address`: NetAddress
+- **ExtraOptionsBase**
+  - `receiveBufferSize?`: number
+  - `sendBufferSize?`: number
+  - `reuseAddress?`: boolean
+  - `socketTimeout?`: number
+- **UDPExtraOptions**
+  - `broadcast?`: boolean
+- **SocketStateBase**
+  - `isBound`: boolean
+  - `isClose`: boolean
+  - `isConnected`: boolean
+- **SocketRemoteInfo**
+  - `address`: string
+  - `family`: 'IPv4' | 'IPv6'
+  - `port`: number
+  - `size`: number
+- **LocalSocketMessageInfo**
+  - `message`: ArrayBuffer
+  - `address`: string
+  - `size`: number
+- **LocalAddress**
+  - `address`: string
+- **LocalConnectOptions**
+  - `address`: LocalAddress
+  - `timeout?`: number
+- **LocalSendOptions**
+  - `data`: string | ArrayBuffer
+  - `encoding?`: string
+- **UDPSocket**
+  - `bind`: void
+  - `bind`: Promise<void>
+  - `send`: void
+  - `send`: Promise<void>
+  - `close`: void
+  - `close`: Promise<void>
+  - `getState`: void
+  - `getState`: Promise<SocketStateBase>
+  - `setExtraOptions`: void
+  - `setExtraOptions`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **MulticastSocket**
+  - `addMembership`: void
+  - `addMembership`: Promise<void>
+  - `dropMembership`: void
+  - `dropMembership`: Promise<void>
+  - `setMulticastTTL`: void
+  - `setMulticastTTL`: Promise<void>
+  - `getMulticastTTL`: void
+  - `getMulticastTTL`: Promise<number>
+  - `setLoopbackMode`: void
+  - `setLoopbackMode`: Promise<void>
+  - `getLoopbackMode`: void
+  - `getLoopbackMode`: Promise<boolean>
+- **LocalSocket**
+  - `bind`: Promise<void>
+  - `connect`: Promise<void>
+  - `send`: Promise<void>
+  - `close`: Promise<void>
+  - `getState`: Promise<SocketStateBase>
+  - `getSocketFd`: Promise<number>
+  - `setExtraOptions`: Promise<void>
+  - `getExtraOptions`: Promise<ExtraOptionsBase>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **LocalSocketConnection**
+  - `clientId`: number
+  - `send`: Promise<void>
+  - `close`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **LocalSocketServer**
+  - `listen`: Promise<void>
+  - `getState`: Promise<SocketStateBase>
+  - `setExtraOptions`: Promise<void>
+  - `getExtraOptions`: Promise<ExtraOptionsBase>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **TCPConnectOptions**
+  - `address`: NetAddress
+  - `timeout?`: number
+- **TCPSendOptions**
+  - `data`: string | ArrayBuffer
+  - `encoding?`: string
+- **TCPExtraOptions**
+  - `keepAlive?`: boolean
+  - `OOBInline?`: boolean
+  - `TCPNoDelay?`: boolean
+  - `socketLinger?`: { on: boolean, linger: number }
+- **TCPSocket**
+  - `bind`: void
+  - `bind`: Promise<void>
+  - `connect`: void
+  - `connect`: Promise<void>
+  - `send`: void
+  - `send`: Promise<void>
+  - `close`: void
+  - `close`: Promise<void>
+  - `getRemoteAddress`: void
+  - `getRemoteAddress`: Promise<NetAddress>
+  - `getState`: void
+  - `getState`: Promise<SocketStateBase>
+  - `getSocketFd`: void
+  - `getSocketFd`: Promise<number>
+  - `setExtraOptions`: void
+  - `setExtraOptions`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **TLSSocket**
+  - `bind`: void
+  - `bind`: Promise<void>
+  - `getRemoteAddress`: void
+  - `getRemoteAddress`: Promise<NetAddress>
+  - `getState`: void
+  - `getState`: Promise<SocketStateBase>
+  - `setExtraOptions`: void
+  - `setExtraOptions`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `getCertificate`: void
+  - `getCertificate`: Promise<X509CertRawData>
+  - `getRemoteCertificate`: void
+  - `getRemoteCertificate`: Promise<X509CertRawData>
+  - `getProtocol`: void
+  - `getProtocol`: Promise<string>
+  - `getCipherSuite`: void
+  - `getCipherSuite`: Promise<Array<string>>
+  - `getSignatureAlgorithms`: void
+  - `getSignatureAlgorithms`: Promise<Array<string>>
+  - `connect`: void
+  - `connect`: Promise<void>
+  - `send`: void
+  - `send`: Promise<void>
+  - `close`: void
+  - `close`: Promise<void>
+- **TLSSecureOptions**
+  - `ca`: string | Array<string>
+  - `cert?`: string
+  - `key?`: string
+  - `password?`: string
+  - `protocols?`: Protocol | Array<Protocol>
+  - `useRemoteCipherPrefer?`: boolean
+  - `signatureAlgorithms?`: string
+  - `cipherSuite?`: string
+- **TLSConnectOptions**
+  - `address`: NetAddress
+  - `secureOptions`: TLSSecureOptions
+  - `ALPNProtocols?`: Array<string>
+- **TCPSocketConnection**
+  - `clientId`: number
+  - `send`: void
+  - `send`: Promise<void>
+  - `close`: void
+  - `close`: Promise<void>
+  - `getRemoteAddress`: void
+  - `getRemoteAddress`: Promise<NetAddress>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **TCPSocketServer**
+  - `listen`: void
+  - `listen`: Promise<void>
+  - `getState`: void
+  - `getState`: Promise<SocketStateBase>
+  - `setExtraOptions`: void
+  - `setExtraOptions`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **TLSSocketConnection**
+  - `clientId`: number
+  - `send`: void
+  - `send`: Promise<void>
+  - `close`: void
+  - `close`: Promise<void>
+  - `getRemoteAddress`: void
+  - `getRemoteAddress`: Promise<NetAddress>
+  - `getRemoteCertificate`: void
+  - `getRemoteCertificate`: Promise<X509CertRawData>
+  - `getCipherSuite`: void
+  - `getCipherSuite`: Promise<Array<string>>
+  - `getSignatureAlgorithms`: void
+  - `getSignatureAlgorithms`: Promise<Array<string>>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+- **SocketMessageInfo**
+  - `message`: ArrayBuffer
+  - `remoteInfo`: SocketRemoteInfo
+- **TLSSocketServer**
+  - `listen`: void
+  - `listen`: Promise<void>
+  - `getState`: void
+  - `getState`: Promise<SocketStateBase>
+  - `setExtraOptions`: void
+  - `setExtraOptions`: Promise<void>
+  - `getCertificate`: void
+  - `getCertificate`: Promise<X509CertRawData>
+  - `getProtocol`: void
+  - `getProtocol`: Promise<string>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+#### Enums
+- **Protocol**
+  - `TLSv12` = "TLSv1.2"
+  - `TLSv13` = "TLSv1.3"
+#### Functions
+- `constructUDPSocketInstance(): UDPSocket`
+- `constructMulticastSocketInstance(): MulticastSocket`
+- `constructTCPSocketInstance(): TCPSocket`
+- `constructTLSSocketInstance(): TLSSocket`
+- `constructTCPSocketServerInstance(): TCPSocketServer`
+- `constructTLSSocketServerInstance(): TLSSocketServer`
+- `constructLocalSocketInstance(): LocalSocket`
+- `constructLocalSocketServerInstance(): LocalSocketServer`
+#### Type Aliases
+- `X509CertRawData` = cert.EncodingBlob
+
+### statistics (@ohos.net.statistics.d.ts)
+#### Interfaces
+- **IfaceInfo**
+  - `iface`: string
+  - `startTime`: number
+  - `endTime`: number
+- **UidInfo**
+  - `ifaceInfo`: IfaceInfo
+  - `uid`: number
+- **NetStatsInfo**
+  - `rxBytes`: number
+  - `txBytes`: number
+  - `rxPackets`: number
+  - `txPackets`: number
+- **NetStatsChangeInfo**
+  - `iface`: string
+  - `uid?`: number
+#### Functions
+- `getIfaceRxBytes(nic: string, callback: AsyncCallback<number>): void`
+- `getIfaceRxBytes(nic: string): Promise<number>`
+- `getIfaceTxBytes(nic: string, callback: AsyncCallback<number>): void`
+- `getIfaceTxBytes(nic: string): Promise<number>`
+- `getCellularRxBytes(callback: AsyncCallback<number>): void`
+- `getCellularRxBytes(): Promise<number>`
+- `getCellularTxBytes(callback: AsyncCallback<number>): void`
+- `getCellularTxBytes(): Promise<number>`
+- `getAllRxBytes(callback: AsyncCallback<number>): void`
+- `getAllRxBytes(): Promise<number>`
+- `getAllTxBytes(callback: AsyncCallback<number>): void`
+- `getAllTxBytes(): Promise<number>`
+- `getUidRxBytes(uid: number, callback: AsyncCallback<number>): void`
+- `getUidRxBytes(uid: number): Promise<number>`
+- `getUidTxBytes(uid: number, callback: AsyncCallback<number>): void`
+- `getUidTxBytes(uid: number): Promise<number>`
+- `on(type: 'netStatsChange', callback: Callback<NetStatsChangeInfo>): void`
+- `off(type: 'netStatsChange', callback?: Callback<NetStatsChangeInfo>): void`
+- `getTrafficStatsByIface(ifaceInfo: IfaceInfo, callback: AsyncCallback<NetStatsInfo>): void`
+- `getTrafficStatsByIface(ifaceInfo: IfaceInfo): Promise<NetStatsInfo>`
+- `getTrafficStatsByUid(uidInfo: UidInfo, callback: AsyncCallback<NetStatsInfo>): void`
+- `getTrafficStatsByUid(uidInfo: UidInfo): Promise<NetStatsInfo>`
+- `getSockfdRxBytes(sockfd: number, callback: AsyncCallback<number>): void`
+- `getSockfdRxBytes(sockfd: number): Promise<number>`
+- `getSockfdTxBytes(sockfd: number, callback: AsyncCallback<number>): void`
+- `getSockfdTxBytes(sockfd: number): Promise<number>`
+
+### vpn (@ohos.net.vpn.d.ts)
+#### Interfaces
+- **VpnConnection**
+  - `setUp`: void
+  - `setUp`: Promise<number>
+  - `protect`: void
+  - `protect`: Promise<void>
+  - `destroy`: void
+  - `destroy`: Promise<void>
+- **VpnConfig**
+  - `addresses`: Array<LinkAddress>
+  - `routes?`: Array<RouteInfo>
+  - `dnsAddresses?`: Array<string>
+  - `searchDomains?`: Array<string>
+  - `mtu?`: number
+  - `isIPv4Accepted?`: boolean
+  - `isIPv6Accepted?`: boolean
+  - `isLegacy?`: boolean
+  - `isBlocking?`: boolean
+  - `trustedApplications?`: Array<string>
+  - `blockedApplications?`: Array<string>
+#### Functions
+- `createVpnConnection(context: AbilityContext): VpnConnection`
+#### Type Aliases
+- `LinkAddress` = connection.LinkAddress
+- `RouteInfo` = connection.RouteInfo
+- `AbilityContext` = _AbilityContext
+
+### vpnExtension (@ohos.net.vpnExtension.d.ts)
+#### Interfaces
+- **VpnConnection**
+  - `create`: Promise<number>
+  - `protect`: Promise<void>
+  - `destroy`: Promise<void>
+- **VpnConfig**
+  - `addresses`: Array<LinkAddress>
+  - `routes?`: Array<RouteInfo>
+  - `dnsAddresses?`: Array<string>
+  - `searchDomains?`: Array<string>
+  - `mtu?`: number
+  - `isIPv4Accepted?`: boolean
+  - `isIPv6Accepted?`: boolean
+  - `isInternal?`: boolean
+  - `isBlocking?`: boolean
+  - `trustedApplications?`: Array<string>
+  - `blockedApplications?`: Array<string>
+#### Functions
+- `startVpnExtensionAbility(want: Want): Promise<void>`
+- `stopVpnExtensionAbility(want: Want): Promise<void>`
+- `setAlwaysOnVpnEnabled(enable: boolean, bundleName: string): Promise<void>`
+- `isAlwaysOnVpnEnabled(bundleName: string): Promise<boolean>`
+- `updateVpnAuthorizedState(bundleName: string): boolean`
+- `createVpnConnection(context: VpnExtensionContext): VpnConnection`
+#### Type Aliases
+- `LinkAddress` = connection.LinkAddress
+- `RouteInfo` = connection.RouteInfo
+- `VpnExtensionContext` = _VpnExtensionContext
+
+### webSocket (@ohos.net.webSocket.d.ts)
+#### Interfaces
+- **WebSocketRequestOptions**
+  - `header?`: Object
+  - `caPath?`: string
+  - `clientCert?`: ClientCert
+- **ClientCert**
+  - `certPath`: string
+  - `keyPath`: string
+  - `keyPassword?`: string
+- **WebSocketCloseOptions**
+  - `code?`: number
+  - `reason?`: string
+- **CloseResult**
+  - `code`: number
+  - `reason`: string
+- **WebSocket**
+  - `connect`: void
+  - `connect`: void
+  - `connect`: Promise<boolean>
+  - `send`: void
+  - `send`: Promise<boolean>
+  - `close`: void
+  - `close`: void
+  - `close`: Promise<boolean>
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+#### Functions
+- `createWebSocket(): WebSocket`
+
+### cardEmulation (@ohos.nfc.cardEmulation.d.ts)
+#### Enums
+- **FeatureType**
+  - `HCE` = 0
+  - `UICC` = 1
+  - `ESE` = 2
+- **CardType**
+  - `PAYMENT` = 'payment'
+  - `OTHER` = 'other'
+#### Functions
+- `isSupported(feature: number): boolean`
+- `hasHceCapability(): boolean`
+- `isDefaultService(elementName: ElementName, type: CardType): boolean`
+- `getPaymentServices(): AbilityInfo[]`
+#### Classes
+- **HceService**
+  - `startHCE()`: boolean
+  - `start()`: void
+  - `stopHCE()`: boolean
+  - `stop()`: void
+  - `on()`: void
+  - `sendResponse()`: void
+  - `transmit()`: Promise<void>
+  - `transmit()`: void
+
+### nfcController (@ohos.nfc.controller.d.ts)
+#### Enums
+- **NfcState**
+  - `STATE_OFF` = 1
+  - `STATE_TURNING_ON` = 2
+  - `STATE_ON` = 3
+  - `STATE_TURNING_OFF` = 4
+#### Functions
+- `isNfcAvailable(): boolean`
+- `on(type: 'nfcStateChange', callback: Callback<NfcState>): void`
+- `off(type: 'nfcStateChange', callback?: Callback<NfcState>): void`
+- `openNfc(): boolean`
+- `enableNfc(): void`
+- `closeNfc(): boolean`
+- `disableNfc(): void`
+- `isNfcOpen(): boolean`
+- `getNfcState(): NfcState`
+
+### tag (@ohos.nfc.tag.d.ts)
+#### Interfaces
+- **TagInfo**
+  - `uid`: number[]
+  - `technology`: number[]
+  - `extrasData`: PacMap[]
+  - `tagRfDiscId`: number
+  - `remoteTagService`: rpc.RemoteObject
+  - `supportedProfiles`: number[]
+- **NdefRecord**
+  - `tnf`: number
+  - `rtdType`: number[]
+  - `id`: number[]
+  - `payload`: number[]
+#### Enums
+- **TnfType**
+  - `TNF_EMPTY` = 0x0
+  - `TNF_WELL_KNOWN` = 0x1
+  - `TNF_MEDIA` = 0x2
+  - `TNF_ABSOLUTE_URI` = 0x3
+  - `TNF_EXT_APP` = 0x4
+  - `TNF_UNKNOWN` = 0x5
+  - `TNF_UNCHANGED` = 0x6
+- **NfcForumType**
+  - `NFC_FORUM_TYPE_1` = 1
+  - `NFC_FORUM_TYPE_2` = 2
+  - `NFC_FORUM_TYPE_3` = 3
+  - `NFC_FORUM_TYPE_4` = 4
+  - `MIFARE_CLASSIC` = 101
+- **MifareClassicType**
+  - `TYPE_UNKNOWN` = 0
+  - `TYPE_CLASSIC` = 1
+  - `TYPE_PLUS` = 2
+  - `TYPE_PRO` = 3
+- **MifareClassicSize**
+  - `MC_SIZE_MINI` = 320
+  - `MC_SIZE_1K` = 1024
+  - `MC_SIZE_2K` = 2048
+  - `MC_SIZE_4K` = 4096
+- **MifareUltralightType**
+  - `TYPE_UNKNOWN` = 0
+  - `TYPE_ULTRALIGHT` = 1
+  - `TYPE_ULTRALIGHT_C` = 2
+#### Functions
+- `getNfcATag(tagInfo: TagInfo): NfcATag`
+- `getNfcA(tagInfo: TagInfo): NfcATag`
+- `getNfcBTag(tagInfo: TagInfo): NfcBTag`
+- `getNfcB(tagInfo: TagInfo): NfcBTag`
+- `getNfcFTag(tagInfo: TagInfo): NfcFTag`
+- `getNfcF(tagInfo: TagInfo): NfcFTag`
+- `getNfcVTag(tagInfo: TagInfo): NfcVTag`
+- `getNfcV(tagInfo: TagInfo): NfcVTag`
+- `getIsoDep(tagInfo: TagInfo): IsoDepTag`
+- `getNdef(tagInfo: TagInfo): NdefTag`
+- `getMifareClassic(tagInfo: TagInfo): MifareClassicTag`
+- `getMifareUltralight(tagInfo: TagInfo): MifareUltralightTag`
+- `getNdefFormatable(tagInfo: TagInfo): NdefFormatableTag`
+- `getTagInfo(want: Want): TagInfo`
+- `registerForegroundDispatch(
+    elementName: ElementName,
+    discTech: number[],
+    callback: AsyncCallback<TagInfo>
+  ): void`
+- `unregisterForegroundDispatch(elementName: ElementName): void`
+- `on(type: 'readerMode', elementName: ElementName, discTech: number[], callback: AsyncCallback<TagInfo>): void`
+- `off(type: 'readerMode', elementName: ElementName, callback?: AsyncCallback<TagInfo>): void`
+- `makeUriRecord(uri: string): NdefRecord`
+- `makeTextRecord(text: string, locale: string): NdefRecord`
+- `makeMimeRecord(mimeType: string, mimeData: number[]): NdefRecord`
+- `makeExternalRecord(domainName: string, type: string, externalData: number[]): NdefRecord`
+- `createNdefMessage(data: number[]): NdefMessage`
+- `createNdefMessage(ndefRecords: NdefRecord[]): NdefMessage`
+- `messageToBytes(ndefMessage: NdefMessage): number[]`
+#### Type Aliases
+- `NfcATag` = _NfcATag
+- `NfcBTag` = _NfcBTag
+- `NfcFTag` = _NfcFTag
+- `NfcVTag` = _NfcVTag
+- `IsoDepTag` = _IsoDepTag
+- `NdefTag` = _NdefTag
+- `MifareClassicTag` = _MifareClassicTag
+- `MifareUltralightTag` = _MifareUltralightTag
+- `NdefFormatableTag` = _NdefFormatableTag
+- `NdefMessage` = _NdefMessage
+- `TagSession` = _TagSession
+
+### notification (@ohos.notification.d.ts)
+#### Interfaces
+- **BundleOption**
+  - `bundle`: string
+  - `uid?`: number
+- **NotificationKey**
+  - `id`: number
+  - `label?`: string
+- **DoNotDisturbDate**
+  - `type`: DoNotDisturbType
+  - `begin`: Date
+  - `end`: Date
+#### Enums
+- **SlotType**
+  - `UNKNOWN_TYPE` = 0
+  - `SOCIAL_COMMUNICATION` = 1
+  - `SERVICE_INFORMATION` = 2
+  - `CONTENT_INFORMATION` = 3
+  - `OTHER_TYPES` = 0xFFFF
+- **ContentType**
+- **SlotLevel**
+  - `LEVEL_NONE` = 0
+  - `LEVEL_MIN` = 1
+  - `LEVEL_LOW` = 2
+  - `LEVEL_DEFAULT` = 3
+  - `LEVEL_HIGH` = 4
+- **DoNotDisturbType**
+  - `TYPE_NONE` = 0
+  - `TYPE_ONCE` = 1
+  - `TYPE_DAILY` = 2
+  - `TYPE_CLEARLY` = 3
+- **DeviceRemindType**
+  - `IDLE_DONOT_REMIND` = 0
+  - `IDLE_REMIND` = 1
+  - `ACTIVE_DONOT_REMIND` = 2
+  - `ACTIVE_REMIND` = 3
+- **SourceType**
+  - `TYPE_NORMAL` = 0
+  - `TYPE_CONTINUOUS` = 1
+  - `TYPE_TIMER` = 2
+- **RemoveReason**
+  - `CLICK_REASON_REMOVE` = 1
+  - `CANCEL_REASON_REMOVE` = 2
+#### Functions
+- `publish(request: NotificationRequest, callback: AsyncCallback<void>): void`
+- `publish(request: NotificationRequest): Promise<void>`
+- `publish(request: NotificationRequest, userId: number, callback: AsyncCallback<void>): void`
+- `publish(request: NotificationRequest, userId: number): Promise<void>`
+- `cancel(id: number, callback: AsyncCallback<void>): void`
+- `cancel(id: number, label: string, callback: AsyncCallback<void>): void`
+- `cancel(id: number, label?: string): Promise<void>`
+- `cancelAll(callback: AsyncCallback<void>): void`
+- `cancelAll(): Promise<void>`
+- `addSlot(slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `addSlot(slot: NotificationSlot): Promise<void>`
+- `addSlot(type: SlotType, callback: AsyncCallback<void>): void`
+- `addSlot(type: SlotType): Promise<void>`
+- `addSlots(slots: Array<NotificationSlot>, callback: AsyncCallback<void>): void`
+- `addSlots(slots: Array<NotificationSlot>): Promise<void>`
+- `getSlot(slotType: SlotType, callback: AsyncCallback<NotificationSlot>): void`
+- `getSlot(slotType: SlotType): Promise<NotificationSlot>`
+- `getSlots(callback: AsyncCallback<Array<NotificationSlot>>): void`
+- `getSlots(): Promise<Array<NotificationSlot>>`
+- `removeSlot(slotType: SlotType, callback: AsyncCallback<void>): void`
+- `removeSlot(slotType: SlotType): Promise<void>`
+- `removeAllSlots(callback: AsyncCallback<void>): void`
+- `removeAllSlots(): Promise<void>`
+- `subscribe(subscriber: NotificationSubscriber, callback: AsyncCallback<void>): void`
+- `subscribe(
+    subscriber: NotificationSubscriber,
+    info: NotificationSubscribeInfo,
+    callback: AsyncCallback<void>
+  ): void`
+- `subscribe(subscriber: NotificationSubscriber, info?: NotificationSubscribeInfo): Promise<void>`
+- `unsubscribe(subscriber: NotificationSubscriber, callback: AsyncCallback<void>): void`
+- `unsubscribe(subscriber: NotificationSubscriber): Promise<void>`
+- `enableNotification(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `enableNotification(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isNotificationEnabled(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(bundle: BundleOption): Promise<boolean>`
+- `isNotificationEnabled(callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(): Promise<boolean>`
+- `isNotificationEnabled(userId: number, callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(userId: number): Promise<boolean>`
+- `displayBadge(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `displayBadge(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isBadgeDisplayed(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isBadgeDisplayed(bundle: BundleOption): Promise<boolean>`
+- `setSlotByBundle(bundle: BundleOption, slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `setSlotByBundle(bundle: BundleOption, slot: NotificationSlot): Promise<void>`
+- `getSlotsByBundle(bundle: BundleOption, callback: AsyncCallback<Array<NotificationSlot>>): void`
+- `getSlotsByBundle(bundle: BundleOption): Promise<Array<NotificationSlot>>`
+- `getSlotNumByBundle(bundle: BundleOption, callback: AsyncCallback<number>): void`
+- `getSlotNumByBundle(bundle: BundleOption): Promise<number>`
+- `remove(
+    bundle: BundleOption,
+    notificationKey: NotificationKey,
+    reason: RemoveReason,
+    callback: AsyncCallback<void>
+  ): void`
+- `remove(bundle: BundleOption, notificationKey: NotificationKey, reason: RemoveReason): Promise<void>`
+- `remove(hashCode: string, reason: RemoveReason, callback: AsyncCallback<void>): void`
+- `remove(hashCode: string, reason: RemoveReason): Promise<void>`
+- `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void`
+- `removeAll(callback: AsyncCallback<void>): void`
+- `removeAll(userId: number, callback: AsyncCallback<void>): void`
+- `removeAll(userId: number): Promise<void>`
+- `removeAll(bundle?: BundleOption): Promise<void>`
+- `getAllActiveNotifications(callback: AsyncCallback<Array<NotificationRequest>>): void`
+- `getAllActiveNotifications(): Promise<Array<NotificationRequest>>`
+- `getActiveNotificationCount(callback: AsyncCallback<number>): void`
+- `getActiveNotificationCount(): Promise<number>`
+- `getActiveNotifications(callback: AsyncCallback<Array<NotificationRequest>>): void`
+- `getActiveNotifications(): Promise<Array<NotificationRequest>>`
+- `cancelGroup(groupName: string, callback: AsyncCallback<void>): void`
+- `cancelGroup(groupName: string): Promise<void>`
+- `removeGroupByBundle(bundle: BundleOption, groupName: string, callback: AsyncCallback<void>): void`
+- `removeGroupByBundle(bundle: BundleOption, groupName: string): Promise<void>`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, callback: AsyncCallback<void>): void`
+- `setDoNotDisturbDate(date: DoNotDisturbDate): Promise<void>`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, userId: number, callback: AsyncCallback<void>): void`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, userId: number): Promise<void>`
+- `getDoNotDisturbDate(callback: AsyncCallback<DoNotDisturbDate>): void`
+- `getDoNotDisturbDate(): Promise<DoNotDisturbDate>`
+- `getDoNotDisturbDate(userId: number, callback: AsyncCallback<DoNotDisturbDate>): void`
+- `getDoNotDisturbDate(userId: number): Promise<DoNotDisturbDate>`
+- `supportDoNotDisturbMode(callback: AsyncCallback<boolean>): void`
+- `supportDoNotDisturbMode(): Promise<boolean>`
+- `isSupportTemplate(templateName: string, callback: AsyncCallback<boolean>): void`
+- `isSupportTemplate(templateName: string): Promise<boolean>`
+- `requestEnableNotification(callback: AsyncCallback<void>): void`
+- `requestEnableNotification(): Promise<void>`
+- `enableDistributed(enable: boolean, callback: AsyncCallback<void>): void`
+- `enableDistributed(enable: boolean): Promise<void>`
+- `isDistributedEnabled(callback: AsyncCallback<boolean>): void`
+- `isDistributedEnabled(): Promise<boolean>`
+- `enableDistributedByBundle(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `enableDistributedByBundle(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isDistributedEnabledByBundle(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isDistributedEnabledByBundle(bundle: BundleOption): Promise<boolean>`
+- `getDeviceRemindType(callback: AsyncCallback<DeviceRemindType>): void`
+- `getDeviceRemindType(): Promise<DeviceRemindType>`
+
+### notificationManager (@ohos.notificationManager.d.ts)
+#### Interfaces
+- **ButtonOptions**
+  - `buttonName`: string
+- **SystemLiveViewSubscriber**
+  - `onResponse?`: (notificationId: number, buttonOptions: ButtonOptions) => void
+- **NotificationCheckInfo**
+  - `bundleName`: string
+  - `notificationId`: number
+  - `label?`: string
+  - `contentType`: ContentType
+  - `creatorUserId`: number
+  - `slotType`: SlotType
+  - `extraInfos?`: Record<string, Object>
+- **NotificationCheckResult**
+  - `code`: number
+  - `message`: string
+- **DoNotDisturbDate**
+  - `type`: DoNotDisturbType
+  - `begin`: Date
+  - `end`: Date
+#### Enums
+- **SlotType**
+  - `UNKNOWN_TYPE` = 0
+  - `SOCIAL_COMMUNICATION` = 1
+  - `SERVICE_INFORMATION` = 2
+  - `CONTENT_INFORMATION` = 3
+  - `LIVE_VIEW` = 4
+  - `CUSTOMER_SERVICE` = 5
+  - `OTHER_TYPES` = 0xFFFF
+- **ContentType**
+- **SlotLevel**
+  - `LEVEL_NONE` = 0
+  - `LEVEL_MIN` = 1
+  - `LEVEL_LOW` = 2
+  - `LEVEL_DEFAULT` = 3
+  - `LEVEL_HIGH` = 4
+- **DoNotDisturbType**
+  - `TYPE_NONE` = 0
+  - `TYPE_ONCE` = 1
+  - `TYPE_DAILY` = 2
+  - `TYPE_CLEARLY` = 3
+- **DeviceRemindType**
+  - `IDLE_DONOT_REMIND` = 0
+  - `IDLE_REMIND` = 1
+  - `ACTIVE_DONOT_REMIND` = 2
+  - `ACTIVE_REMIND` = 3
+- **SourceType**
+  - `TYPE_NORMAL` = 0
+  - `TYPE_CONTINUOUS` = 1
+  - `TYPE_TIMER` = 2
+#### Functions
+- `publish(request: NotificationRequest, callback: AsyncCallback<void>): void`
+- `publish(request: NotificationRequest): Promise<void>`
+- `publish(request: NotificationRequest, userId: number, callback: AsyncCallback<void>): void`
+- `publish(request: NotificationRequest, userId: number): Promise<void>`
+- `publishAsBundle(
+    request: NotificationRequest,
+    representativeBundle: string,
+    userId: number,
+    callback: AsyncCallback<void>
+  ): void`
+- `publishAsBundle(request: NotificationRequest, representativeBundle: string, userId: number): Promise<void>`
+- `cancel(id: number, callback: AsyncCallback<void>): void`
+- `cancel(id: number, label: string, callback: AsyncCallback<void>): void`
+- `cancel(id: number, label?: string): Promise<void>`
+- `cancelAsBundle(
+    id: number,
+    representativeBundle: string,
+    userId: number,
+    callback: AsyncCallback<void>
+  ): void`
+- `cancelAsBundle(id: number, representativeBundle: string, userId: number): Promise<void>`
+- `cancelAll(callback: AsyncCallback<void>): void`
+- `cancelAll(): Promise<void>`
+- `addSlot(slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `addSlot(slot: NotificationSlot): Promise<void>`
+- `addSlot(type: SlotType, callback: AsyncCallback<void>): void`
+- `addSlot(type: SlotType): Promise<void>`
+- `addSlots(slots: Array<NotificationSlot>, callback: AsyncCallback<void>): void`
+- `addSlots(slots: Array<NotificationSlot>): Promise<void>`
+- `getSlot(slotType: SlotType, callback: AsyncCallback<NotificationSlot>): void`
+- `getSlot(slotType: SlotType): Promise<NotificationSlot>`
+- `getSlots(callback: AsyncCallback<Array<NotificationSlot>>): void`
+- `getSlots(): Promise<Array<NotificationSlot>>`
+- `removeSlot(slotType: SlotType, callback: AsyncCallback<void>): void`
+- `removeSlot(slotType: SlotType): Promise<void>`
+- `removeAllSlots(callback: AsyncCallback<void>): void`
+- `removeAllSlots(): Promise<void>`
+- `setNotificationEnable(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `setNotificationEnable(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isNotificationEnabled(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(bundle: BundleOption): Promise<boolean>`
+- `isNotificationEnabled(callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(): Promise<boolean>`
+- `isNotificationEnabled(userId: number, callback: AsyncCallback<boolean>): void`
+- `isNotificationEnabled(userId: number): Promise<boolean>`
+- `displayBadge(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `displayBadge(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isBadgeDisplayed(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isBadgeDisplayed(bundle: BundleOption): Promise<boolean>`
+- `setSlotByBundle(bundle: BundleOption, slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `setSlotByBundle(bundle: BundleOption, slot: NotificationSlot): Promise<void>`
+- `getSlotsByBundle(bundle: BundleOption, callback: AsyncCallback<Array<NotificationSlot>>): void`
+- `getSlotsByBundle(bundle: BundleOption): Promise<Array<NotificationSlot>>`
+- `getSlotNumByBundle(bundle: BundleOption, callback: AsyncCallback<number>): void`
+- `getSlotNumByBundle(bundle: BundleOption): Promise<number>`
+- `getAllActiveNotifications(callback: AsyncCallback<Array<NotificationRequest>>): void`
+- `getAllActiveNotifications(): Promise<Array<NotificationRequest>>`
+- `getActiveNotificationCount(callback: AsyncCallback<number>): void`
+- `getActiveNotificationCount(): Promise<number>`
+- `getActiveNotifications(callback: AsyncCallback<Array<NotificationRequest>>): void`
+- `getActiveNotifications(): Promise<Array<NotificationRequest>>`
+- `getActiveNotificationByFilter(filter: NotificationFilter, callback: AsyncCallback<NotificationRequest>): void`
+- `getActiveNotificationByFilter(filter: NotificationFilter): Promise<NotificationRequest>`
+- `cancelGroup(groupName: string, callback: AsyncCallback<void>): void`
+- `cancelGroup(groupName: string): Promise<void>`
+- `removeGroupByBundle(bundle: BundleOption, groupName: string, callback: AsyncCallback<void>): void`
+- `removeGroupByBundle(bundle: BundleOption, groupName: string): Promise<void>`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, callback: AsyncCallback<void>): void`
+- `setDoNotDisturbDate(date: DoNotDisturbDate): Promise<void>`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, userId: number, callback: AsyncCallback<void>): void`
+- `setDoNotDisturbDate(date: DoNotDisturbDate, userId: number): Promise<void>`
+- `getDoNotDisturbDate(callback: AsyncCallback<DoNotDisturbDate>): void`
+- `getDoNotDisturbDate(): Promise<DoNotDisturbDate>`
+- `getDoNotDisturbDate(userId: number, callback: AsyncCallback<DoNotDisturbDate>): void`
+- `getDoNotDisturbDate(userId: number): Promise<DoNotDisturbDate>`
+- `isSupportDoNotDisturbMode(callback: AsyncCallback<boolean>): void`
+- `isSupportDoNotDisturbMode(): Promise<boolean>`
+- `isSupportTemplate(templateName: string, callback: AsyncCallback<boolean>): void`
+- `isSupportTemplate(templateName: string): Promise<boolean>`
+- `requestEnableNotification(callback: AsyncCallback<void>): void`
+- `requestEnableNotification(context: UIAbilityContext, callback: AsyncCallback<void>): void`
+- `requestEnableNotification(): Promise<void>`
+- `requestEnableNotification(context: UIAbilityContext): Promise<void>`
+- `setDistributedEnable(enable: boolean, callback: AsyncCallback<void>): void`
+- `setDistributedEnable(enable: boolean): Promise<void>`
+- `isDistributedEnabled(callback: AsyncCallback<boolean>): void`
+- `isDistributedEnabled(): Promise<boolean>`
+- `setDistributedEnableByBundle(bundle: BundleOption, enable: boolean, callback: AsyncCallback<void>): void`
+- `setDistributedEnableByBundle(bundle: BundleOption, enable: boolean): Promise<void>`
+- `isDistributedEnabledByBundle(bundle: BundleOption, callback: AsyncCallback<boolean>): void`
+- `isDistributedEnabledByBundle(bundle: BundleOption): Promise<boolean>`
+- `getDeviceRemindType(callback: AsyncCallback<DeviceRemindType>): void`
+- `getDeviceRemindType(): Promise<DeviceRemindType>`
+- `setNotificationEnableSlot(
+    bundle: BundleOption,
+    type: SlotType,
+    enable: boolean,
+    callback: AsyncCallback<void>
+  ): void`
+- `setNotificationEnableSlot(
+    bundle: BundleOption,
+    type: SlotType,
+    enable: boolean,
+    isForceControl: boolean,
+    callback: AsyncCallback<void>,
+  ): void`
+- `setNotificationEnableSlot(bundle: BundleOption, type: SlotType, enable: boolean, isForceControl?: boolean): Promise<void>`
+- `isNotificationSlotEnabled(bundle: BundleOption, type: SlotType, callback: AsyncCallback<boolean>): void`
+- `isNotificationSlotEnabled(bundle: BundleOption, type: SlotType): Promise<boolean>`
+- `setSyncNotificationEnabledWithoutApp(userId: number, enable: boolean, callback: AsyncCallback<void>): void`
+- `setSyncNotificationEnabledWithoutApp(userId: number, enable: boolean): Promise<void>`
+- `getSyncNotificationEnabledWithoutApp(userId: number, callback: AsyncCallback<boolean>): void`
+- `getSyncNotificationEnabledWithoutApp(userId: number): Promise<boolean>`
+- `setBadgeNumber(badgeNumber: number, callback: AsyncCallback<void>): void`
+- `setBadgeNumber(badgeNumber: number): Promise<void>`
+- `triggerSystemLiveView(bundle: BundleOption, notificationId: number, buttonOptions: ButtonOptions): Promise<void>`
+- `subscribeSystemLiveView(subscriber: SystemLiveViewSubscriber): Promise<void>`
+- `setSlotFlagsByBundle(bundle: BundleOption, slotFlags: number): Promise<void>`
+- `getSlotFlagsByBundle(bundle: BundleOption): Promise<number>`
+#### Type Aliases
+- `BundleOption` = _BundleOption
+- `NotificationActionButton` = _NotificationActionButton
+- `NotificationBasicContent` = _NotificationBasicContent
+- `NotificationContent` = _NotificationContent
+- `NotificationLongTextContent` = _NotificationLongTextContent
+- `NotificationLiveViewContent` = _NotificationLiveViewContent
+- `NotificationMultiLineContent` = _NotificationMultiLineContent
+- `NotificationPictureContent` = _NotificationPictureContent
+- `NotificationSystemLiveViewContent` = _NotificationSystemLiveViewContent
+- `NotificationFlags` = _NotificationFlags
+- `NotificationFlagStatus` = _NotificationFlagStatus
+- `NotificationRequest` = _NotificationRequest
+- `NotificationFilter` = _NotificationFilter
+- `NotificationCheckRequest` = _NotificationCheckRequest
+- `DistributedOptions` = _DistributedOptions
+- `NotificationSlot` = _NotificationSlot
+- `LiveViewStatus` = _LiveViewStatus
+- `NotificationSorting` = _NotificationSorting
+- `NotificationTemplate` = _NotificationTemplate
+- `NotificationUserInput` = _NotificationUserInput
+- `NotificationCapsule` = _NotificationCapsule
+- `NotificationButton` = _NotificationButton
+- `NotificationTime` = _NotificationTime
+- `NotificationProgress` = _NotificationProgress
+
+### notificationSubscribe (@ohos.notificationSubscribe.d.ts)
+#### Interfaces
+- **NotificationKey**
+  - `id`: number
+  - `label?`: string
+#### Enums
+- **RemoveReason**
+  - `CLICK_REASON_REMOVE` = 1
+  - `CANCEL_REASON_REMOVE` = 2
+#### Functions
+- `subscribe(subscriber: NotificationSubscriber, callback: AsyncCallback<void>): void`
+- `subscribeSelf(subscriber: NotificationSubscriber): Promise<void>`
+- `subscribe(
+    subscriber: NotificationSubscriber,
+    info: NotificationSubscribeInfo,
+    callback: AsyncCallback<void>
+  ): void`
+- `subscribe(subscriber: NotificationSubscriber, info?: NotificationSubscribeInfo): Promise<void>`
+- `unsubscribe(subscriber: NotificationSubscriber, callback: AsyncCallback<void>): void`
+- `unsubscribe(subscriber: NotificationSubscriber): Promise<void>`
+- `remove(
+    bundle: BundleOption,
+    notificationKey: NotificationKey,
+    reason: RemoveReason,
+    callback: AsyncCallback<void>
+  ): void`
+- `remove(bundle: BundleOption, notificationKey: NotificationKey, reason: RemoveReason): Promise<void>`
+- `remove(hashCode: string, reason: RemoveReason, callback: AsyncCallback<void>): void`
+- `remove(hashCodes: Array<String>, reason: RemoveReason, callback: AsyncCallback<void>): void`
+- `remove(hashCode: string, reason: RemoveReason): Promise<void>`
+- `remove(hashCodes: Array<String>, reason: RemoveReason): Promise<void>`
+- `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void`
+- `removeAll(callback: AsyncCallback<void>): void`
+- `removeAll(userId: number, callback: AsyncCallback<void>): void`
+- `removeAll(userId: number): Promise<void>`
+- `removeAll(bundle?: BundleOption): Promise<void>`
+#### Type Aliases
+- `BundleOption` = _BundleOption
+- `NotificationSubscribeInfo` = _NotificationSubscribeInfo
+- `NotificationSubscriber` = _NotificationSubscriber
+- `SubscribeCallbackData` = _SubscribeCallbackData
+- `EnabledNotificationCallbackData` = _EnabledNotificationCallbackData
+- `BadgeNumberCallbackData` = _BadgeNumberCallbackData
+
+### pasteboard (@ohos.pasteboard.d.ts)
+#### Interfaces
+- **PasteDataProperty**
+  - `readonly mimeTypes`: Array<string>
+  - `tag`: string
+  - `readonly timestamp`: number
+  - `localOnly`: boolean
+  - `shareOption`: ShareOption
+- **PasteDataRecord**
+  - `htmlText`: string
+  - `want`: Want
+  - `mimeType`: string
+  - `plainText`: string
+  - `uri`: string
+  - `pixelMap`: image.PixelMap
+  - `convertToText`: void
+  - `convertToText`: Promise<string>
+  - `toPlainText`: string
+- **PasteData**
+  - `addHtmlRecord`: void
+  - `addWantRecord`: void
+  - `addRecord`: void
+  - `addTextRecord`: void
+  - `addUriRecord`: void
+  - `addRecord`: void
+  - `getMimeTypes`: Array<string>
+  - `getPrimaryHtml`: string
+  - `getPrimaryWant`: Want
+  - `getPrimaryMimeType`: string
+  - `getPrimaryText`: string
+  - `getPrimaryUri`: string
+  - `getPrimaryPixelMap`: image.PixelMap
+  - `getProperty`: PasteDataProperty
+  - `setProperty`: void
+  - `getRecordAt`: PasteDataRecord
+  - `getRecord`: PasteDataRecord
+  - `getRecordCount`: number
+  - `getTag`: string
+  - `hasMimeType`: boolean
+  - `hasType`: boolean
+  - `removeRecordAt`: boolean
+  - `removeRecord`: void
+  - `replaceRecordAt`: boolean
+  - `replaceRecord`: void
+- **SystemPasteboard**
+  - `isRemoteData`: boolean
+  - `getDataSource`: string
+  - `hasDataType`: boolean
+  - `clear`: void
+  - `clear`: Promise<void>
+  - `clearData`: void
+  - `clearData`: Promise<void>
+  - `clearDataSync`: void
+  - `getPasteData`: void
+  - `getPasteData`: Promise<PasteData>
+  - `getData`: void
+  - `getData`: Promise<PasteData>
+  - `getDataSync`: PasteData
+  - `hasPasteData`: void
+  - `hasPasteData`: Promise<boolean>
+  - `hasData`: void
+  - `hasData`: Promise<boolean>
+  - `hasDataSync`: boolean
+  - `setPasteData`: void
+  - `setPasteData`: Promise<void>
+  - `setData`: void
+  - `setData`: Promise<void>
+  - `setDataSync`: void
+#### Enums
+- **ShareOption**
+#### Functions
+- `createHtmlData(htmlText: string): PasteData`
+- `createWantData(want: Want): PasteData`
+- `createPlainTextData(text: string): PasteData`
+- `createUriData(uri: string): PasteData`
+- `createData(mimeType: string, value: ValueType): PasteData`
+- `createHtmlTextRecord(htmlText: string): PasteDataRecord`
+- `createWantRecord(want: Want): PasteDataRecord`
+- `createPlainTextRecord(text: string): PasteDataRecord`
+- `createUriRecord(uri: string): PasteDataRecord`
+- `createRecord(mimeType: string, value: ValueType): PasteDataRecord`
+- `getSystemPasteboard(): SystemPasteboard`
+#### Type Aliases
+- `ValueType` = string | image.PixelMap | Want | ArrayBuffer
+
+### pluginComponentManager (@ohos.pluginComponent.d.ts)
+#### Interfaces
+- **PluginComponentTemplate**
+  - `source`: string
+  - `ability`: string
+- **PushParameters**
+  - `want`: Want
+  - `name`: string
+  - `data`: KVObject
+  - `extraData`: KVObject
+  - `jsonPath?`: string
+- **PushParameterForStage**
+  - `owner`: Want
+  - `target`: Want
+  - `name`: string
+  - `data`: KVObject
+  - `extraData`: KVObject
+  - `jsonPath?`: string
+- **RequestParameters**
+  - `want`: Want
+  - `name`: string
+  - `data`: KVObject
+  - `jsonPath?`: string
+- **RequestParameterForStage**
+  - `owner`: Want
+  - `target`: Want
+  - `name`: string
+  - `data`: KVObject
+  - `jsonPath?`: string
+- **RequestCallbackParameters**
+  - `componentTemplate`: PluginComponentTemplate
+  - `data`: KVObject
+  - `extraData`: KVObject
+- **RequestEventResult**
+  - `template?`: string
+  - `data?`: KVObject
+  - `extraData?`: KVObject
+#### Functions
+- `push(param: PushParameters, callback: AsyncCallback<void>): void`
+- `request(param: RequestParameters, callback: AsyncCallback<RequestCallbackParameters>): void`
+- `push(param: PushParameterForStage, callback: AsyncCallback<void>): void`
+- `request(param: RequestParameterForStage, callback: AsyncCallback<RequestCallbackParameters>): void`
+- `on(eventType: string, callback: OnPushEventCallback | OnRequestEventCallback): void`
+#### Type Aliases
+- `KVObject` = { [key: string]: number | string | boolean | [] | KVObject }
+
+  /**
+   * Plugin component push parameters.
+   *
+   * @interface PushParameters
+   * @s
+- `OnPushEventCallback` = (source: Want, template: PluginComponentTemplate, data: KVObject,
+    extraData: KVObject) => void
+- `OnRequestEventCallback` = (source: Want, name: string, data: KVObject) => RequestEventResult
+
+### power (@ohos.power.d.ts)
+#### Enums
+- **DevicePowerMode**
+  - `MODE_NORMAL` = 600
+#### Functions
+- `shutdown(reason: string): void`
+- `rebootDevice(reason: string): void`
+- `reboot(reason: string): void`
+- `isScreenOn(callback: AsyncCallback<boolean>): void`
+- `isScreenOn(): Promise<boolean>`
+- `isActive(): boolean`
+- `wakeup(detail: string): void`
+- `suspend(isImmediate?: boolean): void`
+- `getPowerMode(): DevicePowerMode`
+- `setPowerMode(mode: DevicePowerMode, callback: AsyncCallback<void>): void`
+- `setPowerMode(mode: DevicePowerMode): Promise<void>`
+- `isStandby(): boolean`
+
+### print (@ohos.print.d.ts)
+#### Interfaces
+- **PrintTask**
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `on`: void
+  - `off`: void
+  - `off`: void
+  - `off`: void
+  - `off`: void
+- **PrintDocumentAdapter**
+  - `writeResultCallback`: (jobId: string, writeResult: PrintFileCreationState) => void): void
+  - `onJobStateChanged`: void
+- **PrintAttributes**
+  - `copyNumber?`: number
+  - `pageRange?`: PrintPageRange
+  - `pageSize?`: PrintPageSize | PrintPageType
+  - `directionMode?`: PrintDirectionMode
+  - `colorMode?`: PrintColorMode
+  - `duplexMode?`: PrintDuplexMode
+- **PrintPageRange**
+  - `startPage?`: number
+  - `endPage?`: number
+  - `pages?`: Array<number>
+- **PrintMargin**
+  - `top?`: number
+  - `bottom?`: number
+  - `left?`: number
+  - `right?`: number
+- **PrinterRange**
+  - `startPage?`: number
+  - `endPage?`: number
+  - `pages?`: Array<number>
+- **PreviewAttribute**
+  - `previewRange`: PrinterRange
+  - `result?`: number
+- **PrintResolution**
+  - `id`: string
+  - `horizontalDpi`: number
+  - `verticalDpi`: number
+- **PrintPageSize**
+  - `id`: string
+  - `name`: string
+  - `width`: number
+  - `height`: number
+- **PrinterCapability**
+  - `colorMode`: number
+  - `duplexMode`: number
+  - `pageSize`: Array<PrintPageSize>
+  - `resolution?`: Array<PrintResolution>
+  - `minMargin?`: PrintMargin
+  - `options?`: Object
+- **PrinterInfo**
+  - `printerId`: string
+  - `printerName`: string
+  - `printerState`: PrinterState
+  - `printerIcon?`: number
+  - `description?`: string
+  - `capability?`: PrinterCapability
+  - `options?`: Object
+- **PrintJob**
+  - `fdList`: Array<number>
+  - `jobId`: string
+  - `printerId`: string
+  - `jobState`: PrintJobState
+  - `jobSubstate`: PrintJobSubState
+  - `copyNumber`: number
+  - `pageRange`: PrinterRange
+  - `isSequential`: boolean
+  - `pageSize`: PrintPageSize
+  - `isLandscape`: boolean
+  - `colorMode`: number
+  - `duplexMode`: number
+  - `margin?`: PrintMargin
+  - `preview?`: PreviewAttribute
+  - `options?`: Object
+- **PrinterExtensionInfo**
+  - `extensionId`: string
+  - `vendorId`: string
+  - `vendorName`: string
+  - `vendorIcon`: number
+  - `version`: string
+#### Enums
+- **PrintDirectionMode**
+  - `DIRECTION_MODE_AUTO` = 0
+  - `DIRECTION_MODE_PORTRAIT` = 1
+  - `DIRECTION_MODE_LANDSCAPE` = 2
+- **PrintColorMode**
+  - `COLOR_MODE_MONOCHROME` = 0
+  - `COLOR_MODE_COLOR` = 1
+- **PrintDuplexMode**
+  - `DUPLEX_MODE_NONE` = 0
+  - `DUPLEX_MODE_LONG_EDGE` = 1
+  - `DUPLEX_MODE_SHORT_EDGE` = 2
+- **PrintPageType**
+  - `PAGE_ISO_A3` = 0
+  - `PAGE_ISO_A4` = 1
+  - `PAGE_ISO_A5` = 2
+  - `PAGE_JIS_B5` = 3
+  - `PAGE_ISO_C5` = 4
+  - `PAGE_ISO_DL` = 5
+  - `PAGE_LETTER` = 6
+  - `PAGE_LEGAL` = 7
+  - `PAGE_PHOTO_4X6` = 8
+  - `PAGE_PHOTO_5X7` = 9
+  - `PAGE_INT_DL_ENVELOPE` = 10
+  - `PAGE_B_TABLOID` = 11
+- **PrintDocumentAdapterState**
+  - `PREVIEW_DESTROY` = 0
+  - `PRINT_TASK_SUCCEED` = 1
+  - `PRINT_TASK_FAIL` = 2
+  - `PRINT_TASK_CANCEL` = 3
+  - `PRINT_TASK_BLOCK` = 4
+- **PrintFileCreationState**
+  - `PRINT_FILE_CREATED` = 0
+  - `PRINT_FILE_CREATION_FAILED` = 1
+  - `PRINT_FILE_CREATED_UNRENDERED` = 2
+- **PrinterState**
+  - `PRINTER_ADDED` = 0
+  - `PRINTER_REMOVED` = 1
+  - `PRINTER_CAPABILITY_UPDATED` = 2
+  - `PRINTER_CONNECTED` = 3
+  - `PRINTER_DISCONNECTED` = 4
+  - `PRINTER_RUNNING` = 5
+- **PrintJobState**
+  - `PRINT_JOB_PREPARE` = 0
+  - `PRINT_JOB_QUEUED` = 1
+  - `PRINT_JOB_RUNNING` = 2
+  - `PRINT_JOB_BLOCKED` = 3
+  - `PRINT_JOB_COMPLETED` = 4
+- **PrintJobSubState**
+  - `PRINT_JOB_COMPLETED_SUCCESS` = 0
+  - `PRINT_JOB_COMPLETED_FAILED` = 1
+  - `PRINT_JOB_COMPLETED_CANCELLED` = 2
+  - `PRINT_JOB_COMPLETED_FILE_CORRUPTED` = 3
+  - `PRINT_JOB_BLOCK_OFFLINE` = 4
+  - `PRINT_JOB_BLOCK_BUSY` = 5
+  - `PRINT_JOB_BLOCK_CANCELLED` = 6
+  - `PRINT_JOB_BLOCK_OUT_OF_PAPER` = 7
+  - `PRINT_JOB_BLOCK_OUT_OF_INK` = 8
+  - `PRINT_JOB_BLOCK_OUT_OF_TONER` = 9
+  - `PRINT_JOB_BLOCK_JAMMED` = 10
+  - `PRINT_JOB_BLOCK_DOOR_OPEN` = 11
+  - `PRINT_JOB_BLOCK_SERVICE_REQUEST` = 12
+  - `PRINT_JOB_BLOCK_LOW_ON_INK` = 13
+  - `PRINT_JOB_BLOCK_LOW_ON_TONER` = 14
+  - `PRINT_JOB_BLOCK_REALLY_LOW_ON_INK` = 15
+  - `PRINT_JOB_BLOCK_BAD_CERTIFICATE` = 16
+  - `PRINT_JOB_BLOCK_ACCOUNT_ERROR` = 18
+  - `PRINT_JOB_BLOCK_PRINT_PERMISSION_ERROR` = 19
+  - `PRINT_JOB_BLOCK_PRINT_COLOR_PERMISSION_ERROR` = 20
+  - `PRINT_JOB_BLOCK_NETWORK_ERROR` = 21
+  - `PRINT_JOB_BLOCK_SERVER_CONNECTION_ERROR` = 22
+  - `PRINT_JOB_BLOCK_LARGE_FILE_ERROR` = 23
+  - `PRINT_JOB_BLOCK_FILE_PARSING_ERROR` = 24
+  - `PRINT_JOB_BLOCK_SLOW_FILE_CONVERSION` = 25
+  - `PRINT_JOB_RUNNING_UPLOADING_FILES` = 26
+  - `PRINT_JOB_RUNNING_CONVERTING_FILES` = 27
+  - `PRINT_JOB_BLOCK_UNKNOWN` = 99
+- **PrintErrorCode**
+  - `E_PRINT_NONE` = 0
+  - `E_PRINT_NO_PERMISSION` = 201
+  - `E_PRINT_INVALID_PARAMETER` = 401
+  - `E_PRINT_GENERIC_FAILURE` = 13100001
+  - `E_PRINT_RPC_FAILURE` = 13100002
+  - `E_PRINT_SERVER_FAILURE` = 13100003
+  - `E_PRINT_INVALID_EXTENSION` = 13100004
+  - `E_PRINT_INVALID_PRINTER` = 13100005
+  - `E_PRINT_INVALID_PRINT_JOB` = 13100006
+  - `E_PRINT_FILE_IO` = 13100007
+#### Functions
+- `print(files: Array<string>, callback: AsyncCallback<PrintTask>): void`
+- `print(files: Array<string>): Promise<PrintTask>`
+- `print(files: Array<string>, context: Context, callback: AsyncCallback<PrintTask>): void`
+- `print(files: Array<string>, context: Context): Promise<PrintTask>`
+- `print(jobName: string, printAdapter: PrintDocumentAdapter, printAttributes: PrintAttributes,
+    context: Context): Promise<PrintTask>`
+- `queryAllPrinterExtensionInfos(callback: AsyncCallback<Array<PrinterExtensionInfo>>): void`
+- `queryAllPrinterExtensionInfos(): Promise<Array<PrinterExtensionInfo>>`
+- `startDiscoverPrinter(extensionList: Array<string>, callback: AsyncCallback<void>): void`
+- `startDiscoverPrinter(extensionList: Array<string>): Promise<void>`
+- `stopDiscoverPrinter(callback: AsyncCallback<void>): void`
+- `stopDiscoverPrinter(): Promise<void>`
+- `connectPrinter(printerId: string, callback: AsyncCallback<void>): void`
+- `connectPrinter(printerId: string): Promise<void>`
+- `disconnectPrinter(printerId: string, callback: AsyncCallback<void>): void`
+- `disconnectPrinter(printerId: string): Promise<void>`
+- `queryPrinterCapability(printerId: string, callback: AsyncCallback<void>): void`
+- `queryPrinterCapability(printerId: string): Promise<void>`
+- `startPrintJob(jobInfo: PrintJob, callback: AsyncCallback<void>): void`
+- `startPrintJob(jobInfo: PrintJob): Promise<void>`
+- `cancelPrintJob(jobId: string, callback: AsyncCallback<void>): void`
+- `cancelPrintJob(jobId: string): Promise<void>`
+- `requestPrintPreview(jobInfo: PrintJob, callback: Callback<number>): void`
+- `requestPrintPreview(jobInfo: PrintJob): Promise<number>`
+- `off(type: 'printerStateChange', callback?: Callback<boolean>): void`
+- `off(type: 'jobStateChange', callback?: Callback<boolean>): void`
+- `off(type: 'extInfoChange', callback?: Callback<boolean>): void`
+- `addPrinters(printers: Array<PrinterInfo>, callback: AsyncCallback<void>): void`
+- `addPrinters(printers: Array<PrinterInfo>): Promise<void>`
+- `removePrinters(printerIds: Array<string>, callback: AsyncCallback<void>): void`
+- `removePrinters(printerIds: Array<string>): Promise<void>`
+- `updatePrinters(printers: Array<PrinterInfo>, callback: AsyncCallback<void>): void`
+- `updatePrinters(printers: Array<PrinterInfo>): Promise<void>`
+- `updatePrinterState(printerId: string, state: PrinterState, callback: AsyncCallback<void>): void`
+- `updatePrinterState(printerId: string, state: PrinterState): Promise<void>`
+- `updatePrintJobState(jobId: string, state: PrintJobState, subState: PrintJobSubState, callback: AsyncCallback<void>): void`
+- `updatePrintJobState(jobId: string, state: PrintJobState, subState: PrintJobSubState): Promise<void>`
+- `updateExtensionInfo(info: string, callback: AsyncCallback<void>): void`
+- `updateExtensionInfo(info: string): Promise<void>`
+- `queryAllPrintJobs(callback: AsyncCallback<void>): void`
+- `queryAllPrintJobs(): Promise<void>`
+- `queryPrintJobList(callback: AsyncCallback<Array<PrintJob>>): void`
+- `queryPrintJobList(): Promise<Array<PrintJob>>`
+- `queryPrintJobById(jobId: string, callback: AsyncCallback<PrintJob>): void`
+- `queryPrintJobById(jobId: string): Promise<PrintJob>`
+- `startGettingPrintFile(jobId: string, printAttributes: PrintAttributes, fd: number,
+    onFileStateChanged: Callback<PrintFileCreationState>): void`
+- `notifyPrintService(jobId: string, type: 'spooler_closed_for_cancelled' | 'spooler_closed_for_started', callback: AsyncCallback<void>): void`
+- `notifyPrintService(jobId: string, type: 'spooler_closed_for_cancelled' | 'spooler_closed_for_started'): Promise<void>`
+
+### privacyManager (@ohos.privacyManager.d.ts)
+#### Interfaces
+- **ActiveChangeResponse**
+  - `tokenId`: number
+  - `permissionName`: Permissions
+  - `deviceId`: string
+  - `activeStatus`: PermissionActiveStatus
+- **PermissionUsedRequest**
+  - `tokenId?`: number
+  - `isRemote?`: boolean
+  - `deviceId?`: string
+  - `bundleName?`: string
+  - `permissionNames?`: Array<Permissions>
+  - `beginTime?`: number
+  - `endTime?`: number
+  - `flag`: PermissionUsageFlag
+- **PermissionUsedResponse**
+  - `beginTime`: number
+  - `endTime`: number
+  - `bundleRecords`: Array<BundleUsedRecord>
+- **BundleUsedRecord**
+  - `tokenId`: number
+  - `isRemote`: boolean
+  - `deviceId`: string
+  - `bundleName`: string
+  - `permissionRecords`: Array<PermissionUsedRecord>
+- **PermissionUsedRecord**
+  - `permissionName`: Permissions
+  - `accessCount`: number
+  - `rejectCount`: number
+  - `lastAccessTime`: number
+  - `lastRejectTime`: number
+  - `lastAccessDuration`: number
+  - `accessRecords`: Array<UsedRecordDetail>
+  - `rejectRecords`: Array<UsedRecordDetail>
+- **UsedRecordDetail**
+  - `status`: number
+  - `lockScreenStatus?`: number
+  - `timestamp`: number
+  - `count?`: number
+  - `accessDuration`: number
+#### Enums
+- **PermissionActiveStatus**
+  - `PERM_INACTIVE` = 0
+  - `PERM_ACTIVE_IN_FOREGROUND` = 1
+  - `PERM_ACTIVE_IN_BACKGROUND` = 2
+- **PermissionUsageFlag**
+  - `FLAG_PERMISSION_USAGE_SUMMARY` = 0
+  - `FLAG_PERMISSION_USAGE_DETAIL` = 1
+#### Functions
+- `addPermissionUsedRecord(
+    tokenID: number,
+    permissionName: Permissions,
+    successCount: number,
+    failCount: number
+  ): Promise<void>`
+- `addPermissionUsedRecord(
+    tokenID: number,
+    permissionName: Permissions,
+    successCount: number,
+    failCount: number,
+    callback: AsyncCallback<void>
+  ): void`
+- `getPermissionUsedRecord(request: PermissionUsedRequest): Promise<PermissionUsedResponse>`
+- `getPermissionUsedRecord(
+    request: PermissionUsedRequest,
+    callback: AsyncCallback<PermissionUsedResponse>
+  ): void`
+- `startUsingPermission(tokenID: number, permissionName: Permissions): Promise<void>`
+- `startUsingPermission(tokenID: number, permissionName: Permissions, callback: AsyncCallback<void>): void`
+- `stopUsingPermission(tokenID: number, permissionName: Permissions): Promise<void>`
+- `stopUsingPermission(tokenID: number, permissionName: Permissions, callback: AsyncCallback<void>): void`
+- `on(
+    type: 'activeStateChange',
+    permissionList: Array<Permissions>,
+    callback: Callback<ActiveChangeResponse>
+  ): void`
+- `off(
+    type: 'activeStateChange',
+    permissionList: Array<Permissions>,
+    callback?: Callback<ActiveChangeResponse>
+  ): void`
+
+### process (@ohos.process.d.ts)
+#### Interfaces
+- **ChildProcess**
+  - `readonly pid`: number
+  - `readonly ppid`: number
+  - `readonly exitCode`: number
+  - `readonly killed`: boolean
+  - `wait`: Promise<number>
+  - `getOutput`: Promise<Uint8Array>
+  - `getErrorOutput`: Promise<Uint8Array>
+  - `close`: void
+  - `kill`: void
+- **ConditionType**
+  - `timeout?`: number
+  - `killSignal?`: number | string
+  - `maxBuffer?`: number
+#### Functions
+- `isIsolatedProcess(): boolean`
+- `isAppUid(v: number): boolean`
+- `is64Bit(): boolean`
+- `getUidForName(v: string): number`
+- `getThreadPriority(v: number): number`
+- `getStartRealtime(): number`
+- `getPastCpuTime(): number`
+- `getSystemConfig(name: number): number`
+- `getEnvironmentVar(name: string): string`
+- `runCmd(
+    command: string,
+    options?: ConditionType
+  ): ChildProcess`
+- `abort(): void`
+- `on(type: string, listener: EventListener): void`
+- `off(type: string): boolean`
+- `exit(code: number): void`
+- `cwd(): string`
+- `chdir(dir: string): void`
+- `uptime(): number`
+- `kill(signal: number, pid: number): boolean`
+#### Classes
+- **ProcessManager**
+  - `isAppUid()`: boolean
+  - `getUidForName()`: number
+  - `getThreadPriority()`: number
+  - `getSystemConfig()`: number
+  - `getEnvironmentVar()`: string
+  - `exit()`: void
+  - `kill()`: boolean
+#### Type Aliases
+- `EventListener` = (evt: Object) => void
+
+### prompt (@ohos.prompt.d.ts)
+#### Interfaces
+- **ShowToastOptions**
+  - `message`: string
+  - `duration?`: number
+  - `bottom?`: string | number
+- **Button**
+  - `text`: string
+  - `color`: string
+- **ShowDialogSuccessResponse**
+  - `index`: number
+- **ShowDialogOptions**
+  - `title?`: string
+  - `message?`: string
+  - `buttons?`: [Button, Button?, Button?]
+- **ActionMenuSuccessResponse**
+  - `index`: number
+- **ActionMenuOptions**
+  - `title?`: string
+  - `buttons`: [Button, Button?, Button?, Button?, Button?, Button?]
+#### Functions
+- `showToast(options: ShowToastOptions): void`
+- `showDialog(options: ShowDialogOptions, callback: AsyncCallback<ShowDialogSuccessResponse>): void`
+- `showDialog(options: ShowDialogOptions): Promise<ShowDialogSuccessResponse>`
+- `showActionMenu(options: ActionMenuOptions, callback: AsyncCallback<ActionMenuSuccessResponse>): void`
+- `showActionMenu(options: ActionMenuOptions): Promise<ActionMenuSuccessResponse>`
+
+### promptAction (@ohos.promptAction.d.ts)
+#### Interfaces
+- **ShowToastOptions**
+  - `message`: string | Resource
+  - `duration?`: number
+  - `bottom?`: string | number
+  - `showMode?`: ToastShowMode
+- **Button**
+  - `text`: string | Resource
+  - `color`: string | Resource
+- **ShowDialogSuccessResponse**
+  - `index`: number
+- **ShowDialogOptions**
+  - `title?`: string | Resource
+  - `message?`: string | Resource
+  - `buttons?`: Array<Button>
+  - `maskRect?`: Rectangle
+  - `alignment?`: DialogAlignment
+  - `offset?`: Offset
+  - `showInSubWindow?`: boolean
+  - `isModal?`: boolean
+- **BaseDialogOptions**
+  - `maskRect?`: Rectangle
+  - `alignment?`: DialogAlignment
+  - `offset?`: Offset
+  - `showInSubWindow?`: boolean
+  - `isModal?`: boolean
+- **CustomDialogOptions**
+  - `builder`: CustomBuilder
+- **ActionMenuSuccessResponse**
+  - `index`: number
+- **ActionMenuOptions**
+  - `title?`: string | Resource
+  - `buttons`: [Button, Button?, Button?, Button?, Button?, Button?]
+  - `showInSubWindow?`: boolean
+  - `isModal?`: boolean
+#### Enums
+- **ToastShowMode**
+  - `DEFAULT` = 0
+  - `TOP_MOST` = 1
+#### Functions
+- `showToast(options: ShowToastOptions): void`
+- `showDialog(options: ShowDialogOptions, callback: AsyncCallback<ShowDialogSuccessResponse>): void`
+- `showDialog(options: ShowDialogOptions): Promise<ShowDialogSuccessResponse>`
+- `openCustomDialog(options: CustomDialogOptions): Promise<number>`
+- `closeCustomDialog(dialogId: number): void`
+- `showActionMenu(options: ActionMenuOptions, callback: AsyncCallback<ActionMenuSuccessResponse>): void`
+- `showActionMenu(options: ActionMenuOptions): Promise<ActionMenuSuccessResponse>`
+
+### reminderAgent (@ohos.reminderAgent.d.ts)
+#### Interfaces
+- **ActionButton**
+  - `title`: string
+  - `type`: ActionButtonType
+- **WantAgent**
+  - `pkgName`: string
+  - `abilityName`: string
+- **MaxScreenWantAgent**
+  - `pkgName`: string
+  - `abilityName`: string
+- **ReminderRequest**
+  - `reminderType`: ReminderType
+  - `actionButton?`: [ActionButton?, ActionButton?]
+  - `wantAgent?`: WantAgent
+  - `maxScreenWantAgent?`: MaxScreenWantAgent
+  - `ringDuration?`: number
+  - `snoozeTimes?`: number
+  - `timeInterval?`: number
+  - `title?`: string
+  - `content?`: string
+  - `expiredContent?`: string
+  - `snoozeContent?`: string
+  - `notificationId?`: number
+  - `slotType?`: notification.SlotType
+- **ReminderRequestCalendar**
+  - `dateTime`: LocalDateTime
+  - `repeatMonths?`: Array<number>
+  - `repeatDays?`: Array<number>
+- **ReminderRequestAlarm**
+  - `hour`: number
+  - `minute`: number
+  - `daysOfWeek?`: Array<number>
+- **ReminderRequestTimer**
+  - `triggerTimeInSeconds`: number
+- **LocalDateTime**
+  - `year`: number
+  - `month`: number
+  - `day`: number
+  - `hour`: number
+  - `minute`: number
+  - `second?`: number
+#### Enums
+- **ActionButtonType**
+  - `ACTION_BUTTON_TYPE_CLOSE` = 0
+  - `ACTION_BUTTON_TYPE_SNOOZE` = 1
+- **ReminderType**
+  - `REMINDER_TYPE_TIMER` = 0
+  - `REMINDER_TYPE_CALENDAR` = 1
+  - `REMINDER_TYPE_ALARM` = 2
+#### Functions
+- `publishReminder(reminderReq: ReminderRequest, callback: AsyncCallback<number>): void`
+- `publishReminder(reminderReq: ReminderRequest): Promise<number>`
+- `cancelReminder(reminderId: number, callback: AsyncCallback<void>): void`
+- `cancelReminder(reminderId: number): Promise<void>`
+- `getValidReminders(callback: AsyncCallback<Array<ReminderRequest>>): void`
+- `getValidReminders(): Promise<Array<ReminderRequest>>`
+- `cancelAllReminders(callback: AsyncCallback<void>): void`
+- `cancelAllReminders(): Promise<void>`
+- `addNotificationSlot(slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `addNotificationSlot(slot: NotificationSlot): Promise<void>`
+- `removeNotificationSlot(slotType: notification.SlotType, callback: AsyncCallback<void>): void`
+- `removeNotificationSlot(slotType: notification.SlotType): Promise<void>`
+
+### reminderAgentManager (@ohos.reminderAgentManager.d.ts)
+#### Interfaces
+- **ActionButton**
+  - `title`: string
+  - `titleResource?`: string
+  - `type`: ActionButtonType
+  - `wantAgent?`: WantAgent
+  - `dataShareUpdate?`: DataShareUpdate
+- **WantAgent**
+  - `pkgName`: string
+  - `abilityName`: string
+  - `uri?`: string
+- **DataShareUpdate**
+  - `uri`: string
+  - `equalTo`: Record<string, number | string | boolean>
+  - `value`: ValuesBucket
+- **MaxScreenWantAgent**
+  - `pkgName`: string
+  - `abilityName`: string
+- **ReminderRequest**
+  - `reminderType`: ReminderType
+  - `actionButton?`: [ActionButton?, ActionButton?, ActionButton?]
+  - `wantAgent?`: WantAgent
+  - `maxScreenWantAgent?`: MaxScreenWantAgent
+  - `ringDuration?`: number
+  - `snoozeTimes?`: number
+  - `timeInterval?`: number
+  - `title?`: string
+  - `content?`: string
+  - `expiredContent?`: string
+  - `snoozeContent?`: string
+  - `notificationId?`: number
+  - `groupId?`: string
+  - `slotType?`: notification.SlotType
+  - `tapDismissed?`: boolean
+  - `autoDeletedTime?`: number
+  - `snoozeSlotType?`: notification.SlotType
+  - `customRingUri?`: string
+- **ReminderRequestCalendar**
+  - `dateTime`: LocalDateTime
+  - `repeatMonths?`: Array<number>
+  - `repeatDays?`: Array<number>
+  - `daysOfWeek?`: Array<number>
+- **ReminderRequestAlarm**
+  - `hour`: number
+  - `minute`: number
+  - `daysOfWeek?`: Array<number>
+- **ReminderRequestTimer**
+  - `triggerTimeInSeconds`: number
+- **LocalDateTime**
+  - `year`: number
+  - `month`: number
+  - `day`: number
+  - `hour`: number
+  - `minute`: number
+  - `second?`: number
+#### Enums
+- **ActionButtonType**
+  - `ACTION_BUTTON_TYPE_CLOSE` = 0
+  - `ACTION_BUTTON_TYPE_SNOOZE` = 1
+  - `ACTION_BUTTON_TYPE_CUSTOM` = 2
+- **ReminderType**
+  - `REMINDER_TYPE_TIMER` = 0
+  - `REMINDER_TYPE_CALENDAR` = 1
+  - `REMINDER_TYPE_ALARM` = 2
+#### Functions
+- `publishReminder(reminderReq: ReminderRequest, callback: AsyncCallback<number>): void`
+- `publishReminder(reminderReq: ReminderRequest): Promise<number>`
+- `cancelReminder(reminderId: number, callback: AsyncCallback<void>): void`
+- `cancelReminder(reminderId: number): Promise<void>`
+- `getValidReminders(callback: AsyncCallback<Array<ReminderRequest>>): void`
+- `getValidReminders(): Promise<Array<ReminderRequest>>`
+- `cancelAllReminders(callback: AsyncCallback<void>): void`
+- `cancelAllReminders(): Promise<void>`
+- `addNotificationSlot(slot: NotificationSlot, callback: AsyncCallback<void>): void`
+- `addNotificationSlot(slot: NotificationSlot): Promise<void>`
+- `removeNotificationSlot(slotType: notification.SlotType, callback: AsyncCallback<void>): void`
+- `removeNotificationSlot(slotType: notification.SlotType): Promise<void>`
+
+### request (@ohos.request.d.ts)
+#### Interfaces
+- **DownloadConfig**
+  - `url`: string
+  - `header?`: Object
+  - `enableMetered?`: boolean
+  - `enableRoaming?`: boolean
+  - `description?`: string
+  - `networkType?`: number
+  - `filePath?`: string
+  - `title?`: string
+  - `background?`: boolean
+- **DownloadInfo**
+  - `description`: string
+  - `downloadedBytes`: number
+  - `downloadId`: number
+  - `failedReason`: number
+  - `fileName`: string
+  - `filePath`: string
+  - `pausedReason`: number
+  - `status`: number
+  - `targetURI`: string
+  - `downloadTitle`: string
+  - `downloadTotalBytes`: number
+- **DownloadTask**
+  - `remove`: void
+  - `remove`: Promise<boolean>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `resume`: void
+  - `resume`: Promise<void>
+  - `query`: void
+  - `query`: Promise<DownloadInfo>
+  - `queryMimeType`: void
+  - `queryMimeType`: Promise<string>
+  - `delete`: void
+  - `delete`: Promise<boolean>
+  - `suspend`: void
+  - `suspend`: Promise<boolean>
+  - `restore`: void
+  - `restore`: Promise<boolean>
+  - `getTaskInfo`: void
+  - `getTaskInfo`: Promise<DownloadInfo>
+  - `getTaskMimeType`: void
+  - `getTaskMimeType`: Promise<string>
+- **File**
+  - `filename`: string
+  - `name`: string
+  - `uri`: string
+  - `type`: string
+- **RequestData**
+  - `name`: string
+  - `value`: string
+- **UploadConfig**
+  - `url`: string
+  - `header`: Object
+  - `method`: string
+  - `index?`: number
+  - `begins?`: number
+  - `ends?`: number
+  - `files`: Array<File>
+  - `data`: Array<RequestData>
+- **TaskState**
+  - `path`: string
+  - `responseCode`: number
+  - `message`: string
+- **UploadTask**
+  - `on`: void
+  - `off`: void
+  - `remove`: void
+  - `remove`: Promise<boolean>
+  - `delete`: void
+  - `delete`: Promise<boolean>
+- **FileSpec**
+  - `path`: string
+  - `mimeType?`: string
+  - `filename?`: string
+  - `extras?`: object
+- **FormItem**
+  - `name`: string
+  - `value`: string | FileSpec | Array<FileSpec>
+- **Config**
+  - `action`: Action
+  - `url`: string
+  - `title?`: string
+  - `description?`: string
+  - `mode?`: Mode
+  - `overwrite?`: boolean
+  - `method?`: string
+  - `headers?`: object
+  - `data?`: string | Array<FormItem>
+  - `saveas?`: string
+  - `network?`: Network
+  - `metered?`: boolean
+  - `roaming?`: boolean
+  - `retry?`: boolean
+  - `redirect?`: boolean
+  - `index?`: number
+  - `begins?`: number
+  - `ends?`: number
+  - `gauge?`: boolean
+  - `precise?`: boolean
+  - `token?`: string
+  - `priority?`: number
+  - `extras?`: object
+- **Progress**
+  - `readonly state`: State
+  - `readonly index`: number
+  - `readonly processed`: number
+  - `readonly sizes`: Array<number>
+  - `readonly extras?`: object
+- **Filter**
+  - `bundle?`: string
+  - `before?`: number
+  - `after?`: number
+  - `state?`: State
+  - `action?`: Action
+  - `mode?`: Mode
+- **TaskInfo**
+  - `readonly uid?`: string
+  - `readonly bundle?`: string
+  - `readonly saveas?`: string
+  - `readonly url?`: string
+  - `readonly data?`: string | Array<FormItem>
+  - `readonly tid`: string
+  - `readonly title`: string
+  - `readonly description`: string
+  - `readonly action`: Action
+  - `readonly mode`: Mode
+  - `readonly priority`: number
+  - `readonly mimeType`: string
+  - `readonly progress`: Progress
+  - `readonly gauge`: boolean
+  - `readonly ctime`: number
+  - `readonly mtime`: number
+  - `readonly retry`: boolean
+  - `readonly tries`: number
+  - `readonly faults`: Faults
+  - `readonly reason`: string
+  - `readonly extras?`: object
+- **Task**
+  - `readonly tid`: string
+  - `config`: Config
+  - `start`: void
+  - `start`: Promise<void>
+  - `pause`: void
+  - `pause`: Promise<void>
+  - `resume`: void
+  - `resume`: Promise<void>
+  - `stop`: void
+  - `stop`: Promise<void>
+#### Enums
+- **Action**
+- **Mode**
+- **Network**
+- **BroadcastEvent**
+  - `COMPLETE` = 'ohos.request.event.COMPLETE'
+- **State**
+  - `INITIALIZED` = 0x00
+  - `WAITING` = 0x10
+  - `RUNNING` = 0x20
+  - `RETRYING` = 0x21
+  - `PAUSED` = 0x30
+  - `STOPPED` = 0x31
+  - `COMPLETED` = 0x40
+  - `FAILED` = 0x41
+  - `REMOVED` = 0x50
+- **Faults**
+  - `OTHERS` = 0xFF
+  - `DISCONNECTED` = 0x00
+  - `TIMEOUT` = 0x10
+  - `PROTOCOL` = 0x20
+  - `FSIO` = 0x40
+#### Functions
+- `download(config: DownloadConfig, callback: AsyncCallback<DownloadTask>): void`
+- `downloadFile(context: BaseContext, config: DownloadConfig, callback: AsyncCallback<DownloadTask>): void`
+- `download(config: DownloadConfig): Promise<DownloadTask>`
+- `downloadFile(context: BaseContext, config: DownloadConfig): Promise<DownloadTask>`
+- `upload(config: UploadConfig, callback: AsyncCallback<UploadTask>): void`
+- `uploadFile(context: BaseContext, config: UploadConfig, callback: AsyncCallback<UploadTask>): void`
+- `upload(config: UploadConfig): Promise<UploadTask>`
+- `uploadFile(context: BaseContext, config: UploadConfig): Promise<UploadTask>`
+- `create(context: BaseContext, config: Config, callback: AsyncCallback<Task>): void`
+- `create(context: BaseContext, config: Config): Promise<Task>`
+- `getTask(context: BaseContext, id: string, token?: string): Promise<Task>`
+- `remove(id: string, callback: AsyncCallback<void>): void`
+- `remove(id: string): Promise<void>`
+- `show(id: string, callback: AsyncCallback<TaskInfo>): void`
+- `show(id: string): Promise<TaskInfo>`
+- `touch(id: string, token: string, callback: AsyncCallback<TaskInfo>): void`
+- `touch(id: string, token: string): Promise<TaskInfo>`
+- `search(callback: AsyncCallback<Array<string>>): void`
+- `search(filter: Filter, callback: AsyncCallback<Array<string>>): void`
+- `search(filter?: Filter): Promise<Array<string>>`
+- `query(id: string, callback: AsyncCallback<TaskInfo>): void`
+- `query(id: string): Promise<TaskInfo>`
+
+### resourceManager (@ohos.resourceManager.d.ts)
+#### Interfaces
+- **AsyncCallback**
+- **ResourceManager**
+  - `getString`: void
+  - `getString`: Promise<string>
+  - `getStringValue`: void
+  - `getStringValue`: Promise<string>
+  - `getStringArray`: void
+  - `getStringArray`: Promise<Array<string>>
+  - `getStringArrayValue`: void
+  - `getStringArrayValue`: Promise<Array<string>>
+  - `getMedia`: void
+  - `getMedia`: Promise<Uint8Array>
+  - `getMediaContent`: void
+  - `getMediaContent`: void
+  - `getMediaContent`: Promise<Uint8Array>
+  - `getMediaContent`: Promise<Uint8Array>
+  - `getMediaBase64`: void
+  - `getMediaBase64`: Promise<string>
+  - `getMediaContentBase64`: void
+  - `getMediaContentBase64`: void
+  - `getMediaContentBase64`: Promise<string>
+  - `getMediaContentBase64`: Promise<string>
+  - `getDeviceCapability`: void
+  - `getDeviceCapability`: Promise<DeviceCapability>
+  - `getConfiguration`: void
+  - `getConfiguration`: Promise<Configuration>
+  - `getPluralString`: void
+  - `getPluralString`: Promise<string>
+  - `getPluralStringValue`: void
+  - `getPluralStringValue`: Promise<string>
+  - `getRawFile`: void
+  - `getRawFile`: Promise<Uint8Array>
+  - `getRawFileDescriptor`: void
+  - `getRawFileDescriptor`: Promise<RawFileDescriptor>
+  - `closeRawFileDescriptor`: void
+  - `closeRawFileDescriptor`: Promise<void>
+  - `getStringByName`: void
+  - `getStringByName`: Promise<string>
+  - `getStringArrayByName`: void
+  - `getStringArrayByName`: Promise<Array<string>>
+  - `getMediaByName`: void
+  - `getMediaByName`: void
+  - `getMediaByName`: Promise<Uint8Array>
+  - `getMediaByName`: Promise<Uint8Array>
+  - `getMediaBase64ByName`: void
+  - `getMediaBase64ByName`: void
+  - `getMediaBase64ByName`: Promise<string>
+  - `getMediaBase64ByName`: Promise<string>
+  - `getPluralStringByName`: void
+  - `getPluralStringByName`: Promise<string>
+  - `getStringSync`: string
+  - `getStringSync`: string
+  - `getStringSync`: string
+  - `getStringSync`: string
+  - `getStringByNameSync`: string
+  - `getStringByNameSync`: string
+  - `getBoolean`: boolean
+  - `getBoolean`: boolean
+  - `getBooleanByName`: boolean
+  - `getNumber`: number
+  - `getNumber`: number
+  - `getNumberByName`: number
+  - `getStringValue`: void
+  - `getStringValue`: Promise<string>
+  - `getStringArrayValue`: void
+  - `getStringArrayValue`: Promise<Array<string>>
+  - `getPluralStringValue`: void
+  - `getPluralStringValue`: Promise<string>
+  - `getMediaContent`: void
+  - `getMediaContent`: void
+  - `getMediaContent`: Promise<Uint8Array>
+  - `getMediaContent`: Promise<Uint8Array>
+  - `getMediaContentBase64`: void
+  - `getMediaContentBase64`: void
+  - `getMediaContentBase64`: Promise<string>
+  - `getMediaContentBase64`: Promise<string>
+  - `getRawFileContent`: void
+  - `getRawFileContent`: Promise<Uint8Array>
+  - `getRawFd`: void
+  - `getRawFd`: Promise<RawFileDescriptor>
+  - `closeRawFd`: void
+  - `closeRawFd`: Promise<void>
+  - `getDrawableDescriptor`: DrawableDescriptor
+  - `getDrawableDescriptorByName`: DrawableDescriptor
+  - `getDrawableDescriptor`: DrawableDescriptor
+  - `getRawFileList`: void
+  - `getRawFileList`: Promise<Array<string>>
+  - `getColor`: void
+  - `getColor`: Promise<number>
+  - `getColor`: void
+  - `getColor`: Promise<number>
+  - `getColorByName`: void
+  - `getColorByName`: Promise<number>
+  - `getColorSync`: number
+  - `getColorSync`: number
+  - `getColorByNameSync`: number
+  - `addResource`: void
+  - `removeResource`: void
+  - `getRawFdSync`: RawFileDescriptor
+  - `closeRawFdSync`: void
+  - `getRawFileListSync`: Array<string>
+  - `getRawFileContentSync`: Uint8Array
+  - `getMediaContentSync`: Uint8Array
+  - `getMediaContentSync`: Uint8Array
+  - `getMediaContentBase64Sync`: string
+  - `getMediaContentBase64Sync`: string
+  - `getPluralStringValueSync`: string
+  - `getPluralStringValueSync`: string
+  - `getStringArrayValueSync`: Array<string>
+  - `getStringArrayValueSync`: Array<string>
+  - `getPluralStringByNameSync`: string
+  - `getMediaByNameSync`: Uint8Array
+  - `getMediaBase64ByNameSync`: string
+  - `getStringArrayByNameSync`: Array<string>
+  - `getConfigurationSync`: Configuration
+  - `getDeviceCapabilitySync`: DeviceCapability
+  - `getLocales`: Array<string>
+  - `getSymbol`: number
+  - `getSymbol`: number
+  - `getSymbolByName`: number
+#### Enums
+- **Direction**
+  - `DIRECTION_VERTICAL` = 0
+  - `DIRECTION_HORIZONTAL` = 1
+- **DeviceType**
+  - `DEVICE_TYPE_PHONE` = 0x00
+  - `DEVICE_TYPE_TABLET` = 0x01
+  - `DEVICE_TYPE_CAR` = 0x02
+  - `DEVICE_TYPE_PC` = 0x03
+  - `DEVICE_TYPE_TV` = 0x04
+  - `DEVICE_TYPE_WEARABLE` = 0x06
+  - `DEVICE_TYPE_2IN1` = 0x07
+- **ScreenDensity**
+  - `SCREEN_SDPI` = 120
+  - `SCREEN_MDPI` = 160
+  - `SCREEN_LDPI` = 240
+  - `SCREEN_XLDPI` = 320
+  - `SCREEN_XXLDPI` = 480
+  - `SCREEN_XXXLDPI` = 640
+#### Functions
+- `getResourceManager(callback: AsyncCallback<ResourceManager>): void`
+- `getResourceManager(bundleName: string, callback: AsyncCallback<ResourceManager>): void`
+- `getResourceManager(): Promise<ResourceManager>`
+- `getResourceManager(bundleName: string): Promise<ResourceManager>`
+- `getSystemResourceManager(): ResourceManager`
+#### Classes
+- **Configuration**
+  - `direction`: Direction
+  - `locale`: string
+- **DeviceCapability**
+  - `screenDensity`: ScreenDensity
+  - `deviceType`: DeviceType
+#### Type Aliases
+- `RawFileDescriptor` = _RawFileDescriptor
+- `Resource` = _Resource
+
+### backgroundTaskManager (@ohos.resourceschedule.backgroundTaskManager.d.ts)
+#### Interfaces
+- **DelaySuspendInfo**
+  - `requestId`: number
+  - `actualDelayTime`: number
+- **EfficiencyResourcesRequest**
+  - `resourceTypes`: number
+  - `isApply`: boolean
+  - `timeOut`: number
+  - `isPersist?`: boolean
+  - `isProcess?`: boolean
+  - `reason`: string
+#### Enums
+- **BackgroundMode**
+  - `DATA_TRANSFER` = 1
+  - `AUDIO_PLAYBACK` = 2
+  - `AUDIO_RECORDING` = 3
+  - `LOCATION` = 4
+  - `BLUETOOTH_INTERACTION` = 5
+  - `MULTI_DEVICE_CONNECTION` = 6
+  - `WIFI_INTERACTION` = 7
+  - `VOIP` = 8
+  - `TASK_KEEPING` = 9
+- **ResourceType**
+  - `CPU` = 1
+  - `COMMON_EVENT` = 1 << 1
+  - `TIMER` = 1 << 2
+  - `WORK_SCHEDULER` = 1 << 3
+  - `BLUETOOTH` = 1 << 4
+  - `GPS` = 1 << 5
+  - `AUDIO` = 1 << 6
+  - `RUNNING_LOCK` = 1 << 7
+  - `SENSOR` = 1 << 8
+#### Functions
+- `cancelSuspendDelay(requestId: number): void`
+- `getRemainingDelayTime(requestId: number, callback: AsyncCallback<number>): void`
+- `getRemainingDelayTime(requestId: number): Promise<number>`
+- `requestSuspendDelay(reason: string, callback: Callback<void>): DelaySuspendInfo`
+- `startBackgroundRunning(context: Context, bgMode: BackgroundMode, wantAgent: WantAgent, callback: AsyncCallback<void>): void`
+- `startBackgroundRunning(context: Context, bgMode: BackgroundMode, wantAgent: WantAgent): Promise<void>`
+- `stopBackgroundRunning(context: Context, callback: AsyncCallback<void>): void`
+- `stopBackgroundRunning(context: Context): Promise<void>`
+- `applyEfficiencyResources(request: EfficiencyResourcesRequest): void`
+- `resetAllEfficiencyResources(): void`
+
+### deviceStandby (@ohos.resourceschedule.deviceStandby.d.ts)
+#### Interfaces
+- **ExemptedAppInfo**
+  - `resourceTypes`: number
+  - `name`: string
+  - `duration`: number
+- **ResourceRequest**
+  - `resourceTypes`: number
+  - `uid`: number
+  - `name`: string
+  - `duration`: number
+  - `reason`: string
+#### Enums
+- **ResourceType**
+  - `NETWORK` = 1
+  - `RUNNING_LOCK` = 1 << 1
+  - `TIMER` = 1 << 2
+  - `WORK_SCHEDULER` = 1 << 3
+  - `AUTO_SYNC` = 1 << 4
+  - `PUSH` = 1 << 5
+  - `FREEZE` = 1 << 6
+#### Functions
+- `getExemptedApps(resourceTypes: number, callback: AsyncCallback<Array<ExemptedAppInfo>>): void`
+- `getExemptedApps(resourceTypes: number): Promise<Array<ExemptedAppInfo>>`
+- `requestExemptionResource(request: ResourceRequest): void`
+- `releaseExemptionResource(request: ResourceRequest): void`
+
+### usageStatistics (@ohos.resourceschedule.usageStatistics.d.ts)
+#### Interfaces
+- **BundleStatsInfo**
+  - `id`: number
+  - `abilityInFgTotalTime?`: number
+  - `abilityPrevAccessTime?`: number
+  - `abilityPrevSeenTime?`: number
+  - `abilitySeenTotalTime?`: number
+  - `bundleName?`: string
+  - `fgAbilityAccessTotalTime?`: number
+  - `fgAbilityPrevAccessTime?`: number
+  - `infosBeginTime?`: number
+  - `infosEndTime?`: number
+- **HapFormInfo**
+  - `formName`: string
+  - `formDimension`: number
+  - `formId`: number
+  - `formLastUsedTime`: number
+  - `count`: number
+- **HapModuleInfo**
+  - `deviceId?`: string
+  - `bundleName`: string
+  - `moduleName`: string
+  - `abilityName?`: string
+  - `appLabelId?`: number
+  - `labelId?`: number
+  - `descriptionId?`: number
+  - `abilityLableId?`: number
+  - `abilityDescriptionId?`: number
+  - `abilityIconId?`: number
+  - `launchedCount`: number
+  - `lastModuleUsedTime`: number
+  - `formRecords`: Array<HapFormInfo>
+- **DeviceEventStats**
+  - `name`: string
+  - `eventId`: number
+  - `count`: number
+- **BundleEvents**
+  - `appGroup?`: number
+  - `bundleName?`: string
+  - `indexOfLink?`: string
+  - `nameOfClass?`: string
+  - `eventOccurredTime?`: number
+  - `eventId?`: number
+- **AppGroupCallbackInfo**
+  - `appOldGroup`: number
+  - `appNewGroup`: number
+  - `userId`: number
+  - `changeReason`: number
+  - `bundleName`: string
+#### Enums
+- **IntervalType**
+  - `BY_OPTIMIZED` = 0
+  - `BY_DAILY` = 1
+  - `BY_WEEKLY` = 2
+  - `BY_MONTHLY` = 3
+  - `BY_ANNUALLY` = 4
+- **GroupType**
+  - `ALIVE_GROUP` = 10
+  - `DAILY_GROUP` = 20
+  - `FIXED_GROUP` = 30
+  - `RARE_GROUP` = 40
+  - `LIMITED_GROUP` = 50
+  - `NEVER_GROUP` = 60
+#### Functions
+- `isIdleState(bundleName: string, callback: AsyncCallback<boolean>): void`
+- `isIdleState(bundleName: string): Promise<boolean>`
+- `isIdleStateSync(bundleName: string): boolean`
+- `queryAppGroup(callback: AsyncCallback<number>): void`
+- `queryAppGroup(): Promise<number>`
+- `queryAppGroupSync(): number`
+- `queryAppGroup(bundleName: string, callback: AsyncCallback<number>): void`
+- `queryAppGroup(bundleName: string): Promise<number>`
+- `queryAppGroupSync(bundleName: string): number`
+- `queryBundleStatsInfos(begin: number, end: number, callback: AsyncCallback<BundleStatsMap>): void`
+- `queryBundleStatsInfos(begin: number, end: number): Promise<BundleStatsMap>`
+- `queryBundleStatsInfoByInterval(
+    byInterval: IntervalType,
+    begin: number,
+    end: number,
+    callback: AsyncCallback<Array<BundleStatsInfo>>
+  ): void`
+- `queryBundleStatsInfoByInterval(
+    byInterval: IntervalType,
+    begin: number,
+    end: number
+  ): Promise<Array<BundleStatsInfo>>`
+- `queryBundleEvents(begin: number, end: number, callback: AsyncCallback<Array<BundleEvents>>): void`
+- `queryBundleEvents(begin: number, end: number): Promise<Array<BundleEvents>>`
+- `queryCurrentBundleEvents(begin: number, end: number, callback: AsyncCallback<Array<BundleEvents>>): void`
+- `queryCurrentBundleEvents(begin: number, end: number): Promise<Array<BundleEvents>>`
+- `queryModuleUsageRecords(maxNum: number, callback: AsyncCallback<Array<HapModuleInfo>>): void`
+- `queryModuleUsageRecords(maxNum: number): Promise<Array<HapModuleInfo>>`
+- `queryModuleUsageRecords(callback: AsyncCallback<Array<HapModuleInfo>>): void`
+- `queryModuleUsageRecords(): Promise<Array<HapModuleInfo>>`
+- `setAppGroup(bundleName: string, newGroup: GroupType, callback: AsyncCallback<void>): void`
+- `setAppGroup(bundleName: string, newGroup: GroupType): Promise<void>`
+- `registerAppGroupCallBack(groupCallback: Callback<AppGroupCallbackInfo>, callback: AsyncCallback<void>): void`
+- `registerAppGroupCallBack(groupCallback: Callback<AppGroupCallbackInfo>): Promise<void>`
+- `unregisterAppGroupCallBack(callback: AsyncCallback<void>): void`
+- `unregisterAppGroupCallBack(): Promise<void>`
+- `queryDeviceEventStats(begin: number, end: number, callback: AsyncCallback<Array<DeviceEventStats>>): void`
+- `queryDeviceEventStats(begin: number, end: number): Promise<Array<DeviceEventStats>>`
+- `queryNotificationEventStats(
+    begin: number,
+    end: number,
+    callback: AsyncCallback<Array<DeviceEventStats>>
+  ): void`
+- `queryNotificationEventStats(begin: number, end: number): Promise<Array<DeviceEventStats>>`
+#### Type Aliases
+- `BundleStatsMap` = Record<string, BundleStatsInfo>
+
+### workScheduler (@ohos.resourceschedule.workScheduler.d.ts)
+#### Interfaces
+- **WorkInfo**
+  - `workId`: number
+  - `bundleName`: string
+  - `abilityName`: string
+  - `isPersisted?`: boolean
+  - `networkType?`: NetworkType
+  - `isCharging?`: boolean
+  - `chargerType?`: ChargingType
+  - `batteryLevel?`: number
+  - `batteryStatus?`: BatteryStatus
+  - `storageRequest?`: StorageRequest
+  - `repeatCycleTime?`: number
+  - `isRepeat?`: boolean
+  - `repeatCount?`: number
+  - `isDeepIdle?`: boolean
+  - `idleWaitTime?`: number
+  - `parameters?`: Record<string, number | string | boolean>
+#### Enums
+- **NetworkType**
+  - `NETWORK_TYPE_ANY` = 0
+- **ChargingType**
+  - `CHARGING_PLUGGED_ANY` = 0
+- **BatteryStatus**
+  - `BATTERY_STATUS_LOW` = 0
+- **StorageRequest**
+  - `STORAGE_LEVEL_LOW` = 0
+#### Functions
+- `startWork(work: WorkInfo): void`
+- `stopWork(work: WorkInfo, needCancel?: boolean): void`
+- `getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void`
+- `getWorkStatus(workId: number): Promise<WorkInfo>`
+- `obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>`
+- `obtainAllWorks(callback: AsyncCallback<Array<WorkInfo>>): void`
+- `obtainAllWorks(): Promise<Array<WorkInfo>>`
+- `stopAndClearWorks(): void`
+- `isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean`
+- `isLastWorkTimeOut(workId: number, callback: AsyncCallback<boolean>): void`
+- `isLastWorkTimeOut(workId: number): Promise<boolean>`
+
+### router (@ohos.router.d.ts)
+#### Interfaces
+- **RouterOptions**
+  - `url`: string
+  - `params?`: Object
+- **RouterState**
+  - `index`: number
+  - `name`: string
+  - `path`: string
+- **EnableAlertOptions**
+  - `message`: string
+- **NamedRouterOptions**
+  - `name`: string
+  - `params?`: Object
+#### Enums
+- **RouterMode**
+#### Functions
+- `push(options: RouterOptions): void`
+- `pushUrl(options: RouterOptions, callback: AsyncCallback<void>): void`
+- `pushUrl(options: RouterOptions): Promise<void>`
+- `pushUrl(options: RouterOptions, mode: RouterMode, callback: AsyncCallback<void>): void`
+- `pushUrl(options: RouterOptions, mode: RouterMode): Promise<void>`
+- `replace(options: RouterOptions): void`
+- `replaceUrl(options: RouterOptions, callback: AsyncCallback<void>): void`
+- `replaceUrl(options: RouterOptions): Promise<void>`
+- `replaceUrl(options: RouterOptions, mode: RouterMode, callback: AsyncCallback<void>): void`
+- `replaceUrl(options: RouterOptions, mode: RouterMode): Promise<void>`
+- `back(options?: RouterOptions): void`
+- `clear(): void`
+- `getLength(): string`
+- `getState(): RouterState`
+- `enableAlertBeforeBackPage(options: EnableAlertOptions): void`
+- `showAlertBeforeBackPage(options: EnableAlertOptions): void`
+- `disableAlertBeforeBackPage(): void`
+- `hideAlertBeforeBackPage(): void`
+- `getParams(): Object`
+- `pushNamedRoute(options: NamedRouterOptions, callback: AsyncCallback<void>): void`
+- `pushNamedRoute(options: NamedRouterOptions): Promise<void>`
+- `pushNamedRoute(options: NamedRouterOptions, mode: RouterMode, callback: AsyncCallback<void>): void`
+- `pushNamedRoute(options: NamedRouterOptions, mode: RouterMode): Promise<void>`
+- `replaceNamedRoute(options: NamedRouterOptions, callback: AsyncCallback<void>): void`
+- `replaceNamedRoute(options: NamedRouterOptions): Promise<void>`
+- `replaceNamedRoute(options: NamedRouterOptions, mode: RouterMode, callback: AsyncCallback<void>): void`
+- `replaceNamedRoute(options: NamedRouterOptions, mode: RouterMode): Promise<void>`
+
+### rpc (@ohos.rpc.d.ts)
+#### Interfaces
+- **Sequenceable**
+  - `marshalling`: boolean
+  - `unmarshalling`: boolean
+- **Parcelable**
+  - `marshalling`: boolean
+  - `unmarshalling`: boolean
+- **SendRequestResult**
+  - `errCode`: number
+  - `code`: number
+  - `data`: MessageParcel
+  - `reply`: MessageParcel
+- **RequestResult**
+  - `errCode`: number
+  - `code`: number
+  - `data`: MessageSequence
+  - `reply`: MessageSequence
+- **IRemoteBroker**
+  - `asObject`: IRemoteObject
+- **DeathRecipient**
+  - `onRemoteDied`: void
+#### Enums
+- **ErrorCode**
+  - `CHECK_PARAM_ERROR` = 401
+  - `OS_MMAP_ERROR` = 1900001
+  - `OS_IOCTL_ERROR` = 1900002
+  - `WRITE_TO_ASHMEM_ERROR` = 1900003
+  - `READ_FROM_ASHMEM_ERROR` = 1900004
+  - `ONLY_PROXY_OBJECT_PERMITTED_ERROR` = 1900005
+  - `ONLY_REMOTE_OBJECT_PERMITTED_ERROR` = 1900006
+  - `COMMUNICATION_ERROR` = 1900007
+  - `PROXY_OR_REMOTE_OBJECT_INVALID_ERROR` = 1900008
+  - `WRITE_DATA_TO_MESSAGE_SEQUENCE_ERROR` = 1900009
+  - `READ_DATA_FROM_MESSAGE_SEQUENCE_ERROR` = 1900010
+  - `PARCEL_MEMORY_ALLOC_ERROR` = 1900011
+  - `CALL_JS_METHOD_ERROR` = 1900012
+  - `OS_DUP_ERROR` = 1900013
+#### Classes
+- **MessageParcel**
+  - `create()`: MessageParcel
+  - `reclaim()`: void
+  - `writeRemoteObject()`: boolean
+  - `readRemoteObject()`: IRemoteObject
+  - `writeInterfaceToken()`: boolean
+  - `readInterfaceToken()`: string
+  - `getSize()`: number
+  - `getCapacity()`: number
+  - `setSize()`: boolean
+  - `setCapacity()`: boolean
+  - `getWritableBytes()`: number
+  - `getReadableBytes()`: number
+  - `getReadPosition()`: number
+  - `getWritePosition()`: number
+  - `rewindRead()`: boolean
+  - `rewindWrite()`: boolean
+  - `writeNoException()`: void
+  - `readException()`: void
+  - `writeByte()`: boolean
+  - `writeShort()`: boolean
+  - `writeInt()`: boolean
+  - `writeLong()`: boolean
+  - `writeFloat()`: boolean
+  - `writeDouble()`: boolean
+  - `writeBoolean()`: boolean
+  - `writeChar()`: boolean
+  - `writeString()`: boolean
+  - `writeSequenceable()`: boolean
+  - `writeByteArray()`: boolean
+  - `writeShortArray()`: boolean
+  - `writeIntArray()`: boolean
+  - `writeLongArray()`: boolean
+  - `writeFloatArray()`: boolean
+  - `writeDoubleArray()`: boolean
+  - `writeBooleanArray()`: boolean
+  - `writeCharArray()`: boolean
+  - `writeStringArray()`: boolean
+  - `writeSequenceableArray()`: boolean
+  - `writeRemoteObjectArray()`: boolean
+  - `readByte()`: number
+  - `readShort()`: number
+  - `readInt()`: number
+  - `readLong()`: number
+  - `readFloat()`: number
+  - `readDouble()`: number
+  - `readBoolean()`: boolean
+  - `readChar()`: number
+  - `readString()`: string
+  - `readSequenceable()`: boolean
+  - `readByteArray()`: void
+  - `readByteArray()`: number[]
+  - `readShortArray()`: void
+  - `readShortArray()`: number[]
+  - `readIntArray()`: void
+  - `readIntArray()`: number[]
+  - `readLongArray()`: void
+  - `readLongArray()`: number[]
+  - `readFloatArray()`: void
+  - `readFloatArray()`: number[]
+  - `readDoubleArray()`: void
+  - `readDoubleArray()`: number[]
+  - `readBooleanArray()`: void
+  - `readBooleanArray()`: boolean[]
+  - `readCharArray()`: void
+  - `readCharArray()`: number[]
+  - `readStringArray()`: void
+  - `readStringArray()`: string[]
+  - `readSequenceableArray()`: void
+  - `readRemoteObjectArray()`: void
+  - `readRemoteObjectArray()`: IRemoteObject[]
+  - `closeFileDescriptor()`: void
+  - `dupFileDescriptor()`: number
+  - `containFileDescriptors()`: boolean
+  - `writeFileDescriptor()`: boolean
+  - `readFileDescriptor()`: number
+  - `writeAshmem()`: boolean
+  - `readAshmem()`: Ashmem
+  - `getRawDataCapacity()`: number
+  - `writeRawData()`: boolean
+  - `readRawData()`: number[]
+- **MessageSequence**
+  - `create()`: MessageSequence
+  - `reclaim()`: void
+  - `writeRemoteObject()`: void
+  - `readRemoteObject()`: IRemoteObject
+  - `writeInterfaceToken()`: void
+  - `readInterfaceToken()`: string
+  - `getSize()`: number
+  - `getCapacity()`: number
+  - `setSize()`: void
+  - `setCapacity()`: void
+  - `getWritableBytes()`: number
+  - `getReadableBytes()`: number
+  - `getReadPosition()`: number
+  - `getWritePosition()`: number
+  - `rewindRead()`: void
+  - `rewindWrite()`: void
+  - `writeNoException()`: void
+  - `readException()`: void
+  - `writeByte()`: void
+  - `writeShort()`: void
+  - `writeInt()`: void
+  - `writeLong()`: void
+  - `writeFloat()`: void
+  - `writeDouble()`: void
+  - `writeBoolean()`: void
+  - `writeChar()`: void
+  - `writeString()`: void
+  - `writeParcelable()`: void
+  - `writeByteArray()`: void
+  - `writeShortArray()`: void
+  - `writeIntArray()`: void
+  - `writeLongArray()`: void
+  - `writeFloatArray()`: void
+  - `writeDoubleArray()`: void
+  - `writeBooleanArray()`: void
+  - `writeCharArray()`: void
+  - `writeStringArray()`: void
+  - `writeParcelableArray()`: void
+  - `writeRemoteObjectArray()`: void
+  - `readByte()`: number
+  - `readShort()`: number
+  - `readInt()`: number
+  - `readLong()`: number
+  - `readFloat()`: number
+  - `readDouble()`: number
+  - `readBoolean()`: boolean
+  - `readChar()`: number
+  - `readString()`: string
+  - `readParcelable()`: void
+  - `readByteArray()`: void
+  - `readByteArray()`: number[]
+  - `readShortArray()`: void
+  - `readShortArray()`: number[]
+  - `readIntArray()`: void
+  - `readIntArray()`: number[]
+  - `readLongArray()`: void
+  - `readLongArray()`: number[]
+  - `readFloatArray()`: void
+  - `readFloatArray()`: number[]
+  - `readDoubleArray()`: void
+  - `readDoubleArray()`: number[]
+  - `readBooleanArray()`: void
+  - `readBooleanArray()`: boolean[]
+  - `readCharArray()`: void
+  - `readCharArray()`: number[]
+  - `readStringArray()`: void
+  - `readStringArray()`: string[]
+  - `readParcelableArray()`: void
+  - `readRemoteObjectArray()`: void
+  - `readRemoteObjectArray()`: IRemoteObject[]
+  - `closeFileDescriptor()`: void
+  - `dupFileDescriptor()`: number
+  - `containFileDescriptors()`: boolean
+  - `writeFileDescriptor()`: void
+  - `readFileDescriptor()`: number
+  - `writeAshmem()`: void
+  - `readAshmem()`: Ashmem
+  - `getRawDataCapacity()`: number
+  - `writeRawData()`: void
+  - `writeRawDataBuffer()`: void
+  - `readRawData()`: number[]
+  - `readRawDataBuffer()`: ArrayBuffer
+- **IRemoteObject**
+  - `queryLocalInterface()`: IRemoteBroker
+  - `getLocalInterface()`: IRemoteBroker
+  - `sendRequest()`: boolean
+  - `sendRequest()`: Promise<SendRequestResult>
+  - `sendMessageRequest()`: Promise<RequestResult>
+  - `sendRequest()`: void
+  - `sendMessageRequest()`: void
+  - `addDeathRecipient()`: boolean
+  - `registerDeathRecipient()`: void
+  - `removeDeathRecipient()`: boolean
+  - `unregisterDeathRecipient()`: void
+  - `getInterfaceDescriptor()`: string
+  - `getDescriptor()`: string
+  - `isObjectDead()`: boolean
+- **MessageOption**
+  - `getFlags()`: number
+  - `setFlags()`: void
+  - `isAsync()`: boolean
+  - `setAsync()`: void
+  - `getWaitTime()`: number
+  - `setWaitTime()`: void
+  - `TF_SYNC`: number
+  - `TF_ASYNC`: number
+  - `TF_ACCEPT_FDS`: number
+  - `TF_WAIT_TIME`: number
+- **RemoteObject**
+  - `queryLocalInterface()`: IRemoteBroker
+  - `getLocalInterface()`: IRemoteBroker
+  - `getInterfaceDescriptor()`: string
+  - `getDescriptor()`: string
+  - `onRemoteMessageRequest()`: boolean | Promise<boolean>
+  - `onRemoteRequest()`: boolean
+  - `sendRequest()`: boolean
+  - `sendRequest()`: Promise<SendRequestResult>
+  - `sendMessageRequest()`: Promise<RequestResult>
+  - `sendRequest()`: void
+  - `sendMessageRequest()`: void
+  - `getCallingPid()`: number
+  - `getCallingUid()`: number
+  - `attachLocalInterface()`: void
+  - `modifyLocalInterface()`: void
+- **RemoteProxy**
+  - `queryLocalInterface()`: IRemoteBroker
+  - `getLocalInterface()`: IRemoteBroker
+  - `addDeathRecipient()`: boolean
+  - `registerDeathRecipient()`: void
+  - `removeDeathRecipient()`: boolean
+  - `unregisterDeathRecipient()`: void
+  - `getInterfaceDescriptor()`: string
+  - `getDescriptor()`: string
+  - `sendRequest()`: boolean
+  - `sendRequest()`: Promise<SendRequestResult>
+  - `sendMessageRequest()`: Promise<RequestResult>
+  - `sendRequest()`: void
+  - `sendMessageRequest()`: void
+  - `isObjectDead()`: boolean
+  - `PING_TRANSACTION`: number
+  - `DUMP_TRANSACTION`: number
+  - `INTERFACE_TRANSACTION`: number
+  - `MIN_TRANSACTION_ID`: number
+  - `MAX_TRANSACTION_ID`: number
+- **IPCSkeleton**
+  - `getContextObject()`: IRemoteObject
+  - `getCallingPid()`: number
+  - `getCallingUid()`: number
+  - `getCallingTokenId()`: number
+  - `getCallingDeviceID()`: string
+  - `getLocalDeviceID()`: string
+  - `isLocalCalling()`: boolean
+  - `flushCommands()`: number
+  - `flushCmdBuffer()`: void
+  - `resetCallingIdentity()`: string
+  - `setCallingIdentity()`: boolean
+  - `restoreCallingIdentity()`: void
+- **Ashmem**
+  - `createAshmem()`: Ashmem
+  - `create()`: Ashmem
+  - `createAshmemFromExisting()`: Ashmem
+  - `create()`: Ashmem
+  - `closeAshmem()`: void
+  - `unmapAshmem()`: void
+  - `getAshmemSize()`: number
+  - `mapAshmem()`: boolean
+  - `mapTypedAshmem()`: void
+  - `mapReadAndWriteAshmem()`: boolean
+  - `mapReadWriteAshmem()`: void
+  - `mapReadOnlyAshmem()`: boolean
+  - `mapReadonlyAshmem()`: void
+  - `setProtection()`: boolean
+  - `setProtectionType()`: void
+  - `writeToAshmem()`: boolean
+  - `writeAshmem()`: void
+  - `writeDataToAshmem()`: void
+  - `readFromAshmem()`: number[]
+  - `readAshmem()`: number[]
+  - `readDataFromAshmem()`: ArrayBuffer
+  - `PROT_EXEC`: number
+  - `PROT_NONE`: number
+  - `PROT_READ`: number
+  - `PROT_WRITE`: number
+
+### runningLock (@ohos.runningLock.d.ts)
+#### Enums
+- **RunningLockType**
+  - `BACKGROUND` = 1
+#### Functions
+- `isRunningLockTypeSupported(type: RunningLockType, callback: AsyncCallback<boolean>): void`
+- `isRunningLockTypeSupported(type: RunningLockType): Promise<boolean>`
+- `isSupported(type: RunningLockType): boolean`
+- `createRunningLock(name: string, type: RunningLockType, callback: AsyncCallback<RunningLock>): void`
+- `createRunningLock(name: string, type: RunningLockType): Promise<RunningLock>`
+- `create(name: string, type: RunningLockType, callback: AsyncCallback<RunningLock>): void`
+- `create(name: string, type: RunningLockType): Promise<RunningLock>`
+#### Classes
+- **RunningLock**
+  - `lock()`: void
+  - `hold()`: void
+  - `isUsed()`: boolean
+  - `isHolding()`: boolean
+  - `unlock()`: void
+  - `unhold()`: void
+
+### screen (@ohos.screen.d.ts)
+#### Interfaces
+- **ExpandOption**
+  - `screenId`: number
+  - `startX`: number
+  - `startY`: number
+- **VirtualScreenOption**
+  - `name`: string
+  - `width`: number
+  - `height`: number
+  - `density`: number
+  - `surfaceId`: string
+- **Screen**
+  - `readonly id`: number
+  - `readonly parent`: number
+  - `readonly supportedModeInfo`: Array<ScreenModeInfo>
+  - `readonly activeModeIndex`: number
+  - `readonly orientation`: Orientation
+  - `readonly sourceMode`: ScreenSourceMode
+  - `setOrientation`: void
+  - `setOrientation`: Promise<void>
+  - `setScreenActiveMode`: void
+  - `setScreenActiveMode`: Promise<void>
+  - `setDensityDpi`: void
+  - `setDensityDpi`: Promise<void>
+- **ScreenModeInfo**
+  - `id`: number
+  - `width`: number
+  - `height`: number
+  - `refreshRate`: number
+#### Enums
+- **ScreenSourceMode**
+  - `SCREEN_MAIN` = 0
+  - `SCREEN_MIRROR` = 1
+  - `SCREEN_EXTEND` = 2
+  - `SCREEN_ALONE` = 3
+- **Orientation**
+  - `UNSPECIFIED` = 0
+  - `VERTICAL` = 1
+  - `HORIZONTAL` = 2
+  - `REVERSE_VERTICAL` = 3
+  - `REVERSE_HORIZONTAL` = 4
+#### Functions
+- `getAllScreens(callback: AsyncCallback<Array<Screen>>): void`
+- `getAllScreens(): Promise<Array<Screen>>`
+- `on(eventType: 'connect' | 'disconnect' | 'change', callback: Callback<number>): void`
+- `off(eventType: 'connect' | 'disconnect' | 'change', callback?: Callback<number>): void`
+- `makeExpand(options: Array<ExpandOption>, callback: AsyncCallback<number>): void`
+- `makeExpand(options: Array<ExpandOption>): Promise<number>`
+- `stopExpand(expandScreen: Array<number>, callback: AsyncCallback<void>): void`
+- `stopExpand(expandScreen: Array<number>): Promise<void>`
+- `makeMirror(mainScreen: number, mirrorScreen: Array<number>, callback: AsyncCallback<number>): void`
+- `makeMirror(mainScreen: number, mirrorScreen: Array<number>): Promise<number>`
+- `stopMirror(mirrorScreen: Array<number>, callback: AsyncCallback<void>): void`
+- `stopMirror(mirrorScreen: Array<number>): Promise<void>`
+- `createVirtualScreen(options: VirtualScreenOption, callback: AsyncCallback<Screen>): void`
+- `createVirtualScreen(options: VirtualScreenOption): Promise<Screen>`
+- `destroyVirtualScreen(screenId: number, callback: AsyncCallback<void>): void`
+- `destroyVirtualScreen(screenId: number): Promise<void>`
+- `setVirtualScreenSurface(screenId: number, surfaceId: string, callback: AsyncCallback<void>): void`
+- `setVirtualScreenSurface(screenId: number, surfaceId: string): Promise<void>`
+- `isScreenRotationLocked(callback: AsyncCallback<boolean>): void`
+- `isScreenRotationLocked(): Promise<boolean>`
+- `setScreenRotationLocked(isLocked: boolean, callback: AsyncCallback<void>): void`
+- `setScreenRotationLocked(isLocked: boolean): Promise<void>`
+
+### screenLock (@ohos.screenLock.d.ts)
+#### Interfaces
+- **SystemEvent**
+  - `eventType`: EventType
+  - `params`: string
+#### Functions
+- `isScreenLocked(callback: AsyncCallback<boolean>): void`
+- `isScreenLocked(): Promise<boolean>`
+- `isLocked(): boolean`
+- `isSecureMode(callback: AsyncCallback<boolean>): void`
+- `isSecureMode(): Promise<boolean>`
+- `unlockScreen(callback: AsyncCallback<void>): void`
+- `unlockScreen(): Promise<void>`
+- `unlock(callback: AsyncCallback<boolean>): void`
+- `unlock(): Promise<boolean>`
+- `lock(callback: AsyncCallback<boolean>): void`
+- `lock(): Promise<boolean>`
+- `onSystemEvent(callback: Callback<SystemEvent>): boolean`
+- `sendScreenLockEvent(event: String, parameter: number, callback: AsyncCallback<boolean>): void`
+- `sendScreenLockEvent(event: String, parameter: number): Promise<boolean>`
+#### Type Aliases
+- `EventType` = 'beginWakeUp'
+    | 'endWakeUp'
+    | 'beginScreenOn'
+    | 'endScreenOn'
+    | 'beginScreenOff'
+    | 'endScreenOff'
+    | 'unlockScreen'
+    | 'lock
+
+### screenshot (@ohos.screenshot.d.ts)
+#### Interfaces
+- **Rect**
+  - `left`: number
+  - `top`: number
+  - `width`: number
+  - `height`: number
+- **Size**
+  - `width`: number
+  - `height`: number
+- **ScreenshotOptions**
+  - `screenRect?`: Rect
+  - `imageSize?`: Size
+  - `rotation?`: number
+  - `displayId?`: number
+#### Functions
+- `save(options: ScreenshotOptions, callback: AsyncCallback<image.PixelMap>): void`
+- `save(callback: AsyncCallback<image.PixelMap>): void`
+- `save(options?: ScreenshotOptions): Promise<image.PixelMap>`
+
+### omapi (@ohos.secureElement.d.ts)
+#### Interfaces
+- **SEService**
+  - `getReaders`: Reader[]
+  - `isConnected`: boolean
+  - `shutdown`: void
+  - `getVersion`: string
+- **Reader**
+  - `getName`: string
+  - `isSecureElementPresent`: boolean
+  - `openSession`: Session
+  - `closeSessions`: void
+- **Session**
+  - `getReader`: Reader
+  - `getATR`: number[]
+  - `close`: void
+  - `isClosed`: boolean
+  - `closeChannels`: void
+  - `openBasicChannel`: Promise<Channel>
+  - `openBasicChannel`: void
+  - `openBasicChannel`: Promise<Channel>
+  - `openBasicChannel`: void
+  - `openLogicalChannel`: Promise<Channel>
+  - `openLogicalChannel`: void
+  - `openLogicalChannel`: Promise<Channel>
+  - `openLogicalChannel`: void
+- **Channel**
+  - `getSession`: Session
+  - `close`: void
+  - `isBasicChannel`: boolean
+  - `isClosed`: boolean
+  - `getSelectResponse`: number[]
+  - `transmit`: Promise<number[]>
+  - `transmit`: void
+#### Enums
+- **ServiceState**
+  - `DISCONNECTED` = 0
+  - `CONNECTED` = 1
+#### Functions
+- `newSEService(type: 'serviceState', callback: Callback<ServiceState>): SEService`
+
+### asset (@ohos.security.asset.d.ts)
+#### Enums
+- **Accessibility**
+  - `DEVICE_POWERED_ON` = 0
+  - `DEVICE_FIRST_UNLOCKED` = 1
+  - `DEVICE_UNLOCKED` = 2
+- **AuthType**
+  - `NONE` = 0x00
+  - `ANY` = 0xFF
+- **SyncType**
+  - `NEVER` = 0
+  - `THIS_DEVICE` = 1 << 0
+  - `TRUSTED_DEVICE` = 1 << 1
+- **ConflictResolution**
+  - `OVERWRITE` = 0
+  - `THROW_ERROR` = 1
+- **ReturnType**
+  - `ALL` = 0
+  - `ATTRIBUTES` = 1
+- **TagType**
+  - `BOOL` = 0x01 << 28
+  - `NUMBER` = 0x02 << 28
+  - `BYTES` = 0x03 << 28
+- **Tag**
+  - `SECRET` = TagType.BYTES | 0x01
+  - `ALIAS` = TagType.BYTES | 0x02
+  - `ACCESSIBILITY` = TagType.NUMBER | 0x03
+  - `REQUIRE_PASSWORD_SET` = TagType.BOOL | 0x04
+  - `AUTH_TYPE` = TagType.NUMBER | 0x05
+  - `AUTH_VALIDITY_PERIOD` = TagType.NUMBER | 0x06
+  - `AUTH_CHALLENGE` = TagType.BYTES | 0x07
+  - `AUTH_TOKEN` = TagType.BYTES | 0x08
+  - `SYNC_TYPE` = TagType.NUMBER | 0x10
+- **ErrorCode**
+  - `PERMISSION_DENIED` = 201
+  - `INVALID_ARGUMENT` = 401
+  - `SERVICE_UNAVAILABLE` = 24000001
+  - `NOT_FOUND` = 24000002
+  - `DUPLICATED` = 24000003
+  - `ACCESS_DENIED` = 24000004
+  - `STATUS_MISMATCH` = 24000005
+  - `OUT_OF_MEMORY` = 24000006
+  - `DATA_CORRUPTED` = 24000007
+  - `DATABASE_ERROR` = 24000008
+  - `CRYPTO_ERROR` = 24000009
+  - `IPC_ERROR` = 24000010
+  - `BMS_ERROR` = 24000011
+  - `ACCOUNT_ERROR` = 24000012
+  - `ACCESS_TOKEN_ERROR` = 24000013
+  - `FILE_OPERATION_ERROR` = 24000014
+  - `GET_SYSTEM_TIME_ERROR` = 24000015
+  - `LIMIT_EXCEEDED` = 24000016
+  - `UNSUPPORTED` = 24000017
+#### Functions
+- `add(attributes: AssetMap): Promise<void>`
+- `remove(query: AssetMap): Promise<void>`
+- `update(query: AssetMap, attributesToUpdate: AssetMap): Promise<void>`
+- `preQuery(query: AssetMap): Promise<Uint8Array>`
+- `query(query: AssetMap): Promise<Array<AssetMap>>`
+- `postQuery(handle: AssetMap): Promise<void>`
+#### Type Aliases
+- `AssetMap` = Map<Tag, Value>
+- `Value` = boolean | number | Uint8Array
+
+### cert (@ohos.security.cert.d.ts)
+#### Interfaces
+- **DataBlob**
+  - `data`: Uint8Array
+- **DataArray**
+  - `data`: Array<Uint8Array>
+- **EncodingBlob**
+  - `data`: Uint8Array
+  - `encodingFormat`: EncodingFormat
+- **CertChainData**
+  - `data`: Uint8Array
+  - `count`: number
+  - `encodingFormat`: EncodingFormat
+- **X509Cert**
+  - `verify`: void
+  - `verify`: Promise<void>
+  - `getEncoded`: void
+  - `getEncoded`: Promise<EncodingBlob>
+  - `getPublicKey`: cryptoFramework.PubKey
+  - `checkValidityWithDate`: void
+  - `getVersion`: number
+  - `getSerialNumber`: number
+  - `getCertSerialNumber`: bigint
+  - `getIssuerName`: DataBlob
+  - `getSubjectName`: DataBlob
+  - `getNotBeforeTime`: string
+  - `getNotAfterTime`: string
+  - `getSignature`: DataBlob
+  - `getSignatureAlgName`: string
+  - `getSignatureAlgOid`: string
+  - `getSignatureAlgParams`: DataBlob
+  - `getKeyUsage`: DataBlob
+  - `getExtKeyUsage`: DataArray
+  - `getBasicConstraints`: number
+  - `getSubjectAltNames`: DataArray
+  - `getIssuerAltNames`: DataArray
+  - `getItem`: DataBlob
+  - `match`: boolean
+- **CertExtension**
+  - `getEncoded`: EncodingBlob
+  - `getOidList`: DataArray
+  - `getEntry`: DataBlob
+  - `checkCA`: number
+  - `hasUnsupportedCriticalExtension`: boolean
+- **X509CrlEntry**
+  - `getEncoded`: void
+  - `getEncoded`: Promise<EncodingBlob>
+  - `getSerialNumber`: number
+  - `getCertIssuer`: DataBlob
+  - `getRevocationDate`: string
+- **X509CRLEntry**
+  - `getEncoded`: void
+  - `getEncoded`: Promise<EncodingBlob>
+  - `getSerialNumber`: bigint
+  - `getCertIssuer`: DataBlob
+  - `getRevocationDate`: string
+  - `getExtensions`: DataBlob
+  - `hasExtensions`: boolean
+- **X509Crl**
+  - `isRevoked`: boolean
+  - `getType`: string
+  - `getEncoded`: void
+  - `getEncoded`: Promise<EncodingBlob>
+  - `verify`: void
+  - `verify`: Promise<void>
+  - `getVersion`: number
+  - `getIssuerName`: DataBlob
+  - `getLastUpdate`: string
+  - `getNextUpdate`: string
+  - `getRevokedCert`: X509CrlEntry
+  - `getRevokedCertWithCert`: X509CrlEntry
+  - `getRevokedCerts`: void
+  - `getRevokedCerts`: Promise<Array<X509CrlEntry>>
+  - `getTbsInfo`: DataBlob
+  - `getSignature`: DataBlob
+  - `getSignatureAlgName`: string
+  - `getSignatureAlgOid`: string
+  - `getSignatureAlgParams`: DataBlob
+- **X509CRL**
+  - `isRevoked`: boolean
+  - `getType`: string
+  - `getEncoded`: void
+  - `getEncoded`: Promise<EncodingBlob>
+  - `verify`: void
+  - `verify`: Promise<void>
+  - `getVersion`: number
+  - `getIssuerName`: DataBlob
+  - `getLastUpdate`: string
+  - `getNextUpdate`: string
+  - `getRevokedCert`: X509CRLEntry
+  - `getRevokedCertWithCert`: X509CRLEntry
+  - `getRevokedCerts`: void
+  - `getRevokedCerts`: Promise<Array<X509CRLEntry>>
+  - `getTBSInfo`: DataBlob
+  - `getSignature`: DataBlob
+  - `getSignatureAlgName`: string
+  - `getSignatureAlgOid`: string
+  - `getSignatureAlgParams`: DataBlob
+  - `getExtensions`: DataBlob
+  - `match`: boolean
+- **CertChainValidator**
+  - `validate`: void
+  - `validate`: Promise<void>
+  - `readonly algorithm`: string
+- **X509CertMatchParameters**
+  - `x509Cert?`: X509Cert
+  - `validDate?`: string
+  - `issuer?`: Uint8Array
+  - `keyUsage?`: Array<boolean>
+  - `serialNumber?`: bigint
+  - `subject?`: Uint8Array
+  - `publicKey?`: DataBlob
+  - `publicKeyAlgID?`: string
+- **X509CRLMatchParameters**
+  - `issuer?`: Array<Uint8Array>
+  - `x509Cert?`: X509Cert
+- **CertCRLCollection**
+  - `selectCerts`: Promise<Array<X509Cert>>
+  - `selectCerts`: void
+  - `selectCRLs`: Promise<Array<X509CRL>>
+  - `selectCRLs`: void
+- **X509CertChain**
+  - `getCertList`: Array<X509Cert>
+  - `validate`: Promise<CertChainValidationResult>
+  - `validate`: void
+- **X509TrustAnchor**
+  - `CACert?`: X509Cert
+  - `CAPubKey?`: Uint8Array
+  - `CASubject?`: Uint8Array
+- **CertChainValidationParameters**
+  - `date?`: string
+  - `trustAnchors`: Array<X509TrustAnchor>
+  - `certCRLs?`: Array<CertCRLCollection>
+- **CertChainValidationResult**
+  - `readonly trustAnchor`: X509TrustAnchor
+  - `readonly entityCert`: X509Cert
+#### Enums
+- **CertResult**
+  - `INVALID_PARAMS` = 401
+  - `NOT_SUPPORT` = 801
+  - `ERR_OUT_OF_MEMORY` = 19020001
+  - `ERR_RUNTIME_ERROR` = 19020002
+  - `ERR_CRYPTO_OPERATION` = 19030001
+  - `ERR_CERT_SIGNATURE_FAILURE` = 19030002
+  - `ERR_CERT_NOT_YET_VALID` = 19030003
+  - `ERR_CERT_HAS_EXPIRED` = 19030004
+  - `ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY` = 19030005
+  - `ERR_KEYUSAGE_NO_CERTSIGN` = 19030006
+  - `ERR_KEYUSAGE_NO_DIGITAL_SIGNATURE` = 19030007
+- **EncodingFormat**
+  - `FORMAT_DER` = 0
+  - `FORMAT_PEM` = 1
+  - `FORMAT_PKCS7` = 2
+- **CertItemType**
+  - `CERT_ITEM_TYPE_TBS` = 0
+  - `CERT_ITEM_TYPE_PUBLIC_KEY` = 1
+  - `CERT_ITEM_TYPE_ISSUER_UNIQUE_ID` = 2
+  - `CERT_ITEM_TYPE_SUBJECT_UNIQUE_ID` = 3
+  - `CERT_ITEM_TYPE_EXTENSIONS` = 4
+- **ExtensionOidType**
+  - `EXTENSION_OID_TYPE_ALL` = 0
+  - `EXTENSION_OID_TYPE_CRITICAL` = 1
+  - `EXTENSION_OID_TYPE_UNCRITICAL` = 2
+- **ExtensionEntryType**
+  - `EXTENSION_ENTRY_TYPE_ENTRY` = 0
+  - `EXTENSION_ENTRY_TYPE_ENTRY_CRITICAL` = 1
+  - `EXTENSION_ENTRY_TYPE_ENTRY_VALUE` = 2
+#### Functions
+- `createX509Cert(inStream: EncodingBlob, callback: AsyncCallback<X509Cert>): void`
+- `createX509Cert(inStream: EncodingBlob): Promise<X509Cert>`
+- `createCertExtension(inStream: EncodingBlob, callback: AsyncCallback<CertExtension>): void`
+- `createCertExtension(inStream: EncodingBlob): Promise<CertExtension>`
+- `createX509Crl(inStream: EncodingBlob, callback: AsyncCallback<X509Crl>): void`
+- `createX509Crl(inStream: EncodingBlob): Promise<X509Crl>`
+- `createX509CRL(inStream: EncodingBlob, callback: AsyncCallback<X509CRL>): void`
+- `createX509CRL(inStream: EncodingBlob): Promise<X509CRL>`
+- `createCertChainValidator(algorithm: string): CertChainValidator`
+- `createCertCRLCollection(certs: Array<X509Cert>, crls?: Array<X509CRL>): CertCRLCollection`
+- `createX509CertChain(inStream: EncodingBlob): Promise<X509CertChain>`
+- `createX509CertChain(inStream: EncodingBlob, callback: AsyncCallback<X509CertChain>): void`
+- `createX509CertChain(certs: Array<X509Cert>): X509CertChain`
+
+### certificateManager (@ohos.security.certManager.d.ts)
+#### Interfaces
+- **CertInfo**
+  - `uri`: string
+  - `certAlias`: string
+  - `state`: boolean
+  - `issuerName`: string
+  - `subjectName`: string
+  - `serial`: string
+  - `notBefore`: string
+  - `notAfter`: string
+  - `fingerprintSha256`: string
+  - `cert`: Uint8Array
+- **CertAbstract**
+  - `uri`: string
+  - `certAlias`: string
+  - `state`: boolean
+  - `subjectName`: string
+- **Credential**
+  - `type`: string
+  - `alias`: string
+  - `keyUri`: string
+  - `certNum`: number
+  - `keyNum`: number
+  - `credentialData`: Uint8Array
+- **CredentialAbstract**
+  - `type`: string
+  - `alias`: string
+  - `keyUri`: string
+- **CMResult**
+  - `certList?`: Array<CertAbstract>
+  - `certInfo?`: CertInfo
+  - `credentialList?`: Array<CredentialAbstract>
+  - `credential?`: Credential
+  - `appUidList?`: Array<string>
+  - `uri?`: string
+  - `outData?`: Uint8Array
+- **CMSignatureSpec**
+  - `purpose`: CmKeyPurpose
+  - `padding?`: CmKeyPadding
+  - `digest?`: CmKeyDigest
+- **CMHandle**
+  - `handle`: Uint8Array
+#### Enums
+- **CMErrorCode**
+  - `CM_ERROR_NO_PERMISSION` = 201
+  - `CM_ERROR_NOT_SYSTEM_APP` = 202
+  - `CM_ERROR_INVALID_PARAMS` = 401
+  - `CM_ERROR_GENERIC` = 17500001
+  - `CM_ERROR_NO_FOUND` = 17500002
+  - `CM_ERROR_INCORRECT_FORMAT` = 17500003
+- **CmKeyPurpose**
+  - `CM_KEY_PURPOSE_SIGN` = 4
+  - `CM_KEY_PURPOSE_VERIFY` = 8
+- **CmKeyDigest**
+  - `CM_DIGEST_NONE` = 0
+  - `CM_DIGEST_MD5` = 1
+  - `CM_DIGEST_SHA1` = 2
+  - `CM_DIGEST_SHA224` = 3
+  - `CM_DIGEST_SHA256` = 4
+  - `CM_DIGEST_SHA384` = 5
+  - `CM_DIGEST_SHA512` = 6
+- **CmKeyPadding**
+  - `CM_PADDING_NONE` = 0
+  - `CM_PADDING_PSS` = 1
+  - `CM_PADDING_PKCS1_V1_5` = 2
+#### Functions
+- `installPrivateCertificate(
+    keystore: Uint8Array,
+    keystorePwd: string,
+    certAlias: string,
+    callback: AsyncCallback<CMResult>
+  ): void`
+- `installPrivateCertificate(keystore: Uint8Array, keystorePwd: string, certAlias: string): Promise<CMResult>`
+- `uninstallPrivateCertificate(keyUri: string, callback: AsyncCallback<void>): void`
+- `uninstallPrivateCertificate(keyUri: string): Promise<void>`
+- `getAllAppPrivateCertificates(callback: AsyncCallback<CMResult>): void`
+- `getAllAppPrivateCertificates(): Promise<CMResult>`
+- `getPrivateCertificate(keyUri: string, callback: AsyncCallback<CMResult>): void`
+- `getPrivateCertificate(keyUri: string): Promise<CMResult>`
+- `init(authUri: string, spec: CMSignatureSpec, callback: AsyncCallback<CMHandle>): void`
+- `init(authUri: string, spec: CMSignatureSpec): Promise<CMHandle>`
+- `update(handle: Uint8Array, data: Uint8Array, callback: AsyncCallback<void>): void`
+- `update(handle: Uint8Array, data: Uint8Array): Promise<void>`
+- `finish(handle: Uint8Array, callback: AsyncCallback<CMResult>): void`
+- `finish(handle: Uint8Array, signature: Uint8Array, callback: AsyncCallback<CMResult>): void`
+- `finish(handle: Uint8Array, signature?: Uint8Array): Promise<CMResult>`
+- `abort(handle: Uint8Array, callback: AsyncCallback<void>): void`
+- `abort(handle: Uint8Array): Promise<void>`
+
+### cryptoFramework (@ohos.security.cryptoFramework.d.ts)
+#### Interfaces
+- **DataBlob**
+  - `data`: Uint8Array
+- **ParamsSpec**
+  - `algName`: string
+- **IvParamsSpec**
+  - `iv`: DataBlob
+- **GcmParamsSpec**
+  - `iv`: DataBlob
+  - `aad`: DataBlob
+  - `authTag`: DataBlob
+- **CcmParamsSpec**
+  - `iv`: DataBlob
+  - `aad`: DataBlob
+  - `authTag`: DataBlob
+- **Key**
+  - `getEncoded`: DataBlob
+  - `readonly format`: string
+  - `readonly algName`: string
+- **SymKey**
+  - `clearMem`: void
+- **PriKey**
+  - `clearMem`: void
+  - `getAsyKeySpec`: bigint | string | number
+- **PubKey**
+  - `getAsyKeySpec`: bigint | string | number
+- **KeyPair**
+  - `readonly priKey`: PriKey
+  - `readonly pubKey`: PubKey
+- **Random**
+  - `generateRandom`: void
+  - `generateRandom`: Promise<DataBlob>
+  - `generateRandomSync`: DataBlob
+  - `setSeed`: void
+  - `readonly algName`: string
+- **AsyKeyGenerator**
+  - `generateKeyPair`: void
+  - `generateKeyPair`: Promise<KeyPair>
+  - `convertKey`: void
+  - `convertKey`: void
+  - `convertKey`: Promise<KeyPair>
+  - `convertKey`: Promise<KeyPair>
+  - `readonly algName`: string
+- **SymKeyGenerator**
+  - `generateSymKey`: void
+  - `generateSymKey`: Promise<SymKey>
+  - `convertKey`: void
+  - `convertKey`: Promise<SymKey>
+  - `readonly algName`: string
+- **Mac**
+  - `init`: void
+  - `init`: Promise<void>
+  - `update`: void
+  - `update`: Promise<void>
+  - `doFinal`: void
+  - `doFinal`: Promise<DataBlob>
+  - `getMacLength`: number
+  - `readonly algName`: string
+- **Md**
+  - `update`: void
+  - `update`: Promise<void>
+  - `digest`: void
+  - `digest`: Promise<DataBlob>
+  - `getMdLength`: number
+  - `readonly algName`: string
+- **Cipher**
+  - `init`: void
+  - `init`: void
+  - `init`: Promise<void>
+  - `init`: Promise<void>
+  - `update`: void
+  - `update`: Promise<DataBlob>
+  - `doFinal`: void
+  - `doFinal`: void
+  - `doFinal`: Promise<DataBlob>
+  - `doFinal`: Promise<DataBlob>
+  - `setCipherSpec`: void
+  - `getCipherSpec`: string | Uint8Array
+  - `readonly algName`: string
+- **Sign**
+  - `init`: void
+  - `init`: Promise<void>
+  - `update`: void
+  - `update`: Promise<void>
+  - `sign`: void
+  - `sign`: void
+  - `sign`: Promise<DataBlob>
+  - `sign`: Promise<DataBlob>
+  - `setSignSpec`: void
+  - `setSignSpec`: void
+  - `getSignSpec`: string | number
+  - `readonly algName`: string
+- **Verify**
+  - `init`: void
+  - `init`: Promise<void>
+  - `update`: void
+  - `update`: Promise<void>
+  - `verify`: void
+  - `verify`: void
+  - `verify`: Promise<boolean>
+  - `verify`: Promise<boolean>
+  - `setVerifySpec`: void
+  - `setVerifySpec`: void
+  - `getVerifySpec`: string | number
+  - `readonly algName`: string
+- **KeyAgreement**
+  - `generateSecret`: void
+  - `generateSecret`: Promise<DataBlob>
+  - `readonly algName`: string
+- **AsyKeySpec**
+  - `algName`: string
+  - `specType`: AsyKeySpecType
+- **DSACommonParamsSpec**
+  - `p`: bigint
+  - `q`: bigint
+  - `g`: bigint
+- **DSAPubKeySpec**
+  - `params`: DSACommonParamsSpec
+  - `pk`: bigint
+- **DSAKeyPairSpec**
+  - `params`: DSACommonParamsSpec
+  - `sk`: bigint
+  - `pk`: bigint
+- **ECField**
+  - `fieldType`: string
+- **ECFieldFp**
+  - `p`: bigint
+- **Point**
+  - `x`: bigint
+  - `y`: bigint
+- **ECCCommonParamsSpec**
+  - `field`: ECField
+  - `a`: bigint
+  - `b`: bigint
+  - `g`: Point
+  - `n`: bigint
+  - `h`: number
+- **ECCPriKeySpec**
+  - `params`: ECCCommonParamsSpec
+  - `sk`: bigint
+- **ECCPubKeySpec**
+  - `params`: ECCCommonParamsSpec
+  - `pk`: Point
+- **ECCKeyPairSpec**
+  - `params`: ECCCommonParamsSpec
+  - `sk`: bigint
+  - `pk`: Point
+- **DHCommonParamsSpec**
+  - `p`: bigint
+  - `g`: bigint
+  - `l`: number
+- **DHPriKeySpec**
+  - `params`: DHCommonParamsSpec
+  - `sk`: bigint
+- **DHPubKeySpec**
+  - `params`: DHCommonParamsSpec
+  - `pk`: bigint
+- **DHKeyPairSpec**
+  - `params`: DHCommonParamsSpec
+  - `sk`: bigint
+  - `pk`: bigint
+- **ED25519PriKeySpec**
+  - `sk`: bigint
+- **ED25519PubKeySpec**
+  - `pk`: bigint
+- **ED25519KeyPairSpec**
+  - `sk`: bigint
+  - `pk`: bigint
+- **X25519PriKeySpec**
+  - `sk`: bigint
+- **X25519PubKeySpec**
+  - `pk`: bigint
+- **X25519KeyPairSpec**
+  - `sk`: bigint
+  - `pk`: bigint
+- **RSACommonParamsSpec**
+  - `n`: bigint
+- **RSAPubKeySpec**
+  - `params`: RSACommonParamsSpec
+  - `pk`: bigint
+- **RSAKeyPairSpec**
+  - `params`: RSACommonParamsSpec
+  - `sk`: bigint
+  - `pk`: bigint
+- **AsyKeyGeneratorBySpec**
+  - `generateKeyPair`: void
+  - `generateKeyPair`: Promise<KeyPair>
+  - `generatePriKey`: void
+  - `generatePriKey`: Promise<PriKey>
+  - `generatePubKey`: void
+  - `generatePubKey`: Promise<PubKey>
+  - `readonly algName`: string
+- **KdfSpec**
+  - `algName`: string
+- **PBKDF2Spec**
+  - `password`: string | Uint8Array
+  - `salt`: Uint8Array
+  - `iterations`: number
+  - `keySize`: number
+- **Kdf**
+  - `generateSecret`: void
+  - `generateSecret`: Promise<DataBlob>
+  - `readonly algName`: string
+#### Enums
+- **Result**
+  - `INVALID_PARAMS` = 401
+  - `NOT_SUPPORT` = 801
+  - `ERR_OUT_OF_MEMORY` = 17620001
+  - `ERR_RUNTIME_ERROR` = 17620002
+  - `ERR_CRYPTO_OPERATION` = 17630001
+- **CryptoMode**
+  - `ENCRYPT_MODE` = 0
+  - `DECRYPT_MODE` = 1
+- **CipherSpecItem**
+  - `OAEP_MD_NAME_STR` = 100
+  - `OAEP_MGF_NAME_STR` = 101
+  - `OAEP_MGF1_MD_STR` = 102
+  - `OAEP_MGF1_PSRC_UINT8ARR` = 103
+  - `SM2_MD_NAME_STR` = 104
+- **SignSpecItem**
+  - `PSS_MD_NAME_STR` = 100
+  - `PSS_MGF_NAME_STR` = 101
+  - `PSS_MGF1_MD_STR` = 102
+  - `PSS_SALT_LEN_NUM` = 103
+  - `PSS_TRAILER_FIELD_NUM` = 104
+  - `SM2_USER_ID_UINT8ARR` = 105
+- **AsyKeySpecItem**
+  - `DSA_P_BN` = 101
+  - `DSA_Q_BN` = 102
+  - `DSA_G_BN` = 103
+  - `DSA_SK_BN` = 104
+  - `DSA_PK_BN` = 105
+  - `ECC_FP_P_BN` = 201
+  - `ECC_A_BN` = 202
+  - `ECC_B_BN` = 203
+  - `ECC_G_X_BN` = 204
+  - `ECC_G_Y_BN` = 205
+  - `ECC_N_BN` = 206
+  - `ECC_H_NUM` = 207
+  - `ECC_SK_BN` = 208
+  - `ECC_PK_X_BN` = 209
+  - `ECC_PK_Y_BN` = 210
+  - `ECC_FIELD_TYPE_STR` = 211
+  - `ECC_FIELD_SIZE_NUM` = 212
+  - `ECC_CURVE_NAME_STR` = 213
+  - `RSA_N_BN` = 301
+  - `RSA_SK_BN` = 302
+  - `RSA_PK_BN` = 303
+  - `DH_P_BN` = 401
+  - `DH_G_BN` = 402
+  - `DH_L_NUM` = 403
+  - `DH_SK_BN` = 404
+  - `DH_PK_BN` = 405
+  - `ED25519_SK_BN` = 501
+  - `ED25519_PK_BN` = 502
+  - `X25519_SK_BN` = 601
+  - `X25519_PK_BN` = 602
+- **AsyKeySpecType**
+  - `COMMON_PARAMS_SPEC` = 0
+  - `PRIVATE_KEY_SPEC` = 1
+  - `PUBLIC_KEY_SPEC` = 2
+  - `KEY_PAIR_SPEC` = 3
+#### Functions
+- `createRandom(): Random`
+- `createAsyKeyGenerator(algName: string): AsyKeyGenerator`
+- `createSymKeyGenerator(algName: string): SymKeyGenerator`
+- `createMac(algName: string): Mac`
+- `createMd(algName: string): Md`
+- `createCipher(transformation: string): Cipher`
+- `createSign(algName: string): Sign`
+- `createVerify(algName: string): Verify`
+- `createKeyAgreement(algName: string): KeyAgreement`
+- `createAsyKeyGeneratorBySpec(asyKeySpec: AsyKeySpec): AsyKeyGeneratorBySpec`
+- `createKdf(algName: string): Kdf`
+#### Classes
+- **ECCKeyUtil**
+  - `genECCCommonParamsSpec()`: ECCCommonParamsSpec
+- **DHKeyUtil**
+  - `genDHCommonParamsSpec()`: DHCommonParamsSpec
+
+### huks (@ohos.security.huks.d.ts)
+#### Interfaces
+- **HuksParam**
+  - `tag`: HuksTag
+  - `value`: boolean | number | bigint | Uint8Array
+- **HuksHandle**
+  - `errorCode`: number
+  - `handle`: number
+  - `token?`: Uint8Array
+- **HuksSessionHandle**
+  - `handle`: number
+  - `challenge?`: Uint8Array
+- **HuksOptions**
+  - `properties?`: Array<HuksParam>
+  - `inData?`: Uint8Array
+- **HuksResult**
+  - `errorCode`: number
+  - `outData?`: Uint8Array
+  - `properties?`: Array<HuksParam>
+  - `certChains?`: Array<string>
+- **HuksReturnResult**
+  - `outData?`: Uint8Array
+  - `properties?`: Array<HuksParam>
+  - `certChains?`: Array<string>
+#### Enums
+- **HuksErrorCode**
+  - `HUKS_SUCCESS` = 0
+  - `HUKS_FAILURE` = -1
+  - `HUKS_ERROR_BAD_STATE` = -2
+  - `HUKS_ERROR_INVALID_ARGUMENT` = -3
+  - `HUKS_ERROR_NOT_SUPPORTED` = -4
+  - `HUKS_ERROR_NO_PERMISSION` = -5
+  - `HUKS_ERROR_INSUFFICIENT_DATA` = -6
+  - `HUKS_ERROR_BUFFER_TOO_SMALL` = -7
+  - `HUKS_ERROR_INSUFFICIENT_MEMORY` = -8
+  - `HUKS_ERROR_COMMUNICATION_FAILURE` = -9
+  - `HUKS_ERROR_STORAGE_FAILURE` = -10
+  - `HUKS_ERROR_HARDWARE_FAILURE` = -11
+  - `HUKS_ERROR_ALREADY_EXISTS` = -12
+  - `HUKS_ERROR_NOT_EXIST` = -13
+  - `HUKS_ERROR_NULL_POINTER` = -14
+  - `HUKS_ERROR_FILE_SIZE_FAIL` = -15
+  - `HUKS_ERROR_READ_FILE_FAIL` = -16
+  - `HUKS_ERROR_INVALID_PUBLIC_KEY` = -17
+  - `HUKS_ERROR_INVALID_PRIVATE_KEY` = -18
+  - `HUKS_ERROR_INVALID_KEY_INFO` = -19
+  - `HUKS_ERROR_HASH_NOT_EQUAL` = -20
+  - `HUKS_ERROR_MALLOC_FAIL` = -21
+  - `HUKS_ERROR_WRITE_FILE_FAIL` = -22
+  - `HUKS_ERROR_REMOVE_FILE_FAIL` = -23
+  - `HUKS_ERROR_OPEN_FILE_FAIL` = -24
+  - `HUKS_ERROR_CLOSE_FILE_FAIL` = -25
+  - `HUKS_ERROR_MAKE_DIR_FAIL` = -26
+  - `HUKS_ERROR_INVALID_KEY_FILE` = -27
+  - `HUKS_ERROR_IPC_MSG_FAIL` = -28
+  - `HUKS_ERROR_REQUEST_OVERFLOWS` = -29
+  - `HUKS_ERROR_PARAM_NOT_EXIST` = -30
+  - `HUKS_ERROR_CRYPTO_ENGINE_ERROR` = -31
+  - `HUKS_ERROR_COMMUNICATION_TIMEOUT` = -32
+  - `HUKS_ERROR_IPC_INIT_FAIL` = -33
+  - `HUKS_ERROR_IPC_DLOPEN_FAIL` = -34
+  - `HUKS_ERROR_EFUSE_READ_FAIL` = -35
+  - `HUKS_ERROR_NEW_ROOT_KEY_MATERIAL_EXIST` = -36
+  - `HUKS_ERROR_UPDATE_ROOT_KEY_MATERIAL_FAIL` = -37
+  - `HUKS_ERROR_VERIFICATION_FAILED` = -38
+  - `HUKS_ERROR_CHECK_GET_ALG_FAIL` = -100
+  - `HUKS_ERROR_CHECK_GET_KEY_SIZE_FAIL` = -101
+  - `HUKS_ERROR_CHECK_GET_PADDING_FAIL` = -102
+  - `HUKS_ERROR_CHECK_GET_PURPOSE_FAIL` = -103
+  - `HUKS_ERROR_CHECK_GET_DIGEST_FAIL` = -104
+  - `HUKS_ERROR_CHECK_GET_MODE_FAIL` = -105
+  - `HUKS_ERROR_CHECK_GET_NONCE_FAIL` = -106
+  - `HUKS_ERROR_CHECK_GET_AAD_FAIL` = -107
+  - `HUKS_ERROR_CHECK_GET_IV_FAIL` = -108
+  - `HUKS_ERROR_CHECK_GET_AE_TAG_FAIL` = -109
+  - `HUKS_ERROR_CHECK_GET_SALT_FAIL` = -110
+  - `HUKS_ERROR_CHECK_GET_ITERATION_FAIL` = -111
+  - `HUKS_ERROR_INVALID_ALGORITHM` = -112
+  - `HUKS_ERROR_INVALID_KEY_SIZE` = -113
+  - `HUKS_ERROR_INVALID_PADDING` = -114
+  - `HUKS_ERROR_INVALID_PURPOSE` = -115
+  - `HUKS_ERROR_INVALID_MODE` = -116
+  - `HUKS_ERROR_INVALID_DIGEST` = -117
+  - `HUKS_ERROR_INVALID_SIGNATURE_SIZE` = -118
+  - `HUKS_ERROR_INVALID_IV` = -119
+  - `HUKS_ERROR_INVALID_AAD` = -120
+  - `HUKS_ERROR_INVALID_NONCE` = -121
+  - `HUKS_ERROR_INVALID_AE_TAG` = -122
+  - `HUKS_ERROR_INVALID_SALT` = -123
+  - `HUKS_ERROR_INVALID_ITERATION` = -124
+  - `HUKS_ERROR_INVALID_OPERATION` = -125
+  - `HUKS_ERROR_INTERNAL_ERROR` = -999
+  - `HUKS_ERROR_UNKNOWN_ERROR` = -1000
+- **HuksExceptionErrCode**
+  - `HUKS_ERR_CODE_PERMISSION_FAIL` = 201
+  - `HUKS_ERR_CODE_ILLEGAL_ARGUMENT` = 401
+  - `HUKS_ERR_CODE_NOT_SUPPORTED_API` = 801
+  - `HUKS_ERR_CODE_FEATURE_NOT_SUPPORTED` = 12000001
+  - `HUKS_ERR_CODE_MISSING_CRYPTO_ALG_ARGUMENT` = 12000002
+  - `HUKS_ERR_CODE_INVALID_CRYPTO_ALG_ARGUMENT` = 12000003
+  - `HUKS_ERR_CODE_FILE_OPERATION_FAIL` = 12000004
+  - `HUKS_ERR_CODE_COMMUNICATION_FAIL` = 12000005
+  - `HUKS_ERR_CODE_CRYPTO_FAIL` = 12000006
+  - `HUKS_ERR_CODE_KEY_AUTH_PERMANENTLY_INVALIDATED` = 12000007
+  - `HUKS_ERR_CODE_KEY_AUTH_VERIFY_FAILED` = 12000008
+  - `HUKS_ERR_CODE_KEY_AUTH_TIME_OUT` = 12000009
+  - `HUKS_ERR_CODE_SESSION_LIMIT` = 12000010
+  - `HUKS_ERR_CODE_ITEM_NOT_EXIST` = 12000011
+  - `HUKS_ERR_CODE_EXTERNAL_ERROR` = 12000012
+  - `HUKS_ERR_CODE_CREDENTIAL_NOT_EXIST` = 12000013
+  - `HUKS_ERR_CODE_INSUFFICIENT_MEMORY` = 12000014
+  - `HUKS_ERR_CODE_CALL_SERVICE_FAILED` = 12000015
+  - `HUKS_ERR_CODE_DEVICE_PASSWORD_UNSET` = 12000016
+- **HuksKeyPurpose**
+  - `HUKS_KEY_PURPOSE_ENCRYPT` = 1
+  - `HUKS_KEY_PURPOSE_DECRYPT` = 2
+  - `HUKS_KEY_PURPOSE_SIGN` = 4
+  - `HUKS_KEY_PURPOSE_VERIFY` = 8
+  - `HUKS_KEY_PURPOSE_DERIVE` = 16
+  - `HUKS_KEY_PURPOSE_WRAP` = 32
+  - `HUKS_KEY_PURPOSE_UNWRAP` = 64
+  - `HUKS_KEY_PURPOSE_MAC` = 128
+  - `HUKS_KEY_PURPOSE_AGREE` = 256
+- **HuksKeyDigest**
+  - `HUKS_DIGEST_NONE` = 0
+  - `HUKS_DIGEST_MD5` = 1
+  - `HUKS_DIGEST_SM3` = 2
+  - `HUKS_DIGEST_SHA1` = 10
+  - `HUKS_DIGEST_SHA224` = 11
+  - `HUKS_DIGEST_SHA256` = 12
+  - `HUKS_DIGEST_SHA384` = 13
+  - `HUKS_DIGEST_SHA512` = 14
+- **HuksKeyPadding**
+  - `HUKS_PADDING_NONE` = 0
+  - `HUKS_PADDING_OAEP` = 1
+  - `HUKS_PADDING_PSS` = 2
+  - `HUKS_PADDING_PKCS1_V1_5` = 3
+  - `HUKS_PADDING_PKCS5` = 4
+  - `HUKS_PADDING_PKCS7` = 5
+- **HuksCipherMode**
+  - `HUKS_MODE_ECB` = 1
+  - `HUKS_MODE_CBC` = 2
+  - `HUKS_MODE_CTR` = 3
+  - `HUKS_MODE_OFB` = 4
+  - `HUKS_MODE_CCM` = 31
+  - `HUKS_MODE_GCM` = 32
+- **HuksKeySize**
+  - `HUKS_RSA_KEY_SIZE_512` = 512
+  - `HUKS_RSA_KEY_SIZE_768` = 768
+  - `HUKS_RSA_KEY_SIZE_1024` = 1024
+  - `HUKS_RSA_KEY_SIZE_2048` = 2048
+  - `HUKS_RSA_KEY_SIZE_3072` = 3072
+  - `HUKS_RSA_KEY_SIZE_4096` = 4096
+  - `HUKS_ECC_KEY_SIZE_224` = 224
+  - `HUKS_ECC_KEY_SIZE_256` = 256
+  - `HUKS_ECC_KEY_SIZE_384` = 384
+  - `HUKS_ECC_KEY_SIZE_521` = 521
+  - `HUKS_AES_KEY_SIZE_128` = 128
+  - `HUKS_AES_KEY_SIZE_192` = 192
+  - `HUKS_AES_KEY_SIZE_256` = 256
+  - `HUKS_AES_KEY_SIZE_512` = 512
+  - `HUKS_CURVE25519_KEY_SIZE_256` = 256
+  - `HUKS_DH_KEY_SIZE_2048` = 2048
+  - `HUKS_DH_KEY_SIZE_3072` = 3072
+  - `HUKS_DH_KEY_SIZE_4096` = 4096
+  - `HUKS_SM2_KEY_SIZE_256` = 256
+  - `HUKS_SM4_KEY_SIZE_128` = 128
+- **HuksKeyAlg**
+  - `HUKS_ALG_RSA` = 1
+  - `HUKS_ALG_ECC` = 2
+  - `HUKS_ALG_DSA` = 3
+  - `HUKS_ALG_AES` = 20
+  - `HUKS_ALG_HMAC` = 50
+  - `HUKS_ALG_HKDF` = 51
+  - `HUKS_ALG_PBKDF2` = 52
+  - `HUKS_ALG_ECDH` = 100
+  - `HUKS_ALG_X25519` = 101
+  - `HUKS_ALG_ED25519` = 102
+  - `HUKS_ALG_DH` = 103
+  - `HUKS_ALG_SM2` = 150
+  - `HUKS_ALG_SM3` = 151
+  - `HUKS_ALG_SM4` = 152
+- **HuksUnwrapSuite**
+  - `HUKS_UNWRAP_SUITE_X25519_AES_256_GCM_NOPADDING` = 1
+  - `HUKS_UNWRAP_SUITE_ECDH_AES_256_GCM_NOPADDING` = 2
+- **HuksKeyGenerateType**
+  - `HUKS_KEY_GENERATE_TYPE_DEFAULT` = 0
+  - `HUKS_KEY_GENERATE_TYPE_DERIVE` = 1
+  - `HUKS_KEY_GENERATE_TYPE_AGREE` = 2
+- **HuksKeyFlag**
+  - `HUKS_KEY_FLAG_IMPORT_KEY` = 1
+  - `HUKS_KEY_FLAG_GENERATE_KEY` = 2
+  - `HUKS_KEY_FLAG_AGREE_KEY` = 3
+  - `HUKS_KEY_FLAG_DERIVE_KEY` = 4
+- **HuksKeyStorageType**
+  - `HUKS_STORAGE_TEMP` = 0
+  - `HUKS_STORAGE_PERSISTENT` = 1
+  - `HUKS_STORAGE_ONLY_USED_IN_HUKS` = 2
+  - `HUKS_STORAGE_KEY_EXPORT_ALLOWED` = 3
+- **HuksImportKeyType**
+  - `HUKS_KEY_TYPE_PUBLIC_KEY` = 0
+  - `HUKS_KEY_TYPE_PRIVATE_KEY` = 1
+  - `HUKS_KEY_TYPE_KEY_PAIR` = 2
+- **HuksRsaPssSaltLenType**
+  - `HUKS_RSA_PSS_SALT_LEN_DIGEST` = 0
+  - `HUKS_RSA_PSS_SALT_LEN_MAX` = 1
+- **HuksUserAuthType**
+  - `HUKS_USER_AUTH_TYPE_FINGERPRINT` = 1 << 0
+  - `HUKS_USER_AUTH_TYPE_FACE` = 1 << 1
+  - `HUKS_USER_AUTH_TYPE_PIN` = 1 << 2
+- **HuksAuthAccessType**
+  - `HUKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD` = 1 << 0
+  - `HUKS_AUTH_ACCESS_INVALID_NEW_BIO_ENROLL` = 1 << 1
+  - `HUKS_AUTH_ACCESS_ALWAYS_VALID` = 1 << 2
+- **HuksAuthStorageLevel**
+  - `HUKS_AUTH_STORAGE_LEVEL_DE` = 0
+  - `HUKS_AUTH_STORAGE_LEVEL_CE` = 1
+  - `HUKS_AUTH_STORAGE_LEVEL_ECE` = 2
+- **HuksChallengeType**
+  - `HUKS_CHALLENGE_TYPE_NORMAL` = 0
+  - `HUKS_CHALLENGE_TYPE_CUSTOM` = 1
+  - `HUKS_CHALLENGE_TYPE_NONE` = 2
+- **HuksChallengePosition**
+  - `HUKS_CHALLENGE_POS_0` = 0
+- **HuksSecureSignType**
+  - `HUKS_SECURE_SIGN_WITH_AUTHINFO` = 1
+- **HuksSendType**
+  - `HUKS_SEND_TYPE_ASYNC` = 0
+  - `HUKS_SEND_TYPE_SYNC` = 1
+- **HuksTagType**
+  - `HUKS_TAG_TYPE_INVALID` = 0 << 28
+  - `HUKS_TAG_TYPE_INT` = 1 << 28
+  - `HUKS_TAG_TYPE_UINT` = 2 << 28
+  - `HUKS_TAG_TYPE_ULONG` = 3 << 28
+  - `HUKS_TAG_TYPE_BOOL` = 4 << 28
+  - `HUKS_TAG_TYPE_BYTES` = 5 << 28
+- **HuksTag**
+  - `HUKS_TAG_INVALID` = HuksTagType.HUKS_TAG_TYPE_INVALID | 0
+  - `HUKS_TAG_ALGORITHM` = HuksTagType.HUKS_TAG_TYPE_UINT | 1
+  - `HUKS_TAG_PURPOSE` = HuksTagType.HUKS_TAG_TYPE_UINT | 2
+  - `HUKS_TAG_KEY_SIZE` = HuksTagType.HUKS_TAG_TYPE_UINT | 3
+  - `HUKS_TAG_DIGEST` = HuksTagType.HUKS_TAG_TYPE_UINT | 4
+  - `HUKS_TAG_PADDING` = HuksTagType.HUKS_TAG_TYPE_UINT | 5
+  - `HUKS_TAG_BLOCK_MODE` = HuksTagType.HUKS_TAG_TYPE_UINT | 6
+  - `HUKS_TAG_KEY_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 7
+  - `HUKS_TAG_ASSOCIATED_DATA` = HuksTagType.HUKS_TAG_TYPE_BYTES | 8
+  - `HUKS_TAG_NONCE` = HuksTagType.HUKS_TAG_TYPE_BYTES | 9
+  - `HUKS_TAG_IV` = HuksTagType.HUKS_TAG_TYPE_BYTES | 10
+  - `HUKS_TAG_INFO` = HuksTagType.HUKS_TAG_TYPE_BYTES | 11
+  - `HUKS_TAG_SALT` = HuksTagType.HUKS_TAG_TYPE_BYTES | 12
+  - `HUKS_TAG_PWD` = HuksTagType.HUKS_TAG_TYPE_BYTES | 13
+  - `HUKS_TAG_ITERATION` = HuksTagType.HUKS_TAG_TYPE_UINT | 14
+  - `HUKS_TAG_KEY_GENERATE_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 15
+  - `HUKS_TAG_DERIVE_MAIN_KEY` = HuksTagType.HUKS_TAG_TYPE_BYTES | 16
+  - `HUKS_TAG_DERIVE_FACTOR` = HuksTagType.HUKS_TAG_TYPE_BYTES | 17
+  - `HUKS_TAG_DERIVE_ALG` = HuksTagType.HUKS_TAG_TYPE_UINT | 18
+  - `HUKS_TAG_AGREE_ALG` = HuksTagType.HUKS_TAG_TYPE_UINT | 19
+  - `HUKS_TAG_AGREE_PUBLIC_KEY_IS_KEY_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BOOL | 20
+  - `HUKS_TAG_AGREE_PRIVATE_KEY_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BYTES | 21
+  - `HUKS_TAG_AGREE_PUBLIC_KEY` = HuksTagType.HUKS_TAG_TYPE_BYTES | 22
+  - `HUKS_TAG_KEY_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BYTES | 23
+  - `HUKS_TAG_DERIVE_KEY_SIZE` = HuksTagType.HUKS_TAG_TYPE_UINT | 24
+  - `HUKS_TAG_IMPORT_KEY_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 25
+  - `HUKS_TAG_UNWRAP_ALGORITHM_SUITE` = HuksTagType.HUKS_TAG_TYPE_UINT | 26
+  - `HUKS_TAG_DERIVED_AGREED_KEY_STORAGE_FLAG` = HuksTagType.HUKS_TAG_TYPE_UINT | 29
+  - `HUKS_TAG_RSA_PSS_SALT_LEN_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 30
+  - `HUKS_TAG_ACTIVE_DATETIME` = HuksTagType.HUKS_TAG_TYPE_ULONG | 201
+  - `HUKS_TAG_ORIGINATION_EXPIRE_DATETIME` = HuksTagType.HUKS_TAG_TYPE_ULONG | 202
+  - `HUKS_TAG_USAGE_EXPIRE_DATETIME` = HuksTagType.HUKS_TAG_TYPE_ULONG | 203
+  - `HUKS_TAG_CREATION_DATETIME` = HuksTagType.HUKS_TAG_TYPE_ULONG | 204
+  - `HUKS_TAG_ALL_USERS` = HuksTagType.HUKS_TAG_TYPE_BOOL | 301
+  - `HUKS_TAG_USER_ID` = HuksTagType.HUKS_TAG_TYPE_UINT | 302
+  - `HUKS_TAG_NO_AUTH_REQUIRED` = HuksTagType.HUKS_TAG_TYPE_BOOL | 303
+  - `HUKS_TAG_USER_AUTH_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 304
+  - `HUKS_TAG_AUTH_TIMEOUT` = HuksTagType.HUKS_TAG_TYPE_UINT | 305
+  - `HUKS_TAG_AUTH_TOKEN` = HuksTagType.HUKS_TAG_TYPE_BYTES | 306
+  - `HUKS_TAG_KEY_AUTH_ACCESS_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 307
+  - `HUKS_TAG_KEY_SECURE_SIGN_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 308
+  - `HUKS_TAG_CHALLENGE_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 309
+  - `HUKS_TAG_CHALLENGE_POS` = HuksTagType.HUKS_TAG_TYPE_UINT | 310
+  - `HUKS_TAG_KEY_AUTH_PURPOSE` = HuksTagType.HUKS_TAG_TYPE_UINT | 311
+  - `HUKS_TAG_AUTH_STORAGE_LEVEL` = HuksTagType.HUKS_TAG_TYPE_UINT | 316
+  - `HUKS_TAG_ATTESTATION_CHALLENGE` = HuksTagType.HUKS_TAG_TYPE_BYTES | 501
+  - `HUKS_TAG_ATTESTATION_APPLICATION_ID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 502
+  - `HUKS_TAG_ATTESTATION_ID_BRAND` = HuksTagType.HUKS_TAG_TYPE_BYTES | 503
+  - `HUKS_TAG_ATTESTATION_ID_DEVICE` = HuksTagType.HUKS_TAG_TYPE_BYTES | 504
+  - `HUKS_TAG_ATTESTATION_ID_PRODUCT` = HuksTagType.HUKS_TAG_TYPE_BYTES | 505
+  - `HUKS_TAG_ATTESTATION_ID_SERIAL` = HuksTagType.HUKS_TAG_TYPE_BYTES | 506
+  - `HUKS_TAG_ATTESTATION_ID_IMEI` = HuksTagType.HUKS_TAG_TYPE_BYTES | 507
+  - `HUKS_TAG_ATTESTATION_ID_MEID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 508
+  - `HUKS_TAG_ATTESTATION_ID_MANUFACTURER` = HuksTagType.HUKS_TAG_TYPE_BYTES | 509
+  - `HUKS_TAG_ATTESTATION_ID_MODEL` = HuksTagType.HUKS_TAG_TYPE_BYTES | 510
+  - `HUKS_TAG_ATTESTATION_ID_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BYTES | 511
+  - `HUKS_TAG_ATTESTATION_ID_SOCID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 512
+  - `HUKS_TAG_ATTESTATION_ID_UDID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 513
+  - `HUKS_TAG_ATTESTATION_ID_SEC_LEVEL_INFO` = HuksTagType.HUKS_TAG_TYPE_BYTES | 514
+  - `HUKS_TAG_ATTESTATION_ID_VERSION_INFO` = HuksTagType.HUKS_TAG_TYPE_BYTES | 515
+  - `HUKS_TAG_IS_KEY_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BOOL | 1001
+  - `HUKS_TAG_KEY_STORAGE_FLAG` = HuksTagType.HUKS_TAG_TYPE_UINT | 1002
+  - `HUKS_TAG_IS_ALLOWED_WRAP` = HuksTagType.HUKS_TAG_TYPE_BOOL | 1003
+  - `HUKS_TAG_KEY_WRAP_TYPE` = HuksTagType.HUKS_TAG_TYPE_UINT | 1004
+  - `HUKS_TAG_KEY_AUTH_ID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 1005
+  - `HUKS_TAG_KEY_ROLE` = HuksTagType.HUKS_TAG_TYPE_UINT | 1006
+  - `HUKS_TAG_KEY_FLAG` = HuksTagType.HUKS_TAG_TYPE_UINT | 1007
+  - `HUKS_TAG_IS_ASYNCHRONIZED` = HuksTagType.HUKS_TAG_TYPE_UINT | 1008
+  - `HUKS_TAG_SECURE_KEY_ALIAS` = HuksTagType.HUKS_TAG_TYPE_BOOL | 1009
+  - `HUKS_TAG_SECURE_KEY_UUID` = HuksTagType.HUKS_TAG_TYPE_BYTES | 1010
+  - `HUKS_TAG_KEY_DOMAIN` = HuksTagType.HUKS_TAG_TYPE_UINT | 1011
+  - `HUKS_TAG_IS_DEVICE_PASSWORD_SET` = HuksTagType.HUKS_TAG_TYPE_BOOL | 1012
+  - `HUKS_TAG_PROCESS_NAME` = HuksTagType.HUKS_TAG_TYPE_BYTES | 10001
+  - `HUKS_TAG_PACKAGE_NAME` = HuksTagType.HUKS_TAG_TYPE_BYTES | 10002
+  - `HUKS_TAG_ACCESS_TIME` = HuksTagType.HUKS_TAG_TYPE_UINT | 10003
+  - `HUKS_TAG_USES_TIME` = HuksTagType.HUKS_TAG_TYPE_UINT | 10004
+  - `HUKS_TAG_CRYPTO_CTX` = HuksTagType.HUKS_TAG_TYPE_ULONG | 10005
+  - `HUKS_TAG_KEY` = HuksTagType.HUKS_TAG_TYPE_BYTES | 10006
+  - `HUKS_TAG_KEY_VERSION` = HuksTagType.HUKS_TAG_TYPE_UINT | 10007
+  - `HUKS_TAG_PAYLOAD_LEN` = HuksTagType.HUKS_TAG_TYPE_UINT | 10008
+  - `HUKS_TAG_AE_TAG` = HuksTagType.HUKS_TAG_TYPE_BYTES | 10009
+  - `HUKS_TAG_IS_KEY_HANDLE` = HuksTagType.HUKS_TAG_TYPE_ULONG | 10010
+  - `HUKS_TAG_OS_VERSION` = HuksTagType.HUKS_TAG_TYPE_UINT | 10101
+  - `HUKS_TAG_OS_PATCHLEVEL` = HuksTagType.HUKS_TAG_TYPE_UINT | 10102
+  - `HUKS_TAG_SYMMETRIC_KEY_DATA` = HuksTagType.HUKS_TAG_TYPE_BYTES | 20001
+  - `HUKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA` = HuksTagType.HUKS_TAG_TYPE_BYTES | 20002
+  - `HUKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA` = HuksTagType.HUKS_TAG_TYPE_BYTES | 20003
+#### Functions
+- `generateKey(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `generateKey(keyAlias: string, options: HuksOptions): Promise<HuksResult>`
+- `generateKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<void>): void`
+- `generateKeyItem(keyAlias: string, options: HuksOptions): Promise<void>`
+- `deleteKey(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `deleteKey(keyAlias: string, options: HuksOptions): Promise<HuksResult>`
+- `deleteKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<void>): void`
+- `deleteKeyItem(keyAlias: string, options: HuksOptions): Promise<void>`
+- `importKey(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `importKey(keyAlias: string, options: HuksOptions): Promise<HuksResult>`
+- `importKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<void>): void`
+- `importKeyItem(keyAlias: string, options: HuksOptions): Promise<void>`
+- `importWrappedKeyItem(
+    keyAlias: string,
+    wrappingKeyAlias: string,
+    options: HuksOptions,
+    callback: AsyncCallback<void>
+  ): void`
+- `importWrappedKeyItem(keyAlias: string, wrappingKeyAlias: string, options: HuksOptions): Promise<void>`
+- `exportKey(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `exportKey(keyAlias: string, options: HuksOptions): Promise<HuksResult>`
+- `exportKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksReturnResult>): void`
+- `exportKeyItem(keyAlias: string, options: HuksOptions): Promise<HuksReturnResult>`
+- `getKeyProperties(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `getKeyProperties(keyAlias: string, options: HuksOptions): Promise<HuksResult>`
+- `getKeyItemProperties(
+    keyAlias: string,
+    options: HuksOptions,
+    callback: AsyncCallback<HuksReturnResult>
+  ): void`
+- `getKeyItemProperties(keyAlias: string, options: HuksOptions): Promise<HuksReturnResult>`
+- `isKeyExist(keyAlias: string, options: HuksOptions, callback: AsyncCallback<boolean>): void`
+- `isKeyExist(keyAlias: string, options: HuksOptions): Promise<boolean>`
+- `isKeyItemExist(keyAlias: string, options: HuksOptions, callback: AsyncCallback<boolean>): void`
+- `isKeyItemExist(keyAlias: string, options: HuksOptions): Promise<boolean>`
+- `hasKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<boolean>): void`
+- `hasKeyItem(keyAlias: string, options: HuksOptions): Promise<boolean>`
+- `init(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksHandle>): void`
+- `init(keyAlias: string, options: HuksOptions): Promise<HuksHandle>`
+- `initSession(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksSessionHandle>): void`
+- `initSession(keyAlias: string, options: HuksOptions): Promise<HuksSessionHandle>`
+- `update(handle: number, token?: Uint8Array, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `update(handle: number, token?: Uint8Array, options: HuksOptions): Promise<HuksResult>`
+- `updateSession(handle: number, options: HuksOptions, callback: AsyncCallback<HuksReturnResult>): void`
+- `updateSession(
+    handle: number,
+    options: HuksOptions,
+    token: Uint8Array,
+    callback: AsyncCallback<HuksReturnResult>
+  ): void`
+- `updateSession(handle: number, options: HuksOptions, token?: Uint8Array): Promise<HuksReturnResult>`
+- `finish(handle: number, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `finish(handle: number, options: HuksOptions): Promise<HuksResult>`
+- `finishSession(handle: number, options: HuksOptions, callback: AsyncCallback<HuksReturnResult>): void`
+- `finishSession(
+    handle: number,
+    options: HuksOptions,
+    token: Uint8Array,
+    callback: AsyncCallback<HuksReturnResult>
+  ): void`
+- `finishSession(handle: number, options: HuksOptions, token?: Uint8Array): Promise<HuksReturnResult>`
+- `abort(handle: number, options: HuksOptions, callback: AsyncCallback<HuksResult>): void`
+- `abort(handle: number, options: HuksOptions): Promise<HuksResult>`
+- `abortSession(handle: number, options: HuksOptions, callback: AsyncCallback<void>): void`
+- `abortSession(handle: number, options: HuksOptions): Promise<void>`
+- `attestKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksReturnResult>): void`
+- `attestKeyItem(keyAlias: string, options: HuksOptions): Promise<HuksReturnResult>`
+- `anonAttestKeyItem(keyAlias: string, options: HuksOptions, callback: AsyncCallback<HuksReturnResult>): void`
+- `anonAttestKeyItem(keyAlias: string, options: HuksOptions): Promise<HuksReturnResult>`
+- `getSdkVersion(options: HuksOptions): string`
+
+### sensor (@ohos.sensor.d.ts)
+#### Interfaces
+- **Sensor**
+  - `sensorName`: string
+  - `vendorName`: string
+  - `firmwareVersion`: string
+  - `hardwareVersion`: string
+  - `sensorId`: number
+  - `maxRange`: number
+  - `minSamplePeriod`: number
+  - `maxSamplePeriod`: number
+  - `precision`: number
+  - `power`: number
+- **GeomagneticResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+  - `geomagneticDip`: number
+  - `deflectionAngle`: number
+  - `levelIntensity`: number
+  - `totalIntensity`: number
+- **LocationOptions**
+  - `latitude`: number
+  - `longitude`: number
+  - `altitude`: number
+- **CoordinatesOptions**
+  - `x`: number
+  - `y`: number
+- **RotationMatrixResponse**
+  - `rotation`: Array<number>
+- **Options**
+  - `interval?`: number | SensorFrequency
+- **Response**
+  - `timestamp`: number
+  - `accuracy`: SensorAccuracy
+- **AccelerometerResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **LinearAccelerometerResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **AccelerometerUncalibratedResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+  - `biasX`: number
+  - `biasY`: number
+  - `biasZ`: number
+- **GravityResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **OrientationResponse**
+  - `alpha`: number
+  - `beta`: number
+  - `gamma`: number
+- **RotationVectorResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+  - `w`: number
+- **GyroscopeResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **GyroscopeUncalibratedResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+  - `biasX`: number
+  - `biasY`: number
+  - `biasZ`: number
+- **SignificantMotionResponse**
+  - `scalar`: number
+- **ProximityResponse**
+  - `distance`: number
+- **LightResponse**
+  - `intensity`: number
+- **HallResponse**
+  - `status`: number
+- **MagneticFieldResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **MagneticFieldUncalibratedResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+  - `biasX`: number
+  - `biasY`: number
+  - `biasZ`: number
+- **PedometerResponse**
+  - `steps`: number
+- **HumidityResponse**
+  - `humidity`: number
+- **PedometerDetectionResponse**
+  - `scalar`: number
+- **AmbientTemperatureResponse**
+  - `temperature`: number
+- **BarometerResponse**
+  - `pressure`: number
+- **HeartRateResponse**
+  - `heartRate`: number
+- **WearDetectionResponse**
+  - `value`: number
+- **ColorResponse**
+  - `lightIntensity`: number
+  - `colorTemperature`: number
+- **SarResponse**
+  - `absorptionRatio`: number
+#### Enums
+- **SensorId**
+  - `ACCELEROMETER` = 1
+  - `GYROSCOPE` = 2
+  - `AMBIENT_LIGHT` = 5
+  - `MAGNETIC_FIELD` = 6
+  - `BAROMETER` = 8
+  - `HALL` = 10
+  - `PROXIMITY` = 12
+  - `HUMIDITY` = 13
+  - `COLOR` = 14
+  - `SAR` = 15
+  - `ORIENTATION` = 256
+  - `GRAVITY` = 257
+  - `LINEAR_ACCELEROMETER` = 258
+  - `ROTATION_VECTOR` = 259
+  - `AMBIENT_TEMPERATURE` = 260
+  - `MAGNETIC_FIELD_UNCALIBRATED` = 261
+  - `GYROSCOPE_UNCALIBRATED` = 263
+  - `SIGNIFICANT_MOTION` = 264
+  - `PEDOMETER_DETECTION` = 265
+  - `PEDOMETER` = 266
+  - `HEART_RATE` = 278
+  - `WEAR_DETECTION` = 280
+  - `ACCELEROMETER_UNCALIBRATED` = 281
+- **SensorType**
+  - `SENSOR_TYPE_ID_ACCELEROMETER` = 1
+  - `SENSOR_TYPE_ID_GYROSCOPE` = 2
+  - `SENSOR_TYPE_ID_AMBIENT_LIGHT` = 5
+  - `SENSOR_TYPE_ID_MAGNETIC_FIELD` = 6
+  - `SENSOR_TYPE_ID_BAROMETER` = 8
+  - `SENSOR_TYPE_ID_HALL` = 10
+  - `SENSOR_TYPE_ID_PROXIMITY` = 12
+  - `SENSOR_TYPE_ID_HUMIDITY` = 13
+  - `SENSOR_TYPE_ID_ORIENTATION` = 256
+  - `SENSOR_TYPE_ID_GRAVITY` = 257
+  - `SENSOR_TYPE_ID_LINEAR_ACCELERATION` = 258
+  - `SENSOR_TYPE_ID_ROTATION_VECTOR` = 259
+  - `SENSOR_TYPE_ID_AMBIENT_TEMPERATURE` = 260
+  - `SENSOR_TYPE_ID_MAGNETIC_FIELD_UNCALIBRATED` = 261
+  - `SENSOR_TYPE_ID_GYROSCOPE_UNCALIBRATED` = 263
+  - `SENSOR_TYPE_ID_SIGNIFICANT_MOTION` = 264
+  - `SENSOR_TYPE_ID_PEDOMETER_DETECTION` = 265
+  - `SENSOR_TYPE_ID_PEDOMETER` = 266
+  - `SENSOR_TYPE_ID_HEART_RATE` = 278
+  - `SENSOR_TYPE_ID_WEAR_DETECTION` = 280
+  - `SENSOR_TYPE_ID_ACCELEROMETER_UNCALIBRATED` = 281
+- **SensorAccuracy**
+  - `ACCURACY_UNRELIABLE` = 0
+  - `ACCURACY_LOW` = 1
+  - `ACCURACY_MEDIUM` = 2
+  - `ACCURACY_HIGH` = 3
+#### Functions
+- `on(type: SensorId.COLOR, callback: Callback<ColorResponse>, options?: Options): void`
+- `on(type: SensorId.SAR, callback: Callback<SarResponse>, options?: Options): void`
+- `on(type: SensorId.ACCELEROMETER, callback: Callback<AccelerometerResponse>,
+    options?: Options): void`
+- `on(type: SensorId.ACCELEROMETER_UNCALIBRATED, callback: Callback<AccelerometerUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorId.AMBIENT_LIGHT, callback: Callback<LightResponse>, options?: Options): void`
+- `on(type: SensorId.AMBIENT_TEMPERATURE, callback: Callback<AmbientTemperatureResponse>,
+    options?: Options): void`
+- `on(type: SensorId.BAROMETER, callback: Callback<BarometerResponse>, options?: Options): void`
+- `on(type: SensorId.GRAVITY, callback: Callback<GravityResponse>,
+    options?: Options): void`
+- `on(type: SensorId.GYROSCOPE, callback: Callback<GyroscopeResponse>,
+    options?: Options): void`
+- `on(type: SensorId.GYROSCOPE_UNCALIBRATED, callback: Callback<GyroscopeUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorId.HALL, callback: Callback<HallResponse>, options?: Options): void`
+- `on(type: SensorId.HEART_RATE, callback: Callback<HeartRateResponse>,
+    options?: Options): void`
+- `on(type: SensorId.HUMIDITY, callback: Callback<HumidityResponse>,
+    options?: Options): void`
+- `on(type: SensorId.LINEAR_ACCELEROMETER, callback: Callback<LinearAccelerometerResponse>,
+    options?: Options): void`
+- `on(type: SensorId.MAGNETIC_FIELD, callback: Callback<MagneticFieldResponse>,
+    options?: Options): void`
+- `on(type: SensorId.MAGNETIC_FIELD_UNCALIBRATED, callback: Callback<MagneticFieldUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorId.ORIENTATION, callback: Callback<OrientationResponse>,
+    options?: Options): void`
+- `on(type: SensorId.PEDOMETER, callback: Callback<PedometerResponse>, options?: Options): void`
+- `on(type: SensorId.PEDOMETER_DETECTION, callback: Callback<PedometerDetectionResponse>,
+    options?: Options): void`
+- `on(type: SensorId.PROXIMITY, callback: Callback<ProximityResponse>, options?: Options): void`
+- `on(type: SensorId.ROTATION_VECTOR, callback: Callback<RotationVectorResponse>,
+    options?: Options): void`
+- `on(type: SensorId.SIGNIFICANT_MOTION, callback: Callback<SignificantMotionResponse>,
+    options?: Options): void`
+- `on(type: SensorId.WEAR_DETECTION, callback: Callback<WearDetectionResponse>,
+    options?: Options): void`
+- `once(type: SensorId.ACCELEROMETER, callback: Callback<AccelerometerResponse>): void`
+- `once(type: SensorId.ACCELEROMETER_UNCALIBRATED, callback: Callback<AccelerometerUncalibratedResponse>): void`
+- `once(type: SensorId.AMBIENT_LIGHT, callback: Callback<LightResponse>): void`
+- `once(type: SensorId.AMBIENT_TEMPERATURE, callback: Callback<AmbientTemperatureResponse>): void`
+- `once(type: SensorId.BAROMETER, callback: Callback<BarometerResponse>): void`
+- `once(type: SensorId.GRAVITY, callback: Callback<GravityResponse>): void`
+- `once(type: SensorId.GYROSCOPE, callback: Callback<GyroscopeResponse>): void`
+- `once(type: SensorId.GYROSCOPE_UNCALIBRATED, callback: Callback<GyroscopeUncalibratedResponse>): void`
+- `once(type: SensorId.HALL, callback: Callback<HallResponse>): void`
+- `once(type: SensorId.HEART_RATE, callback: Callback<HeartRateResponse>): void`
+- `once(type: SensorId.HUMIDITY, callback: Callback<HumidityResponse>): void`
+- `once(type: SensorId.LINEAR_ACCELEROMETER, callback: Callback<LinearAccelerometerResponse>): void`
+- `once(type: SensorId.MAGNETIC_FIELD, callback: Callback<MagneticFieldResponse>): void`
+- `once(type: SensorId.MAGNETIC_FIELD_UNCALIBRATED, callback: Callback<MagneticFieldUncalibratedResponse>): void`
+- `once(type: SensorId.ORIENTATION, callback: Callback<OrientationResponse>): void`
+- `once(type: SensorId.PEDOMETER, callback: Callback<PedometerResponse>): void`
+- `once(type: SensorId.PEDOMETER_DETECTION, callback: Callback<PedometerDetectionResponse>): void`
+- `once(type: SensorId.PROXIMITY, callback: Callback<ProximityResponse>): void`
+- `once(type: SensorId.ROTATION_VECTOR, callback: Callback<RotationVectorResponse>): void`
+- `once(type: SensorId.SIGNIFICANT_MOTION, callback: Callback<SignificantMotionResponse>): void`
+- `once(type: SensorId.WEAR_DETECTION, callback: Callback<WearDetectionResponse>): void`
+- `off(type: SensorId.COLOR, callback?: Callback<ColorResponse>): void`
+- `off(type: SensorId.SAR, callback?: Callback<SarResponse>): void`
+- `off(type: SensorId.ACCELEROMETER, callback?: Callback<AccelerometerResponse>): void`
+- `off(type: SensorId.ACCELEROMETER_UNCALIBRATED, callback?: Callback<AccelerometerUncalibratedResponse>): void`
+- `off(type: SensorId.AMBIENT_LIGHT, callback?: Callback<LightResponse>): void`
+- `off(type: SensorId.AMBIENT_TEMPERATURE, callback?: Callback<AmbientTemperatureResponse>): void`
+- `off(type: SensorId.BAROMETER, callback?: Callback<BarometerResponse>): void`
+- `off(type: SensorId.GRAVITY, callback?: Callback<GravityResponse>): void`
+- `off(type: SensorId.GYROSCOPE, callback?: Callback<GyroscopeResponse>): void`
+- `off(type: SensorId.GYROSCOPE_UNCALIBRATED, callback?: Callback<GyroscopeUncalibratedResponse>): void`
+- `off(type: SensorId.HALL, callback?: Callback<HallResponse>): void`
+- `off(type: SensorId.HEART_RATE, callback?: Callback<HeartRateResponse>): void`
+- `off(type: SensorId.HUMIDITY, callback?: Callback<HumidityResponse>): void`
+- `off(type: SensorId.LINEAR_ACCELEROMETER, callback?: Callback<LinearAccelerometerResponse>): void`
+- `off(type: SensorId.MAGNETIC_FIELD, callback?: Callback<MagneticFieldResponse>): void`
+- `off(type: SensorId.MAGNETIC_FIELD_UNCALIBRATED, callback?: Callback<MagneticFieldUncalibratedResponse>): void`
+- `off(type: SensorId.ORIENTATION, callback?: Callback<OrientationResponse>): void`
+- `off(type: SensorId.PEDOMETER, callback?: Callback<PedometerResponse>): void`
+- `off(type: SensorId.PEDOMETER_DETECTION, callback?: Callback<PedometerDetectionResponse>): void`
+- `off(type: SensorId.PROXIMITY, callback?: Callback<ProximityResponse>): void`
+- `off(type: SensorId.ROTATION_VECTOR, callback?: Callback<RotationVectorResponse>): void`
+- `off(type: SensorId.SIGNIFICANT_MOTION, callback?: Callback<SignificantMotionResponse>): void`
+- `off(type: SensorId.WEAR_DETECTION, callback?: Callback<WearDetectionResponse>): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER, callback: Callback<AccelerometerResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER_UNCALIBRATED, callback: Callback<AccelerometerUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_AMBIENT_LIGHT, callback: Callback<LightResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_AMBIENT_TEMPERATURE, callback: Callback<AmbientTemperatureResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_BAROMETER, callback: Callback<BarometerResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_GRAVITY, callback: Callback<GravityResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE, callback: Callback<GyroscopeResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE_UNCALIBRATED, callback: Callback<GyroscopeUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_HALL, callback: Callback<HallResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_HEART_RATE, callback: Callback<HeartRateResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_HUMIDITY, callback: Callback<HumidityResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_LINEAR_ACCELERATION, callback: Callback<LinearAccelerometerResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD, callback: Callback<MagneticFieldResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD_UNCALIBRATED, callback: Callback<MagneticFieldUncalibratedResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_ORIENTATION, callback: Callback<OrientationResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_PEDOMETER, callback: Callback<PedometerResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_PEDOMETER_DETECTION, callback: Callback<PedometerDetectionResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_PROXIMITY, callback: Callback<ProximityResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_ROTATION_VECTOR, callback: Callback<RotationVectorResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_SIGNIFICANT_MOTION, callback: Callback<SignificantMotionResponse>,
+    options?: Options): void`
+- `on(type: SensorType.SENSOR_TYPE_ID_WEAR_DETECTION, callback: Callback<WearDetectionResponse>,
+    options?: Options): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER, callback: Callback<AccelerometerResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER_UNCALIBRATED, callback: Callback<AccelerometerUncalibratedResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_AMBIENT_LIGHT, callback: Callback<LightResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_AMBIENT_TEMPERATURE, callback: Callback<AmbientTemperatureResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_BAROMETER, callback: Callback<BarometerResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_GRAVITY, callback: Callback<GravityResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE, callback: Callback<GyroscopeResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE_UNCALIBRATED, callback: Callback<GyroscopeUncalibratedResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_HALL, callback: Callback<HallResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_HEART_RATE, callback: Callback<HeartRateResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_HUMIDITY, callback: Callback<HumidityResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_LINEAR_ACCELERATION, callback: Callback<LinearAccelerometerResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD, callback: Callback<MagneticFieldResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD_UNCALIBRATED, callback: Callback<MagneticFieldUncalibratedResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_ORIENTATION, callback: Callback<OrientationResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_PEDOMETER, callback: Callback<PedometerResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_PEDOMETER_DETECTION, callback: Callback<PedometerDetectionResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_PROXIMITY, callback: Callback<ProximityResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_ROTATION_VECTOR, callback: Callback<RotationVectorResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_SIGNIFICANT_MOTION, callback: Callback<SignificantMotionResponse>): void`
+- `once(type: SensorType.SENSOR_TYPE_ID_WEAR_DETECTION, callback: Callback<WearDetectionResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER, callback?: Callback<AccelerometerResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_ACCELEROMETER_UNCALIBRATED,
+    callback?: Callback<AccelerometerUncalibratedResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_AMBIENT_LIGHT, callback?: Callback<LightResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_AMBIENT_TEMPERATURE, callback?: Callback<AmbientTemperatureResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_BAROMETER, callback?: Callback<BarometerResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_GRAVITY, callback?: Callback<GravityResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE, callback?: Callback<GyroscopeResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_GYROSCOPE_UNCALIBRATED, callback?: Callback<GyroscopeUncalibratedResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_HALL, callback?: Callback<HallResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_HEART_RATE, callback?: Callback<HeartRateResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_HUMIDITY, callback?: Callback<HumidityResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_LINEAR_ACCELERATION, callback?: Callback<LinearAccelerometerResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD, callback?: Callback<MagneticFieldResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_MAGNETIC_FIELD_UNCALIBRATED, callback?: Callback<MagneticFieldUncalibratedResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_ORIENTATION, callback?: Callback<OrientationResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_PEDOMETER, callback?: Callback<PedometerResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_PEDOMETER_DETECTION, callback?: Callback<PedometerDetectionResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_PROXIMITY, callback?: Callback<ProximityResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_ROTATION_VECTOR, callback?: Callback<RotationVectorResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_SIGNIFICANT_MOTION, callback?: Callback<SignificantMotionResponse>): void`
+- `off(type: SensorType.SENSOR_TYPE_ID_WEAR_DETECTION, callback?: Callback<WearDetectionResponse>): void`
+- `getSingleSensor(type: SensorId, callback: AsyncCallback<Sensor>): void`
+- `getSingleSensor(type: SensorId): Promise<Sensor>`
+- `getSensorList(callback: AsyncCallback<Array<Sensor>>): void`
+- `getSensorList(): Promise<Array<Sensor>>`
+- `getGeomagneticField(locationOptions: LocationOptions, timeMillis: number, callback: AsyncCallback<GeomagneticResponse>): void`
+- `getGeomagneticField(locationOptions: LocationOptions, timeMillis: number): Promise<GeomagneticResponse>`
+- `getGeomagneticInfo(locationOptions: LocationOptions, timeMillis: number, callback: AsyncCallback<GeomagneticResponse>): void`
+- `getGeomagneticInfo(locationOptions: LocationOptions, timeMillis: number): Promise<GeomagneticResponse>`
+- `getAltitude(seaPressure: number, currentPressure: number, callback: AsyncCallback<number>): void`
+- `getAltitude(seaPressure: number, currentPressure: number): Promise<number>`
+- `getDeviceAltitude(seaPressure: number, currentPressure: number, callback: AsyncCallback<number>): void`
+- `getDeviceAltitude(seaPressure: number, currentPressure: number): Promise<number>`
+- `getGeomagneticDip(inclinationMatrix: Array<number>, callback: AsyncCallback<number>): void`
+- `getGeomagneticDip(inclinationMatrix: Array<number>): Promise<number>`
+- `getInclination(inclinationMatrix: Array<number>, callback: AsyncCallback<number>): void`
+- `getInclination(inclinationMatrix: Array<number>): Promise<number>`
+- `getAngleModify(currentRotationMatrix: Array<number>, preRotationMatrix: Array<number>,
+    callback: AsyncCallback<Array<number>>): void`
+- `getAngleModify(currentRotationMatrix: Array<number>, preRotationMatrix: Array<number>): Promise<Array<number>>`
+- `getAngleVariation(currentRotationMatrix: Array<number>, preRotationMatrix: Array<number>,
+    callback: AsyncCallback<Array<number>>): void`
+- `getAngleVariation(currentRotationMatrix: Array<number>, preRotationMatrix: Array<number>): Promise<Array<number>>`
+- `createRotationMatrix(rotationVector: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `createRotationMatrix(rotationVector: Array<number>): Promise<Array<number>>`
+- `getRotationMatrix(rotationVector: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `getRotationMatrix(rotationVector: Array<number>): Promise<Array<number>>`
+- `transformCoordinateSystem(inRotationVector: Array<number>, coordinates: CoordinatesOptions,
+    callback: AsyncCallback<Array<number>>): void`
+- `transformCoordinateSystem(inRotationVector: Array<number>, coordinates: CoordinatesOptions): Promise<Array<number>>`
+- `transformRotationMatrix(inRotationVector: Array<number>, coordinates: CoordinatesOptions,
+    callback: AsyncCallback<Array<number>>): void`
+- `transformRotationMatrix(inRotationVector: Array<number>, coordinates: CoordinatesOptions): Promise<Array<number>>`
+- `createQuaternion(rotationVector: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `createQuaternion(rotationVector: Array<number>): Promise<Array<number>>`
+- `getQuaternion(rotationVector: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `getQuaternion(rotationVector: Array<number>): Promise<Array<number>>`
+- `getDirection(rotationMatrix: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `getDirection(rotationMatrix: Array<number>): Promise<Array<number>>`
+- `getOrientation(rotationMatrix: Array<number>, callback: AsyncCallback<Array<number>>): void`
+- `getOrientation(rotationMatrix: Array<number>): Promise<Array<number>>`
+- `createRotationMatrix(gravity: Array<number>, geomagnetic: Array<number>, callback: AsyncCallback<RotationMatrixResponse>): void`
+- `createRotationMatrix(gravity: Array<number>, geomagnetic: Array<number>,): Promise<RotationMatrixResponse>`
+- `getRotationMatrix(gravity: Array<number>, geomagnetic: Array<number>, callback: AsyncCallback<RotationMatrixResponse>): void`
+- `getRotationMatrix(gravity: Array<number>, geomagnetic: Array<number>): Promise<RotationMatrixResponse>`
+#### Type Aliases
+- `SensorFrequency` = 'game' | 'ui' | 'normal'
+
+### settings (@ohos.settings.d.ts)
+#### Functions
+- `getURI(name: string, callback: AsyncCallback<object>): void`
+- `getURI(name: string): Promise<object>`
+- `getValue(dataAbilityHelper: DataAbilityHelper, name: string, callback: AsyncCallback<object>): void`
+- `getValue(dataAbilityHelper: DataAbilityHelper, name: string): Promise<object>`
+- `getValue(context: Context, name: string, callback: AsyncCallback<string>): void`
+- `getValue(context: Context, name: string): Promise<string>`
+- `getValue(context: Context, name: string, domainName: string): Promise<string>`
+- `setValue(dataAbilityHelper: DataAbilityHelper, name: string, value: object, callback: AsyncCallback<boolean>): void`
+- `setValue(dataAbilityHelper: DataAbilityHelper, name: string, value: object): Promise<boolean>`
+- `setValue(context: Context, name: string, value: string, callback: AsyncCallback<boolean>): void`
+- `setValue(context: Context, name: string, value: string): Promise<boolean>`
+- `setValue(context: Context, name: string, value: string, domainName: string): Promise<boolean>`
+- `enableAirplaneMode(enable: boolean, callback: AsyncCallback<void>): void`
+- `enableAirplaneMode(enable: boolean): Promise<void>`
+- `canShowFloating(callback: AsyncCallback<boolean>): void`
+- `canShowFloating(): Promise<boolean>`
+- `getUriSync(name: string): string`
+- `getValueSync(dataAbilityHelper: DataAbilityHelper, name: string, defValue: string): string`
+- `getValueSync(context: Context, name: string, defValue: string): string`
+- `getValueSync(context: Context, name: string, defValue: string, domainName: string): string`
+- `setValueSync(dataAbilityHelper: DataAbilityHelper, name: string, value: string): boolean`
+- `setValueSync(context: Context, name: string, value: string): boolean`
+- `setValueSync(context: Context, name: string, value: string, domainName: string): boolean`
+- `registerKeyObserver(context: Context, name: string, domainName: string, observer: AsyncCallback<void>): boolean`
+- `unregisterKeyObserver(context: Context, name: string, domainName: string): boolean`
+
+### Statfs (@ohos.statfs.d.ts)
+#### Functions
+- `getFreeBytes(path: string, callback: AsyncCallback<number>): void`
+- `getFreeBytes(path: string): Promise<number>`
+- `getTotalBytes(path: string, callback: AsyncCallback<number>): void`
+- `getTotalBytes(path: string): Promise<number>`
+
+### stationary (@ohos.stationary.d.ts)
+#### Interfaces
+- **ActivityResponse**
+  - `state`: ActivityState
+#### Enums
+- **ActivityEvent**
+  - `ENTER` = 1
+  - `EXIT` = 2
+  - `ENTER_EXIT` = 3
+- **ActivityState**
+  - `ENTER` = 1
+  - `EXIT` = 2
+#### Functions
+- `on(activity: ActivityType, event: ActivityEvent, reportLatencyNs: number, callback: Callback<ActivityResponse>): void`
+- `once(activity: ActivityType, callback: Callback<ActivityResponse>): void`
+- `off(activity: ActivityType, event: ActivityEvent, callback?: Callback<ActivityResponse>): void`
+#### Type Aliases
+- `ActivityType` = 'still' | 'relativeStill'
+
+### systemCapability (@ohos.systemCapability.d.ts)
+#### Functions
+- `querySystemCapabilities(callback: AsyncCallback<string>): void`
+- `querySystemCapabilities(): Promise<string>`
+
+### systemDateTime (@ohos.systemDateTime.d.ts)
+#### Enums
+- **TimeType**
+#### Functions
+- `setTime(time: number, callback: AsyncCallback<void>): void`
+- `setTime(time: number): Promise<void>`
+- `getCurrentTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getCurrentTime(callback: AsyncCallback<number>): void`
+- `getCurrentTime(isNano?: boolean): Promise<number>`
+- `getTime(isNanoseconds?: boolean): number`
+- `getRealActiveTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getRealActiveTime(callback: AsyncCallback<number>): void`
+- `getRealActiveTime(isNano?: boolean): Promise<number>`
+- `getRealTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getRealTime(callback: AsyncCallback<number>): void`
+- `getRealTime(isNano?: boolean): Promise<number>`
+- `getUptime(timeType: TimeType, isNanoseconds?: boolean): number`
+- `setDate(date: Date, callback: AsyncCallback<void>): void`
+- `setDate(date: Date): Promise<void>`
+- `getDate(callback: AsyncCallback<Date>): void`
+- `getDate(): Promise<Date>`
+- `setTimezone(timezone: string, callback: AsyncCallback<void>): void`
+- `setTimezone(timezone: string): Promise<void>`
+- `getTimezone(callback: AsyncCallback<string>): void`
+- `getTimezone(): Promise<string>`
+- `getTimezoneSync(): string`
+
+### systemParameterEnhance (@ohos.systemParameterEnhance.d.ts)
+#### Functions
+- `getSync(key: string, def?: string): string`
+- `get(key: string, callback: AsyncCallback<string>): void`
+- `get(key: string, def: string, callback: AsyncCallback<string>): void`
+- `get(key: string, def?: string): Promise<string>`
+- `setSync(key: string, value: string): void`
+- `set(key: string, value: string, callback: AsyncCallback<void>): void`
+- `set(key: string, value: string): Promise<void>`
+
+### systemTime (@ohos.systemTime.d.ts)
+#### Functions
+- `setTime(time: number, callback: AsyncCallback<void>): void`
+- `setTime(time: number): Promise<void>`
+- `getCurrentTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getCurrentTime(callback: AsyncCallback<number>): void`
+- `getCurrentTime(isNano?: boolean): Promise<number>`
+- `getRealActiveTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getRealActiveTime(callback: AsyncCallback<number>): void`
+- `getRealActiveTime(isNano?: boolean): Promise<number>`
+- `getRealTime(isNano: boolean, callback: AsyncCallback<number>): void`
+- `getRealTime(callback: AsyncCallback<number>): void`
+- `getRealTime(isNano?: boolean): Promise<number>`
+- `setDate(date: Date, callback: AsyncCallback<void>): void`
+- `setDate(date: Date): Promise<void>`
+- `getDate(callback: AsyncCallback<Date>): void`
+- `getDate(): Promise<Date>`
+- `setTimezone(timezone: string, callback: AsyncCallback<void>): void`
+- `setTimezone(timezone: string): Promise<void>`
+- `getTimezone(callback: AsyncCallback<string>): void`
+- `getTimezone(): Promise<string>`
+
+### systemTimer (@ohos.systemTimer.d.ts)
+#### Interfaces
+- **TimerOptions**
+  - `type`: number
+  - `repeat`: boolean
+  - `interval?`: number
+  - `wantAgent?`: WantAgent
+  - `callback?`: () => void
+#### Functions
+- `createTimer(options: TimerOptions, callback: AsyncCallback<number>): void`
+- `createTimer(options: TimerOptions): Promise<number>`
+- `startTimer(timer: number, triggerTime: number, callback: AsyncCallback<void>): void`
+- `startTimer(timer: number, triggerTime: number): Promise<void>`
+- `stopTimer(timer: number, callback: AsyncCallback<void>): void`
+- `stopTimer(timer: number): Promise<void>`
+- `destroyTimer(timer: number, callback: AsyncCallback<void>): void`
+- `destroyTimer(timer: number): Promise<void>`
+
+### systemParameter (@ohos.systemparameter.d.ts)
+#### Functions
+- `getSync(key: string, def?: string): string`
+- `get(key: string, callback: AsyncCallback<string>): void`
+- `get(key: string, def: string, callback: AsyncCallback<string>): void`
+- `get(key: string, def?: string): Promise<string>`
+- `setSync(key: string, value: string): void`
+- `set(key: string, value: string, callback: AsyncCallback<void>): void`
+- `set(key: string, value: string): Promise<void>`
+
+### taskpool (@ohos.taskpool.d.ts)
+#### Enums
+- **Priority**
+  - `HIGH` = 0
+  - `MEDIUM` = 1
+  - `LOW` = 2
+- **State**
+  - `WAITING` = 1
+  - `RUNNING` = 2
+  - `CANCELED` = 3
+#### Functions
+- `execute(func: Function, ...args: Object[]): Promise<Object>`
+- `execute(task: Task, priority?: Priority): Promise<Object>`
+- `execute(group: TaskGroup, priority?: Priority): Promise<Object[]>`
+- `executeDelayed(delayTime: number, task: Task, priority?: Priority): Promise<Object>`
+- `cancel(task: Task): void`
+- `cancel(group: TaskGroup): void`
+- `getTaskPoolInfo(): TaskPoolInfo`
+#### Classes
+- **Task**
+  - `isCanceled()`: boolean
+  - `sendData()`: void
+  - `setTransferList()`: void
+  - `setCloneList()`: void
+  - `onReceiveData()`: void
+  - `addDependency()`: void
+  - `removeDependency()`: void
+  - `function`: Function
+  - `arguments?`: Object[]
+  - `name`: string
+  - `totalDuration`: number
+  - `ioDuration`: number
+  - `cpuDuration`: number
+- **TaskGroup**
+  - `addTask()`: void
+  - `addTask()`: void
+  - `name`: string
+- **SequenceRunner**
+  - `execute()`: Promise<Object>
+- **TaskInfo**
+  - `taskId`: number
+  - `state`: State
+  - `duration?`: number
+- **ThreadInfo**
+  - `tid`: number
+  - `taskIds?`: number[]
+  - `priority?`: Priority
+- **TaskPoolInfo**
+  - `threadInfos`: ThreadInfo[]
+  - `taskInfos`: TaskInfo[]
+
+### call (@ohos.telephony.call.d.ts)
+#### Interfaces
+- **AudioDevice**
+  - `deviceType`: AudioDeviceType
+  - `address?`: string
+  - `deviceName?`: string
+- **AudioDeviceCallbackInfo**
+  - `audioDeviceList`: Array<AudioDevice>
+  - `currentAudioDevice`: AudioDevice
+  - `isMuted`: boolean
+- **CallTransferInfo**
+  - `transferNum`: string
+  - `type`: CallTransferType
+  - `settingType`: CallTransferSettingType
+  - `startHour?`: number
+  - `startMinute?`: number
+  - `endHour?`: number
+  - `endMinute?`: number
+- **CallAttributeOptions**
+  - `accountNumber`: string
+  - `speakerphoneOn`: boolean
+  - `accountId`: number
+  - `videoState`: VideoStateType
+  - `startTime`: number
+  - `isEcc`: boolean
+  - `callType`: CallType
+  - `callId`: number
+  - `callState`: DetailedCallState
+  - `conferenceState`: ConferenceState
+  - `voipCallAttribute?`: VoipCallAttribute
+  - `crsType`: number
+  - `originalCallType`: number
+- **VoipCallAttribute**
+  - `voipCallId`: string
+  - `userName`: string
+  - `userProfile`: image.PixelMap
+  - `extensionId`: string
+  - `abilityName`: string
+  - `voipBundleName`: string
+- **CallRestrictionInfo**
+  - `type`: CallRestrictionType
+  - `password`: string
+  - `mode`: CallRestrictionMode
+- **CallEventOptions**
+- **DialOptions**
+  - `extras?`: boolean
+  - `accountId?`: number
+  - `videoState?`: VideoStateType
+  - `dialScene?`: DialScene
+  - `dialType?`: DialType
+- **DialCallOptions**
+  - `accountId?`: number
+  - `videoState?`: VideoStateType
+  - `dialScene?`: DialScene
+  - `dialType?`: DialType
+- **RejectMessageOptions**
+  - `messageContent`: string
+- **CallTransferResult**
+  - `status`: TransferStatus
+  - `number`: string
+  - `startHour`: number
+  - `startMinute`: number
+  - `endHour`: number
+  - `endMinute`: number
+- **EmergencyNumberOptions**
+  - `slotId?`: number
+- **NumberFormatOptions**
+  - `countryCode?`: string
+- **MmiCodeResults**
+  - `result`: MmiCodeResult
+  - `message`: string
+- **DisconnectedDetails**
+  - `reason`: DisconnectedReason
+  - `message`: string
+- **ImsCallModeInfo**
+  - `callId`: number
+  - `result`: VideoRequestResultType
+  - `isRequestInfo`: boolean
+  - `imsCallMode`: ImsCallMode
+- **CallSessionEvent**
+  - `callId`: number
+  - `eventId`: CallSessionEventId
+- **PeerDimensionsDetail**
+  - `callId`: number
+  - `width`: number
+  - `height`: number
+- **CameraCapabilities**
+  - `callId`: number
+  - `width`: number
+  - `height`: number
+#### Enums
+- **ImsCallMode**
+  - `CALL_MODE_AUDIO_ONLY` = 0
+- **VoNRState**
+  - `VONR_STATE_OFF` = 0
+  - `VONR_STATE_ON` = 1
+- **AudioDeviceType**
+- **CallRestrictionType**
+  - `RESTRICTION_TYPE_ALL_INCOMING` = 0
+- **CallTransferType**
+  - `TRANSFER_TYPE_UNCONDITIONAL` = 0
+- **CallTransferSettingType**
+  - `CALL_TRANSFER_DISABLE` = 0
+  - `CALL_TRANSFER_ENABLE` = 1
+  - `CALL_TRANSFER_REGISTRATION` = 3
+  - `CALL_TRANSFER_ERASURE` = 4
+- **ConferenceState**
+  - `TEL_CONFERENCE_IDLE` = 0
+- **CallType**
+  - `TYPE_CS` = 0
+  - `TYPE_IMS` = 1
+  - `TYPE_OTT` = 2
+  - `TYPE_ERR_CALL` = 3
+  - `TYPE_VOIP` = 4
+- **VideoStateType**
+  - `TYPE_VOICE` = 0
+  - `TYPE_VIDEO_SEND_ONLY` = 1
+- **VideoRequestResultType**
+  - `TYPE_REQUEST_SUCCESS` = 0
+  - `TYPE_DOWNGRADE_RTP_OR_RTCP_TIMEOUT` = 100
+- **DeviceDirection**
+  - `DEVICE_DIRECTION_0` = 0
+  - `DEVICE_DIRECTION_90` = 90
+  - `DEVICE_DIRECTION_180` = 180
+  - `DEVICE_DIRECTION_270` = 270
+- **CallSessionEventId**
+  - `EVENT_CONTROL_CAMERA_FAILURE` = 0
+  - `EVENT_DISPLAY_SURFACE_RELEASED` = 100
+- **DetailedCallState**
+  - `CALL_STATUS_ACTIVE` = 0
+- **CallRestrictionMode**
+  - `RESTRICTION_MODE_DEACTIVATION` = 0
+- **CallAbilityEventId**
+  - `EVENT_DIAL_NO_CARRIER` = 1
+- **CallState**
+  - `CALL_STATE_UNKNOWN` = -1
+  - `CALL_STATE_IDLE` = 0
+  - `CALL_STATE_RINGING` = 1
+  - `CALL_STATE_OFFHOOK` = 2
+  - `CALL_STATE_ANSWERED` = 3
+- **DialScene**
+  - `CALL_NORMAL` = 0
+  - `CALL_PRIVILEGED` = 1
+  - `CALL_EMERGENCY` = 2
+- **DialType**
+  - `DIAL_CARRIER_TYPE` = 0
+  - `DIAL_VOICE_MAIL_TYPE` = 1
+  - `DIAL_OTT_TYPE` = 2
+- **CallWaitingStatus**
+  - `CALL_WAITING_DISABLE` = 0
+  - `CALL_WAITING_ENABLE` = 1
+- **RestrictionStatus**
+  - `RESTRICTION_DISABLE` = 0
+  - `RESTRICTION_ENABLE` = 1
+- **TransferStatus**
+  - `TRANSFER_DISABLE` = 0
+  - `TRANSFER_ENABLE` = 1
+- **MmiCodeResult**
+  - `MMI_CODE_SUCCESS` = 0
+  - `MMI_CODE_FAILED` = 1
+- **DisconnectedReason**
+  - `UNASSIGNED_NUMBER` = 1
+  - `NO_ROUTE_TO_DESTINATION` = 3
+  - `CHANNEL_UNACCEPTABLE` = 6
+  - `OPERATOR_DETERMINED_BARRING` = 8
+  - `CALL_COMPLETED_ELSEWHERE` = 13
+  - `NORMAL_CALL_CLEARING` = 16
+  - `USER_BUSY` = 17
+  - `NO_USER_RESPONDING` = 18
+  - `USER_ALERTING_NO_ANSWER` = 19
+  - `CALL_REJECTED` = 21
+  - `NUMBER_CHANGED` = 22
+  - `CALL_REJECTED_DUE_TO_FEATURE_AT_THE_DESTINATION` = 24
+  - `FAILED_PRE_EMPTION` = 25
+  - `NON_SELECTED_USER_CLEARING` = 26
+  - `DESTINATION_OUT_OF_ORDER` = 27
+  - `INVALID_NUMBER_FORMAT` = 28
+  - `FACILITY_REJECTED` = 29
+  - `RESPONSE_TO_STATUS_ENQUIRY` = 30
+  - `NORMAL_UNSPECIFIED` = 31
+  - `NO_CIRCUIT_CHANNEL_AVAILABLE` = 34
+  - `NETWORK_OUT_OF_ORDER` = 38
+  - `TEMPORARY_FAILURE` = 41
+  - `SWITCHING_EQUIPMENT_CONGESTION` = 42
+  - `ACCESS_INFORMATION_DISCARDED` = 43
+  - `REQUEST_CIRCUIT_CHANNEL_NOT_AVAILABLE` = 44
+  - `RESOURCES_UNAVAILABLE_UNSPECIFIED` = 47
+  - `QUALITY_OF_SERVICE_UNAVAILABLE` = 49
+  - `REQUESTED_FACILITY_NOT_SUBSCRIBED` = 50
+  - `INCOMING_CALLS_BARRED_WITHIN_THE_CUG` = 55
+  - `BEARER_CAPABILITY_NOT_AUTHORIZED` = 57
+  - `BEARER_CAPABILITY_NOT_PRESENTLY_AVAILABLE` = 58
+  - `SERVICE_OR_OPTION_NOT_AVAILABLE_UNSPECIFIED` = 63
+  - `BEARER_SERVICE_NOT_IMPLEMENTED` = 65
+  - `ACM_EQUALTO_OR_GREATER_THAN_THE_MAXIMUM_VALUE` = 68
+  - `REQUESTED_FACILITY_NOT_IMPLEMENTED` = 69
+  - `ONLY_RESTRICTED_DIGITAL_INFO_BEARER_CAPABILITY_IS_AVAILABLE` = 70
+  - `SERVICE_OR_OPTION_NOT_IMPLEMENTED_UNSPECIFIED` = 79
+  - `INVALID_TRANSACTION_IDENTIFIER_VALUE` = 81
+  - `USER_NOT_MEMBER_OF_CUG` = 87
+  - `INCOMPATIBLE_DESTINATION` = 88
+  - `INVALID_TRANSIT_NETWORK_SELECTION` = 91
+  - `SEMANTICALLY_INCORRECT_MESSAGE` = 95
+  - `INVALID_MANDATORY_INFORMATION` = 96
+  - `MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED` = 97
+  - `MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE` = 98
+  - `INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED` = 99
+  - `CONDITIONAL_IE_ERROR` = 100
+  - `MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE` = 101
+  - `RECOVERY_ON_TIMER_EXPIRED` = 102
+  - `PROTOCOL_ERROR_UNSPECIFIED` = 111
+  - `INTERWORKING_UNSPECIFIED` = 127
+  - `CALL_BARRED` = 240
+  - `FDN_BLOCKED` = 241
+  - `IMSI_UNKNOWN_IN_VLR` = 242
+  - `IMEI_NOT_ACCEPTED` = 243
+  - `DIAL_MODIFIED_TO_USSD` = 244
+  - `DIAL_MODIFIED_TO_SS` = 245
+  - `DIAL_MODIFIED_TO_DIAL` = 246
+  - `RADIO_OFF` = 247
+  - `OUT_OF_SERVICE` = 248
+  - `NO_VALID_SIM` = 249
+  - `RADIO_INTERNAL_ERROR` = 250
+  - `NETWORK_RESP_TIMEOUT` = 251
+  - `NETWORK_REJECT` = 252
+  - `RADIO_ACCESS_FAILURE` = 253
+  - `RADIO_LINK_FAILURE` = 254
+  - `RADIO_LINK_LOST` = 255
+  - `RADIO_UPLINK_FAILURE` = 256
+  - `RADIO_SETUP_FAILURE` = 257
+  - `RADIO_RELEASE_NORMAL` = 258
+  - `RADIO_RELEASE_ABNORMAL` = 259
+  - `ACCESS_CLASS_BLOCKED` = 260
+  - `NETWORK_DETACH` = 261
+  - `INVALID_PARAMETER` = 1025
+  - `SIM_NOT_EXIT` = 1026
+  - `SIM_PIN_NEED` = 1027
+  - `CALL_NOT_ALLOW` = 1029
+  - `SIM_INVALID` = 1045
+  - `UNKNOWN` = 1279
+#### Functions
+- `dial(phoneNumber: string, options: DialOptions, callback: AsyncCallback<boolean>): void`
+- `dial(phoneNumber: string, options?: DialOptions): Promise<boolean>`
+- `dial(phoneNumber: string, callback: AsyncCallback<boolean>): void`
+- `dialCall(phoneNumber: string, options: DialCallOptions, callback: AsyncCallback<void>): void`
+- `dialCall(phoneNumber: string, options?: DialCallOptions): Promise<void>`
+- `dialCall(phoneNumber: string, callback: AsyncCallback<void>): void`
+- `makeCall(phoneNumber: string, callback: AsyncCallback<void>): void`
+- `makeCall(phoneNumber: string): Promise<void>`
+- `hasCall(callback: AsyncCallback<boolean>): void`
+- `hasCall(): Promise<boolean>`
+- `hasCallSync(): boolean`
+- `getCallState(callback: AsyncCallback<CallState>): void`
+- `getCallState(): Promise<CallState>`
+- `getCallStateSync(): CallState`
+- `muteRinger(callback: AsyncCallback<void>): void`
+- `muteRinger(): Promise<void>`
+- `hasVoiceCapability(): boolean`
+- `isEmergencyPhoneNumber(phoneNumber: string, options: EmergencyNumberOptions, callback: AsyncCallback<boolean>): void`
+- `isEmergencyPhoneNumber(phoneNumber: string, options?: EmergencyNumberOptions): Promise<boolean>`
+- `isEmergencyPhoneNumber(phoneNumber: string, callback: AsyncCallback<boolean>): void`
+- `formatPhoneNumber(phoneNumber: string, options: NumberFormatOptions, callback: AsyncCallback<string>): void`
+- `formatPhoneNumber(phoneNumber: string, options?: NumberFormatOptions): Promise<string>`
+- `formatPhoneNumber(phoneNumber: string, callback: AsyncCallback<string>): void`
+- `formatPhoneNumberToE164(phoneNumber: string, countryCode: string, callback: AsyncCallback<string>): void`
+- `formatPhoneNumberToE164(phoneNumber: string, countryCode: string): Promise<string>`
+- `answerCall(callId: number, callback: AsyncCallback<void>): void`
+- `answerCall(callId?: number): Promise<void>`
+- `answerCall(callback: AsyncCallback<void>): void`
+- `answerCall(videoState: VideoStateType, callId: number): Promise<void>`
+- `hangUpCall(callId: number, callback: AsyncCallback<void>): void`
+- `hangUpCall(callId?: number): Promise<void>`
+- `hangUpCall(callback: AsyncCallback<void>): void`
+- `rejectCall(callId: number, options: RejectMessageOptions, callback: AsyncCallback<void>): void`
+- `rejectCall(callId?: number, options?: RejectMessageOptions): Promise<void>`
+- `rejectCall(callId: number, callback: AsyncCallback<void>): void`
+- `rejectCall(callback: AsyncCallback<void>): void`
+- `rejectCall(options: RejectMessageOptions, callback: AsyncCallback<void>): void`
+- `holdCall(callId: number, callback: AsyncCallback<void>): void`
+- `holdCall(callId: number): Promise<void>`
+- `unHoldCall(callId: number, callback: AsyncCallback<void>): void`
+- `unHoldCall(callId: number): Promise<void>`
+- `switchCall(callId: number, callback: AsyncCallback<void>): void`
+- `switchCall(callId: number): Promise<void>`
+- `combineConference(callId: number, callback: AsyncCallback<void>): void`
+- `combineConference(callId: number): Promise<void>`
+- `getMainCallId(callId: number, callback: AsyncCallback<number>): void`
+- `getMainCallId(callId: number): Promise<number>`
+- `getSubCallIdList(callId: number, callback: AsyncCallback<Array<string>>): void`
+- `getSubCallIdList(callId: number): Promise<Array<string>>`
+- `getCallIdListForConference(callId: number, callback: AsyncCallback<Array<string>>): void`
+- `getCallIdListForConference(callId: number): Promise<Array<string>>`
+- `getCallWaitingStatus(slotId: number, callback: AsyncCallback<CallWaitingStatus>): void`
+- `getCallWaitingStatus(slotId: number): Promise<CallWaitingStatus>`
+- `setCallWaiting(slotId: number, activate: boolean, callback: AsyncCallback<void>): void`
+- `setCallWaiting(slotId: number, activate: boolean): Promise<void>`
+- `startDTMF(callId: number, character: string, callback: AsyncCallback<void>): void`
+- `startDTMF(callId: number, character: string): Promise<void>`
+- `stopDTMF(callId: number, callback: AsyncCallback<void>): void`
+- `stopDTMF(callId: number): Promise<void>`
+- `postDialProceed(callId: number, proceed: boolean, callback: AsyncCallback<void>): void`
+- `postDialProceed(callId: number, proceed: boolean): Promise<void>`
+- `isInEmergencyCall(callback: AsyncCallback<boolean>): void`
+- `isInEmergencyCall(): Promise<boolean>`
+- `on(type: 'callDetailsChange', callback: Callback<CallAttributeOptions>): void`
+- `off(type: 'callDetailsChange', callback?: Callback<CallAttributeOptions>): void`
+- `on(type: 'callEventChange', callback: Callback<CallEventOptions>): void`
+- `off(type: 'callEventChange', callback?: Callback<CallEventOptions>): void`
+- `on(type: 'callDisconnectedCause', callback: Callback<DisconnectedDetails>): void`
+- `off(type: 'callDisconnectedCause', callback?: Callback<DisconnectedDetails>): void`
+- `on(type: 'mmiCodeResult', callback: Callback<MmiCodeResults>): void`
+- `off(type: 'mmiCodeResult', callback?: Callback<MmiCodeResults>): void`
+- `on(type: 'audioDeviceChange', callback: Callback<AudioDeviceCallbackInfo>): void`
+- `off(type: 'audioDeviceChange', callback?: Callback<AudioDeviceCallbackInfo>): void`
+- `on(type: 'postDialDelay', callback: Callback<string>): void`
+- `off(type: 'postDialDelay', callback?: Callback<string>): void`
+- `isNewCallAllowed(callback: AsyncCallback<boolean>): void`
+- `isNewCallAllowed(): Promise<boolean>`
+- `separateConference(callId: number, callback: AsyncCallback<void>): void`
+- `separateConference(callId: number): Promise<void>`
+- `getCallRestrictionStatus(slotId: number, type: CallRestrictionType, callback: AsyncCallback<RestrictionStatus>): void`
+- `getCallRestrictionStatus(slotId: number, type: CallRestrictionType): Promise<RestrictionStatus>`
+- `setCallRestriction(slotId: number, info: CallRestrictionInfo, callback: AsyncCallback<void>): void`
+- `setCallRestriction(slotId: number, info: CallRestrictionInfo): Promise<void>`
+- `setCallRestrictionPassword(slotId: number, oldPassword: string, newPassword: string, callback: AsyncCallback<void>): void`
+- `setCallRestrictionPassword(slotId: number, oldPassword: string, newPassword: string): Promise<void>`
+- `getCallTransferInfo(slotId: number, type: CallTransferType, callback: AsyncCallback<CallTransferResult>): void`
+- `getCallTransferInfo(slotId: number, type: CallTransferType): Promise<CallTransferResult>`
+- `setCallTransfer(slotId: number, info: CallTransferInfo, callback: AsyncCallback<void>): void`
+- `setCallTransfer(slotId: number, info: CallTransferInfo): Promise<void>`
+- `isRinging(callback: AsyncCallback<boolean>): void`
+- `isRinging(): Promise<boolean>`
+- `setMuted(callback: AsyncCallback<void>): void`
+- `setMuted(): Promise<void>`
+- `cancelMuted(callback: AsyncCallback<void>): void`
+- `cancelMuted(): Promise<void>`
+- `setAudioDevice(device: AudioDevice, callback: AsyncCallback<void>): void`
+- `setAudioDevice(device: AudioDevice): Promise<void>`
+- `joinConference(mainCallId: number, callNumberList: Array<string>, callback: AsyncCallback<void>): void`
+- `joinConference(mainCallId: number, callNumberList: Array<string>): Promise<void>`
+- `kickOutFromConference(callId: number, callback: AsyncCallback<void>): void`
+- `kickOutFromConference(callId: number): Promise<void>`
+- `updateImsCallMode(callId: number, mode: ImsCallMode, callback: AsyncCallback<void>): void`
+- `updateImsCallMode(callId: number, mode: ImsCallMode): Promise<void>`
+- `cancelCallUpgrade(callId: number): Promise<void>`
+- `controlCamera(callId: number, cameraId: string): Promise<void>`
+- `setPreviewSurface(callId: number, surfaceId: string): Promise<void>`
+- `setDisplaySurface(callId: number, surfaceId: string): Promise<void>`
+- `setDeviceDirection(callId: number, deviceDirection: DeviceDirection): Promise<void>`
+- `on(type: 'imsCallModeChange', callback: Callback<ImsCallModeInfo>): void`
+- `off(type: 'imsCallModeChange', callback?: Callback<ImsCallModeInfo>): void`
+- `on(type: 'callSessionEvent', callback: Callback<CallSessionEvent>): void`
+- `off(type: 'callSessionEvent', callback?: Callback<CallSessionEvent>): void`
+- `on(type: 'peerDimensionsChange', callback: Callback<PeerDimensionsDetail>): void`
+- `off(type: 'peerDimensionsChange', callback?: Callback<PeerDimensionsDetail>): void`
+- `on(type: 'cameraCapabilitiesChange', callback: Callback<CameraCapabilities>): void`
+- `off(type: 'cameraCapabilitiesChange', callback?: Callback<CameraCapabilities>): void`
+- `enableImsSwitch(slotId: number, callback: AsyncCallback<void>): void`
+- `enableImsSwitch(slotId: number): Promise<void>`
+- `disableImsSwitch(slotId: number, callback: AsyncCallback<void>): void`
+- `disableImsSwitch(slotId: number): Promise<void>`
+- `isImsSwitchEnabled(slotId: number, callback: AsyncCallback<boolean>): void`
+- `isImsSwitchEnabled(slotId: number): Promise<boolean>`
+- `closeUnfinishedUssd(slotId: number, callback: AsyncCallback<void>): void`
+- `closeUnfinishedUssd(slotId: number): Promise<void>`
+- `setVoNRState(slotId: number, state: VoNRState, callback: AsyncCallback<void>): void`
+- `setVoNRState(slotId: number, state: VoNRState): Promise<void>`
+- `getVoNRState(slotId: number, callback: AsyncCallback<VoNRState>): void`
+- `getVoNRState(slotId: number): Promise<VoNRState>`
+- `canSetCallTransferTime(slotId: number, callback: AsyncCallback<boolean>): void`
+- `canSetCallTransferTime(slotId: number): Promise<boolean>`
+- `inputDialerSpecialCode(inputCode: string, callback: AsyncCallback<void>): void`
+- `inputDialerSpecialCode(inputCode: string): Promise<void>`
+- `removeMissedIncomingCallNotification(callback: AsyncCallback<void>): void`
+- `removeMissedIncomingCallNotification(): Promise<void>`
+
+### data (@ohos.telephony.data.d.ts)
+#### Enums
+- **DataFlowType**
+  - `DATA_FLOW_TYPE_NONE` = 0
+  - `DATA_FLOW_TYPE_DOWN` = 1
+  - `DATA_FLOW_TYPE_UP` = 2
+  - `DATA_FLOW_TYPE_UP_DOWN` = 3
+  - `DATA_FLOW_TYPE_DORMANT` = 4
+- **DataConnectState**
+  - `DATA_STATE_UNKNOWN` = -1
+  - `DATA_STATE_DISCONNECTED` = 0
+  - `DATA_STATE_CONNECTING` = 1
+  - `DATA_STATE_CONNECTED` = 2
+  - `DATA_STATE_SUSPENDED` = 3
+#### Functions
+- `getDefaultCellularDataSlotId(callback: AsyncCallback<number>): void`
+- `getDefaultCellularDataSlotId(): Promise<number>`
+- `getDefaultCellularDataSlotIdSync(): number`
+- `setDefaultCellularDataSlotId(slotId: number, callback: AsyncCallback<void>): void`
+- `setDefaultCellularDataSlotId(slotId: number): Promise<void>`
+- `getCellularDataFlowType(callback: AsyncCallback<DataFlowType>): void`
+- `getCellularDataFlowType(): Promise<DataFlowType>`
+- `getCellularDataState(callback: AsyncCallback<DataConnectState>): void`
+- `getCellularDataState(): Promise<DataConnectState>`
+- `isCellularDataEnabled(callback: AsyncCallback<boolean>): void`
+- `isCellularDataEnabled(): Promise<boolean>`
+- `enableCellularData(callback: AsyncCallback<void>): void`
+- `enableCellularData(): Promise<void>`
+- `disableCellularData(callback: AsyncCallback<void>): void`
+- `disableCellularData(): Promise<void>`
+- `isCellularDataRoamingEnabled(slotId: number, callback: AsyncCallback<boolean>): void`
+- `isCellularDataRoamingEnabled(slotId: number): Promise<boolean>`
+- `enableCellularDataRoaming(slotId: number, callback: AsyncCallback<void>): void`
+- `enableCellularDataRoaming(slotId: number): Promise<void>`
+- `disableCellularDataRoaming(slotId: number, callback: AsyncCallback<void>): void`
+- `disableCellularDataRoaming(slotId: number): Promise<void>`
+- `getDefaultCellularDataSimId(): number`
+
+### observer (@ohos.telephony.observer.d.ts)
+#### Interfaces
+- **SimStateData**
+  - `type`: CardType
+  - `state`: SimState
+  - `reason`: LockReason
+- **CallStateInfo**
+  - `state`: CallState
+  - `number`: string
+- **DataConnectionStateInfo**
+  - `state`: DataConnectState
+  - `network`: RatType
+- **ObserverOptions**
+  - `slotId`: number
+#### Enums
+- **LockReason**
+#### Functions
+- `on(type: 'networkStateChange', callback: Callback<NetworkState>): void`
+- `on(type: 'networkStateChange', options: ObserverOptions, callback: Callback<NetworkState>): void`
+- `off(type: 'networkStateChange', callback?: Callback<NetworkState>): void`
+- `on(type: 'signalInfoChange', callback: Callback<Array<SignalInformation>>): void`
+- `on(type: 'signalInfoChange', options: ObserverOptions, callback: Callback<Array<SignalInformation>>): void`
+- `off(type: 'signalInfoChange', callback?: Callback<Array<SignalInformation>>): void`
+- `on(type: 'cellInfoChange', callback: Callback<Array<CellInformation>>): void`
+- `on(type: 'cellInfoChange', options: ObserverOptions, callback: Callback<Array<CellInformation>>): void`
+- `off(type: 'cellInfoChange', callback?: Callback<Array<CellInformation>>): void`
+- `on(type: 'cellularDataConnectionStateChange', callback: Callback<DataConnectionStateInfo>): void`
+- `on(type: 'cellularDataConnectionStateChange', options: ObserverOptions,
+    callback: Callback<DataConnectionStateInfo>): void`
+- `off(type: 'cellularDataConnectionStateChange', callback?: Callback<DataConnectionStateInfo>): void`
+- `on(type: 'cellularDataFlowChange', callback: Callback<DataFlowType>): void`
+- `on(type: 'cellularDataFlowChange', options: ObserverOptions, callback: Callback<DataFlowType>): void`
+- `off(type: 'cellularDataFlowChange', callback?: Callback<DataFlowType>): void`
+- `on(type: 'callStateChange', callback: Callback<CallStateInfo>): void`
+- `on(type: 'callStateChange', options: ObserverOptions, callback: Callback<CallStateInfo>): void`
+- `off(type: 'callStateChange', callback?: Callback<CallStateInfo>): void`
+- `on(type: 'simStateChange', callback: Callback<SimStateData>): void`
+- `on(type: 'simStateChange', options: ObserverOptions, callback: Callback<SimStateData>): void`
+- `off(type: 'simStateChange', callback?: Callback<SimStateData>): void`
+- `on(type: 'iccAccountInfoChange', callback: Callback<void>): void`
+- `off(type: 'iccAccountInfoChange', callback?: Callback<void>): void`
+#### Type Aliases
+- `NetworkState` = radio.NetworkState
+- `SignalInformation` = radio.SignalInformation
+- `CellInformation` = radio.CellInformation
+- `DataConnectState` = data.DataConnectState
+- `RatType` = radio.RadioTechnology
+- `DataFlowType` = data.DataFlowType
+- `CallState` = call.CallState
+- `CardType` = sim.CardType
+- `SimState` = sim.SimState
+
+### radio (@ohos.telephony.radio.d.ts)
+#### Interfaces
+- **NetworkRadioTech**
+  - `psRadioTech`: RadioTechnology
+  - `csRadioTech`: RadioTechnology
+- **SignalInformation**
+  - `signalType`: NetworkType
+  - `signalLevel`: number
+  - `dBm`: number
+- **NetworkState**
+  - `longOperatorName`: string
+  - `shortOperatorName`: string
+  - `plmnNumeric`: string
+  - `isRoaming`: boolean
+  - `regState`: RegState
+  - `cfgTech`: RadioTechnology
+  - `nsaState`: NsaState
+  - `isCaActive`: boolean
+  - `isEmergency`: boolean
+- **CellInformation**
+  - `networkType`: NetworkType
+  - `isCamped`: boolean
+  - `timeStamp`: number
+  - `signalInformation`: SignalInformation
+- **CdmaCellInformation**
+  - `baseId`: number
+  - `latitude`: number
+  - `longitude`: number
+  - `nid`: number
+  - `sid`: number
+- **GsmCellInformation**
+  - `lac`: number
+  - `cellId`: number
+  - `arfcn`: number
+  - `bsic`: number
+  - `mcc`: string
+  - `mnc`: string
+- **LteCellInformation**
+  - `cgi`: number
+  - `pci`: number
+  - `tac`: number
+  - `earfcn`: number
+  - `bandwidth`: number
+  - `mcc`: string
+  - `mnc`: string
+  - `isSupportEndc`: boolean
+- **NrCellInformation**
+  - `nrArfcn`: number
+  - `pci`: number
+  - `tac`: number
+  - `nci`: number
+  - `mcc`: string
+  - `mnc`: string
+- **TdscdmaCellInformation**
+  - `lac`: number
+  - `cellId`: number
+  - `cpid`: number
+  - `uarfcn`: number
+  - `mcc`: string
+  - `mnc`: string
+- **WcdmaCellInformation**
+  - `lac`: number
+  - `cellId`: number
+  - `psc`: number
+  - `uarfcn`: number
+  - `mcc`: string
+  - `mnc`: string
+- **NetworkSearchResult**
+  - `isNetworkSearchSuccess`: boolean
+  - `networkSearchResult`: Array<NetworkInformation>
+- **NetworkInformation**
+  - `operatorName`: string
+  - `operatorNumeric`: string
+  - `state`: NetworkInformationState
+  - `radioTech`: string
+- **NetworkSelectionModeOptions**
+  - `slotId`: number
+  - `selectMode`: NetworkSelectionMode
+  - `networkInformation`: NetworkInformation
+  - `resumeSelection`: boolean
+- **ImsRegInfo**
+  - `imsRegState`: ImsRegState
+  - `imsRegTech`: ImsRegTech
+#### Enums
+- **PreferredNetworkMode**
+  - `PREFERRED_NETWORK_MODE_GSM` = 1
+  - `PREFERRED_NETWORK_MODE_WCDMA` = 2
+  - `PREFERRED_NETWORK_MODE_LTE` = 3
+  - `PREFERRED_NETWORK_MODE_LTE_WCDMA` = 4
+  - `PREFERRED_NETWORK_MODE_LTE_WCDMA_GSM` = 5
+  - `PREFERRED_NETWORK_MODE_WCDMA_GSM` = 6
+  - `PREFERRED_NETWORK_MODE_CDMA` = 7
+  - `PREFERRED_NETWORK_MODE_EVDO` = 8
+  - `PREFERRED_NETWORK_MODE_EVDO_CDMA` = 9
+  - `PREFERRED_NETWORK_MODE_WCDMA_GSM_EVDO_CDMA` = 10
+  - `PREFERRED_NETWORK_MODE_LTE_EVDO_CDMA` = 11
+  - `PREFERRED_NETWORK_MODE_LTE_WCDMA_GSM_EVDO_CDMA` = 12
+  - `PREFERRED_NETWORK_MODE_TDSCDMA` = 13
+  - `PREFERRED_NETWORK_MODE_TDSCDMA_GSM` = 14
+  - `PREFERRED_NETWORK_MODE_TDSCDMA_WCDMA` = 15
+  - `PREFERRED_NETWORK_MODE_TDSCDMA_WCDMA_GSM` = 16
+  - `PREFERRED_NETWORK_MODE_LTE_TDSCDMA` = 17
+  - `PREFERRED_NETWORK_MODE_LTE_TDSCDMA_GSM` = 18
+  - `PREFERRED_NETWORK_MODE_LTE_TDSCDMA_WCDMA` = 19
+  - `PREFERRED_NETWORK_MODE_LTE_TDSCDMA_WCDMA_GSM` = 20
+  - `PREFERRED_NETWORK_MODE_TDSCDMA_WCDMA_GSM_EVDO_CDMA` = 21
+  - `PREFERRED_NETWORK_MODE_LTE_TDSCDMA_WCDMA_GSM_EVDO_CDMA` = 22
+  - `PREFERRED_NETWORK_MODE_NR` = 31
+  - `PREFERRED_NETWORK_MODE_NR_LTE` = 32
+  - `PREFERRED_NETWORK_MODE_NR_LTE_WCDMA` = 33
+  - `PREFERRED_NETWORK_MODE_NR_LTE_WCDMA_GSM` = 34
+  - `PREFERRED_NETWORK_MODE_NR_LTE_EVDO_CDMA` = 35
+  - `PREFERRED_NETWORK_MODE_NR_LTE_WCDMA_GSM_EVDO_CDMA` = 36
+  - `PREFERRED_NETWORK_MODE_NR_LTE_TDSCDMA` = 37
+  - `PREFERRED_NETWORK_MODE_NR_LTE_TDSCDMA_GSM` = 38
+  - `PREFERRED_NETWORK_MODE_NR_LTE_TDSCDMA_WCDMA` = 39
+  - `PREFERRED_NETWORK_MODE_NR_LTE_TDSCDMA_WCDMA_GSM` = 40
+  - `PREFERRED_NETWORK_MODE_NR_LTE_TDSCDMA_WCDMA_GSM_EVDO_CDMA` = 41
+  - `PREFERRED_NETWORK_MODE_MAX_VALUE` = 99
+- **RadioTechnology**
+  - `RADIO_TECHNOLOGY_UNKNOWN` = 0
+  - `RADIO_TECHNOLOGY_GSM` = 1
+  - `RADIO_TECHNOLOGY_1XRTT` = 2
+  - `RADIO_TECHNOLOGY_WCDMA` = 3
+  - `RADIO_TECHNOLOGY_HSPA` = 4
+  - `RADIO_TECHNOLOGY_HSPAP` = 5
+  - `RADIO_TECHNOLOGY_TD_SCDMA` = 6
+  - `RADIO_TECHNOLOGY_EVDO` = 7
+  - `RADIO_TECHNOLOGY_EHRPD` = 8
+  - `RADIO_TECHNOLOGY_LTE` = 9
+  - `RADIO_TECHNOLOGY_LTE_CA` = 10
+  - `RADIO_TECHNOLOGY_IWLAN` = 11
+  - `RADIO_TECHNOLOGY_NR` = 12
+- **NetworkType**
+- **RegState**
+  - `REG_STATE_NO_SERVICE` = 0
+  - `REG_STATE_IN_SERVICE` = 1
+  - `REG_STATE_EMERGENCY_CALL_ONLY` = 2
+  - `REG_STATE_POWER_OFF` = 3
+- **NsaState**
+  - `NSA_STATE_NOT_SUPPORT` = 1
+  - `NSA_STATE_NO_DETECT` = 2
+  - `NSA_STATE_CONNECTED_DETECT` = 3
+  - `NSA_STATE_IDLE_DETECT` = 4
+  - `NSA_STATE_DUAL_CONNECTED` = 5
+  - `NSA_STATE_SA_ATTACHED` = 6
+- **NrOptionMode**
+- **NROptionMode**
+- **NetworkInformationState**
+- **NetworkSelectionMode**
+- **ImsRegState**
+- **ImsRegTech**
+- **ImsServiceType**
+- **NetworkCapabilityType**
+- **NetworkCapabilityState**
+#### Functions
+- `getRadioTech(slotId: number, callback: AsyncCallback<NetworkRadioTech>): void`
+- `getRadioTech(slotId: number): Promise<NetworkRadioTech>`
+- `getNetworkState(slotId: number, callback: AsyncCallback<NetworkState>): void`
+- `getNetworkState(slotId?: number): Promise<NetworkState>`
+- `getNetworkState(callback: AsyncCallback<NetworkState>): void`
+- `sendUpdateCellLocationRequest(slotId: number, callback: AsyncCallback<void>): void`
+- `sendUpdateCellLocationRequest(slotId?: number): Promise<void>`
+- `sendUpdateCellLocationRequest(callback: AsyncCallback<void>): void`
+- `getCellInformation(slotId: number, callback: AsyncCallback<Array<CellInformation>>): void`
+- `getCellInformation(slotId?: number): Promise<Array<CellInformation>>`
+- `getCellInformation(callback: AsyncCallback<Array<CellInformation>>): void`
+- `getNetworkSelectionMode(slotId: number, callback: AsyncCallback<NetworkSelectionMode>): void`
+- `getNetworkSelectionMode(slotId: number): Promise<NetworkSelectionMode>`
+- `setNetworkSelectionMode(options: NetworkSelectionModeOptions, callback: AsyncCallback<void>): void`
+- `setNetworkSelectionMode(options: NetworkSelectionModeOptions): Promise<void>`
+- `getNetworkSearchInformation(slotId: number, callback: AsyncCallback<NetworkSearchResult>): void`
+- `getNetworkSearchInformation(slotId: number): Promise<NetworkSearchResult>`
+- `getISOCountryCodeForNetwork(slotId: number, callback: AsyncCallback<string>): void`
+- `getISOCountryCodeForNetwork(slotId: number): Promise<string>`
+- `getISOCountryCodeForNetworkSync(slotId: number): string`
+- `getNrOptionMode(slotId: number, callback: AsyncCallback<NrOptionMode>): void`
+- `getNrOptionMode(slotId?: number): Promise<NrOptionMode>`
+- `getNrOptionMode(callback: AsyncCallback<NrOptionMode>): void`
+- `getIMEI(slotId: number, callback: AsyncCallback<string>): void`
+- `getIMEI(slotId?: number): Promise<string>`
+- `getIMEI(callback: AsyncCallback<string>): void`
+- `getMEID(slotId: number, callback: AsyncCallback<string>): void`
+- `getMEID(slotId?: number): Promise<string>`
+- `getMEID(callback: AsyncCallback<string>): void`
+- `getUniqueDeviceId(slotId: number, callback: AsyncCallback<string>): void`
+- `getUniqueDeviceId(slotId?: number): Promise<string>`
+- `getUniqueDeviceId(callback: AsyncCallback<string>): void`
+- `getPrimarySlotId(callback: AsyncCallback<number>): void`
+- `getPrimarySlotId(): Promise<number>`
+- `setPrimarySlotId(slotId: number, callback: AsyncCallback<void>): void`
+- `setPrimarySlotId(slotId: number): Promise<void>`
+- `getSignalInformation(slotId: number, callback: AsyncCallback<Array<SignalInformation>>): void`
+- `getSignalInformation(slotId: number): Promise<Array<SignalInformation>>`
+- `getSignalInformationSync(slotId: number): Array<SignalInformation>`
+- `isNrSupported(): boolean`
+- `isNrSupported(slotId: number): boolean`
+- `isNRSupported(): boolean`
+- `isNRSupported(slotId: number): boolean`
+- `isRadioOn(slotId: number, callback: AsyncCallback<boolean>): void`
+- `isRadioOn(slotId?: number): Promise<boolean>`
+- `isRadioOn(callback: AsyncCallback<boolean>): void`
+- `turnOnRadio(slotId: number, callback: AsyncCallback<void>): void`
+- `turnOnRadio(slotId?: number): Promise<void>`
+- `turnOnRadio(callback: AsyncCallback<void>): void`
+- `turnOffRadio(slotId: number, callback: AsyncCallback<void>): void`
+- `turnOffRadio(slotId?: number): Promise<void>`
+- `turnOffRadio(callback: AsyncCallback<void>): void`
+- `getOperatorName(slotId: number, callback: AsyncCallback<string>): void`
+- `getOperatorName(slotId: number): Promise<string>`
+- `getOperatorNameSync(slotId: number): string`
+- `setPreferredNetwork(slotId: number, networkMode: PreferredNetworkMode, callback: AsyncCallback<void>): void`
+- `setPreferredNetwork(slotId: number, networkMode: PreferredNetworkMode): Promise<void>`
+- `getPreferredNetwork(slotId: number, callback: AsyncCallback<PreferredNetworkMode>): void`
+- `getPreferredNetwork(slotId: number): Promise<PreferredNetworkMode>`
+- `getImsRegInfo(slotId: number, imsType: ImsServiceType, callback: AsyncCallback<ImsRegInfo>): void`
+- `getImsRegInfo(slotId: number, imsType: ImsServiceType): Promise<ImsRegInfo>`
+- `on(type: 'imsRegStateChange', slotId: number, imsType: ImsServiceType, callback: Callback<ImsRegInfo>): void`
+- `off(type: 'imsRegStateChange', slotId: number, imsType: ImsServiceType, callback?: Callback<ImsRegInfo>): void`
+- `getBasebandVersion(slotId: number, callback: AsyncCallback<string>): void`
+- `getBasebandVersion(slotId: number): Promise<string>`
+- `setNROptionMode(slotId: number, mode: NROptionMode, callback: AsyncCallback<void>): void`
+- `setNROptionMode(slotId: number, mode: NROptionMode): Promise<void>`
+- `getNROptionMode(slotId: number, callback: AsyncCallback<NROptionMode>): void`
+- `getNROptionMode(slotId: number): Promise<NROptionMode>`
+- `setNetworkCapability(slotId: number, type: NetworkCapabilityType, state: NetworkCapabilityState,
+    callback: AsyncCallback<void>): void`
+- `setNetworkCapability(slotId: number, type: NetworkCapabilityType, state: NetworkCapabilityState): Promise<void>`
+- `getNetworkCapability(slotId: number, type: NetworkCapabilityType,
+    callback: AsyncCallback<NetworkCapabilityState>): void`
+- `getNetworkCapability(slotId: number, type: NetworkCapabilityType): Promise<NetworkCapabilityState>`
+- `factoryReset(slotId: number): Promise<void>`
+
+### sim (@ohos.telephony.sim.d.ts)
+#### Interfaces
+- **OperatorConfig**
+  - `field`: string
+  - `value`: string
+- **IccAccountInfo**
+  - `simId`: number
+  - `slotIndex`: number
+  - `isEsim`: boolean
+  - `isActive`: boolean
+  - `iccId`: string
+  - `showName`: string
+  - `showNumber`: string
+- **LockStatusResponse**
+  - `result`: number
+  - `remain?`: number
+- **DiallingNumbersInfo**
+  - `alphaTag`: string
+  - `number`: string
+  - `recordNumber?`: number
+  - `pin2?`: string
+- **LockInfo**
+  - `lockType`: LockType
+  - `password`: string
+  - `state`: LockState
+- **PersoLockInfo**
+  - `lockType`: PersoLockType
+  - `password`: string
+#### Enums
+- **LockType**
+  - `PIN_LOCK` = 1
+  - `FDN_LOCK` = 2
+- **CardType**
+  - `UNKNOWN_CARD` = -1
+  - `SINGLE_MODE_SIM_CARD` = 10
+  - `SINGLE_MODE_USIM_CARD` = 20
+  - `SINGLE_MODE_RUIM_CARD` = 30
+  - `DUAL_MODE_CG_CARD` = 40
+  - `CT_NATIONAL_ROAMING_CARD` = 41
+  - `CU_DUAL_MODE_CARD` = 42
+  - `DUAL_MODE_TELECOM_LTE_CARD` = 43
+  - `DUAL_MODE_UG_CARD` = 50
+  - `SINGLE_MODE_ISIM_CARD` = 60
+- **SimState**
+- **LockState**
+  - `LOCK_OFF` = 0
+  - `LOCK_ON` = 1
+- **ContactType**
+  - `GENERAL_CONTACT` = 1
+  - `FIXED_DIALING` = 2
+- **PersoLockType**
+- **OperatorConfigKey**
+  - `KEY_VOICE_MAIL_NUMBER_STRING` = 'voice_mail_number_string'
+  - `KEY_IMS_SWITCH_ON_BY_DEFAULT_BOOL` = 'ims_switch_on_by_default_bool'
+  - `KEY_HIDE_IMS_SWITCH_BOOL` = 'hide_ims_switch_bool'
+  - `KEY_VOLTE_SUPPORTED_BOOL` = 'volte_supported_bool'
+  - `KEY_NR_MODE_SUPPORTED_LIST_INT_ARRAY` = 'nr_mode_supported_list_int_array'
+  - `KEY_VOLTE_PROVISIONING_SUPPORTED_BOOL` = 'volte_provisioning_supported_bool'
+  - `KEY_SS_OVER_UT_SUPPORTED_BOOL` = 'ss_over_ut_supported_bool'
+  - `KEY_IMS_GBA_REQUIRED_BOOL` = 'ims_gba_required_bool'
+  - `KEY_UT_PROVISIONING_SUPPORTED_BOOL` = 'ut_provisioning_supported_bool'
+  - `KEY_IMS_PREFER_FOR_EMERGENCY_BOOL` = 'ims_prefer_for_emergency_bool'
+  - `KEY_CALL_WAITING_SERVICE_CLASS_INT` = 'call_waiting_service_class_int'
+  - `KEY_CALL_TRANSFER_VISIBILITY_BOOL` = 'call_transfer_visibility_bool'
+  - `KEY_IMS_CALL_DISCONNECT_REASON_INFO_MAPPING_STRING_ARRAY` = 'ims_call_disconnect_reason_info_mapping_string_array'
+  - `KEY_FORCE_VOLTE_SWITCH_ON_BOOL` = 'force_volte_switch_on_bool'
+  - `KEY_ENABLE_OPERATOR_NAME_CUST_BOOL` = 'enable_operator_name_cust_bool'
+  - `KEY_OPERATOR_NAME_CUST_STRING` = 'operator_name_cust_string'
+  - `KEY_SPN_DISPLAY_CONDITION_CUST_INT` = 'spn_display_condition_cust_int'
+  - `KEY_PNN_CUST_STRING_ARRAY` = 'pnn_cust_string_array'
+  - `KEY_OPL_CUST_STRING_ARRAY` = 'opl_cust_string_array'
+  - `KEY_EMERGENCY_CALL_STRING_ARRAY` = 'emergency_call_string_array'
+- **DsdsMode**
+  - `DSDS_MODE_V2` = 0
+  - `DSDS_MODE_V3` = 1
+  - `DSDS_MODE_V5_TDM` = 2
+  - `DSDS_MODE_V5_DSDA` = 3
+- **OperatorSimCard**
+  - `CHINA_TELECOM_CARD` = 'china_telecom_card'
+#### Functions
+- `isSimActive(slotId: number, callback: AsyncCallback<boolean>): void`
+- `isSimActive(slotId: number): Promise<boolean>`
+- `isSimActiveSync(slotId: number): boolean`
+- `getDefaultVoiceSlotId(callback: AsyncCallback<number>): void`
+- `getDefaultVoiceSlotId(): Promise<number>`
+- `hasOperatorPrivileges(slotId: number, callback: AsyncCallback<boolean>): void`
+- `hasOperatorPrivileges(slotId: number): Promise<boolean>`
+- `getISOCountryCodeForSim(slotId: number, callback: AsyncCallback<string>): void`
+- `getISOCountryCodeForSim(slotId: number): Promise<string>`
+- `getISOCountryCodeForSimSync(slotId: number): string`
+- `getSimOperatorNumeric(slotId: number, callback: AsyncCallback<string>): void`
+- `getSimOperatorNumeric(slotId: number): Promise<string>`
+- `getSimOperatorNumericSync(slotId: number): string`
+- `getSimSpn(slotId: number, callback: AsyncCallback<string>): void`
+- `getSimSpn(slotId: number): Promise<string>`
+- `getSimSpnSync(slotId: number): string`
+- `getSimState(slotId: number, callback: AsyncCallback<SimState>): void`
+- `getSimState(slotId: number): Promise<SimState>`
+- `getSimStateSync(slotId: number): SimState`
+- `getCardType(slotId: number, callback: AsyncCallback<CardType>): void`
+- `getCardType(slotId: number): Promise<CardType>`
+- `getCardTypeSync(slotId: number): CardType`
+- `getSimIccId(slotId: number, callback: AsyncCallback<string>): void`
+- `getSimIccId(slotId: number): Promise<string>`
+- `getVoiceMailIdentifier(slotId: number, callback: AsyncCallback<string>): void`
+- `getVoiceMailIdentifier(slotId: number): Promise<string>`
+- `getVoiceMailNumber(slotId: number, callback: AsyncCallback<string>): void`
+- `getVoiceMailNumber(slotId: number): Promise<string>`
+- `setVoiceMailInfo(slotId: number, mailName: string, mailNumber: string, callback: AsyncCallback<void>): void`
+- `setVoiceMailInfo(slotId: number, mailName: string, mailNumber: string): Promise<void>`
+- `getSimTelephoneNumber(slotId: number, callback: AsyncCallback<string>): void`
+- `getSimTelephoneNumber(slotId: number): Promise<string>`
+- `getSimGid1(slotId: number, callback: AsyncCallback<string>): void`
+- `getSimGid1(slotId: number): Promise<string>`
+- `getMaxSimCount(): number`
+- `getIMSI(slotId: number, callback: AsyncCallback<string>): void`
+- `getIMSI(slotId: number): Promise<string>`
+- `isOperatorSimCard(slotId: number, operator: OperatorSimCard): boolean`
+- `hasSimCard(slotId: number, callback: AsyncCallback<boolean>): void`
+- `hasSimCard(slotId: number): Promise<boolean>`
+- `hasSimCardSync(slotId: number): boolean`
+- `getSimAccountInfo(slotId: number, callback: AsyncCallback<IccAccountInfo>): void`
+- `getSimAccountInfo(slotId: number): Promise<IccAccountInfo>`
+- `getActiveSimAccountInfoList(callback: AsyncCallback<Array<IccAccountInfo>>): void`
+- `getActiveSimAccountInfoList(): Promise<Array<IccAccountInfo>>`
+- `setDefaultVoiceSlotId(slotId: number, callback: AsyncCallback<void>): void`
+- `setDefaultVoiceSlotId(slotId: number): Promise<void>`
+- `activateSim(slotId: number, callback: AsyncCallback<void>): void`
+- `activateSim(slotId: number): Promise<void>`
+- `deactivateSim(slotId: number, callback: AsyncCallback<void>): void`
+- `deactivateSim(slotId: number): Promise<void>`
+- `setShowName(slotId: number, name: string, callback: AsyncCallback<void>): void`
+- `setShowName(slotId: number, name: string): Promise<void>`
+- `getShowName(slotId: number, callback: AsyncCallback<string>): void`
+- `getShowName(slotId: number): Promise<string>`
+- `setShowNumber(slotId: number, number: string, callback: AsyncCallback<void>): void`
+- `setShowNumber(slotId: number, number: string): Promise<void>`
+- `getShowNumber(slotId: number, callback: AsyncCallback<string>): void`
+- `getShowNumber(slotId: number): Promise<string>`
+- `getOperatorConfigs(slotId: number, callback: AsyncCallback<Array<OperatorConfig>>): void`
+- `getOperatorConfigs(slotId: number): Promise<Array<OperatorConfig>>`
+- `unlockPin(slotId: number, pin: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `unlockPin(slotId: number, pin: string): Promise<LockStatusResponse>`
+- `unlockPuk(slotId: number, newPin: string, puk: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `unlockPuk(slotId: number, newPin: string, puk: string): Promise<LockStatusResponse>`
+- `alterPin(slotId: number, newPin: string, oldPin: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `alterPin(slotId: number, newPin: string, oldPin: string): Promise<LockStatusResponse>`
+- `setLockState(slotId: number, options: LockInfo, callback: AsyncCallback<LockStatusResponse>): void`
+- `setLockState(slotId: number, options: LockInfo): Promise<LockStatusResponse>`
+- `unlockPin2(slotId: number, pin2: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `unlockPin2(slotId: number, pin2: string): Promise<LockStatusResponse>`
+- `unlockPuk2(slotId: number, newPin2: string, puk2: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `unlockPuk2(slotId: number, newPin2: string, puk2: string): Promise<LockStatusResponse>`
+- `alterPin2(slotId: number, newPin2: string, oldPin2: string, callback: AsyncCallback<LockStatusResponse>): void`
+- `alterPin2(slotId: number, newPin2: string, oldPin2: string): Promise<LockStatusResponse>`
+- `queryIccDiallingNumbers(slotId: number, type: ContactType, callback: AsyncCallback<Array<DiallingNumbersInfo>>): void`
+- `queryIccDiallingNumbers(slotId: number, type: ContactType): Promise<Array<DiallingNumbersInfo>>`
+- `addIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo, callback: AsyncCallback<void>): void`
+- `addIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo): Promise<void>`
+- `delIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo, callback: AsyncCallback<void>): void`
+- `delIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo): Promise<void>`
+- `updateIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo, callback: AsyncCallback<void>): void`
+- `updateIccDiallingNumbers(slotId: number, type: ContactType, diallingNumbers: DiallingNumbersInfo): Promise<void>`
+- `getLockState(slotId: number, lockType: LockType, callback: AsyncCallback<LockState>): void`
+- `getLockState(slotId: number, lockType: LockType): Promise<LockState>`
+- `sendEnvelopeCmd(slotId: number, cmd: string, callback: AsyncCallback<void>): void`
+- `sendEnvelopeCmd(slotId: number, cmd: string): Promise<void>`
+- `sendTerminalResponseCmd(slotId: number, cmd: string, callback: AsyncCallback<void>): void`
+- `sendTerminalResponseCmd(slotId: number, cmd: string): Promise<void>`
+- `unlockSimLock(slotId: number, lockInfo: PersoLockInfo, callback: AsyncCallback<LockStatusResponse>): void`
+- `unlockSimLock(slotId: number, lockInfo: PersoLockInfo): Promise<LockStatusResponse>`
+- `getOpKey(slotId: number, callback: AsyncCallback<string>): void`
+- `getOpKey(slotId: number): Promise<string>`
+- `getOpKeySync(slotId: number): string`
+- `getOpName(slotId: number, callback: AsyncCallback<string>): void`
+- `getOpName(slotId: number): Promise<string>`
+- `getOpNameSync(slotId: number): string`
+- `getDefaultVoiceSimId(callback: AsyncCallback<number>): void`
+- `getDefaultVoiceSimId(): Promise<number>`
+- `getDsdsMode(callback: AsyncCallback<DsdsMode>): void`
+- `getDsdsMode(): Promise<DsdsMode>`
+
+### sms (@ohos.telephony.sms.d.ts)
+#### Interfaces
+- **MmsInformation**
+  - `messageType`: MessageType
+  - `mmsType`: MmsSendReq | MmsSendConf | MmsNotificationInd | MmsRespInd | MmsRetrieveConf | MmsAcknowledgeInd | MmsDeliveryInd | MmsReadOrigInd | MmsReadRecInd
+  - `attachment?`: Array<MmsAttachment>
+- **MmsParams**
+  - `slotId`: number
+  - `mmsc`: string
+  - `data`: string
+  - `mmsConfig?`: MmsConfig
+- **MmsConfig**
+  - `userAgent`: string
+  - `userAgentProfile`: string
+- **MmsSendReq**
+  - `from`: MmsAddress
+  - `transactionId`: string
+  - `contentType`: string
+  - `version`: MmsVersionType
+  - `to?`: Array<MmsAddress>
+  - `date?`: number
+  - `cc?`: Array<MmsAddress>
+  - `bcc?`: Array<MmsAddress>
+  - `subject?`: string
+  - `messageClass?`: number
+  - `expiry?`: number
+  - `priority?`: MmsPriorityType
+  - `senderVisibility?`: number
+  - `deliveryReport?`: number
+  - `readReport?`: number
+- **MmsSendConf**
+  - `responseState`: number
+  - `transactionId`: string
+  - `version`: MmsVersionType
+  - `messageId?`: string
+- **MmsNotificationInd**
+  - `transactionId`: string
+  - `messageClass`: number
+  - `messageSize`: number
+  - `expiry`: number
+  - `contentLocation`: string
+  - `version`: MmsVersionType
+  - `from?`: MmsAddress
+  - `subject?`: string
+  - `deliveryReport?`: number
+  - `contentClass?`: number
+- **MmsRespInd**
+  - `transactionId`: string
+  - `status`: number
+  - `version`: MmsVersionType
+  - `reportAllowed?`: ReportType
+- **MmsRetrieveConf**
+  - `transactionId`: string
+  - `messageId`: string
+  - `date`: number
+  - `contentType`: string
+  - `to`: Array<MmsAddress>
+  - `version`: MmsVersionType
+  - `from?`: MmsAddress
+  - `cc?`: Array<MmsAddress>
+  - `subject?`: string
+  - `priority?`: MmsPriorityType
+  - `deliveryReport?`: number
+  - `readReport?`: number
+  - `retrieveStatus?`: number
+  - `retrieveText?`: string
+- **MmsAcknowledgeInd**
+  - `transactionId`: string
+  - `version`: MmsVersionType
+  - `reportAllowed?`: ReportType
+- **MmsDeliveryInd**
+  - `messageId`: string
+  - `date`: number
+  - `to`: Array<MmsAddress>
+  - `status`: number
+  - `version`: MmsVersionType
+- **MmsReadOrigInd**
+  - `version`: MmsVersionType
+  - `messageId`: string
+  - `to`: Array<MmsAddress>
+  - `from`: MmsAddress
+  - `date`: number
+  - `readStatus`: number
+- **MmsReadRecInd**
+  - `version`: MmsVersionType
+  - `messageId`: string
+  - `to`: Array<MmsAddress>
+  - `from`: MmsAddress
+  - `readStatus`: number
+  - `date?`: number
+- **MmsAttachment**
+  - `contentId`: string
+  - `contentLocation`: string
+  - `contentDisposition`: DispositionType
+  - `contentTransferEncoding`: string
+  - `contentType`: string
+  - `isSmil`: boolean
+  - `path?`: string
+  - `inBuff?`: Array<number>
+  - `fileName?`: string
+  - `charset?`: MmsCharSets
+- **MmsAddress**
+  - `address`: string
+  - `charset`: MmsCharSets
+- **CBConfigOptions**
+  - `slotId`: number
+  - `enable`: boolean
+  - `startMessageId`: number
+  - `endMessageId`: number
+  - `ranType`: RanType
+- **SimMessageOptions**
+  - `slotId`: number
+  - `smsc`: string
+  - `pdu`: string
+  - `status`: SimMessageStatus
+- **UpdateSimMessageOptions**
+  - `slotId`: number
+  - `msgIndex`: number
+  - `newStatus`: SimMessageStatus
+  - `pdu`: string
+  - `smsc`: string
+- **ShortMessage**
+  - `visibleMessageBody`: string
+  - `visibleRawAddress`: string
+  - `messageClass`: ShortMessageClass
+  - `protocolId`: number
+  - `scAddress`: string
+  - `scTimestamp`: number
+  - `isReplaceMessage`: boolean
+  - `hasReplyPath`: boolean
+  - `pdu`: Array<number>
+  - `status`: number
+  - `isSmsStatusReportMessage`: boolean
+- **SimShortMessage**
+  - `shortMessage`: ShortMessage
+  - `simMessageStatus`: SimMessageStatus
+  - `indexOnSim`: number
+- **SendMessageOptions**
+  - `slotId`: number
+  - `destinationHost`: string
+  - `serviceCenter?`: string
+  - `content`: string | Array<number>
+  - `destinationPort?`: number
+  - `sendCallback?`: AsyncCallback<ISendShortMessageCallback>
+  - `deliveryCallback?`: AsyncCallback<IDeliveryShortMessageCallback>
+- **ISendShortMessageCallback**
+  - `result`: SendSmsResult
+  - `url`: string
+  - `isLastPart`: boolean
+- **IDeliveryShortMessageCallback**
+  - `pdu`: Array<number>
+- **SmsSegmentsInfo**
+  - `splitCount`: number
+  - `encodeCount`: number
+  - `encodeCountRemaining`: number
+  - `scheme`: SmsEncodingScheme
+#### Enums
+- **MessageType**
+  - `TYPE_MMS_SEND_REQ` = 128
+- **MmsPriorityType**
+  - `MMS_LOW` = 128
+- **MmsVersionType**
+  - `MMS_VERSION_1_0` = 0x10
+- **MmsCharSets**
+  - `BIG5` = 0X07EA
+  - `ISO_10646_UCS_2` = 0X03E8
+  - `ISO_8859_1` = 0X04
+  - `SHIFT_JIS` = 0X11
+  - `US_ASCII` = 0X03
+  - `UTF_8` = 0X6A
+- **DispositionType**
+  - `FROM_DATA` = 0
+- **ReportType**
+  - `MMS_YES` = 128
+- **SimMessageStatus**
+  - `SIM_MESSAGE_STATUS_FREE` = 0
+  - `SIM_MESSAGE_STATUS_READ` = 1
+  - `SIM_MESSAGE_STATUS_UNREAD` = 3
+  - `SIM_MESSAGE_STATUS_SENT` = 5
+  - `SIM_MESSAGE_STATUS_UNSENT` = 7
+- **ShortMessageClass**
+- **SendSmsResult**
+  - `SEND_SMS_SUCCESS` = 0
+  - `SEND_SMS_FAILURE_UNKNOWN` = 1
+  - `SEND_SMS_FAILURE_RADIO_OFF` = 2
+  - `SEND_SMS_FAILURE_SERVICE_UNAVAILABLE` = 3
+- **RanType**
+  - `TYPE_GSM` = 1
+  - `TYPE_CDMA` = 2
+- **SmsEncodingScheme**
+  - `SMS_ENCODING_UNKNOWN` = 0
+#### Functions
+- `splitMessage(content: string, callback: AsyncCallback<Array<string>>): void`
+- `splitMessage(content: string): Promise<Array<string>>`
+- `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void`
+- `createMessage(pdu: Array<number>, specification: string): Promise<ShortMessage>`
+- `sendMessage(options: SendMessageOptions): void`
+- `sendShortMessage(options: SendMessageOptions, callback: AsyncCallback<void>): void`
+- `sendShortMessage(options: SendMessageOptions): Promise<void>`
+- `setDefaultSmsSlotId(slotId: number, callback: AsyncCallback<void>): void`
+- `setDefaultSmsSlotId(slotId: number): Promise<void>`
+- `getDefaultSmsSlotId(callback: AsyncCallback<number>): void`
+- `getDefaultSmsSlotId(): Promise<number>`
+- `setSmscAddr(slotId: number, smscAddr: string, callback: AsyncCallback<void>): void`
+- `setSmscAddr(slotId: number, smscAddr: string): Promise<void>`
+- `getSmscAddr(slotId: number, callback: AsyncCallback<string>): void`
+- `getSmscAddr(slotId: number): Promise<string>`
+- `hasSmsCapability(): boolean`
+- `addSimMessage(options: SimMessageOptions, callback: AsyncCallback<void>): void`
+- `addSimMessage(options: SimMessageOptions): Promise<void>`
+- `delSimMessage(slotId: number, msgIndex: number, callback: AsyncCallback<void>): void`
+- `delSimMessage(slotId: number, msgIndex: number): Promise<void>`
+- `updateSimMessage(options: UpdateSimMessageOptions, callback: AsyncCallback<void>): void`
+- `updateSimMessage(options: UpdateSimMessageOptions): Promise<void>`
+- `getAllSimMessages(slotId: number, callback: AsyncCallback<Array<SimShortMessage>>): void`
+- `getAllSimMessages(slotId: number): Promise<Array<SimShortMessage>>`
+- `setCBConfig(options: CBConfigOptions, callback: AsyncCallback<void>): void`
+- `setCBConfig(options: CBConfigOptions): Promise<void>`
+- `getSmsSegmentsInfo(slotId: number, message: string, force7bit: boolean, callback: AsyncCallback<SmsSegmentsInfo>): void`
+- `getSmsSegmentsInfo(slotId: number, message: string, force7bit: boolean): Promise<SmsSegmentsInfo>`
+- `isImsSmsSupported(slotId: number, callback: AsyncCallback<boolean>): void`
+- `isImsSmsSupported(slotId: number): Promise<boolean>`
+- `getImsShortMessageFormat(callback: AsyncCallback<string>): void`
+- `getImsShortMessageFormat(): Promise<string>`
+- `decodeMms(mmsFilePathName: string | Array<number>, callback: AsyncCallback<MmsInformation>): void`
+- `decodeMms(mmsFilePathName: string | Array<number>): Promise<MmsInformation>`
+- `encodeMms(mms: MmsInformation, callback: AsyncCallback<Array<number>>): void`
+- `encodeMms(mms: MmsInformation): Promise<Array<number>>`
+- `getDefaultSmsSimId(callback: AsyncCallback<number>): void`
+- `getDefaultSmsSimId(): Promise<number>`
+- `sendMms(context: Context, mmsParams: MmsParams, callback: AsyncCallback<void>): void`
+- `sendMms(context: Context, mmsParams: MmsParams): Promise<void>`
+- `downloadMms(context: Context, mmsParams: MmsParams, callback: AsyncCallback<void>): void`
+- `downloadMms(context: Context, mmsParams: MmsParams): Promise<void>`
+
+### vcard (@ohos.telephony.vcard.d.ts)
+#### Interfaces
+- **VCardBuilderOptions**
+  - `cardType?`: VCardType
+  - `charset?`: string
+#### Enums
+- **VCardType**
+  - `VERSION_21` = 0
+  - `VERSION_30` = 1
+  - `VERSION_40` = 2
+#### Functions
+- `importVCard(context: Context, filePath: string, accountId: number, callback: AsyncCallback<void>): void`
+- `importVCard(context: Context, filePath: string, accountId?: number): Promise<void>`
+- `importVCard(context: Context, filePath: string, callback: AsyncCallback<void>): void`
+- `exportVCard(context: Context, predicates: dataSharePredicates.DataSharePredicates,
+    options: VCardBuilderOptions, callback: AsyncCallback<string>): void`
+- `exportVCard(context: Context, predicates: dataSharePredicates.DataSharePredicates,
+    options?: VCardBuilderOptions): Promise<string>`
+- `exportVCard(context: Context, predicates: dataSharePredicates.DataSharePredicates,
+    callback: AsyncCallback<string>): void`
+
+### thermal (@ohos.thermal.d.ts)
+#### Enums
+- **ThermalLevel**
+  - `COOL` = 0
+  - `NORMAL` = 1
+  - `WARM` = 2
+  - `HOT` = 3
+  - `OVERHEATED` = 4
+  - `WARNING` = 5
+  - `EMERGENCY` = 6
+  - `ESCAPE` = 7
+#### Functions
+- `subscribeThermalLevel(callback: AsyncCallback<ThermalLevel>): void`
+- `registerThermalLevelCallback(callback: Callback<ThermalLevel>): void`
+- `unsubscribeThermalLevel(callback?: AsyncCallback<void>): void`
+- `unregisterThermalLevelCallback(callback?: Callback<void>): void`
+- `getThermalLevel(): ThermalLevel`
+- `getLevel(): ThermalLevel`
+
+### uiAppearance (@ohos.uiAppearance.d.ts)
+#### Enums
+- **DarkMode**
+  - `ALWAYS_DARK` = 0
+  - `ALWAYS_LIGHT` = 1
+#### Functions
+- `setDarkMode(mode: DarkMode, callback: AsyncCallback<void>): void`
+- `setDarkMode(mode: DarkMode): Promise<void>`
+- `getDarkMode(): DarkMode`
+
+### uiExtensionHost (@ohos.uiExtensionHost.d.ts)
+#### Interfaces
+- **UIExtensionHostWindowProxy**
+  - `getWindowAvoidArea`: window.AvoidArea
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `properties`: UIExtensionHostWindowProxyProperties
+  - `hideNonSecureWindows`: Promise<void>
+- **UIExtensionHostWindowProxyProperties**
+  - `uiExtensionHostWindowProxyRect`: window.Rect
+
+### update (@ohos.update.d.ts)
+#### Interfaces
+- **Updater**
+  - `checkNewVersion`: void
+  - `checkNewVersion`: Promise<CheckResult>
+  - `getNewVersionInfo`: void
+  - `getNewVersionInfo`: Promise<NewVersionInfo>
+  - `getNewVersionDescription`: void
+  - `getNewVersionDescription`: Promise<Array<ComponentDescription>>
+  - `getCurrentVersionInfo`: void
+  - `getCurrentVersionInfo`: Promise<CurrentVersionInfo>
+  - `getCurrentVersionDescription`: void
+  - `getCurrentVersionDescription`: Promise<Array<ComponentDescription>>
+  - `getTaskInfo`: void
+  - `getTaskInfo`: Promise<TaskInfo>
+  - `download`: void
+  - `download`: Promise<void>
+  - `resumeDownload`: void
+  - `resumeDownload`: Promise<void>
+  - `pauseDownload`: void
+  - `pauseDownload`: Promise<void>
+  - `upgrade`: void
+  - `upgrade`: Promise<void>
+  - `clearError`: void
+  - `clearError`: Promise<void>
+  - `getUpgradePolicy`: void
+  - `getUpgradePolicy`: Promise<UpgradePolicy>
+  - `setUpgradePolicy`: void
+  - `setUpgradePolicy`: Promise<void>
+  - `terminateUpgrade`: void
+  - `terminateUpgrade`: Promise<void>
+  - `on`: void
+  - `off`: void
+- **Restorer**
+  - `factoryReset`: void
+  - `factoryReset`: Promise<void>
+- **LocalUpdater**
+  - `verifyUpgradePackage`: void
+  - `verifyUpgradePackage`: Promise<void>
+  - `applyNewVersion`: void
+  - `applyNewVersion`: Promise<void>
+  - `on`: void
+  - `off`: void
+- **UpgradeInfo**
+  - `upgradeApp`: string
+  - `businessType`: BusinessType
+- **BusinessType**
+  - `vendor`: BusinessVendor
+  - `subType`: BusinessSubType
+- **CheckResult**
+  - `isExistNewVersion`: boolean
+  - `newVersionInfo`: NewVersionInfo
+- **NewVersionInfo**
+  - `versionDigestInfo`: VersionDigestInfo
+  - `versionComponents`: Array<VersionComponent>
+- **VersionDigestInfo**
+  - `versionDigest`: string
+- **VersionComponent**
+  - `componentId`: string
+  - `componentType`: ComponentType
+  - `upgradeAction`: UpgradeAction
+  - `displayVersion`: string
+  - `innerVersion`: string
+  - `size`: number
+  - `effectiveMode`: EffectiveMode
+  - `descriptionInfo`: DescriptionInfo
+- **DescriptionOptions**
+  - `format`: DescriptionFormat
+  - `language`: string
+- **ComponentDescription**
+  - `componentId`: string
+  - `descriptionInfo`: DescriptionInfo
+- **DescriptionInfo**
+  - `descriptionType`: DescriptionType
+  - `content`: string
+- **CurrentVersionInfo**
+  - `osVersion`: string
+  - `deviceName`: string
+  - `versionComponents`: Array<VersionComponent>
+- **DownloadOptions**
+  - `allowNetwork`: NetType
+  - `order`: Order
+- **ResumeDownloadOptions**
+  - `allowNetwork`: NetType
+- **PauseDownloadOptions**
+  - `isAllowAutoResume`: boolean
+- **UpgradeOptions**
+  - `order`: Order
+- **ClearOptions**
+  - `status`: UpgradeStatus
+- **UpgradePolicy**
+  - `downloadStrategy`: boolean
+  - `autoUpgradeStrategy`: boolean
+  - `autoUpgradePeriods`: Array<UpgradePeriod>
+- **UpgradePeriod**
+  - `start`: number
+  - `end`: number
+- **TaskInfo**
+  - `existTask`: boolean
+  - `taskBody`: TaskBody
+- **EventInfo**
+  - `eventId`: EventId
+  - `taskBody`: TaskBody
+- **TaskBody**
+  - `versionDigestInfo`: VersionDigestInfo
+  - `status`: UpgradeStatus
+  - `subStatus`: number
+  - `progress`: number
+  - `installMode`: number
+  - `errorMessages`: Array<ErrorMessage>
+  - `versionComponents`: Array<VersionComponent>
+- **ErrorMessage**
+  - `errorCode`: number
+  - `errorMessage`: string
+- **EventClassifyInfo**
+  - `eventClassify`: EventClassify
+  - `extraInfo`: string
+- **UpgradeFile**
+  - `fileType`: ComponentType
+  - `filePath`: string
+- **UpgradeTaskCallback**
+#### Enums
+- **BusinessVendor**
+  - `PUBLIC` = 'public'
+- **BusinessSubType**
+  - `FIRMWARE` = 1
+- **ComponentType**
+  - `OTA` = 1
+- **UpgradeAction**
+  - `UPGRADE` = 'upgrade'
+  - `RECOVERY` = 'recovery'
+- **EffectiveMode**
+  - `COLD` = 1
+  - `LIVE` = 2
+  - `LIVE_AND_COLD` = 3
+- **DescriptionType**
+  - `CONTENT` = 0
+  - `URI` = 1
+- **DescriptionFormat**
+  - `STANDARD` = 0
+  - `SIMPLIFIED` = 1
+- **NetType**
+  - `CELLULAR` = 1
+  - `METERED_WIFI` = 2
+  - `NOT_METERED_WIFI` = 4
+  - `WIFI` = 6
+  - `CELLULAR_AND_WIFI` = 7
+- **Order**
+  - `DOWNLOAD` = 1
+  - `INSTALL` = 2
+  - `DOWNLOAD_AND_INSTALL` = 3
+  - `APPLY` = 4
+  - `INSTALL_AND_APPLY` = 6
+- **UpgradeStatus**
+  - `WAITING_DOWNLOAD` = 20
+  - `DOWNLOADING` = 21
+  - `DOWNLOAD_PAUSED` = 22
+  - `DOWNLOAD_FAIL` = 23
+  - `WAITING_INSTALL` = 30
+  - `UPDATING` = 31
+  - `WAITING_APPLY` = 40
+  - `APPLYING` = 41
+  - `UPGRADE_SUCCESS` = 50
+  - `UPGRADE_FAIL` = 51
+- **EventClassify**
+  - `TASK` = 0x01000000
+- **EventId**
+  - `EVENT_TASK_BASE` = EventClassify.TASK
+#### Functions
+- `getOnlineUpdater(upgradeInfo: UpgradeInfo): Updater`
+- `getRestorer(): Restorer`
+- `getLocalUpdater(): LocalUpdater`
+
+### uri (@ohos.uri.d.ts)
+#### Classes
+- **URI**
+  - `toString()`: string
+  - `equals()`: boolean
+  - `equalsTo()`: boolean
+  - `checkIsAbsolute()`: boolean
+  - `normalize()`: URI
+  - `scheme`: string
+  - `userInfo`: string
+  - `host`: string
+  - `port`: string
+  - `path`: string
+  - `query`: string
+  - `fragment`: string
+  - `authority`: string
+  - `ssp`: string
+
+### url (@ohos.url.d.ts)
+#### Classes
+- **URLSearchParams**
+  - `append()`: void
+  - `delete()`: void
+  - `getAll()`: string[]
+  - `entries()`: IterableIterator<[string, string]>
+  - `get()`: string | null
+  - `has()`: boolean
+  - `set()`: void
+  - `sort()`: void
+  - `keys()`: IterableIterator<string>
+  - `values()`: IterableIterator<string>
+  - `toString()`: string
+- **URLParams**
+  - `append()`: void
+  - `delete()`: void
+  - `getAll()`: string[]
+  - `entries()`: IterableIterator<[string, string]>
+  - `get()`: string | null
+  - `has()`: boolean
+  - `set()`: void
+  - `sort()`: void
+  - `keys()`: IterableIterator<string>
+  - `values()`: IterableIterator<string>
+  - `toString()`: string
+- **URL**
+  - `parseURL()`: URL
+  - `toString()`: string
+  - `toJSON()`: string
+  - `hash`: string
+  - `host`: string
+  - `hostname`: string
+  - `href`: string
+  - `readonly origin`: string
+  - `password`: string
+  - `pathname`: string
+  - `port`: string
+  - `protocol`: string
+  - `search`: string
+  - `readonly searchParams`: URLSearchParams
+  - `readonly params`: URLParams
+  - `username`: string
+
+### usb (@ohos.usb.d.ts)
+#### Interfaces
+- **USBEndpoint**
+  - `address`: number
+  - `attributes`: number
+  - `interval`: number
+  - `maxPacketSize`: number
+  - `direction`: USBRequestDirection
+  - `number`: number
+  - `type`: number
+  - `interfaceId`: number
+- **USBInterface**
+  - `id`: number
+  - `protocol`: number
+  - `clazz`: number
+  - `subClass`: number
+  - `alternateSetting`: number
+  - `name`: string
+  - `endpoints`: Array<USBEndpoint>
+- **USBConfig**
+  - `id`: number
+  - `attributes`: number
+  - `maxPower`: number
+  - `name`: string
+  - `isRemoteWakeup`: boolean
+  - `isSelfPowered`: boolean
+  - `interfaces`: Array<USBInterface>
+- **USBDevice**
+  - `busNum`: number
+  - `devAddress`: number
+  - `serial`: string
+  - `name`: string
+  - `manufacturerName`: string
+  - `productName`: string
+  - `version`: string
+  - `vendorId`: number
+  - `productId`: number
+  - `clazz`: number
+  - `subClass`: number
+  - `protocol`: number
+  - `configs`: Array<USBConfig>
+- **USBDevicePipe**
+  - `busNum`: number
+  - `devAddress`: number
+- **USBPortStatus**
+  - `currentMode`: number
+  - `currentPowerRole`: number
+  - `currentDataRole`: number
+- **USBPort**
+  - `id`: number
+  - `supportedModes`: PortModeType
+  - `status`: USBPortStatus
+- **USBControlParams**
+  - `request`: number
+  - `target`: USBRequestTargetType
+  - `reqType`: USBControlRequestType
+  - `value`: number
+  - `index`: number
+  - `data`: Uint8Array
+#### Enums
+- **PowerRoleType**
+  - `NONE` = 0
+  - `SOURCE` = 1
+  - `SINK` = 2
+- **DataRoleType**
+  - `NONE` = 0
+  - `HOST` = 1
+  - `DEVICE` = 2
+- **PortModeType**
+  - `NONE` = 0
+  - `UFP` = 1
+  - `DFP` = 2
+  - `DRP` = 3
+  - `NUM_MODES` = 4
+- **USBRequestTargetType**
+  - `USB_REQUEST_TARGET_DEVICE` = 0
+  - `USB_REQUEST_TARGET_INTERFACE` = 1
+  - `USB_REQUEST_TARGET_ENDPOINT` = 2
+  - `USB_REQUEST_TARGET_OTHER` = 3
+- **USBControlRequestType**
+  - `USB_REQUEST_TYPE_STANDARD` = 0
+  - `USB_REQUEST_TYPE_CLASS` = 1
+  - `USB_REQUEST_TYPE_VENDOR` = 2
+- **USBRequestDirection**
+  - `USB_REQUEST_DIR_TO_DEVICE` = 0
+  - `USB_REQUEST_DIR_FROM_DEVICE` = 0x80
+- **FunctionType**
+  - `NONE` = 0
+  - `ACM` = 1
+  - `ECM` = 2
+  - `HDC` = 4
+  - `MTP` = 8
+  - `PTP` = 16
+  - `RNDIS` = 32
+  - `MIDI` = 64
+  - `AUDIO_SOURCE` = 128
+  - `NCM` = 256
+#### Functions
+- `getDevices(): Array<Readonly<USBDevice>>`
+- `connectDevice(device: USBDevice): Readonly<USBDevicePipe>`
+- `hasRight(deviceName: string): boolean`
+- `requestRight(deviceName: string): Promise<boolean>`
+- `usbFunctionsFromString(funcs: string): number`
+- `usbFunctionsToString(funcs: FunctionType): string`
+- `setCurrentFunctions(funcs: FunctionType): Promise<boolean>`
+- `getCurrentFunctions(): FunctionType`
+- `getPorts(): Array<USBPort>`
+- `getSupportedModes(portId: number): PortModeType`
+- `setPortRoles(portId: number, powerRole: PowerRoleType, dataRole: DataRoleType): Promise<boolean>`
+- `claimInterface(pipe: USBDevicePipe, iface: USBInterface, force?: boolean): number`
+- `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number`
+- `setConfiguration(pipe: USBDevicePipe, config: USBConfig): number`
+- `setInterface(pipe: USBDevicePipe, iface: USBInterface): number`
+- `getRawDescriptor(pipe: USBDevicePipe): Uint8Array`
+- `getFileDescriptor(pipe: USBDevicePipe): number`
+- `controlTransfer(pipe: USBDevicePipe, controlparam: USBControlParams, timeout?: number): Promise<number>`
+- `bulkTransfer(
+    pipe: USBDevicePipe,
+    endpoint: USBEndpoint,
+    buffer: Uint8Array,
+    timeout?: number
+  ): Promise<number>`
+- `closePipe(pipe: USBDevicePipe): number`
+
+### usbManager (@ohos.usbManager.d.ts)
+#### Interfaces
+- **USBEndpoint**
+  - `address`: number
+  - `attributes`: number
+  - `interval`: number
+  - `maxPacketSize`: number
+  - `direction`: USBRequestDirection
+  - `number`: number
+  - `type`: number
+  - `interfaceId`: number
+- **USBInterface**
+  - `id`: number
+  - `protocol`: number
+  - `clazz`: number
+  - `subClass`: number
+  - `alternateSetting`: number
+  - `name`: string
+  - `endpoints`: Array<USBEndpoint>
+- **USBConfiguration**
+  - `id`: number
+  - `attributes`: number
+  - `maxPower`: number
+  - `name`: string
+  - `isRemoteWakeup`: boolean
+  - `isSelfPowered`: boolean
+  - `interfaces`: Array<USBInterface>
+- **USBDevice**
+  - `busNum`: number
+  - `devAddress`: number
+  - `serial`: string
+  - `name`: string
+  - `manufacturerName`: string
+  - `productName`: string
+  - `version`: string
+  - `vendorId`: number
+  - `productId`: number
+  - `clazz`: number
+  - `subClass`: number
+  - `protocol`: number
+  - `configs`: Array<USBConfiguration>
+- **USBDevicePipe**
+  - `busNum`: number
+  - `devAddress`: number
+- **USBPortStatus**
+  - `currentMode`: number
+  - `currentPowerRole`: number
+  - `currentDataRole`: number
+- **USBPort**
+  - `id`: number
+  - `supportedModes`: PortModeType
+  - `status`: USBPortStatus
+- **USBControlParams**
+  - `request`: number
+  - `target`: USBRequestTargetType
+  - `reqType`: USBControlRequestType
+  - `value`: number
+  - `index`: number
+  - `data`: Uint8Array
+#### Enums
+- **PowerRoleType**
+  - `NONE` = 0
+  - `SOURCE` = 1
+  - `SINK` = 2
+- **DataRoleType**
+  - `NONE` = 0
+  - `HOST` = 1
+  - `DEVICE` = 2
+- **PortModeType**
+  - `NONE` = 0
+  - `UFP` = 1
+  - `DFP` = 2
+  - `DRP` = 3
+  - `NUM_MODES` = 4
+- **USBRequestTargetType**
+  - `USB_REQUEST_TARGET_DEVICE` = 0
+  - `USB_REQUEST_TARGET_INTERFACE` = 1
+  - `USB_REQUEST_TARGET_ENDPOINT` = 2
+  - `USB_REQUEST_TARGET_OTHER` = 3
+- **USBControlRequestType**
+  - `USB_REQUEST_TYPE_STANDARD` = 0
+  - `USB_REQUEST_TYPE_CLASS` = 1
+  - `USB_REQUEST_TYPE_VENDOR` = 2
+- **USBRequestDirection**
+  - `USB_REQUEST_DIR_TO_DEVICE` = 0
+  - `USB_REQUEST_DIR_FROM_DEVICE` = 0x80
+- **FunctionType**
+  - `NONE` = 0
+  - `ACM` = 1
+  - `ECM` = 2
+  - `HDC` = 4
+  - `MTP` = 8
+  - `PTP` = 16
+  - `RNDIS` = 32
+  - `MIDI` = 64
+  - `AUDIO_SOURCE` = 128
+  - `NCM` = 256
+#### Functions
+- `getDevices(): Array<Readonly<USBDevice>>`
+- `connectDevice(device: USBDevice): Readonly<USBDevicePipe>`
+- `hasRight(deviceName: string): boolean`
+- `requestRight(deviceName: string): Promise<boolean>`
+- `removeRight(deviceName: string): boolean`
+- `addRight(bundleName: string, deviceName: string): boolean`
+- `usbFunctionsFromString(funcs: string): number`
+- `usbFunctionsToString(funcs: FunctionType): string`
+- `setCurrentFunctions(funcs: FunctionType): Promise<void>`
+- `getCurrentFunctions(): FunctionType`
+- `getPorts(): Array<USBPort>`
+- `getSupportedModes(portId: number): PortModeType`
+- `setPortRoles(portId: number, powerRole: PowerRoleType, dataRole: DataRoleType): Promise<void>`
+- `claimInterface(pipe: USBDevicePipe, iface: USBInterface, force?: boolean): number`
+- `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number`
+- `setConfiguration(pipe: USBDevicePipe, config: USBConfiguration): number`
+- `setInterface(pipe: USBDevicePipe, iface: USBInterface): number`
+- `getRawDescriptor(pipe: USBDevicePipe): Uint8Array`
+- `getFileDescriptor(pipe: USBDevicePipe): number`
+- `controlTransfer(pipe: USBDevicePipe, controlparam: USBControlParams, timeout?: number): Promise<number>`
+- `bulkTransfer(
+    pipe: USBDevicePipe,
+    endpoint: USBEndpoint,
+    buffer: Uint8Array,
+    timeout?: number
+  ): Promise<number>`
+- `closePipe(pipe: USBDevicePipe): number`
+
+### faceAuth (@ohos.userIAM.faceAuth.d.ts)
+#### Classes
+- **FaceAuthManager**
+  - `setSurfaceId()`: void
+
+### userAuth (@ohos.userIAM.userAuth.d.ts)
+#### Interfaces
+- **Authenticator**
+  - `execute`: void
+  - `execute`: Promise<number>
+- **IUserAuthCallback**
+  - `onResult`: (result: number, extraInfo: AuthResult) => void
+  - `onAcquireInfo?`: (module: number, acquire: number, extraInfo: any) => void
+- **AuthResult**
+  - `token?`: Uint8Array
+  - `remainTimes?`: number
+  - `freezingTime?`: number
+- **AuthEvent**
+  - `callback`: void
+- **AuthResultInfo**
+  - `result`: number
+  - `token?`: Uint8Array
+  - `remainAttempts?`: number
+  - `lockoutDuration?`: number
+- **TipInfo**
+  - `module`: number
+  - `tip`: number
+- **AuthInstance**
+  - `on`: (name: AuthEventKey, callback: AuthEvent) => void
+  - `off`: (name: AuthEventKey) => void
+  - `start`: () => void
+  - `cancel`: () => void
+- **AuthParam**
+  - `challenge`: Uint8Array
+  - `authType`: UserAuthType[]
+  - `authTrustLevel`: AuthTrustLevel
+- **WidgetParam**
+  - `title`: string
+  - `navigationButtonText?`: string
+  - `windowMode?`: WindowModeType
+- **UserAuthResult**
+  - `result`: number
+  - `token?`: Uint8Array
+  - `authType?`: UserAuthType
+- **IAuthCallback**
+  - `onResult`: void
+- **UserAuthInstance**
+  - `on`: void
+  - `off`: void
+  - `start`: void
+  - `cancel`: void
+- **UserAuthWidgetMgr**
+  - `on`: void
+  - `off`: void
+- **IAuthWidgetCallback**
+  - `sendCommand`: void
+#### Enums
+- **AuthenticationResult**
+  - `NO_SUPPORT` = -1
+  - `SUCCESS` = 0
+  - `COMPARE_FAILURE` = 1
+  - `CANCELED` = 2
+  - `TIMEOUT` = 3
+  - `CAMERA_FAIL` = 4
+  - `BUSY` = 5
+  - `INVALID_PARAMETERS` = 6
+  - `LOCKED` = 7
+  - `NOT_ENROLLED` = 8
+  - `GENERAL_ERROR` = 100
+- **ResultCode**
+  - `SUCCESS` = 0
+  - `FAIL` = 1
+  - `GENERAL_ERROR` = 2
+  - `CANCELED` = 3
+  - `TIMEOUT` = 4
+  - `TYPE_NOT_SUPPORT` = 5
+  - `TRUST_LEVEL_NOT_SUPPORT` = 6
+  - `BUSY` = 7
+  - `INVALID_PARAMETERS` = 8
+  - `LOCKED` = 9
+  - `NOT_ENROLLED` = 10
+- **FaceTips**
+  - `FACE_AUTH_TIP_TOO_BRIGHT` = 1
+  - `FACE_AUTH_TIP_TOO_DARK` = 2
+  - `FACE_AUTH_TIP_TOO_CLOSE` = 3
+  - `FACE_AUTH_TIP_TOO_FAR` = 4
+  - `FACE_AUTH_TIP_TOO_HIGH` = 5
+  - `FACE_AUTH_TIP_TOO_LOW` = 6
+  - `FACE_AUTH_TIP_TOO_RIGHT` = 7
+  - `FACE_AUTH_TIP_TOO_LEFT` = 8
+  - `FACE_AUTH_TIP_TOO_MUCH_MOTION` = 9
+  - `FACE_AUTH_TIP_POOR_GAZE` = 10
+  - `FACE_AUTH_TIP_NOT_DETECTED` = 11
+- **FingerprintTips**
+  - `FINGERPRINT_AUTH_TIP_GOOD` = 0
+  - `FINGERPRINT_AUTH_TIP_DIRTY` = 1
+  - `FINGERPRINT_AUTH_TIP_INSUFFICIENT` = 2
+  - `FINGERPRINT_AUTH_TIP_PARTIAL` = 3
+  - `FINGERPRINT_AUTH_TIP_TOO_FAST` = 4
+  - `FINGERPRINT_AUTH_TIP_TOO_SLOW` = 5
+- **UserAuthType**
+  - `PIN` = 1
+  - `FACE` = 2
+  - `FINGERPRINT` = 4
+- **AuthTrustLevel**
+  - `ATL1` = 10000
+  - `ATL2` = 20000
+  - `ATL3` = 30000
+  - `ATL4` = 40000
+- **WindowModeType**
+  - `DIALOG_BOX` = 1
+  - `FULLSCREEN` = 2
+- **NoticeType**
+  - `WIDGET_NOTICE` = 1
+- **UserAuthResultCode**
+  - `SUCCESS` = 12500000
+  - `FAIL` = 12500001
+  - `GENERAL_ERROR` = 12500002
+  - `CANCELED` = 12500003
+  - `TIMEOUT` = 12500004
+  - `TYPE_NOT_SUPPORT` = 12500005
+  - `TRUST_LEVEL_NOT_SUPPORT` = 12500006
+  - `BUSY` = 12500007
+  - `LOCKED` = 12500009
+  - `NOT_ENROLLED` = 12500010
+  - `CANCELED_FROM_WIDGET` = 12500011
+#### Functions
+- `getAuthenticator(): Authenticator`
+- `getAvailableStatus(authType: UserAuthType, authTrustLevel: AuthTrustLevel): void`
+- `getAuthInstance(challenge: Uint8Array, authType: UserAuthType, authTrustLevel: AuthTrustLevel): AuthInstance`
+- `getUserAuthInstance(authParam: AuthParam, widgetParam: WidgetParam): UserAuthInstance`
+- `sendNotice(noticeType: NoticeType, eventData: string): void`
+- `getUserAuthWidgetMgr(version: number): UserAuthWidgetMgr`
+#### Classes
+- **UserAuth**
+  - `getVersion()`: number
+  - `getAvailableStatus()`: number
+  - `auth()`: Uint8Array
+  - `cancelAuth()`: number
+#### Type Aliases
+- `AuthType` = 'ALL' | 'FACE_ONLY'
+- `SecureLevel` = 'S1' | 'S2' | 'S3' | 'S4'
+- `AuthEventKey` = 'result' | 'tip'
+- `EventInfo` = AuthResultInfo | TipInfo
+
+### @ohos.util.ArrayList (@ohos.util.ArrayList.d.ts)
+
+### @ohos.util.Deque (@ohos.util.Deque.d.ts)
+
+### @ohos.util.HashMap (@ohos.util.HashMap.d.ts)
+
+### @ohos.util.HashSet (@ohos.util.HashSet.d.ts)
+
+### @ohos.util.LightWeightMap (@ohos.util.LightWeightMap.d.ts)
+
+### @ohos.util.LightWeightSet (@ohos.util.LightWeightSet.d.ts)
+
+### @ohos.util.LinkedList (@ohos.util.LinkedList.d.ts)
+
+### @ohos.util.List (@ohos.util.List.d.ts)
+
+### @ohos.util.PlainArray (@ohos.util.PlainArray.d.ts)
+
+### @ohos.util.Queue (@ohos.util.Queue.d.ts)
+
+### @ohos.util.Stack (@ohos.util.Stack.d.ts)
+
+### @ohos.util.TreeMap (@ohos.util.TreeMap.d.ts)
+
+### @ohos.util.TreeSet (@ohos.util.TreeSet.d.ts)
+
+### @ohos.util.Vector (@ohos.util.Vector.d.ts)
+
+### util (@ohos.util.d.ts)
+#### Interfaces
+- **TextDecoderOptions**
+  - `fatal?`: boolean
+  - `ignoreBOM?`: boolean
+- **DecodeWithStreamOptions**
+  - `stream?`: boolean
+- **EncodeIntoUint8ArrayInfo**
+  - `read`: number
+  - `written`: number
+- **ScopeComparable**
+  - `compareTo`: boolean
+#### Enums
+- **Type**
+#### Functions
+- `printf(format: string, ...args: Object[]): string`
+- `format(format: string, ...args: Object[]): string`
+- `getErrorString(errno: number): string`
+- `errnoToString(errno: number): string`
+- `callbackWrapper(original: Function): (err: Object, value: Object) => void`
+- `generateRandomUUID(entropyCache?: boolean): string`
+- `generateRandomBinaryUUID(entropyCache?: boolean): Uint8Array`
+- `parseUUID(uuid: string): Uint8Array`
+#### Classes
+- **TextDecoder**
+  - `create()`: TextDecoder
+  - `decode()`: string
+  - `decodeWithStream()`: string
+  - `readonly encoding`: string
+  - `readonly fatal`: boolean
+- **TextEncoder**
+  - `encode()`: Uint8Array
+  - `encodeInto()`: Uint8Array
+  - `encodeInto()`: { read: number; written: number }
+  - `encodeIntoUint8Array()`: EncodeIntoUint8ArrayInfo
+- **RationalNumber**
+  - `parseRationalNumber()`: RationalNumber
+  - `createRationalFromString()`: RationalNumber
+  - `compareTo()`: number
+  - `compare()`: number
+  - `equals()`: boolean
+  - `valueOf()`: number
+  - `getCommonDivisor()`: number
+  - `getCommonFactor()`: number
+  - `getDenominator()`: number
+  - `getNumerator()`: number
+  - `isFinite()`: boolean
+  - `isNaN()`: boolean
+  - `isZero()`: boolean
+  - `toString()`: string
+- **Scope**
+  - `toString()`: string
+  - `intersect()`: Scope
+  - `intersect()`: Scope
+  - `getUpper()`: ScopeType
+  - `getLower()`: ScopeType
+  - `expand()`: Scope
+  - `expand()`: Scope
+  - `expand()`: Scope
+  - `contains()`: boolean
+  - `contains()`: boolean
+  - `clamp()`: ScopeType
+- **ScopeHelper**
+  - `toString()`: string
+  - `intersect()`: ScopeHelper
+  - `intersect()`: ScopeHelper
+  - `getUpper()`: ScopeType
+  - `getLower()`: ScopeType
+  - `expand()`: ScopeHelper
+  - `expand()`: ScopeHelper
+  - `expand()`: ScopeHelper
+  - `contains()`: boolean
+  - `contains()`: boolean
+  - `clamp()`: ScopeType
+- **Base64**
+  - `encodeSync()`: Uint8Array
+  - `encodeToStringSync()`: string
+  - `decodeSync()`: Uint8Array
+  - `encode()`: Promise<Uint8Array>
+  - `encodeToString()`: Promise<string>
+  - `decode()`: Promise<Uint8Array>
+- **Base64Helper**
+  - `encodeSync()`: Uint8Array
+  - `encodeToStringSync()`: string
+  - `decodeSync()`: Uint8Array
+  - `encode()`: Promise<Uint8Array>
+  - `encodeToString()`: Promise<string>
+  - `decode()`: Promise<Uint8Array>
+- **types**
+  - `isAnyArrayBuffer()`: boolean
+  - `isArrayBufferView()`: boolean
+  - `isArgumentsObject()`: boolean
+  - `isArrayBuffer()`: boolean
+  - `isAsyncFunction()`: boolean
+  - `isBigInt64Array()`: boolean
+  - `isBigUint64Array()`: boolean
+  - `isBooleanObject()`: boolean
+  - `isBoxedPrimitive()`: boolean
+  - `isDataView()`: boolean
+  - `isDate()`: boolean
+  - `isExternal()`: boolean
+  - `isFloat32Array()`: boolean
+  - `isFloat64Array()`: boolean
+  - `isGeneratorFunction()`: boolean
+  - `isGeneratorObject()`: boolean
+  - `isInt8Array()`: boolean
+  - `isInt16Array()`: boolean
+  - `isInt32Array()`: boolean
+  - `isMap()`: boolean
+  - `isMapIterator()`: boolean
+  - `isModuleNamespaceObject()`: boolean
+  - `isNativeError()`: boolean
+  - `isNumberObject()`: boolean
+  - `isPromise()`: boolean
+  - `isProxy()`: boolean
+  - `isRegExp()`: boolean
+  - `isSet()`: boolean
+  - `isSetIterator()`: boolean
+  - `isSharedArrayBuffer()`: boolean
+  - `isStringObject()`: boolean
+  - `isSymbolObject()`: boolean
+  - `isTypedArray()`: boolean
+  - `isUint8Array()`: boolean
+  - `isUint8ClampedArray()`: boolean
+  - `isUint16Array()`: boolean
+  - `isUint32Array()`: boolean
+  - `isWeakMap()`: boolean
+  - `isWeakSet()`: boolean
+- **Aspect**
+  - `addBefore()`: void
+  - `addAfter()`: void
+  - `replace()`: void
+#### Type Aliases
+- `ScopeType` = ScopeComparable | number
+
+### vibrator (@ohos.vibrator.d.ts)
+#### Interfaces
+- **VibrateAttribute**
+  - `id?`: number
+  - `usage`: Usage
+- **VibrateTime**
+  - `type`: 'time'
+- **VibratePreset**
+  - `type`: 'preset'
+  - `effectId`: string
+  - `count`: number
+- **VibrateFromFile**
+  - `type`: 'file'
+  - `hapticFd`: HapticFileDescriptor
+- **HapticFileDescriptor**
+  - `fd`: number
+  - `offset?`: number
+  - `length?`: number
+#### Enums
+- **EffectId**
+  - `EFFECT_CLOCK_TIMER` = 'haptic.clock.timer'
+- **VibratorStopMode**
+  - `VIBRATOR_STOP_MODE_TIME` = 'time'
+  - `VIBRATOR_STOP_MODE_PRESET` = 'preset'
+#### Functions
+- `vibrate(duration: number, callback?: AsyncCallback<void>): void`
+- `vibrate(duration: number): Promise<void>`
+- `vibrate(effectId: EffectId): Promise<void>`
+- `vibrate(effectId: EffectId, callback?: AsyncCallback<void>): void`
+- `startVibration(effect: VibrateEffect, attribute: VibrateAttribute, callback: AsyncCallback<void>): void`
+- `startVibration(effect: VibrateEffect, attribute: VibrateAttribute): Promise<void>`
+- `stopVibration(stopMode: VibratorStopMode): Promise<void>`
+- `stopVibration(stopMode: VibratorStopMode, callback: AsyncCallback<void>): void`
+- `stopVibration(callback: AsyncCallback<void>): void`
+- `stopVibration(): Promise<void>`
+- `isSupportEffect(effectId: string, callback: AsyncCallback<boolean>): void`
+- `isSupportEffect(effectId: string): Promise<boolean>`
+- `stop(stopMode: VibratorStopMode): Promise<void>`
+- `stop(stopMode: VibratorStopMode, callback?: AsyncCallback<void>): void`
+#### Type Aliases
+- `Usage` = 'unknown' | 'alarm' | 'ring' | 'notification' | 'communication' |
+  'touch' | 'media' | 'physicalFeedback' | 'simulateReality'
+- `VibrateEffect` = VibrateTime | VibratePreset | VibrateFromFile
+
+### wallpaper (@ohos.wallpaper.d.ts)
+#### Interfaces
+- **RgbaColor**
+  - `red`: number
+  - `green`: number
+  - `blue`: number
+  - `alpha`: number
+#### Enums
+- **WallpaperType**
+- **WallpaperResourceType**
+#### Functions
+- `getColors(wallpaperType: WallpaperType, callback: AsyncCallback<Array<RgbaColor>>): void`
+- `getColors(wallpaperType: WallpaperType): Promise<Array<RgbaColor>>`
+- `getColorsSync(wallpaperType: WallpaperType): Array<RgbaColor>`
+- `getId(wallpaperType: WallpaperType, callback: AsyncCallback<number>): void`
+- `getId(wallpaperType: WallpaperType): Promise<number>`
+- `getFile(wallpaperType: WallpaperType, callback: AsyncCallback<number>): void`
+- `getFile(wallpaperType: WallpaperType): Promise<number>`
+- `getMinHeight(callback: AsyncCallback<number>): void`
+- `getMinHeight(): Promise<number>`
+- `getMinHeightSync(): number`
+- `getMinWidth(callback: AsyncCallback<number>): void`
+- `getMinWidth(): Promise<number>`
+- `getMinWidthSync(): number`
+- `isChangePermitted(callback: AsyncCallback<boolean>): void`
+- `isChangePermitted(): Promise<boolean>`
+- `isOperationAllowed(callback: AsyncCallback<boolean>): void`
+- `isOperationAllowed(): Promise<boolean>`
+- `reset(wallpaperType: WallpaperType, callback: AsyncCallback<void>): void`
+- `reset(wallpaperType: WallpaperType): Promise<void>`
+- `restore(wallpaperType: WallpaperType, callback: AsyncCallback<void>): void`
+- `restore(wallpaperType: WallpaperType): Promise<void>`
+- `setWallpaper(
+    source: string | image.PixelMap,
+    wallpaperType: WallpaperType,
+    callback: AsyncCallback<void>
+  ): void`
+- `setWallpaper(source: string | image.PixelMap, wallpaperType: WallpaperType): Promise<void>`
+- `setImage(source: string | image.PixelMap, wallpaperType: WallpaperType, callback: AsyncCallback<void>): void`
+- `setImage(source: string | image.PixelMap, wallpaperType: WallpaperType): Promise<void>`
+- `getPixelMap(wallpaperType: WallpaperType, callback: AsyncCallback<image.PixelMap>): void`
+- `getPixelMap(wallpaperType: WallpaperType): Promise<image.PixelMap>`
+- `getImage(wallpaperType: WallpaperType, callback: AsyncCallback<image.PixelMap>): void`
+- `getImage(wallpaperType: WallpaperType): Promise<image.PixelMap>`
+- `setVideo(source: string, wallpaperType: WallpaperType, callback: AsyncCallback<void>): void`
+- `setVideo(source: string, wallpaperType: WallpaperType): Promise<void>`
+- `setCustomWallpaper(source: string, wallpaperType: WallpaperType, callback: AsyncCallback<void>): void`
+- `setCustomWallpaper(source: string, wallpaperType: WallpaperType): Promise<void>`
+
+### wantAgent (@ohos.wantAgent.d.ts)
+#### Interfaces
+- **CompleteData**
+  - `info`: WantAgent
+  - `want`: Want
+  - `finalCode`: number
+  - `finalData`: string
+  - `extraInfo?`: { [key: string]: any }
+#### Enums
+- **WantAgentFlags**
+  - `ONE_TIME_FLAG` = 0
+- **OperationType**
+  - `UNKNOWN_TYPE` = 0
+#### Functions
+- `getBundleName(agent: WantAgent, callback: AsyncCallback<string>): void`
+- `getBundleName(agent: WantAgent): Promise<string>`
+- `getUid(agent: WantAgent, callback: AsyncCallback<number>): void`
+- `getUid(agent: WantAgent): Promise<number>`
+- `getWant(agent: WantAgent, callback: AsyncCallback<Want>): void`
+- `getWant(agent: WantAgent): Promise<Want>`
+- `cancel(agent: WantAgent, callback: AsyncCallback<void>): void`
+- `cancel(agent: WantAgent): Promise<void>`
+- `trigger(agent: WantAgent, triggerInfo: TriggerInfo, callback?: Callback<CompleteData>): void`
+- `equal(agent: WantAgent, otherAgent: WantAgent, callback: AsyncCallback<boolean>): void`
+- `equal(agent: WantAgent, otherAgent: WantAgent): Promise<boolean>`
+- `getWantAgent(info: WantAgentInfo, callback: AsyncCallback<WantAgent>): void`
+- `getWantAgent(info: WantAgentInfo): Promise<WantAgent>`
+#### Type Aliases
+- `WantAgent` = object
+
+### webview (@ohos.web.webview.d.ts)
+#### Interfaces
+- **WebHeader**
+  - `headerKey`: string
+  - `headerValue`: string
+- **HitTestValue**
+  - `type`: WebHitTestType
+  - `extra`: string
+- **WebCustomScheme**
+  - `schemeName`: string
+  - `isSupportCORS`: boolean
+  - `isSupportFetch`: boolean
+- **WebStorageOrigin**
+  - `origin`: string
+  - `usage`: number
+  - `quota`: number
+- **WebMessagePort**
+  - `isExtentionType?`: boolean
+  - `close`: void
+  - `postMessageEvent`: void
+  - `postMessageEventExt`: void
+- **HistoryItem**
+  - `icon`: image.PixelMap
+  - `historyUrl`: string
+  - `historyRawUrl`: string
+  - `title`: string
+- **BackForwardList**
+  - `currentIndex`: number
+  - `size`: number
+  - `getItemAtIndex`: HistoryItem
+#### Enums
+- **WebHitTestType**
+  - `src` = http.
+  - `src` = http.
+  - `src` = http + HTML::img.
+  - `src` = http + HTML::img.
+- **SecureDnsMode**
+  - `OFF` = 0
+  - `AUTO` = 1
+  - `SECURE_ONLY` = 2
+- **SecurityLevel**
+  - `NONE` = 0
+  - `SECURE` = 1
+  - `WARNING` = 2
+  - `DANGEROUS` = 3
+- **WebMessageType**
+- **JsMessageType**
+- **WebDownloadState**
+  - `IN_PROGRESS` = 0
+- **WebDownloadErrorCode**
+  - `ERROR_UNKNOWN` = 0
+  - `FILE_FAILED` = 1
+  - `FILE_ACCESS_DENIED` = 2
+  - `FILE_NO_SPACE` = 3
+  - `FILE_NAME_TOO_LONG` = 5
+  - `FILE_TOO_LARGE` = 6
+  - `FILE_TRANSIENT_ERROR` = 10
+  - `FILE_BLOCKED` = 11
+  - `FILE_TOO_SHORT` = 13
+  - `FILE_HASH_MISMATCH` = 14
+  - `FILE_SAME_AS_SOURCE` = 15
+  - `NETWORK_FAILED` = 20
+  - `NETWORK_TIMEOUT` = 21
+  - `NETWORK_DISCONNECTED` = 22
+  - `NETWORK_SERVER_DOWN` = 23
+  - `NETWORK_INVALID_REQUEST` = 24
+  - `SERVER_FAILED` = 30
+  - `SERVER_NO_RANGE` = 31
+  - `SERVER_BAD_CONTENT` = 33
+  - `SERVER_UNAUTHORIZED` = 34
+  - `SERVER_CERT_PROBLEM` = 35
+  - `SERVER_FORBIDDEN` = 36
+  - `SERVER_UNREACHABLE` = 37
+  - `SERVER_CONTENT_LENGTH_MISMATCH` = 38
+  - `SERVER_CROSS_ORIGIN_REDIRECT` = 39
+  - `USER_CANCELED` = 40
+  - `USER_SHUTDOWN` = 41
+  - `CRASH` = 50
+#### Functions
+- `once(type: string, callback: Callback<void>): void`
+#### Classes
+- **WebStorage**
+  - `deleteAllData()`: void
+  - `deleteOrigin()`: void
+  - `getOrigins()`: Promise<Array<WebStorageOrigin>>
+  - `getOrigins()`: void
+  - `getOriginQuota()`: Promise<number>
+  - `getOriginQuota()`: void
+  - `getOriginUsage()`: Promise<number>
+  - `getOriginUsage()`: void
+- **WebDataBase**
+  - `existHttpAuthCredentials()`: boolean
+  - `deleteHttpAuthCredentials()`: void
+  - `getHttpAuthCredentials()`: Array<string>
+  - `saveHttpAuthCredentials()`: void
+- **GeolocationPermissions**
+  - `allowGeolocation()`: void
+  - `deleteGeolocation()`: void
+  - `deleteAllGeolocation()`: void
+  - `getAccessibleGeolocation()`: Promise<boolean>
+  - `getAccessibleGeolocation()`: void
+  - `getStoredGeolocation()`: Promise<Array<string>>
+  - `getStoredGeolocation()`: void
+- **WebCookieManager**
+  - `getCookie()`: string
+  - `fetchCookieSync()`: string
+  - `fetchCookie()`: Promise<string>
+  - `fetchCookie()`: void
+  - `setCookie()`: void
+  - `configCookieSync()`: void
+  - `configCookie()`: Promise<void>
+  - `configCookie()`: void
+  - `saveCookieAsync()`: Promise<void>
+  - `saveCookieAsync()`: void
+  - `isCookieAllowed()`: boolean
+  - `putAcceptCookieEnabled()`: void
+  - `isThirdPartyCookieAllowed()`: boolean
+  - `putAcceptThirdPartyCookieEnabled()`: void
+  - `existCookie()`: boolean
+  - `deleteEntireCookie()`: void
+  - `clearAllCookiesSync()`: void
+  - `clearAllCookies()`: Promise<void>
+  - `clearAllCookies()`: void
+  - `deleteSessionCookie()`: void
+  - `clearSessionCookieSync()`: void
+  - `clearSessionCookie()`: Promise<void>
+  - `clearSessionCookie()`: void
+- **WebMessageExt**
+  - `getType()`: WebMessageType
+  - `getString()`: string
+  - `getNumber()`: number
+  - `getBoolean()`: boolean
+  - `getArrayBuffer()`: ArrayBuffer
+  - `getArray()`: Array<string | number | boolean>
+  - `getError()`: Error
+  - `setType()`: void
+  - `setString()`: void
+  - `setNumber()`: void
+  - `setBoolean()`: void
+  - `setArrayBuffer()`: void
+  - `setArray()`: void
+  - `setError()`: void
+- **JsMessageExt**
+  - `getType()`: JsMessageType
+  - `getString()`: string
+  - `getNumber()`: number
+  - `getBoolean()`: boolean
+  - `getArrayBuffer()`: ArrayBuffer
+  - `getArray()`: Array<string | number | boolean>
+- **WebviewController**
+  - `initializeWebEngine()`: void
+  - `setHttpDns()`: void
+  - `setWebDebuggingAccess()`: void
+  - `enableSafeBrowsing()`: void
+  - `isSafeBrowsingEnabled()`: boolean
+  - `accessForward()`: boolean
+  - `accessBackward()`: boolean
+  - `accessStep()`: boolean
+  - `forward()`: void
+  - `backward()`: void
+  - `clearHistory()`: void
+  - `onActive()`: void
+  - `onInactive()`: void
+  - `refresh()`: void
+  - `loadData()`: void
+  - `loadUrl()`: void
+  - `getHitTest()`: WebHitTestType
+  - `storeWebArchive()`: Promise<string>
+  - `storeWebArchive()`: void
+  - `zoom()`: void
+  - `zoomIn()`: void
+  - `zoomOut()`: void
+  - `getHitTestValue()`: HitTestValue
+  - `getWebId()`: number
+  - `getUserAgent()`: string
+  - `getTitle()`: string
+  - `getPageHeight()`: number
+  - `backOrForward()`: void
+  - `requestFocus()`: void
+  - `createWebMessagePorts()`: Array<WebMessagePort>
+  - `postMessage()`: void
+  - `stop()`: void
+  - `registerJavaScriptProxy()`: void
+  - `deleteJavaScriptRegister()`: void
+  - `searchAllAsync()`: void
+  - `clearMatches()`: void
+  - `searchNext()`: void
+  - `clearSslCache()`: void
+  - `clearClientAuthenticationCache()`: void
+  - `runJavaScript()`: Promise<string>
+  - `runJavaScript()`: void
+  - `runJavaScriptExt()`: Promise<JsMessageExt>
+  - `runJavaScriptExt()`: void
+  - `getUrl()`: string
+  - `pageUp()`: void
+  - `pageDown()`: void
+  - `getOriginalUrl()`: string
+  - `getFavicon()`: image.PixelMap
+  - `setNetworkAvailable()`: void
+  - `hasImage()`: Promise<boolean>
+  - `hasImage()`: void
+  - `getBackForwardEntries()`: BackForwardList
+  - `removeCache()`: void
+  - `scrollTo()`: void
+  - `scrollBy()`: void
+  - `slideScroll()`: void
+  - `serializeWebState()`: Uint8Array
+  - `restoreWebState()`: void
+  - `customizeSchemes()`: void
+  - `getCertificate()`: Promise<Array<cert.X509Cert>>
+  - `getCertificate()`: void
+  - `setAudioMuted()`: void
+  - `prefetchPage()`: void
+  - `prepareForPageLoad()`: void
+  - `setCustomUserAgent()`: void
+  - `getCustomUserAgent()`: string
+  - `setConnectionTimeout()`: void
+  - `setDownloadDelegate()`: void
+  - `startDownload()`: void
+  - `postUrl()`: void
+  - `createWebPrintDocumentAdapter()`: print.PrintDocumentAdapter
+  - `getSecurityLevel()`: SecurityLevel
+  - `isIncognitoMode()`: boolean
+- **WebDownloadItem**
+  - `getGuid()`: string
+  - `getCurrentSpeed()`: number
+  - `getPercentComplete()`: number
+  - `getTotalBytes()`: number
+  - `getState()`: WebDownloadState
+  - `getLastErrorCode()`: WebDownloadErrorCode
+  - `getMethod()`: string
+  - `getMimeType()`: string
+  - `getUrl()`: string
+  - `getSuggestedFileName()`: string
+  - `start()`: void
+  - `cancel()`: void
+  - `pause()`: void
+  - `resume()`: void
+  - `getReceivedBytes()`: number
+  - `getFullPath()`: string
+  - `serialize()`: Uint8Array
+  - `deserialize()`: WebDownloadItem
+- **WebDownloadDelegate**
+  - `onBeforeDownload()`: void
+  - `onDownloadUpdated()`: void
+  - `onDownloadFinish()`: void
+  - `onDownloadFailed()`: void
+- **WebDownloadManager**
+  - `setDownloadDelegate()`: void
+  - `resumeDownload()`: void
+#### Type Aliases
+- `WebMessage` = ArrayBuffer | string
+
+### wifi (@ohos.wifi.d.ts)
+#### Interfaces
+- **WifiDeviceConfig**
+  - `ssid`: string
+  - `bssid`: string
+  - `preSharedKey`: string
+  - `isHiddenSsid`: boolean
+  - `securityType`: WifiSecurityType
+  - `creatorUid`: number
+  - `disableReason`: number
+  - `netId`: number
+  - `randomMacType`: number
+  - `randomMacAddr`: string
+  - `ipType`: IpType
+  - `staticIp`: IpConfig
+- **IpConfig**
+  - `ipAddress`: number
+  - `gateway`: number
+  - `dnsServers`: number[]
+  - `domains`: Array<string>
+- **WifiScanInfo**
+  - `ssid`: string
+  - `bssid`: string
+  - `capabilities`: string
+  - `securityType`: WifiSecurityType
+  - `rssi`: number
+  - `band`: number
+  - `frequency`: number
+  - `channelWidth`: number
+  - `timestamp`: number
+- **WifiLinkedInfo**
+  - `ssid`: string
+  - `bssid`: string
+  - `networkId`: number
+  - `rssi`: number
+  - `band`: number
+  - `linkSpeed`: number
+  - `frequency`: number
+  - `isHidden`: boolean
+  - `isRestricted`: boolean
+  - `chload`: number
+  - `snr`: number
+  - `macAddress`: string
+  - `ipAddress`: number
+  - `suppState`: SuppState
+  - `connState`: ConnState
+- **IpInfo**
+  - `ipAddress`: number
+  - `gateway`: number
+  - `netmask`: number
+  - `primaryDns`: number
+  - `secondDns`: number
+  - `serverIp`: number
+  - `leaseDuration`: number
+- **HotspotConfig**
+  - `ssid`: string
+  - `securityType`: WifiSecurityType
+  - `band`: number
+  - `preSharedKey`: string
+  - `maxConn`: number
+- **StationInfo**
+  - `name`: string
+  - `macAddress`: string
+  - `ipAddress`: string
+- **WifiP2pDevice**
+  - `deviceName`: string
+  - `deviceAddress`: string
+  - `primaryDeviceType`: string
+  - `deviceStatus`: P2pDeviceStatus
+  - `groupCapabilitys`: number
+- **WifiP2PConfig**
+  - `deviceAddress`: string
+  - `netId`: number
+  - `passphrase`: string
+  - `groupName`: string
+  - `goBand`: GroupOwnerBand
+- **WifiP2pGroupInfo**
+  - `isP2pGo`: boolean
+  - `ownerInfo`: WifiP2pDevice
+  - `passphrase`: string
+  - `interface`: string
+  - `groupName`: string
+  - `networkId`: number
+  - `frequency`: number
+  - `clientDevices`: WifiP2pDevice[]
+  - `goIpAddress`: string
+- **WifiP2pLinkedInfo**
+  - `connectState`: P2pConnectState
+  - `isGroupOwner`: boolean
+  - `groupOwnerAddr`: string
+#### Enums
+- **WifiSecurityType**
+  - `WIFI_SEC_TYPE_INVALID` = 0
+  - `WIFI_SEC_TYPE_OPEN` = 1
+  - `WIFI_SEC_TYPE_WEP` = 2
+  - `WIFI_SEC_TYPE_PSK` = 3
+  - `WIFI_SEC_TYPE_SAE` = 4
+- **IpType**
+- **SuppState**
+- **ConnState**
+- **P2pConnectState**
+  - `DISCONNECTED` = 0
+  - `CONNECTED` = 1
+- **P2pDeviceStatus**
+  - `CONNECTED` = 0
+  - `INVITED` = 1
+  - `FAILED` = 2
+  - `AVAILABLE` = 3
+  - `UNAVAILABLE` = 4
+- **GroupOwnerBand**
+  - `GO_BAND_AUTO` = 0
+  - `GO_BAND_2GHZ` = 1
+  - `GO_BAND_5GHZ` = 2
+#### Functions
+- `enableWifi(): boolean`
+- `disableWifi(): boolean`
+- `isWifiActive(): boolean`
+- `scan(): boolean`
+- `getScanInfos(): Promise<Array<WifiScanInfo>>`
+- `getScanInfos(callback: AsyncCallback<Array<WifiScanInfo>>): void`
+- `addDeviceConfig(config: WifiDeviceConfig): Promise<number>`
+- `addDeviceConfig(config: WifiDeviceConfig, callback: AsyncCallback<number>): void`
+- `addUntrustedConfig(config: WifiDeviceConfig): Promise<boolean>`
+- `addUntrustedConfig(config: WifiDeviceConfig, callback: AsyncCallback<boolean>): void`
+- `removeUntrustedConfig(config: WifiDeviceConfig): Promise<boolean>`
+- `removeUntrustedConfig(config: WifiDeviceConfig, callback: AsyncCallback<boolean>): void`
+- `connectToNetwork(networkId: number): boolean`
+- `connectToDevice(config: WifiDeviceConfig): boolean`
+- `disconnect(): boolean`
+- `getSignalLevel(rssi: number, band: number): number`
+- `getLinkedInfo(): Promise<WifiLinkedInfo>`
+- `getLinkedInfo(callback: AsyncCallback<WifiLinkedInfo>): void`
+- `isConnected(): boolean`
+- `getSupportedFeatures(): number`
+- `isFeatureSupported(featureId: number): boolean`
+- `getDeviceMacAddress(): string[]`
+- `getIpInfo(): IpInfo`
+- `getCountryCode(): string`
+- `reassociate(): boolean`
+- `reconnect(): boolean`
+- `getDeviceConfigs(): Array<WifiDeviceConfig>`
+- `updateNetwork(config: WifiDeviceConfig): number`
+- `disableNetwork(netId: number): boolean`
+- `removeAllNetwork(): boolean`
+- `removeDevice(id: number): boolean`
+- `enableHotspot(): boolean`
+- `disableHotspot(): boolean`
+- `isHotspotDualBandSupported(): boolean`
+- `isHotspotActive(): boolean`
+- `setHotspotConfig(config: HotspotConfig): boolean`
+- `getHotspotConfig(): HotspotConfig`
+- `getStations(): Array<StationInfo>`
+- `getP2pLinkedInfo(): Promise<WifiP2pLinkedInfo>`
+- `getP2pLinkedInfo(callback: AsyncCallback<WifiP2pLinkedInfo>): void`
+- `getCurrentGroup(): Promise<WifiP2pGroupInfo>`
+- `getCurrentGroup(callback: AsyncCallback<WifiP2pGroupInfo>): void`
+- `getP2pPeerDevices(): Promise<WifiP2pDevice[]>`
+- `getP2pPeerDevices(callback: AsyncCallback<WifiP2pDevice[]>): void`
+- `createGroup(config: WifiP2PConfig): boolean`
+- `removeGroup(): boolean`
+- `p2pConnect(config: WifiP2PConfig): boolean`
+- `p2pCancelConnect(): boolean`
+- `startDiscoverDevices(): boolean`
+- `stopDiscoverDevices(): boolean`
+- `deletePersistentGroup(netId: number): boolean`
+- `setDeviceName(devName: string): boolean`
+- `on(type: 'wifiStateChange', callback: Callback<number>): void`
+- `off(type: 'wifiStateChange', callback?: Callback<number>): void`
+- `on(type: 'wifiConnectionChange', callback: Callback<number>): void`
+- `off(type: 'wifiConnectionChange', callback?: Callback<number>): void`
+- `on(type: 'wifiScanStateChange', callback: Callback<number>): void`
+- `off(type: 'wifiScanStateChange', callback?: Callback<number>): void`
+- `on(type: 'wifiRssiChange', callback: Callback<number>): void`
+- `off(type: 'wifiRssiChange', callback?: Callback<number>): void`
+- `on(type: 'streamChange', callback: Callback<number>): void`
+- `off(type: 'streamChange', callback?: Callback<number>): void`
+- `on(type: 'hotspotStateChange', callback: Callback<number>): void`
+- `off(type: 'hotspotStateChange', callback?: Callback<number>): void`
+- `on(type: 'hotspotStaJoin', callback: Callback<StationInfo>): void`
+- `off(type: 'hotspotStaJoin', callback?: Callback<StationInfo>): void`
+- `on(type: 'hotspotStaLeave', callback: Callback<StationInfo>): void`
+- `off(type: 'hotspotStaLeave', callback?: Callback<StationInfo>): void`
+- `on(type: 'p2pStateChange', callback: Callback<number>): void`
+- `off(type: 'p2pStateChange', callback?: Callback<number>): void`
+- `on(type: 'p2pConnectionChange', callback: Callback<WifiP2pLinkedInfo>): void`
+- `off(type: 'p2pConnectionChange', callback?: Callback<WifiP2pLinkedInfo>): void`
+- `on(type: 'p2pDeviceChange', callback: Callback<WifiP2pDevice>): void`
+- `off(type: 'p2pDeviceChange', callback?: Callback<WifiP2pDevice>): void`
+- `on(type: 'p2pPeerDeviceChange', callback: Callback<WifiP2pDevice[]>): void`
+- `off(type: 'p2pPeerDeviceChange', callback?: Callback<WifiP2pDevice[]>): void`
+- `on(type: 'p2pPersistentGroupChange', callback: Callback<void>): void`
+- `off(type: 'p2pPersistentGroupChange', callback?: Callback<void>): void`
+- `on(type: 'p2pDiscoveryChange', callback: Callback<number>): void`
+- `off(type: 'p2pDiscoveryChange', callback?: Callback<number>): void`
+
+### wifiManager (@ohos.wifiManager.d.ts)
+#### Interfaces
+- **WifiProxyConfig**
+  - `proxyMethod?`: ProxyMethod
+  - `pacWebAddress?`: string
+  - `serverHostName?`: string
+  - `serverPort?`: number
+  - `exclusionObjects?`: string
+- **WifiEapConfig**
+  - `eapMethod`: EapMethod
+  - `phase2Method`: Phase2Method
+  - `identity`: string
+  - `anonymousIdentity`: string
+  - `password`: string
+  - `caCertAlias`: string
+  - `caPath`: string
+  - `clientCertAlias`: string
+  - `certEntry`: Uint8Array
+  - `certPassword`: string
+  - `altSubjectMatch`: string
+  - `domainSuffixMatch`: string
+  - `realm`: string
+  - `plmn`: string
+  - `eapSubId`: number
+- **WifiDeviceConfig**
+  - `ssid`: string
+  - `bssid?`: string
+  - `bssidType?`: DeviceAddressType
+  - `preSharedKey`: string
+  - `isHiddenSsid?`: boolean
+  - `securityType`: WifiSecurityType
+  - `creatorUid?`: number
+  - `disableReason?`: number
+  - `netId?`: number
+  - `randomMacType?`: number
+  - `randomMacAddr?`: string
+  - `ipType?`: IpType
+  - `staticIp?`: IpConfig
+  - `eapConfig?`: WifiEapConfig
+  - `proxyConfig?`: WifiProxyConfig
+- **IpConfig**
+  - `ipAddress`: number
+  - `gateway`: number
+  - `prefixLength`: number
+  - `dnsServers`: number[]
+  - `domains`: Array<string>
+- **WifiInfoElem**
+  - `eid`: number
+  - `content`: Uint8Array
+- **WifiScanInfo**
+  - `ssid`: string
+  - `bssid`: string
+  - `bssidType`: DeviceAddressType
+  - `capabilities`: string
+  - `securityType`: WifiSecurityType
+  - `rssi`: number
+  - `band`: number
+  - `frequency`: number
+  - `channelWidth`: number
+  - `centerFrequency0`: number
+  - `centerFrequency1`: number
+  - `infoElems`: Array<WifiInfoElem>
+  - `timestamp`: number
+- **WifiLinkedInfo**
+  - `ssid`: string
+  - `bssid`: string
+  - `networkId`: number
+  - `rssi`: number
+  - `band`: number
+  - `linkSpeed`: number
+  - `rxLinkSpeed`: number
+  - `maxSupportedTxLinkSpeed`: number
+  - `maxSupportedRxLinkSpeed`: number
+  - `frequency`: number
+  - `isHidden`: boolean
+  - `isRestricted`: boolean
+  - `chload`: number
+  - `snr`: number
+  - `macType`: number
+  - `macAddress`: string
+  - `ipAddress`: number
+  - `suppState`: SuppState
+  - `connState`: ConnState
+  - `channelWidth`: WifiChannelWidth
+  - `wifiStandard`: WifiStandard
+- **IpInfo**
+  - `ipAddress`: number
+  - `gateway`: number
+  - `netmask`: number
+  - `primaryDns`: number
+  - `secondDns`: number
+  - `serverIp`: number
+  - `leaseDuration`: number
+- **Ipv6Info**
+  - `linkIpv6Address`: string
+  - `globalIpv6Address`: string
+  - `randomGlobalIpv6Address`: string
+  - `gateway`: string
+  - `netmask`: string
+  - `primaryDNS`: string
+  - `secondDNS`: string
+- **HotspotConfig**
+  - `ssid`: string
+  - `securityType`: WifiSecurityType
+  - `band`: number
+  - `channel?`: number
+  - `preSharedKey`: string
+  - `maxConn`: number
+  - `ipAddress?`: string
+- **StationInfo**
+  - `name`: string
+  - `macAddress`: string
+  - `macAddressType?`: DeviceAddressType
+  - `ipAddress`: string
+- **WifiP2pDevice**
+  - `deviceName`: string
+  - `deviceAddress`: string
+  - `deviceAddressType?`: DeviceAddressType
+  - `primaryDeviceType`: string
+  - `deviceStatus`: P2pDeviceStatus
+  - `groupCapabilities`: number
+- **WifiP2PConfig**
+  - `deviceAddress`: string
+  - `deviceAddressType?`: DeviceAddressType
+  - `netId`: number
+  - `passphrase`: string
+  - `groupName`: string
+  - `goBand`: GroupOwnerBand
+- **WifiP2pGroupInfo**
+  - `isP2pGo`: boolean
+  - `ownerInfo`: WifiP2pDevice
+  - `passphrase`: string
+  - `interface`: string
+  - `groupName`: string
+  - `networkId`: number
+  - `frequency`: number
+  - `clientDevices`: WifiP2pDevice[]
+  - `goIpAddress`: string
+- **WifiP2pLinkedInfo**
+  - `connectState`: P2pConnectState
+  - `isGroupOwner`: boolean
+  - `groupOwnerAddr`: string
+#### Enums
+- **DeviceAddressType**
+- **EapMethod**
+- **Phase2Method**
+- **DisconnectedReason**
+  - `DISC_REASON_DEFAULT` = 0
+  - `DISC_REASON_WRONG_PWD` = 1
+  - `DISC_REASON_CONNECTION_FULL` = 2
+- **ProxyMethod**
+  - `METHOD_NONE` = 0
+  - `METHOD_AUTO` = 1
+  - `METHOD_MANUAL` = 2
+- **WifiChannelWidth**
+  - `WIDTH_20MHZ` = 0
+  - `WIDTH_40MHZ` = 1
+  - `WIDTH_80MHZ` = 2
+  - `WIDTH_160MHZ` = 3
+  - `WIDTH_80MHZ_PLUS` = 4
+- **WifiSecurityType**
+  - `WIFI_SEC_TYPE_INVALID` = 0
+  - `WIFI_SEC_TYPE_OPEN` = 1
+  - `WIFI_SEC_TYPE_WEP` = 2
+  - `WIFI_SEC_TYPE_PSK` = 3
+  - `WIFI_SEC_TYPE_SAE` = 4
+  - `WIFI_SEC_TYPE_EAP` = 5
+  - `WIFI_SEC_TYPE_EAP_SUITE_B` = 6
+  - `WIFI_SEC_TYPE_OWE` = 7
+  - `WIFI_SEC_TYPE_WAPI_CERT` = 8
+  - `WIFI_SEC_TYPE_WAPI_PSK` = 9
+- **WifiBandType**
+- **WifiStandard**
+- **IpType**
+- **SuppState**
+- **ConnState**
+- **P2pConnectState**
+  - `DISCONNECTED` = 0
+  - `CONNECTED` = 1
+- **P2pDeviceStatus**
+  - `CONNECTED` = 0
+  - `INVITED` = 1
+  - `FAILED` = 2
+  - `AVAILABLE` = 3
+  - `UNAVAILABLE` = 4
+- **GroupOwnerBand**
+  - `GO_BAND_AUTO` = 0
+  - `GO_BAND_2GHZ` = 1
+  - `GO_BAND_5GHZ` = 2
+#### Functions
+- `enableWifi(): void`
+- `disableWifi(): void`
+- `isWifiActive(): boolean`
+- `scan(): void`
+- `startScan(): void`
+- `getScanResults(): Promise<Array<WifiScanInfo>>`
+- `getScanResults(callback: AsyncCallback<Array<WifiScanInfo>>): void`
+- `getScanResultsSync(): Array<WifiScanInfo>`
+- `getScanInfoList(): Array<WifiScanInfo>`
+- `setScanAlwaysAllowed(isScanAlwaysAllowed: boolean): void`
+- `getScanAlwaysAllowed(): boolean`
+- `addDeviceConfig(config: WifiDeviceConfig): Promise<number>`
+- `addDeviceConfig(config: WifiDeviceConfig, callback: AsyncCallback<number>): void`
+- `addCandidateConfig(config: WifiDeviceConfig): Promise<number>`
+- `addCandidateConfig(config: WifiDeviceConfig, callback: AsyncCallback<number>): void`
+- `removeCandidateConfig(networkId: number): Promise<void>`
+- `removeCandidateConfig(networkId: number, callback: AsyncCallback<void>): void`
+- `getCandidateConfigs(): Array<WifiDeviceConfig>`
+- `connectToCandidateConfig(networkId: number): void`
+- `connectToNetwork(networkId: number): void`
+- `connectToDevice(config: WifiDeviceConfig): void`
+- `disconnect(): void`
+- `getSignalLevel(rssi: number, band: number): number`
+- `getLinkedInfo(): Promise<WifiLinkedInfo>`
+- `getLinkedInfo(callback: AsyncCallback<WifiLinkedInfo>): void`
+- `isConnected(): boolean`
+- `getSupportedFeatures(): number`
+- `isFeatureSupported(featureId: number): boolean`
+- `getDeviceMacAddress(): string[]`
+- `getIpInfo(): IpInfo`
+- `getIpv6Info(): Ipv6Info`
+- `getCountryCode(): string`
+- `reassociate(): void`
+- `reconnect(): void`
+- `getDeviceConfigs(): Array<WifiDeviceConfig>`
+- `updateNetwork(config: WifiDeviceConfig): number`
+- `disableNetwork(netId: number): void`
+- `removeAllNetwork(): void`
+- `removeDevice(id: number): void`
+- `isBandTypeSupported(bandType: WifiBandType): boolean`
+- `get5GChannelList(): Array<number>`
+- `getDisconnectedReason(): DisconnectedReason`
+- `startPortalCertification(): void`
+- `isMeteredHotspot(): boolean`
+- `factoryReset(): void`
+- `enableHotspot(): void`
+- `disableHotspot(): void`
+- `isHotspotDualBandSupported(): boolean`
+- `isHotspotActive(): boolean`
+- `setHotspotConfig(config: HotspotConfig): void`
+- `getHotspotConfig(): HotspotConfig`
+- `getStations(): Array<StationInfo>`
+- `getHotspotBlockList(): Array<StationInfo>`
+- `getP2pLinkedInfo(): Promise<WifiP2pLinkedInfo>`
+- `getP2pLinkedInfo(callback: AsyncCallback<WifiP2pLinkedInfo>): void`
+- `getCurrentGroup(): Promise<WifiP2pGroupInfo>`
+- `getCurrentGroup(callback: AsyncCallback<WifiP2pGroupInfo>): void`
+- `getP2pPeerDevices(): Promise<WifiP2pDevice[]>`
+- `getP2pPeerDevices(callback: AsyncCallback<WifiP2pDevice[]>): void`
+- `getP2pLocalDevice(): Promise<WifiP2pDevice>`
+- `getP2pLocalDevice(callback: AsyncCallback<WifiP2pDevice>): void`
+- `createGroup(config: WifiP2PConfig): void`
+- `removeGroup(): void`
+- `p2pConnect(config: WifiP2PConfig): void`
+- `p2pCancelConnect(): void`
+- `startDiscoverDevices(): void`
+- `stopDiscoverDevices(): void`
+- `deletePersistentGroup(netId: number): void`
+- `getP2pGroups(): Promise<Array<WifiP2pGroupInfo>>`
+- `getP2pGroups(callback: AsyncCallback<Array<WifiP2pGroupInfo>>): void`
+- `setDeviceName(devName: string): void`
+- `on(type: 'wifiStateChange', callback: Callback<number>): void`
+- `off(type: 'wifiStateChange', callback?: Callback<number>): void`
+- `on(type: 'wifiConnectionChange', callback: Callback<number>): void`
+- `off(type: 'wifiConnectionChange', callback?: Callback<number>): void`
+- `on(type: 'wifiScanStateChange', callback: Callback<number>): void`
+- `off(type: 'wifiScanStateChange', callback?: Callback<number>): void`
+- `on(type: 'wifiRssiChange', callback: Callback<number>): void`
+- `off(type: 'wifiRssiChange', callback?: Callback<number>): void`
+- `on(type: 'streamChange', callback: Callback<number>): void`
+- `off(type: 'streamChange', callback?: Callback<number>): void`
+- `on(type: 'deviceConfigChange', callback: Callback<number>): void`
+- `off(type: 'deviceConfigChange', callback?: Callback<number>): void`
+- `on(type: 'hotspotStateChange', callback: Callback<number>): void`
+- `off(type: 'hotspotStateChange', callback?: Callback<number>): void`
+- `on(type: 'hotspotStaJoin', callback: Callback<StationInfo>): void`
+- `off(type: 'hotspotStaJoin', callback?: Callback<StationInfo>): void`
+- `on(type: 'hotspotStaLeave', callback: Callback<StationInfo>): void`
+- `off(type: 'hotspotStaLeave', callback?: Callback<StationInfo>): void`
+- `on(type: 'p2pStateChange', callback: Callback<number>): void`
+- `off(type: 'p2pStateChange', callback?: Callback<number>): void`
+- `on(type: 'p2pConnectionChange', callback: Callback<WifiP2pLinkedInfo>): void`
+- `off(type: 'p2pConnectionChange', callback?: Callback<WifiP2pLinkedInfo>): void`
+- `on(type: 'p2pDeviceChange', callback: Callback<WifiP2pDevice>): void`
+- `off(type: 'p2pDeviceChange', callback?: Callback<WifiP2pDevice>): void`
+- `on(type: 'p2pPeerDeviceChange', callback: Callback<WifiP2pDevice[]>): void`
+- `off(type: 'p2pPeerDeviceChange', callback?: Callback<WifiP2pDevice[]>): void`
+- `on(type: 'p2pPersistentGroupChange', callback: Callback<void>): void`
+- `off(type: 'p2pPersistentGroupChange', callback?: Callback<void>): void`
+- `on(type: 'p2pDiscoveryChange', callback: Callback<number>): void`
+- `off(type: 'p2pDiscoveryChange', callback?: Callback<number>): void`
+
+### wifiManagerExt (@ohos.wifiManagerExt.d.ts)
+#### Enums
+- **PowerMode**
+  - `SLEEPING` = 0
+  - `GENERAL` = 1
+  - `THROUGH_WALL` = 2
+#### Functions
+- `enableHotspot(): void`
+- `disableHotspot(): void`
+- `getSupportedPowerMode(): Promise<Array<PowerMode>>`
+- `getSupportedPowerMode(callback: AsyncCallback<Array<PowerMode>>): void`
+- `getPowerMode(): Promise<PowerMode>`
+- `getPowerMode(callback: AsyncCallback<PowerMode>): void`
+- `setPowerMode(mode: PowerMode): void`
+
+### wifiext (@ohos.wifiext.d.ts)
+#### Enums
+- **PowerModel**
+  - `SLEEPING` = 0
+  - `GENERAL` = 1
+  - `THROUGH_WALL` = 2
+#### Functions
+- `enableHotspot(): boolean`
+- `disableHotspot(): boolean`
+- `getSupportedPowerModel(): Promise<Array<PowerModel>>`
+- `getSupportedPowerModel(callback: AsyncCallback<Array<PowerModel>>): void`
+- `getPowerModel(): Promise<PowerModel>`
+- `getPowerModel(callback: AsyncCallback<PowerModel>): void`
+- `setPowerModel(model: PowerModel): boolean`
+
+### window (@ohos.window.d.ts)
+#### Interfaces
+- **SystemBarProperties**
+  - `statusBarColor?`: string
+  - `isStatusBarLightIcon?`: boolean
+  - `statusBarContentColor?`: string
+  - `navigationBarColor?`: string
+  - `isNavigationBarLightIcon?`: boolean
+  - `navigationBarContentColor?`: string
+- **SystemBarRegionTint**
+  - `type`: WindowType
+  - `isEnable?`: boolean
+  - `region?`: Rect
+  - `backgroundColor?`: string
+  - `contentColor?`: string
+- **SystemBarTintState**
+  - `displayId`: number
+  - `regionTint`: Array<SystemBarRegionTint>
+- **Rect**
+  - `left`: number
+  - `top`: number
+  - `width`: number
+  - `height`: number
+- **AvoidArea**
+  - `visible`: boolean
+  - `leftRect`: Rect
+  - `topRect`: Rect
+  - `rightRect`: Rect
+  - `bottomRect`: Rect
+- **Size**
+  - `width`: number
+  - `height`: number
+- **WindowProperties**
+  - `windowRect`: Rect
+  - `drawableRect`: Rect
+  - `type`: WindowType
+  - `isFullScreen`: boolean
+  - `isLayoutFullScreen`: boolean
+  - `focusable`: boolean
+  - `touchable`: boolean
+  - `brightness`: number
+  - `dimBehindValue`: number
+  - `isKeepScreenOn`: boolean
+  - `isPrivacyMode`: boolean
+  - `isRoundCorner`: boolean
+  - `isTransparent`: boolean
+  - `id`: number
+- **ScaleOptions**
+  - `x?`: number
+  - `y?`: number
+  - `pivotX?`: number
+  - `pivotY?`: number
+- **RotateOptions**
+  - `x?`: number
+  - `y?`: number
+  - `z?`: number
+  - `pivotX?`: number
+  - `pivotY?`: number
+- **TranslateOptions**
+  - `x?`: number
+  - `y?`: number
+  - `z?`: number
+- **TransitionContext**
+  - `toWindow`: Window
+  - `completeTransition`: void
+- **TransitionController**
+  - `animationForShown`: void
+  - `animationForHidden`: void
+- **Configuration**
+  - `name`: string
+  - `windowType`: WindowType
+  - `ctx?`: BaseContext
+  - `displayId?`: number
+  - `parentId?`: number
+- **WindowLimits**
+  - `maxWidth?`: number
+  - `maxHeight?`: number
+  - `minWidth?`: number
+  - `minHeight?`: number
+- **TitleButtonRect**
+  - `right`: number
+  - `top`: number
+  - `width`: number
+  - `height`: number
+- **Window**
+  - `hide`: void
+  - `hide`: Promise<void>
+  - `hideWithAnimation`: void
+  - `hideWithAnimation`: Promise<void>
+  - `show`: void
+  - `show`: Promise<void>
+  - `showWindow`: void
+  - `showWindow`: Promise<void>
+  - `showWithAnimation`: void
+  - `showWithAnimation`: Promise<void>
+  - `destroy`: void
+  - `destroy`: Promise<void>
+  - `destroyWindow`: void
+  - `destroyWindow`: Promise<void>
+  - `moveTo`: Promise<void>
+  - `moveTo`: void
+  - `moveWindowTo`: Promise<void>
+  - `moveWindowTo`: void
+  - `resetSize`: Promise<void>
+  - `resetSize`: void
+  - `resize`: Promise<void>
+  - `resize`: void
+  - `setWindowType`: Promise<void>
+  - `setWindowType`: void
+  - `setWindowMode`: Promise<void>
+  - `setWindowMode`: void
+  - `getProperties`: void
+  - `getProperties`: Promise<WindowProperties>
+  - `getWindowProperties`: WindowProperties
+  - `getAvoidArea`: void
+  - `getAvoidArea`: Promise<AvoidArea>
+  - `getWindowAvoidArea`: AvoidArea
+  - `setFullScreen`: void
+  - `setFullScreen`: Promise<void>
+  - `setLayoutFullScreen`: void
+  - `setLayoutFullScreen`: Promise<void>
+  - `setWindowLayoutFullScreen`: void
+  - `setWindowLayoutFullScreen`: Promise<void>
+  - `setSystemBarEnable`: void
+  - `setSystemBarEnable`: Promise<void>
+  - `setWindowSystemBarEnable`: void
+  - `setWindowSystemBarEnable`: Promise<void>
+  - `setSpecificSystemBarEnabled`: Promise<void>
+  - `setSystemBarProperties`: void
+  - `setSystemBarProperties`: Promise<void>
+  - `setWindowSystemBarProperties`: void
+  - `setWindowSystemBarProperties`: Promise<void>
+  - `setPreferredOrientation`: Promise<void>
+  - `setPreferredOrientation`: void
+  - `loadContent`: void
+  - `loadContent`: Promise<void>
+  - `loadContent`: void
+  - `loadContent`: Promise<void>
+  - `getUIContext`: UIContext
+  - `setUIContent`: void
+  - `setUIContent`: Promise<void>
+  - `loadContentByName`: void
+  - `loadContentByName`: void
+  - `loadContentByName`: Promise<void>
+  - `isShowing`: void
+  - `isShowing`: Promise<boolean>
+  - `isWindowShowing`: boolean
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `on`: void
+  - `off`: void
+  - `bindDialogTarget`: Promise<void>
+  - `bindDialogTarget`: void
+  - `bindDialogTarget`: Promise<void>
+  - `bindDialogTarget`: void
+  - `isSupportWideGamut`: Promise<boolean>
+  - `isSupportWideGamut`: void
+  - `isWindowSupportWideGamut`: Promise<boolean>
+  - `isWindowSupportWideGamut`: void
+  - `setColorSpace`: Promise<void>
+  - `setColorSpace`: void
+  - `setWindowColorSpace`: Promise<void>
+  - `setWindowColorSpace`: void
+  - `getColorSpace`: Promise<ColorSpace>
+  - `getColorSpace`: void
+  - `getWindowColorSpace`: ColorSpace
+  - `setBackgroundColor`: Promise<void>
+  - `setBackgroundColor`: void
+  - `setWindowBackgroundColor`: void
+  - `setBrightness`: Promise<void>
+  - `setBrightness`: void
+  - `setWindowBrightness`: Promise<void>
+  - `setWindowBrightness`: void
+  - `setDimBehind`: void
+  - `setDimBehind`: Promise<void>
+  - `setFocusable`: Promise<void>
+  - `setFocusable`: void
+  - `setWindowFocusable`: Promise<void>
+  - `setWindowFocusable`: void
+  - `setKeepScreenOn`: Promise<void>
+  - `setKeepScreenOn`: void
+  - `setWindowKeepScreenOn`: Promise<void>
+  - `setWindowKeepScreenOn`: void
+  - `setWakeUpScreen`: void
+  - `setOutsideTouchable`: Promise<void>
+  - `setOutsideTouchable`: void
+  - `setPrivacyMode`: Promise<void>
+  - `setPrivacyMode`: void
+  - `setWindowPrivacyMode`: Promise<void>
+  - `setWindowPrivacyMode`: void
+  - `setSnapshotSkip`: void
+  - `setTouchable`: Promise<void>
+  - `setTouchable`: void
+  - `setWindowTouchable`: Promise<void>
+  - `setWindowTouchable`: void
+  - `setForbidSplitMove`: void
+  - `setForbidSplitMove`: Promise<void>
+  - `snapshot`: void
+  - `snapshot`: Promise<image.PixelMap>
+  - `opacity`: void
+  - `scale`: void
+  - `rotate`: void
+  - `translate`: void
+  - `getTransitionController`: TransitionController
+  - `setBlur`: void
+  - `setBackdropBlur`: void
+  - `setBackdropBlurStyle`: void
+  - `setShadow`: void
+  - `setCornerRadius`: void
+  - `raiseToAppTop`: void
+  - `raiseToAppTop`: Promise<void>
+  - `setAspectRatio`: void
+  - `setAspectRatio`: Promise<void>
+  - `resetAspectRatio`: void
+  - `resetAspectRatio`: Promise<void>
+  - `setWaterMarkFlag`: void
+  - `setWaterMarkFlag`: Promise<void>
+  - `raiseAboveTarget`: void
+  - `raiseAboveTarget`: Promise<void>
+  - `setRaiseByClickEnabled`: void
+  - `setRaiseByClickEnabled`: Promise<void>
+  - `minimize`: void
+  - `minimize`: Promise<void>
+  - `setResizeByDragEnabled`: void
+  - `setResizeByDragEnabled`: Promise<void>
+  - `hideNonSystemFloatingWindows`: void
+  - `hideNonSystemFloatingWindows`: Promise<void>
+  - `getWindowLimits`: WindowLimits
+  - `setWindowLimits`: Promise<WindowLimits>
+  - `setSingleFrameComposerEnabled`: Promise<void>
+  - `keepKeyboardOnFocus`: void
+  - `recover`: Promise<void>
+  - `setWindowDecorVisible`: void
+  - `setWindowDecorHeight`: void
+  - `getWindowDecorHeight`: number
+  - `getTitleButtonRect`: TitleButtonRect
+  - `on`: void
+  - `off`: void
+- **SubWindowOptions**
+  - `title`: string
+  - `decorEnabled`: boolean
+- **WindowStage**
+  - `getMainWindow`: Promise<Window>
+  - `getMainWindow`: void
+  - `getMainWindowSync`: Window
+  - `createSubWindow`: Promise<Window>
+  - `createSubWindow`: void
+  - `createSubWindowWithOptions`: Promise<Window>
+  - `getSubWindow`: Promise<Array<Window>>
+  - `getSubWindow`: void
+  - `loadContent`: void
+  - `loadContent`: Promise<void>
+  - `loadContent`: void
+  - `loadContentByName`: void
+  - `loadContentByName`: void
+  - `loadContentByName`: Promise<void>
+  - `on`: void
+  - `off`: void
+  - `disableWindowDecor`: void
+  - `setShowOnLockScreen`: void
+#### Enums
+- **WindowType**
+- **AvoidAreaType**
+- **WindowMode**
+  - `UNDEFINED` = 1
+- **WindowLayoutMode**
+- **WindowStatusType**
+  - `UNDEFINED` = 0
+- **ColorSpace**
+- **Orientation**
+  - `UNSPECIFIED` = 0
+  - `PORTRAIT` = 1
+  - `LANDSCAPE` = 2
+  - `PORTRAIT_INVERTED` = 3
+  - `LANDSCAPE_INVERTED` = 4
+  - `AUTO_ROTATION` = 5
+  - `AUTO_ROTATION_PORTRAIT` = 6
+  - `AUTO_ROTATION_LANDSCAPE` = 7
+  - `AUTO_ROTATION_RESTRICTED` = 8
+  - `AUTO_ROTATION_PORTRAIT_RESTRICTED` = 9
+  - `AUTO_ROTATION_LANDSCAPE_RESTRICTED` = 10
+  - `LOCKED` = 11
+- **BlurStyle**
+- **WindowEventType**
+  - `WINDOW_SHOWN` = 1
+  - `WINDOW_ACTIVE` = 2
+  - `WINDOW_INACTIVE` = 3
+  - `WINDOW_HIDDEN` = 4
+  - `WINDOW_DESTROYED` = 7
+- **WindowStageEventType**
+  - `SHOWN` = 1
+#### Functions
+- `createWindow(config: Configuration, callback: AsyncCallback<Window>): void`
+- `createWindow(config: Configuration): Promise<Window>`
+- `create(id: string, type: WindowType, callback: AsyncCallback<Window>): void`
+- `create(id: string, type: WindowType): Promise<Window>`
+- `create(ctx: BaseContext, id: string, type: WindowType): Promise<Window>`
+- `create(ctx: BaseContext, id: string, type: WindowType, callback: AsyncCallback<Window>): void`
+- `find(id: string, callback: AsyncCallback<Window>): void`
+- `find(id: string): Promise<Window>`
+- `findWindow(name: string): Window`
+- `getTopWindow(callback: AsyncCallback<Window>): void`
+- `getTopWindow(): Promise<Window>`
+- `getTopWindow(ctx: BaseContext): Promise<Window>`
+- `getTopWindow(ctx: BaseContext, callback: AsyncCallback<Window>): void`
+- `getLastWindow(ctx: BaseContext, callback: AsyncCallback<Window>): void`
+- `getLastWindow(ctx: BaseContext): Promise<Window>`
+- `minimizeAll(id: number, callback: AsyncCallback<void>): void`
+- `minimizeAll(id: number): Promise<void>`
+- `toggleShownStateForAllAppWindows(callback: AsyncCallback<void>): void`
+- `toggleShownStateForAllAppWindows(): Promise<void>`
+- `setWindowLayoutMode(mode: WindowLayoutMode, callback: AsyncCallback<void>): void`
+- `setWindowLayoutMode(mode: WindowLayoutMode): Promise<void>`
+- `setGestureNavigationEnabled(enable: boolean, callback: AsyncCallback<void>): void`
+- `setGestureNavigationEnabled(enable: boolean): Promise<void>`
+- `setWaterMarkImage(pixelMap: image.PixelMap, enable: boolean): Promise<void>`
+- `setWaterMarkImage(pixelMap: image.PixelMap, enable: boolean, callback: AsyncCallback<void>): void`
+- `shiftAppWindowFocus(sourceWindowId: number, targetWindowId: number): Promise<void>`
+- `on(type: 'systemBarTintChange', callback: Callback<SystemBarTintState>): void`
+- `off(type: 'systemBarTintChange', callback?: Callback<SystemBarTintState>): void`
+- `on(type: 'gestureNavigationEnabledChange', callback: Callback<boolean>): void`
+- `off(type: 'gestureNavigationEnabledChange', callback?: Callback<boolean>): void`
+- `on(type: 'waterMarkFlagChange', callback: Callback<boolean>): void`
+- `off(type: 'waterMarkFlagChange', callback?: Callback<boolean>): void`
+#### Type Aliases
+- `SpecificSystemBar` = 'status' | 'navigation' | 'navigationIndicator'
+
+### worker (@ohos.worker.d.ts)
+#### Interfaces
+- **WorkerOptions**
+  - `type?`: 'classic' | 'module'
+  - `name?`: string
+  - `shared?`: boolean
+- **Event**
+  - `readonly type`: string
+  - `readonly timeStamp`: number
+- **ErrorEvent**
+  - `readonly message`: string
+  - `readonly filename`: string
+  - `readonly lineno`: number
+  - `readonly colno`: number
+  - `readonly error`: Object
+- **MessageEvent**
+  - `readonly data`: T
+- **MessageEvents**
+- **PostMessageOptions**
+  - `transfer?`: Object[]
+- **EventListener**
+- **WorkerEventListener**
+- **EventTarget**
+  - `addEventListener`: void
+  - `dispatchEvent`: boolean
+  - `removeEventListener`: void
+  - `removeAllListener`: void
+- **WorkerEventTarget**
+  - `addEventListener`: void
+  - `dispatchEvent`: boolean
+  - `removeEventListener`: void
+  - `removeAllListener`: void
+- **WorkerGlobalScope**
+  - `readonly name`: string
+  - `onerror?`: (ev: ErrorEvent) => void
+  - `readonly self`: WorkerGlobalScope & typeof globalThis
+- **GlobalScope**
+  - `readonly name`: string
+  - `onerror?`: (ev: ErrorEvent) => void
+  - `readonly self`: GlobalScope & typeof globalThis
+- **DedicatedWorkerGlobalScope**
+  - `onmessage?`: (this: DedicatedWorkerGlobalScope, ev: MessageEvent) => void
+  - `onmessageerror?`: (this: DedicatedWorkerGlobalScope, ev: MessageEvent) => void
+  - `close`: void
+  - `postMessage`: void
+  - `postMessage`: void
+  - `postMessage`: void
+- **ThreadWorkerGlobalScope**
+  - `onmessage?`: (this: ThreadWorkerGlobalScope, ev: MessageEvents) => void
+  - `onmessageerror?`: (this: ThreadWorkerGlobalScope, ev: MessageEvents) => void
+  - `close`: void
+  - `postMessage`: void
+  - `postMessage`: void
+  - `callGlobalCallObjectMethod`: Object
+#### Classes
+- **RestrictedWorker**
+#### Type Aliases
+- `MessageType` = 'message' | 'messageerror'
+
+### xml (@ohos.xml.d.ts)
+#### Interfaces
+- **ParseInfo**
+  - `getColumnNumber`: number
+  - `getDepth`: number
+  - `getLineNumber`: number
+  - `getName`: string
+  - `getNamespace`: string
+  - `getPrefix`: string
+  - `getText`: string
+  - `isEmptyElementTag`: boolean
+  - `isWhitespace`: boolean
+  - `getAttributeCount`: number
+- **ParseOptions**
+  - `supportDoctype?`: boolean
+  - `ignoreNameSpace?`: boolean
+  - `tagValueCallbackFunction?`: (name: string, value: string) => boolean
+  - `attributeValueCallbackFunction?`: (name: string, value: string) => boolean
+  - `tokenValueCallbackFunction?`: (eventType: EventType, value: ParseInfo) => boolean
+#### Enums
+- **EventType**
+#### Classes
+- **XmlSerializer**
+  - `setAttributes()`: void
+  - `addEmptyElement()`: void
+  - `setDeclaration()`: void
+  - `startElement()`: void
+  - `endElement()`: void
+  - `setNamespace()`: void
+  - `setComment()`: void
+  - `setCDATA()`: void
+  - `setText()`: void
+  - `setDocType()`: void
+- **XmlPullParser**
+  - `parse()`: void
+
+### zlib (@ohos.zlib.d.ts)
+#### Interfaces
+- **Options**
+  - `level?`: CompressLevel
+  - `memLevel?`: MemLevel
+  - `strategy?`: CompressStrategy
+#### Enums
+- **ErrorCode**
+  - `ERROR_CODE_OK` = 0
+  - `ERROR_CODE_ERRNO` = -1
+- **CompressLevel**
+  - `COMPRESS_LEVEL_NO_COMPRESSION` = 0
+  - `COMPRESS_LEVEL_BEST_SPEED` = 1
+  - `COMPRESS_LEVEL_BEST_COMPRESSION` = 9
+  - `COMPRESS_LEVEL_DEFAULT_COMPRESSION` = -1
+- **CompressStrategy**
+  - `COMPRESS_STRATEGY_DEFAULT_STRATEGY` = 0
+  - `COMPRESS_STRATEGY_FILTERED` = 1
+  - `COMPRESS_STRATEGY_HUFFMAN_ONLY` = 2
+  - `COMPRESS_STRATEGY_RLE` = 3
+  - `COMPRESS_STRATEGY_FIXED` = 4
+- **MemLevel**
+  - `MEM_LEVEL_MIN` = 1
+  - `MEM_LEVEL_MAX` = 9
+  - `MEM_LEVEL_DEFAULT` = 8
+#### Functions
+- `zipFile(inFile: string, outFile: string, options: Options): Promise<void>`
+- `unzipFile(inFile: string, outFile: string, options: Options): Promise<void>`
+- `compressFile(inFile: string, outFile: string, options: Options, callback: AsyncCallback<void>): void`
+- `compressFile(inFile: string, outFile: string, options: Options): Promise<void>`
+- `decompressFile(inFile: string, outFile: string, options: Options, callback: AsyncCallback<void>): void`
+- `decompressFile(inFile: string, outFile: string, callback: AsyncCallback<void>): void`
+- `decompressFile(inFile: string, outFile: string, options?: Options): Promise<void>`
+
+### @system.app (@system.app.d.ts)
+#### Interfaces
+- **AppResponse**
+  - `appID`: string
+  - `appName`: string
+  - `versionName`: string
+  - `versionCode`: number
+- **ScreenOnVisibleOptions**
+  - `visible?`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **RequestFullWindowOptions**
+  - `duration`: number
+#### Classes
+- **App**
+  - `getInfo()`: AppResponse
+  - `terminate()`: void
+  - `screenOnVisible()`: void
+  - `requestFullWindow()`: void
+  - `setImageCacheCount()`: void
+  - `setImageRawDataCacheSize()`: void
+  - `setImageFileCacheSize()`: void
+
+### @system.battery (@system.battery.d.ts)
+#### Interfaces
+- **BatteryResponse**
+  - `charging`: boolean
+  - `level`: number
+- **GetStatusOptions**
+  - `success?`: (data: BatteryResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Battery**
+  - `getStatus()`: void
+
+### @system.bluetooth (@system.bluetooth.d.ts)
+#### Interfaces
+- **StartBLEScanOptions**
+  - `interval`: number
+  - `success`: () => void
+  - `fail`: (data: string, code: number) => void
+  - `complete`: () => void
+- **StopBLEScanOptions**
+  - `success`: () => void
+  - `fail`: (data: string, code: number) => void
+  - `complete`: () => void
+- **BluetoothDevice**
+  - `addrType`: 'public' | 'random'
+  - `addr`: string
+  - `rssi`: number
+  - `txpower`: string
+  - `data`: string
+- **BLEFoundResponse**
+  - `devices`: Array<BluetoothDevice>
+- **SubscribeBLEFoundOptions**
+  - `success`: (data: BLEFoundResponse) => void
+  - `fail`: (data: string, code: number) => void
+#### Classes
+- **Bluetooth**
+  - `startBLEScan()`: void
+  - `stopBLEScan()`: void
+  - `subscribeBLEFound()`: void
+  - `unsubscribeBLEFound()`: void
+
+### @system.brightness (@system.brightness.d.ts)
+#### Interfaces
+- **BrightnessResponse**
+  - `value`: number
+- **GetBrightnessOptions**
+  - `success?`: (data: BrightnessResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **SetBrightnessOptions**
+  - `value`: number
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **BrightnessModeResponse**
+  - `mode`: number
+- **GetBrightnessModeOptions**
+  - `success?`: (data: BrightnessModeResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **SetBrightnessModeOptions**
+  - `mode`: number
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **SetKeepScreenOnOptions**
+  - `keepScreenOn`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Brightness**
+  - `getValue()`: void
+  - `setValue()`: void
+  - `getMode()`: void
+  - `setMode()`: void
+  - `setKeepScreenOn()`: void
+
+### @system.cipher (@system.cipher.d.ts)
+#### Interfaces
+- **CipherResponse**
+  - `text`: string
+- **CipherRsaOptions**
+  - `action`: string
+  - `text`: string
+  - `key`: string
+  - `transformation?`: string
+  - `success`: (data: CipherResponse) => void
+  - `fail`: (data: string, code: number) => void
+  - `complete`: () => void
+- **CipherAesOptions**
+  - `action`: string
+  - `text`: string
+  - `key`: string
+  - `transformation?`: string
+  - `iv?`: string
+  - `ivOffset?`: string
+  - `ivLen?`: string
+  - `success`: (data: CipherResponse) => void
+  - `fail`: (data: string, code: number) => void
+  - `complete`: () => void
+#### Classes
+- **Cipher**
+  - `rsa()`: void
+  - `aes()`: void
+
+### @system.configuration (@system.configuration.d.ts)
+#### Interfaces
+- **LocaleResponse**
+  - `language`: string
+  - `countryOrRegion`: string
+  - `dir`: "ltr" | "rtl"
+#### Classes
+- **Configuration**
+  - `getLocale()`: LocaleResponse
+
+### @system.device (@system.device.d.ts)
+#### Interfaces
+- **DeviceResponse**
+  - `brand`: string
+  - `manufacturer`: string
+  - `model`: string
+  - `product`: string
+  - `language`: string
+  - `region`: string
+  - `windowWidth`: number
+  - `windowHeight`: number
+  - `screenDensity`: number
+  - `screenShape`: 'rect' | 'circle'
+  - `apiVersion`: number
+  - `deviceType`: string
+- **GetDeviceOptions**
+  - `success?`: (data: DeviceResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Device**
+  - `getInfo()`: void
+
+### @system.fetch (@system.fetch.d.ts)
+#### Interfaces
+- **FetchResponse**
+  - `code`: number
+  - `data`: string | object
+  - `headers`: Object
+#### Classes
+- **Fetch**
+  - `url`: string
+  - `data?`: string | object
+  - `header?`: Object
+  - `method?`: string
+  - `responseType?`: string
+  - `success?`: (data: FetchResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+
+### @system.file (@system.file.d.ts)
+#### Interfaces
+- **FileResponse**
+  - `uri`: string
+  - `length`: number
+  - `lastModifiedTime`: number
+  - `type`: 'dir' | 'file'
+  - `subFiles?`: Array<FileResponse>
+- **FileMoveOption**
+  - `srcUri`: string
+  - `dstUri`: string
+  - `success?`: (uri: string) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileListResponse**
+  - `fileList`: Array<FileResponse>
+- **FileListOption**
+  - `uri`: string
+  - `success?`: (data: FileListResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileCopyOption**
+  - `srcUri`: string
+  - `dstUri`: string
+  - `success?`: (uri: string) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileGetOption**
+  - `uri`: string
+  - `recursive?`: boolean
+  - `success?`: (file: FileResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileDeleteOption**
+  - `uri`: string
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileWriteTextOption**
+  - `uri`: string
+  - `text`: string
+  - `encoding?`: string
+  - `append?`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileReadTextResponse**
+  - `text`: string
+- **FileReadTextOption**
+  - `uri`: string
+  - `encoding?`: string
+  - `position?`: number
+  - `length?`: number
+  - `success?`: (data: FileReadTextResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileWriteArrayBufferOption**
+  - `uri`: string
+  - `buffer`: Uint8Array
+  - `position?`: number
+  - `append?`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileReadArrayBufferResponse**
+  - `buffer`: Uint8Array
+- **FileReadArrayBufferOption**
+  - `uri`: string
+  - `position?`: number
+  - `length?`: number
+  - `success?`: (data: FileReadArrayBufferResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileAccessOption**
+  - `uri`: string
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileMkdirOption**
+  - `uri`: string
+  - `recursive?`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **FileRmdirOption**
+  - `uri`: string
+  - `recursive?`: boolean
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **File**
+  - `move()`: void
+  - `copy()`: void
+  - `list()`: void
+  - `get()`: void
+  - `delete()`: void
+  - `writeText()`: void
+  - `readText()`: void
+  - `writeArrayBuffer()`: void
+  - `readArrayBuffer()`: void
+  - `access()`: void
+  - `mkdir()`: void
+  - `rmdir()`: void
+
+### @system.geolocation (@system.geolocation.d.ts)
+#### Interfaces
+- **GeolocationResponse**
+  - `longitude`: number
+  - `latitude`: number
+  - `altitude`: number
+  - `accuracy`: number
+  - `time`: number
+- **GetLocationOption**
+  - `timeout?`: number
+  - `coordType?`: string
+  - `success?`: (data: GeolocationResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **GetLocationTypeResponse**
+  - `types`: Array<string>
+- **GetLocationTypeOption**
+  - `success?`: (data: GetLocationTypeResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **SubscribeLocationOption**
+  - `coordType?`: string
+  - `success`: (data: GeolocationResponse) => void
+  - `fail?`: (data: string, code: number) => void
+#### Classes
+- **Geolocation**
+  - `getLocation()`: void
+  - `getLocationType()`: void
+  - `subscribe()`: void
+  - `unsubscribe()`: void
+  - `getSupportedCoordTypes()`: Array<string>
+
+### @system.mediaquery (@system.mediaquery.d.ts)
+#### Interfaces
+- **MediaQueryEvent**
+  - `matches`: boolean
+- **MediaQueryList**
+  - `media?`: string
+  - `matches?`: boolean
+  - `onchange?`: (matches: boolean) => void
+#### Classes
+- **MediaQuery**
+  - `matchMedia()`: MediaQueryList
+
+### @system.network (@system.network.d.ts)
+#### Interfaces
+- **NetworkResponse**
+  - `type`: string
+  - `metered`: boolean
+#### Classes
+- **Network**
+  - `unsubscribe()`: void
+  - `success?`: (data: NetworkResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+  - `success?`: (data: NetworkResponse) => void
+  - `fail?`: (data: any, code: number) => void
+
+### @system.notification (@system.notification.d.ts)
+#### Interfaces
+- **ActionResult**
+  - `bundleName`: string
+  - `abilityName`: string
+  - `uri`: string
+- **ShowNotificationOptions**
+  - `contentTitle?`: string
+  - `contentText?`: string
+  - `clickAction?`: ActionResult
+#### Classes
+- **Notification**
+  - `show()`: void
+
+### @system.package (@system.package.d.ts)
+#### Interfaces
+- **CheckPackageHasInstalledResponse**
+  - `result`: boolean
+- **CheckPackageHasInstalledOptions**
+  - `bundleName`: string
+  - `success?`: (data: CheckPackageHasInstalledResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Package**
+  - `hasInstalled()`: void
+
+### @system.prompt (@system.prompt.d.ts)
+#### Interfaces
+- **ShowToastOptions**
+  - `message`: string
+  - `duration?`: number
+  - `bottom?`: string | number
+- **Button**
+  - `text`: string
+  - `color`: string
+- **ShowDialogSuccessResponse**
+  - `index`: number
+- **ShowDialogOptions**
+  - `title?`: string
+  - `message?`: string
+  - `buttons?`: [Button, Button?, Button?]
+  - `success?`: (data: ShowDialogSuccessResponse) => void
+  - `cancel?`: (data: string, code: string) => void
+  - `complete?`: (data: string) => void
+- **ShowActionMenuOptions**
+  - `title?`: string
+  - `buttons`: [Button, Button?, Button?, Button?, Button?, Button?]
+  - `success?`: (tapIndex: number, errMsg: string) => void
+  - `fail?`: (errMsg: string) => void
+  - `complete?`: () => void
+#### Classes
+- **Prompt**
+  - `showToast()`: void
+  - `showDialog()`: void
+  - `showActionMenu()`: void
+
+### @system.request (@system.request.d.ts)
+#### Interfaces
+- **UploadResponse**
+  - `code`: number
+  - `data`: string
+  - `headers`: Object
+- **DownloadResponse**
+  - `token`: string
+- **OnDownloadCompleteResponse**
+  - `uri`: string
+- **RequestFile**
+  - `filename?`: string
+  - `name?`: string
+  - `uri`: string
+  - `type?`: string
+- **RequestData**
+  - `name`: string
+  - `value`: string
+- **UploadRequestOptions**
+  - `url`: string
+  - `data?`: Array<RequestData>
+  - `files`: Array<RequestFile>
+  - `header?`: Object
+  - `method?`: string
+  - `success?`: (data: UploadResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+- **DownloadRequestOptions**
+  - `url`: string
+  - `filename?`: string
+  - `header?`: string
+  - `description?`: string
+  - `success?`: (data: DownloadResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+- **OnDownloadCompleteOptions**
+  - `token`: string
+  - `success?`: (data: OnDownloadCompleteResponse) => void
+  - `fail?`: (data: any, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Request**
+  - `upload()`: void
+  - `download()`: void
+  - `onDownloadComplete()`: void
+
+### @system.router (@system.router.d.ts)
+#### Interfaces
+- **RouterOptions**
+  - `uri`: string
+  - `params?`: Object
+- **BackRouterOptions**
+  - `uri?`: string
+  - `params?`: Object
+- **RouterState**
+  - `index`: number
+  - `name`: string
+  - `path`: string
+- **EnableAlertBeforeBackPageOptions**
+  - `message`: string
+  - `success?`: (errMsg: string) => void
+  - `cancel?`: (errMsg: string) => void
+  - `complete?`: () => void
+- **DisableAlertBeforeBackPageOptions**
+  - `success?`: (errMsg: string) => void
+  - `cancel?`: (errMsg: string) => void
+  - `complete?`: () => void
+#### Classes
+- **Router**
+  - `push()`: void
+  - `replace()`: void
+  - `back()`: void
+  - `getParams()`: ParamsInterface
+  - `clear()`: void
+  - `getLength()`: string
+  - `getState()`: RouterState
+  - `enableAlertBeforeBackPage()`: void
+  - `disableAlertBeforeBackPage()`: void
+#### Type Aliases
+- `ParamsInterface` = {
+  [key: string]: Object
+
+### @system.sensor (@system.sensor.d.ts)
+#### Interfaces
+- **AccelerometerResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **subscribeAccelerometerOptions**
+  - `interval`: string
+  - `success`: (data: AccelerometerResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **CompassResponse**
+  - `direction`: number
+- **SubscribeCompassOptions**
+  - `success`: (data: CompassResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **ProximityResponse**
+  - `distance`: number
+- **SubscribeProximityOptions**
+  - `success`: (data: ProximityResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **LightResponse**
+  - `intensity`: number
+- **SubscribeLightOptions**
+  - `success`: (data: LightResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **StepCounterResponse**
+  - `steps`: number
+- **SubscribeStepCounterOptions**
+  - `success`: (data: StepCounterResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **BarometerResponse**
+  - `pressure`: number
+- **SubscribeBarometerOptions**
+  - `success`: (data: BarometerResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **HeartRateResponse**
+  - `heartRate`: number
+- **SubscribeHeartRateOptions**
+  - `success`: (data: HeartRateResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **OnBodyStateResponse**
+  - `value`: boolean
+- **SubscribeOnBodyStateOptions**
+  - `success`: (data: OnBodyStateResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **GetOnBodyStateOptions**
+  - `success`: (data: OnBodyStateResponse) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **DeviceOrientationResponse**
+  - `alpha`: number
+  - `beta`: number
+  - `gamma`: number
+- **SubscribeDeviceOrientationOptions**
+  - `interval`: string
+  - `success`: (data: DeviceOrientationResponse) => void
+  - `fail?`: (data: string, code: number) => void
+- **GyroscopeResponse**
+  - `x`: number
+  - `y`: number
+  - `z`: number
+- **SubscribeGyroscopeOptions**
+  - `interval`: string
+  - `success`: (data: GyroscopeResponse) => void
+  - `fail?`: (data: string, code: number) => void
+#### Classes
+- **Sensor**
+  - `subscribeAccelerometer()`: void
+  - `unsubscribeAccelerometer()`: void
+  - `subscribeCompass()`: void
+  - `unsubscribeCompass()`: void
+  - `subscribeProximity()`: void
+  - `unsubscribeProximity()`: void
+  - `subscribeLight()`: void
+  - `unsubscribeLight()`: void
+  - `subscribeStepCounter()`: void
+  - `unsubscribeStepCounter()`: void
+  - `subscribeBarometer()`: void
+  - `unsubscribeBarometer()`: void
+  - `subscribeHeartRate()`: void
+  - `unsubscribeHeartRate()`: void
+  - `subscribeOnBodyState()`: void
+  - `unsubscribeOnBodyState()`: void
+  - `getOnBodyState()`: void
+  - `subscribeDeviceOrientation()`: void
+  - `unsubscribeDeviceOrientation()`: void
+  - `subscribeGyroscope()`: void
+  - `unsubscribeGyroscope()`: void
+
+### @system.storage (@system.storage.d.ts)
+#### Interfaces
+- **GetStorageOptions**
+  - `key`: string
+  - `default?`: string
+  - `success?`: (data: any) => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **SetStorageOptions**
+  - `key`: string
+  - `value`: string
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **ClearStorageOptions**
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+- **DeleteStorageOptions**
+  - `key`: string
+  - `success?`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Storage**
+  - `get()`: void
+  - `set()`: void
+  - `clear()`: void
+  - `delete()`: void
+
+### @system.vibrator (@system.vibrator.d.ts)
+#### Interfaces
+- **VibrateOptions**
+  - `mode?`: 'long' | 'short'
+  - `success`: () => void
+  - `fail?`: (data: string, code: number) => void
+  - `complete?`: () => void
+#### Classes
+- **Vibrator**
+  - `vibrate()`: void
+
+### permissions (permissions.d.ts)
+#### Type Aliases
+- `Permissions` = string
