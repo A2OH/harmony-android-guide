@@ -56,6 +56,16 @@ const OH_REVIEWS = [
   { slug: '14-build-system-review', title: 'Build System' },
 ];
 
+const OH_API_ENUM = [
+  { slug: 'api-count-report', title: 'API Count Report' },
+  { slug: 'api-enumeration-js-part1', title: 'JS API Enumeration (Part 1)' },
+  { slug: 'api-enumeration-js-part2', title: 'JS API Enumeration (Part 2)' },
+  { slug: 'api-enumeration-js-part3', title: 'JS API Enumeration (Part 3)' },
+  { slug: 'api-enumeration-js-part4-subdirs', title: 'JS API Enumeration (Part 4 — Subdirs)' },
+  { slug: 'api-enumeration-ndk-part1', title: 'NDK API Enumeration (Part 1)' },
+  { slug: 'api-enumeration-ndk-part2', title: 'NDK API Enumeration (Part 2)' },
+];
+
 function DocIndex() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
@@ -96,18 +106,35 @@ function DocIndex() {
       </div>
 
       {/* API Enumeration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <span className="text-xs font-bold bg-green-900 text-green-300 px-2 py-0.5 rounded">ANDROID</span>
-          API Enumeration (56,387 APIs)
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
-          {ANDROID_API_ENUM.map(d => (
-            <Link key={d.slug} to={`/docs/android/api-enumeration/${d.slug}`}
-              className="block text-sm text-blue-400 hover:text-blue-300 py-1 px-2 rounded hover:bg-gray-800">
-              {d.title}
-            </Link>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span className="text-xs font-bold bg-green-900 text-green-300 px-2 py-0.5 rounded">ANDROID</span>
+            API Enumeration (56,387 APIs)
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+            {ANDROID_API_ENUM.map(d => (
+              <Link key={d.slug} to={`/docs/android/api-enumeration/${d.slug}`}
+                className="block text-sm text-blue-400 hover:text-blue-300 py-1 px-2 rounded hover:bg-gray-800">
+                {d.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span className="text-xs font-bold bg-blue-900 text-blue-300 px-2 py-0.5 rounded">OPENHARMONY</span>
+            API Enumeration
+          </h2>
+          <div className="space-y-1">
+            {OH_API_ENUM.map(d => (
+              <Link key={d.slug} to={`/docs/openharmony/${d.slug}`}
+                className="block text-sm text-blue-400 hover:text-blue-300 py-1 px-2 rounded hover:bg-gray-800">
+                {d.title}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
