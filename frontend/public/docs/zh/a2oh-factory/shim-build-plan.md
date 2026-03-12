@@ -8,113 +8,97 @@
 
 ## 系统架构总览
 
-```
-+=========================================================================+
-|                         整体系统架构                                      |
-+=========================================================================+
-|                                                                         |
-|  +-------------------+    +-------------------+    +------------------+ |
-|  |   api_compat.db   |    |   AI 代码生成引擎   |    |   进度跟踪数据库   | |
-|  |  (57,289 API 映射) |--->|  (Claude API)     |--->| shim_progress.db | |
-|  |  评分/指南/示例    |    |  提示词模板+反馈循环 |    |  状态/测试结果    | |
-|  +-------------------+    +--------+----------+    +------------------+ |
-|                                    |                                    |
-|                     生成代码 (Java + Rust + 测试)                        |
-|                                    |                                    |
-|          +-------------------------+-------------------------+          |
-|          |                         |                         |          |
-|          v                         v                         v          |
-|  +---------------+     +-------------------+     +------------------+  |
-|  |  Java 适配层   |     |   JNI/FFI 桥接层   |     |    测试用例       |  |
-|  |  (android.*)  |     |   (Rust + C++)    |     | (JUnit + gtest)  |  |
-|  +-------+-------+     +--------+----------+     +--------+---------+  |
-|          |                       |                         |           |
-|          v                       v                         v           |
-|  +---------------+     +-------------------+     +------------------+  |
-|  | Android 端测试 |     |  OHOS 原生 API    |     |  三级测试流水线   |  |
-|  | (JVM 模拟运行) |     |  (@ohos.* / NDK)  |     | Mock/无头/QEMU  |  |
-|  +---------------+     +-------------------+     +------------------+  |
-|                                                                         |
-+=========================================================================+
+```mermaid
+graph TD
+    subgraph 输入["数据源"]
+        DB["api_compat.db<br/>57,289 API 映射<br/>评分 + 指南"]
+        EXISTING["已有适配代码<br/>34 个类已适配"]
+    end
+
+    subgraph AI["AI 代码生成"]
+        PROMPT["构建 AI 提示词<br/>映射表 + 指南 + 示例"]
+        CLAUDE["Claude API<br/>提示词 + 反馈循环"]
+    end
+
+    subgraph 输出["生成产物"]
+        JAVA["Java 适配层<br/>android.* 类"]
+        BRIDGE["JNI/FFI 桥接层<br/>Rust + C++"]
+        TESTS["测试用例<br/>JUnit + gtest"]
+    end
+
+    subgraph 目标["运行目标"]
+        ANDROID["Android 端测试<br/>JVM 模拟"]
+        OHOS["OHOS 原生 API<br/>@ohos.* / NDK"]
+        PIPELINE["三级测试流水线<br/>Mock / 无头 / QEMU"]
+    end
+
+    subgraph 跟踪["进度跟踪"]
+        PROGRESS["shim_progress.db<br/>状态 + 结果"]
+    end
+
+    DB --> PROMPT
+    EXISTING --> PROMPT
+    PROMPT --> CLAUDE
+    CLAUDE --> JAVA
+    CLAUDE --> BRIDGE
+    CLAUDE --> TESTS
+    JAVA --> ANDROID
+    BRIDGE --> OHOS
+    TESTS --> PIPELINE
+    PIPELINE --> PROGRESS
+    PROGRESS -.->|反馈| PROMPT
+
+    style DB fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style CLAUDE fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style PROGRESS fill:#065f46,stroke:#10b981,color:#e5e7eb
+    style JAVA fill:#92400e,stroke:#f59e0b,color:#e5e7eb
+    style BRIDGE fill:#92400e,stroke:#f59e0b,color:#e5e7eb
+    style TESTS fill:#92400e,stroke:#f59e0b,color:#e5e7eb
 ```
 
 ### 适配层详细架构
 
-```
-+=========================================================================+
-|                         适配层三层架构                                     |
-+=========================================================================+
-|                                                                         |
-|  APK 字节码 (未修改的 .dex 文件)                                          |
-|           |                                                             |
-|           v                                                             |
-|  +---------------------------------------------------------------+     |
-|  |  第一层：Java 适配层 (~3,105 行 Java 代码)                      |     |
-|  |                                                               |     |
-|  |  实现 android.* 框架类                                         |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  | android.app.*    |  | android.content.*|  | android.os.* | |     |
-|  |  | Activity         |  | Context          |  | Bundle       | |     |
-|  |  | Service          |  | Intent           |  | Handler      | |     |
-|  |  | Notification     |  | SharedPreferences|  | Looper       | |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  | android.view.*   |  | android.widget.* |  | android.net.*| |     |
-|  |  | View, ViewGroup  |  | Button, TextView |  | Uri          | |     |
-|  |  | LayoutInflater   |  | EditText, Toast  |  | HttpURL...   | |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  +------------------+  +------------------+                   |     |
-|  |  | android.database.|  | android.util.*   |                   |     |
-|  |  | SQLiteDatabase   |  | Log, SparseArray |                   |     |
-|  |  | Cursor           |  | ArrayMap         |                   |     |
-|  |  +------------------+  +------------------+                   |     |
-|  |                                                               |     |
-|  |  所有方法委托给原生桥接层 (OHBridge.nativeXxx())                  |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|                                 | JNI 调用                              |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  第二层：JNI/FFI 桥接层 (~2,658 行 Rust/C++ 代码)               |     |
-|  |                                                               |     |
-|  |  +-----------------------------------------------------------+|     |
-|  |  | Rust 模块                                                  ||     |
-|  |  |                                                           ||     |
-|  |  | lib.rs -------- JNI 入口注册                                ||     |
-|  |  | preferences.rs  SharedPreferences <-> Preferences          ||     |
-|  |  | rdb_store.rs -- SQLiteDatabase <-> RdbStore                ||     |
-|  |  | notification.rs 通知系统桥接                                 ||     |
-|  |  | reminder.rs --- AlarmManager <-> reminderAgentManager      ||     |
-|  |  | navigation.rs - Activity <-> UIAbility 导航                 ||     |
-|  |  | logging.rs ---- Log <-> HiLog                              ||     |
-|  |  | toast.rs ------ Toast <-> promptAction                     ||     |
-|  |  | network.rs ---- 网络 API                                   ||     |
-|  |  | device_info.rs  构建/设备信息                                ||     |
-|  |  | view.rs ------- View 渲染策略                               ||     |
-|  |  +-----------------------------------------------------------+|     |
-|  |                                                               |     |
-|  |  类型编排: Java 对象 <-> Rust 结构体 <-> OH C/N-API 类型        |     |
-|  |  异步转换: OH Promise <-> Android 回调                          |     |
-|  |  生命周期: JNI 局部引用/全局引用/弱引用管理                        |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|                                 | FFI 调用                              |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  第三层：OpenHarmony 原生 API                                   |     |
-|  |                                                               |     |
-|  |  @ohos.data.preferences     数据存储                            |     |
-|  |  @ohos.data.relationalStore 关系型数据库                         |     |
-|  |  @ohos.app.ability          应用框架                            |     |
-|  |  @ohos.notification         通知服务                            |     |
-|  |  @ohos.net.http             网络请求                            |     |
-|  |  @ohos.multimedia           多媒体                              |     |
-|  |  @ohos.sensor               传感器                              |     |
-|  |  @ohos.bluetooth            蓝牙                               |     |
-|  |  ArkUI 声明式 UI 框架        界面渲染                            |     |
-|  +---------------------------------------------------------------+     |
-|                                                                         |
-+=========================================================================+
+```mermaid
+graph TD
+    APK["APK 字节码<br/>未修改的 .dex 文件"]
+
+    subgraph L1["第一层：Java 适配层 (~3,105 行)"]
+        direction LR
+        APP["android.app.*<br/>Activity, Service<br/>Notification"]
+        CONTENT["android.content.*<br/>Context, Intent<br/>SharedPreferences"]
+        OS["android.os.*<br/>Bundle, Handler<br/>Looper"]
+        VIEW["android.view.*<br/>View, ViewGroup<br/>LayoutInflater"]
+        WIDGET["android.widget.*<br/>Button, TextView<br/>EditText, Toast"]
+        NET["android.net.*<br/>Uri, HttpURL"]
+    end
+
+    subgraph L2["第二层：JNI/FFI 桥接层 (~2,658 行 Rust/C++)"]
+        PREFS["preferences.rs<br/>SharedPreferences"]
+        RDB["rdb_store.rs<br/>SQLiteDatabase"]
+        NAV["navigation.rs<br/>Activity 生命周期"]
+        NOTIF["notification.rs<br/>通知系统"]
+        LOG["logging.rs<br/>Log → HiLog"]
+        VBRIDGE["view.rs<br/>View 渲染"]
+    end
+
+    subgraph L3["第三层：OpenHarmony 原生 API"]
+        direction LR
+        DATA["@ohos.data.*<br/>preferences<br/>relationalStore"]
+        ABILITY["@ohos.app.ability<br/>UIAbility"]
+        OHNOTIF["@ohos.notification"]
+        OHNET["@ohos.net.http"]
+        MEDIA["@ohos.multimedia"]
+        ARKUI["ArkUI<br/>声明式 UI"]
+    end
+
+    APK -->|"调用 android.*"| L1
+    L1 -->|"JNI 调用"| L2
+    L2 -->|"FFI 调用"| L3
+
+    style APK fill:#1f2937,stroke:#6b7280,color:#e5e7eb
+    style L1 fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style L2 fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style L3 fill:#065f46,stroke:#10b981,color:#e5e7eb
 ```
 
 ---
@@ -150,76 +134,42 @@
 
 ### AI 生成与测试完整流程
 
-```
-+=========================================================================+
-|                    端到端流水线流程图                                      |
-+=========================================================================+
-|                                                                         |
-|  [api_compat.db] --查询未实现的类--> [优先级队列]                          |
-|                                        |                                |
-|                                        v                                |
-|                            +---------------------+                     |
-|                            |  构建 AI 提示词       |                     |
-|                            |  - API 映射表        |                     |
-|                            |  - 迁移指南          |                     |
-|                            |  - 代码示例          |                     |
-|                            |  - 已有适配代码      |                     |
-|                            +----------+----------+                     |
-|                                       |                                |
-|                                       v                                |
-|                            +---------------------+                     |
-|                            |  Claude API 生成代码  |                     |
-|                            |  1. Java 适配类      |                     |
-|                            |  2. JUnit 测试       |                     |
-|                            |  3. Rust 桥接模块    |                     |
-|                            |  4. gtest 测试       |                     |
-|                            +----------+----------+                     |
-|                                       |                                |
-|                     +-----------------+-----------------+               |
-|                     |                                   |               |
-|                     v                                   v               |
-|           +------------------+                +------------------+      |
-|           | Android 端编译    |                | OHOS 端编译       |      |
-|           | (javac)          |                | (CMake + Clang)  |      |
-|           +--------+---------+                +--------+---------+      |
-|                    |                                   |                |
-|               编译失败?                            编译失败?             |
-|               |    |                              |    |               |
-|             是     否                           是     否              |
-|               |    |                              |    |               |
-|               v    v                              v    v               |
-|          [反馈给AI] [继续]                    [反馈给AI] [继续]          |
-|          [重试x3]                            [重试x3]                  |
-|                    |                                   |                |
-|                    v                                   v                |
-|           +------------------+                +------------------+      |
-|           | 第1级: Mock 测试  |                | 第1级: Mock 测试  |      |
-|           | (JVM, ~5秒)      |                | (x86原生, ~5秒)  |      |
-|           +--------+---------+                +--------+---------+      |
-|                    |                                   |                |
-|                    v                                   v                |
-|           +------------------+                +------------------+      |
-|           | 第2级: 集成测试    |                | 第2级: 无头ArkUI  |      |
-|           | (Android模拟器)   |                | (CMake, ~30秒)   |      |
-|           +--------+---------+                +--------+---------+      |
-|                    |                                   |                |
-|                    +----------------+------------------+               |
-|                                     |                                  |
-|                                     v                                  |
-|                          +---------------------+                       |
-|                          | 第3级: QEMU 集成测试  |                       |
-|                          | (完整构建+启动, ~5分)  |                       |
-|                          +----------+----------+                       |
-|                                     |                                  |
-|                          全部通过?   |                                  |
-|                          |         |                                   |
-|                        是         否                                   |
-|                          |         |                                   |
-|                          v         v                                   |
-|                   [提交代码]  [记录失败,反馈AI]                           |
-|                   [更新进度DB]  [重试或标记人工审查]                       |
-|                                                                         |
-+=========================================================================+
+```mermaid
+flowchart TD
+    START["api_compat.db"] --> QUEUE["优先级队列<br/>未实现的类"]
+    QUEUE --> PROMPT["构建 AI 提示词<br/>API 映射 + 指南<br/>+ 代码示例"]
+    PROMPT --> GEN["Claude API 生成代码<br/>1. Java 适配类<br/>2. JUnit 测试<br/>3. Rust 桥接模块<br/>4. gtest 测试"]
+
+    GEN --> ACOMPILE["Android 端编译<br/>javac"]
+    GEN --> OCOMPILE["OHOS 端编译<br/>CMake + Clang"]
+
+    ACOMPILE --> AFAIL{编译成功?}
+    OCOMPILE --> OFAIL{编译成功?}
+
+    AFAIL -->|否| AFEEDBACK["将错误反馈给 AI<br/>重试最多 3 次"]
+    AFEEDBACK --> GEN
+    OFAIL -->|否| OFEEDBACK["将错误反馈给 AI<br/>重试最多 3 次"]
+    OFEEDBACK --> GEN
+
+    AFAIL -->|是| MOCK1["第1级: Mock 测试<br/>JVM ~5秒"]
+    OFAIL -->|是| MOCK2["第1级: Mock 测试<br/>x86 原生 ~5秒"]
+
+    MOCK1 --> INTEG1["第2级: 集成测试<br/>Android 模拟器"]
+    MOCK2 --> INTEG2["第2级: 无头 ArkUI<br/>CMake ~30秒"]
+
+    INTEG1 --> QEMU["第3级: QEMU<br/>完整构建+启动 ~5分"]
+    INTEG2 --> QEMU
+
+    QEMU --> PASS{全部通过?}
+    PASS -->|是| COMMIT["Git 提交<br/>更新 shim_progress.db"]
+    PASS -->|否| FAILLOG["记录失败<br/>反馈给 AI<br/>或标记人工审查"]
+    FAILLOG --> GEN
+
+    style START fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style GEN fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style COMMIT fill:#065f46,stroke:#10b981,color:#e5e7eb
+    style FAILLOG fill:#7f1d1d,stroke:#ef4444,color:#e5e7eb
+    style QEMU fill:#92400e,stroke:#f59e0b,color:#e5e7eb
 ```
 
 ### 0.1 — 端到端测试流水线验证
@@ -593,54 +543,26 @@ test-apps/07-tier2-media/
 
 ### 3.1 — 策略：声明式视图构建器
 
-```
-+=========================================================================+
-|                    UI 适配架构                                            |
-+=========================================================================+
-|                                                                         |
-|  Android 命令式代码:                                                     |
-|  +---------------------------------------------------------------+     |
-|  |  LinearLayout layout = new LinearLayout(ctx);                  |     |
-|  |  Button btn = new Button(ctx);                                 |     |
-|  |  btn.setText("点击我");                                         |     |
-|  |  btn.setOnClickListener(v -> handleClick());                   |     |
-|  |  layout.addView(btn);                                         |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|              适配层捕获为视图描述树                                        |
-|                                 |                                       |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  ViewTree (视图树) {                                           |     |
-|  |    LinearLayout {                                              |     |
-|  |      orientation: VERTICAL                                     |     |
-|  |      children: [                                               |     |
-|  |        Button {                                                |     |
-|  |          text: "点击我",                                        |     |
-|  |          onClick: handleClick                                  |     |
-|  |        }                                                       |     |
-|  |      ]                                                         |     |
-|  |    }                                                           |     |
-|  |  }                                                             |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|              ArkUI 渲染器读取视图树                                       |
-|                                 |                                       |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  @Component                                                    |     |
-|  |  struct AndroidViewHost {                                      |     |
-|  |    @State viewTree: ViewNode                                   |     |
-|  |    build() {                                                   |     |
-|  |      Column() {              // LinearLayout -> Column         |     |
-|  |        Button(this.viewTree.children[0].text)                  |     |
-|  |          .onClick(() => this.viewTree.children[0].onClick())   |     |
-|  |      }                                                         |     |
-|  |    }                                                           |     |
-|  |  }                                                             |     |
-|  +---------------------------------------------------------------+     |
-|                                                                         |
-+=========================================================================+
+```mermaid
+flowchart TD
+    subgraph Android["Android 命令式代码"]
+        CODE["LinearLayout layout = new LinearLayout(ctx)<br/>Button btn = new Button(ctx)<br/>btn.setText('点击我')<br/>btn.setOnClickListener(v → handleClick())<br/>layout.addView(btn)"]
+    end
+
+    subgraph Tree["视图描述树"]
+        VT["ViewTree<br/>LinearLayout orientation=VERTICAL<br/>└─ Button text='点击我' onClick=handleClick"]
+    end
+
+    subgraph ArkUI["ArkUI 声明式渲染器"]
+        COMP["@Component AndroidViewHost<br/>@State viewTree: ViewNode<br/>build: Column → Button"]
+    end
+
+    CODE -->|"适配层捕获"| VT
+    VT -->|"ArkUI 读取视图树"| COMP
+
+    style Android fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style Tree fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style ArkUI fill:#065f46,stroke:#10b981,color:#e5e7eb
 ```
 
 ### 3.2 — 无头 ArkUI 测试用于视图适配验证

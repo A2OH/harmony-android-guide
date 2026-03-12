@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useLang } from '../i18n/LanguageContext';
+import MermaidBlock from '../components/MermaidBlock';
 
 const ANDROID_REVIEWS = [
   { slug: '01-app-framework-review', title: 'App Framework (Activity, Service, Application)', titleZh: '应用框架（Activity、Service、Application）' },
@@ -206,7 +207,18 @@ function DocViewer() {
         <Link to="/docs" className="text-sm text-blue-400 hover:underline">{t('docs.backToDocumentation')}</Link>
       </div>
       <article className="prose prose-invert prose-sm max-w-none bg-gray-900 border border-gray-800 rounded-xl p-6 overflow-x-auto">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code({ className, children, ...props }) {
+              const match = /language-mermaid/.exec(className || '');
+              if (match) {
+                return <MermaidBlock code={String(children).trim()} />;
+              }
+              return <code className={className} {...props}>{children}</code>;
+            },
+          }}
+        >{content}</ReactMarkdown>
       </article>
     </div>
   );

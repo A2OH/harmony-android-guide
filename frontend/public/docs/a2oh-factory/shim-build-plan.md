@@ -33,230 +33,161 @@ Build a transparent Android-to-OHOS API translation layer using AI-assisted code
 
 ## System Architecture
 
-```
-+=========================================================================+
-|                      Overall System Architecture                        |
-+=========================================================================+
-|                                                                         |
-|  +-------------------+    +-------------------+    +------------------+ |
-|  |   api_compat.db   |    |  AI Code Gen      |    |  Progress DB     | |
-|  |  (57,289 mappings)|--->|  (Claude API)     |--->| shim_progress.db | |
-|  |  scores/guides    |    |  prompts+feedback |    |  status/results  | |
-|  +-------------------+    +--------+----------+    +------------------+ |
-|                                    |                                    |
-|                  Generated Code (Java + Rust + Tests)                   |
-|                                    |                                    |
-|          +-------------------------+-------------------------+          |
-|          |                         |                         |          |
-|          v                         v                         v          |
-|  +---------------+     +-------------------+     +------------------+  |
-|  |  Java Shim    |     |   JNI/FFI Bridge  |     |    Test Cases    |  |
-|  |  (android.*)  |     |   (Rust + C++)    |     | (JUnit + gtest)  |  |
-|  +-------+-------+     +--------+----------+     +--------+---------+  |
-|          |                       |                         |           |
-|          v                       v                         v           |
-|  +---------------+     +-------------------+     +------------------+  |
-|  | Android Tests |     |  OHOS Native APIs |     | 3-Level Pipeline |  |
-|  | (JVM mock)    |     |  (@ohos.* / NDK)  |     | Mock/Headless/   |  |
-|  +---------------+     +-------------------+     | QEMU             |  |
-|                                                  +------------------+  |
-+=========================================================================+
+```mermaid
+graph TD
+    subgraph Input["Data Sources"]
+        DB["api_compat.db<br/>57,289 API mappings<br/>scores + guides"]
+        EXISTING["Existing Shim Code<br/>34 classes shimmed"]
+    end
+
+    subgraph AI["AI Code Generation"]
+        PROMPT["Build AI Prompt<br/>mapping table + guides + examples"]
+        CLAUDE["Claude API<br/>prompts + feedback loop"]
+    end
+
+    subgraph Output["Generated Artifacts"]
+        JAVA["Java Shim<br/>android.* classes"]
+        BRIDGE["JNI/FFI Bridge<br/>Rust + C++"]
+        TESTS["Test Cases<br/>JUnit + gtest"]
+    end
+
+    subgraph Targets["Runtime Targets"]
+        ANDROID["Android Tests<br/>JVM mock"]
+        OHOS["OHOS Native APIs<br/>@ohos.* / NDK"]
+        PIPELINE["3-Level Pipeline<br/>Mock / Headless / QEMU"]
+    end
+
+    subgraph Track["Progress Tracking"]
+        PROGRESS["shim_progress.db<br/>status + results"]
+    end
+
+    DB --> PROMPT
+    EXISTING --> PROMPT
+    PROMPT --> CLAUDE
+    CLAUDE --> JAVA
+    CLAUDE --> BRIDGE
+    CLAUDE --> TESTS
+    JAVA --> ANDROID
+    BRIDGE --> OHOS
+    TESTS --> PIPELINE
+    PIPELINE --> PROGRESS
+    PROGRESS -.->|feedback| PROMPT
+
+    style DB fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style CLAUDE fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style PROGRESS fill:#065f46,stroke:#10b981,color:#e5e7eb
+    style JAVA fill:#92400e,stroke:#f59e0b,color:#e5e7eb
+    style BRIDGE fill:#92400e,stroke:#f59e0b,color:#e5e7eb
+    style TESTS fill:#92400e,stroke:#f59e0b,color:#e5e7eb
 ```
 
 ### Shim Layer Architecture (3 Layers)
 
-```
-+=========================================================================+
-|                    Three-Layer Shim Architecture                        |
-+=========================================================================+
-|                                                                         |
-|  APK Bytecode (unmodified .dex files)                                   |
-|           |                                                             |
-|           v                                                             |
-|  +---------------------------------------------------------------+     |
-|  |  Layer 1: Java Shim (~3,105 lines)                             |     |
-|  |                                                               |     |
-|  |  Implements android.* framework classes                        |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  | android.app.*    |  | android.content.*|  | android.os.* | |     |
-|  |  | Activity         |  | Context          |  | Bundle       | |     |
-|  |  | Service          |  | Intent           |  | Handler      | |     |
-|  |  | Notification     |  | SharedPreferences|  | Looper       | |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |  | android.view.*   |  | android.widget.* |  | android.net.*| |     |
-|  |  | View, ViewGroup  |  | Button, TextView |  | Uri          | |     |
-|  |  | LayoutInflater   |  | EditText, Toast  |  | HttpURL...   | |     |
-|  |  +------------------+  +------------------+  +--------------+ |     |
-|  |                                                               |     |
-|  |  All methods delegate to native bridge (OHBridge.nativeXxx()) |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|                                 | JNI calls                            |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  Layer 2: JNI/FFI Bridge (~2,658 lines Rust/C++)               |     |
-|  |                                                               |     |
-|  |  lib.rs -------- JNI entry registration                       |     |
-|  |  preferences.rs  SharedPreferences <-> Preferences            |     |
-|  |  rdb_store.rs -- SQLiteDatabase <-> RdbStore                  |     |
-|  |  notification.rs Notification system bridge                    |     |
-|  |  reminder.rs --- AlarmManager <-> reminderAgentManager        |     |
-|  |  navigation.rs - Activity <-> UIAbility navigation            |     |
-|  |  logging.rs ---- Log <-> HiLog                                |     |
-|  |  toast.rs ------ Toast <-> promptAction                       |     |
-|  |  network.rs ---- Networking APIs                              |     |
-|  |  view.rs ------- View rendering strategy                      |     |
-|  |                                                               |     |
-|  |  Type marshalling: Java objects <-> Rust structs <-> OH C     |     |
-|  |  Async conversion: OH Promise <-> Android callbacks           |     |
-|  |  Lifecycle: JNI local/global/weak ref management              |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|                                 | FFI calls                            |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  Layer 3: OpenHarmony Native APIs                              |     |
-|  |                                                               |     |
-|  |  @ohos.data.preferences     Data storage                      |     |
-|  |  @ohos.data.relationalStore Relational DB                     |     |
-|  |  @ohos.app.ability          App framework                     |     |
-|  |  @ohos.notification         Notification service              |     |
-|  |  @ohos.net.http             Network requests                  |     |
-|  |  @ohos.multimedia           Multimedia                        |     |
-|  |  @ohos.sensor               Sensors                           |     |
-|  |  @ohos.bluetooth            Bluetooth                         |     |
-|  |  ArkUI declarative UI       UI rendering                      |     |
-|  +---------------------------------------------------------------+     |
-|                                                                         |
-+=========================================================================+
+```mermaid
+graph TD
+    APK["APK Bytecode<br/>unmodified .dex files"]
+
+    subgraph L1["Layer 1: Java Shim (~3,105 lines)"]
+        direction LR
+        APP["android.app.*<br/>Activity, Service<br/>Notification"]
+        CONTENT["android.content.*<br/>Context, Intent<br/>SharedPreferences"]
+        OS["android.os.*<br/>Bundle, Handler<br/>Looper"]
+        VIEW["android.view.*<br/>View, ViewGroup<br/>LayoutInflater"]
+        WIDGET["android.widget.*<br/>Button, TextView<br/>EditText, Toast"]
+        NET["android.net.*<br/>Uri, HttpURL"]
+    end
+
+    subgraph L2["Layer 2: JNI/FFI Bridge (~2,658 lines Rust/C++)"]
+        PREFS["preferences.rs<br/>SharedPreferences"]
+        RDB["rdb_store.rs<br/>SQLiteDatabase"]
+        NAV["navigation.rs<br/>Activity lifecycle"]
+        NOTIF["notification.rs<br/>Notifications"]
+        LOG["logging.rs<br/>Log → HiLog"]
+        VBRIDGE["view.rs<br/>View rendering"]
+    end
+
+    subgraph L3["Layer 3: OpenHarmony Native APIs"]
+        direction LR
+        DATA["@ohos.data.*<br/>preferences<br/>relationalStore"]
+        ABILITY["@ohos.app.ability<br/>UIAbility"]
+        OHNOTIF["@ohos.notification"]
+        OHNET["@ohos.net.http"]
+        MEDIA["@ohos.multimedia"]
+        ARKUI["ArkUI<br/>declarative UI"]
+    end
+
+    APK -->|calls android.*| L1
+    L1 -->|JNI calls| L2
+    L2 -->|FFI calls| L3
+
+    style APK fill:#1f2937,stroke:#6b7280,color:#e5e7eb
+    style L1 fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style L2 fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style L3 fill:#065f46,stroke:#10b981,color:#e5e7eb
 ```
 
 ### End-to-End Pipeline Flow
 
-```
-+=========================================================================+
-|                    End-to-End Pipeline Flow                              |
-+=========================================================================+
-|                                                                         |
-|  [api_compat.db] --query unimplemented--> [Priority Queue]              |
-|                                               |                         |
-|                                               v                         |
-|                                  +---------------------+                |
-|                                  |  Build AI Prompt     |                |
-|                                  |  - API mapping table |                |
-|                                  |  - Migration guides  |                |
-|                                  |  - Code examples     |                |
-|                                  |  - Existing shim code|                |
-|                                  +----------+----------+                |
-|                                             |                           |
-|                                             v                           |
-|                                  +---------------------+                |
-|                                  |  Claude API Generate |                |
-|                                  |  1. Java shim class  |                |
-|                                  |  2. JUnit test       |                |
-|                                  |  3. Rust bridge      |                |
-|                                  |  4. gtest test       |                |
-|                                  +----------+----------+                |
-|                                             |                           |
-|                       +---------------------+--------------------+      |
-|                       |                                          |      |
-|                       v                                          v      |
-|             +------------------+                +------------------+    |
-|             | Android Compile  |                | OHOS Compile     |    |
-|             | (javac)          |                | (CMake + Clang)  |    |
-|             +--------+---------+                +--------+---------+    |
-|                      |                                   |              |
-|                 Fail? |                              Fail?|              |
-|                 |     |                              |    |              |
-|               Yes    No                            Yes   No             |
-|                 |     |                              |    |              |
-|                 v     v                              v    v              |
-|          [Feed back] [Continue]              [Feed back] [Continue]     |
-|          [Retry x3]                          [Retry x3]                 |
-|                      |                                   |              |
-|                      v                                   v              |
-|             +------------------+                +------------------+    |
-|             | Level 1: Mock    |                | Level 1: Mock    |    |
-|             | (JVM, ~5s)       |                | (x86 native, ~5s)|    |
-|             +--------+---------+                +--------+---------+    |
-|                      |                                   |              |
-|                      v                                   v              |
-|             +------------------+                +------------------+    |
-|             | Level 2: Integ.  |                | Level 2: Headless|    |
-|             | (Android emu)    |                | ArkUI (CMake,30s)|    |
-|             +--------+---------+                +--------+---------+    |
-|                      |                                   |              |
-|                      +----------------+------------------+              |
-|                                       |                                 |
-|                                       v                                 |
-|                            +---------------------+                      |
-|                            | Level 3: QEMU       |                      |
-|                            | (Full build+boot,   |                      |
-|                            |  ~5 min)             |                      |
-|                            +----------+----------+                      |
-|                                       |                                 |
-|                            All pass?  |                                 |
-|                            |         |                                  |
-|                          Yes        No                                  |
-|                            |         |                                  |
-|                            v         v                                  |
-|                     [Commit]   [Log failure, feed back to AI]           |
-|                     [Update DB] [Retry or flag for human review]        |
-|                                                                         |
-+=========================================================================+
+```mermaid
+flowchart TD
+    START["api_compat.db"] --> QUEUE["Priority Queue<br/>unimplemented classes"]
+    QUEUE --> PROMPT["Build AI Prompt<br/>API mappings + guides<br/>+ code examples"]
+    PROMPT --> GEN["Claude API Generate<br/>1. Java shim class<br/>2. JUnit test<br/>3. Rust bridge<br/>4. gtest test"]
+
+    GEN --> ACOMPILE["Android Compile<br/>javac"]
+    GEN --> OCOMPILE["OHOS Compile<br/>CMake + Clang"]
+
+    ACOMPILE --> AFAIL{Compile OK?}
+    OCOMPILE --> OFAIL{Compile OK?}
+
+    AFAIL -->|No| AFEEDBACK["Feed errors to AI<br/>retry max 3x"]
+    AFEEDBACK --> GEN
+    OFAIL -->|No| OFEEDBACK["Feed errors to AI<br/>retry max 3x"]
+    OFEEDBACK --> GEN
+
+    AFAIL -->|Yes| MOCK1["Level 1: Mock Test<br/>JVM ~5s"]
+    OFAIL -->|Yes| MOCK2["Level 1: Mock Test<br/>x86 native ~5s"]
+
+    MOCK1 --> INTEG1["Level 2: Integration<br/>Android emulator"]
+    MOCK2 --> INTEG2["Level 2: Headless ArkUI<br/>CMake ~30s"]
+
+    INTEG1 --> QEMU["Level 3: QEMU<br/>Full build + boot ~5min"]
+    INTEG2 --> QEMU
+
+    QEMU --> PASS{All pass?}
+    PASS -->|Yes| COMMIT["Git Commit<br/>Update shim_progress.db"]
+    PASS -->|No| FAILLOG["Log failure<br/>Feed back to AI<br/>or flag for human review"]
+    FAILLOG --> GEN
+
+    style START fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style GEN fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style COMMIT fill:#065f46,stroke:#10b981,color:#e5e7eb
+    style FAILLOG fill:#7f1d1d,stroke:#ef4444,color:#e5e7eb
+    style QEMU fill:#92400e,stroke:#f59e0b,color:#e5e7eb
 ```
 
 ### UI Shim Architecture (Phase 3)
 
-```
-+=========================================================================+
-|                    UI Shim Architecture                                  |
-+=========================================================================+
-|                                                                         |
-|  Android imperative code:                                               |
-|  +---------------------------------------------------------------+     |
-|  |  LinearLayout layout = new LinearLayout(ctx);                  |     |
-|  |  Button btn = new Button(ctx);                                 |     |
-|  |  btn.setText("Click me");                                      |     |
-|  |  btn.setOnClickListener(v -> handleClick());                   |     |
-|  |  layout.addView(btn);                                         |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|              Shim captures as View Description Tree                     |
-|                                 |                                       |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  ViewTree {                                                    |     |
-|  |    LinearLayout {                                              |     |
-|  |      orientation: VERTICAL                                     |     |
-|  |      children: [                                               |     |
-|  |        Button {                                                |     |
-|  |          text: "Click me",                                     |     |
-|  |          onClick: handleClick                                  |     |
-|  |        }                                                       |     |
-|  |      ]                                                         |     |
-|  |    }                                                           |     |
-|  |  }                                                             |     |
-|  +------------------------------+--------------------------------+     |
-|                                 |                                       |
-|              ArkUI renderer reads View Tree                             |
-|                                 |                                       |
-|                                 v                                       |
-|  +---------------------------------------------------------------+     |
-|  |  @Component                                                    |     |
-|  |  struct AndroidViewHost {                                      |     |
-|  |    @State viewTree: ViewNode                                   |     |
-|  |    build() {                                                   |     |
-|  |      Column() {              // LinearLayout -> Column         |     |
-|  |        Button(this.viewTree.children[0].text)                  |     |
-|  |          .onClick(() => this.viewTree.children[0].onClick())   |     |
-|  |      }                                                         |     |
-|  |    }                                                           |     |
-|  |  }                                                             |     |
-|  +---------------------------------------------------------------+     |
-|                                                                         |
-+=========================================================================+
+```mermaid
+flowchart TD
+    subgraph Android["Android Imperative Code"]
+        CODE["LinearLayout layout = new LinearLayout(ctx)<br/>Button btn = new Button(ctx)<br/>btn.setText('Click me')<br/>btn.setOnClickListener(v → handleClick())<br/>layout.addView(btn)"]
+    end
+
+    subgraph Tree["View Description Tree"]
+        VT["ViewTree<br/>LinearLayout orientation=VERTICAL<br/>└─ Button text='Click me' onClick=handleClick"]
+    end
+
+    subgraph ArkUI["ArkUI Declarative Renderer"]
+        COMP["@Component AndroidViewHost<br/>@State viewTree: ViewNode<br/>build: Column → Button"]
+    end
+
+    CODE -->|"Shim captures"| VT
+    VT -->|"ArkUI reads tree"| COMP
+
+    style Android fill:#1e3a5f,stroke:#3b82f6,color:#e5e7eb
+    style Tree fill:#6d28d9,stroke:#7c3aed,color:#e5e7eb
+    style ArkUI fill:#065f46,stroke:#10b981,color:#e5e7eb
 ```
 
 ## Phase 0: Infrastructure Hardening (Week 1)
