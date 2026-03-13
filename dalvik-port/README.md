@@ -13,9 +13,9 @@ classes from `core-android-x86.jar`, runs bytecode, GC works correctly.
 
 - **Linux x86_64**: Fully boots, runs Hello World, runs unmodified Android apps
 - **OpenHarmony aarch64**: Fully boots and runs Hello World (static binary, tested via QEMU user-mode)
-- **OpenHarmony ARM32**: Runs unmodified Android apps transparently via QEMU user-mode
+- **OpenHarmony ARM32**: Runs unmodified Android apps transparently on QEMU system emulator with OHOS kernel
 - **1,968 Java shim classes**: 100% clean compile (0 errors), 2,422 .class files, covering android.* + dalvik.* + com.ohos.* types
-- **Android app transparency**: Full Activity lifecycle (onCreate→onStart→onResume→onPause→onStop→onDestroy) driven by ActivityThread + Instrumentation, manifest parsing, Intent routing, Bundle passing — all transparent across x86_64, aarch64, and ARM32
+- **Transparent Android app execution**: Unmodified Android apps (standard `Activity.onCreate(Bundle)`, `Log`, `Intent`, `Bundle`) run without any OHOS awareness. `ActivityThread` parses `AndroidManifest.xml`, creates `Application`, uses `Instrumentation` to instantiate and drive the full Activity lifecycle via reflection — identical behavior on x86_64 JVM, aarch64, and ARM32 OHOS
 
 ## Source
 
@@ -102,33 +102,52 @@ user.name = shell
 Done!
 ```
 
-### OpenHarmony ARM32 (via QEMU user-mode)
+### Transparent Android App (via ActivityThread)
+
+An unmodified Android app (`testapp/`) runs transparently via `ActivityThread`,
+which parses `AndroidManifest.xml` and drives the Activity lifecycle:
 
 ```bash
-/tmp/qemu-arm-static ./build-ohos-arm32/dalvikvm \
-  -Xverify:none -Xdexopt:none \
-  -Xbootclasspath:$(pwd)/core-android-x86.jar \
-  -classpath hello.dex Hello
+# On x86_64 JVM (native)
+java -cp testapp-classes android.app.ActivityThread testapp/AndroidManifest.xml
 
-# Run unmodified Android app with full lifecycle:
-/tmp/qemu-arm-static ./build-ohos-arm32/dalvikvm \
-  -Xverify:none -Xdexopt:none \
-  -Xbootclasspath:$(pwd)/core-android-x86.jar \
-  -classpath hello-android.dex com.example.hello.MainActivity
+# On QEMU ARM32 system emulator
+dalvikvm -cp testapp.dex -Xbootclasspath:core.jar \
+  android.app.ActivityThread --activity com.example.hello.MainActivity
 ```
 
-Android app output:
+Output (identical on both platforms):
 ```
-I/ActivityThread: Starting app: com.example.hello
+I/ActivityThread: --- ActivityThread starting ---
+I/ActivityThread: Package: com.example.hello
+I/ActivityThread: Launcher: com.example.hello.MainActivity
+I/ActivityThread: Application.onCreate()
+I/HelloApp: Application initialized for package: com.example.hello
+I/ActivityThread: Activity created: com.example.hello.MainActivity
+I/ActivityThread: --- onCreate ---
 I/MainActivity: onCreate called
+I/MainActivity: Fresh launch (no saved state)
+I/MainActivity: Bundle: message=Hello from a real Android app! version=1 transparent=true
+I/MainActivity: Launch intent: Intent { act=android.intent.action.MAIN cat=[...LAUNCHER] cmp=com.example.hello/.MainActivity }
+I/MainActivity: Action: android.intent.action.MAIN
+I/MainActivity: Share intent: Intent { act=android.intent.action.SEND (has extras) }
+I/MainActivity: OS: Linux/unknown
+I/MainActivity: VM: Dalvik 1.6.0
+I/MainActivity: Component: app/com.example.hello.MainActivity
 I/MainActivity: Computation: 6 * 7 = 42
-I/MainActivity: onStart called
-I/MainActivity: onResume called
-I/MainActivity: onPause called
-I/MainActivity: onStop called
-I/MainActivity: onDestroy called
-I/ActivityThread: App finished
+I/ActivityThread: --- onStart ---
+I/MainActivity: onStart
+I/ActivityThread: --- onResume ---
+I/MainActivity: onResume
+I/ActivityThread: --- onPause / onStop / onDestroy ---
+I/ActivityThread: Activity finished with result 0
+I/ActivityThread: --- ActivityThread complete ---
 ```
+
+The test app (`testapp/com/example/hello/MainActivity.java`) uses only standard
+Android APIs — `Activity.onCreate(Bundle)`, `android.util.Log`, `Intent`,
+`Bundle`, `getIntent()`, `getComponentName()`, `getApplication()` — with zero
+knowledge of OHOS or the shim layer.
 
 ### QEMU System Emulator (ARM32 with OHOS Kernel)
 

@@ -22,6 +22,7 @@ export default function Header() {
         </Link>
         <nav className="flex gap-4 text-sm">
           <Link to="/" className="text-gray-400 hover:text-white">{t('nav.dashboard')}</Link>
+          <Link to="/status" className="text-gray-400 hover:text-white">{t('nav.status')}</Link>
           <Link to="/browse" className="text-gray-400 hover:text-white">{t('nav.browse')}</Link>
           <Link to="/mappings" className="text-gray-400 hover:text-white">{t('nav.mappings')}</Link>
           <Link to="/gaps" className="text-gray-400 hover:text-white">{t('nav.gaps')}</Link>

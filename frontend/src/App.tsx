@@ -10,6 +10,7 @@ import Gaps from './pages/Gaps';
 import Search from './pages/Search';
 import SubsystemDetail from './pages/SubsystemDetail';
 import Docs from './pages/Docs';
+import Status from './pages/Status';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Header />
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/status" element={<Status />} />
               <Route path="/browse" element={<Browse />} />
               <Route path="/api/:id" element={<ApiDetail />} />
               <Route path="/mappings" element={<Mappings />} />
