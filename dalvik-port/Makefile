@@ -38,6 +38,26 @@ ifeq ($(TARGET),ohos)
                 --sysroot=$(OHOS_SYSROOT) \
                 -static
   LDFLAGS   := -lpthread -ldl -lz -lffi
+else ifeq ($(TARGET),ohos-arm32)
+  # OpenHarmony ARM32 (for QEMU virt-arm)
+  OHOS_SYSROOT_ARM32 := $(CURDIR)/ohos-sysroot-arm32
+  CXX       := $(OHOS_LLVM)/bin/clang++
+  CC        := $(OHOS_LLVM)/bin/clang
+  AR        := $(OHOS_LLVM)/bin/llvm-ar
+  RANLIB    := $(OHOS_LLVM)/bin/llvm-ranlib
+  BUILD     := $(CURDIR)/build-ohos-arm32
+  TARGET_FLAGS := --target=arm-linux-ohos \
+                  --sysroot=$(OHOS_SYSROOT_ARM32) \
+                  -D__MUSL__ \
+                  -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                  -fuse-ld=lld \
+                  --rtlib=compiler-rt
+  LINK_FLAGS := -fuse-ld=lld --rtlib=compiler-rt \
+                --target=arm-linux-ohos \
+                --sysroot=$(OHOS_SYSROOT_ARM32) \
+                -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                -static
+  LDFLAGS   := -lpthread -ldl -lz -lffi
 else ifeq ($(TARGET),ohos-x86)
   # OpenHarmony x86_64 (for OHOS emulator)
   CXX       := $(OHOS_LLVM)/bin/clang++

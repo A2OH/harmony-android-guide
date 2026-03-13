@@ -40,11 +40,13 @@ int jniRegisterSystemMethods(void* env) {
 } /* extern "C" */
 
 /* ── 64-bit u4/size_t mismatch wrapper ── */
+#if __SIZEOF_POINTER__ > 4
 struct StringObject;
 extern "C" StringObject* _Z32dvmCreateStringFromCstrAndLengthPKcm(const char*, unsigned long);
 extern "C" StringObject* _Z32dvmCreateStringFromCstrAndLengthPKcj(const char* s, unsigned int len) {
     return _Z32dvmCreateStringFromCstrAndLengthPKcm(s, (unsigned long)len);
 }
+#endif
 
 /* ── mterp stubs for portable-only build ── */
 struct Thread;

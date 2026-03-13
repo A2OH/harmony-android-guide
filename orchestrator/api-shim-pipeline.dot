@@ -1,0 +1,214 @@
+// Attractor pipeline: Android API shim generation for a single class
+// This graph is instantiated per API class by the dispatcher.
+// Variables like ${ANDROID_CLASS}, ${SKILL_FILE}, etc. are expanded at dispatch time.
+
+digraph ApiShimPipeline {
+    graph [
+        goal="Generate compilable, tested Android API shim for ${ANDROID_CLASS}",
+        retry_policy="standard",
+        context_fidelity="compact",
+        llm_model="claude-opus-4-6",
+        llm_provider="anthropic"
+    ]
+
+    rankdir=LR
+
+    // ── Entry ──
+    start [shape=Mdiamond, label="Start: ${ANDROID_CLASS}"]
+
+    // ── Stage 1: Read skill file + DB context ──
+    read_context [
+        shape=box,
+        label="Read Context",
+        type="tool",
+        prompt="Read the per-API skill file and extract method table, scenario, dependencies.
+File: skills/per-api/${SKILL_FILE}
+Also query api_compat.db for full method details:
+  sqlite3 database/api_compat.db \"SELECT a.name, a.signature, m.score, m.mapping_type, m.gap_description, m.migration_guide, m.code_example_android, m.code_example_oh, oa.name as oh_name FROM api_mappings m JOIN android_apis a ON m.android_api_id=a.id JOIN android_types t ON a.type_id=t.id JOIN android_packages p ON t.package_id=p.id LEFT JOIN oh_apis oa ON m.oh_api_id=oa.id WHERE p.name||'.'||t.full_name='${ANDROID_CLASS}' AND a.kind IN ('method','constructor') ORDER BY m.score DESC;\"
+Store the results in context."
+    ]
+
+    // ── Stage 2: Generate shim code ──
+    generate [
+        shape=box,
+        label="Generate Shim",
+        prompt="You are working on the Android→OpenHarmony shim layer in ${PROJECT_ROOT}.
+
+TARGET CLASS: ${ANDROID_CLASS}
+SCENARIO: ${SCENARIO}
+
+SKILL FILE CONTENT (per-API reference):
+${SKILL_CONTENT}
+
+API DETAILS FROM DATABASE:
+${API_DETAILS}
+
+EXISTING SHIM PATTERNS (reference):
+- shim/java/android/util/Log.java (thin wrapper pattern)
+- shim/java/android/content/SharedPreferences.java (bridge delegation pattern)
+- shim/java/android/widget/Button.java (UI ViewNode pattern)
+
+TASK:
+1. Create/update Java shim class at shim/java/${CLASS_PATH}.java
+   - Match AOSP package and class name exactly
+   - Follow the scenario instructions from the skill file
+   - For implementable APIs (score >= 5): implement with OHBridge delegation
+   - For stub APIs (score < 5): follow stub strategy from skill file
+
+2. Add OHBridge native declarations to shim/java/com/ohos/shim/bridge/OHBridge.java
+
+3. Add mock implementations to test-apps/mock/com/ohos/shim/bridge/OHBridge.java
+
+4. Add test section to test-apps/02-headless-cli/src/HeadlessTest.java
+   - Test each implemented method with valid + edge inputs (null, empty, boundary)
+   - Test stubs behave as expected (throw or return default)
+
+5. Do NOT commit. Make the code compile and tests pass.
+
+CONSTRAINTS:
+- Use javac from run-local-tests.sh
+- Do not break existing tests (baseline: ${BASELINE_PASS} pass, ${BASELINE_FAIL} fail)
+- Keep shim minimal — only what's needed",
+        max_retries=0
+    ]
+
+    // ── Stage 3: Compile ──
+    compile [
+        shape=box,
+        label="Compile",
+        type="tool",
+        prompt="cd ${PROJECT_ROOT}/test-apps && ./run-local-tests.sh 2>&1 | head -100
+Capture compilation output. If compilation fails, store errors in context.compile_error."
+    ]
+
+    // ── Stage 4: Check compile result ──
+    compile_check [
+        shape=diamond,
+        type="conditional",
+        label="Compile OK?"
+    ]
+
+    // ── Stage 5a: Fix compilation errors ──
+    fix_compile [
+        shape=box,
+        label="Fix Compile Errors",
+        prompt="The previous code generation for ${ANDROID_CLASS} failed to compile.
+
+COMPILATION ERRORS:
+${context.compile_error}
+
+Fix ONLY the compilation errors. Do not rewrite the entire class.
+Show the minimal changes needed. Common fixes:
+- Missing import: add import statement
+- Type mismatch: add explicit cast
+- Missing method in OHBridge: add to both OHBridge.java and mock
+- Undeclared variable: check spelling or add declaration
+
+After fixing, run: cd ${PROJECT_ROOT}/test-apps && ./run-local-tests.sh",
+        max_retries=0
+    ]
+
+    // ── Stage 5b: Run tests ──
+    run_tests [
+        shape=box,
+        label="Run Tests",
+        type="tool",
+        prompt="cd ${PROJECT_ROOT}/test-apps && ./run-local-tests.sh 2>&1
+Parse output for 'Passed: N | Failed: N'. Store in context.test_pass and context.test_fail.
+Check regression: test_fail must be <= ${BASELINE_FAIL} + 2."
+    ]
+
+    // ── Stage 6: Check test results ──
+    test_check [
+        shape=diamond,
+        type="conditional",
+        label="Tests Pass?"
+    ]
+
+    // ── Stage 7a: Fix test failures ──
+    fix_tests [
+        shape=box,
+        label="Fix Test Failures",
+        prompt="Tests failed for ${ANDROID_CLASS} shim.
+
+TEST OUTPUT:
+${context.test_output}
+
+FAILURES:
+${context.test_failures}
+
+SKILL FILE REFERENCE:
+${SKILL_CONTENT}
+
+Fix the test failures. Check:
+- Wrong return value: consult migration_guide in skill file
+- NullPointerException: add null guards
+- Wrong mock behavior: update mock to return plausible values
+- Missing test method: check AOSP API surface
+
+Do NOT rewrite the entire class. Fix only the failing tests.
+After fixing, run: cd ${PROJECT_ROOT}/test-apps && ./run-local-tests.sh",
+        max_retries=0
+    ]
+
+    // ── Stage 7b: Record success ──
+    record_success [
+        shape=box,
+        label="Record Success",
+        type="tool",
+        prompt="sqlite3 ${PROJECT_ROOT}/database/shim_progress.db \"
+UPDATE shim_progress SET
+  status='tested_mock',
+  test_pass=${context.test_pass},
+  test_fail=${context.test_fail},
+  completed_at=datetime('now')
+WHERE android_class='${ANDROID_CLASS}';\"
+echo 'SUCCESS: ${ANDROID_CLASS} shimmed with ${context.test_pass} tests passing'"
+    ]
+
+    // ── Stage 8: Record failure (after max retries) ──
+    record_failure [
+        shape=box,
+        label="Record Failure",
+        type="tool",
+        prompt="sqlite3 ${PROJECT_ROOT}/database/shim_progress.db \"
+UPDATE shim_progress SET
+  status='failed',
+  last_error='${context.last_error}',
+  test_pass=${context.test_pass},
+  test_fail=${context.test_fail}
+WHERE android_class='${ANDROID_CLASS}';\"
+echo 'FAILED: ${ANDROID_CLASS} after max retries'"
+    ]
+
+    // ── Exit ──
+    exit_ok [shape=Msquare, label="Done OK"]
+    exit_fail [shape=Msquare, label="Done Fail"]
+
+    // ── Edges ──
+    start -> read_context
+    read_context -> generate
+
+    generate -> compile
+    compile -> compile_check
+
+    // Compile success → run tests
+    compile_check -> run_tests [label="OK", condition="outcome=success"]
+    // Compile fail → fix (up to 3 cycles)
+    compile_check -> fix_compile [label="Fail", condition="outcome=fail && context.compile_retries < 3"]
+    compile_check -> record_failure [label="Give Up", condition="outcome=fail && context.compile_retries >= 3"]
+
+    fix_compile -> compile
+
+    // Test success → record
+    run_tests -> test_check
+    test_check -> record_success [label="Pass", condition="outcome=success"]
+    // Test fail → fix (up to 3 cycles)
+    test_check -> fix_tests [label="Fail", condition="outcome=fail && context.test_retries < 3"]
+    test_check -> record_failure [label="Give Up", condition="outcome=fail && context.test_retries >= 3"]
+
+    fix_tests -> run_tests
+
+    record_success -> exit_ok
+    record_failure -> exit_fail
+}

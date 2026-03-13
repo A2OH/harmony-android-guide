@@ -125,10 +125,51 @@ def parse_header_file(filepath):
                 'signature': f"{ret_type} {func_name}({params})",
             })
 
-    # Parse typedef struct
+    # Track struct names parsed with body to avoid double-capturing
+    structs_with_body = set()
+
+    # Parse struct bodies for member fields
+    for m in re.finditer(
+        r'typedef\s+struct\s*(?:\w+)?\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}\s*(\w+)\s*;',
+        clean, re.DOTALL
+    ):
+        body = m.group(1)
+        struct_name = m.group(2)
+        structs_with_body.add(struct_name)
+        members = []
+
+        # Parse each line for field declarations
+        for field_m in re.finditer(
+            r'^\s*([\w\s\*]+?)\s+(\w+)(?:\[(\d+)\])?\s*;',
+            body, re.MULTILINE
+        ):
+            field_type = field_m.group(1).strip()
+            field_name = field_m.group(2).strip()
+            # Skip if looks like a function pointer or nested struct
+            if '(' in field_type or field_type in ('struct', 'union', 'enum'):
+                continue
+            members.append({
+                'name': field_name,
+                'type': field_type,
+                'signature': f"{field_type} {field_name}",
+            })
+
+        result['structs'].append({
+            'name': struct_name,
+            'signature': f"typedef struct {struct_name}",
+            'members': members,
+        })
+
+    # Parse typedef struct (simple, without body) - skip those already parsed with body
     for m in re.finditer(r'typedef\s+struct\s+(\w+)', clean):
         name = m.group(1)
-        result['structs'].append({'name': name, 'signature': f"typedef struct {name}"})
+        if name not in structs_with_body:
+            if not any(s['name'] == name for s in result['structs']):
+                result['structs'].append({
+                    'name': name,
+                    'signature': f"typedef struct {name}",
+                    'members': [],
+                })
 
     # Parse typedef enum
     for m in re.finditer(r'typedef\s+enum\s*(?:\w+)?\s*\{([^}]+)\}\s*(\w+)\s*;', clean, re.DOTALL):
@@ -146,12 +187,47 @@ def parse_header_file(filepath):
             'values': values,
         })
 
+    # Parse standalone enums (non-typedef)
+    for m in re.finditer(r'\benum\s+(\w+)\s*\{([^}]+)\}\s*;', clean, re.DOTALL):
+        enum_name = m.group(1)
+        if not any(e['name'] == enum_name for e in result['enums']):
+            body = m.group(2)
+            values = []
+            for vm in re.finditer(r'(\w+)\s*(?:=\s*([^,\n]+))?', body):
+                val_name = vm.group(1)
+                if val_name.strip() and not val_name.startswith('//'):
+                    values.append({
+                        'name': val_name,
+                        'value': (vm.group(2) or '').strip(),
+                        'signature': f"{val_name}" + (f" = {vm.group(2).strip()}" if vm.group(2) else ""),
+                    })
+            if values:
+                result['enums'].append({
+                    'name': enum_name,
+                    'values': values,
+                })
+
     # Parse simple typedefs
     for m in re.finditer(r'typedef\s+(?!struct|enum|union)(\S+(?:\s*\*)?)\s+(\w+)\s*;', clean):
         result['typedefs'].append({
             'name': m.group(2),
             'type': m.group(1),
             'signature': f"typedef {m.group(1)} {m.group(2)}",
+        })
+
+    # Parse function pointer typedefs (callbacks)
+    for m in re.finditer(
+        r'typedef\s+([\w\s\*]+?)\s*\(\s*\*\s*(\w+)\s*\)\s*\(([^)]*)\)\s*;',
+        clean
+    ):
+        ret_type = m.group(1).strip()
+        cb_name = m.group(2).strip()
+        params = m.group(3).strip()
+        result['typedefs'].append({
+            'name': cb_name,
+            'type': f"callback({params}) -> {ret_type}",
+            'signature': f"typedef {ret_type} (*{cb_name})({params})",
+            'is_callback': True,
         })
 
     # Parse #define macros (skip include guards)
@@ -188,7 +264,7 @@ def import_to_db(db_path, ndk_dir):
             continue
 
         # Skip files with no APIs
-        total = len(parsed['functions']) + len(parsed['structs']) + len(parsed['enums']) + len(parsed['typedefs'])
+        total = len(parsed['functions']) + len(parsed['structs']) + len(parsed['enums']) + len(parsed['typedefs']) + len(parsed['macros'])
         if total == 0:
             continue
 
@@ -225,7 +301,26 @@ def import_to_db(db_path, ndk_dir):
                 INSERT OR IGNORE INTO oh_types (module_id, name, kind, syscap, since_version)
                 VALUES (?, ?, 'struct', ?, ?)
             """, (module_id, struct['name'], parsed['syscap'], parsed['since']))
-            type_count += 1
+
+            type_id = c.execute(
+                "SELECT id FROM oh_types WHERE module_id=? AND name=?",
+                (module_id, struct['name'])
+            ).fetchone()
+            if type_id:
+                type_id = type_id[0]
+                type_count += 1
+
+                # Import struct members as properties
+                for member in struct.get('members', []):
+                    c.execute("""
+                        INSERT INTO oh_apis
+                        (type_id, module_id, kind, name, signature, return_type, subsystem)
+                        VALUES (?, ?, 'property', ?, ?, ?, ?)
+                    """, (type_id, module_id, member['name'], member['signature'],
+                          member['type'], subsystem))
+                    api_count += 1
+            else:
+                type_count += 1
 
         # Import enums
         for enum in parsed['enums']:

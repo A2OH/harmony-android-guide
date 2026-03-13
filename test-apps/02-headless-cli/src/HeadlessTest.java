@@ -69,6 +69,18 @@ public class HeadlessTest {
         testContentProviderClient();
         testMediaStore();
         testLocation();
+        testWebView();
+        testSensorManager();
+        testService();
+        testHandler();
+        testContentProvider();
+        testMediaPlayer();
+        testAudioManager();
+        testConnectivityManager();
+        testLocationManager();
+        testWifiManager();
+        testTelephonyManager();
+        testGraphics();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -1104,5 +1116,1246 @@ public class HeadlessTest {
         check("copy latitude", Math.abs(copy.getLatitude() - loc.getLatitude()) < 0.0001);
 
         check("toString", loc.toString().contains("gps"));
+    }
+
+    // ── WebView ──
+
+    static void testWebView() {
+        section("android.webkit.WebView → @ohos.web.webview.WebviewController");
+
+        // ── Construction and initial state ──────────────────────────────────
+        android.webkit.WebView wv = new android.webkit.WebView();
+        check("WebView created non-null", wv != null);
+        check("getUrl() null before load", wv.getUrl() == null);
+        check("getTitle() null before load", wv.getTitle() == null);
+        check("canGoBack() false initially", !wv.canGoBack());
+        check("canGoForward() false initially", !wv.canGoForward());
+
+        // ── loadUrl stores URL ───────────────────────────────────────────────
+        wv.loadUrl("https://example.com");
+        check("getUrl() returns loaded URL", "https://example.com".equals(wv.getUrl()));
+        check("canGoBack() false after first load", !wv.canGoBack());
+        check("canGoForward() false after first load", !wv.canGoForward());
+
+        // ── Second load creates history ──────────────────────────────────────
+        wv.loadUrl("https://openharmony.io");
+        check("getUrl() updated after second load",
+              "https://openharmony.io".equals(wv.getUrl()));
+        check("canGoBack() true after second load", wv.canGoBack());
+        check("canGoForward() false at end of history", !wv.canGoForward());
+
+        // ── goBack ───────────────────────────────────────────────────────────
+        wv.goBack();
+        check("getUrl() after goBack is first URL",
+              "https://example.com".equals(wv.getUrl()));
+        check("canGoBack() false at start of history", !wv.canGoBack());
+        check("canGoForward() true after goBack", wv.canGoForward());
+
+        // ── goForward ────────────────────────────────────────────────────────
+        wv.goForward();
+        check("getUrl() after goForward is second URL",
+              "https://openharmony.io".equals(wv.getUrl()));
+        check("canGoForward() false at end again", !wv.canGoForward());
+        check("canGoBack() true after goForward", wv.canGoBack());
+
+        // ── goBack then new load clears forward history ──────────────────────
+        wv.goBack();
+        wv.loadUrl("https://harmonyos.com");
+        check("new load clears forward history", !wv.canGoForward());
+        check("getUrl() is new URL after branch load",
+              "https://harmonyos.com".equals(wv.getUrl()));
+
+        // ── reload ───────────────────────────────────────────────────────────
+        final boolean[] reloadFinished = {false};
+        wv.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override public void onPageFinished(android.webkit.WebView view, String url) {
+                reloadFinished[0] = true;
+            }
+        });
+        wv.reload();
+        check("reload fires onPageFinished", reloadFinished[0]);
+        check("getUrl() unchanged after reload",
+              "https://harmonyos.com".equals(wv.getUrl()));
+
+        // ── stopLoading doesn't throw ────────────────────────────────────────
+        try {
+            wv.stopLoading();
+            check("stopLoading() does not throw", true);
+        } catch (Exception e) {
+            check("stopLoading() does not throw", false);
+        }
+
+        // ── WebSettings ──────────────────────────────────────────────────────
+        android.webkit.WebSettings ws = wv.getSettings();
+        check("getSettings() returns non-null", ws != null);
+
+        ws.setJavaScriptEnabled(true);
+        check("setJavaScriptEnabled(true) / getJavaScriptEnabled()",
+              ws.getJavaScriptEnabled());
+
+        ws.setJavaScriptEnabled(false);
+        check("setJavaScriptEnabled(false)", !ws.getJavaScriptEnabled());
+
+        ws.setDomStorageEnabled(true);
+        check("setDomStorageEnabled / getDomStorageEnabled",
+              ws.getDomStorageEnabled());
+
+        ws.setBuiltInZoomControls(true);
+        check("setBuiltInZoomControls / getBuiltInZoomControls",
+              ws.getBuiltInZoomControls());
+
+        ws.setUseWideViewPort(true);
+        check("setUseWideViewPort / getUseWideViewPort", ws.getUseWideViewPort());
+
+        ws.setLoadWithOverviewMode(true);
+        check("setLoadWithOverviewMode / getLoadWithOverviewMode",
+              ws.getLoadWithOverviewMode());
+
+        ws.setCacheMode(android.webkit.WebSettings.LOAD_NO_CACHE);
+        check("setCacheMode / getCacheMode",
+              ws.getCacheMode() == android.webkit.WebSettings.LOAD_NO_CACHE);
+
+        check("LOAD_DEFAULT == 0",
+              android.webkit.WebSettings.LOAD_DEFAULT == 0);
+        check("LOAD_CACHE_ELSE_NETWORK == 1",
+              android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK == 1);
+        check("LOAD_NO_CACHE == 2",
+              android.webkit.WebSettings.LOAD_NO_CACHE == 2);
+        check("LOAD_CACHE_ONLY == 3",
+              android.webkit.WebSettings.LOAD_CACHE_ONLY == 3);
+
+        ws.setUserAgentString("TestAgent/1.0");
+        check("setUserAgentString / getUserAgentString",
+              "TestAgent/1.0".equals(ws.getUserAgentString()));
+
+        ws.setAllowFileAccess(false);
+        check("setAllowFileAccess(false)", !ws.getAllowFileAccess());
+
+        ws.setMediaPlaybackRequiresUserGesture(false);
+        check("setMediaPlaybackRequiresUserGesture(false)",
+              !ws.getMediaPlaybackRequiresUserGesture());
+
+        // ── WebViewClient callbacks ──────────────────────────────────────────
+        final boolean[] pageStarted  = {false};
+        final boolean[] pageFinished = {false};
+        final String[]  callbackUrl  = {null};
+
+        android.webkit.WebView wv2 = new android.webkit.WebView();
+        wv2.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override
+            public void onPageStarted(android.webkit.WebView view, String url,
+                                      android.graphics.Bitmap favicon) {
+                pageStarted[0] = true;
+                callbackUrl[0] = url;
+            }
+            @Override
+            public void onPageFinished(android.webkit.WebView view, String url) {
+                pageFinished[0] = true;
+            }
+            @Override
+            public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+                return false;
+            }
+        });
+
+        wv2.loadUrl("https://test.example");
+        check("onPageStarted callback fired", pageStarted[0]);
+        check("onPageStarted URL matches", "https://test.example".equals(callbackUrl[0]));
+        check("onPageFinished callback fired", pageFinished[0]);
+
+        // ── WebChromeClient callbacks ─────────────────────────────────────────
+        final int[]    progressVal = {-1};
+        final String[] chromTitle  = {null};
+
+        android.webkit.WebView wv3 = new android.webkit.WebView();
+        wv3.setWebChromeClient(new android.webkit.WebChromeClient() {
+            @Override
+            public void onProgressChanged(android.webkit.WebView view, int newProgress) {
+                progressVal[0] = newProgress;
+            }
+            @Override
+            public void onReceivedTitle(android.webkit.WebView view, String title) {
+                chromTitle[0] = title;
+            }
+        });
+
+        wv3.loadUrl("https://chrom.example");
+        check("onProgressChanged called with 100", progressVal[0] == 100);
+
+        wv3.pushTitle("Test Page Title");
+        check("onReceivedTitle callback fired", "Test Page Title".equals(chromTitle[0]));
+        check("getTitle() updated via pushTitle",
+              "Test Page Title".equals(wv3.getTitle()));
+
+        // ── evaluateJavascript ────────────────────────────────────────────────
+        final boolean[] evalCalled = {false};
+        final String[]  evalResult = {null};
+        wv.evaluateJavascript("1+1", new android.webkit.ValueCallback<String>() {
+            @Override public void onReceiveValue(String value) {
+                evalCalled[0] = true;
+                evalResult[0] = value;
+            }
+        });
+        check("evaluateJavascript callback fired", evalCalled[0]);
+        check("evaluateJavascript result is null (stub)", evalResult[0] == null);
+
+        // ── addJavascriptInterface doesn't throw ─────────────────────────────
+        try {
+            wv.addJavascriptInterface(new Object(), "Android");
+            check("addJavascriptInterface does not throw", true);
+        } catch (Exception e) {
+            check("addJavascriptInterface does not throw", false);
+        }
+
+        // ── loadData / loadDataWithBaseURL don't throw ────────────────────────
+        try {
+            wv.loadData("<html><body>Hello</body></html>", "text/html", "UTF-8");
+            check("loadData does not throw", true);
+        } catch (Exception e) {
+            check("loadData does not throw", false);
+        }
+
+        try {
+            wv.loadDataWithBaseURL("https://base.example", "<html/>",
+                                   "text/html", "UTF-8", "https://history.example");
+            check("loadDataWithBaseURL does not throw", true);
+            check("loadDataWithBaseURL uses historyUrl",
+                  "https://history.example".equals(wv.getUrl()));
+        } catch (Exception e) {
+            check("loadDataWithBaseURL does not throw", false);
+        }
+
+        // ── destroy ───────────────────────────────────────────────────────────
+        android.webkit.WebView wv4 = new android.webkit.WebView();
+        wv4.loadUrl("https://destroy.example");
+        try {
+            wv4.destroy();
+            check("destroy() does not throw", true);
+        } catch (Exception e) {
+            check("destroy() does not throw", false);
+        }
+        try {
+            wv4.loadUrl("https://after.destroy");
+            check("loadUrl after destroy should have thrown", false);
+        } catch (IllegalStateException e) {
+            check("loadUrl after destroy throws IllegalStateException", true);
+        }
+    }
+
+    // ── SensorManager ─────────────────────────────────────────────
+
+    static void testSensorManager() {
+        section("android.hardware.SensorManager → @ohos.sensor");
+
+        // ── Delay constants ─────────────────────────────────────────────
+        check("SENSOR_DELAY_FASTEST == 0",
+                android.hardware.SensorManager.SENSOR_DELAY_FASTEST == 0);
+        check("SENSOR_DELAY_GAME == 1",
+                android.hardware.SensorManager.SENSOR_DELAY_GAME == 1);
+        check("SENSOR_DELAY_UI == 2",
+                android.hardware.SensorManager.SENSOR_DELAY_UI == 2);
+        check("SENSOR_DELAY_NORMAL == 3",
+                android.hardware.SensorManager.SENSOR_DELAY_NORMAL == 3);
+
+        // ── Accuracy constants ────────────────────────────────────────────
+        check("SENSOR_STATUS_UNRELIABLE == 0",
+                android.hardware.SensorManager.SENSOR_STATUS_UNRELIABLE == 0);
+        check("SENSOR_STATUS_ACCURACY_LOW == 1",
+                android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW == 1);
+        check("SENSOR_STATUS_ACCURACY_MEDIUM == 2",
+                android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM == 2);
+        check("SENSOR_STATUS_ACCURACY_HIGH == 3",
+                android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_HIGH == 3);
+
+        // ── GRAVITY_EARTH constant ────────────────────────────────────────────
+        check("GRAVITY_EARTH ~9.80665",
+                Math.abs(android.hardware.SensorManager.GRAVITY_EARTH - 9.80665f) < 0.0001f);
+
+        android.hardware.SensorManager sm = new android.hardware.SensorManager();
+
+        // ── getDefaultSensor ────────────────────────────────────────────
+        android.hardware.Sensor accel =
+                sm.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
+        check("getDefaultSensor(ACCELEROMETER) non-null", accel != null);
+        check("getDefaultSensor(ACCELEROMETER) type correct",
+                accel != null && accel.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER);
+
+        android.hardware.Sensor gyro =
+                sm.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
+        check("getDefaultSensor(GYROSCOPE) non-null", gyro != null);
+
+        android.hardware.Sensor light =
+                sm.getDefaultSensor(android.hardware.Sensor.TYPE_LIGHT);
+        check("getDefaultSensor(LIGHT) non-null", light != null);
+
+        android.hardware.Sensor proximity =
+                sm.getDefaultSensor(android.hardware.Sensor.TYPE_PROXIMITY);
+        check("getDefaultSensor(PROXIMITY) non-null", proximity != null);
+
+        android.hardware.Sensor unknown = sm.getDefaultSensor(9999);
+        check("getDefaultSensor(unknown) returns null", unknown == null);
+
+        // ── getSensorList ─────────────────────────────────────────────────
+        java.util.List<android.hardware.Sensor> allSensors =
+                sm.getSensorList(android.hardware.Sensor.TYPE_ALL);
+        check("getSensorList(TYPE_ALL) non-null", allSensors != null);
+        check("getSensorList(TYPE_ALL) size >= 5",
+                allSensors != null && allSensors.size() >= 5);
+
+        java.util.List<android.hardware.Sensor> accelList =
+                sm.getSensorList(android.hardware.Sensor.TYPE_ACCELEROMETER);
+        check("getSensorList(ACCELEROMETER) has one entry",
+                accelList != null && accelList.size() == 1);
+        check("getSensorList(ACCELEROMETER) correct type",
+                accelList != null && !accelList.isEmpty()
+                && accelList.get(0).getType() == android.hardware.Sensor.TYPE_ACCELEROMETER);
+
+        java.util.List<android.hardware.Sensor> noneList = sm.getSensorList(9999);
+        check("getSensorList(unknown) returns empty list",
+                noneList != null && noneList.isEmpty());
+
+        // ── SensorEvent construction ──────────────────────────────────────────
+        android.hardware.SensorEvent event = new android.hardware.SensorEvent();
+        event.sensor    = accel;
+        event.accuracy  = android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+        event.timestamp = System.nanoTime();
+        event.values    = new float[]{1.0f, 2.0f, 9.8f};
+        check("SensorEvent.sensor assigned", event.sensor == accel);
+        check("SensorEvent.accuracy assigned",
+                event.accuracy == android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
+        check("SensorEvent.timestamp > 0", event.timestamp > 0);
+        check("SensorEvent.values length == 3",
+                event.values != null && event.values.length == 3);
+        check("SensorEvent.values[2] ~9.8", Math.abs(event.values[2] - 9.8f) < 0.1f);
+
+        // Convenience constructor
+        android.hardware.SensorEvent event2 = new android.hardware.SensorEvent(gyro, 3);
+        check("SensorEvent(sensor, count) sets sensor", event2.sensor == gyro);
+        check("SensorEvent(sensor, count) allocates values",
+                event2.values != null && event2.values.length == 3);
+
+        // toString must not throw
+        String evtStr = event.toString();
+        check("SensorEvent.toString() non-null", evtStr != null);
+
+        // ── SensorEventListener registration ─────────────────────────────────
+        final android.hardware.SensorEvent[] received = {null};
+        final int[] accuracyChangedArr = {-1};
+
+        android.hardware.SensorEventListener listener =
+                new android.hardware.SensorEventListener() {
+            @Override
+            public void onSensorChanged(android.hardware.SensorEvent e) {
+                received[0] = e;
+            }
+            @Override
+            public void onAccuracyChanged(android.hardware.Sensor s, int acc) {
+                accuracyChangedArr[0] = acc;
+            }
+        };
+
+        check("no listeners before register", !sm.hasListener(listener));
+
+        boolean registered = sm.registerListener(
+                listener, accel,
+                android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
+        check("registerListener returns true", registered);
+        check("listener registered after registerListener", sm.hasListener(listener));
+        check("listenerCount == 1 after register", sm.getListenerCount() == 1);
+
+        // Register same listener for a second sensor
+        sm.registerListener(listener, gyro,
+                android.hardware.SensorManager.SENSOR_DELAY_GAME);
+        java.util.List<android.hardware.Sensor> forListener =
+                sm.getSensorsForListener(listener);
+        check("getSensorsForListener size == 2 after second register",
+                forListener.size() == 2);
+
+        // Registering a duplicate sensor must not add twice
+        sm.registerListener(listener, accel,
+                android.hardware.SensorManager.SENSOR_DELAY_FASTEST);
+        check("duplicate sensor not added twice",
+                sm.getSensorsForListener(listener).size() == 2);
+
+        // ── unregisterListener(listener, sensor) ──────────────────────────────────────
+        sm.unregisterListener(listener, accel);
+        java.util.List<android.hardware.Sensor> afterPartial =
+                sm.getSensorsForListener(listener);
+        check("after unregister(sensor), only gyro remains",
+                afterPartial.size() == 1
+                && afterPartial.get(0).getType() == android.hardware.Sensor.TYPE_GYROSCOPE);
+        check("listener still tracked after partial unregister",
+                sm.hasListener(listener));
+
+        // ── unregisterListener(listener) removes all ──────────────────────────────────────
+        sm.unregisterListener(listener);
+        check("listener removed after full unregisterListener",
+                !sm.hasListener(listener));
+        check("listenerCount == 0 after full unregister",
+                sm.getListenerCount() == 0);
+
+        // ── null-safety ───────────────────────────────────────────────────────────────
+        boolean nullReg = sm.registerListener(null, accel,
+                android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
+        check("registerListener(null,sensor,delay) returns false", !nullReg);
+
+        nullReg = sm.registerListener(listener, null,
+                android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
+        check("registerListener(listener,null,delay) returns false", !nullReg);
+
+        sm.unregisterListener(null);
+        sm.unregisterListener(null, accel);
+        check("unregisterListener(null) does not throw", true);
+
+        // ── SensorEventListener interface dispatches correctly ─────────────────────────
+        listener.onSensorChanged(event);
+        check("onSensorChanged dispatch works", received[0] == event);
+
+        listener.onAccuracyChanged(accel,
+                android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW);
+        check("onAccuracyChanged dispatch works",
+                accuracyChangedArr[0]
+                == android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW);
+    }
+
+    // ── Service ──
+
+    static void testService() {
+        section("android.app.Service → ServiceExtensionAbility");
+
+        // Subclass Service
+        final boolean[] lifecycleEvents = {false, false, false, false};
+        android.app.Service svc = new android.app.Service() {
+            @Override
+            public void onCreate() {
+                lifecycleEvents[0] = true;
+            }
+            @Override
+            public int onStartCommand(android.content.Intent intent, int flags, int startId) {
+                lifecycleEvents[1] = true;
+                return super.onStartCommand(intent, flags, startId);
+            }
+            @Override
+            public android.os.IBinder onBind(android.content.Intent intent) {
+                lifecycleEvents[2] = true;
+                return null;
+            }
+            @Override
+            public void onDestroy() {
+                lifecycleEvents[3] = true;
+            }
+        };
+
+        // Constants
+        check("START_STICKY == 1",
+                android.app.Service.START_STICKY == 1);
+        check("START_NOT_STICKY == 2",
+                android.app.Service.START_NOT_STICKY == 2);
+        check("START_REDELIVER_INTENT == 3",
+                android.app.Service.START_REDELIVER_INTENT == 3);
+
+        // Lifecycle
+        svc.onCreate();
+        check("onCreate called", lifecycleEvents[0]);
+
+        android.content.Intent intent = new android.content.Intent();
+        int result = svc.onStartCommand(intent, 0, 1);
+        check("onStartCommand called", lifecycleEvents[1]);
+        check("onStartCommand returns START_STICKY",
+                result == android.app.Service.START_STICKY);
+
+        android.os.IBinder binder = svc.onBind(intent);
+        check("onBind called", lifecycleEvents[2]);
+        check("onBind returns null (default)", binder == null);
+
+        // stopSelf triggers onDestroy
+        check("isStopRequested false before stopSelf", !svc.isStopRequested());
+        svc.stopSelf();
+        check("onDestroy called via stopSelf", lifecycleEvents[3]);
+        check("isStopRequested true after stopSelf", svc.isStopRequested());
+
+        // stopSelf(id) — only stops when startId matches
+        android.app.Service svc2 = new android.app.Service() {
+            @Override public android.os.IBinder onBind(android.content.Intent i) { return null; }
+        };
+        svc2.onStartCommand(intent, 0, 5);
+        check("stopSelf(wrong id) returns false", !svc2.stopSelf(3));
+        check("stopSelf(correct id) returns true", svc2.stopSelf(5));
+    }
+
+    // ── Handler ──
+
+    static void testHandler() {
+        section("android.os.Handler + Message + Looper");
+
+        // post(Runnable) runs immediately
+        final boolean[] runnableRan = {false};
+        android.os.Handler handler = new android.os.Handler();
+        boolean posted = handler.post(() -> runnableRan[0] = true);
+        check("post(Runnable) returns true", posted);
+        check("post(Runnable) runs immediately", runnableRan[0]);
+
+        // sendMessage dispatches to handleMessage
+        final int[] receivedWhat = {-1};
+        android.os.Handler msgHandler = new android.os.Handler() {
+            @Override
+            public void handleMessage(android.os.Message msg) {
+                receivedWhat[0] = msg.what;
+            }
+        };
+        android.os.Message msg = android.os.Message.obtain(msgHandler, 42);
+        check("Message.obtain sets what", msg.what == 42);
+        check("Message.obtain sets target", msg.target == msgHandler);
+
+        boolean sent = msgHandler.sendMessage(msg);
+        check("sendMessage returns true", sent);
+        check("handleMessage received what=42", receivedWhat[0] == 42);
+
+        // sendEmptyMessage
+        final int[] emptyWhat = {-1};
+        android.os.Handler emptyHandler = new android.os.Handler() {
+            @Override
+            public void handleMessage(android.os.Message m) {
+                emptyWhat[0] = m.what;
+            }
+        };
+        emptyHandler.sendEmptyMessage(99);
+        check("sendEmptyMessage dispatches what=99", emptyWhat[0] == 99);
+
+        // Message.obtain with arg1/arg2
+        android.os.Message msg2 = android.os.Message.obtain(msgHandler, 7, 10, 20);
+        check("Message.obtain(h,what,arg1,arg2) arg1==10", msg2.arg1 == 10);
+        check("Message.obtain(h,what,arg1,arg2) arg2==20", msg2.arg2 == 20);
+
+        // Message.obtain with obj
+        android.os.Message msg3 = android.os.Message.obtain(msgHandler, 8, "payload");
+        check("Message.obtain(h,what,obj) obj set", "payload".equals(msg3.obj));
+
+        // Handler.Callback intercept
+        final boolean[] callbackFired = {false};
+        android.os.Handler cbHandler = new android.os.Handler(
+                (android.os.Handler.Callback) m -> {
+                    callbackFired[0] = true;
+                    return true; // consumed
+                });
+        cbHandler.sendEmptyMessage(1);
+        check("Handler.Callback intercepts message", callbackFired[0]);
+
+        // Looper.getMainLooper
+        android.os.Looper mainLooper = android.os.Looper.getMainLooper();
+        check("Looper.getMainLooper non-null", mainLooper != null);
+        check("Looper.getMainLooper thread non-null",
+                mainLooper != null && mainLooper.getThread() != null);
+
+        // Looper.myLooper
+        android.os.Looper myLooper = android.os.Looper.myLooper();
+        check("Looper.myLooper non-null", myLooper != null);
+
+        // Looper.prepare() and loop() don't throw
+        try {
+            android.os.Looper.prepare();
+            android.os.Looper.loop();
+            check("Looper.prepare/loop no-op, no exception", true);
+        } catch (Exception e) {
+            check("Looper.prepare/loop no-op, no exception", false);
+        }
+
+        // Message pool recycle
+        android.os.Message poolMsg = android.os.Message.obtain();
+        check("Message.obtain from pool non-null", poolMsg != null);
+        poolMsg.what = 100;
+        poolMsg.recycle();
+        android.os.Message reused = android.os.Message.obtain();
+        check("Message after recycle what reset", reused.what == 0);
+
+        // Handler bound to looper
+        android.os.Handler looperHandler = new android.os.Handler(mainLooper);
+        check("Handler.getLooper returns mainLooper",
+                looperHandler.getLooper() == mainLooper);
+    }
+
+    // ── ContentProvider ──
+
+    static void testContentProvider() {
+        section("android.content.ContentProvider → DataShareExtensionAbility");
+
+        // Concrete subclass
+        final java.util.List<String> insertedUris = new java.util.ArrayList<>();
+        android.content.ContentProvider provider = new android.content.ContentProvider() {
+            @Override
+            public boolean onCreate() { return true; }
+
+            @Override
+            public android.database.Cursor query(android.net.Uri uri, String[] projection,
+                    String selection, String[] selectionArgs, String sortOrder) {
+                return null; // stub
+            }
+
+            @Override
+            public android.net.Uri insert(android.net.Uri uri, android.content.ContentValues values) {
+                String uriStr = uri.toString() + "/" + System.nanoTime();
+                insertedUris.add(uriStr);
+                return android.net.Uri.parse(uriStr);
+            }
+
+            @Override
+            public int update(android.net.Uri uri, android.content.ContentValues values,
+                    String selection, String[] selectionArgs) {
+                return 1;
+            }
+
+            @Override
+            public int delete(android.net.Uri uri, String selection, String[] selectionArgs) {
+                return 2;
+            }
+
+            @Override
+            public String getType(android.net.Uri uri) {
+                return "vnd.android.cursor.dir/vnd.test.item";
+            }
+        };
+
+        // Attach context
+        android.content.Context ctx = new android.content.Context() {};
+        android.content.ContentProvider.ProviderInfo info =
+                new android.content.ContentProvider.ProviderInfo("com.example.test");
+        provider.attachInfo(ctx, info);
+        check("getContext returns attached context", provider.getContext() == ctx);
+
+        // onCreate
+        check("onCreate returns true", provider.onCreate());
+
+        // insert + query + update + delete + getType
+        android.net.Uri baseUri = android.net.Uri.parse("content://com.example.test/items");
+        android.content.ContentValues cv = new android.content.ContentValues();
+        cv.put("name", "Alice");
+
+        android.net.Uri inserted = provider.insert(baseUri, cv);
+        check("insert returns non-null URI", inserted != null);
+
+        android.database.Cursor cursor = provider.query(baseUri, null, null, null, null);
+        check("query returns (stub) cursor (may be null)", true); // null is acceptable
+
+        int updated = provider.update(baseUri, cv, null, null);
+        check("update returns count >= 0", updated >= 0);
+
+        int deleted = provider.delete(baseUri, null, null);
+        check("delete returns count >= 0", deleted >= 0);
+
+        String type = provider.getType(baseUri);
+        check("getType returns non-null string", type != null && !type.isEmpty());
+
+        // bulkInsert — default implementation loops over insert()
+        android.content.ContentValues[] bulkCvs = {
+            new android.content.ContentValues(),
+            new android.content.ContentValues(),
+            new android.content.ContentValues()
+        };
+        bulkCvs[0].put("name", "Bob");
+        bulkCvs[1].put("name", "Carol");
+        bulkCvs[2].put("name", "Dave");
+        int bulkCount = provider.bulkInsert(baseUri, bulkCvs);
+        check("bulkInsert returns 3", bulkCount == 3);
+
+        // ProviderInfo authority
+        check("ProviderInfo authority set", "com.example.test".equals(info.authority));
+
+        // call() default returns null
+        android.os.Bundle callResult = provider.call("myMethod", null, null);
+        check("call() default returns null", callResult == null);
+    }
+
+    // ── MediaPlayer ──
+
+    static void testMediaPlayer() {
+        section("android.media.MediaPlayer → AVPlayer");
+
+        android.media.MediaPlayer mp = new android.media.MediaPlayer();
+        check("initial state is IDLE",
+                mp.getState() == android.media.MediaPlayer.State.IDLE);
+
+        // setDataSource transitions to INITIALIZED
+        mp.setDataSource("/sdcard/test.mp3");
+        check("state after setDataSource is INITIALIZED",
+                mp.getState() == android.media.MediaPlayer.State.INITIALIZED);
+
+        // setDataSource in wrong state throws
+        try {
+            mp.setDataSource("/sdcard/other.mp3");
+            check("setDataSource in INITIALIZED should throw", false);
+        } catch (IllegalStateException e) {
+            check("setDataSource in non-IDLE throws IllegalStateException", true);
+        }
+
+        // prepare
+        final boolean[] preparedCalled = {false};
+        mp.setOnPreparedListener(m -> preparedCalled[0] = true);
+        mp.prepare();
+        check("state after prepare is PREPARED",
+                mp.getState() == android.media.MediaPlayer.State.PREPARED);
+        check("onPrepared callback fired", preparedCalled[0]);
+
+        // start
+        mp.start();
+        check("state after start is STARTED",
+                mp.getState() == android.media.MediaPlayer.State.STARTED);
+        check("isPlaying() true after start", mp.isPlaying());
+
+        // getDuration (mock returns 30000)
+        int duration = mp.getDuration();
+        check("getDuration returns > 0", duration > 0);
+
+        // setVolume does not throw
+        try {
+            mp.setVolume(0.5f, 0.5f);
+            check("setVolume does not throw", true);
+        } catch (Exception e) {
+            check("setVolume does not throw", false);
+        }
+
+        // seekTo
+        final boolean[] seekDone = {false};
+        mp.setOnSeekCompleteListener(m -> seekDone[0] = true);
+        mp.seekTo(5000);
+        check("seekTo does not throw", true);
+        check("onSeekComplete callback fired", seekDone[0]);
+
+        // setLooping does not throw
+        try {
+            mp.setLooping(true);
+            check("setLooping(true) does not throw", true);
+        } catch (Exception e) {
+            check("setLooping(true) does not throw", false);
+        }
+
+        // pause
+        mp.pause();
+        check("state after pause is PAUSED",
+                mp.getState() == android.media.MediaPlayer.State.PAUSED);
+        check("isPlaying() false after pause", !mp.isPlaying());
+
+        // stop
+        mp.stop();
+        check("state after stop is STOPPED",
+                mp.getState() == android.media.MediaPlayer.State.STOPPED);
+
+        // release
+        mp.release();
+        check("state after release is END",
+                mp.getState() == android.media.MediaPlayer.State.END);
+        check("isPlaying() false after release", !mp.isPlaying());
+
+        // getDuration after release throws
+        try {
+            mp.getDuration();
+            check("getDuration after release should throw", false);
+        } catch (IllegalStateException e) {
+            check("getDuration after release throws IllegalStateException", true);
+        }
+
+        // State machine: reset returns to IDLE
+        android.media.MediaPlayer mp2 = new android.media.MediaPlayer();
+        mp2.setDataSource("/test.mp3");
+        mp2.reset();
+        check("reset returns state to IDLE",
+                mp2.getState() == android.media.MediaPlayer.State.IDLE);
+    }
+
+    // ── AudioManager ──
+
+    static void testAudioManager() {
+        section("android.media.AudioManager → @ohos.multimedia.audio");
+
+        android.media.AudioManager am = new android.media.AudioManager();
+
+        // Stream type constants
+        check("STREAM_VOICE_CALL == 0",
+                android.media.AudioManager.STREAM_VOICE_CALL == 0);
+        check("STREAM_MUSIC == 3",
+                android.media.AudioManager.STREAM_MUSIC == 3);
+        check("STREAM_ALARM == 4",
+                android.media.AudioManager.STREAM_ALARM == 4);
+
+        // Ringer mode constants
+        check("RINGER_MODE_SILENT == 0",
+                android.media.AudioManager.RINGER_MODE_SILENT == 0);
+        check("RINGER_MODE_VIBRATE == 1",
+                android.media.AudioManager.RINGER_MODE_VIBRATE == 1);
+        check("RINGER_MODE_NORMAL == 2",
+                android.media.AudioManager.RINGER_MODE_NORMAL == 2);
+
+        // AudioFocus constants
+        check("AUDIOFOCUS_REQUEST_GRANTED == 1",
+                android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED == 1);
+        check("AUDIOFOCUS_REQUEST_FAILED == 0",
+                android.media.AudioManager.AUDIOFOCUS_REQUEST_FAILED == 0);
+
+        // getStreamMaxVolume
+        int maxVol = am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+        check("getStreamMaxVolume(MUSIC) > 0", maxVol > 0);
+
+        // Volume roundtrip
+        int origVol = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
+        int newVol = Math.max(0, origVol - 1);
+        am.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0);
+        check("setStreamVolume / getStreamVolume roundtrip",
+                am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC) == newVol);
+
+        // Ringer mode roundtrip
+        int origMode = am.getRingerMode();
+        check("getRingerMode returns valid mode", origMode >= 0 && origMode <= 2);
+        am.setRingerMode(android.media.AudioManager.RINGER_MODE_SILENT);
+        check("setRingerMode SILENT / getRingerMode",
+                am.getRingerMode() == android.media.AudioManager.RINGER_MODE_SILENT);
+        am.setRingerMode(origMode); // restore
+
+        // Audio mode (in-process state)
+        am.setMode(android.media.AudioManager.MODE_IN_CALL);
+        check("setMode/getMode roundtrip",
+                am.getMode() == android.media.AudioManager.MODE_IN_CALL);
+        am.setMode(android.media.AudioManager.MODE_NORMAL);
+
+        // Speakerphone (in-process)
+        am.setSpeakerphoneOn(true);
+        check("setSpeakerphoneOn true / isSpeakerphoneOn", am.isSpeakerphoneOn());
+        am.setSpeakerphoneOn(false);
+        check("setSpeakerphoneOn false / isSpeakerphoneOn", !am.isSpeakerphoneOn());
+
+        // requestAudioFocus always grants in shim
+        int focusResult = am.requestAudioFocus(
+                fc -> { /* listener */ },
+                android.media.AudioManager.STREAM_MUSIC,
+                android.media.AudioManager.AUDIOFOCUS_GAIN);
+        check("requestAudioFocus returns GRANTED",
+                focusResult == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+
+        int abandonResult = am.abandonAudioFocus(null);
+        check("abandonAudioFocus returns GRANTED",
+                abandonResult == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+    }
+
+    // ── ConnectivityManager ──
+
+    static void testConnectivityManager() {
+        section("android.net.ConnectivityManager + NetworkInfo + Network");
+
+        android.net.ConnectivityManager cm = new android.net.ConnectivityManager();
+
+        // Constants
+        check("TYPE_MOBILE == 0",  android.net.ConnectivityManager.TYPE_MOBILE == 0);
+        check("TYPE_WIFI == 1",    android.net.ConnectivityManager.TYPE_WIFI == 1);
+        check("TYPE_ETHERNET == 9", android.net.ConnectivityManager.TYPE_ETHERNET == 9);
+
+        // getActiveNetworkInfo (mock always returns a network)
+        android.net.NetworkInfo info = cm.getActiveNetworkInfo();
+        check("getActiveNetworkInfo non-null (mock is connected)", info != null);
+
+        if (info != null) {
+            check("NetworkInfo.isConnected()", info.isConnected());
+            int type = info.getType();
+            check("NetworkInfo.getType() is known type",
+                    type == android.net.ConnectivityManager.TYPE_WIFI
+                    || type == android.net.ConnectivityManager.TYPE_MOBILE
+                    || type == android.net.ConnectivityManager.TYPE_ETHERNET);
+            String typeName = info.getTypeName();
+            check("NetworkInfo.getTypeName() non-null", typeName != null && !typeName.isEmpty());
+            check("NetworkInfo.getState() is CONNECTED",
+                    info.getState() == android.net.NetworkInfo.State.CONNECTED);
+            check("NetworkInfo.isAvailable()", info.isAvailable());
+            check("NetworkInfo.isConnectedOrConnecting()", info.isConnectedOrConnecting());
+        }
+
+        // getActiveNetwork
+        android.net.Network net = cm.getActiveNetwork();
+        check("getActiveNetwork non-null", net != null);
+
+        // isDefaultNetworkActive
+        check("isDefaultNetworkActive() true", cm.isDefaultNetworkActive());
+
+        // getNetworkInfo per type
+        android.net.NetworkInfo wifiInfo = cm.getNetworkInfo(
+                android.net.ConnectivityManager.TYPE_WIFI);
+        check("getNetworkInfo(WIFI) non-null", wifiInfo != null);
+
+        // getAllNetworkInfo
+        android.net.NetworkInfo[] all = cm.getAllNetworkInfo();
+        check("getAllNetworkInfo returns 3 entries", all != null && all.length == 3);
+
+        // NetworkCallback registration/unregistration
+        android.net.ConnectivityManager.NetworkCallback cb =
+                new android.net.ConnectivityManager.NetworkCallback();
+        cm.registerDefaultNetworkCallback(cb);
+        cm.registerDefaultNetworkCallback(cb); // duplicate should not be added twice
+        cm.unregisterNetworkCallback(cb);
+        check("NetworkCallback register/unregister does not throw", true);
+    }
+
+    // ── LocationManager ──
+
+    static void testLocationManager() {
+        section("android.location.LocationManager + Criteria");
+
+        android.location.LocationManager lm = new android.location.LocationManager();
+
+        // Provider constants
+        check("GPS_PROVIDER is 'gps'",
+                "gps".equals(android.location.LocationManager.GPS_PROVIDER));
+        check("NETWORK_PROVIDER is 'network'",
+                "network".equals(android.location.LocationManager.NETWORK_PROVIDER));
+        check("PASSIVE_PROVIDER is 'passive'",
+                "passive".equals(android.location.LocationManager.PASSIVE_PROVIDER));
+
+        // getLastKnownLocation (mock returns SF coords)
+        android.location.Location loc =
+                lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+        check("getLastKnownLocation non-null", loc != null);
+        if (loc != null) {
+            check("latitude is a valid double", !Double.isNaN(loc.getLatitude()));
+            check("longitude is a valid double", !Double.isNaN(loc.getLongitude()));
+            check("provider is GPS",
+                    android.location.LocationManager.GPS_PROVIDER.equals(loc.getProvider()));
+        }
+
+        // isProviderEnabled (mock returns true)
+        check("isProviderEnabled(GPS) true",
+                lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER));
+
+        // getProviders(false) returns all 3
+        java.util.List<String> allProviders = lm.getProviders(false);
+        check("getProviders(false) returns 3 entries",
+                allProviders != null && allProviders.size() == 3);
+
+        // getProviders(true) when enabled returns 3
+        java.util.List<String> enabledProviders = lm.getProviders(true);
+        check("getProviders(true) returns 3 when enabled",
+                enabledProviders != null && enabledProviders.size() == 3);
+
+        // Criteria
+        android.location.Criteria fineCriteria = new android.location.Criteria();
+        fineCriteria.setAccuracy(android.location.Criteria.ACCURACY_FINE);
+        fineCriteria.setPowerRequirement(android.location.Criteria.POWER_HIGH);
+        check("Criteria.getAccuracy FINE",
+                fineCriteria.getAccuracy() == android.location.Criteria.ACCURACY_FINE);
+        check("Criteria.getPowerRequirement HIGH",
+                fineCriteria.getPowerRequirement() == android.location.Criteria.POWER_HIGH);
+
+        // getBestProvider with FINE criteria returns GPS
+        String bestFine = lm.getBestProvider(fineCriteria, true);
+        check("getBestProvider(FINE) returns GPS",
+                android.location.LocationManager.GPS_PROVIDER.equals(bestFine));
+
+        android.location.Criteria coarseCriteria = new android.location.Criteria();
+        coarseCriteria.setAccuracy(android.location.Criteria.ACCURACY_COARSE);
+        String bestCoarse = lm.getBestProvider(coarseCriteria, true);
+        check("getBestProvider(COARSE) returns NETWORK",
+                android.location.LocationManager.NETWORK_PROVIDER.equals(bestCoarse));
+
+        // Register / unregister listener
+        android.location.LocationListener listener = new android.location.LocationListener() {
+            @Override public void onLocationChanged(android.location.Location l) {}
+            @Override public void onStatusChanged(String p, int s, android.os.Bundle e) {}
+            @Override public void onProviderEnabled(String p) {}
+            @Override public void onProviderDisabled(String p) {}
+        };
+
+        check("no listener before register", !lm.hasListener(listener));
+        lm.requestLocationUpdates(
+                android.location.LocationManager.GPS_PROVIDER, 1000L, 0f, listener);
+        check("listener registered", lm.hasListener(listener));
+        check("listenerCount == 1", lm.getListenerCount() == 1);
+
+        lm.removeUpdates(listener);
+        check("listener removed after removeUpdates", !lm.hasListener(listener));
+        check("listenerCount == 0 after removeUpdates", lm.getListenerCount() == 0);
+    }
+
+    // ── WifiManager ──
+
+    static void testWifiManager() {
+        section("android.net.wifi.WifiManager + WifiInfo");
+
+        android.net.wifi.WifiManager wm = new android.net.wifi.WifiManager();
+
+        // State constants
+        check("WIFI_STATE_DISABLED == 1",
+                android.net.wifi.WifiManager.WIFI_STATE_DISABLED == 1);
+        check("WIFI_STATE_ENABLED == 3",
+                android.net.wifi.WifiManager.WIFI_STATE_ENABLED == 3);
+
+        // isWifiEnabled (mock starts as enabled)
+        check("isWifiEnabled() true initially", wm.isWifiEnabled());
+
+        // setWifiEnabled roundtrip
+        wm.setWifiEnabled(false);
+        check("isWifiEnabled() false after setWifiEnabled(false)", !wm.isWifiEnabled());
+        wm.setWifiEnabled(true);
+        check("isWifiEnabled() true after setWifiEnabled(true)", wm.isWifiEnabled());
+
+        // getWifiState
+        int state = wm.getWifiState();
+        check("getWifiState returns ENABLED when wifi on",
+                state == android.net.wifi.WifiManager.WIFI_STATE_ENABLED);
+
+        // startScan returns true
+        check("startScan() returns true", wm.startScan());
+
+        // getScanResults returns non-null list
+        java.util.List<android.net.wifi.ScanResult> scanResults = wm.getScanResults();
+        check("getScanResults returns non-null", scanResults != null);
+
+        // getConnectionInfo
+        android.net.wifi.WifiInfo wifiInfo = wm.getConnectionInfo();
+        check("getConnectionInfo non-null", wifiInfo != null);
+        if (wifiInfo != null) {
+            String ssid = wifiInfo.getSSID();
+            check("getSSID non-null", ssid != null);
+            int rssi = wifiInfo.getRssi();
+            check("getRssi is negative (dBm)", rssi < 0);
+        }
+
+        // calculateSignalLevel
+        int level = android.net.wifi.WifiManager.calculateSignalLevel(-50, 5);
+        check("calculateSignalLevel(-50, 5) in [0..4]", level >= 0 && level <= 4);
+
+        int minLevel = android.net.wifi.WifiManager.calculateSignalLevel(-100, 5);
+        check("calculateSignalLevel(MIN_RSSI) == 0", minLevel == 0);
+
+        int maxLevel = android.net.wifi.WifiManager.calculateSignalLevel(-55, 5);
+        check("calculateSignalLevel(MAX_RSSI) == 4", maxLevel == 4);
+
+        // compareSignalLevel
+        int cmp = android.net.wifi.WifiManager.compareSignalLevel(-60, -70);
+        check("compareSignalLevel(-60, -70) > 0 (stronger)", cmp > 0);
+
+        // getDhcpInfo
+        android.net.wifi.DhcpInfo dhcp = wm.getDhcpInfo();
+        check("getDhcpInfo non-null", dhcp != null);
+    }
+
+    // ── TelephonyManager ──
+
+    static void testTelephonyManager() {
+        section("android.telephony.TelephonyManager → @ohos.telephony");
+
+        android.telephony.TelephonyManager tm =
+                android.telephony.TelephonyManager.from(new android.content.Context() {});
+
+        // Phone type constants
+        check("PHONE_TYPE_NONE == 0",
+                android.telephony.TelephonyManager.PHONE_TYPE_NONE == 0);
+        check("PHONE_TYPE_GSM == 1",
+                android.telephony.TelephonyManager.PHONE_TYPE_GSM == 1);
+        check("PHONE_TYPE_CDMA == 2",
+                android.telephony.TelephonyManager.PHONE_TYPE_CDMA == 2);
+
+        // SIM state constants
+        check("SIM_STATE_UNKNOWN == 0",
+                android.telephony.TelephonyManager.SIM_STATE_UNKNOWN == 0);
+        check("SIM_STATE_READY == 5",
+                android.telephony.TelephonyManager.SIM_STATE_READY == 5);
+
+        // Network type constants
+        check("NETWORK_TYPE_LTE == 13",
+                android.telephony.TelephonyManager.NETWORK_TYPE_LTE == 13);
+        check("NETWORK_TYPE_NR == 20",
+                android.telephony.TelephonyManager.NETWORK_TYPE_NR == 20);
+
+        // getDeviceId (mock returns non-empty)
+        String deviceId = tm.getDeviceId();
+        check("getDeviceId non-null/non-empty",
+                deviceId != null && !deviceId.isEmpty());
+
+        // getLine1Number (mock returns a number)
+        String line1 = tm.getLine1Number();
+        check("getLine1Number non-null", line1 != null);
+
+        // getSimState (mock returns SIM_STATE_READY = 5)
+        int simState = tm.getSimState();
+        check("getSimState returns valid state", simState >= 0 && simState <= 5);
+
+        // getPhoneType (mock returns PHONE_TYPE_GSM = 1)
+        int phoneType = tm.getPhoneType();
+        check("getPhoneType returns valid type",
+                phoneType == android.telephony.TelephonyManager.PHONE_TYPE_GSM
+                || phoneType == android.telephony.TelephonyManager.PHONE_TYPE_CDMA
+                || phoneType == android.telephony.TelephonyManager.PHONE_TYPE_SIP
+                || phoneType == android.telephony.TelephonyManager.PHONE_TYPE_NONE);
+
+        // getNetworkType (mock returns NETWORK_TYPE_LTE = 13)
+        int netType = tm.getNetworkType();
+        check("getNetworkType returns valid type", netType >= 0);
+
+        // getNetworkOperatorName
+        String opName = tm.getNetworkOperatorName();
+        check("getNetworkOperatorName non-null", opName != null);
+
+        // isNetworkRoaming
+        check("isNetworkRoaming returns boolean (no exception)",
+                !tm.isNetworkRoaming() || tm.isNetworkRoaming()); // always passes
+
+        // getDataState
+        int dataState = tm.getDataState();
+        check("getDataState returns valid state",
+                dataState == android.telephony.TelephonyManager.DATA_DISCONNECTED
+                || dataState == android.telephony.TelephonyManager.DATA_CONNECTING
+                || dataState == android.telephony.TelephonyManager.DATA_CONNECTED);
+
+        // from() is singleton
+        android.telephony.TelephonyManager tm2 =
+                android.telephony.TelephonyManager.from(new android.content.Context() {});
+        check("from() returns singleton", tm == tm2);
+    }
+
+    // ── Graphics ──
+
+    static void testGraphics() {
+        section("android.graphics.Color / Rect / RectF / Point / PointF");
+
+        // ── Color constants ─────────────────────────────────────────────────────
+        check("Color.BLACK == 0xFF000000",
+                android.graphics.Color.BLACK == 0xFF000000);
+        check("Color.WHITE == 0xFFFFFFFF",
+                android.graphics.Color.WHITE == 0xFFFFFFFF);
+        check("Color.RED == 0xFFFF0000",
+                android.graphics.Color.RED == 0xFFFF0000);
+        check("Color.TRANSPARENT == 0",
+                android.graphics.Color.TRANSPARENT == 0);
+
+        // argb / component extractors
+        int col = android.graphics.Color.argb(128, 255, 64, 0);
+        check("Color.argb alpha == 128",
+                android.graphics.Color.alpha(col) == 128);
+        check("Color.argb red == 255",
+                android.graphics.Color.red(col) == 255);
+        check("Color.argb green == 64",
+                android.graphics.Color.green(col) == 64);
+        check("Color.argb blue == 0",
+                android.graphics.Color.blue(col) == 0);
+
+        // rgb (fully opaque)
+        int rgbCol = android.graphics.Color.rgb(0, 128, 255);
+        check("Color.rgb alpha == 255",
+                android.graphics.Color.alpha(rgbCol) == 255);
+        check("Color.rgb blue == 255",
+                android.graphics.Color.blue(rgbCol) == 255);
+
+        // parseColor #RRGGBB
+        int parsed = android.graphics.Color.parseColor("#FF8000");
+        check("parseColor #FF8000 red == 255",
+                android.graphics.Color.red(parsed) == 255);
+        check("parseColor #FF8000 green == 128",
+                android.graphics.Color.green(parsed) == 128);
+        check("parseColor #FF8000 blue == 0",
+                android.graphics.Color.blue(parsed) == 0);
+        check("parseColor #FF8000 alpha == 255",
+                android.graphics.Color.alpha(parsed) == 255);
+
+        // parseColor named
+        check("parseColor 'red' == RED",
+                android.graphics.Color.parseColor("red") == android.graphics.Color.RED);
+        check("parseColor 'white' == WHITE",
+                android.graphics.Color.parseColor("white") == android.graphics.Color.WHITE);
+
+        // parseColor #AARRGGBB
+        int argbParsed = android.graphics.Color.parseColor("#80FF0000");
+        check("parseColor #AARRGGBB alpha == 0x80",
+                android.graphics.Color.alpha(argbParsed) == 0x80);
+
+        // parseColor invalid throws
+        try {
+            android.graphics.Color.parseColor("notacolor");
+            check("parseColor invalid should throw", false);
+        } catch (IllegalArgumentException e) {
+            check("parseColor invalid throws IllegalArgumentException", true);
+        }
+
+        // ── Rect ──────────────────────────────────────────────────────────────────
+        android.graphics.Rect rect = new android.graphics.Rect(10, 20, 110, 70);
+        check("Rect.width() == 100", rect.width() == 100);
+        check("Rect.height() == 50", rect.height() == 50);
+        check("Rect.centerX() == 60", rect.centerX() == 60);
+        check("Rect.centerY() == 45", rect.centerY() == 45);
+        check("Rect.isEmpty() false", !rect.isEmpty());
+
+        // contains(point)
+        check("Rect.contains(60, 45) true", rect.contains(60, 45));
+        check("Rect.contains(0, 0) false", !rect.contains(0, 0));
+
+        // contains(rect)
+        check("Rect.contains sub-rect", rect.contains(20, 25, 100, 65));
+
+        // intersect
+        android.graphics.Rect r2 = new android.graphics.Rect(60, 40, 200, 100);
+        android.graphics.Rect intersectRect = new android.graphics.Rect(rect);
+        boolean intersected = intersectRect.intersect(r2);
+        check("Rect.intersect returns true when overlap", intersected);
+        check("Rect.intersect left == 60", intersectRect.left == 60);
+        check("Rect.intersect top == 40", intersectRect.top == 40);
+        check("Rect.intersect right == 110", intersectRect.right == 110);
+        check("Rect.intersect bottom == 70", intersectRect.bottom == 70);
+
+        // no intersection
+        android.graphics.Rect noOver = new android.graphics.Rect(rect);
+        boolean noIntersect = noOver.intersect(200, 200, 300, 300);
+        check("Rect.intersect returns false when no overlap", !noIntersect);
+
+        // set + equals
+        android.graphics.Rect r3 = new android.graphics.Rect();
+        r3.set(10, 20, 110, 70);
+        check("Rect.set / equals", r3.equals(rect));
+
+        // offset
+        android.graphics.Rect r4 = new android.graphics.Rect(rect);
+        r4.offset(5, 10);
+        check("Rect.offset left", r4.left == 15);
+        check("Rect.offset bottom", r4.bottom == 80);
+
+        // ── RectF ─────────────────────────────────────────────────────────────────
+        android.graphics.RectF rf = new android.graphics.RectF(0f, 0f, 3.5f, 2.0f);
+        check("RectF.width() == 3.5",
+                Math.abs(rf.width() - 3.5f) < 0.001f);
+        check("RectF.height() == 2.0",
+                Math.abs(rf.height() - 2.0f) < 0.001f);
+        check("RectF.centerX() == 1.75",
+                Math.abs(rf.centerX() - 1.75f) < 0.001f);
+        check("RectF.isEmpty() false", !rf.isEmpty());
+
+        android.graphics.RectF rf2 = new android.graphics.RectF(2.0f, 1.0f, 5.0f, 4.0f);
+        android.graphics.RectF rfCopy = new android.graphics.RectF(rf.left, rf.top, rf.right, rf.bottom);
+        boolean rfIntersected = rfCopy.intersect(rf2);
+        check("RectF.intersect returns true", rfIntersected);
+        check("RectF.intersect left == 2.0", Math.abs(rfCopy.left - 2.0f) < 0.001f);
+
+        // RectF from Rect
+        android.graphics.RectF rfFromInt = new android.graphics.RectF(rect);
+        check("RectF from Rect left == 10", Math.abs(rfFromInt.left - 10f) < 0.001f);
+
+        // ── Point ─────────────────────────────────────────────────────────────────
+        android.graphics.Point p = new android.graphics.Point(3, 7);
+        check("Point.x == 3", p.x == 3);
+        check("Point.y == 7", p.y == 7);
+
+        android.graphics.Point p2 = new android.graphics.Point(p);
+        check("Point copy constructor", p2.equals(p));
+
+        p2.set(10, 20);
+        check("Point.set x == 10", p2.x == 10);
+        check("Point.set y == 20", p2.y == 20);
+        check("Point not equal after set", !p2.equals(p));
+
+        // ── PointF ────────────────────────────────────────────────────────────────
+        android.graphics.PointF pf = new android.graphics.PointF(1.5f, 2.5f);
+        check("PointF.x == 1.5", Math.abs(pf.x - 1.5f) < 0.001f);
+        check("PointF.y == 2.5", Math.abs(pf.y - 2.5f) < 0.001f);
+
+        float len = pf.length();
+        check("PointF.length() ~2.915",
+                Math.abs(len - (float) Math.sqrt(1.5*1.5 + 2.5*2.5)) < 0.001f);
+
+        android.graphics.PointF pf2 = new android.graphics.PointF(pf);
+        check("PointF copy constructor equals original", pf2.equals(pf));
+
+        pf2.set(0f, 0f);
+        check("PointF.set to (0,0) not equals original", !pf2.equals(pf));
     }
 }
