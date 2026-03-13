@@ -13,6 +13,7 @@ classes from `core-android-x86.jar`, runs bytecode, GC works correctly.
 
 - **Linux x86_64**: Fully boots and runs Hello World
 - **OpenHarmony aarch64**: Fully boots and runs Hello World (static binary, tested via QEMU user-mode)
+- **OpenHarmony ARM32**: Fully boots and runs Hello World on QEMU system emulator with OHOS kernel
 - **912 Java shim classes**: Compile-compatible Android API stubs for migration
 
 ## Source
@@ -35,6 +36,24 @@ Android never shipped a 64-bit Dalvik — they switched to ART. We did the
 - Pointer-width atomics in `cutils/atomic.h` compat layer
 - Libcore bridge: native implementations for OsConstants, Posix, ICU, System
 
+## ARM32 OHOS Porting Notes
+
+Key issues solved for running on OHOS ARM32 (QEMU system emulator):
+
+- **OHOS musl `__musl_initialize` crash**: The constructor calls `CachedParameterCreate`
+  which accesses the OHOS parameter service (unavailable in minimal environments).
+  Fixed by removing `musl_preinit.o` and param objects from `libc.a`, providing
+  stub implementations in `preinit_stubs.o`.
+- **ARM EABI native call bridge**: The generic libffi path (`arch/generic/Call.cpp`)
+  corrupts JNIEnv* argument on ARM32 OHOS. Replaced with the native ARM EABI
+  assembly (`compat/CallEABI.S`) from AOSP, which directly manages the ARM calling
+  convention and passes r0 (pEnv) straight through.
+- **Raw syscall init binary**: PID 1 uses inline ARM EABI syscalls (no libc)
+  to mount filesystems and exec dalvikvm. Uses `clone(SIGCHLD,0)` for fork and
+  `wait4` instead of `waitpid` (not implemented on ARM Linux).
+- **Missing `/etc/passwd`**: `getpwuid(0)` returns NULL without it, causing NPE
+  in `System.initSystemProperties()`.
+
 ## Build
 
 ```bash
@@ -46,6 +65,9 @@ make -j$(nproc)
 
 # Or step by step:
 make TARGET=ohos -j$(nproc)
+
+# OpenHarmony ARM32 (for QEMU system emulator)
+make TARGET=ohos-arm32 -j$(nproc)
 ```
 
 ## Run
@@ -74,8 +96,27 @@ Hello from Dalvik on Linux!
 os.arch = aarch64
 os.name = Linux
 java.vm.name = Dalvik
+user.name = shell
 1 + 1 = 2
 Done!
+```
+
+### QEMU System Emulator (ARM32 with OHOS Kernel)
+
+Boots a full OHOS kernel with a minimal initramfs containing dalvikvm, dexopt,
+core.jar, and hello.dex. Uses a raw-syscall init binary (no libc) as PID 1,
+with a patched OHOS musl libc.a (parameter service constructor removed).
+
+```bash
+# Build initramfs (see /tmp/dalvik_init_raw.c for init source)
+# Pack: init, bin/dalvikvm, bin/dexopt, data/core.jar, data/hello.dex,
+#       system/bin/dexopt, etc/passwd
+cd /tmp/dalvik-initramfs && find . | cpio -o -H newc | gzip > /tmp/dalvik-initramfs.cpio.gz
+
+# Boot
+qemu-system-arm -M virt -cpu cortex-a15 -m 256 \
+  -kernel <ohos-zImage> -initrd /tmp/dalvik-initramfs.cpio.gz \
+  -append "console=ttyAMA0 rdinit=/init" -nographic -no-reboot
 ```
 
 ## Creating DEX files
@@ -88,10 +129,11 @@ d8 Hello.class --output .    # produces classes.dex, rename to hello.dex
 ## Dependencies
 
 - C++11 compiler (gcc/clang for native, OHOS LLVM for cross)
-- libffi (for generic arch native calls)
+- libffi (for generic arch native calls; not used on ARM32 which has native asm)
 - zlib (for JAR/ZIP reading)
 - pthreads, libdl
 - QEMU user-mode static (for testing aarch64 on x86_64 host)
+- QEMU system-arm (for full OHOS kernel boot with ARM32)
 
 ## Architecture
 

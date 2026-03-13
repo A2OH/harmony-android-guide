@@ -43,6 +43,7 @@ static void initConstant(JNIEnv* env, jclass c, const char* name, int value) {
     env->SetStaticIntField(c, fid, value);
 }
 
+
 static void JNICALL OsConstants_initConstants(JNIEnv* env, jclass c) {
     initConstant(env, c, "AF_INET", AF_INET);
     initConstant(env, c, "AF_INET6", AF_INET6);
@@ -291,6 +292,8 @@ static void JNICALL OsConstants_initConstants(JNIEnv* env, jclass c) {
 #ifdef _SC_NPROCESSORS_ONLN
     initConstant(env, c, "_SC_NPROCESSORS_ONLN", _SC_NPROCESSORS_ONLN);
 #endif
+    fprintf(stderr, "OsConstants done: %d\n", sInitConstantCount);
+    fflush(stderr);
 }
 
 /* ----------------------------------------------------------------
@@ -554,6 +557,9 @@ static jboolean JNICALL File_setLastModifiedImpl(JNIEnv*, jclass, jstring, jlong
 #define CONV_UTF8      1L
 #define CONV_ASCII     2L
 #define CONV_LATIN1    3L
+#define CONV_UTF16     4L
+#define CONV_UTF16BE   5L
+#define CONV_UTF16LE   6L
 
 static long converterForName(const char* name) {
     if (strcasecmp(name, "UTF-8") == 0 || strcasecmp(name, "UTF8") == 0)
@@ -563,6 +569,17 @@ static long converterForName(const char* name) {
     if (strcasecmp(name, "ISO-8859-1") == 0 || strcasecmp(name, "ISO8859_1") == 0 ||
         strcasecmp(name, "ISO-LATIN-1") == 0 || strcasecmp(name, "LATIN1") == 0)
         return CONV_LATIN1;
+    if (strcasecmp(name, "UTF-16") == 0 || strcasecmp(name, "UTF16") == 0 ||
+        strcasecmp(name, "UnicodeBig") == 0)
+        return CONV_UTF16;
+    if (strcasecmp(name, "UTF-16BE") == 0 || strcasecmp(name, "UTF16BE") == 0 ||
+        strcasecmp(name, "UnicodeBigUnmarked") == 0 ||
+        strcasecmp(name, "X-UTF-16BE") == 0)
+        return CONV_UTF16BE;
+    if (strcasecmp(name, "UTF-16LE") == 0 || strcasecmp(name, "UTF16LE") == 0 ||
+        strcasecmp(name, "UnicodeLittleUnmarked") == 0 ||
+        strcasecmp(name, "X-UTF-16LE") == 0)
+        return CONV_UTF16LE;
     return 0;
 }
 
@@ -580,6 +597,9 @@ static jobject JNICALL NativeConverter_charsetForName(JNIEnv* env, jclass, jstri
     const char* utf8Aliases[] = { "UTF-8", "UTF8", "unicode-1-1-utf-8" };
     const char* asciiAliases[] = { "US-ASCII", "ASCII", "iso-ir-6", "cp367" };
     const char* latin1Aliases[] = { "ISO-8859-1", "ISO8859_1", "iso-ir-100", "latin1", "cp819" };
+    const char* utf16Aliases[] = { "UTF-16", "UTF16", "UnicodeBig" };
+    const char* utf16beAliases[] = { "UTF-16BE", "UTF16BE", "UnicodeBigUnmarked", "X-UTF-16BE" };
+    const char* utf16leAliases[] = { "UTF-16LE", "UTF16LE", "UnicodeLittleUnmarked", "X-UTF-16LE" };
 
     switch (handle) {
     case CONV_UTF8:
@@ -591,6 +611,15 @@ static jobject JNICALL NativeConverter_charsetForName(JNIEnv* env, jclass, jstri
     case CONV_LATIN1:
         canonicalName = "ISO-8859-1"; icuCanonicalName = "ISO-8859-1";
         aliases = latin1Aliases; aliasCount = 5; break;
+    case CONV_UTF16:
+        canonicalName = "UTF-16"; icuCanonicalName = "UTF-16";
+        aliases = utf16Aliases; aliasCount = 3; break;
+    case CONV_UTF16BE:
+        canonicalName = "UTF-16BE"; icuCanonicalName = "UTF-16BE";
+        aliases = utf16beAliases; aliasCount = 4; break;
+    case CONV_UTF16LE:
+        canonicalName = "UTF-16LE"; icuCanonicalName = "UTF-16LE";
+        aliases = utf16leAliases; aliasCount = 4; break;
     default: return NULL;
     }
 
@@ -621,13 +650,23 @@ static void JNICALL NativeConverter_closeConverter(JNIEnv*, jclass, jlong) { }
 static void JNICALL NativeConverter_resetByteToChar(JNIEnv*, jclass, jlong) { }
 static void JNICALL NativeConverter_resetCharToByte(JNIEnv*, jclass, jlong) { }
 static jfloat JNICALL NativeConverter_getAveBytesPerChar(JNIEnv*, jclass, jlong h) {
-    return (h == CONV_UTF8) ? 1.1f : 1.0f;
+    if (h == CONV_UTF8) return 1.1f;
+    if (h == CONV_UTF16 || h == CONV_UTF16BE || h == CONV_UTF16LE) return 2.0f;
+    return 1.0f;
 }
-static jfloat JNICALL NativeConverter_getAveCharsPerByte(JNIEnv*, jclass, jlong) { return 1.0f; }
+static jfloat JNICALL NativeConverter_getAveCharsPerByte(JNIEnv*, jclass, jlong h) {
+    if (h == CONV_UTF16 || h == CONV_UTF16BE || h == CONV_UTF16LE) return 0.5f;
+    return 1.0f;
+}
 static jint JNICALL NativeConverter_getMaxBytesPerChar(JNIEnv*, jclass, jlong h) {
-    return (h == CONV_UTF8) ? 4 : 1;
+    if (h == CONV_UTF8) return 4;
+    if (h == CONV_UTF16 || h == CONV_UTF16BE || h == CONV_UTF16LE) return 4;
+    return 1;
 }
-static jint JNICALL NativeConverter_getMinBytesPerChar(JNIEnv*, jclass, jlong) { return 1; }
+static jint JNICALL NativeConverter_getMinBytesPerChar(JNIEnv*, jclass, jlong h) {
+    if (h == CONV_UTF16 || h == CONV_UTF16BE || h == CONV_UTF16LE) return 2;
+    return 1;
+}
 
 static jbyteArray JNICALL NativeConverter_getSubstitutionBytes(JNIEnv* env, jclass, jlong) {
     jbyteArray arr = env->NewByteArray(1);
@@ -638,10 +677,11 @@ static jbyteArray JNICALL NativeConverter_getSubstitutionBytes(JNIEnv* env, jcla
 static jboolean JNICALL NativeConverter_contains(JNIEnv*, jclass, jstring, jstring) { return JNI_FALSE; }
 
 static jobjectArray JNICALL NativeConverter_getAvailableCharsetNames(JNIEnv* env, jclass) {
-    const char* names[] = { "UTF-8", "US-ASCII", "ISO-8859-1" };
+    const char* names[] = { "UTF-8", "US-ASCII", "ISO-8859-1", "UTF-16", "UTF-16BE", "UTF-16LE" };
+    int count = 6;
     jclass strClass = env->FindClass("java/lang/String");
-    jobjectArray arr = env->NewObjectArray(3, strClass, NULL);
-    for (int i = 0; i < 3; i++)
+    jobjectArray arr = env->NewObjectArray(count, strClass, NULL);
+    for (int i = 0; i < count; i++)
         env->SetObjectArrayElement(arr, i, env->NewStringUTF(names[i]));
     return arr;
 }

@@ -57,7 +57,7 @@ else ifeq ($(TARGET),ohos-arm32)
                 --sysroot=$(OHOS_SYSROOT_ARM32) \
                 -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
                 -static
-  LDFLAGS   := -lpthread -ldl -lz -lffi
+  LDFLAGS   := $(OHOS_SYSROOT_ARM32)/usr/lib/preinit_stubs.o -lpthread -ldl -lz -lffi
 else ifeq ($(TARGET),ohos-x86)
   # OpenHarmony x86_64 (for OHOS emulator)
   CXX       := $(OHOS_LLVM)/bin/clang++
@@ -111,7 +111,7 @@ CFLAGS    := -std=c11 -fPIC -O2 \
              $(TARGET_FLAGS) \
              $(INCLUDES)
 
-CXXFLAGS  := -std=c++11 -fPIC -O0 -g \
+CXXFLAGS  := -std=c++11 -fPIC -O2 -g \
              $(COMMON_DEFS) \
              -D_GNU_SOURCE \
              -DNDEBUG \
@@ -260,9 +260,18 @@ DVM_SRCS := \
     $(VM)/hprof/HprofOutput.cpp \
     $(VM)/hprof/HprofString.cpp \
     $(VM)/os/linux.cpp \
-    $(VM)/arch/generic/Call.cpp \
-    $(VM)/arch/generic/Hints.cpp \
     $(VM)/test/TestHash.cpp
+
+# Architecture-specific call bridge
+ifeq ($(TARGET),ohos-arm32)
+  # Use native ARM EABI assembly instead of generic FFI path
+  DVM_ASM_SRCS := $(COMPAT)/CallEABI.S
+  DVM_ARCH_SRCS := $(VM)/arch/arm/HintsEABI.cpp
+else
+  DVM_ARCH_SRCS := $(VM)/arch/generic/Call.cpp $(VM)/arch/generic/Hints.cpp
+endif
+
+DVM_SRCS += $(DVM_ARCH_SRCS)
 
 # Object files
 LIBDEX_OBJS := $(patsubst %.cpp,$(BUILD)/%.o,$(notdir $(LIBDEX_SRCS)))
@@ -353,8 +362,17 @@ $(BUILD)/link_fixups.o: $(COMPAT)/link_fixups.cpp
 $(BUILD)/libcore_bridge.o: $(COMPAT)/libcore_bridge.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Compile ARM EABI assembly if present
+ifdef DVM_ASM_SRCS
+$(BUILD)/CallEABI.o: $(DVM_ASM_SRCS)
+	$(CC) $(TARGET_FLAGS) -c $< -o $@
+ASM_OBJS := $(BUILD)/CallEABI.o
+else
+ASM_OBJS :=
+endif
+
 # Link: create static library from all object files
-link: build-all $(BUILD)/link_fixups.o $(BUILD)/libcore_bridge.o
+link: build-all $(BUILD)/link_fixups.o $(BUILD)/libcore_bridge.o $(ASM_OBJS)
 	@echo "═══ Linking libdvm.a ═══"
 	$(AR) rcs $(BUILD)/libdvm.a $(BUILD)/*.o
 	@echo "Created: $(BUILD)/libdvm.a ($$(du -h $(BUILD)/libdvm.a | cut -f1))"
