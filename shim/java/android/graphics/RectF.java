@@ -1,12 +1,12 @@
 package android.graphics;
 
+import android.os.Parcel;
+
 /**
  * Shim: android.graphics.RectF
  * Pure Java — no OHBridge calls.
  */
 public class RectF {
-    public RectF(Object... args) {}
-    public RectF(int left, int top, int right) {}
 
     public float left, top, right, bottom;
 
@@ -21,6 +21,15 @@ public class RectF {
         this.bottom = bottom;
     }
 
+    public RectF(RectF r) {
+        if (r != null) {
+            this.left   = r.left;
+            this.top    = r.top;
+            this.right  = r.right;
+            this.bottom = r.bottom;
+        }
+    }
+
     public RectF(Rect r) {
         if (r != null) {
             this.left   = r.left;
@@ -32,19 +41,23 @@ public class RectF {
 
     // ── Dimensions ───────────────────────────────────────────────────────────
 
-    public float width()  { return right  - left; }
-    public float height() { return bottom - top;  }
+    public final float width()  { return right  - left; }
+    public final float height() { return bottom - top;  }
 
-    public float centerX() { return (left + right)  / 2.0f; }
-    public float centerY() { return (top  + bottom) / 2.0f; }
+    public final float centerX() { return (left + right)  / 2.0f; }
+    public final float centerY() { return (top  + bottom) / 2.0f; }
 
-    public float exactCenterX() { return centerX(); }
-    public float exactCenterY() { return centerY(); }
+    public final float exactCenterX() { return (left + right) / 2.0f; }
+    public final float exactCenterY() { return (top + bottom) / 2.0f; }
 
     // ── State ────────────────────────────────────────────────────────────────
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return left >= right || top >= bottom;
+    }
+
+    public void setEmpty() {
+        left = right = top = bottom = 0f;
     }
 
     // ── Setters ──────────────────────────────────────────────────────────────
@@ -79,7 +92,12 @@ public class RectF {
     }
 
     public boolean contains(float l, float t, float r, float b) {
-        return left <= l && top <= t && right >= r && bottom >= b;
+        return left < right && top < bottom
+            && left <= l && top <= t && right >= r && bottom >= b;
+    }
+
+    public boolean contains(RectF r) {
+        return contains(r.left, r.top, r.right, r.bottom);
     }
 
     // ── Geometry ─────────────────────────────────────────────────────────────
@@ -103,6 +121,30 @@ public class RectF {
         return false;
     }
 
+    public boolean setIntersect(RectF a, RectF b) {
+        float newLeft   = Math.max(a.left,   b.left);
+        float newTop    = Math.max(a.top,    b.top);
+        float newRight  = Math.min(a.right,  b.right);
+        float newBottom = Math.min(a.bottom, b.bottom);
+        if (newLeft < newRight && newTop < newBottom) {
+            left   = newLeft;
+            top    = newTop;
+            right  = newRight;
+            bottom = newBottom;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean intersects(float l, float t, float r, float b) {
+        return left < r && l < right && top < b && t < bottom;
+    }
+
+    public static boolean intersects(RectF a, RectF b) {
+        return a.left < b.right && b.left < a.right
+            && a.top < b.bottom && b.top < a.bottom;
+    }
+
     public void union(float x, float y) {
         if (x < left)   left   = x;
         if (x > right)  right  = x;
@@ -111,10 +153,14 @@ public class RectF {
     }
 
     public void union(RectF r) {
-        if (r.left   < left)   left   = r.left;
-        if (r.top    < top)    top    = r.top;
-        if (r.right  > right)  right  = r.right;
-        if (r.bottom > bottom) bottom = r.bottom;
+        union(r.left, r.top, r.right, r.bottom);
+    }
+
+    public void union(float l, float t, float r, float b) {
+        if (l < left)   left   = l;
+        if (t < top)    top    = t;
+        if (r > right)  right  = r;
+        if (b > bottom) bottom = b;
     }
 
     public void offset(float dx, float dy) {
@@ -124,11 +170,76 @@ public class RectF {
         bottom += dy;
     }
 
+    public void offsetTo(float newLeft, float newTop) {
+        right  += newLeft - left;
+        bottom += newTop - top;
+        left   = newLeft;
+        top    = newTop;
+    }
+
     public void inset(float dx, float dy) {
         left   += dx;
         top    += dy;
         right  -= dx;
         bottom -= dy;
+    }
+
+    public void sort() {
+        if (left > right) { float t = left; left = right; right = t; }
+        if (top > bottom) { float t = top; top = bottom; bottom = t; }
+    }
+
+    // ── Rounding ─────────────────────────────────────────────────────────────
+
+    public void round(Rect dst) {
+        dst.set(Math.round(left), Math.round(top), Math.round(right), Math.round(bottom));
+    }
+
+    public void roundOut(Rect dst) {
+        dst.set((int) Math.floor(left), (int) Math.floor(top),
+                (int) Math.ceil(right), (int) Math.ceil(bottom));
+    }
+
+    // ── Parcel ───────────────────────────────────────────────────────────────
+
+    public void readFromParcel(Parcel in) {
+        left   = in.readFloat();
+        top    = in.readFloat();
+        right  = in.readFloat();
+        bottom = in.readFloat();
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeFloat(left);
+        out.writeFloat(top);
+        out.writeFloat(right);
+        out.writeFloat(bottom);
+    }
+
+    // ── String conversion ────────────────────────────────────────────────────
+
+    public String toShortString() {
+        return "[" + left + "," + top + "][" + right + "," + bottom + "]";
+    }
+
+    public String flattenToString() {
+        return left + " " + top + " " + right + " " + bottom;
+    }
+
+    public static RectF unflattenFromString(String str) {
+        if (str == null) return null;
+        String[] parts = str.split(" ");
+        if (parts.length != 4) return null;
+        try {
+            return new RectF(
+                Float.parseFloat(parts[0]),
+                Float.parseFloat(parts[1]),
+                Float.parseFloat(parts[2]),
+                Float.parseFloat(parts[3])
+            );
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // ── Object overrides ─────────────────────────────────────────────────────
