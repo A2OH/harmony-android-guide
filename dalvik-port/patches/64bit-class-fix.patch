@@ -1,0 +1,26 @@
+--- a/vm/oo/Class.cpp
++++ b/vm/oo/Class.cpp
+@@ -2548,10 +2548,18 @@
+             /* Copy u4 DEX idx values out of the ClassObject* array
+              * where we stashed them.
+              */
+-            assert(sizeof(*interfaceIdxArray) == sizeof(*clazz->interfaces));
+             size_t len = clazz->interfaceCount * sizeof(*interfaceIdxArray);
+             interfaceIdxArray = (u4*)malloc(len);
+             if (interfaceIdxArray == NULL) {
+                 ALOGW("Unable to allocate memory to link %s", clazz->descriptor);
+                 goto bail;
+             }
+-            memcpy(interfaceIdxArray, clazz->interfaces, len);
++            /* 64-bit fix: interfaces[] are pointer-sized but contain u4 idx values.
++             * Extract each one individually instead of memcpy. */
++            for (int ii = 0; ii < clazz->interfaceCount; ii++) {
++                interfaceIdxArray[ii] = (u4)(uintptr_t)clazz->interfaces[ii];
++            }
+
+             dvmLinearReadWrite(clazz->classLoader, clazz->interfaces);
+-            memset(clazz->interfaces, 0, len);
++            memset(clazz->interfaces, 0,
++                   clazz->interfaceCount * sizeof(*clazz->interfaces));
+             dvmLinearReadOnly(clazz->classLoader, clazz->interfaces);
+         }

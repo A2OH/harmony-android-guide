@@ -5,3 +5,5 @@ dist/
 __pycache__/
 .env
 .DS_Store
+dalvik-port/build/
+database/*.db
