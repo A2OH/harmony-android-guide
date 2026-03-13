@@ -81,6 +81,11 @@ public class HeadlessTest {
         testWifiManager();
         testTelephonyManager();
         testGraphics();
+        testMatrixCursor();
+        testMergeCursor();
+        testMatrix();
+        testDatabaseUtils();
+        testRectFExtended();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -2357,5 +2362,333 @@ public class HeadlessTest {
 
         pf2.set(0f, 0f);
         check("PointF.set to (0,0) not equals original", !pf2.equals(pf));
+    }
+
+    // ── MatrixCursor tests ──────────────────────────────────────────────────
+
+    static void testMatrixCursor() {
+        section("android.database.MatrixCursor");
+
+        String[] cols = {"_id", "name", "value"};
+        android.database.MatrixCursor mc = new android.database.MatrixCursor(cols);
+        check("initial count == 0", mc.getCount() == 0);
+
+        // addRow with Object[]
+        mc.addRow(new Object[]{1, "alpha", "100"});
+        mc.addRow(new Object[]{2, "beta", "200"});
+        check("count after 2 addRow == 2", mc.getCount() == 2);
+
+        // getColumnNames
+        String[] names = mc.getColumnNames();
+        check("getColumnNames length == 3", names.length == 3);
+        check("getColumnNames[1] == name", "name".equals(names[1]));
+
+        // getColumnIndex
+        check("getColumnIndex(name) == 1", mc.getColumnIndex("name") == 1);
+        check("getColumnIndex(missing) == -1", mc.getColumnIndex("missing") == -1);
+
+        // moveToFirst and read values
+        check("moveToFirst", mc.moveToFirst());
+        check("getString(1) == alpha", "alpha".equals(mc.getString(1)));
+        check("getInt(0) == 1", mc.getInt(0) == 1);
+
+        // moveToNext
+        check("moveToNext", mc.moveToNext());
+        check("getString(1) == beta", "beta".equals(mc.getString(1)));
+        check("getInt(2) == 200", mc.getInt(2) == 200);
+
+        // moveToNext at end
+        check("moveToNext past end false", !mc.moveToNext());
+
+        // newRow with RowBuilder
+        mc.newRow().add(3).add("gamma").add("300");
+        check("count after newRow == 3", mc.getCount() == 3);
+        mc.moveToLast();
+        check("getString(1) after newRow == gamma", "gamma".equals(mc.getString(1)));
+
+        // isNull
+        android.database.MatrixCursor mc2 = new android.database.MatrixCursor(new String[]{"a"});
+        mc2.addRow(new Object[]{null});
+        mc2.moveToFirst();
+        check("isNull for null value", mc2.isNull(0));
+
+        // position checks
+        mc.moveToFirst();
+        check("isFirst", mc.isFirst());
+        mc.moveToLast();
+        check("isLast", mc.isLast());
+    }
+
+    // ── MergeCursor tests ───────────────────────────────────────────────────
+
+    static void testMergeCursor() {
+        section("android.database.MergeCursor");
+
+        String[] cols = {"_id", "val"};
+        android.database.MatrixCursor c1 = new android.database.MatrixCursor(cols);
+        c1.addRow(new Object[]{1, "a"});
+        c1.addRow(new Object[]{2, "b"});
+
+        android.database.MatrixCursor c2 = new android.database.MatrixCursor(cols);
+        c2.addRow(new Object[]{3, "c"});
+
+        android.database.MergeCursor merge = new android.database.MergeCursor(
+            new android.database.Cursor[]{c1, c2});
+
+        check("total count == 3", merge.getCount() == 3);
+        check("getColumnNames[0] == _id", "_id".equals(merge.getColumnNames()[0]));
+
+        // Navigate through all rows
+        check("moveToFirst", merge.moveToFirst());
+        check("row 0 val == a", "a".equals(merge.getString(1)));
+
+        check("moveToNext", merge.moveToNext());
+        check("row 1 val == b", "b".equals(merge.getString(1)));
+
+        check("moveToNext crosses cursor boundary", merge.moveToNext());
+        check("row 2 val == c", "c".equals(merge.getString(1)));
+
+        check("moveToNext at end false", !merge.moveToNext());
+
+        // moveToPosition
+        check("moveToPosition(0)", merge.moveToPosition(0));
+        check("position 0 val == a", "a".equals(merge.getString(1)));
+
+        check("moveToPosition(2)", merge.moveToPosition(2));
+        check("position 2 val == c", "c".equals(merge.getString(1)));
+
+        // Empty merge
+        android.database.MergeCursor empty = new android.database.MergeCursor(
+            new android.database.Cursor[]{});
+        check("empty merge count == 0", empty.getCount() == 0);
+    }
+
+    // ── Matrix tests ────────────────────────────────────────────────────────
+
+    static void testMatrix() {
+        section("android.graphics.Matrix");
+
+        android.graphics.Matrix m = new android.graphics.Matrix();
+        check("new Matrix isIdentity", m.isIdentity());
+        check("new Matrix isAffine", m.isAffine());
+
+        // Constants
+        check("MSCALE_X == 0", android.graphics.Matrix.MSCALE_X == 0);
+        check("MSCALE_Y == 4", android.graphics.Matrix.MSCALE_Y == 4);
+        check("MTRANS_X == 2", android.graphics.Matrix.MTRANS_X == 2);
+        check("MTRANS_Y == 5", android.graphics.Matrix.MTRANS_Y == 5);
+        check("MPERSP_2 == 8", android.graphics.Matrix.MPERSP_2 == 8);
+
+        // getValues roundtrip
+        float[] vals = new float[9];
+        m.getValues(vals);
+        check("identity[0] == 1", vals[0] == 1f);
+        check("identity[4] == 1", vals[4] == 1f);
+        check("identity[8] == 1", vals[8] == 1f);
+        check("identity[1] == 0", vals[1] == 0f);
+
+        // setTranslate
+        m.setTranslate(10f, 20f);
+        check("after setTranslate not identity", !m.isIdentity());
+        m.getValues(vals);
+        check("translate X == 10", vals[2] == 10f);
+        check("translate Y == 20", vals[5] == 20f);
+
+        // mapPoints with translation
+        float[] pts = {0f, 0f};
+        m.mapPoints(pts);
+        check("mapPoints translated X == 10", Math.abs(pts[0] - 10f) < 0.001f);
+        check("mapPoints translated Y == 20", Math.abs(pts[1] - 20f) < 0.001f);
+
+        // reset
+        m.reset();
+        check("after reset isIdentity", m.isIdentity());
+
+        // setScale
+        m.setScale(2f, 3f);
+        m.getValues(vals);
+        check("scale X == 2", vals[0] == 2f);
+        check("scale Y == 3", vals[4] == 3f);
+
+        // copy constructor
+        android.graphics.Matrix m2 = new android.graphics.Matrix(m);
+        check("copy equals original", m2.equals(m));
+
+        // set(Matrix)
+        android.graphics.Matrix m3 = new android.graphics.Matrix();
+        m3.set(m);
+        check("set(matrix) equals", m3.equals(m));
+
+        // invert
+        m.setScale(2f, 4f);
+        android.graphics.Matrix inv = new android.graphics.Matrix();
+        boolean ok = m.invert(inv);
+        check("invert scale succeeds", ok);
+        inv.getValues(vals);
+        check("inverted scale X == 0.5", Math.abs(vals[0] - 0.5f) < 0.001f);
+        check("inverted scale Y == 0.25", Math.abs(vals[4] - 0.25f) < 0.001f);
+
+        // postTranslate
+        m.reset();
+        m.postTranslate(5f, 10f);
+        m.getValues(vals);
+        check("postTranslate X == 5", Math.abs(vals[2] - 5f) < 0.001f);
+
+        // setRotate 90 degrees
+        m.setRotate(90f);
+        float[] rpts = {1f, 0f};
+        m.mapPoints(rpts);
+        check("rotate 90 maps (1,0) to ~(0,1) x", Math.abs(rpts[0]) < 0.001f);
+        check("rotate 90 maps (1,0) to ~(0,1) y", Math.abs(rpts[1] - 1f) < 0.001f);
+    }
+
+    // ── DatabaseUtils tests ─────────────────────────────────────────────────
+
+    static void testDatabaseUtils() {
+        section("android.database.DatabaseUtils");
+
+        // Statement type constants
+        check("STATEMENT_SELECT == 1",
+            android.database.DatabaseUtils.STATEMENT_SELECT == 1);
+        check("STATEMENT_UPDATE == 2",
+            android.database.DatabaseUtils.STATEMENT_UPDATE == 2);
+        check("STATEMENT_ATTACH == 3",
+            android.database.DatabaseUtils.STATEMENT_ATTACH == 3);
+        check("STATEMENT_BEGIN == 4",
+            android.database.DatabaseUtils.STATEMENT_BEGIN == 4);
+        check("STATEMENT_COMMIT == 5",
+            android.database.DatabaseUtils.STATEMENT_COMMIT == 5);
+        check("STATEMENT_ABORT == 6",
+            android.database.DatabaseUtils.STATEMENT_ABORT == 6);
+        check("STATEMENT_PRAGMA == 7",
+            android.database.DatabaseUtils.STATEMENT_PRAGMA == 7);
+        check("STATEMENT_DDL == 8",
+            android.database.DatabaseUtils.STATEMENT_DDL == 8);
+        check("STATEMENT_OTHER == 99",
+            android.database.DatabaseUtils.STATEMENT_OTHER == 99);
+
+        // getSqlStatementType
+        check("SELECT type",
+            android.database.DatabaseUtils.getSqlStatementType("SELECT * FROM t") == 1);
+        check("INSERT type",
+            android.database.DatabaseUtils.getSqlStatementType("INSERT INTO t VALUES(1)") == 2);
+        check("UPDATE type",
+            android.database.DatabaseUtils.getSqlStatementType("UPDATE t SET x=1") == 2);
+        check("DELETE type",
+            android.database.DatabaseUtils.getSqlStatementType("DELETE FROM t") == 2);
+        check("CREATE type",
+            android.database.DatabaseUtils.getSqlStatementType("CREATE TABLE t(x)") == 8);
+        check("BEGIN type",
+            android.database.DatabaseUtils.getSqlStatementType("BEGIN TRANSACTION") == 4);
+        check("COMMIT type",
+            android.database.DatabaseUtils.getSqlStatementType("COMMIT") == 5);
+        check("PRAGMA type",
+            android.database.DatabaseUtils.getSqlStatementType("PRAGMA journal_mode") == 7);
+
+        // sqlEscapeString
+        String escaped = android.database.DatabaseUtils.sqlEscapeString("it's a test");
+        check("sqlEscapeString quotes", escaped.equals("'it''s a test'"));
+
+        String simple = android.database.DatabaseUtils.sqlEscapeString("hello");
+        check("sqlEscapeString simple", simple.equals("'hello'"));
+
+        // concatenateWhere
+        String where = android.database.DatabaseUtils.concatenateWhere("a=1", "b=2");
+        check("concatenateWhere", "(a=1) AND (b=2)".equals(where));
+
+        String whereNull = android.database.DatabaseUtils.concatenateWhere(null, "b=2");
+        check("concatenateWhere null first", "b=2".equals(whereNull));
+
+        // appendSelectionArgs
+        String[] args = android.database.DatabaseUtils.appendSelectionArgs(
+            new String[]{"a"}, new String[]{"b", "c"});
+        check("appendSelectionArgs length == 3", args.length == 3);
+        check("appendSelectionArgs[2] == c", "c".equals(args[2]));
+
+        // getCollationKey
+        String key = android.database.DatabaseUtils.getCollationKey("Hello");
+        check("getCollationKey lowercase", "hello".equals(key));
+
+        // getHexCollationKey
+        String hex = android.database.DatabaseUtils.getHexCollationKey("ab");
+        check("getHexCollationKey ab", "00610062".equals(hex));
+
+        // appendEscapedSQLString
+        StringBuilder sb = new StringBuilder();
+        android.database.DatabaseUtils.appendEscapedSQLString(sb, "O'Brien");
+        check("appendEscapedSQLString", "'O''Brien'".equals(sb.toString()));
+    }
+
+    // ── RectF extended tests ────────────────────────────────────────────────
+
+    static void testRectFExtended() {
+        section("android.graphics.RectF (extended)");
+
+        // Copy constructor
+        android.graphics.RectF orig = new android.graphics.RectF(1f, 2f, 3f, 4f);
+        android.graphics.RectF copy = new android.graphics.RectF(orig);
+        check("RectF copy constructor", copy.equals(orig));
+
+        // contains(RectF)
+        android.graphics.RectF outer = new android.graphics.RectF(0f, 0f, 10f, 10f);
+        android.graphics.RectF inner = new android.graphics.RectF(2f, 2f, 8f, 8f);
+        check("contains(RectF) true", outer.contains(inner));
+        check("contains(RectF) false", !inner.contains(outer));
+
+        // setEmpty
+        android.graphics.RectF r = new android.graphics.RectF(1f, 2f, 3f, 4f);
+        r.setEmpty();
+        check("setEmpty isEmpty", r.isEmpty());
+
+        // offsetTo
+        r.set(10f, 20f, 30f, 40f);
+        r.offsetTo(0f, 0f);
+        check("offsetTo left == 0", r.left == 0f);
+        check("offsetTo right == 20", r.right == 20f);
+        check("offsetTo bottom == 20", r.bottom == 20f);
+
+        // sort
+        android.graphics.RectF unsorted = new android.graphics.RectF(5f, 5f, 1f, 1f);
+        unsorted.sort();
+        check("sort left < right", unsorted.left < unsorted.right);
+        check("sort top < bottom", unsorted.top < unsorted.bottom);
+
+        // round
+        android.graphics.RectF rf = new android.graphics.RectF(1.3f, 2.7f, 3.5f, 4.2f);
+        android.graphics.Rect rounded = new android.graphics.Rect();
+        rf.round(rounded);
+        check("round left == 1", rounded.left == 1);
+        check("round top == 3", rounded.top == 3);
+        check("round right == 4", rounded.right == 4 || rounded.right == 3);
+
+        // roundOut
+        android.graphics.Rect roundedOut = new android.graphics.Rect();
+        rf.roundOut(roundedOut);
+        check("roundOut left == 1", roundedOut.left == 1);
+        check("roundOut top == 2", roundedOut.top == 2);
+        check("roundOut right == 4", roundedOut.right == 4);
+        check("roundOut bottom == 5", roundedOut.bottom == 5);
+
+        // flattenToString / unflattenFromString
+        android.graphics.RectF r2 = new android.graphics.RectF(1.5f, 2.5f, 3.5f, 4.5f);
+        String flat = r2.flattenToString();
+        check("flattenToString non-null", flat != null);
+        android.graphics.RectF unflat = android.graphics.RectF.unflattenFromString(flat);
+        check("unflattenFromString roundtrip", unflat != null && unflat.equals(r2));
+
+        // toShortString
+        check("toShortString non-null", r2.toShortString() != null);
+
+        // setIntersect
+        android.graphics.RectF a = new android.graphics.RectF(0f, 0f, 10f, 10f);
+        android.graphics.RectF b = new android.graphics.RectF(5f, 5f, 15f, 15f);
+        android.graphics.RectF result = new android.graphics.RectF();
+        check("setIntersect true", result.setIntersect(a, b));
+        check("setIntersect left == 5", result.left == 5f);
+        check("setIntersect bottom == 10", result.bottom == 10f);
+
+        // intersects (non-mutating)
+        check("intersects true", a.intersects(5f, 5f, 15f, 15f));
+        check("intersects false", !a.intersects(20f, 20f, 30f, 30f));
     }
 }
