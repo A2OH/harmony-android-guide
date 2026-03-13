@@ -292,8 +292,6 @@ static void JNICALL OsConstants_initConstants(JNIEnv* env, jclass c) {
 #ifdef _SC_NPROCESSORS_ONLN
     initConstant(env, c, "_SC_NPROCESSORS_ONLN", _SC_NPROCESSORS_ONLN);
 #endif
-    fprintf(stderr, "OsConstants done: %d\n", sInitConstantCount);
-    fflush(stderr);
 }
 
 /* ----------------------------------------------------------------
