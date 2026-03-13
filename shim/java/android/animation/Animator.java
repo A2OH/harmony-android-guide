@@ -6,26 +6,26 @@ import java.util.ArrayList;
  * Shim: android.animation.Animator — pure Java abstract base.
  * No OH bridge calls; animation state is tracked in Java only.
  */
-public abstract class Animator implements Cloneable {
+public class Animator implements Cloneable {
 
-    /** Listener list; subclasses may read this directly. */
+    /** Object list; subclasses may read this directly. */
     protected final ArrayList<AnimatorListener> mListeners = new ArrayList<>();
 
     // ── Abstract lifecycle ──
 
-    public abstract void start();
-    public abstract void cancel();
-    public abstract void end();
+    public void start() {}
+    public void cancel() {}
+    public void end() {}
 
     // ── Abstract timing ──
 
-    public abstract long getDuration();
-    public abstract Animator setDuration(long duration);
+    public long getDuration() { return 0; }
+    public Animator setDuration(long duration) { return null; }
 
     // ── Abstract state queries ──
 
-    public abstract boolean isRunning();
-    public abstract boolean isStarted();
+    public boolean isRunning() { return false; }
+    public boolean isStarted() { return false; }
 
     // ── Listener management ──
 
@@ -53,6 +53,17 @@ public abstract class Animator implements Cloneable {
     public void resume() {}
     public boolean isPaused() { return false; }
 
+    // ── Clone ──
+
+    @Override
+    public Animator clone() {
+        try {
+            return (Animator) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
+
     // ── AnimatorListener interface ──
 
     public interface AnimatorListener {
@@ -60,5 +71,12 @@ public abstract class Animator implements Cloneable {
         void onAnimationEnd(Animator animation);
         void onAnimationCancel(Animator animation);
         void onAnimationRepeat(Animator animation);
+    }
+
+    // ── AnimatorPauseListener interface (API 19+) ──
+
+    public interface AnimatorPauseListener {
+        void onAnimationPause(Animator animation);
+        void onAnimationResume(Animator animation);
     }
 }

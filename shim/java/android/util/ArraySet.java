@@ -22,7 +22,7 @@ public class ArraySet<E> implements Set<E> {
     }
 
     public ArraySet(int capacity) {
-        mSet = new HashSet<>(Math.max(capacity, 0) * 2);
+        mSet = new HashSet<>(capacity);
     }
 
     public ArraySet(ArraySet<E> set) {
@@ -30,33 +30,20 @@ public class ArraySet<E> implements Set<E> {
         if (set != null) mSet.addAll(set.mSet);
     }
 
-    // -----------------------------------------------------------------------
-    // Standard Set interface
-    // -----------------------------------------------------------------------
-
     @Override public int      size()                             { return mSet.size(); }
     @Override public boolean  isEmpty()                          { return mSet.isEmpty(); }
-    @Override public boolean  contains(Object o)                { return mSet.contains(o); }
-    @Override public boolean  add(E e)                          { return mSet.add(e); }
-    @Override public boolean  remove(Object o)                  { return mSet.remove(o); }
-    @Override public boolean  containsAll(Collection<?> c)      { return mSet.containsAll(c); }
-    @Override public boolean  addAll(Collection<? extends E> c) { return mSet.addAll(c); }
-    @Override public boolean  retainAll(Collection<?> c)        { return mSet.retainAll(c); }
-    @Override public boolean  removeAll(Collection<?> c)        { return mSet.removeAll(c); }
-    @Override public void     clear()                           { mSet.clear(); }
-    @Override public Iterator<E> iterator()                     { return mSet.iterator(); }
-    @Override public Object[] toArray()                         { return mSet.toArray(); }
-    @Override public <T> T[]  toArray(T[] a)                   { return mSet.toArray(a); }
+    @Override public boolean  contains(Object o)                 { return mSet.contains(o); }
+    @Override public boolean  add(E e)                           { return mSet.add(e); }
+    @Override public boolean  remove(Object o)                   { return mSet.remove(o); }
+    @Override public boolean  containsAll(Collection<?> c)       { return mSet.containsAll(c); }
+    @Override public boolean  addAll(Collection<? extends E> c)  { return mSet.addAll(c); }
+    @Override public boolean  retainAll(Collection<?> c)         { return mSet.retainAll(c); }
+    @Override public boolean  removeAll(Collection<?> c)         { return mSet.removeAll(c); }
+    @Override public void     clear()                            { mSet.clear(); }
+    @Override public Iterator<E> iterator()                      { return mSet.iterator(); }
+    @Override public Object[] toArray()                          { return mSet.toArray(); }
+    @Override public <T> T[]  toArray(T[] a)                     { return mSet.toArray(a); }
 
-    // -----------------------------------------------------------------------
-    // Android index-based extension
-    // -----------------------------------------------------------------------
-
-    /**
-     * Returns the element at the given index.
-     * The iteration order follows {@link HashSet} (unspecified), so callers
-     * must not rely on a specific ordering. O(n) — use sparingly.
-     */
     public E valueAt(int index) {
         if (index < 0 || index >= mSet.size()) {
             throw new ArrayIndexOutOfBoundsException(index);
@@ -64,10 +51,6 @@ public class ArraySet<E> implements Set<E> {
         List<E> list = new ArrayList<>(mSet);
         return list.get(index);
     }
-
-    // -----------------------------------------------------------------------
-    // Object overrides
-    // -----------------------------------------------------------------------
 
     @Override public boolean equals(Object o) {
         if (this == o) return true;

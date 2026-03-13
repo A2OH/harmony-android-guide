@@ -1,4 +1,9 @@
 package android.content;
+import android.graphics.Path;
+import android.net.Uri;
+import android.graphics.Path;
+import android.net.Uri;
+import java.net.URI;
 
 import android.net.Uri;
 

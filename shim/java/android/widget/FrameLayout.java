@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.ViewGroup;
+import android.view.ViewGroup;
 
 import android.view.ViewGroup;
 
@@ -30,7 +32,7 @@ public class FrameLayout extends ViewGroup {
             this.gravity = gravity;
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
     }

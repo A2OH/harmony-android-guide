@@ -1,11 +1,13 @@
 package android.text;
+import android.graphics.Paint;
+import android.graphics.Paint;
 
 import android.graphics.Paint;
 
 /**
  * Android-compatible Layout shim. Abstract base for text layout.
  */
-public abstract class Layout {
+public class Layout {
 
     public enum Alignment {
         ALIGN_NORMAL,
@@ -31,7 +33,7 @@ public abstract class Layout {
     }
 
     public final CharSequence getText()      { return mText;       }
-    public final Paint        getPaint()     { return mPaint;      }
+    public final Paint getPaint()     { return mPaint;      }
     public final int          getWidth()     { return mWidth;      }
     public final Alignment    getAlignment() { return mAlignment;  }
 
@@ -43,10 +45,10 @@ public abstract class Layout {
 
     // Abstract methods subclasses must implement ----------------------------
 
-    public abstract int getLineCount();
+    public int getLineCount() { return 0; }
 
     /** Vertical position (top) of the given line in pixels. */
-    public abstract int getLineTop(int line);
+    public int getLineTop(int line) { return 0; }
 
     /** Vertical position (bottom) of the given line in pixels. */
     public int getLineBottom(int line) {
@@ -54,10 +56,10 @@ public abstract class Layout {
     }
 
     /** Character offset of the first character on this line. */
-    public abstract int getLineStart(int line);
+    public int getLineStart(int line) { return 0; }
 
     /** Character offset just past the last visible character on this line. */
-    public abstract int getLineEnd(int line);
+    public int getLineEnd(int line) { return 0; }
 
     /**
      * Returns the line containing the given vertical position.

@@ -18,7 +18,7 @@ public final class Pair<F, S> {
     }
 
     /**
-     * Factory method — mirrors {@code android.util.Pair.create(a, b)}.
+     * Object method — mirrors {@code android.util.Pair.create(a, b)}.
      */
     public static <A, B> Pair<A, B> create(A a, B b) {
         return new Pair<>(a, b);

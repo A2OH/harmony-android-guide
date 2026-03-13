@@ -1,227 +1,164 @@
 package android.view;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.transition.Scene;
+import android.transition.Transition;
+import android.transition.TransitionManager;
+import android.widget.MediaController;
+import java.util.List;
 
-/**
- * Android-compatible Window shim.
- *
- * Abstract base class for a top-level application window. On OpenHarmony the
- * window is managed by ArkUI; this shim provides the API surface so that
- * Android code referencing Window compiles without modification.
- *
- * Concrete instances are normally created by the Activity machinery via
- * PolicyManager.makeNewWindow() — callers should not construct Window
- * directly. The shim provides a minimal concrete subclass {@link Impl} for
- * testing purposes.
- */
-public abstract class Window {
+public class Window {
+    public static final int DECOR_CAPTION_SHADE_AUTO = 0;
+    public static final int DECOR_CAPTION_SHADE_DARK = 0;
+    public static final int DECOR_CAPTION_SHADE_LIGHT = 0;
+    public static final int FEATURE_ACTION_BAR = 0;
+    public static final int FEATURE_ACTION_BAR_OVERLAY = 0;
+    public static final int FEATURE_ACTION_MODE_OVERLAY = 0;
+    public static final int FEATURE_ACTIVITY_TRANSITIONS = 0;
+    public static final int FEATURE_CONTENT_TRANSITIONS = 0;
+    public static final int FEATURE_CONTEXT_MENU = 0;
+    public static final int FEATURE_CUSTOM_TITLE = 0;
+    public static final int FEATURE_LEFT_ICON = 0;
+    public static final int FEATURE_NO_TITLE = 0;
+    public static final int FEATURE_OPTIONS_PANEL = 0;
+    public static final int FEATURE_RIGHT_ICON = 0;
+    public static final int ID_ANDROID_CONTENT = 0;
+    public static final int NAVIGATION_BAR_BACKGROUND_TRANSITION_NAME = 0;
+    public static final int STATUS_BAR_BACKGROUND_TRANSITION_NAME = 0;
 
-    // ── Feature constants ──
+    public Window(Context p0) {}
 
-    /** Request feature: disable the title bar. */
-    public static final int FEATURE_NO_TITLE = 1;
-    /** Request feature: the action bar. */
-    public static final int FEATURE_ACTION_BAR = 8;
-    /** Request feature: action bar with overlay mode. */
-    public static final int FEATURE_ACTION_BAR_OVERLAY = 9;
-    /** Request feature: custom title. */
-    public static final int FEATURE_CUSTOM_TITLE = 7;
-    /** Request feature: indeterminate progress spinner in title. */
-    public static final int FEATURE_INDETERMINATE_PROGRESS = 5;
-
-    // ── Flag constants ──
-
-    public static final int FLAG_FULLSCREEN            = 0x00000400;
-    public static final int FLAG_FORCE_NOT_FULLSCREEN  = 0x00000800;
-    public static final int FLAG_KEEP_SCREEN_ON        = 0x00000080;
-    public static final int FLAG_ALLOW_LOCK_WHILE_SCREEN_ON = 0x00000001;
-    public static final int FLAG_SHOW_WHEN_LOCKED      = 0x00080000;
-    public static final int FLAG_TRANSLUCENT_STATUS    = 0x04000000;
-    public static final int FLAG_TRANSLUCENT_NAVIGATION = 0x08000000;
-    public static final int FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS = 0x80000000;
-
-    // ── Callback interface ──
-
-    /**
-     * API from a Window back to its caller. This allows the client to
-     * intercept key dispatching, panels and menus, as well as be informed
-     * of changes in the window.
-     */
-    public interface Callback {
-        /**
-         * Called to process key events.
-         * @return true if the event was consumed
-         */
-        boolean dispatchKeyEvent(KeyEvent event);
-
-        /**
-         * Called to process touch screen events.
-         * @return true if the event was consumed
-         */
-        boolean dispatchTouchEvent(MotionEvent event);
-    }
-
-    // ── State ──
-
-    private Callback mCallback;
-    private CharSequence mTitle = "";
-    private int mFlags = 0;
-    private int mStatusBarColor = 0xFF000000;
-    private int mNavigationBarColor = 0xFF000000;
-    private WindowManager.LayoutParams mWindowAttributes = new WindowManager.LayoutParams();
-
-    // ── Abstract methods ──
-
-    /**
-     * Returns the top-level window decor view (the outermost View of the window),
-     * which contains the standard window frame/decorations and the client's content
-     * inside of that.
-     */
-    public abstract View getDecorView();
-
-    /**
-     * Convenience for {@link #setContentView(View, ViewGroup.LayoutParams)}
-     * to set the screen content from a layout resource.
-     */
-    public abstract void setContentView(int layoutResID);
-
-    /**
-     * Convenience for {@link #setContentView(View, ViewGroup.LayoutParams)}
-     * using the default layout params.
-     */
-    public abstract void setContentView(View view);
-
-    /**
-     * Set the screen content to an explicit view.
-     */
-    public abstract void setContentView(View view, ViewGroup.LayoutParams params);
-
-    // ── Concrete methods ──
-
-    /** Set the title of the window. */
-    public void setTitle(CharSequence title) {
-        mTitle = title != null ? title : "";
-    }
-
-    /** Get the window title. */
-    public CharSequence getTitle() {
-        return mTitle;
-    }
-
-    /**
-     * Set the flags of the window, as per the
-     * {@link WindowManager.LayoutParams WindowManager.LayoutParams} flags.
-     */
-    public void setFlags(int flags, int mask) {
-        mFlags = (mFlags & ~mask) | (flags & mask);
-        mWindowAttributes.flags = mFlags;
-    }
-
-    /**
-     * Convenience method to set flags with a full mask.
-     */
-    public void addFlags(int flags) {
-        setFlags(flags, flags);
-    }
-
-    /**
-     * Clear the specified flags of the window.
-     */
-    public void clearFlags(int flags) {
-        setFlags(0, flags);
-    }
-
-    /** @return current window flags */
-    public int getFlags() {
-        return mFlags;
-    }
-
-    /**
-     * Sets the color of the status bar. Only applies when
-     * {@link #FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS} is set and
-     * {@link #FLAG_TRANSLUCENT_STATUS} is not set.
-     */
-    public void setStatusBarColor(int color) {
-        mStatusBarColor = color;
-    }
-
-    /** @return the current status bar color */
-    public int getStatusBarColor() {
-        return mStatusBarColor;
-    }
-
-    /**
-     * Sets the color of the navigation bar. Only applies when
-     * {@link #FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS} is set and
-     * {@link #FLAG_TRANSLUCENT_NAVIGATION} is not set.
-     */
-    public void setNavigationBarColor(int color) {
-        mNavigationBarColor = color;
-    }
-
-    /** @return the current navigation bar color */
-    public int getNavigationBarColor() {
-        return mNavigationBarColor;
-    }
-
-    /**
-     * Returns the {@link WindowManager.LayoutParams} for this window.
-     * The window attributes are always mutable; callers may change individual
-     * fields and then call {@link WindowManager#updateViewLayout} to apply them.
-     */
-    public WindowManager.LayoutParams getAttributes() {
-        return mWindowAttributes;
-    }
-
-    /** Set the Callback interface for this window, used to intercept key and touch events. */
-    public void setCallback(Callback callback) {
-        mCallback = callback;
-    }
-
-    /** @return the current Callback, or null if none set */
-    public Callback getCallback() {
-        return mCallback;
-    }
-
-    /**
-     * Enable a window feature. Feature constants are FEATURE_*.
-     * @return true if the feature is now enabled
-     */
-    public boolean requestFeature(int featureId) {
-        // stub — always succeeds
-        return true;
-    }
-
-    // ── Minimal concrete implementation (for shim/test use) ──
-
-    /**
-     * Minimal no-op Window implementation returned by the shim Activity
-     * when no real ArkUI window is available.
-     */
-    public static class Impl extends Window {
-        private View mDecorView;
-
-        public Impl() {
-            // create a stub decor view
-            mDecorView = new View() {};
-        }
-
-        @Override
-        public View getDecorView() {
-            return mDecorView;
-        }
-
-        @Override
-        public void setContentView(int layoutResID) {
-            // no-op stub
-        }
-
-        @Override
-        public void setContentView(View view) {
-            // no-op stub
-        }
-
-        @Override
-        public void setContentView(View view, ViewGroup.LayoutParams params) {
-            // no-op stub
-        }
-    }
+    public void addContentView(View p0, Object p1) {}
+    public void addFlags(int p0) {}
+    public void addOnFrameMetricsAvailableListener(Object p0, Handler p1) {}
+    public void clearFlags(int p0) {}
+    public void closeAllPanels() {}
+    public void closePanel(int p0) {}
+    public Object findViewById(int p0) { return null; }
+    public boolean getAllowEnterTransitionOverlap() { return false; }
+    public boolean getAllowReturnTransitionOverlap() { return false; }
+    public Object getAttributes() { return null; }
+    public Object getCallback() { return null; }
+    public int getColorMode() { return 0; }
+    public Window getContainer() { return null; }
+    public Scene getContentScene() { return null; }
+    public Context getContext() { return null; }
+    public static int getDefaultFeatures(Context p0) { return 0; }
+    public Transition getEnterTransition() { return null; }
+    public Transition getExitTransition() { return null; }
+    public int getFeatures() { return 0; }
+    public int getForcedWindowFlags() { return 0; }
+    public int getLocalFeatures() { return 0; }
+    public MediaController getMediaController() { return null; }
+    public Transition getReenterTransition() { return null; }
+    public Transition getReturnTransition() { return null; }
+    public Transition getSharedElementEnterTransition() { return null; }
+    public Transition getSharedElementExitTransition() { return null; }
+    public Transition getSharedElementReenterTransition() { return null; }
+    public Transition getSharedElementReturnTransition() { return null; }
+    public boolean getSharedElementsUseOverlay() { return false; }
+    public long getTransitionBackgroundFadeDuration() { return 0L; }
+    public TransitionManager getTransitionManager() { return null; }
+    public int getVolumeControlStream() { return 0; }
+    public WindowManager getWindowManager() { return null; }
+    public TypedArray getWindowStyle() { return null; }
+    public boolean hasChildren() { return false; }
+    public boolean hasFeature(int p0) { return false; }
+    public boolean hasSoftInputMode() { return false; }
+    public void injectInputEvent(InputEvent p0) {}
+    public void invalidatePanelMenu(int p0) {}
+    public boolean isActive() { return false; }
+    public boolean isFloating() { return false; }
+    public boolean isNavigationBarContrastEnforced() { return false; }
+    public boolean isShortcutKey(int p0, KeyEvent p1) { return false; }
+    public boolean isStatusBarContrastEnforced() { return false; }
+    public boolean isWideColorGamut() { return false; }
+    public void makeActive() {}
+    public void onActive() {}
+    public void onConfigurationChanged(Configuration p0) {}
+    public void openPanel(int p0, KeyEvent p1) {}
+    public View peekDecorView() { return null; }
+    public boolean performContextMenuIdentifierAction(int p0, int p1) { return false; }
+    public boolean performPanelIdentifierAction(int p0, int p1, int p2) { return false; }
+    public boolean performPanelShortcut(int p0, int p1, KeyEvent p2, int p3) { return false; }
+    public void removeOnFrameMetricsAvailableListener(Object p0) {}
+    public boolean requestFeature(int p0) { return false; }
+    public void restoreHierarchyState(Bundle p0) {}
+    public Bundle saveHierarchyState() { return null; }
+    public void setAllowEnterTransitionOverlap(boolean p0) {}
+    public void setAllowReturnTransitionOverlap(boolean p0) {}
+    public void setAttributes(Object p0) {}
+    public void setBackgroundDrawable(Drawable p0) {}
+    public void setBackgroundDrawableResource(int p0) {}
+    public void setCallback(Object p0) {}
+    public void setChildDrawable(int p0, Drawable p1) {}
+    public void setChildInt(int p0, int p1) {}
+    public void setClipToOutline(boolean p0) {}
+    public void setColorMode(int p0) {}
+    public void setContainer(Window p0) {}
+    public void setContentView(int p0) {}
+    public void setContentView(View p0, Object p1) {}
+    public void setDecorCaptionShade(int p0) {}
+    public void setDecorFitsSystemWindows(boolean p0) {}
+    public void setDefaultWindowFormat(int p0) {}
+    public void setDimAmount(float p0) {}
+    public void setElevation(float p0) {}
+    public void setEnterTransition(Transition p0) {}
+    public void setExitTransition(Transition p0) {}
+    public void setFeatureDrawable(int p0, Drawable p1) {}
+    public void setFeatureDrawableAlpha(int p0, int p1) {}
+    public void setFeatureDrawableResource(int p0, int p1) {}
+    public void setFeatureDrawableUri(int p0, Uri p1) {}
+    public void setFeatureInt(int p0, int p1) {}
+    public void setFlags(int p0, int p1) {}
+    public void setFormat(int p0) {}
+    public void setGravity(int p0) {}
+    public void setIcon(int p0) {}
+    public void setLayout(int p0, int p1) {}
+    public void setLocalFocus(boolean p0, boolean p1) {}
+    public void setLogo(int p0) {}
+    public void setMediaController(MediaController p0) {}
+    public void setNavigationBarColor(int p0) {}
+    public void setNavigationBarContrastEnforced(boolean p0) {}
+    public void setNavigationBarDividerColor(int p0) {}
+    public void setPreferMinimalPostProcessing(boolean p0) {}
+    public void setReenterTransition(Transition p0) {}
+    public void setResizingCaptionDrawable(Drawable p0) {}
+    public void setRestrictedCaptionAreaListener(Object p0) {}
+    public void setReturnTransition(Transition p0) {}
+    public void setSharedElementEnterTransition(Transition p0) {}
+    public void setSharedElementExitTransition(Transition p0) {}
+    public void setSharedElementReenterTransition(Transition p0) {}
+    public void setSharedElementReturnTransition(Transition p0) {}
+    public void setSharedElementsUseOverlay(boolean p0) {}
+    public void setSoftInputMode(int p0) {}
+    public void setStatusBarColor(int p0) {}
+    public void setStatusBarContrastEnforced(boolean p0) {}
+    public void setSustainedPerformanceMode(boolean p0) {}
+    public void setSystemGestureExclusionRects(java.util.List<Object> p0) {}
+    public void setTitle(CharSequence p0) {}
+    public void setTransitionBackgroundFadeDuration(long p0) {}
+    public void setTransitionManager(TransitionManager p0) {}
+    public void setType(int p0) {}
+    public void setUiOptions(int p0) {}
+    public void setUiOptions(int p0, int p1) {}
+    public void setVolumeControlStream(int p0) {}
+    public void setWindowAnimations(int p0) {}
+    public void setWindowManager(WindowManager p0, IBinder p1, String p2) {}
+    public void setWindowManager(WindowManager p0, IBinder p1, String p2, boolean p3) {}
+    public boolean superDispatchGenericMotionEvent(MotionEvent p0) { return false; }
+    public boolean superDispatchKeyEvent(KeyEvent p0) { return false; }
+    public boolean superDispatchKeyShortcutEvent(KeyEvent p0) { return false; }
+    public boolean superDispatchTouchEvent(MotionEvent p0) { return false; }
+    public boolean superDispatchTrackballEvent(MotionEvent p0) { return false; }
+    public void takeInputQueue(Object p0) {}
+    public void takeKeyEvents(boolean p0) {}
+    public void takeSurface(Object p0) {}
+    public void togglePanel(int p0, KeyEvent p1) {}
 }

@@ -18,7 +18,7 @@ public class AtomicFile {
         return mBaseName;
     }
 
-    public FileOutputStream startWrite() throws IOException {
+    public java.io.FileOutputStream startWrite() throws IOException {
         // Backup existing file
         if (mBaseName.exists()) {
             if (!mBackupName.exists()) {
@@ -29,27 +29,27 @@ public class AtomicFile {
                 mBaseName.delete();
             }
         }
-        FileOutputStream fos;
+        java.io.FileOutputStream fos;
         try {
-            fos = new FileOutputStream(mBaseName);
+            fos = new java.io.FileOutputStream(mBaseName);
         } catch (FileNotFoundException e) {
             File parent = mBaseName.getParentFile();
             if (parent != null && !parent.mkdirs()) {
                 throw new IOException("Couldn't create directory " + parent);
             }
-            fos = new FileOutputStream(mBaseName);
+            fos = new java.io.FileOutputStream(mBaseName);
         }
         return fos;
     }
 
-    public void finishWrite(FileOutputStream str) {
+    public void finishWrite(java.io.FileOutputStream str) {
         if (str != null) {
             try { str.close(); } catch (IOException e) {}
         }
         mBackupName.delete();
     }
 
-    public void failWrite(FileOutputStream str) {
+    public void failWrite(java.io.FileOutputStream str) {
         if (str != null) {
             try { str.close(); } catch (IOException e) {}
         }
@@ -57,16 +57,16 @@ public class AtomicFile {
         mBackupName.renameTo(mBaseName);
     }
 
-    public FileInputStream openRead() throws FileNotFoundException {
+    public java.io.FileInputStream openRead() throws FileNotFoundException {
         if (mBackupName.exists()) {
             mBaseName.delete();
             mBackupName.renameTo(mBaseName);
         }
-        return new FileInputStream(mBaseName);
+        return new java.io.FileInputStream(mBaseName);
     }
 
     public byte[] readFully() throws IOException {
-        try (FileInputStream fis = openRead();
+        try (java.io.FileInputStream fis = openRead();
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buf = new byte[4096];
             int len;

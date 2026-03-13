@@ -44,7 +44,7 @@ public class WebBackForwardList implements Cloneable {
      *
      * @param index zero-based index into the history list
      * @return the item at that index
-     * @throws IndexOutOfBoundsException if {@code index} is out of range
+     * @throws IndexOutOfBoundsException { // stub@code index} is out of range
      */
     public WebHistoryItem getItemAtIndex(int index) {
         return mItems.get(index);

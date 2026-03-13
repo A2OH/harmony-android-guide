@@ -1,4 +1,5 @@
 package android.webkit;
+import java.io.File;
 
 /**
  * Shim: android.webkit.WebSettings
@@ -24,7 +25,7 @@ public class WebSettings {
     private boolean useWideViewPort               = false;
     private boolean loadWithOverviewMode          = false;
     private int     cacheMode                     = LOAD_DEFAULT;
-    private String  userAgentString               = "Mozilla/5.0 (Linux; Android)";
+    private String userAgent = "Mozilla/5.0 (Linux; Android)";
     private boolean allowFileAccess               = true;
     private boolean mediaPlaybackRequiresUserGesture = true;
 
@@ -92,11 +93,11 @@ public class WebSettings {
     // ── User-Agent ──
 
     public void setUserAgentString(String ua) {
-        this.userAgentString = (ua != null) ? ua : "";
+//         this.userAgentString = (ua != null) ? ua : "";
     }
 
     public String getUserAgentString() {
-        return userAgentString;
+        return null;
     }
 
     // ── File access ──

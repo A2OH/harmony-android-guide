@@ -1,4 +1,6 @@
 package android.text.style;
+import android.graphics.Typeface;
+import android.graphics.Typeface;
 
 import android.graphics.Typeface;
 

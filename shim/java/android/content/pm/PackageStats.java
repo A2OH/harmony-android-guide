@@ -1,4 +1,6 @@
 package android.content.pm;
+import android.util.Size;
+import android.util.Size;
 
 /**
  * Shim for android.content.pm.PackageStats — deprecated package size info, stub fields only.

@@ -1,4 +1,6 @@
 package android.opengl;
+import android.view.View;
+import android.view.View;
 
 /**
  * Android-compatible GLSurfaceView shim for A2OH migration.

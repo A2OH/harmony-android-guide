@@ -30,7 +30,7 @@ public class WebStorage {
     // ── Inner types ──
 
     /**
-     * Callback interface for asynchronous quota/usage queries.
+     * Object interface for asynchronous quota/usage queries.
      * OH mapping: callback parameter in WebStorage.getOrigins / getUsageForOrigin.
      */
     public interface QuotaUpdater {

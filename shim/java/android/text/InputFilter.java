@@ -1,4 +1,8 @@
 package android.text;
+import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.EditText;
+import android.widget.Filter;
 
 /**
  * Android-compatible InputFilter shim.

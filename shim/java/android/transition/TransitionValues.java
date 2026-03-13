@@ -1,19 +1,16 @@
 package android.transition;
 
-import android.view.View;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Android-compatible TransitionValues shim.
- * Data structure holding per-view values captured by transitions before
- * and after a scene change. Contains the target view and a map of
- * property-name to property-value pairs.
+ * Shim for android.transition.TransitionValues.
+ * Holds property values captured during a scene transition.
  */
 public class TransitionValues {
+    /** The view associated with these values (typed as Object for shim portability). */
+    public Object view;
 
-    /** The View with these values. */
-    public View view;
-
-    /** The set of values tracked by transitions. */
-    public final HashMap<String, Object> values = new HashMap<>();
+    /** Map of property name to captured value. */
+    public Map<String, Object> values = new HashMap<>();
 }

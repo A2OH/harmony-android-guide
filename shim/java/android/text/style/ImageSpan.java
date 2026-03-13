@@ -1,4 +1,7 @@
 package android.text.style;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Drawable;
+import java.net.URI;
 
 /**
  * Android-compatible ImageSpan shim.

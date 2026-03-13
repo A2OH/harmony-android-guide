@@ -1,4 +1,8 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +57,7 @@ public class RelativeLayout extends ViewGroup {
             super(width, height);
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
 

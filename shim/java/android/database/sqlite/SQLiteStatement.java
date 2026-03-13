@@ -6,7 +6,7 @@ package android.database.sqlite;
  * queried for a single scalar value. Extends {@link SQLiteClosable} so callers
  * must release the object when done.
  *
- * All execution methods are stubs that print to stdout and return safe defaults.
+ * All execution methods are stubs that pr(int to stdout and return safe defaults.
  */
 public class SQLiteStatement extends SQLiteClosable {
 

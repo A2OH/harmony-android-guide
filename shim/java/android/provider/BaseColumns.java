@@ -1,13 +1,12 @@
 package android.provider;
 
 /**
- * Android-compatible BaseColumns shim.
- * Defines the standard column names shared by all content providers.
+ * A2OH shim — android.provider.BaseColumns
+ *
+ * Marker interface providing standard _ID and _COUNT column constants
+ * used throughout the Android content provider framework.
  */
 public interface BaseColumns {
-    /** The unique row ID. */
     String _ID = "_id";
-
-    /** The number of rows in a directory. */
     String _COUNT = "_count";
 }

@@ -1,4 +1,12 @@
 package android.text.method;
+import android.text.Editable;
+import android.text.InputType;
+import android.view.KeyEvent;
+import android.view.View;
+import android.text.Editable;
+import android.text.InputType;
+import android.view.KeyEvent;
+import android.view.View;
 
 import android.text.Editable;
 import android.text.InputType;
@@ -7,7 +15,7 @@ import android.view.View;
 
 /**
  * Android-compatible TextKeyListener shim.
- * Listener for key presses on views, delivering them to the Editable associated
+ * Object for key presses on views, delivering them to the Editable associated
  * with the view. Supports configurable capitalisation.
  */
 public class TextKeyListener implements KeyListener {

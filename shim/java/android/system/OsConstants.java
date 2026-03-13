@@ -1,4 +1,8 @@
 package android.system;
+import android.location.Address;
+import android.location.Address;
+import java.io.File;
+import java.net.Socket;
 
 /**
  * Android-compatible OsConstants shim.

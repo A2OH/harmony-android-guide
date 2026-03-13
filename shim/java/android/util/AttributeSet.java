@@ -1,4 +1,6 @@
 package android.util;
+import android.view.View;
+import android.view.View;
 
 /**
  * Android-compatible AttributeSet shim.

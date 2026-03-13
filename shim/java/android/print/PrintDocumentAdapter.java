@@ -1,20 +1,24 @@
 package android.print;
+import android.os.ParcelFileDescriptor;
+import android.telecom.Call;
+import android.os.ParcelFileDescriptor;
+import android.telecom.Call;
 
 /**
  * Android-compatible PrintDocumentAdapter shim.
- * Abstract base — apps subclass this to supply print content.
+ * Abstract base — apps subclass this to supply pr(int content.
  */
-public abstract class PrintDocumentAdapter {
+public class PrintDocumentAdapter {
 
     // -------------------------------------------------------------------------
     // Inner class: LayoutResultCallback
     // -------------------------------------------------------------------------
     public static abstract class LayoutResultCallback {
         /** Call when layout succeeded. */
-        public abstract void onLayoutFinished(PrintDocumentInfo info, boolean changed);
+        public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {}
 
         /** Call when layout failed. */
-        public abstract void onLayoutFailed(CharSequence error);
+        public void onLayoutFailed(CharSequence error) {}
 
         /** Call when layout was cancelled. */
         public void onLayoutCancelled() {}
@@ -25,10 +29,10 @@ public abstract class PrintDocumentAdapter {
     // -------------------------------------------------------------------------
     public static abstract class WriteResultCallback {
         /** Call when writing of pages succeeded. */
-        public abstract void onWriteFinished(PageRange[] pages);
+        public void onWriteFinished(PageRange[] pages) {}
 
         /** Call when writing of pages failed. */
-        public abstract void onWriteFailed(CharSequence error);
+        public void onWriteFailed(CharSequence error) {}
 
         /** Call when writing of pages was cancelled. */
         public void onWriteCancelled() {}
@@ -105,22 +109,22 @@ public abstract class PrintDocumentAdapter {
     // Abstract lifecycle callbacks
     // -------------------------------------------------------------------------
 
-    /** Called when the print process starts. */
+    /** Called when the pr(int process starts. */
     public void onStart() {}
 
     /**
-     * Called when the print attributes (e.g. page size) need to be determined.
+     * Called when the pr(int attributes (e.g. page size) need to be determined.
      *
      * @param oldAttributes the previously used attributes (may be null on first call)
      * @param newAttributes the new requested attributes
      * @param extras        optional extras bundle (passed as Object to avoid dependency)
      * @param callback      result callback — must always be called
      */
-    public abstract void onLayout(
+    public void onLayout(
             PrintAttributes oldAttributes,
             PrintAttributes newAttributes,
             Object          extras,
-            LayoutResultCallback callback);
+            LayoutResultCallback callback) {}
 
     /**
      * Called when the content should be written to the output file descriptor.
@@ -130,12 +134,12 @@ public abstract class PrintDocumentAdapter {
      * @param extras   optional extras bundle (passed as Object)
      * @param callback result callback — must always be called
      */
-    public abstract void onWrite(
+    public void onWrite(
             PageRange[]       pages,
             Object            destination,
             Object            extras,
-            WriteResultCallback callback);
+            WriteResultCallback callback) {}
 
-    /** Called when the print process finishes (success or cancellation). */
+    /** Called when the pr(int process finishes (success or cancellation). */
     public void onFinish() {}
 }

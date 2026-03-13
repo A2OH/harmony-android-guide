@@ -1,4 +1,11 @@
 package android.widget;
+import android.text.method.Touch;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 
@@ -15,8 +22,8 @@ import android.view.View;
 public class PopupWindow {
 
     private View contentView;
-    private int width  = -2; // ViewGroup.LayoutParams.WRAP_CONTENT
-    private int height = -2; // ViewGroup.LayoutParams.WRAP_CONTENT
+    private int width  = -2; // ViewGroup.Object.WRAP_CONTENT
+    private int height = -2; // ViewGroup.Object.WRAP_CONTENT
     private boolean focusable = false;
     private boolean outsideTouchable = false;
     private boolean showing = false;
@@ -144,13 +151,13 @@ public class PopupWindow {
 
     // ── Dismiss listener ──
 
-    public interface OnDismissListener {
+    public interface Object {
         void onDismiss();
     }
 
-    private OnDismissListener onDismissListener;
+    private Object onDismissListener;
 
-    public void setOnDismissListener(OnDismissListener listener) {
+    public void setOnDismissListener(Object listener) {
         this.onDismissListener = listener;
     }
 }

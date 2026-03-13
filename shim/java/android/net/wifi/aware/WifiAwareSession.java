@@ -1,32 +1,13 @@
 package android.net.wifi.aware;
+import android.net.NetworkSpecifier;
+import android.os.Handler;
 
-/**
- * Android-compatible WifiAwareSession shim. Stub.
- */
 public class WifiAwareSession implements AutoCloseable {
+    public WifiAwareSession() {}
 
-    public void publish(PublishConfig publishConfig,
-                        WifiAwareManager.DiscoverySessionCallback callback,
-                        android.os.Handler handler) {
-        // Stub: Wi-Fi Aware not available in shim layer
-    }
-
-    public void subscribe(SubscribeConfig subscribeConfig,
-                          WifiAwareManager.DiscoverySessionCallback callback,
-                          android.os.Handler handler) {
-        // Stub: Wi-Fi Aware not available in shim layer
-    }
-
-    public Object createNetworkSpecifierOpen(int role, Object peerHandle) {
-        return null;
-    }
-
-    public Object createNetworkSpecifierPassphrase(int role, Object peerHandle, String passphrase) {
-        return null;
-    }
-
-    @Override
-    public void close() {
-        // Stub: no-op
-    }
+    public void close() {}
+    public NetworkSpecifier createNetworkSpecifierOpen(int p0, byte[] p1) { return null; }
+    public NetworkSpecifier createNetworkSpecifierPassphrase(int p0, byte[] p1, String p2) { return null; }
+    public void publish(PublishConfig p0, DiscoverySessionCallback p1, Handler p2) {}
+    public void subscribe(SubscribeConfig p0, DiscoverySessionCallback p1, Handler p2) {}
 }

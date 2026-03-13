@@ -1,4 +1,8 @@
 package android.content.res;
+import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
+import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
 
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;

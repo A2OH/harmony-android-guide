@@ -1,4 +1,8 @@
 package android.graphics;
+import android.content.res.Resources;
+import android.util.Config;
+import android.content.res.Resources;
+import android.util.Config;
 
 import java.io.InputStream;
 

@@ -1,4 +1,5 @@
 package android.os;
+import java.util.Map;
 
 /**
  * Android-compatible Process shim. Uses Java Runtime for process info.

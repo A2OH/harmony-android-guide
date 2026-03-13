@@ -1,4 +1,6 @@
 package android.content;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 /**
  * Android-compatible RestrictionEntry shim. Stub — no-op implementation for A2OH migration.

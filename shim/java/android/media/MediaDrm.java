@@ -1,4 +1,7 @@
 package android.media;
+import android.se.omapi.Session;
+import android.se.omapi.Session;
+import java.util.HashMap;
 
 import java.util.UUID;
 
@@ -53,13 +56,7 @@ public class MediaDrm {
             mDefaultUrl = defaultUrl != null ? defaultUrl : "";
         }
 
-        public byte[] getData() {
-            return mData;
-        }
 
-        public String getDefaultUrl() {
-            return mDefaultUrl;
-        }
     }
 
     public interface OnEventListener {

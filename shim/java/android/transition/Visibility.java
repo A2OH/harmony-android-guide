@@ -1,38 +1,17 @@
 package android.transition;
 
-/**
- * Android-compatible Visibility transition shim.
- * Abstract base class for transitions that respond to visibility changes.
- * Subclasses include Fade, Explode, and Slide.
- * Stub — no animation is performed on OpenHarmony.
- */
-public abstract class Visibility extends Transition {
-
-    /** Mode indicating the transition should animate views appearing. */
-    public static final int MODE_IN = 0x1;
-
-    /** Mode indicating the transition should animate views disappearing. */
-    public static final int MODE_OUT = 0x2;
-
-    private int mMode = MODE_IN | MODE_OUT;
-
+public class Visibility {
     public Visibility() {}
 
-    /**
-     * Sets which visibility changes this transition responds to.
-     *
-     * @param mode a combination of {@link #MODE_IN} and {@link #MODE_OUT}
-     */
-    public void setMode(int mode) {
-        mMode = mode;
-    }
-
-    /**
-     * Returns the current transition mode.
-     *
-     * @return a combination of {@link #MODE_IN} and {@link #MODE_OUT}
-     */
-    public int getMode() {
-        return mMode;
-    }
+    public static final int MODE_IN = 0;
+    public static final int MODE_OUT = 0;
+    public void captureEndValues(Object p0) {}
+    public void captureStartValues(Object p0) {}
+    public int getMode() { return 0; }
+    public boolean isVisible(Object p0) { return false; }
+    public Object onAppear(Object p0, Object p1, Object p2, Object p3, Object p4) { return null; }
+    public Object onAppear(Object p0, Object p1, Object p2, Object p3) { return null; }
+    public Object onDisappear(Object p0, Object p1, Object p2, Object p3, Object p4) { return null; }
+    public Object onDisappear(Object p0, Object p1, Object p2, Object p3) { return null; }
+    public void setMode(Object p0) {}
 }

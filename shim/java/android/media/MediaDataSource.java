@@ -7,7 +7,7 @@ import java.io.IOException;
  * Shim stub for android.media.MediaDataSource.
  * Abstract base class for media data sources used by MediaPlayer and MediaExtractor.
  */
-public abstract class MediaDataSource implements Closeable {
+public class MediaDataSource implements Closeable {
 
     /**
      * Called to request data from the given position.
@@ -18,13 +18,12 @@ public abstract class MediaDataSource implements Closeable {
      * @param size     the amount of data requested
      * @return the number of bytes read, or -1 on end-of-stream
      */
-    public abstract int readAt(long position, byte[] buffer, int offset, int size)
-            throws IOException;
+    public int readAt(long position, byte[] buffer, int offset, int size)throws IOException { return 0; }
 
     /**
      * @return the size of the data source, or -1 if the length cannot be determined
      */
-    public abstract long getSize() throws IOException;
+    public long getSize()throws IOException { return 0; }
 
     @Override
     public void close() throws IOException {

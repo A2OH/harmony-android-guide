@@ -1,4 +1,5 @@
 package android.util;
+import java.lang.Comparable;
 
 /**
  * Stub for android.util.Half — half-precision 16-bit IEEE 754 floating-point.

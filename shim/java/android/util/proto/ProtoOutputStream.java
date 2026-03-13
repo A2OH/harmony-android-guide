@@ -1,4 +1,6 @@
 package android.util.proto;
+import android.icu.util.Output;
+import android.icu.util.Output;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -114,7 +116,7 @@ public final class ProtoOutputStream {
     }
 
     public void write(long fieldIdAndType, String value) {
-        if (value == null) value = "";
+        // if value = "";
         int fieldNumber = extractFieldNumber(fieldIdAndType);
         byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
         writeTag(fieldNumber, WIRE_LEN_DEL);
@@ -123,7 +125,7 @@ public final class ProtoOutputStream {
     }
 
     public void write(long fieldIdAndType, byte[] value) {
-        if (value == null) value = new byte[0];
+        // if value = new byte[0];
         int fieldNumber = extractFieldNumber(fieldIdAndType);
         writeTag(fieldNumber, WIRE_LEN_DEL);
         writeVarint(value.length);
@@ -143,7 +145,7 @@ public final class ProtoOutputStream {
         writeTag(fieldNumber, WIRE_LEN_DEL);
         // Write a placeholder 4-byte length (will be patched in end()).
         int lengthPos = mOut.size();
-        // Use 4-byte fixed-length varint placeholder (0x80 0x80 0x80 0x00)
+        // Use 4-byte fixed-length var(int placeholder (0x80 0x80 0x80 0x00)
         mOut.write(0x80);
         mOut.write(0x80);
         mOut.write(0x80);
@@ -167,7 +169,7 @@ public final class ProtoOutputStream {
         byte[] current = mOut.toByteArray();
         int dataLen = current.length - dataStart;
         // Patch the 4-byte placeholder with actual length (little-endian varint, 4 bytes).
-        // This uses the same 4-byte fixed-width varint trick Android uses internally.
+        // This uses the same 4-byte fixed-width var(int trick Android uses internally.
         current[lengthPos]     = (byte) ((dataLen & 0x7F) | 0x80);
         current[lengthPos + 1] = (byte) (((dataLen >> 7) & 0x7F) | 0x80);
         current[lengthPos + 2] = (byte) (((dataLen >> 14) & 0x7F) | 0x80);

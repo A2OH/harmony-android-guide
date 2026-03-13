@@ -1,34 +1,10 @@
 package android.app;
 
-import android.widget.DatePicker;
+public class DatePickerDialog {
+    public DatePickerDialog() {}
 
-/**
- * Android-compatible DatePickerDialog shim. Stub — shows no UI.
- */
-public class DatePickerDialog extends AlertDialog {
-    private final DatePicker mDatePicker = new DatePicker();
-
-    public DatePickerDialog(Object context, OnDateSetListener listener,
-                            int year, int month, int dayOfMonth) {
-        super(context);
-        mDatePicker.init(year, month, dayOfMonth, null);
-    }
-
-    public DatePickerDialog(Object context, int themeResId, OnDateSetListener listener,
-                            int year, int month, int dayOfMonth) {
-        super(context, themeResId);
-        mDatePicker.init(year, month, dayOfMonth, null);
-    }
-
-    public DatePicker getDatePicker() {
-        return mDatePicker;
-    }
-
-    public void updateDate(int year, int month, int dayOfMonth) {
-        mDatePicker.updateDate(year, month, dayOfMonth);
-    }
-
-    public interface OnDateSetListener {
-        void onDateSet(DatePicker view, int year, int month, int dayOfMonth);
-    }
+    public void onClick(Object p0, Object p1) {}
+    public void onDateChanged(Object p0, Object p1, Object p2, Object p3) {}
+    public void setOnDateSetListener(Object p0) {}
+    public void updateDate(Object p0, Object p1, Object p2) {}
 }

@@ -1,4 +1,6 @@
 package android.graphics.drawable;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap;
 
 import android.graphics.Bitmap;
 

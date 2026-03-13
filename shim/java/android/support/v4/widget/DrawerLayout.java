@@ -1,4 +1,11 @@
 package android.support.v4.widget;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import java.util.Set;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -210,7 +217,7 @@ public class DrawerLayout extends ViewGroup {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Listener for monitoring events about drawers.
+     * Object for monitoring events about drawers.
      */
     public interface DrawerListener {
 

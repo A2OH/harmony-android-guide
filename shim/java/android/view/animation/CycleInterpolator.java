@@ -1,26 +1,10 @@
 package android.view.animation;
+import android.content.Context;
+import android.util.AttributeSet;
 
-/**
- * Android shim: android.view.animation.CycleInterpolator
- *
- * Repeats the animation for a specified number of cycles. The rate of change
- * follows a sinusoidal pattern:  sin(2 * π * cycles * input)
- */
-public class CycleInterpolator implements Interpolator {
+public class CycleInterpolator extends BaseInterpolator {
+    public CycleInterpolator(float p0) {}
+    public CycleInterpolator(Context p0, AttributeSet p1) {}
 
-    private final float mCycles;
-
-    /**
-     * Creates a new CycleInterpolator.
-     *
-     * @param cycles the number of cycles to repeat
-     */
-    public CycleInterpolator(float cycles) {
-        mCycles = cycles;
-    }
-
-    @Override
-    public float getInterpolation(float input) {
-        return (float) Math.sin(2 * mCycles * Math.PI * input);
-    }
+    public float getInterpolation(float p0) { return 0f; }
 }

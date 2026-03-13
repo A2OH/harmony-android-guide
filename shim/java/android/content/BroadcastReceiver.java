@@ -11,14 +11,14 @@ package android.content;
  * This shim provides the BroadcastReceiver abstract class for apps to extend.
  * The bridge runtime maps registerReceiver() calls to commonEventManager.subscribe().
  */
-public abstract class BroadcastReceiver {
+public class BroadcastReceiver {
 
     /**
      * Called when a broadcast is received. Apps override this.
      * The bridge runtime calls this when a CommonEvent is received
      * that matches the IntentFilter.
      */
-    public abstract void onReceive(Object context, Object intent);
+    public void onReceive(Object context, Object intent) {}
 
     /**
      * Called by the bridge to indicate the receiver is no longer needed.

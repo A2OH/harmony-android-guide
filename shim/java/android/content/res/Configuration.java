@@ -1,4 +1,5 @@
 package android.content.res;
+import java.util.Locale;
 
 public class Configuration {
     public static final int ORIENTATION_UNDEFINED  = 0;

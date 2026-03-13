@@ -8,14 +8,14 @@ import java.util.Map;
 /**
  * Android-compatible IdentityCredential shim. Abstract stub for identity credential operations.
  */
-public abstract class IdentityCredential {
+public class IdentityCredential {
 
     protected IdentityCredential() {}
 
     /**
      * Returns the credential key certificate chain.
      */
-    public Collection<X509Certificate> getCredentialKeyCertificateChain() {
+    public Collection<Object> getCredentialKeyCertificateChain() {
         return Collections.emptyList();
     }
 
@@ -47,7 +47,7 @@ public abstract class IdentityCredential {
     /**
      * Returns authentication keys that need certification (their certificate is expired or missing).
      */
-    public Collection<X509Certificate> getAuthKeysNeedingCertification() {
+    public Collection<Object> getAuthKeysNeedingCertification() {
         return Collections.emptyList();
     }
 
@@ -57,7 +57,7 @@ public abstract class IdentityCredential {
      * @param authenticationKey the authentication key certificate
      * @param staticAuthData    the static authentication data to store
      */
-    public void storeStaticAuthenticationData(X509Certificate authenticationKey,
+    public void storeStaticAuthenticationData(Object authenticationKey,
                                               byte[] staticAuthData) {
         // no-op stub
     }

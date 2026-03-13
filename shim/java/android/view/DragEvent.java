@@ -1,62 +1,26 @@
 package android.view;
-
 import android.content.ClipData;
+import android.content.ClipDescription;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-/**
- * Shim: android.view.DragEvent — pure Java stub.
- * Represents an event sent during a drag-and-drop operation.
- */
-public class DragEvent {
+public class DragEvent implements Parcelable {
+    public static final int ACTION_DRAG_ENDED = 0;
+    public static final int ACTION_DRAG_ENTERED = 0;
+    public static final int ACTION_DRAG_EXITED = 0;
+    public static final int ACTION_DRAG_LOCATION = 0;
+    public static final int ACTION_DRAG_STARTED = 0;
+    public static final int ACTION_DROP = 0;
 
-    public static final int ACTION_DRAG_STARTED = 1;
-    public static final int ACTION_DRAG_LOCATION = 2;
-    public static final int ACTION_DROP = 3;
-    public static final int ACTION_DRAG_ENDED = 4;
-    public static final int ACTION_DRAG_ENTERED = 5;
-    public static final int ACTION_DRAG_EXITED = 6;
+    public DragEvent() {}
 
-    private int mAction;
-    private float mX;
-    private float mY;
-    private ClipData mClipData;
-    private Object mLocalState;
-    private boolean mResult;
-
-    /** Package-private constructor. */
-    DragEvent() {}
-
-    /** Return the action value of this event. */
-    public int getAction() {
-        return mAction;
-    }
-
-    /** Return the X coordinate of the drag point. */
-    public float getX() {
-        return mX;
-    }
-
-    /** Return the Y coordinate of the drag point. */
-    public float getY() {
-        return mY;
-    }
-
-    /** Return the ClipData associated with the drop. */
-    public ClipData getClipData() {
-        return mClipData;
-    }
-
-    /** Return the local-state object set when the drag started. */
-    public Object getLocalState() {
-        return mLocalState;
-    }
-
-    /** Return the result of the drag-and-drop operation. */
-    public boolean getResult() {
-        return mResult;
-    }
-
-    @Override
-    public String toString() {
-        return "DragEvent{action=" + mAction + ", x=" + mX + ", y=" + mY + "}";
-    }
+    public int describeContents() { return 0; }
+    public int getAction() { return 0; }
+    public ClipData getClipData() { return null; }
+    public ClipDescription getClipDescription() { return null; }
+    public Object getLocalState() { return null; }
+    public boolean getResult() { return false; }
+    public float getX() { return 0f; }
+    public float getY() { return 0f; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

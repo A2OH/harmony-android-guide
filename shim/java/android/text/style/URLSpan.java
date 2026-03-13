@@ -1,4 +1,5 @@
 package android.text.style;
+import java.net.URL;
 
 /**
  * Android-compatible URLSpan shim.

@@ -1,4 +1,8 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 
 import android.graphics.Canvas;
 

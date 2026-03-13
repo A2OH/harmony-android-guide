@@ -1,57 +1,18 @@
 package android.content;
-
 import android.database.Cursor;
 import android.net.Uri;
 
-/**
- * Android-compatible SearchRecentSuggestionsProvider shim.
- * Extends ContentProvider with setupSuggestions() stub.
- */
 public class SearchRecentSuggestionsProvider extends ContentProvider {
+    public static final int DATABASE_MODE_2LINES = 0;
+    public static final int DATABASE_MODE_QUERIES = 0;
 
-    public static final int DATABASE_MODE_QUERIES = 1;
-    public static final int DATABASE_MODE_2LINES = 2;
+    public SearchRecentSuggestionsProvider() {}
 
-    private String mAuthority;
-    private int mMode;
-
-    /**
-     * Set up the suggestions provider. Stub -- stores configuration only.
-     */
-    protected void setupSuggestions(String authority, int mode) {
-        mAuthority = authority;
-        mMode = mode;
-    }
-
-    @Override
-    public boolean onCreate() {
-        return true; // stub
-    }
-
-    @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-                        String[] selectionArgs, String sortOrder) {
-        return null; // stub
-    }
-
-    @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        return uri; // stub
-    }
-
-    @Override
-    public int update(Uri uri, ContentValues values, String selection,
-                      String[] selectionArgs) {
-        return 0; // stub
-    }
-
-    @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0; // stub
-    }
-
-    @Override
-    public String getType(Uri uri) {
-        return null; // stub
-    }
+    public int delete(Uri p0, String p1, String[] p2) { return 0; }
+    public String getType(Uri p0) { return null; }
+    public Uri insert(Uri p0, ContentValues p1) { return null; }
+    public boolean onCreate() { return false; }
+    public Cursor query(Uri p0, String[] p1, String p2, String[] p3, String p4) { return null; }
+    public void setupSuggestions(String p0, int p1) {}
+    public int update(Uri p0, ContentValues p1, String p2, String[] p3) { return 0; }
 }

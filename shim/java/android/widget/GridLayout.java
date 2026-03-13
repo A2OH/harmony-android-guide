@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.ViewGroup;
+import android.view.ViewGroup;
 
 import android.view.ViewGroup;
 
@@ -82,17 +84,17 @@ public class GridLayout extends ViewGroup {
         }
     }
 
-    public static class LayoutParams extends ViewGroup.MarginLayoutParams {
+    public static class Object extends ViewGroup.MarginLayoutParams {
         public Spec rowSpec;
         public Spec columnSpec;
 
-        public LayoutParams(Spec rowSpec, Spec columnSpec) {
+        public Object(Spec rowSpec, Spec columnSpec) {
             super(WRAP_CONTENT, WRAP_CONTENT);
             this.rowSpec = rowSpec;
             this.columnSpec = columnSpec;
         }
 
-        public LayoutParams() {
+        public Object() {
             super(WRAP_CONTENT, WRAP_CONTENT);
         }
     }

@@ -1,4 +1,6 @@
 package android.security;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyGenParameterSpec;
 
 import java.math.BigInteger;
 import java.util.Date;

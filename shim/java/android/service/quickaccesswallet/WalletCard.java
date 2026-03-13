@@ -1,4 +1,6 @@
 package android.service.quickaccesswallet;
+import android.graphics.drawable.Icon;
+import android.graphics.drawable.Icon;
 
 /**
  * Android-compatible WalletCard shim. Stub for a card shown in the Quick Access Wallet.

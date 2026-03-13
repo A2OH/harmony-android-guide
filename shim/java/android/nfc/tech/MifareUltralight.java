@@ -1,4 +1,6 @@
 package android.nfc.tech;
+import android.nfc.Tag;
+import android.nfc.Tag;
 
 import android.nfc.Tag;
 import java.io.IOException;

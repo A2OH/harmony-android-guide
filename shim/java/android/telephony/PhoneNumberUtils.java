@@ -96,14 +96,14 @@ public class PhoneNumberUtils {
         if (stripped == null) return phoneNumber;
         // US local 10-digit: (NXX) NXX-XXXX
         if (stripped.length() == 10 && !stripped.startsWith("+")) {
-            return "(" + stripped.substring(0, 3) + ") "
-                    + stripped.substring(3, 6) + "-"
+            return "(" + stripped.substring(0) + ") "
+                    + stripped.substring(3) + "-"
                     + stripped.substring(6);
         }
         // US with country code 11-digit starting with 1
         if (stripped.length() == 11 && stripped.startsWith("1")) {
-            return "+1 (" + stripped.substring(1, 4) + ") "
-                    + stripped.substring(4, 7) + "-"
+            return "+1 (" + stripped.substring(1) + ") "
+                    + stripped.substring(4) + "-"
                     + stripped.substring(7);
         }
         return phoneNumber;

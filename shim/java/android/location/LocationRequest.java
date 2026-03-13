@@ -1,4 +1,5 @@
 package android.location;
+import java.util.Set;
 
 /**
  * Android-compatible LocationRequest shim. Stub — stores request parameters only.

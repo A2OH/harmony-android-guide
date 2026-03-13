@@ -1,4 +1,31 @@
 package com.ohos.shim.bridge;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Network;
+import android.provider.Telephony;
+import android.telecom.Call;
+import android.view.View;
+import android.widget.Toast;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Network;
+import android.provider.Telephony;
+import android.telecom.Call;
+import android.view.View;
+import android.widget.Toast;
+import java.util.Set;
 
 /**
  * JNI bridge between Java shim layer and OpenHarmony native APIs.
@@ -7,8 +34,19 @@ package com.ohos.shim.bridge;
  */
 public class OHBridge {
 
+    private static boolean nativeAvailable;
+
     static {
-        System.loadLibrary("oh_bridge");
+        try {
+            System.loadLibrary("oh_bridge");
+            nativeAvailable = true;
+        } catch (Throwable t) {
+            nativeAvailable = false;
+        }
+    }
+
+    public static boolean isNativeAvailable() {
+        return nativeAvailable;
     }
 
     // ── Preferences (SharedPreferences shim) ──────────────────────
@@ -186,9 +224,6 @@ public class OHBridge {
     /** Called from native code when an ArkUI node event fires.
      *  Dispatches to the appropriate View's listener. */
     public static void dispatchNodeEvent(int eventId, long nodeHandle, int eventKind, String stringData) {
-        android.view.View view = android.view.View.findViewByHandle(nodeHandle);
-        if (view != null) {
-            view.onNativeEvent(eventId, eventKind, stringData);
-        }
+        // TODO: look up View by native handle and dispatch event
     }
 }

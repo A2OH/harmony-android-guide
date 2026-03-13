@@ -1,4 +1,8 @@
 package android.text.method;
+import android.graphics.Rect;
+import android.view.View;
+import android.graphics.Rect;
+import android.view.View;
 
 /**
  * Android-compatible TransformationMethod stub.

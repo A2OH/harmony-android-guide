@@ -1,4 +1,6 @@
 package android.view.inputmethod;
+import android.text.InputType;
+import android.text.InputType;
 
 /**
  * Android-compatible EditorInfo shim.

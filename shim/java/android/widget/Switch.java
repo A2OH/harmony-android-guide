@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 import com.ohos.shim.bridge.OHBridge;
@@ -42,7 +44,7 @@ public class Switch extends TextView {
         this.onCheckedChangeListener = listener;
     }
 
-    @Override
+    
     public void onNativeEvent(int eventId, int eventKind, String stringData) {
         if (eventKind == EVENT_TOGGLE_ON_CHANGE) {
             checked = !checked;

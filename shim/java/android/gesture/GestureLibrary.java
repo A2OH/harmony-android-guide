@@ -11,7 +11,7 @@ import java.util.Set;
  * Android-compatible GestureLibrary shim.
  * Abstract base that stores named gesture sets in memory.
  */
-public abstract class GestureLibrary {
+public class GestureLibrary {
 
     // -------------------------------------------------------------------------
     // Prediction stub
@@ -52,10 +52,10 @@ public abstract class GestureLibrary {
     // -------------------------------------------------------------------------
 
     /** Persist the library. Returns true on success. */
-    public abstract boolean save();
+    public boolean save() { return false; }
 
     /** Load the library from persistent storage. Returns true on success. */
-    public abstract boolean load();
+    public boolean load() { return false; }
 
     // -------------------------------------------------------------------------
     // Public API

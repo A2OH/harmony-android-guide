@@ -1,4 +1,11 @@
 package android.widget;
+import android.database.DataSetObserver;
+import android.view.View;
+import android.view.ViewGroup;
+import android.database.DataSetObserver;
+import android.view.View;
+import android.view.ViewGroup;
+import java.util.Observer;
 
 import android.database.DataSetObserver;
 import android.view.View;
@@ -27,43 +34,43 @@ import java.util.List;
  *   <li>{@link #isChildSelectable(int, int)}</li>
  * </ul>
  */
-public abstract class BaseExpandableListAdapter implements ExpandableListAdapter {
+public class BaseExpandableListAdapter implements ExpandableListAdapter {
 
     private final List<DataSetObserver> observers = new ArrayList<>();
 
     // ── Abstract data methods ──
 
     @Override
-    public abstract int getGroupCount();
+    public int getGroupCount() { return 0; }
 
     @Override
-    public abstract int getChildrenCount(int groupPosition);
+    public int getChildrenCount(int groupPosition) { return 0; }
 
     @Override
-    public abstract Object getGroup(int groupPosition);
+    public Object getGroup(int groupPosition) { return null; }
 
     @Override
-    public abstract Object getChild(int groupPosition, int childPosition);
+    public Object getChild(int groupPosition, int childPosition) { return null; }
 
     @Override
-    public abstract long getGroupId(int groupPosition);
+    public long getGroupId(int groupPosition) { return 0; }
 
     @Override
-    public abstract long getChildId(int groupPosition, int childPosition);
+    public long getChildId(int groupPosition, int childPosition) { return 0; }
 
     // ── Abstract view methods ──
 
     @Override
-    public abstract View getGroupView(int groupPosition, boolean isExpanded,
-                                      View convertView, ViewGroup parent);
+    public View getGroupView(int groupPosition, boolean isExpanded,
+                                      View convertView, ViewGroup parent) { return null; }
 
     @Override
-    public abstract View getChildView(int groupPosition, int childPosition,
+    public View getChildView(int groupPosition, int childPosition,
                                       boolean isLastChild,
-                                      View convertView, ViewGroup parent);
+                                      View convertView, ViewGroup parent) { return null; }
 
     @Override
-    public abstract boolean isChildSelectable(int groupPosition, int childPosition);
+    public boolean isChildSelectable(int groupPosition, int childPosition) { return false; }
 
     // ── Default implementations ──
 

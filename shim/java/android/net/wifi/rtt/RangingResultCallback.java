@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Android-compatible RangingResultCallback shim. Abstract stub.
  */
-public abstract class RangingResultCallback {
+public class RangingResultCallback {
 
     public static final int STATUS_CODE_FAIL          = 1;
     public static final int STATUS_CODE_FAIL_RTT_NOT_AVAILABLE = 2;
@@ -15,12 +15,12 @@ public abstract class RangingResultCallback {
      *
      * @param results list of {@link RangingResult} for each requested peer.
      */
-    public abstract void onRangingResults(List<RangingResult> results);
+    public void onRangingResults(List<RangingResult> results) {}
 
     /**
      * Called when ranging fails before any results are produced.
      *
      * @param code failure status code.
      */
-    public abstract void onRangingFailure(int code);
+    public void onRangingFailure(int code) {}
 }

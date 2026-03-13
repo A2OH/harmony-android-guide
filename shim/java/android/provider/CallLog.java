@@ -1,4 +1,6 @@
 package android.provider;
+import android.net.Uri;
+import android.net.Uri;
 
 import android.net.Uri;
 

@@ -1,4 +1,8 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +35,7 @@ public class RadioGroup extends LinearLayout {
 
         // Uncheck previously checked button
         if (checkedId != -1) {
-            View prev = findViewById(checkedId);
+            View prev = (View) findViewById(checkedId);
             if (prev instanceof RadioButton) {
                 ((RadioButton) prev).setChecked(false);
             }
@@ -40,7 +44,7 @@ public class RadioGroup extends LinearLayout {
         checkedId = id;
 
         if (id != -1) {
-            View next = findViewById(id);
+            View next = (View) findViewById(id);
             if (next instanceof RadioButton) {
                 ((RadioButton) next).setChecked(true);
             }
@@ -67,25 +71,25 @@ public class RadioGroup extends LinearLayout {
 
     // ── Override addView to wire up RadioButton state changes ──
 
-    @Override
+    
     public void addView(View child) {
         super.addView(child);
         wireRadioButton(child);
     }
 
-    @Override
+    
     public void addView(View child, int index) {
         super.addView(child, index);
         wireRadioButton(child);
     }
 
-    @Override
+    
     public void addView(View child, ViewGroup.LayoutParams params) {
         super.addView(child, params);
         wireRadioButton(child);
     }
 
-    @Override
+
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
         super.addView(child, index, params);
         wireRadioButton(child);

@@ -1,4 +1,7 @@
 package android.view;
+import android.service.controls.Control;
+import android.service.controls.Control;
+import java.util.Set;
 
 /**
  * Shim: android.view.MenuItem interface.

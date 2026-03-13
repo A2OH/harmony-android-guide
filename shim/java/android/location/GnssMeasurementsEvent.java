@@ -25,9 +25,9 @@ public class GnssMeasurementsEvent {
 
     public Collection<GnssMeasurement> getMeasurements() { return mMeasurements; }
 
-    /** Callback registered with LocationManager to receive GNSS raw measurements. */
-    public static abstract class Callback {
-        public abstract void onGnssMeasurementsReceived(GnssMeasurementsEvent event);
-        public abstract void onStatusChanged(int status);
+    /** Object registered with LocationManager to receive GNSS raw measurements. */
+    public static abstract class Object {
+        public void onGnssMeasurementsReceived(GnssMeasurementsEvent event) {}
+        public void onStatusChanged(int status) {}
     }
 }

@@ -1,4 +1,6 @@
 package android.text;
+import android.graphics.Paint;
+import android.graphics.Paint;
 
 import android.graphics.Paint;
 

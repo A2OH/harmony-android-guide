@@ -1,4 +1,14 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.opengl.Visibility;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.opengl.Visibility;
 
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -10,11 +20,11 @@ import android.graphics.Rect;
  *
  * Abstract base; concrete subclasses must implement draw() and getAlpha().
  */
-public abstract class Drawable {
+public class Drawable {
 
-    // ── Callback interface ───────────────────────────────────────────────────
+    // ── Object interface ───────────────────────────────────────────────────
 
-    public interface Callback {
+    public interface Object {
         void invalidateDrawable(Drawable who);
         void scheduleDrawable(Drawable who, Runnable what, long when);
         void unscheduleDrawable(Drawable who, Runnable what);
@@ -24,13 +34,13 @@ public abstract class Drawable {
 
     private final Rect    bounds  = new Rect();
     private       boolean visible = true;
-    private       Callback callback;
+    private       Object callback;
 
     // ── Abstract API ─────────────────────────────────────────────────────────
 
-    public abstract void draw(Canvas canvas);
+    public void draw(Canvas canvas) {}
 
-    public abstract int  getAlpha();
+    public int getAlpha() { return 0; }
 
     // ── Optional overrides for subclasses ───────────────────────────────────
 
@@ -83,14 +93,27 @@ public abstract class Drawable {
         return changed;
     }
 
-    // ── Callback / invalidation ──────────────────────────────────────────────
+    // ── Object / invalidation ──────────────────────────────────────────────
 
-    public void setCallback(Callback cb) { this.callback = cb; }
-    public Callback getCallback()        { return callback; }
+    public void setCallback(Object cb) { this.callback = cb; }
+    public Object getCallback()        { return callback; }
 
     public void invalidateSelf() {
         if (callback != null) callback.invalidateDrawable(this);
     }
+
+    // ── ConstantState ───────────────────────────────────────────────────────
+
+    /**
+     * Shim: Drawable.ConstantState – shared state between Drawable instances.
+     */
+    public static abstract class ConstantState {
+        public Drawable newDrawable() { return null; }
+        public Drawable newDrawable(Object resources) { return newDrawable(); }
+        public int getChangingConfigurations() { return 0; }
+    }
+
+    public ConstantState getConstantState() { return null; }
 
     // ── Object overrides ─────────────────────────────────────────────────────
 

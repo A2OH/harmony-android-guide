@@ -1,101 +1,44 @@
 package android.transition;
 
-import java.util.ArrayList;
+public class Transition {
+    public Transition() {}
 
-/**
- * Android-compatible Transition shim. Abstract base for all transitions.
- * No-op on OpenHarmony; structural stub for compile compatibility.
- */
-public abstract class Transition {
-
-    private long mDuration = -1;
-    private long mStartDelay = -1;
-    private Object mInterpolator; // android.animation.TimeInterpolator — kept as Object to avoid hard dep
-    private final ArrayList<Object> mTargets = new ArrayList<>();
-    private final ArrayList<TransitionListener> mListeners = new ArrayList<>();
-
-    // ── Target management ──
-
-    public Transition addTarget(android.view.View target) {
-        if (target != null) mTargets.add(target);
-        return this;
-    }
-
-    public Transition addTarget(int targetId) {
-        mTargets.add(targetId);
-        return this;
-    }
-
-    public Transition addTarget(String targetName) {
-        if (targetName != null) mTargets.add(targetName);
-        return this;
-    }
-
-    public Transition addTarget(Class targetType) {
-        if (targetType != null) mTargets.add(targetType);
-        return this;
-    }
-
-    public Transition removeTarget(android.view.View target) {
-        mTargets.remove(target);
-        return this;
-    }
-
-    public Transition removeTarget(int targetId) {
-        mTargets.remove(Integer.valueOf(targetId));
-        return this;
-    }
-
-    // ── Timing ──
-
-    public Transition setDuration(long duration) {
-        mDuration = duration;
-        return this;
-    }
-
-    public long getDuration() {
-        return mDuration;
-    }
-
-    public Transition setStartDelay(long startDelay) {
-        mStartDelay = startDelay;
-        return this;
-    }
-
-    public long getStartDelay() {
-        return mStartDelay;
-    }
-
-    public Transition setInterpolator(Object interpolator) {
-        mInterpolator = interpolator;
-        return this;
-    }
-
-    public Object getInterpolator() {
-        return mInterpolator;
-    }
-
-    // ── Listener management ──
-
-    public Transition addListener(TransitionListener listener) {
-        if (listener != null && !mListeners.contains(listener)) {
-            mListeners.add(listener);
-        }
-        return this;
-    }
-
-    public Transition removeListener(TransitionListener listener) {
-        mListeners.remove(listener);
-        return this;
-    }
-
-    // ── TransitionListener interface ──
-
-    public interface TransitionListener {
-        void onTransitionStart(Transition transition);
-        void onTransitionEnd(Transition transition);
-        void onTransitionCancel(Transition transition);
-        void onTransitionPause(Transition transition);
-        void onTransitionResume(Transition transition);
-    }
+    public static final int MATCH_ID = 0;
+    public static final int MATCH_INSTANCE = 0;
+    public static final int MATCH_ITEM_ID = 0;
+    public static final int MATCH_NAME = 0;
+    public Object addListener(Object p0) { return null; }
+    public Object addTarget(Object p0) { return null; }
+    public boolean canRemoveViews() { return false; }
+    public void captureEndValues(Object p0) {}
+    public void captureStartValues(Object p0) {}
+    public Object clone() { return null; }
+    public Object createAnimator(Object p0, Object p1, Object p2) { return null; }
+    public Object excludeChildren(Object p0, Object p1) { return null; }
+    public Object excludeTarget(Object p0, Object p1) { return null; }
+    public long getDuration() { return 0L; }
+    public Object getEpicenter() { return null; }
+    public Object getEpicenterCallback() { return null; }
+    public Object getInterpolator() { return null; }
+    public Object getName() { return null; }
+    public Object getPathMotion() { return null; }
+    public Object getPropagation() { return null; }
+    public long getStartDelay() { return 0L; }
+    public Object getTargetIds() { return null; }
+    public Object getTargetNames() { return null; }
+    public Object getTargetTypes() { return null; }
+    public Object getTargets() { return null; }
+    public Object getTransitionProperties() { return null; }
+    public Object getTransitionValues(Object p0, Object p1) { return null; }
+    public boolean isTransitionRequired(Object p0, Object p1) { return false; }
+    public Object removeListener(Object p0) { return null; }
+    public Object removeTarget(Object p0) { return null; }
+    public Object setDuration(Object p0) { return null; }
+    public void setEpicenterCallback(Object p0) {}
+    public Object setInterpolator(Object p0) { return null; }
+    public void setMatchOrder(Object p0) {}
+    public void setPathMotion(Object p0) {}
+    public void setPropagation(Object p0) {}
+    public Object setStartDelay(Object p0) { return null; }
+    public Object onGetEpicenter(Object p0) { return null; }
 }

@@ -5,21 +5,21 @@ import java.nio.ByteBuffer;
 /**
  * Android-compatible Image shim. Stub for media image data access.
  */
-public abstract class Image implements AutoCloseable {
+public class Image implements AutoCloseable {
 
-    public abstract int getWidth();
-    public abstract int getHeight();
-    public abstract int getFormat();
-    public abstract long getTimestamp();
-    public abstract Plane[] getPlanes();
-    public abstract void close();
+    public int getWidth() { return 0; }
+    public int getHeight() { return 0; }
+    public int getFormat() { return 0; }
+    public long getTimestamp() { return 0; }
+    public Plane[] getPlanes() { return null; }
+    public void close() {}
 
     /**
      * A single color plane of image data.
      */
     public static abstract class Plane {
-        public abstract int getRowStride();
-        public abstract int getPixelStride();
-        public abstract ByteBuffer getBuffer();
+        public int getRowStride() { return 0; }
+        public int getPixelStride() { return 0; }
+        public ByteBuffer getBuffer() { return null; }
     }
 }

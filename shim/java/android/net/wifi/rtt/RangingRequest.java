@@ -1,4 +1,10 @@
 package android.net.wifi.rtt;
+import android.bluetooth.le.ScanResult;
+import android.net.MacAddress;
+import android.net.wifi.aware.PeerHandle;
+import android.bluetooth.le.ScanResult;
+import android.net.MacAddress;
+import android.net.wifi.aware.PeerHandle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +33,14 @@ public class RangingRequest {
     public static class Builder {
         private final List<Object> peers = new ArrayList<>();
 
-        /** Add a single access point (ScanResult) to range against. */
+        /** Add a single access po(int (ScanResult) to range against. */
         public Builder addAccessPoint(Object scanResult) {
             peers.add(scanResult);
             return this;
         }
 
         /** Add a list of access points (ScanResult) to range against. */
-        public Builder addAccessPoints(List<?> scanResults) {
+        public Builder addAccessPoints(java.util.List<Object> scanResults) {
             peers.addAll(scanResults);
             return this;
         }

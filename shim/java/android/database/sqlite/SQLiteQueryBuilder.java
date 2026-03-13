@@ -1,4 +1,6 @@
 package android.database.sqlite;
+import android.content.res.Configuration;
+import android.content.res.Configuration;
 
 import java.util.Map;
 import java.util.Set;
@@ -229,7 +231,7 @@ public class SQLiteQueryBuilder {
                 groupBy, having, sortOrder, limit);
         System.out.println("[SQLiteQueryBuilder] query: " + sql);
         // Return a stub cursor; in a real port this would call db.rawQuery(sql, selectionArgs)
-        return new SQLiteCursor(db, mTables, sql);
+        return new SQLiteCursor((SQLiteCursorDriver) db, mTables, sql);
     }
 
     // -------------------------------------------------------------------------

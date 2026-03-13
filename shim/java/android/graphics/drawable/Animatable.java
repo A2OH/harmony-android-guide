@@ -1,4 +1,6 @@
 package android.graphics.drawable;
+import android.animation.Animator;
+import android.animation.Animator;
 
 /**
  * Shim: android.graphics.drawable.Animatable

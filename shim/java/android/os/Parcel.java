@@ -3,6 +3,7 @@ package android.os;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.IOException;
 
 /**
  * Android-compatible Parcel shim. In-memory serialization using byte buffer.

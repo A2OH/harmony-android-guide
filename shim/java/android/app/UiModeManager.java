@@ -89,7 +89,7 @@ public class UiModeManager {
     }
 
     /**
-     * Request to enter car mode. Stub — records state locally only.
+     * Object to enter car mode. Stub — records state locally only.
      *
      * @param flags optional flags (ignored in shim)
      */
@@ -99,7 +99,7 @@ public class UiModeManager {
     }
 
     /**
-     * Request to exit car mode. Stub — records state locally only.
+     * Object to exit car mode. Stub — records state locally only.
      *
      * @param flags optional flags (ignored in shim)
      */

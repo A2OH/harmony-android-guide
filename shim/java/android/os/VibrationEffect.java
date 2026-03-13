@@ -4,7 +4,7 @@ package android.os;
  * Shim: android.os.VibrationEffect — abstract class representing a
  * vibration effect that can be played by a Vibrator.
  */
-public abstract class VibrationEffect {
+public class VibrationEffect {
 
     /** The default vibration strength of the device. */
     public static final int DEFAULT_AMPLITUDE = -1;

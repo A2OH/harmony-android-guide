@@ -55,7 +55,7 @@ public class NotificationChannelGroup {
     }
 
     /**
-     * Returns the list of channels that belong to this group, in the order they were added.
+     * Returns the list of channels that be(long to this group, in the order they were added.
      * This list is mutable — channels can be added directly to support the shim's
      * NotificationManager.createNotificationChannel() registration flow.
      */

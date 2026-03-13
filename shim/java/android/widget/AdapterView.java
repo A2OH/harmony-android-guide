@@ -1,4 +1,8 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +14,7 @@ import android.view.ViewGroup;
  * Maps to an ArkUI STACK node by default; concrete subclasses override with the
  * appropriate node type (LIST, GRID, …).
  */
-public abstract class AdapterView extends ViewGroup {
+public class AdapterView extends ViewGroup {
 
     public static final int INVALID_POSITION = -1;
     public static final long INVALID_ROW_ID  = Long.MIN_VALUE;
@@ -28,8 +32,8 @@ public abstract class AdapterView extends ViewGroup {
 
     // ── Abstract adapter contract ──
 
-    public abstract int getCount();
-    public abstract Object getItemAtPosition(int position);
+    public int getCount() { return 0; }
+    public Object getItemAtPosition(int position) { return null; }
 
     // ── Click listeners ──
 

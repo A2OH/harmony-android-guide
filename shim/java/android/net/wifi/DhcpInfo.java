@@ -1,4 +1,6 @@
 package android.net.wifi;
+import android.net.Network;
+import android.net.Network;
 
 /**
  * Shim: android.net.wifi.DhcpInfo — stub holding DHCP-assigned address info.

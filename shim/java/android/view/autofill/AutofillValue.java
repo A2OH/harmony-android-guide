@@ -1,4 +1,6 @@
 package android.view.autofill;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 /**
  * Android-compatible AutofillValue shim. Represents the value of a field to autofill.

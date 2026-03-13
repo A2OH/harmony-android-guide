@@ -12,7 +12,7 @@ public class AutofillManager {
         public static final int EVENT_INPUT_HIDDEN   = 2;
         public static final int EVENT_INPUT_UNAVAILABLE = 3;
 
-        public abstract void onAutofillEvent(Object view, AutofillId id, int event);
+        public void onAutofillEvent(Object view, AutofillId id, int event) {}
     }
 
     // --- State queries ---
@@ -43,7 +43,7 @@ public class AutofillManager {
         // stub
     }
 
-    // --- Callback registration ---
+    // --- Object registration ---
 
     public void registerCallback(AutofillCallback callback) {
         // stub

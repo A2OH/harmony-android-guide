@@ -1,4 +1,10 @@
 package android.text.util;
+import android.text.Spannable;
+import android.widget.TextView;
+import android.text.Spannable;
+import android.widget.TextView;
+import java.net.URL;
+import java.util.regex.Pattern;
 
 import android.text.Spannable;
 import android.widget.TextView;

@@ -1,6 +1,7 @@
 package android.view.accessibility;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Android-compatible AccessibilityEvent shim.

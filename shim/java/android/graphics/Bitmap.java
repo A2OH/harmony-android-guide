@@ -1,4 +1,8 @@
 package android.graphics;
+import android.util.Config;
+import android.webkit.WebViewClient;
+import android.util.Config;
+import android.webkit.WebViewClient;
 
 /**
  * Shim: android.graphics.Bitmap

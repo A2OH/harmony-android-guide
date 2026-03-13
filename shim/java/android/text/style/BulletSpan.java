@@ -2,7 +2,7 @@ package android.text.style;
 
 /**
  * Android shim: BulletSpan
- * Draws a bullet point at the beginning of a paragraph.
+ * Draws a bullet po(int at the beginning of a paragraph.
  */
 public class BulletSpan {
 

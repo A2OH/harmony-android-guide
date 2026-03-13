@@ -1,10 +1,12 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.Canvas;
 
 import android.graphics.Canvas;
 
 /**
  * Android-compatible RotateDrawable shim. Rotates a child drawable around a
- * configurable pivot point between fromDegrees and toDegrees based on level.
+ * configurable pivot po(int between fromDegrees and toDegrees based on level.
  */
 public class RotateDrawable extends Drawable {
 

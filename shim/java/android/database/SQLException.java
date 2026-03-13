@@ -1,10 +1,19 @@
 package android.database;
 
 /**
- * Shim: android.database.SQLException — same as AOSP, pure Java.
+ * An exception that indicates there was an error with SQL parsing or execution.
  */
 public class SQLException extends RuntimeException {
-    public SQLException() {}
-    public SQLException(String error) { super(error); }
-    public SQLException(String error, Throwable cause) { super(error, cause); }
+
+    public SQLException() {
+        super();
+    }
+
+    public SQLException(String error) {
+        super(error);
+    }
+
+    public SQLException(String error, Throwable cause) {
+        super(error, cause);
+    }
 }

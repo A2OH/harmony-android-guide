@@ -42,8 +42,8 @@ public class WifiEnterpriseConfig {
     private int    phase2Method = Phase2.NONE;
     private String identity     = "";
     private String password     = "";
-    private X509Certificate caCertificate     = null;
-    private X509Certificate clientCertificate = null;
+    private Object caCertificate     = null;
+    private Object clientCertificate = null;
 
     // -------------------------------------------------------------------------
     // Methods
@@ -83,19 +83,19 @@ public class WifiEnterpriseConfig {
         return password;
     }
 
-    public void setCaCertificate(X509Certificate cert) {
+    public void setCaCertificate(Object cert) {
         this.caCertificate = cert;
     }
 
-    public X509Certificate getCaCertificate() {
+    public Object getCaCertificate() {
         return caCertificate;
     }
 
-    public void setClientCertificate(X509Certificate cert) {
+    public void setClientCertificate(Object cert) {
         this.clientCertificate = cert;
     }
 
-    public X509Certificate getClientCertificate() {
+    public Object getClientCertificate() {
         return clientCertificate;
     }
 }

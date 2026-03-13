@@ -6,7 +6,7 @@ package android.widget;
  * Subclasses implement performFiltering() (runs on a worker thread) and
  * publishResults() (runs on the UI thread) to supply filtered content.
  */
-public abstract class Filter {
+public class Filter {
 
     // ── Inner class ──────────────────────────────────────────────────────────
 
@@ -34,18 +34,18 @@ public abstract class Filter {
     /**
      * Invoked on a worker thread to perform the filtering.
      *
-     * @param constraint  the constraint used to filter the data
+     * @param constra(int the constra(int used to filter the data
      * @return            a FilterResults object containing the filtered set
      */
-    protected abstract FilterResults performFiltering(CharSequence constraint);
+    protected FilterResults performFiltering(CharSequence constraint) { return null; }
 
     /**
      * Invoked on the UI thread to publish the results of the filtering.
      *
-     * @param constraint  the constraint used to filter the data
+     * @param constra(int the constra(int used to filter the data
      * @param results     the results of the filtering operation
      */
-    protected abstract void publishResults(CharSequence constraint, FilterResults results);
+    protected void publishResults(CharSequence constraint, FilterResults results) {}
 
     // ── Public filter entry points ───────────────────────────────────────────
 
@@ -53,7 +53,7 @@ public abstract class Filter {
      * Starts a filtering operation. In this shim the work is performed
      * synchronously on the calling thread (no background thread is created).
      *
-     * @param constraint the constraint used to filter the data
+     * @param constra(int the constra(int used to filter the data
      */
     public final void filter(CharSequence constraint) {
         filter(constraint, null);
@@ -62,7 +62,7 @@ public abstract class Filter {
     /**
      * Starts a filtering operation with an optional completion listener.
      *
-     * @param constraint the constraint used to filter the data
+     * @param constra(int the constra(int used to filter the data
      * @param listener   optional listener notified when filtering completes
      */
     public final void filter(CharSequence constraint, FilterListener listener) {

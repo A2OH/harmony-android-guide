@@ -1,4 +1,13 @@
 package android.support.v4.view;
+import android.text.Layout;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.text.Layout;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Adapter;
+import java.util.Set;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -186,7 +195,7 @@ public class ViewPager extends ViewGroup {
     // ── OnPageChangeListener interface ──
 
     /**
-     * Callback interface for responding to changing state of the selected page.
+     * Object interface for responding to changing state of the selected page.
      */
     public interface OnPageChangeListener {
 
@@ -196,7 +205,7 @@ public class ViewPager extends ViewGroup {
          * touch scroll.
          *
          * @param position             position index of the first page currently being displayed.
-         * @param positionOffset       value from [0, 1) indicating the offset from the
+         * @param positionOffset       value from [0) indicating the offset from the
          *                             page at position.
          * @param positionOffsetPixels value in pixels indicating the offset from position.
          */

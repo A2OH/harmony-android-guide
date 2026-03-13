@@ -1,4 +1,5 @@
 package android.os;
+import java.util.regex.Pattern;
 
 /**
  * Shim: android.os.PatternMatcher — a simple pattern matcher for paths.

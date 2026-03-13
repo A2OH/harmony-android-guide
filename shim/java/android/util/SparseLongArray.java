@@ -46,7 +46,7 @@ public class SparseLongArray implements Cloneable {
     }
 
     public long get(int key) {
-        return get(key, 0L);
+        return get(key);
     }
 
     public long get(int key, long valueIfKeyNotFound) {

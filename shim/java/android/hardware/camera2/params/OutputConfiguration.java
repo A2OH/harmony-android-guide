@@ -1,4 +1,8 @@
 package android.hardware.camera2.params;
+import android.hardware.camera2.CameraCaptureSession;
+import android.view.Surface;
+import android.hardware.camera2.CameraCaptureSession;
+import android.view.Surface;
 
 import android.view.Surface;
 import java.util.ArrayList;

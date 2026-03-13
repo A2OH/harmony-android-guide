@@ -1,4 +1,6 @@
 package android.os;
+import android.util.Size;
+import android.util.Size;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +10,7 @@ import java.util.Set;
  * Shim: android.os.BaseBundle — abstract base class providing common
  * key-value storage for Bundle and PersistableBundle.
  */
-public abstract class BaseBundle {
+public class BaseBundle {
 
     final Map<String, Object> map;
 

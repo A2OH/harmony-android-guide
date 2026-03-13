@@ -1,89 +1,35 @@
 package android.media;
 
-/**
- * Android-compatible MediaRouter shim. Stub for media route selection.
- */
 public class MediaRouter {
-    public static final int ROUTE_TYPE_LIVE_AUDIO      = 1;
-    public static final int ROUTE_TYPE_LIVE_VIDEO      = 2;
-    public static final int ROUTE_TYPE_REMOTE_DISPLAY  = 4;
+    public MediaRouter() {}
 
-    private static MediaRouter sInstance;
-
-    private MediaRouter() {}
-
-    public static MediaRouter getInstance(Object context) {
-        if (sInstance == null) {
-            sInstance = new MediaRouter();
-        }
-        return sInstance;
-    }
-
-    public RouteInfo getSelectedRoute() {
-        return new RouteInfo();
-    }
-
-    public void addCallback(int types, Callback cb) {
-        // no-op
-    }
-
-    public void removeCallback(Callback cb) {
-        // no-op
-    }
-
-    public void selectRoute(int types, RouteInfo route) {
-        // no-op
-    }
-
-    // -----------------------------------------------------------------------
-    // RouteInfo inner class
-    // -----------------------------------------------------------------------
-
-    public static class RouteInfo {
-        private String mName = "Default Route";
-        private boolean mEnabled = true;
-
-        public String getName() { return mName; }
-        public boolean isEnabled() { return mEnabled; }
-        public boolean isDefault() { return true; }
-
-        public int getPlaybackType() { return 0; }
-        public int getVolumeMax() { return 100; }
-        public int getVolume() { return 50; }
-        public void requestSetVolume(int volume) {}
-        public void requestUpdateVolume(int direction) {}
-    }
-
-    // -----------------------------------------------------------------------
-    // UserRouteInfo inner class
-    // -----------------------------------------------------------------------
-
-    public static class UserRouteInfo extends RouteInfo {
-        private String mTag;
-
-        public void setName(String name) {}
-        public void setStatus(CharSequence status) {}
-        public void setTag(Object tag) { mTag = tag != null ? tag.toString() : null; }
-        public Object getTag() { return mTag; }
-        public void setVolume(int volume) {}
-        public void setVolumeMax(int max) {}
-        public void setVolumeCallback(Object cb) {}
-        public void setRemotePlaybackInfo(String statusText, int iconRes, Object presentationDisplay) {}
-    }
-
-    // -----------------------------------------------------------------------
-    // Callback abstract inner class
-    // -----------------------------------------------------------------------
-
-    public static abstract class Callback {
-        public void onRouteSelected(MediaRouter router, int type, RouteInfo info) {}
-        public void onRouteUnselected(MediaRouter router, int type, RouteInfo info) {}
-        public void onRouteAdded(MediaRouter router, RouteInfo info) {}
-        public void onRouteRemoved(MediaRouter router, RouteInfo info) {}
-        public void onRouteChanged(MediaRouter router, RouteInfo info) {}
-        public void onRouteGrouped(MediaRouter router, RouteInfo info, RouteInfo group, int index) {}
-        public void onRouteUngrouped(MediaRouter router, RouteInfo info, RouteInfo group) {}
-        public void onRouteVolumeChanged(MediaRouter router, RouteInfo info) {}
-        public void onRoutePresentationDisplayChanged(MediaRouter router, RouteInfo info) {}
-    }
+    public static final int CALLBACK_FLAG_PERFORM_ACTIVE_SCAN = 0;
+    public static final int CALLBACK_FLAG_UNFILTERED_EVENTS = 0;
+    public static final int ROUTE_TYPE_LIVE_AUDIO = 0;
+    public static final int ROUTE_TYPE_LIVE_VIDEO = 0;
+    public static final int ROUTE_TYPE_USER = 0;
+    public void addCallback(Object p0, Object p1) {}
+    public void addCallback(Object p0, Object p1, Object p2) {}
+    public void addUserRoute(Object p0) {}
+    public void clearUserRoutes() {}
+    public Object createRouteCategory(Object p0, Object p1) { return null; }
+    public Object createUserRoute(Object p0) { return null; }
+    public Object getCategoryAt(Object p0) { return null; }
+    public int getCategoryCount() { return 0; }
+    public Object getDefaultRoute() { return null; }
+    public Object getRouteAt(Object p0) { return null; }
+    public int getRouteCount() { return 0; }
+    public Object getSelectedRoute(Object p0) { return null; }
+    public void removeCallback(Object p0) {}
+    public void removeUserRoute(Object p0) {}
+    public void selectRoute(Object p0, Object p1) {}
+    public void onRouteAdded(Object p0, Object p1) {}
+    public void onRouteChanged(Object p0, Object p1) {}
+    public void onRouteGrouped(Object p0, Object p1, Object p2, Object p3) {}
+    public void onRoutePresentationDisplayChanged(Object p0, Object p1) {}
+    public void onRouteRemoved(Object p0, Object p1) {}
+    public void onRouteSelected(Object p0, Object p1, Object p2) {}
+    public void onRouteUngrouped(Object p0, Object p1, Object p2) {}
+    public void onRouteUnselected(Object p0, Object p1, Object p2) {}
+    public void onRouteVolumeChanged(Object p0, Object p1) {}
 }

@@ -1,4 +1,6 @@
 package android.hardware.display;
+import android.view.Display;
+import android.view.Display;
 
 /**
  * Android-compatible DisplayManager stub.

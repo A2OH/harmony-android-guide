@@ -1,4 +1,6 @@
 package android.widget;
+import android.graphics.Interpolator;
+import android.graphics.Interpolator;
 
 /**
  * Shim: android.widget.OverScroller — smooth scrolling/flinging with overscroll.
@@ -125,7 +127,7 @@ public class OverScroller {
      * Start a scroll with the default duration (250 ms).
      */
     public void startScroll(int startX, int startY, int dx, int dy) {
-        startScroll(startX, startY, dx, dy, 250);
+        startScroll(startX, startY, dx, dy);
     }
 
     // ── Fling ──
@@ -137,8 +139,8 @@ public class OverScroller {
      *
      * @param startX    initial X position
      * @param startY    initial Y position
-     * @param velocityX initial velocity in px/s along X
-     * @param velocityY initial velocity in px/s along Y
+     * @param velocityX initial velocity in px/s a(long X
+     * @param velocityY initial velocity in px/s a(long Y
      * @param minX      minimum X value
      * @param maxX      maximum X value
      * @param minY      minimum Y value

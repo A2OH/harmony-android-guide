@@ -1,4 +1,6 @@
 package android.widget;
+import android.media.Rating;
+import android.media.Rating;
 
 import com.ohos.shim.bridge.OHBridge;
 

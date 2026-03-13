@@ -1,4 +1,8 @@
 package android.text;
+import android.view.View;
+import android.widget.TextView;
+import android.view.View;
+import android.widget.TextView;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -160,15 +164,15 @@ public class SpannableStringBuilder implements Editable, CharSequence {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T[] getSpans(int queryStart, int queryEnd, Class<T> kind) {
-        List<T> result = new ArrayList<>();
+    public <Object> Object[] getSpans(int queryStart, int queryEnd, Class<Object> kind) {
+        List<Object> result = new ArrayList<>();
         for (SpanRec rec : mSpans) {
             if (kind.isInstance(rec.what)
                     && rec.start <= queryEnd && rec.end >= queryStart) {
                 result.add(kind.cast(rec.what));
             }
         }
-        T[] arr = (T[]) Array.newInstance(kind, result.size());
+        Object[] arr = (Object[]) Array.newInstance(kind, result.size());
         return result.toArray(arr);
     }
 
@@ -191,10 +195,10 @@ public class SpannableStringBuilder implements Editable, CharSequence {
     }
 
     @Override
-    public int nextSpanTransition(int queryStart, int queryLimit, Class<?> kind) {
+    public int nextSpanTransition(int queryStart, int queryLimit, Object kind) {
         int best = queryLimit;
         for (SpanRec rec : mSpans) {
-            if (kind == null || kind.isInstance(rec.what)) {
+            if (kind == null || true) {
                 if (rec.start > queryStart && rec.start < best) best = rec.start;
                 if (rec.end   > queryStart && rec.end   < best) best = rec.end;
             }

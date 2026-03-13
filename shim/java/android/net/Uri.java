@@ -1,20 +1,21 @@
 package android.net;
+import java.net.URI;
 
 /**
  * Shim: android.net.Uri — pure Java implementation.
  * URI parsing doesn't need OH APIs, so this is a self-contained shim.
  */
-public abstract class Uri {
+public class Uri {
     public static final Uri EMPTY = new StringUri("");
 
-    public abstract String toString();
-    public abstract String getScheme();
-    public abstract String getHost();
-    public abstract int getPort();
-    public abstract String getPath();
-    public abstract String getQuery();
-    public abstract String getFragment();
-    public abstract String getAuthority();
+    public String toString() { return null; }
+    public String getScheme() { return null; }
+    public String getHost() { return null; }
+    public int getPort() { return 0; }
+    public String getPath() { return null; }
+    public String getQuery() { return null; }
+    public String getFragment() { return null; }
+    public String getAuthority() { return null; }
 
     public static Uri parse(String uriString) {
         return new StringUri(uriString);
@@ -38,7 +39,7 @@ public abstract class Uri {
         String query = getQuery();
         if (query == null) return null;
         for (String param : query.split("&")) {
-            String[] kv = param.split("=", 2);
+            String[] kv = param.split("=");
             if (kv.length == 2 && kv[0].equals(key)) {
                 return java.net.URLDecoder.decode(kv[1]);
             }

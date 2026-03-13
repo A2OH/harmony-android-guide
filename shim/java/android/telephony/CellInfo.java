@@ -3,7 +3,7 @@ package android.telephony;
 /**
  * Android-compatible CellInfo shim. Stub implementation for mock testing.
  */
-public abstract class CellInfo {
+public class CellInfo {
 
     public abstract static class CellIdentity {
         public String getOperatorAlphaLong() { return ""; }
@@ -11,18 +11,18 @@ public abstract class CellInfo {
     }
 
     public abstract static class CellSignalStrength {
-        public abstract int getDbm();
-        public abstract int getAsuLevel();
-        public abstract int getLevel();
+        public int getDbm() { return 0; }
+        public int getAsuLevel() { return 0; }
+        public int getLevel() { return 0; }
     }
 
     public boolean isRegistered() {
         return false;
     }
 
-    public abstract CellIdentity getCellIdentity();
+    public CellIdentity getCellIdentity() { return null; }
 
-    public abstract CellSignalStrength getCellSignalStrength();
+    public CellSignalStrength getCellSignalStrength() { return null; }
 
     public long getTimeStamp() {
         return 0L;

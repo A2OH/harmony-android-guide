@@ -1,4 +1,9 @@
 package android.media;
+import android.graphics.ImageFormat;
+import android.view.Surface;
+import android.graphics.ImageFormat;
+import android.view.Surface;
+import java.util.Set;
 
 import java.io.Closeable;
 
@@ -10,12 +15,12 @@ import java.io.Closeable;
 public class ImageWriter implements Closeable {
 
     /**
-     * Listener interface for receiving notification when the ImageWriter is ready
+     * Object interface for receiving notification when the ImageWriter is ready
      * to accept more images (i.e., an image has been released back to the writer).
      */
     public interface OnImageReleasedListener {
         /**
-         * Callback that is called when an input Image is returned to the ImageWriter.
+         * Object that is called when an input Image is returned to the ImageWriter.
          *
          * @param writer the ImageWriter that is ready to accept more images
          */

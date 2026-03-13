@@ -1,66 +1,26 @@
 package android.app.slice;
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.CancellationSignal;
+import java.util.Set;
 
-/**
- * Android-compatible SliceProvider shim. Abstract stub — no-op on OpenHarmony.
- *
- * SliceProvider is a ContentProvider subclass that apps implement to supply
- * Slice content to the system. There is no OH equivalent; this shim satisfies
- * compile-time dependencies only.
- *
- * ContentProvider is not available in this shim set, so SliceProvider extends
- * Object directly and re-declares the minimal surface needed.
- *
- * OH migration note: Use FormExtensionAbility for widget/card content instead.
- */
-public abstract class SliceProvider {
+public class SliceProvider extends ContentProvider {
+    public static final int SLICE_TYPE = 0;
 
-    private Object mContext;
+    public SliceProvider(String... p0) {}
+    public SliceProvider() {}
 
-    // ── ContentProvider surface ────────────────────────────────────────────────
-
-    /** Called by the system when the provider is first created. */
-    public boolean onCreate() {
-        return true;
-    }
-
-    /** Returns the context attached to this provider. */
-    public Object getContext() {
-        return mContext;
-    }
-
-    /** Called by the runtime to attach a context before onCreate(). */
-    public void attachContext(Object context) {
-        mContext = context;
-    }
-
-    // ── Slice-specific API ─────────────────────────────────────────────────────
-
-    /**
-     * Implemented by subclasses to return a Slice bound to the given URI.
-     * Called by the system when a slice consumer requests content.
-     *
-     * @param sliceUri the URI of the slice to bind (typed as Object for shim compatibility)
-     * @return the Slice to display, or null if the URI is not handled
-     */
-    public abstract Slice onBindSlice(Object sliceUri);
-
-    /**
-     * Called when a slice is pinned (a consumer is actively showing it).
-     * Override to start any ongoing work needed to keep the slice up-to-date.
-     *
-     * @param sliceUri the URI of the slice that was pinned
-     */
-    public void onSlicePinned(Object sliceUri) {
-        // default no-op
-    }
-
-    /**
-     * Called when a slice is unpinned (all consumers have stopped showing it).
-     * Override to stop any ongoing work started in onSlicePinned().
-     *
-     * @param sliceUri the URI of the slice that was unpinned
-     */
-    public void onSliceUnpinned(Object sliceUri) {
-        // default no-op
-    }
+    public int delete(Uri p0, String p1, String[] p2) { return 0; }
+    public String getType(Uri p0) { return null; }
+    public Uri insert(Uri p0, ContentValues p1) { return null; }
+    public Slice onBindSlice(Uri p0, java.util.Set<Object> p1) { return null; }
+    public void onSlicePinned(Uri p0) {}
+    public void onSliceUnpinned(Uri p0) {}
+    public Cursor query(Uri p0, String[] p1, String p2, String[] p3, String p4) { return null; }
+    public Cursor query(Uri p0, String[] p1, String p2, String[] p3, String p4, CancellationSignal p5) { return null; }
+    public Cursor query(Uri p0, String[] p1, Bundle p2, CancellationSignal p3) { return null; }
+    public int update(Uri p0, ContentValues p1, String p2, String[] p3) { return 0; }
 }

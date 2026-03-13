@@ -1,4 +1,6 @@
 package android.widget;
+import android.text.format.Formatter;
+import android.text.format.Formatter;
 
 /**
  * Android-compatible NumberPicker shim.

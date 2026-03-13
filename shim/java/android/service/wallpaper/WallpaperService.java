@@ -3,13 +3,13 @@ package android.service.wallpaper;
 /**
  * Android-compatible WallpaperService shim. Stub — no-op implementation.
  */
-public abstract class WallpaperService {
+public class WallpaperService {
 
-    public abstract Engine onCreateEngine();
+    public Engine onCreateEngine() { return null; }
 
     // --- Engine inner class ---
 
-    public abstract class Engine {
+    public class Engine {
 
         private boolean visible = false;
         private boolean preview = false;

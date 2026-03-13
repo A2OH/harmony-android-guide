@@ -7,7 +7,7 @@ package android.content;
  *
  * @param <D> the result data type
  */
-public abstract class AsyncTaskLoader<D> extends Loader<D> {
+public class AsyncTaskLoader<D> extends Loader<D> {
 
     private volatile boolean mCanceled;
 
@@ -23,7 +23,7 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
      * Subclasses implement this to perform the actual load.
      * In real Android this runs on a worker thread; here it is a stub.
      */
-    public abstract D loadInBackground();
+    public D loadInBackground() { return null; }
 
     // ──────────────────────────────────────────────────────────
     // Lifecycle overrides

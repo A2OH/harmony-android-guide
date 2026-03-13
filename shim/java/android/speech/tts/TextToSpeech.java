@@ -1,68 +1,32 @@
 package android.speech.tts;
 
-import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * Android-compatible TextToSpeech shim. Stub for A2OH migration.
+ * Shim for android.speech.tts.TextToSpeech.
+ * All methods return error/no-op — real synthesis not available on OpenHarmony.
  */
 public class TextToSpeech {
 
-    // -----------------------------------------------------------------------
-    // Status / result codes
-    // -----------------------------------------------------------------------
     public static final int SUCCESS = 0;
-    public static final int ERROR   = -1;
-
-    // -----------------------------------------------------------------------
-    // Language availability codes
-    // -----------------------------------------------------------------------
-    public static final int LANG_AVAILABLE          =  0;
-    public static final int LANG_COUNTRY_AVAILABLE  =  1;
-    public static final int LANG_COUNTRY_VAR_AVAILABLE = 2;
-    public static final int LANG_MISSING_DATA       = -1;
-    public static final int LANG_NOT_SUPPORTED      = -2;
-
-    // -----------------------------------------------------------------------
-    // Queue modes
-    // -----------------------------------------------------------------------
+    public static final int ERROR = -1;
     public static final int QUEUE_FLUSH = 0;
-    public static final int QUEUE_ADD   = 1;
+    public static final int QUEUE_ADD = 1;
+    public static final String ACTION_TTS_QUEUE_PROCESSING_COMPLETED =
+            "android.speech.tts.TTS_QUEUE_PROCESSING_COMPLETED";
 
-    // -----------------------------------------------------------------------
-    // Interfaces
-    // -----------------------------------------------------------------------
-
+    /** Object interface for TTS engine initialization. */
     public interface OnInitListener {
         void onInit(int status);
     }
 
-    /** @deprecated Use {@link UtteranceProgressListener} instead. */
-    @Deprecated
-    public interface OnUtteranceCompletedListener {
-        void onUtteranceCompleted(String utteranceId);
-    }
-
-    // -----------------------------------------------------------------------
-    // Constructor
-    // -----------------------------------------------------------------------
+    private final OnInitListener mListener;
 
     public TextToSpeech(Object context, OnInitListener listener) {
-        // In the shim environment TTS engine is not present; signal error.
-        if (listener != null) {
-            listener.onInit(ERROR);
-        }
+        mListener = listener;
     }
 
-    // -----------------------------------------------------------------------
-    // Playback
-    // -----------------------------------------------------------------------
-
-    public int speak(String text, int queueMode, HashMap<String, String> params) {
-        return ERROR;
-    }
-
-    public int speak(CharSequence text, int queueMode, Object bundle, String utteranceId) {
+    public int speak(CharSequence text, int queueMode, Object params, String utteranceId) {
         return ERROR;
     }
 
@@ -71,24 +35,15 @@ public class TextToSpeech {
     }
 
     public void shutdown() {
-        // no-op
     }
 
-    // -----------------------------------------------------------------------
-    // Language
-    // -----------------------------------------------------------------------
-
     public int setLanguage(Locale loc) {
-        return LANG_NOT_SUPPORTED;
+        return 0;
     }
 
     public int isLanguageAvailable(Locale loc) {
-        return LANG_NOT_SUPPORTED;
+        return -2;
     }
-
-    // -----------------------------------------------------------------------
-    // Rate / pitch
-    // -----------------------------------------------------------------------
 
     public int setSpeechRate(float speechRate) {
         return ERROR;
@@ -98,16 +53,6 @@ public class TextToSpeech {
         return ERROR;
     }
 
-    // -----------------------------------------------------------------------
-    // Listener registration
-    // -----------------------------------------------------------------------
-
-    public void setOnUtteranceProgressListener(UtteranceProgressListener listener) {
-        // no-op
-    }
-
-    @Override
-    public String toString() {
-        return "TextToSpeech[shim/unavailable]";
+    public void setOnUtteranceProgressListener(Object listener) {
     }
 }

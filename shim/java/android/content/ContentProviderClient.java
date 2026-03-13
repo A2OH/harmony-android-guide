@@ -1,44 +1,16 @@
 package android.content;
-
-import android.database.Cursor;
 import android.net.Uri;
-import java.io.Closeable;
+import android.os.Bundle;
+import android.os.CancellationSignal;
 
-/**
- * Android-compatible ContentProviderClient shim. Stub — returns empty results.
- */
-public class ContentProviderClient implements Closeable {
-    private boolean mClosed;
-    private final String mAuthority;
+public class ContentProviderClient implements AutoCloseable {
+    public ContentProviderClient() {}
 
-    public ContentProviderClient(String authority) {
-        mAuthority = authority;
-    }
-
-    public Cursor query(Uri url, String[] projection, String selection,
-                       String[] selectionArgs, String sortOrder) {
-        return null; // stub
-    }
-
-    public Uri insert(Uri url, ContentValues values) {
-        return url; // stub
-    }
-
-    public int update(Uri url, ContentValues values, String selection, String[] selectionArgs) {
-        return 0; // stub
-    }
-
-    public int delete(Uri url, String selection, String[] selectionArgs) {
-        return 0; // stub
-    }
-
-    public boolean release() {
-        mClosed = true;
-        return true;
-    }
-
-    @Override
-    public void close() {
-        release();
-    }
+    public int bulkInsert(Uri p0, ContentValues[] p1) { return 0; }
+    public void close() {}
+    public int delete(Uri p0, String p1, String[] p2) { return 0; }
+    public int delete(Uri p0, Bundle p1) { return 0; }
+    public boolean refresh(Uri p0, Bundle p1, CancellationSignal p2) { return false; }
+    public int update(Uri p0, ContentValues p1, String p2, String[] p3) { return 0; }
+    public int update(Uri p0, ContentValues p1, Bundle p2) { return 0; }
 }

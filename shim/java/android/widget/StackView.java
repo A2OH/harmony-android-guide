@@ -1,4 +1,11 @@
 package android.widget;
+import android.appwidget.AppWidgetHost;
+import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 

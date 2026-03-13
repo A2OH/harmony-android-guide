@@ -23,13 +23,13 @@ public class MediaCodec {
         }
     }
 
-    // ---- Callback abstract inner class ----
+    // ---- Object abstract inner class ----
 
-    public static abstract class Callback {
-        public abstract void onInputBufferAvailable(MediaCodec codec, int index);
-        public abstract void onOutputBufferAvailable(MediaCodec codec, int index, BufferInfo info);
-        public abstract void onError(MediaCodec codec, CodecException e);
-        public abstract void onOutputFormatChanged(MediaCodec codec, MediaFormat format);
+    public static abstract class Object {
+        public void onInputBufferAvailable(MediaCodec codec, int index) {}
+        public void onOutputBufferAvailable(MediaCodec codec, int index, BufferInfo info) {}
+        public void onError(MediaCodec codec, CodecException e) {}
+        public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {}
     }
 
     // ---- CodecException (simple checked→unchecked wrapper) ----
@@ -90,7 +90,7 @@ public class MediaCodec {
         // stub — no-op
     }
 
-    public void setCallback(Callback callback) {
+    public void setCallback(Object callback) {
         // stub — no-op
     }
 

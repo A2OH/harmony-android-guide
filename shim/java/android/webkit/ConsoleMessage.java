@@ -1,4 +1,7 @@
 package android.webkit;
+import android.os.Debug;
+import android.os.Debug;
+import java.net.URL;
 
 /**
  * Shim: android.webkit.ConsoleMessage

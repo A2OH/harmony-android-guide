@@ -1,4 +1,6 @@
 package android.se.omapi;
+import android.renderscript.Element;
+import android.renderscript.Element;
 
 /**
  * Android-compatible Channel shim. Represents an ISO 7816-4 channel to a Secure Element application.

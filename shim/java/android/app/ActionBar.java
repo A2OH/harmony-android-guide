@@ -1,11 +1,15 @@
 package android.app;
+import android.opengl.Visibility;
+import android.view.Display;
+import android.opengl.Visibility;
+import android.view.Display;
 
 /**
  * Android-compatible ActionBar shim.
  * Abstract class; all methods are no-ops or return safe defaults.
  * The inner Tab class and OnNavigationListener interface are provided as stubs.
  */
-public abstract class ActionBar {
+public class ActionBar {
 
     // --- Navigation mode constants ---
     public static final int NAVIGATION_MODE_STANDARD = 0;
@@ -22,58 +26,58 @@ public abstract class ActionBar {
     // Title / subtitle
     // -------------------------------------------------------------------------
 
-    public abstract void setTitle(CharSequence title);
-    public abstract void setTitle(int resId);
+    public void setTitle(CharSequence title) {}
+    public void setTitle(int resId) {}
 
-    public abstract void setSubtitle(CharSequence subtitle);
-    public abstract void setSubtitle(int resId);
+    public void setSubtitle(CharSequence subtitle) {}
+    public void setSubtitle(int resId) {}
 
     // -------------------------------------------------------------------------
     // Display options
     // -------------------------------------------------------------------------
 
-    public abstract void setDisplayHomeAsUpEnabled(boolean showHomeAsUp);
-    public abstract void setHomeButtonEnabled(boolean enabled);
-    public abstract void setDisplayShowTitleEnabled(boolean showTitle);
-    public abstract void setDisplayOptions(int options);
-    public abstract void setDisplayOptions(int options, int mask);
+    public void setDisplayHomeAsUpEnabled(boolean showHomeAsUp) {}
+    public void setHomeButtonEnabled(boolean enabled) {}
+    public void setDisplayShowTitleEnabled(boolean showTitle) {}
+    public void setDisplayOptions(int options) {}
+    public void setDisplayOptions(int options, int mask) {}
 
     // -------------------------------------------------------------------------
     // Visibility
     // -------------------------------------------------------------------------
 
-    public abstract void show();
-    public abstract void hide();
-    public abstract boolean isShowing();
+    public void show() {}
+    public void hide() {}
+    public boolean isShowing() { return false; }
 
     // -------------------------------------------------------------------------
     // Dimensions
     // -------------------------------------------------------------------------
 
-    public abstract int getHeight();
+    public int getHeight() { return 0; }
 
     // -------------------------------------------------------------------------
     // Navigation
     // -------------------------------------------------------------------------
 
-    public abstract void setNavigationMode(int mode);
-    public abstract int getNavigationMode();
+    public void setNavigationMode(int mode) {}
+    public int getNavigationMode() { return 0; }
 
     // -------------------------------------------------------------------------
     // Tabs
     // -------------------------------------------------------------------------
 
-    public abstract void addTab(Tab tab);
-    public abstract void addTab(Tab tab, boolean setSelected);
-    public abstract void addTab(Tab tab, int position);
-    public abstract void addTab(Tab tab, int position, boolean setSelected);
-    public abstract void removeTab(Tab tab);
-    public abstract void removeAllTabs();
-    public abstract void selectTab(Tab tab);
-    public abstract Tab getSelectedTab();
-    public abstract Tab getTabAt(int index);
-    public abstract int getTabCount();
-    public abstract Tab newTab();
+    public void addTab(Tab tab) {}
+    public void addTab(Tab tab, boolean setSelected) {}
+    public void addTab(Tab tab, int position) {}
+    public void addTab(Tab tab, int position, boolean setSelected) {}
+    public void removeTab(Tab tab) {}
+    public void removeAllTabs() {}
+    public void selectTab(Tab tab) {}
+    public Tab getSelectedTab() { return null; }
+    public Tab getTabAt(int index) { return null; }
+    public int getTabCount() { return 0; }
+    public Tab newTab() { return null; }
 
     // -------------------------------------------------------------------------
     // Inner: Tab
@@ -86,20 +90,20 @@ public abstract class ActionBar {
 
         public static final int INVALID_POSITION = -1;
 
-        public abstract CharSequence getText();
-        public abstract Tab setText(CharSequence text);
-        public abstract Tab setText(int resId);
+        public CharSequence getText() { return null; }
+        public Tab setText(CharSequence text) { return null; }
+        public Tab setText(int resId) { return null; }
 
-        public abstract Tab setIcon(int resId);
-        public abstract Tab setIcon(Object icon);
+        public Tab setIcon(int resId) { return null; }
+        public Tab setIcon(Object icon) { return null; }
 
-        public abstract Tab setTag(Object obj);
-        public abstract Object getTag();
+        public Tab setTag(Object obj) { return null; }
+        public Object getTag() { return null; }
 
-        public abstract Tab setTabListener(TabListener listener);
-        public abstract int getPosition();
+        public Tab setTabListener(TabListener listener) { return null; }
+        public int getPosition() { return 0; }
 
-        public abstract void select();
+        public void select() {}
     }
 
     // -------------------------------------------------------------------------
@@ -107,7 +111,7 @@ public abstract class ActionBar {
     // -------------------------------------------------------------------------
 
     /**
-     * Callback interface for tab selection events.
+     * Object interface for tab selection events.
      */
     public interface TabListener {
         void onTabSelected(Tab tab, Object ft);
@@ -120,7 +124,7 @@ public abstract class ActionBar {
     // -------------------------------------------------------------------------
 
     /**
-     * Callback interface for list navigation mode.
+     * Object interface for list navigation mode.
      */
     public interface OnNavigationListener {
         boolean onNavigationItemSelected(int itemPosition, long itemId);

@@ -1,4 +1,12 @@
 package android.text.method;
+import android.text.Editable;
+import android.text.InputType;
+import android.view.KeyEvent;
+import android.view.View;
+import android.text.Editable;
+import android.text.InputType;
+import android.view.KeyEvent;
+import android.view.View;
 
 import android.text.Editable;
 import android.view.KeyEvent;

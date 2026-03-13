@@ -1,4 +1,12 @@
 package android.widget;
+import android.support.v4.view.ViewPager;
+import android.text.Selection;
+import android.view.Gravity;
+import android.view.View;
+import android.support.v4.view.ViewPager;
+import android.text.Selection;
+import android.view.Gravity;
+import android.view.View;
 
 import android.view.View;
 

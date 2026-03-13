@@ -1,9 +1,11 @@
 package android.service.notification;
+import android.service.controls.Control;
+import android.service.controls.Control;
 
 /**
  * Android-compatible NotificationListenerService shim. Stub — no-op implementation.
  */
-public abstract class NotificationListenerService {
+public class NotificationListenerService {
 
     // --- Lifecycle callbacks ---
 
@@ -56,7 +58,6 @@ public abstract class NotificationListenerService {
 
         public Ranking() {}
 
-        public String getKey() { return null; }
         public int getImportance() { return IMPORTANCE_DEFAULT; }
         public boolean canShowBadge() { return true; }
         public boolean canBubble() { return false; }

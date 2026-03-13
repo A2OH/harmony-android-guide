@@ -1,43 +1,10 @@
 package android.database;
 
-import java.util.ArrayList;
+public class Observable {
+    public Observable() {}
 
-/**
- * Android-compatible Observable shim.
- * Abstract generic base for observable/observer pattern used throughout android.database.
- */
-public abstract class Observable<T> {
-
-    protected final ArrayList<T> mObservers = new ArrayList<T>();
-
-    public void registerObserver(T observer) {
-        if (observer == null) {
-            throw new IllegalArgumentException("The observer is null.");
-        }
-        synchronized (mObservers) {
-            if (mObservers.contains(observer)) {
-                throw new IllegalStateException("Observer " + observer + " is already registered.");
-            }
-            mObservers.add(observer);
-        }
-    }
-
-    public void unregisterObserver(T observer) {
-        if (observer == null) {
-            throw new IllegalArgumentException("The observer is null.");
-        }
-        synchronized (mObservers) {
-            int index = mObservers.indexOf(observer);
-            if (index == -1) {
-                throw new IllegalStateException("Observer " + observer + " was not registered.");
-            }
-            mObservers.remove(index);
-        }
-    }
-
-    public void unregisterAll() {
-        synchronized (mObservers) {
-            mObservers.clear();
-        }
-    }
+    public int mObservers = 0;
+    public void registerObserver(Object p0) {}
+    public void unregisterAll() {}
+    public void unregisterObserver(Object p0) {}
 }

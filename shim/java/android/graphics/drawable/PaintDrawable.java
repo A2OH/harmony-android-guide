@@ -1,4 +1,9 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.drawable.shapes.RoundRectShape;
+import android.graphics.Canvas;
+import android.graphics.drawable.shapes.RoundRectShape;
+import java.util.Set;
 
 import android.graphics.Canvas;
 import android.graphics.drawable.shapes.RoundRectShape;
@@ -20,7 +25,7 @@ public class PaintDrawable extends ShapeDrawable {
     }
 
     /**
-     * Set the shadow layer for the paint used to draw this drawable.
+     * Set the shadow layer for the pa(int used to draw this drawable.
      */
     public void setShadowLayer(float radius, float dx, float dy, int shadowColor) {
         getPaint().setShadowLayer(radius, dx, dy, shadowColor);

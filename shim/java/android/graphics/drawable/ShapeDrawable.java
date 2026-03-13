@@ -1,4 +1,10 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.shapes.Shape;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.shapes.Shape;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;

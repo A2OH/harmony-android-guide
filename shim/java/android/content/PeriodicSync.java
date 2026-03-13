@@ -1,48 +1,17 @@
 package android.content;
-
 import android.accounts.Account;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-/**
- * Android-compatible PeriodicSync shim.
- * Contains account, authority, extras, and period fields for sync scheduling.
- */
-public class PeriodicSync {
+public class PeriodicSync implements Parcelable {
+    public int account = 0;
+    public int authority = 0;
+    public int extras = 0;
+    public int period = 0;
 
-    public final Account account;
-    public final String authority;
-    public final Bundle extras;
-    public final long period;
+    public PeriodicSync(Account p0, String p1, Bundle p2, long p3) {}
 
-    public PeriodicSync(Account account, String authority, Bundle extras, long period) {
-        this.account = account;
-        this.authority = authority;
-        this.extras = extras != null ? new Bundle(extras) : new Bundle();
-        this.period = period;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PeriodicSync)) return false;
-        PeriodicSync that = (PeriodicSync) o;
-        return period == that.period
-                && account.equals(that.account)
-                && authority.equals(that.authority);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = account.hashCode();
-        result = 31 * result + authority.hashCode();
-        result = 31 * result + (int) (period ^ (period >>> 32));
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "PeriodicSync{account=" + account
-                + ", authority=" + authority
-                + ", period=" + period + "}";
-    }
+    public int describeContents() { return 0; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

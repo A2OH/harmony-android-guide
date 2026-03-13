@@ -1,4 +1,6 @@
 package android.text;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Drawable;
 
 /**
  * Shim: android.text.Html

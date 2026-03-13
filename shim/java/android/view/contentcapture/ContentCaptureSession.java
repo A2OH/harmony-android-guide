@@ -1,10 +1,16 @@
 package android.view.contentcapture;
+import android.view.View;
+import android.view.ViewStructure;
+import android.view.autofill.AutofillId;
+import android.view.View;
+import android.view.ViewStructure;
+import android.view.autofill.AutofillId;
 
 /**
  * Android-compatible ContentCaptureSession shim.
  * Abstract base that tracks view lifecycle events for content capture.
  */
-public abstract class ContentCaptureSession implements AutoCloseable {
+public class ContentCaptureSession implements AutoCloseable {
 
     /**
      * Creates a new ViewStructure for the given view, to be passed to

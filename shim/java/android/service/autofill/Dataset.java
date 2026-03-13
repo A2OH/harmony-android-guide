@@ -1,4 +1,8 @@
 package android.service.autofill;
+import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillValue;
+import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillValue;
 
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;

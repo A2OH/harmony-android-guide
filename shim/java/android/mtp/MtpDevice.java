@@ -1,4 +1,6 @@
 package android.mtp;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDevice;
 
 /**
  * Android-compatible MtpDevice shim for A2OH migration.

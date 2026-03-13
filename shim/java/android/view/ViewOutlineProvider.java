@@ -1,4 +1,6 @@
 package android.view;
+import android.graphics.Outline;
+import android.graphics.Outline;
 
 /**
  * Shim: android.view.ViewOutlineProvider — pure Java stub.
@@ -41,5 +43,5 @@ public abstract class ViewOutlineProvider {
      * @param view the view building the outline
      * @param outline the Outline to populate (Object to avoid dependency chains)
      */
-    public abstract void getOutline(View view, Object outline);
+    public void getOutline(View view, Object outline) {}
 }

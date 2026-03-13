@@ -1,4 +1,7 @@
 package android.media;
+import android.net.Uri;
+import android.net.Uri;
+import java.net.URI;
 
 /**
  * Android-compatible RingtoneManager shim. Stub for ringtone/notification/alarm URI lookup.
@@ -44,7 +47,7 @@ public class RingtoneManager {
      * The returned object logs play/stop calls.
      *
      * @param context ignored in this stub
-     * @param uriString URI of the ringtone (use {@link #getDefaultUri} or a custom URI string)
+     * @param uri(String URI of the ringtone (use {@link #getDefaultUri} or a custom URI string)
      */
     public static Ringtone getRingtone(Object context, String uriString) {
         return new Ringtone(uriString);

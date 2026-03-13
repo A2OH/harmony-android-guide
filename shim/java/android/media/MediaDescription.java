@@ -1,4 +1,9 @@
 package android.media;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import java.net.URI;
 
 /**
  * Android-compatible MediaDescription shim. Stub for media item metadata.

@@ -1,4 +1,6 @@
 package android.app;
+import android.os.Build;
+import android.os.Build;
 
 /**
  * Android-compatible ApplicationErrorReport shim.

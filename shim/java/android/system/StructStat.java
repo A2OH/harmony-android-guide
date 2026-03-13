@@ -1,4 +1,5 @@
 package android.system;
+import java.io.File;
 
 /**
  * Android-compatible StructStat shim.

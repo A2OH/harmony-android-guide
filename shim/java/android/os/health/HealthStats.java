@@ -28,7 +28,7 @@ public class HealthStats {
     }
 
     public TimerStat getTimer(int key) {
-        return new TimerStat(0, 0L);
+        return new TimerStat(0);
     }
 
     public int getTimerCount(int key) {

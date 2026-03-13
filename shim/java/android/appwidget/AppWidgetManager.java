@@ -1,59 +1,49 @@
 package android.appwidget;
 
-import java.util.List;
-import java.util.ArrayList;
-
-/**
- * Android-compatible AppWidgetManager shim.
- * Stub — no real widget host; all mutating calls are no-ops.
- */
 public class AppWidgetManager {
+    public AppWidgetManager() {}
 
-    public static final String ACTION_APPWIDGET_UPDATE    = "android.appwidget.action.APPWIDGET_UPDATE";
-    public static final String ACTION_APPWIDGET_CONFIGURE = "android.appwidget.action.APPWIDGET_CONFIGURE";
-    public static final String EXTRA_APPWIDGET_ID         = "appWidgetId";
-    public static final String EXTRA_APPWIDGET_IDS        = "appWidgetIds";
-    public static final int    INVALID_APPWIDGET_ID       = 0;
-
-    private static final AppWidgetManager sInstance = new AppWidgetManager();
-
-    private AppWidgetManager() {}
-
-    /** Returns the singleton shim instance (context is ignored). */
-    public static AppWidgetManager getInstance(Object context) {
-        return sInstance;
-    }
-
-    /** Updates the widget identified by appWidgetId with the given RemoteViews. No-op in shim. */
-    public void updateAppWidget(int appWidgetId, android.widget.RemoteViews views) {
-        // stub — no-op
-    }
-
-    /** Bulk update overload. No-op in shim. */
-    public void updateAppWidget(int[] appWidgetIds, android.widget.RemoteViews views) {
-        // stub — no-op
-    }
-
-    /** Returns an empty array — no widgets hosted in shim environment. */
-    public int[] getAppWidgetIds(Object provider) {
-        return new int[0];
-    }
-
-    /** Returns an empty list — no providers installed in shim environment. */
-    public List<AppWidgetProviderInfo> getInstalledProviders() {
-        return new ArrayList<AppWidgetProviderInfo>();
-    }
-
-    /** Returns an empty list for the given category filter. */
-    public List<AppWidgetProviderInfo> getInstalledProviders(int categoryFilter) {
-        return new ArrayList<AppWidgetProviderInfo>();
-    }
-
-    /**
-     * Attempts to bind appWidgetId to provider. Always returns false in shim
-     * (caller must use the real BIND_APPWIDGET permission on device).
-     */
-    public boolean bindAppWidgetIdIfAllowed(int appWidgetId, Object provider) {
-        return false;
-    }
+    public static final int ACTION_APPWIDGET_BIND = 0;
+    public static final int ACTION_APPWIDGET_CONFIGURE = 0;
+    public static final int ACTION_APPWIDGET_DELETED = 0;
+    public static final int ACTION_APPWIDGET_DISABLED = 0;
+    public static final int ACTION_APPWIDGET_ENABLED = 0;
+    public static final int ACTION_APPWIDGET_HOST_RESTORED = 0;
+    public static final int ACTION_APPWIDGET_OPTIONS_CHANGED = 0;
+    public static final int ACTION_APPWIDGET_PICK = 0;
+    public static final int ACTION_APPWIDGET_RESTORED = 0;
+    public static final int ACTION_APPWIDGET_UPDATE = 0;
+    public static final int EXTRA_APPWIDGET_ID = 0;
+    public static final int EXTRA_APPWIDGET_IDS = 0;
+    public static final int EXTRA_APPWIDGET_OLD_IDS = 0;
+    public static final int EXTRA_APPWIDGET_OPTIONS = 0;
+    public static final int EXTRA_APPWIDGET_PREVIEW = 0;
+    public static final int EXTRA_APPWIDGET_PROVIDER = 0;
+    public static final int EXTRA_APPWIDGET_PROVIDER_PROFILE = 0;
+    public static final int EXTRA_CUSTOM_EXTRAS = 0;
+    public static final int EXTRA_CUSTOM_INFO = 0;
+    public static final int EXTRA_HOST_ID = 0;
+    public static final int INVALID_APPWIDGET_ID = 0;
+    public static final int META_DATA_APPWIDGET_PROVIDER = 0;
+    public static final int OPTION_APPWIDGET_HOST_CATEGORY = 0;
+    public static final int OPTION_APPWIDGET_MAX_HEIGHT = 0;
+    public static final int OPTION_APPWIDGET_MAX_WIDTH = 0;
+    public static final int OPTION_APPWIDGET_MIN_HEIGHT = 0;
+    public static final int OPTION_APPWIDGET_MIN_WIDTH = 0;
+    public static final int OPTION_APPWIDGET_RESTORE_COMPLETED = 0;
+    public boolean bindAppWidgetIdIfAllowed(Object p0, Object p1) { return false; }
+    public boolean bindAppWidgetIdIfAllowed(Object p0, Object p1, Object p2) { return false; }
+    public boolean bindAppWidgetIdIfAllowed(Object p0, Object p1, Object p2, Object p3) { return false; }
+    public int getAppWidgetIds(Object p0) { return 0; }
+    public Object getAppWidgetInfo(Object p0) { return null; }
+    public Object getAppWidgetOptions(Object p0) { return null; }
+    public Object getInstalledProviders() { return null; }
+    public static Object getInstance(Object p0) { return null; }
+    public boolean isRequestPinAppWidgetSupported() { return false; }
+    public void notifyAppWidgetViewDataChanged(Object p0, Object p1) {}
+    public void partiallyUpdateAppWidget(Object p0, Object p1) {}
+    public boolean requestPinAppWidget(Object p0, Object p1, Object p2) { return false; }
+    public void updateAppWidget(Object p0, Object p1) {}
+    public void updateAppWidgetOptions(Object p0, Object p1) {}
+    public void updateAppWidgetProviderInfo(Object p0, Object p1) {}
 }

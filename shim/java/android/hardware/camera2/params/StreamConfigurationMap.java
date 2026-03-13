@@ -1,4 +1,6 @@
 package android.hardware.camera2.params;
+import android.graphics.Point;
+import android.graphics.Point;
 
 import android.graphics.Point;
 

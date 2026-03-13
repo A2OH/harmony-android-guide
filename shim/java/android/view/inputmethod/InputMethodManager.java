@@ -1,4 +1,6 @@
 package android.view.inputmethod;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 

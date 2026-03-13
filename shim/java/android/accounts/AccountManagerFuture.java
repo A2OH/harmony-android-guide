@@ -1,14 +1,10 @@
 package android.accounts;
+import android.icu.util.TimeUnit;
 
-import java.util.concurrent.TimeUnit;
-
-/**
- * Android-compatible AccountManagerFuture shim. Stub interface.
- */
-public interface AccountManagerFuture<V> {
-    V getResult() throws AccountsException;
-    V getResult(long timeout, TimeUnit unit) throws AccountsException;
-    boolean cancel(boolean mayInterruptIfRunning);
+public interface AccountManagerFuture {
+    boolean cancel(boolean p0);
+    Object getResult();
+    Object getResult(long p0, TimeUnit p1);
     boolean isCancelled();
     boolean isDone();
 }

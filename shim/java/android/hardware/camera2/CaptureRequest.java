@@ -1,79 +1,38 @@
 package android.hardware.camera2;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
- * Shim stub for android.hardware.camera2.CaptureRequest.
- * Immutable request built via {@link Builder}.
+ * Stub for android.hardware.camera2.CaptureRequest.
+ * Maps to OpenHarmony camera framework capture settings.
  */
-public final class CaptureRequest {
+public class CaptureRequest {
 
-    // -----------------------------------------------------------------------
-    // Key<T>
-    // -----------------------------------------------------------------------
+    public static final Object CONTROL_MODE = "android.control.mode";
+    public static final Object CONTROL_AE_MODE = "android.control.aeMode";
+    public static final Object CONTROL_AF_MODE = "android.control.afMode";
+    public static final Object CONTROL_AWB_MODE = "android.control.awbMode";
+    public static final Object FLASH_MODE = "android.flash.mode";
+    public static final Object JPEG_ORIENTATION = "android.jpeg.orientation";
+    public static final Object JPEG_QUALITY = "android.jpeg.quality";
+    public static final Object SCALER_CROP_REGION = "android.scaler.cropRegion";
 
-    /** Typed key identifying a single capture-request parameter. */
-    public static final class Key<T> {
-        private final String name;
-
-        public Key(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
+    public CaptureRequest() {
     }
 
-    // -----------------------------------------------------------------------
-    // Internal state (populated by Builder)
-    // -----------------------------------------------------------------------
+    public static class Builder {
 
-    private final Map<Key<?>, Object> entries;
-
-    private CaptureRequest(Map<Key<?>, Object> entries) {
-        this.entries = new LinkedHashMap<>(entries);
-    }
-
-    /** Returns the value set for {@code key}, or {@code null} if not set. */
-    @SuppressWarnings("unchecked")
-    public <T> T get(Key<T> key) {
-        return (T) entries.get(key);
-    }
-
-    // -----------------------------------------------------------------------
-    // Builder
-    // -----------------------------------------------------------------------
-
-    /**
-     * Mutable builder for constructing a {@link CaptureRequest}.
-     */
-    public static final class Builder {
-
-        private final Map<Key<?>, Object> entries = new LinkedHashMap<>();
-
-        /**
-         * Set a capture request field to a value.  The field definitions can
-         * be found in {@link CaptureRequest}.
-         *
-         * @param key   the {@link Key} to set
-         * @param value the value to set the key to
-         */
-        public <T> void set(Key<T> key, T value) {
-            if (key == null) {
-                throw new IllegalArgumentException("key must not be null");
-            }
-            entries.put(key, value);
+        public Builder() {
         }
 
-        /**
-         * Build a {@link CaptureRequest} from the current state of the builder.
-         *
-         * @return a new, immutable {@link CaptureRequest}
-         */
+        public void addTarget(Object surface) {
+            // no-op stub
+        }
+
+        public void set(Object key, Object value) {
+            // no-op stub
+        }
+
         public CaptureRequest build() {
-            return new CaptureRequest(entries);
+            return new CaptureRequest();
         }
     }
 }

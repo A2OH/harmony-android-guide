@@ -6,7 +6,7 @@ import java.io.IOException;
  * Android-compatible ProxyFileDescriptorCallback shim. Abstract base class
  * for proxied file descriptor operations.
  */
-public abstract class ProxyFileDescriptorCallback {
+public class ProxyFileDescriptorCallback {
 
     public int onGetSize() throws IOException {
         return 0;
@@ -24,5 +24,5 @@ public abstract class ProxyFileDescriptorCallback {
         // no-op by default
     }
 
-    public abstract void onRelease();
+    public void onRelease() {}
 }

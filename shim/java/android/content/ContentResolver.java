@@ -1,132 +1,88 @@
 package android.content;
-
-import android.database.Cursor;
+import android.accounts.Account;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CancellationSignal;
+import java.util.List;
 
-/**
- * Shim: android.content.ContentResolver — minimal stub.
- * Tier 3 — no direct OH equivalent; mapped to DataShareHelper on OH.
- *
- * ContentResolver is Android's client-side gateway to ContentProviders.
- * In OpenHarmony the equivalent consumer API is:
- *   @ohos.data.dataShare → DataShareHelper
- *   helper.query(uri, predicates, columns, callback)
- *   helper.insert(uri, value, callback)
- *   helper.update(uri, predicates, value, callback)
- *   helper.delete(uri, predicates, callback)
- *
- * This shim provides no-op implementations sufficient for unit tests that
- * exercise code paths expecting a ContentResolver but not actually reading
- * data from a provider.  Real OH integration requires a DataShareHelper
- * obtained from the UIAbilityContext.
- */
 public class ContentResolver {
+    public static final int ANY_CURSOR_ITEM_TYPE = 0;
+    public static final int CURSOR_DIR_BASE_TYPE = 0;
+    public static final int CURSOR_ITEM_BASE_TYPE = 0;
+    public static final int EXTRA_HONORED_ARGS = 0;
+    public static final int EXTRA_REFRESH_SUPPORTED = 0;
+    public static final int EXTRA_SIZE = 0;
+    public static final int EXTRA_TOTAL_COUNT = 0;
+    public static final int NOTIFY_DELETE = 0;
+    public static final int NOTIFY_INSERT = 0;
+    public static final int NOTIFY_SKIP_NOTIFY_FOR_DESCENDANTS = 0;
+    public static final int NOTIFY_SYNC_TO_NETWORK = 0;
+    public static final int NOTIFY_UPDATE = 0;
+    public static final int QUERY_ARG_GROUP_COLUMNS = 0;
+    public static final int QUERY_ARG_LIMIT = 0;
+    public static final int QUERY_ARG_OFFSET = 0;
+    public static final int QUERY_ARG_SORT_COLLATION = 0;
+    public static final int QUERY_ARG_SORT_COLUMNS = 0;
+    public static final int QUERY_ARG_SORT_DIRECTION = 0;
+    public static final int QUERY_ARG_SORT_LOCALE = 0;
+    public static final int QUERY_ARG_SQL_GROUP_BY = 0;
+    public static final int QUERY_ARG_SQL_HAVING = 0;
+    public static final int QUERY_ARG_SQL_LIMIT = 0;
+    public static final int QUERY_ARG_SQL_SELECTION = 0;
+    public static final int QUERY_ARG_SQL_SELECTION_ARGS = 0;
+    public static final int QUERY_ARG_SQL_SORT_ORDER = 0;
+    public static final int QUERY_SORT_DIRECTION_ASCENDING = 0;
+    public static final int QUERY_SORT_DIRECTION_DESCENDING = 0;
+    public static final int SCHEME_ANDROID_RESOURCE = 0;
+    public static final int SCHEME_CONTENT = 0;
+    public static final int SCHEME_FILE = 0;
+    public static final int SYNC_EXTRAS_DISCARD_LOCAL_DELETIONS = 0;
+    public static final int SYNC_EXTRAS_DO_NOT_RETRY = 0;
+    public static final int SYNC_EXTRAS_EXPEDITED = 0;
+    public static final int SYNC_EXTRAS_IGNORE_BACKOFF = 0;
+    public static final int SYNC_EXTRAS_IGNORE_SETTINGS = 0;
+    public static final int SYNC_EXTRAS_INITIALIZE = 0;
+    public static final int SYNC_EXTRAS_MANUAL = 0;
+    public static final int SYNC_EXTRAS_OVERRIDE_TOO_MANY_DELETIONS = 0;
+    public static final int SYNC_EXTRAS_REQUIRE_CHARGING = 0;
+    public static final int SYNC_EXTRAS_UPLOAD = 0;
+    public static final int SYNC_OBSERVER_TYPE_ACTIVE = 0;
+    public static final int SYNC_OBSERVER_TYPE_PENDING = 0;
+    public static final int SYNC_OBSERVER_TYPE_SETTINGS = 0;
 
-    // ── URI scheme constants ──────────────────────────────────────────────────
+    public ContentResolver(Context p0) {}
 
-    /** URI scheme used by ContentProviders ("content://…"). */
-    public static final String SCHEME_CONTENT = "content";
-
-    /** URI scheme for local file access ("file://…"). */
-    public static final String SCHEME_FILE    = "file";
-
-    // ── Constructor ───────────────────────────────────────────────────────────
-
-    /**
-     * Construct a ContentResolver.  In production Android code this is created
-     * by the framework; callers normally obtain it via
-     * {@code Context.getContentResolver()}.
-     */
-    public ContentResolver() {
-        // no state needed for the stub
-    }
-
-    // ── CRUD stubs ────────────────────────────────────────────────────────────
-
-    /**
-     * Query the given URI, returning a Cursor over the result set.
-     *
-     * <p><b>OH migration:</b> replace with
-     * {@code DataShareHelper.query(uri, predicates, columns, callback)}.
-     *
-     * @return always null in this stub
-     */
-    public Cursor query(Uri uri,
-                        String[] projection,
-                        String selection,
-                        String[] selectionArgs,
-                        String sortOrder) {
-        return null;
-    }
-
-    /**
-     * Query variant with a cancellation signal (API 16+).
-     *
-     * @return always null in this stub
-     */
-    public Cursor query(Uri uri,
-                        String[] projection,
-                        String selection,
-                        String[] selectionArgs,
-                        String sortOrder,
-                        Object cancellationSignal) {
-        return null;
-    }
-
-    /**
-     * Insert a row into the table designated by the given URI.
-     *
-     * <p><b>OH migration:</b> replace with
-     * {@code DataShareHelper.insert(uri, valuesBucket, callback)}.
-     *
-     * @return always null in this stub
-     */
-    public Uri insert(Uri uri, ContentValues values) {
-        return null;
-    }
-
-    /**
-     * Update rows in the table designated by the given URI.
-     *
-     * <p><b>OH migration:</b> replace with
-     * {@code DataShareHelper.update(uri, predicates, valuesBucket, callback)}.
-     *
-     * @return always 0 in this stub
-     */
-    public int update(Uri uri,
-                      ContentValues values,
-                      String selection,
-                      String[] selectionArgs) {
-        return 0;
-    }
-
-    /**
-     * Delete rows from the table designated by the given URI.
-     *
-     * <p><b>OH migration:</b> replace with
-     * {@code DataShareHelper.delete(uri, predicates, callback)}.
-     *
-     * @return always 0 in this stub
-     */
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
-    }
-
-    /**
-     * Returns the MIME type of the given URI.
-     *
-     * @return always null in this stub
-     */
-    public String getType(Uri uri) {
-        return null;
-    }
-
-    /**
-     * Notify registered observers that a row was updated.
-     * No-op in this stub.
-     */
-    public void notifyChange(Uri uri, Object observer) {
-        // no-op
-    }
+    public static void addPeriodicSync(Account p0, String p1, Bundle p2, long p3) {}
+    public static Object addStatusChangeListener(int p0, SyncStatusObserver p1) { return null; }
+    public int bulkInsert(Uri p0, ContentValues[] p1) { return 0; }
+    public static void cancelSync(Account p0, String p1) {}
+    public static void cancelSync(SyncRequest p0) {}
+    public int delete(Uri p0, String p1, String[] p2) { return 0; }
+    public int delete(Uri p0, Bundle p1) { return 0; }
+    public static List<?> getCurrentSyncs() { return null; }
+    public static int getIsSyncable(Account p0, String p1) { return 0; }
+    public static boolean getMasterSyncAutomatically() { return false; }
+    public static List<?> getPeriodicSyncs(Account p0, String p1) { return null; }
+    public static SyncAdapterType[] getSyncAdapterTypes() { return null; }
+    public static boolean getSyncAutomatically(Account p0, String p1) { return false; }
+    public static boolean isSyncActive(Account p0, String p1) { return false; }
+    public static boolean isSyncPending(Account p0, String p1) { return false; }
+    public void notifyChange(Uri p0, ContentObserver p1) {}
+    public void notifyChange(Uri p0, ContentObserver p1, int p2) {}
+    public boolean refresh(Uri p0, Bundle p1, CancellationSignal p2) { return false; }
+    public void registerContentObserver(Uri p0, boolean p1, ContentObserver p2) {}
+    public void releasePersistableUriPermission(Uri p0, int p1) {}
+    public static void removePeriodicSync(Account p0, String p1, Bundle p2) {}
+    public static void removeStatusChangeListener(Object p0) {}
+    public static void requestSync(Account p0, String p1, Bundle p2) {}
+    public static void requestSync(SyncRequest p0) {}
+    public static void setIsSyncable(Account p0, String p1, int p2) {}
+    public static void setMasterSyncAutomatically(boolean p0) {}
+    public static void setSyncAutomatically(Account p0, String p1, boolean p2) {}
+    public void takePersistableUriPermission(Uri p0, int p1) {}
+    public void unregisterContentObserver(ContentObserver p0) {}
+    public int update(Uri p0, ContentValues p1, String p2, String[] p3) { return 0; }
+    public int update(Uri p0, ContentValues p1, Bundle p2) { return 0; }
+    public static void validateSyncExtrasBundle(Bundle p0) {}
 }

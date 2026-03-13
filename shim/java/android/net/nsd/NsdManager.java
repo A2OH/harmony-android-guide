@@ -1,63 +1,20 @@
 package android.net.nsd;
 
-/**
- * Android-compatible NsdManager shim. Stub — no-op network service discovery.
- * Real implementation would use OH mDNS / DNS-SD service.
- */
-public class NsdManager {
-
-    public static final int PROTOCOL_DNS_SD = 1;
-
-    // -------------------------------------------------------------------------
-    // Listener interfaces
-    // -------------------------------------------------------------------------
-
-    public interface RegistrationListener {
-        void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode);
-        void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode);
-        void onServiceRegistered(NsdServiceInfo serviceInfo);
-        void onServiceUnregistered(NsdServiceInfo serviceInfo);
-    }
-
-    public interface DiscoveryListener {
-        void onStartDiscoveryFailed(String serviceType, int errorCode);
-        void onStopDiscoveryFailed(String serviceType, int errorCode);
-        void onDiscoveryStarted(String serviceType);
-        void onDiscoveryStopped(String serviceType);
-        void onServiceFound(NsdServiceInfo serviceInfo);
-        void onServiceLost(NsdServiceInfo serviceInfo);
-    }
-
-    public interface ResolveListener {
-        void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode);
-        void onServiceResolved(NsdServiceInfo serviceInfo);
-    }
-
-    // -------------------------------------------------------------------------
-    // Manager methods
-    // -------------------------------------------------------------------------
+public final class NsdManager {
+    public static final int ACTION_NSD_STATE_CHANGED = 0;
+    public static final int EXTRA_NSD_STATE = 0;
+    public static final int FAILURE_ALREADY_ACTIVE = 0;
+    public static final int FAILURE_INTERNAL_ERROR = 0;
+    public static final int FAILURE_MAX_LIMIT = 0;
+    public static final int NSD_STATE_DISABLED = 0;
+    public static final int NSD_STATE_ENABLED = 0;
+    public static final int PROTOCOL_DNS_SD = 0;
 
     public NsdManager() {}
 
-    public void registerService(NsdServiceInfo serviceInfo, int protocolType,
-            RegistrationListener listener) {
-        if (listener != null) listener.onServiceRegistered(serviceInfo);
-    }
-
-    public void unregisterService(RegistrationListener listener) {
-        if (listener != null) listener.onServiceUnregistered(new NsdServiceInfo());
-    }
-
-    public void discoverServices(String serviceType, int protocolType,
-            DiscoveryListener listener) {
-        if (listener != null) listener.onDiscoveryStarted(serviceType);
-    }
-
-    public void stopServiceDiscovery(DiscoveryListener listener) {
-        if (listener != null) listener.onDiscoveryStopped("");
-    }
-
-    public void resolveService(NsdServiceInfo serviceInfo, ResolveListener listener) {
-        if (listener != null) listener.onServiceResolved(serviceInfo);
-    }
+    public void discoverServices(String p0, int p1, Object p2) {}
+    public void registerService(NsdServiceInfo p0, int p1, Object p2) {}
+    public void resolveService(NsdServiceInfo p0, Object p1) {}
+    public void stopServiceDiscovery(Object p0) {}
+    public void unregisterService(Object p0) {}
 }

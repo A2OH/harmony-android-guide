@@ -1,4 +1,5 @@
 package android.view;
+import java.util.Set;
 
 /**
  * Shim: android.view.ContextMenu interface.
@@ -25,7 +26,7 @@ public interface ContextMenu extends Menu {
      * Additional information about the item for which the context menu is shown.
      * Provides extra data such as the position of the item in a list.
      */
-    public interface ContextMenuInfo {
+    public interface Object {
         // Marker interface — implementing classes provide specific fields
     }
 }

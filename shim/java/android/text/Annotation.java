@@ -1,4 +1,8 @@
 package android.text;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Shim: android.text.Annotation

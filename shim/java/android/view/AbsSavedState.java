@@ -4,7 +4,7 @@ package android.view;
  * Android-compatible AbsSavedState shim.
  * Base class for saved view state.
  */
-public abstract class AbsSavedState {
+public class AbsSavedState {
 
     public static final AbsSavedState EMPTY_STATE = new AbsSavedState() {};
 

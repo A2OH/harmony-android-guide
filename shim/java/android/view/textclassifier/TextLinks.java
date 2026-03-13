@@ -57,10 +57,10 @@ public class TextLinks {
     // Request inner class
     // -----------------------------------------------------------------
 
-    public static final class Request {
+    public static final class Object {
         private final CharSequence text;
 
-        public Request(CharSequence text) {
+        public Object(CharSequence text) {
             this.text = text;
         }
 

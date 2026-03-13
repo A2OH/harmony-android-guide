@@ -1,4 +1,12 @@
 package android.widget;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SimpleMenu;
+import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SimpleMenu;
+import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +26,7 @@ public class PopupMenu {
     private final View mAnchor;
     private final Menu mMenu;
     private OnMenuItemClickListener mItemClickListener;
-    private OnDismissListener mDismissListener;
+    private Object mDismissListener;
     private boolean mShowing = false;
 
     /** Create a PopupMenu anchored to the given view. */
@@ -54,7 +62,7 @@ public class PopupMenu {
         mItemClickListener = listener;
     }
 
-    public void setOnDismissListener(OnDismissListener listener) {
+    public void setOnDismissListener(Object listener) {
         mDismissListener = listener;
     }
 
@@ -102,7 +110,7 @@ public class PopupMenu {
         boolean onMenuItemClick(MenuItem item);
     }
 
-    public interface OnDismissListener {
+    public interface Object {
         void onDismiss(PopupMenu menu);
     }
 }

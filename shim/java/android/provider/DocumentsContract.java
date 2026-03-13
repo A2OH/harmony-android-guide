@@ -1,4 +1,10 @@
 package android.provider;
+import android.net.Uri;
+import android.os.Build;
+import android.net.Uri;
+import android.os.Build;
+import java.net.URI;
+import java.util.regex.Pattern;
 
 import android.net.Uri;
 

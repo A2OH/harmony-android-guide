@@ -1,6 +1,7 @@
 package android.util;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * Android-compatible TypedXmlSerializer shim. Pure stub interface.

@@ -7,7 +7,7 @@ package android.view.textservice;
 public class SpellCheckerSession {
 
     /**
-     * Listener interface for asynchronous spell-check results.
+     * Object interface for asynchronous spell-check results.
      */
     public interface SpellCheckerSessionListener {
         void onGetSuggestions(SuggestionsInfo[] results);

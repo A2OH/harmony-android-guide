@@ -1,4 +1,8 @@
 package android.net.wifi.p2p;
+import android.os.Looper;
+import android.se.omapi.Channel;
+import android.os.Looper;
+import android.se.omapi.Channel;
 
 import java.util.Collection;
 

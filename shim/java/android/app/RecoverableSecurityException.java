@@ -1,4 +1,6 @@
 package android.app;
+import android.graphics.drawable.Icon;
+import android.graphics.drawable.Icon;
 
 /**
  * Android-compatible RecoverableSecurityException shim.

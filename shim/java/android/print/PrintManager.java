@@ -1,4 +1,6 @@
 package android.print;
+import android.printservice.PrintJob;
+import android.printservice.PrintJob;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +8,7 @@ import java.util.List;
 
 /**
  * Android-compatible PrintManager shim.
- * Stubs the print framework; no actual print spooler interaction.
+ * Stubs the pr(int framework; no actual pr(int spooler interaction.
  */
 public final class PrintManager {
 
@@ -33,12 +35,12 @@ public final class PrintManager {
         public boolean isStarted()    { return true; }
         public boolean isQueued()     { return false; }
 
-        /** Request cancellation of this print job. */
+        /** Object cancellation of this pr(int job. */
         public void cancel() {
             mCancelled = true;
         }
 
-        /** Restart a failed print job. No-op in shim. */
+        /** Restart a failed pr(int job. No-op in shim. */
         public void restart() {
             mCancelled = false;
         }
@@ -75,9 +77,8 @@ public final class PrintManager {
     /**
      * Print a document.
      *
-     * @param printJobName human-readable name for the print job
-     * @param documentAdapter adapter that supplies content to print
-     * @param attributes   initial print attributes (may be null)
+     * @param printJobName human-readable name for the pr(int job
+     * @param documentAdapter adapter that supplies content to pr(int * @param attributes   initial pr(int attributes (may be null)
      * @return the created PrintJob
      */
     public PrintJob print(String printJobName,
@@ -100,7 +101,7 @@ public final class PrintManager {
     }
 
     /**
-     * Returns the list of print jobs initiated in this session.
+     * Returns the list of pr(int jobs initiated in this session.
      */
     public List<PrintJob> getPrintJobs() {
         return Collections.unmodifiableList(mPrintJobs);

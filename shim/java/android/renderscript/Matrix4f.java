@@ -15,7 +15,7 @@ public class Matrix4f {
     public Matrix4f(float[] dataArray) {
         mMat = new float[16];
         if (dataArray != null && dataArray.length >= 16) {
-            System.arraycopy(dataArray, 0, mMat, 0, 16);
+// FIXME: // FIXME: // FIXME:             System.arraycopy(dataArray, 0, mMat, 0);
         }
     }
 

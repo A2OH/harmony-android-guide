@@ -1,69 +1,62 @@
 package android.hardware.camera2;
 
+import java.util.List;
+
 /**
- * Shim stub for android.hardware.camera2.CameraDevice.
- * Abstract base; concrete subclasses (or mocks) supply the real implementation.
+ * Android CameraDevice shim for OpenHarmony migration.
+ *
+ * Maps to OpenHarmony's camera NDK (@ohos.multimedia.camera).
  */
-public abstract class CameraDevice {
+public class CameraDevice {
 
-    // -----------------------------------------------------------------------
-    // Error codes (match AOSP values)
-    // -----------------------------------------------------------------------
-
-    /** The camera device is in use already. */
-    public static final int ERROR_CAMERA_IN_USE      = 1;
-    /** The system-wide limit on concurrent open cameras has been reached. */
-    public static final int ERROR_MAX_CAMERAS_IN_USE = 2;
-    /** The camera is disabled due to a device policy. */
-    public static final int ERROR_CAMERA_DISABLED    = 3;
-    /** The camera device has encountered a fatal error. */
-    public static final int ERROR_CAMERA_DEVICE      = 4;
-    /** The camera service has encountered a fatal error. */
-    public static final int ERROR_CAMERA_SERVICE     = 5;
-
-    // -----------------------------------------------------------------------
-    // Abstract API
-    // -----------------------------------------------------------------------
-
-    /** Returns the unique string identifier for this camera device. */
-    public abstract String getId();
+    public static final int TEMPLATE_PREVIEW = 1;
+    public static final int TEMPLATE_STILL_CAPTURE = 2;
+    public static final int TEMPLATE_RECORD = 3;
+    public static final int TEMPLATE_VIDEO_SNAPSHOT = 4;
+    public static final int TEMPLATE_ZERO_SHUTTER_LAG = 5;
+    public static final int TEMPLATE_MANUAL = 6;
 
     /**
-     * Close the connection to this camera device as quickly as possible.
-     * Any in-progress captures are abandoned; no further callbacks will fire
-     * after this returns.
+     * Returns the identifier for this camera device.
      */
-    public abstract void close();
-
-    // -----------------------------------------------------------------------
-    // StateCallback
-    // -----------------------------------------------------------------------
+    public String getId() { return null; }
 
     /**
-     * Callback interface for receiving notifications about camera device state.
+     * Create a capture request builder for the given template type.
+     * Stub: returns null.
+     */
+    public Object createCaptureRequest(int templateType) {
+        return null;
+    }
+
+    /**
+     * Create a capture session.
+     * Stub: no-op.
+     */
+    public void createCaptureSession(java.util.List<Object> outputs, Object stateCallback, Object handler) {
+        // no-op
+    }
+
+    /**
+     * Close the camera device.
+     */
+    public void close() {}
+
+    /**
+     * Object for receiving updates about the state of a camera device.
      */
     public static abstract class StateCallback {
 
-        /**
-         * Called when the camera device has finished opening.
-         *
-         * @param camera the camera device that has become opened
-         */
-        public abstract void onOpened(CameraDevice camera);
+        public static final int ERROR_CAMERA_IN_USE = 1;
+        public static final int ERROR_MAX_CAMERAS_IN_USE = 2;
+        public static final int ERROR_CAMERA_DISABLED = 3;
+        public static final int ERROR_CAMERA_DEVICE = 4;
+        public static final int ERROR_CAMERA_SERVICE = 5;
 
-        /**
-         * Called when the camera device is no longer available for use.
-         *
-         * @param camera the camera device that has been disconnected
-         */
-        public abstract void onDisconnected(CameraDevice camera);
+        public void onOpened(CameraDevice camera) {}
 
-        /**
-         * Called when the camera device has encountered a serious error.
-         *
-         * @param camera the camera device that encountered the error
-         * @param error  one of the {@code ERROR_*} constants defined above
-         */
-        public abstract void onError(CameraDevice camera, int error);
+        public void onDisconnected(CameraDevice camera) {}
+
+        public void onError(CameraDevice camera, int error) {}
     }
 }

@@ -1,4 +1,6 @@
 package android.icu.text;
+import android.icu.util.ULocale;
+import android.icu.util.ULocale;
 
 import android.icu.util.ULocale;
 import java.util.HashMap;
@@ -28,11 +30,11 @@ public class DateTimePatternGenerator {
         SKELETON_MAP.put("yMdHms",      "M/d/y, HH:mm:ss");
         SKELETON_MAP.put("yMMMdHm",     "MMM d, y, HH:mm");
         SKELETON_MAP.put("yMMMdHms",    "MMM d, y, HH:mm:ss");
-        SKELETON_MAP.put("Ed",          "E d");
-        SKELETON_MAP.put("MEd",         "E, M/d");
-        SKELETON_MAP.put("MMMEd",       "E, MMM d");
-        SKELETON_MAP.put("yMEd",        "E, M/d/y");
-        SKELETON_MAP.put("yMMMEd",      "E, MMM d, y");
+        SKELETON_MAP.put("Ed",          "Object d");
+        SKELETON_MAP.put("MEd",         "Object, M/d");
+        SKELETON_MAP.put("MMMEd",       "Object, MMM d");
+        SKELETON_MAP.put("yMEd",        "Object, M/d/y");
+        SKELETON_MAP.put("yMMMEd",      "Object, MMM d, y");
         SKELETON_MAP.put("ms",          "mm:ss");
     }
 

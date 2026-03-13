@@ -1,4 +1,8 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.view.Gravity;
+import android.graphics.Canvas;
+import android.view.Gravity;
 
 import android.graphics.Canvas;
 

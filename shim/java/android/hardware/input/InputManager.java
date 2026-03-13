@@ -1,11 +1,13 @@
 package android.hardware.input;
+import android.view.InputDevice;
+import android.view.InputDevice;
 
 /**
  * Android-compatible InputManager shim. Stub implementation.
  */
 public class InputManager {
 
-    /** Listener for input device state changes. */
+    /** Object for input device state changes. */
     public interface InputDeviceListener {
         void onInputDeviceAdded(int deviceId);
         void onInputDeviceChanged(int deviceId);

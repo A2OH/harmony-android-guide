@@ -1,4 +1,8 @@
 package android.media;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
 
 /**
  * Shim stub for android.media.ThumbnailUtils.
@@ -36,7 +40,7 @@ public class ThumbnailUtils {
      * @return a resized/cropped bitmap (represented as Object), or null if source is null
      */
     public static Object extractThumbnail(Object source, int width, int height) {
-        return extractThumbnail(source, width, height, 0);
+        return extractThumbnail(source, width, height);
     }
 
     /**

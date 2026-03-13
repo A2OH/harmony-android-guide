@@ -1,4 +1,8 @@
 package android.graphics;
+import android.media.effect.Effect;
+import android.view.View;
+import android.media.effect.Effect;
+import android.view.View;
 
 /**
  * Shim: android.graphics.RenderEffect
@@ -10,7 +14,7 @@ package android.graphics;
  */
 public final class RenderEffect {
 
-    // ── Effect kind (for toString / debugging only) ──────────────────────────
+    // ── Effect kind (for to(String / debugging only) ──────────────────────────
 
     private final String mKind;
 

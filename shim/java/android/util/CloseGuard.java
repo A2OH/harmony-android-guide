@@ -1,4 +1,5 @@
 package android.util;
+import java.io.Closeable;
 
 /**
  * Android-compatible CloseGuard shim.

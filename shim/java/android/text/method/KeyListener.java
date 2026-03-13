@@ -1,15 +1,22 @@
 package android.text.method;
+import android.text.Editable;
+import android.view.KeyEvent;
+import android.view.View;
+import android.text.Editable;
+import android.view.KeyEvent;
+import android.view.View;
 
+import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.View;
 
 /**
- * Android-compatible KeyListener interface shim.
+ * Android-compatible KeyListener stub.
  */
 public interface KeyListener {
     int getInputType();
-    boolean onKeyDown(View view, android.text.Editable text, int keyCode, KeyEvent event);
-    boolean onKeyUp(View view, android.text.Editable text, int keyCode, KeyEvent event);
-    boolean onKeyOther(View view, android.text.Editable text, KeyEvent event);
-    void clearMetaKeyState(View view, android.text.Editable content, int states);
+    boolean onKeyDown(View view, Editable text, int keyCode, KeyEvent event);
+    boolean onKeyUp(View view, Editable text, int keyCode, KeyEvent event);
+    boolean onKeyOther(View view, Editable text, KeyEvent event);
+    void clearMetaKeyState(View view, Editable content, int states);
 }

@@ -1,113 +1,57 @@
 package android.media.session;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.MediaMetadata;
+import android.media.Rating;
+import android.media.VolumeProvider;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
+import java.util.List;
 
-/**
- * Android-compatible MediaSession shim. Stub — no IPC or media focus handling.
- */
-public class MediaSession {
+public final class MediaSession {
+    public MediaSession(Context p0, String p1) {}
+    public MediaSession(Context p0, String p1, Bundle p2) {}
 
-    // ---- Token inner class ----
-
-    public static final class Token {
-        private final String mTag;
-
-        Token(String tag) {
-            mTag = tag;
-        }
-
-        public String getTag() { return mTag; }
-
-        @Override
-        public String toString() { return "Token(" + mTag + ")"; }
-    }
-
-    // ---- Callback abstract inner class ----
-
-    public static abstract class Callback {
-        /** Called when a controller requests play. */
-        public void onPlay() {}
-
-        /** Called when a controller requests pause. */
-        public void onPause() {}
-
-        /** Called when a controller requests stop. */
-        public void onStop() {}
-
-        /** Called when a controller requests skip to next item. */
-        public void onSkipToNext() {}
-
-        /** Called when a controller requests skip to previous item. */
-        public void onSkipToPrevious() {}
-
-        /** Called when a controller sends a custom action. */
-        public void onCustomAction(String action, android.os.Bundle extras) {}
-
-        /** Called when a controller sends a play-from-search request. */
-        public void onPlayFromSearch(String query, android.os.Bundle extras) {}
-
-        /** Called when a controller sends a play-from-media-id request. */
-        public void onPlayFromMediaId(String mediaId, android.os.Bundle extras) {}
-
-        /** Called when a controller sets the repeat mode. */
-        public void onSetRepeatMode(int repeatMode) {}
-
-        /** Called when a controller sets the shuffle mode. */
-        public void onSetShuffleMode(int shuffleMode) {}
-    }
-
-    // ---- FLAG_* constants ----
-
-    public static final int FLAG_HANDLES_MEDIA_BUTTONS     = 1 << 0;
-    public static final int FLAG_HANDLES_TRANSPORT_CONTROLS = 1 << 1;
-    public static final int FLAG_HANDLES_QUEUE_COMMANDS    = 1 << 2;
-
-    // ---- private state ----
-
-    private final String  mTag;
-    private final Token   mToken;
-    private Callback      mCallback;
-    private boolean       mActive;
-    private int           mFlags;
-
-    /**
-     * @param context ignored in shim; may be null
-     * @param tag     a short human-readable label for debugging
-     */
-    public MediaSession(Object context, String tag) {
-        mTag   = (tag != null) ? tag : "MediaSession";
-        mToken = new Token(mTag);
-    }
-
-    // ---- configuration ----
-
-    public void setCallback(Callback callback) {
-        mCallback = callback;
-    }
-
-    public void setFlags(int flags) {
-        mFlags = flags;
-    }
-
-    public void setActive(boolean active) {
-        mActive = active;
-    }
-
-    // ---- token ----
-
-    public Token getSessionToken() {
-        return mToken;
-    }
-
-    // ---- teardown ----
-
-    public void release() {
-        mActive   = false;
-        mCallback = null;
-    }
-
-    // ---- accessors ----
-
-    public boolean isActive()    { return mActive; }
-    public String  getTag()      { return mTag; }
-    public int     getFlags()    { return mFlags; }
-    public Callback getCallback(){ return mCallback; }
+    public boolean isActive() { return false; }
+    public void release() {}
+    public void sendSessionEvent(String p0, Bundle p1) {}
+    public void setActive(boolean p0) {}
+    public void setCallback(Object p0) {}
+    public void setCallback(Object p0, Handler p1) {}
+    public void setExtras(Bundle p0) {}
+    public void setFlags(int p0) {}
+    public void setMediaButtonReceiver(PendingIntent p0) {}
+    public void setMetadata(MediaMetadata p0) {}
+    public void setPlaybackState(PlaybackState p0) {}
+    public void setPlaybackToLocal(AudioAttributes p0) {}
+    public void setPlaybackToRemote(VolumeProvider p0) {}
+    public void setQueue(java.util.List<Object> p0) {}
+    public void setQueueTitle(CharSequence p0) {}
+    public void setRatingType(int p0) {}
+    public void setSessionActivity(PendingIntent p0) {}
+    public void onCommand(String p0, Bundle p1, ResultReceiver p2) {}
+    public void onCustomAction(String p0, Bundle p1) {}
+    public void onFastForward() {}
+    public boolean onMediaButtonEvent(Intent p0) { return false; }
+    public void onPause() {}
+    public void onPlay() {}
+    public void onPlayFromMediaId(String p0, Bundle p1) {}
+    public void onPlayFromSearch(String p0, Bundle p1) {}
+    public void onPlayFromUri(Uri p0, Bundle p1) {}
+    public void onPrepare() {}
+    public void onPrepareFromMediaId(String p0, Bundle p1) {}
+    public void onPrepareFromSearch(String p0, Bundle p1) {}
+    public void onPrepareFromUri(Uri p0, Bundle p1) {}
+    public void onRewind() {}
+    public void onSeekTo(long p0) {}
+    public void onSetPlaybackSpeed(float p0) {}
+    public void onSetRating(Rating p0) {}
+    public void onSkipToNext() {}
+    public void onSkipToPrevious() {}
+    public void onSkipToQueueItem(long p0) {}
+    public void onStop() {}
 }

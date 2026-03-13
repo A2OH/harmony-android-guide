@@ -17,7 +17,7 @@ public abstract class LoginFilter implements InputFilter {
      * Called for each character in the source sequence.
      * Subclasses return true if the character is allowed.
      */
-    public abstract boolean isAllowed(char c);
+    public boolean isAllowed(char c) { return false; }
 
     /** Called when an invalid character is encountered (no-op in stub). */
     public void onInvalidCharacter(char c) {}

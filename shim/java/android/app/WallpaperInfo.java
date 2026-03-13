@@ -1,4 +1,6 @@
 package android.app;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Drawable;
 
 /**
  * Android-compatible WallpaperInfo shim.

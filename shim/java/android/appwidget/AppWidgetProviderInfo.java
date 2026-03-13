@@ -1,41 +1,45 @@
 package android.appwidget;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.UserHandle;
 
-/**
- * Android-compatible AppWidgetProviderInfo shim.
- * Plain data-holder; all fields default to zero/null.
- */
-public class AppWidgetProviderInfo {
-
-    /** Widget may be placed on the home screen. */
-    public static final int WIDGET_CATEGORY_HOME_SCREEN = 1;
-    /** Widget may be placed on the keyguard (lock screen). */
-    public static final int WIDGET_CATEGORY_KEYGUARD    = 2;
-    /** Widget may be used as a search box. */
-    public static final int WIDGET_CATEGORY_SEARCHBOX   = 4;
-
-    /** Minimum width in dp. */
-    public int minWidth;
-
-    /** Minimum height in dp. */
-    public int minHeight;
-
-    /** How often the widget should be updated, in milliseconds. 0 = never auto-update. */
-    public int updatePeriodMillis;
-
-    /** Resource id of the initial layout. */
-    public int initialLayout;
-
-    /** ComponentName (as Object) of the configuration activity, or null. */
-    public Object configure;
-
-    /** Human-readable label for this widget. */
-    public String label;
-
-    /** Resource id of the preview image. */
-    public int previewImage;
-
-    /** Combination of WIDGET_CATEGORY_* flags. */
-    public int widgetCategory = WIDGET_CATEGORY_HOME_SCREEN;
+public class AppWidgetProviderInfo implements Parcelable {
+    public static final int RESIZE_BOTH = 0;
+    public static final int RESIZE_HORIZONTAL = 0;
+    public static final int RESIZE_NONE = 0;
+    public static final int RESIZE_VERTICAL = 0;
+    public static final int WIDGET_CATEGORY_HOME_SCREEN = 0;
+    public static final int WIDGET_CATEGORY_KEYGUARD = 0;
+    public static final int WIDGET_CATEGORY_SEARCHBOX = 0;
+    public static final int WIDGET_FEATURE_HIDE_FROM_PICKER = 0;
+    public static final int WIDGET_FEATURE_RECONFIGURABLE = 0;
+    public int autoAdvanceViewId = 0;
+    public int configure = 0;
+    public int icon = 0;
+    public int initialKeyguardLayout = 0;
+    public int initialLayout = 0;
+    public int minHeight = 0;
+    public int minResizeHeight = 0;
+    public int minResizeWidth = 0;
+    public int minWidth = 0;
+    public int previewImage = 0;
+    public int provider = 0;
+    public int resizeMode = 0;
+    public int updatePeriodMillis = 0;
+    public int widgetCategory = 0;
+    public int widgetFeatures = 0;
 
     public AppWidgetProviderInfo() {}
+    public AppWidgetProviderInfo(Parcel p0) {}
+
+    public AppWidgetProviderInfo clone() { return null; }
+    public int describeContents() { return 0; }
+    public UserHandle getProfile() { return null; }
+    public Drawable loadIcon(Context p0, int p1) { return null; }
+    public String loadLabel(PackageManager p0) { return null; }
+    public Drawable loadPreviewImage(Context p0, int p1) { return null; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

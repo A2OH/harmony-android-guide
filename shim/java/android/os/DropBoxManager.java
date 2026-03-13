@@ -2,6 +2,7 @@ package android.os;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Closeable;
 
 /**
  * Android-compatible DropBoxManager shim. In-memory log for debugging entries.

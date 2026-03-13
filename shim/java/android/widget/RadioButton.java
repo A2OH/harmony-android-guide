@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 import com.ohos.shim.bridge.OHBridge;
@@ -18,7 +20,7 @@ public class RadioButton extends View {
     private OnCheckedChangeListener onCheckedChangeListener;
 
     public RadioButton() {
-        super(View.NODE_TYPE_STACK); // Bridge maps to Radio component
+        super(0); // Bridge maps to Radio component
     }
 
     // ── Checked state ──

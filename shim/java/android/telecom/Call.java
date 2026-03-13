@@ -1,4 +1,7 @@
 package android.telecom;
+import android.net.Uri;
+import android.net.Uri;
+import java.net.URI;
 
 /**
  * Android-compatible Call shim. Stub implementation for mock testing.
@@ -121,7 +124,7 @@ public class Call {
 
         @Override
         public String toString() {
-            return "Details{handle=" + mHandle + ", name=" + mCallerDisplayName + "}";
+            return "Details{handle=" + mHandle + ", caller=" + mCallerDisplayName + "}";
         }
     }
 }

@@ -37,7 +37,7 @@ public class MediaSession2 {
      */
     public static class Builder {
         private String mId = "";
-        private SessionCallback mCallback;
+        private Object mCallback;
 
         public Builder() {}
 
@@ -52,7 +52,7 @@ public class MediaSession2 {
         /**
          * Sets the session callback that handles controller commands.
          */
-        public Builder setSessionCallback(SessionCallback callback) {
+        public Builder setSessionCallback(Object callback) {
             mCallback = callback;
             return this;
         }
@@ -68,7 +68,7 @@ public class MediaSession2 {
     /**
      * Abstract callback class for handling commands sent by a connected controller.
      */
-    public abstract static class SessionCallback {
+    public abstract static class Object {
 
         /**
          * Called when a controller connects to the session.

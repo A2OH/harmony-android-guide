@@ -1,4 +1,14 @@
 package android.graphics.drawable;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Shader;
+import android.service.quicksettings.Tile;
+import android.view.Gravity;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Shader;
+import android.service.quicksettings.Tile;
+import android.view.Gravity;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

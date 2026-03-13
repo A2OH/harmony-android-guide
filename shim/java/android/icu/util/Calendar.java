@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Android ICU Calendar shim. Abstract wrapper around java.util.Calendar.
  */
-public abstract class Calendar {
+public class Calendar {
 
     // Field constants (match java.util.Calendar values)
     public static final int ERA            = java.util.Calendar.ERA;

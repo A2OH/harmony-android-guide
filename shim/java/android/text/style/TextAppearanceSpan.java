@@ -1,4 +1,8 @@
 package android.text.style;
+import android.content.res.ColorStateList;
+import android.graphics.Typeface;
+import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 
 /**
  * Android shim: TextAppearanceSpan

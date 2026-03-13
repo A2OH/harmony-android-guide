@@ -41,12 +41,12 @@ public class TextSelection {
     // Request inner class
     // -----------------------------------------------------------------
 
-    public static final class Request {
+    public static final class Object {
         private final CharSequence text;
         private final int startIndex;
         private final int endIndex;
 
-        public Request(CharSequence text, int startIndex, int endIndex) {
+        public Object(CharSequence text, int startIndex, int endIndex) {
             this.text       = text;
             this.startIndex = startIndex;
             this.endIndex   = endIndex;

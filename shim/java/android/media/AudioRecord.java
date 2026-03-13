@@ -1,4 +1,5 @@
 package android.media;
+import java.nio.ByteBuffer;
 
 /**
  * Android-compatible AudioRecord shim. Stub for PCM audio capture.

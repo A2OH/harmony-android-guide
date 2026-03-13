@@ -1,4 +1,12 @@
 package android.text.method;
+import android.text.Spannable;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.widget.TextView;
+import android.text.Spannable;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.widget.TextView;
 
 import android.text.Spannable;
 import android.view.KeyEvent;

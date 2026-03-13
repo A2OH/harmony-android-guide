@@ -18,11 +18,7 @@ public class LinearGradient extends Shader {
     /**
      * Create a linear gradient shader.
      *
-     * @param x0        x-coordinate of start point
-     * @param y0        y-coordinate of start point
-     * @param x1        x-coordinate of end point
-     * @param y1        y-coordinate of end point
-     * @param colors    color array (at least 2 entries)
+     * @param x0        x-coordinate of start po(int * @param y0        y-coordinate of start po(int * @param x1        x-coordinate of end po(int * @param y1        y-coordinate of end po(int * @param colors    color array (at least 2 entries)
      * @param positions relative position of each color in [0,1], or null for even spacing
      * @param tile      tile mode for areas outside the gradient
      */
@@ -43,11 +39,7 @@ public class LinearGradient extends Shader {
     /**
      * Convenience two-color constructor.
      *
-     * @param x0        x-coordinate of start point
-     * @param y0        y-coordinate of start point
-     * @param x1        x-coordinate of end point
-     * @param y1        y-coordinate of end point
-     * @param color0    start color
+     * @param x0        x-coordinate of start po(int * @param y0        y-coordinate of start po(int * @param x1        x-coordinate of end po(int * @param y1        y-coordinate of end po(int * @param color0    start color
      * @param color1    end color
      * @param tile      tile mode
      */

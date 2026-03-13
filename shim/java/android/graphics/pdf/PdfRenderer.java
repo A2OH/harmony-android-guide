@@ -1,4 +1,13 @@
 package android.graphics.pdf;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.os.ParcelFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.os.ParcelFileDescriptor;
+import java.io.Closeable;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -81,7 +90,5 @@ public final class PdfRenderer implements java.io.Closeable {
         public void close() throws IOException {
             mClosed = true;
         }
-
-        public boolean isClosed() { return mClosed; }
     }
 }

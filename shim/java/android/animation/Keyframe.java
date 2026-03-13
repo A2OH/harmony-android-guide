@@ -71,7 +71,7 @@ public abstract class Keyframe {
         return mHasValue;
     }
 
-    public abstract Class getType();
+    public Class getType() { return null; }
 
     // ── Concrete subclasses ──
 

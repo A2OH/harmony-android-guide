@@ -1,4 +1,6 @@
 package android.opengl;
+import android.graphics.Shader;
+import android.graphics.Shader;
 
 import java.nio.Buffer;
 import java.nio.FloatBuffer;

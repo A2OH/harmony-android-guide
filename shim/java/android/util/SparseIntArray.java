@@ -46,7 +46,7 @@ public class SparseIntArray implements Cloneable {
     }
 
     public int get(int key) {
-        return get(key, 0);
+        return get(key);
     }
 
     public int get(int key, int valueIfKeyNotFound) {

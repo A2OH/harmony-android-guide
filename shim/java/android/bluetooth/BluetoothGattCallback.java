@@ -3,7 +3,7 @@ package android.bluetooth;
 /**
  * Android-compatible BluetoothGattCallback shim. Abstract class with no-op defaults.
  */
-public abstract class BluetoothGattCallback {
+public class BluetoothGattCallback {
     /**
      * Called when the connection state of a remote GATT server changes.
      *

@@ -31,12 +31,12 @@ public class GeolocationPermissions {
     // ── Inner interface ──
 
     /**
-     * Callback interface used by the WebChromeClient to respond to a
+     * Object interface used by the WebChromeClient to respond to a
      * geolocation permission request from the page.
      *
      * OH equivalent: callback in onGeolocationShow event handler.
      */
-    public interface Callback {
+    public interface Object {
         /**
          * Invoke to set the geolocation permission for the origin.
          *

@@ -1,4 +1,12 @@
 package android.support.design.widget;
+import android.opengl.Visibility;
+import android.util.Size;
+import android.view.View;
+import android.widget.ImageButton;
+import android.opengl.Visibility;
+import android.util.Size;
+import android.view.View;
+import android.widget.ImageButton;
 
 import android.view.View;
 import android.widget.ImageButton;
@@ -142,7 +150,7 @@ public class FloatingActionButton extends ImageButton {
     // ── OnVisibilityChangedListener inner class ──
 
     /**
-     * Callback to be invoked when the visibility of a FloatingActionButton changes.
+     * Object to be invoked when the visibility of a FloatingActionButton changes.
      */
     public static class OnVisibilityChangedListener {
 

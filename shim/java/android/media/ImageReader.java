@@ -1,4 +1,6 @@
 package android.media;
+import android.view.Surface;
+import android.view.Surface;
 
 import android.view.Surface;
 
@@ -43,7 +45,7 @@ public class ImageReader implements AutoCloseable {
     }
 
     /**
-     * Callback interface for image availability.
+     * Object interface for image availability.
      */
     public interface OnImageAvailableListener {
         void onImageAvailable(ImageReader reader);

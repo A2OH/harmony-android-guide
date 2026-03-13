@@ -3,7 +3,7 @@ package android.bluetooth;
 /**
  * Android-compatible BluetoothGattServerCallback shim. Stub.
  */
-public abstract class BluetoothGattServerCallback {
+public class BluetoothGattServerCallback {
 
     public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {}
 

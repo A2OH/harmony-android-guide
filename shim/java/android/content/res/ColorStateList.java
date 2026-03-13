@@ -1,4 +1,6 @@
 package android.content.res;
+import android.graphics.Color;
+import android.graphics.Color;
 
 /**
  * Shim: android.content.res.ColorStateList

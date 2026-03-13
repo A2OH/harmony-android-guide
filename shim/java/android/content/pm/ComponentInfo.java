@@ -1,56 +1,21 @@
 package android.content.pm;
+import android.os.Parcel;
 
-/**
- * Android-compatible ComponentInfo shim. Base class for component descriptors
- * (ActivityInfo, ServiceInfo, ProviderInfo, etc.).
- */
 public class ComponentInfo extends PackageItemInfo {
-
-    /** Global information about the application/package this component is in. */
-    public ApplicationInfo applicationInfo;
-
-    /** The name of the process this component runs in. */
-    public String processName;
-
-    /** The name of the task affinity of this component. */
-    public String taskAffinity;
-
-    /** Whether this component is enabled. */
-    public boolean enabled = true;
-
-    /** Whether this component is exported. */
-    public boolean exported;
-
-    /** Whether this component is directly boot-aware. */
-    public boolean directBootAware;
-
-    /** Whether this component is encryptionAware (legacy alias for directBootAware). */
-    public boolean encryptionAware;
-
-    /** Split name under which this component is declared. May be null. */
-    public String splitName;
+    public int applicationInfo = 0;
+    public int descriptionRes = 0;
+    public int directBootAware = 0;
+    public int enabled = 0;
+    public int exported = 0;
+    public int processName = 0;
+    public int splitName = 0;
 
     public ComponentInfo() {}
+    public ComponentInfo(ComponentInfo p0) {}
+    public ComponentInfo(Parcel p0) {}
 
-    public ComponentInfo(ComponentInfo orig) {
-        super(orig);
-        if (orig != null) {
-            applicationInfo    = orig.applicationInfo;
-            processName        = orig.processName;
-            taskAffinity       = orig.taskAffinity;
-            enabled            = orig.enabled;
-            exported           = orig.exported;
-            directBootAware    = orig.directBootAware;
-            encryptionAware    = orig.encryptionAware;
-            splitName          = orig.splitName;
-        }
-    }
-
-    /** Returns true if this component is enabled and exported. */
-    public final boolean isEnabled() { return enabled; }
-
-    @Override
-    public String toString() {
-        return "ComponentInfo{" + packageName + "/" + name + "}";
-    }
+    public int getBannerResource() { return 0; }
+    public int getIconResource() { return 0; }
+    public int getLogoResource() { return 0; }
+    public boolean isEnabled() { return false; }
 }

@@ -1,80 +1,37 @@
 package android.widget;
-
+import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * Shim: android.widget.CursorAdapter — adapter backed by a database Cursor.
- *
- * newView() and bindView() are abstract; subclasses implement them to inflate
- * and populate row Views. changeCursor() / swapCursor() manage the Cursor lifecycle.
- */
-public abstract class CursorAdapter extends BaseAdapter {
+public class CursorAdapter extends BaseAdapter implements Filterable, ThemedSpinnerAdapter {
+    public CursorAdapter() {}
+    public static final int FLAG_REGISTER_CONTENT_OBSERVER = 0;
 
-    private Cursor cursor;
-    private final Object context;
+    public CursorAdapter(Context p0, Cursor p1, boolean p2) {}
+    public CursorAdapter(Context p0, Cursor p1, int p2) {}
 
-    public CursorAdapter(Object context, Cursor cursor, boolean autoRequery) {
-        this.context = context;
-        this.cursor = cursor;
-    }
-
-    // ── Abstract methods ──
-
-    /** Inflate a new View for a row. Called only when no convertView is available. */
-    public abstract View newView(Object context, Cursor cursor, ViewGroup parent);
-
-    /** Bind data from the current Cursor row into an existing View. */
-    public abstract void bindView(View view, Object context, Cursor cursor);
-
-    // ── Cursor management ──
-
-    public Cursor getCursor() { return cursor; }
-
-    public void changeCursor(Cursor newCursor) {
-        Cursor old = swapCursor(newCursor);
-        if (old != null) old.close();
-    }
-
-    public Cursor swapCursor(Cursor newCursor) {
-        Cursor old = this.cursor;
-        this.cursor = newCursor;
-        notifyDataSetChanged();
-        return old;
-    }
-
-    // ── BaseAdapter contract ──
-
-    @Override
-    public int getCount() {
-        return (cursor != null && !cursor.isClosed()) ? cursor.getCount() : 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        if (cursor == null || cursor.isClosed()) return null;
-        cursor.moveToPosition(position);
-        return cursor;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        if (cursor == null || cursor.isClosed()) return 0;
-        cursor.moveToPosition(position);
-        // Return the _id column if it exists, otherwise the position
-        int idCol = cursor.getColumnIndex("_id");
-        return idCol >= 0 ? cursor.getLong(idCol) : position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (cursor == null || cursor.isClosed()) return null;
-        cursor.moveToPosition(position);
-        if (convertView == null) {
-            convertView = newView(context, cursor, parent);
-        }
-        bindView(convertView, context, cursor);
-        return convertView;
-    }
+    public void bindView(View p0, Context p1, Cursor p2) {}
+    public void changeCursor(Cursor p0) {}
+    public CharSequence convertToString(Cursor p0) { return null; }
+    public int getCount() { return 0; }
+    public Cursor getCursor() { return null; }
+    public Object getDropDownViewTheme() { return null; }
+    public Filter getFilter() { return null; }
+    public FilterQueryProvider getFilterQueryProvider() { return null; }
+    public Object getItem(int p0) { return null; }
+    public long getItemId(int p0) { return 0L; }
+    public View getView(int p0, View p1, ViewGroup p2) { return null; }
+    public View newDropDownView(Context p0, Cursor p1, ViewGroup p2) { return null; }
+    public View newView(Context p0, Cursor p1, ViewGroup p2) { return null; }
+    public void onContentChanged() {}
+    public void setDropDownViewTheme(Object p0) {}
+    public void setFilterQueryProvider(FilterQueryProvider p0) {}
+    public Cursor swapCursor(Cursor p0) { return null; }
+    public View getDropDownView(int position, Object convertView, Object parent) { return null; }
+    public boolean hasStableIds() { return false; }
+    public void registerDataSetObserver(android.database.DataSetObserver observer) {}
+    public void unregisterDataSetObserver(android.database.DataSetObserver observer) {}
+    public int getItemViewType(int position) { return 0; }
+    public int getViewTypeCount() { return 1; }
 }

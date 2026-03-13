@@ -1,4 +1,8 @@
 package android.nfc.tech;
+import android.nfc.NdefMessage;
+import android.nfc.Tag;
+import android.nfc.NdefMessage;
+import android.nfc.Tag;
 
 import android.nfc.NdefMessage;
 import android.nfc.Tag;

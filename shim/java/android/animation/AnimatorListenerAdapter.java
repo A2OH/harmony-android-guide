@@ -5,7 +5,7 @@ package android.animation;
  * Abstract convenience class implementing both AnimatorListener and AnimatorPauseListener
  * with empty method bodies so subclasses can override only what they need.
  */
-public abstract class AnimatorListenerAdapter
+public class AnimatorListenerAdapter
         implements Animator.AnimatorListener, Animator.AnimatorPauseListener {
 
     @Override

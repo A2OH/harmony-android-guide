@@ -1,4 +1,6 @@
 package android.os;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -14,7 +16,7 @@ import java.util.concurrent.Executors;
  *   Progress – intermediate progress type published via publishProgress()
  *   Result  – output type returned by doInBackground() and received by onPostExecute()
  */
-public abstract class AsyncTask<Params, Progress, Result> {
+public class AsyncTask<Params, Progress, Result> {
 
     public enum Status { PENDING, RUNNING, FINISHED }
 
@@ -31,7 +33,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
     // --- Abstract ---
 
     @SuppressWarnings("unchecked")
-    protected abstract Result doInBackground(Params... params);
+    protected Result doInBackground(Params... params) { return null; }
 
     // --- Optional overrides ---
 

@@ -1,37 +1,38 @@
 package android.view;
+import java.util.Set;
 
 /**
  * Shim: android.view.ActionMode — pure Java stub.
  * Represents a contextual action mode (e.g. text selection toolbar).
  */
-public abstract class ActionMode {
+public class ActionMode {
 
     private Object mTag;
     private boolean mTitleOptionalHint;
 
     /** Set the current title of this action mode. */
-    public abstract void setTitle(CharSequence title);
+    public void setTitle(CharSequence title) {}
 
     /** Set the current title from a string resource. */
-    public abstract void setTitle(int resId);
+    public void setTitle(int resId) {}
 
     /** Set the current subtitle of this action mode. */
-    public abstract void setSubtitle(CharSequence subtitle);
+    public void setSubtitle(CharSequence subtitle) {}
 
     /** Set the current subtitle from a string resource. */
-    public abstract void setSubtitle(int resId);
+    public void setSubtitle(int resId) {}
 
     /** Return the current title of this action mode. */
-    public abstract CharSequence getTitle();
+    public CharSequence getTitle() { return null; }
 
     /** Return the current subtitle of this action mode. */
-    public abstract CharSequence getSubtitle();
+    public CharSequence getSubtitle() { return null; }
 
     /** Return the menu of actions provided by this action mode. */
-    public abstract Menu getMenu();
+    public Menu getMenu() { return null; }
 
     /** Finish and close this action mode. */
-    public abstract void finish();
+    public void finish() {}
 
     /** Invalidate the action mode and refresh the menu/action views. */
     public void invalidate() {
@@ -59,9 +60,9 @@ public abstract class ActionMode {
     }
 
     /**
-     * Callback interface for action mode events.
+     * Object interface for action mode events.
      */
-    public interface Callback {
+    public interface Object {
         /** Called when an action mode is first created. */
         boolean onCreateActionMode(ActionMode mode, Menu menu);
 

@@ -54,9 +54,9 @@ public class AssetFileDescriptor implements Closeable {
     }
 
     /**
-     * Create a FileInputStream for reading this asset. Stub -- returns null.
+     * Create a java.io.FileInputStream for reading this asset. Stub -- returns null.
      */
-    public FileInputStream createInputStream() throws IOException {
+    public java.io.FileInputStream createInputStream() throws IOException {
         return null; // stub
     }
 

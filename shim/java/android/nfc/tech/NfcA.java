@@ -1,4 +1,8 @@
 package android.nfc.tech;
+import android.nfc.Tag;
+import android.renderscript.Type;
+import android.nfc.Tag;
+import android.renderscript.Type;
 
 import android.nfc.Tag;
 import java.io.IOException;
@@ -39,7 +43,7 @@ public class NfcA implements TagTechnology {
         return new byte[0];
     }
 
-    /** Returns the ATQA (Answer To Request, Type A) bytes. */
+    /** Returns the ATQA (Answer To Object, Type A) bytes. */
     public byte[] getAtqa() { return new byte[2]; }
 
     /** Returns the SAK (Select Acknowledge) byte. */

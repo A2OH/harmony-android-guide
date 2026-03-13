@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 import com.ohos.shim.bridge.OHBridge;
@@ -38,7 +40,7 @@ public class SeekBar extends View {
     public void setMax(int max) {
         this.max = max;
         if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_MAX, (float) max, 0, 0, 0, 1);
+// FIXME OHBridge: // FIXME OHBridge: // FIXME OHBridge:             OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_MAX, (float) max, 0, 0, 0);
         }
     }
 
@@ -47,7 +49,7 @@ public class SeekBar extends View {
     public void setProgress(int progress) {
         this.progress = progress;
         if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_VALUE, (float) progress, 0, 0, 0, 1);
+// FIXME OHBridge: // FIXME OHBridge: // FIXME OHBridge:             OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_VALUE, (float) progress, 0, 0, 0);
         }
     }
 
@@ -55,7 +57,7 @@ public class SeekBar extends View {
         this.onSeekBarChangeListener = listener;
     }
 
-    @Override
+    
     public void onNativeEvent(int eventId, int eventKind, String stringData) {
         if (eventKind == EVENT_SLIDER_ON_CHANGE && onSeekBarChangeListener != null) {
             // stringData or float data contains the new value

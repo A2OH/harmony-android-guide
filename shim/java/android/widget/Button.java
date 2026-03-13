@@ -16,7 +16,7 @@ public class Button extends TextView {
         super(NODE_TYPE_BUTTON);
     }
 
-    @Override
+    
     public void setText(CharSequence text) {
         super.setText(text);
         // ArkUI Button uses BUTTON_LABEL for its text

@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.ViewGroup;
+import android.view.ViewGroup;
 
 import android.view.ViewGroup;
 
@@ -35,7 +37,7 @@ public class TableRow extends LinearLayout {
             this.column = column;
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
     }

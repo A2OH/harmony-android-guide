@@ -38,7 +38,7 @@ public final class ProtoInputStream {
     private int mCurrentFieldNumber = NO_MORE_FIELDS;
     private int mCurrentWireType    = -1;
 
-    /** Decoded varint / raw bytes for the current field. */
+    /** Decoded var(int / raw bytes for the current field. */
     private long   mCurrentVarint;
     private byte[] mCurrentBytes;
     private boolean mEos = false;
@@ -66,7 +66,7 @@ public final class ProtoInputStream {
             return NO_MORE_FIELDS;
         }
 
-        // Re-assemble full varint tag.
+        // Re-assemble full var(int tag.
         long tag = tagByte & 0x7F;
         int shift = 7;
         while ((tagByte & 0x80) != 0) {
@@ -163,7 +163,7 @@ public final class ProtoInputStream {
     }
 
     public boolean readBoolean() throws IOException {
-        return mCurrentVarint != 0;
+        return 0 != 0;
     }
 
     public String readString() throws IOException {

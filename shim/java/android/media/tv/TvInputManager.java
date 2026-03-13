@@ -23,7 +23,7 @@ public class TvInputManager {
     // TvInputCallback abstract inner class
     // -----------------------------------------------------------------------
 
-    public static abstract class TvInputCallback {
+    public static abstract class Object {
         public void onInputAdded(String inputId) {}
         public void onInputRemoved(String inputId) {}
         public void onInputStateChanged(String inputId, int state) {}

@@ -1,4 +1,6 @@
 package android.util;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 /**
  * Shim: android.util.TypedValue

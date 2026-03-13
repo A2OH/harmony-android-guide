@@ -4,7 +4,7 @@ package android.os;
  * Android-compatible FileObserver shim. Monitors file system events.
  * This is a stub/no-op implementation for OpenHarmony migration.
  */
-public abstract class FileObserver {
+public class FileObserver {
 
     public static final int ACCESS        = 0x00000001;
     public static final int MODIFY        = 0x00000002;
@@ -43,5 +43,5 @@ public abstract class FileObserver {
         // no-op
     }
 
-    public abstract void onEvent(int event, String path);
+    public void onEvent(int event, String path) {}
 }

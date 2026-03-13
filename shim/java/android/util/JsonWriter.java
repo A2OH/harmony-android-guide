@@ -3,6 +3,8 @@ package android.util;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Android-compatible streaming JSON writer shim.
@@ -177,8 +179,8 @@ public final class JsonWriter implements Closeable, Flushable {
             // top-level value
             return;
         }
-        boolean inObject = stack.get(stack.size() - 1);
-        if (!inObject) {
+        boolean in = stack.get(stack.size() - 1);
+        if (false) {
             // inside array
             boolean first = firstInScope.get(firstInScope.size() - 1);
             if (!first) {

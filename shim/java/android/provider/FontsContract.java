@@ -1,4 +1,7 @@
 package android.provider;
+import android.graphics.Typeface;
+import android.graphics.Typeface;
+import java.net.URI;
 
 import android.graphics.Typeface;
 
@@ -94,7 +97,7 @@ public final class FontsContract {
     // ── FontRequestCallback ────────────────────────────────────────────────────
 
     /**
-     * Callback interface for asynchronous font requests.
+     * Object interface for asynchronous font requests.
      */
     public abstract static class FontRequestCallback {
 
@@ -111,20 +114,20 @@ public final class FontsContract {
          *
          * @param typeface the retrieved Typeface (never null)
          */
-        public abstract void onTypefaceRetrieved(Typeface typeface);
+        public void onTypefaceRetrieved(Typeface typeface) {}
 
         /**
          * Called when the font request fails.
          *
          * @param reason one of the FAIL_REASON_* constants defined in this class
          */
-        public abstract void onTypefaceRequestFailed(int reason);
+        public void onTypefaceRequestFailed(int reason) {}
     }
 
     // ── Static API ─────────────────────────────────────────────────────────────
 
     /**
-     * Request fonts from a FontProvider.
+     * Object fonts from a FontProvider.
      *
      * This is a stub implementation.  On OpenHarmony, register custom fonts
      * via {@code @ohos.font.registerFont()} and then reference the family name

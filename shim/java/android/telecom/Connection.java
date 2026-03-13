@@ -1,10 +1,13 @@
 package android.telecom;
+import android.net.Uri;
+import android.net.Uri;
+import java.net.URI;
 
 /**
  * Android-compatible Connection shim. Abstract stub for mock testing.
  * Represents a phone call connection, managed by a ConnectionService.
  */
-public abstract class Connection {
+public class Connection {
 
     /** Connection is in an initial, undefined state. */
     public static final int STATE_INITIALIZING = 0;

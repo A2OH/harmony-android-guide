@@ -1,4 +1,7 @@
 package android.content;
+import android.net.Uri;
+import android.net.Uri;
+import java.net.URI;
 
 import android.net.Uri;
 
@@ -11,7 +14,7 @@ import android.net.Uri;
  * Example usage:
  * <pre>
  *   Uri base   = Uri.parse("content://com.example/items");
- *   Uri withId = ContentUris.withAppendedId(base, 42);
+ *   Uri withId = ContentUris.withAppendedId(base);
  *   // withId.toString() == "content://com.example/items/42"
  *
  *   long id = ContentUris.parseId(withId); // 42

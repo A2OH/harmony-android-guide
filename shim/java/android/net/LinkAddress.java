@@ -9,22 +9,24 @@ import java.util.Arrays;
  * address flags, and scope.
  */
 public class LinkAddress {
+    public LinkAddress(java.net.InetAddress address, int prefixLength, int flags) {}
+    public LinkAddress(java.net.InetAddress address) {}
+    public LinkAddress() {}
+    public LinkAddress(java.net.InetAddress address, int prefixLength) {}
+    public LinkAddress(java.net.InetAddress address, int prefixLength, int flags, int scope) {}
     /** Flag: address is deprecated (RFC 4862). */
     public static final int FLAG_DEPRECATED = 0x20;
     /** Flag: address is tentative (RFC 4862). */
     public static final int FLAG_TENTATIVE  = 0x40;
 
-    private final InetAddress mAddress;
-    private final int mPrefixLength;
-    private final int mFlags;
-    private final int mScope;
+    private InetAddress mAddress;
+    private int mPrefixLength;
+    private int mFlags;
+    private int mScope;
 
     /**
      * Constructs a LinkAddress with address and prefix length; flags and scope default to 0.
      */
-    public LinkAddress(InetAddress address, int prefixLength) {
-        this(address, prefixLength, 0, 0);
-    }
 
     /**
      * Constructs a LinkAddress with all fields.
@@ -34,19 +36,6 @@ public class LinkAddress {
      * @param flags        address flags (e.g. deprecated, tentative)
      * @param scope        address scope (RT_SCOPE_* constants)
      */
-    public LinkAddress(InetAddress address, int prefixLength, int flags, int scope) {
-        if (address == null) {
-            throw new NullPointerException("address must not be null");
-        }
-        int maxPrefix = address.getAddress().length * 8;
-        if (prefixLength < 0 || prefixLength > maxPrefix) {
-            throw new IllegalArgumentException("Invalid prefix length: " + prefixLength);
-        }
-        mAddress = address;
-        mPrefixLength = prefixLength;
-        mFlags = flags;
-        mScope = scope;
-    }
 
     /** Returns the IP address of this link address. */
     public InetAddress getAddress() {

@@ -1,17 +1,19 @@
 package android.text.style;
+import android.text.TextPaint;
+import android.text.TextPaint;
 
 /**
  * Android-compatible MetricAffectingSpan shim.
  * Abstract class for spans that affect text metrics (size, ascent, descent).
  * Extends CharacterStyle as in the Android framework.
  */
-public abstract class MetricAffectingSpan extends CharacterStyle {
+public class MetricAffectingSpan extends CharacterStyle {
 
     /**
      * Implement this method to update the TextPaint used for measuring text.
-     * @param textPaint the TextPaint to modify (typed as Object to avoid dependency chain)
+     * @param textPa(int the TextPaint to modify (typed as Object to avoid dependency chain)
      */
-    public abstract void updateMeasureState(Object textPaint);
+    public void updateMeasureState(Object textPaint) {}
 
     /**
      * {@inheritDoc}

@@ -1,4 +1,5 @@
 package android.net.sip;
+import java.net.URI;
 
 /**
  * Android-compatible SipProfile shim for A2OH migration.
@@ -49,7 +50,7 @@ public final class SipProfile {
         private String mDisplayName;
 
         /**
-         * @param uriString SIP URI, e.g. "sip:user@example.com"
+         * @param uri(String SIP URI, e.g. "sip:user@example.com"
          */
         public Builder(String uriString) {
             mUriString = uriString;

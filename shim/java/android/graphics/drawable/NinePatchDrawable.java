@@ -1,4 +1,14 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.NinePatch;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.NinePatch;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;

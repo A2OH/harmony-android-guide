@@ -1,4 +1,7 @@
 package android.content;
+import android.net.Uri;
+import android.net.Uri;
+import java.net.URI;
 
 import android.net.Uri;
 

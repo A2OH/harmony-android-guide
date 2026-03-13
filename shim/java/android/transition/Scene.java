@@ -1,53 +1,36 @@
 package android.transition;
 
-import android.view.View;
-import android.view.ViewGroup;
-
 /**
- * Android-compatible Scene shim.
- * Represents a UI state for use with TransitionManager. Stub — enter/exit are no-ops.
+ * Shim for android.transition.Scene.
+ * Represents a snapshot of a view hierarchy at a particular po(int in time.
  */
-public final class Scene {
+public class Scene {
+    private final Object sceneRoot;
 
-    private final ViewGroup mSceneRoot;
-    private View mLayout;
-    private Runnable mEnterAction;
-    private Runnable mExitAction;
-
-    public Scene(ViewGroup sceneRoot) {
-        mSceneRoot = sceneRoot;
+    public Scene(Object sceneRoot) {
+        this.sceneRoot = sceneRoot;
     }
 
-    public Scene(ViewGroup sceneRoot, View layout) {
-        mSceneRoot = sceneRoot;
-        mLayout = layout;
-    }
-
-    public static Scene getSceneForLayout(ViewGroup sceneRoot, int layoutId, Object context) {
+    /**
+     * Object method: returns a Scene inflated from a layout resource.
+     * Shim simply wraps the sceneRoot; layoutId and context are ignored.
+     */
+    public static Scene getSceneForLayout(Object sceneRoot, int layoutId, Object context) {
         return new Scene(sceneRoot);
     }
 
+    /** Enter this scene -- no-op in shim. */
     public void enter() {
-        if (mEnterAction != null) {
-            mEnterAction.run();
-        }
+        // no-op
     }
 
+    /** Exit this scene -- no-op in shim. */
     public void exit() {
-        if (mExitAction != null) {
-            mExitAction.run();
-        }
+        // no-op
     }
 
-    public ViewGroup getSceneRoot() {
-        return mSceneRoot;
-    }
-
-    public void setEnterAction(Runnable action) {
-        mEnterAction = action;
-    }
-
-    public void setExitAction(Runnable action) {
-        mExitAction = action;
+    /** Returns the root of the scene. */
+    public Object getSceneRoot() {
+        return sceneRoot;
     }
 }

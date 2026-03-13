@@ -1,4 +1,7 @@
 package android.media;
+import android.icu.util.Output;
+import android.icu.util.Output;
+import java.io.IOException;
 
 /**
  * Android-compatible MediaRecorder shim. Stub for audio/video recording.

@@ -1,4 +1,8 @@
 package android.content;
+import android.accounts.Account;
+import android.os.SystemClock;
+import android.accounts.Account;
+import android.os.SystemClock;
 
 /**
  * Android-compatible SyncInfo shim.

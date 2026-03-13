@@ -1,4 +1,8 @@
 package android.graphics.drawable.shapes;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -6,11 +10,11 @@ import android.graphics.Paint;
 /**
  * Android-compatible Shape shim. Abstract base class for shapes that can be drawn.
  */
-public abstract class Shape {
+public class Shape {
     private float mWidth;
     private float mHeight;
 
-    public abstract void draw(Canvas canvas, Paint paint);
+    public void draw(Canvas canvas, Paint paint) {}
 
     public float getWidth() { return mWidth; }
     public float getHeight() { return mHeight; }

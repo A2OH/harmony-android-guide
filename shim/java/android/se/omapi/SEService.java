@@ -1,4 +1,6 @@
 package android.se.omapi;
+import android.renderscript.Element;
+import android.renderscript.Element;
 
 import java.util.concurrent.Executor;
 
@@ -11,7 +13,7 @@ public class SEService {
     private final OnConnectedListener mListener;
 
     /**
-     * Listener interface that is called when the SEService is connected and ready to use.
+     * Object interface that is called when the SEService is connected and ready to use.
      */
     public interface OnConnectedListener {
         void onConnected();

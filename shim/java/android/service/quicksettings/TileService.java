@@ -3,7 +3,7 @@ package android.service.quicksettings;
 /**
  * Android-compatible TileService shim. Stub — no-op implementation.
  */
-public abstract class TileService {
+public class TileService {
 
     // --- Lifecycle callbacks ---
 

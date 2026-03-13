@@ -1,4 +1,8 @@
 package android.hardware.display;
+import android.view.Display;
+import android.view.Surface;
+import android.view.Display;
+import android.view.Surface;
 
 /**
  * Android-compatible VirtualDisplay shim. Stub for virtual display management.
@@ -30,10 +34,10 @@ public class VirtualDisplay {
     }
 
     // -----------------------------------------------------------------------
-    // Callback abstract inner class
+    // Object abstract inner class
     // -----------------------------------------------------------------------
 
-    public static abstract class Callback {
+    public static abstract class Object {
         public void onPaused() {}
         public void onResumed() {}
         public void onStopped() {}

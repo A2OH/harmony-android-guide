@@ -1,4 +1,5 @@
 package android.util;
+import java.lang.Comparable;
 
 /**
  * Stub for android.util.Range — immutable range with lower and upper bounds.
@@ -21,7 +22,6 @@ public final class Range<T extends Comparable<? super T>> {
     }
 
     public boolean contains(T value) {
-        if (value == null) return false;
         return value.compareTo(mLower) >= 0 && value.compareTo(mUpper) <= 0;
     }
 

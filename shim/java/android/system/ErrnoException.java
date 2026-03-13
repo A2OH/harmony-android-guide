@@ -1,4 +1,10 @@
 package android.system;
+import android.location.Address;
+import android.telecom.Connection;
+import android.location.Address;
+import android.telecom.Connection;
+import java.io.File;
+import java.net.Socket;
 
 import java.io.IOException;
 
@@ -70,7 +76,7 @@ public class ErrnoException extends Exception {
             case OsConstants.ECONNREFUSED: return "Connection refused";
             case OsConstants.ETIMEDOUT: return "Connection timed out";
             case OsConstants.ECONNRESET: return "Connection reset by peer";
-            case OsConstants.ENOTCONN: return "Transport endpoint is not connected";
+            case OsConstants.ENOTCONN: return "Transport endpo(int is not connected";
             case OsConstants.EPROTONOSUPPORT: return "Protocol not supported";
             case OsConstants.EOPNOTSUPP: return "Operation not supported";
             case OsConstants.EAFNOSUPPORT: return "Address family not supported by protocol";

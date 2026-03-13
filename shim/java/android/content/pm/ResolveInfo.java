@@ -1,44 +1,33 @@
 package android.content.pm;
+import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Printer;
 
-/**
- * Android-compatible ResolveInfo shim. Stub — no-op implementation for A2OH migration.
- */
-public class ResolveInfo {
-
-    public ActivityInfo activityInfo;
-    public ServiceInfo  serviceInfo;
-    public ProviderInfo providerInfo;
-    /** IntentFilter represented as Object to avoid dependency on android.content.IntentFilter. */
-    public Object       filter;
-    public int          priority;
-    public int          preferredOrder;
-    public int          match;
-    public boolean      isDefault;
+public class ResolveInfo implements Parcelable {
+    public int activityInfo = 0;
+    public int filter = 0;
+    public int icon = 0;
+    public int isDefault = 0;
+    public int isInstantAppAvailable = 0;
+    public int labelRes = 0;
+    public int match = 0;
+    public int nonLocalizedLabel = 0;
+    public int preferredOrder = 0;
+    public int priority = 0;
+    public int providerInfo = 0;
+    public int resolvePackageName = 0;
+    public int serviceInfo = 0;
+    public int specificIndex = 0;
 
     public ResolveInfo() {}
+    public ResolveInfo(ResolveInfo p0) {}
 
-    /**
-     * Retrieve the best label associated with this resolution.
-     * @param pm  PackageManager — typed as Object to avoid dependency.
-     */
-    public CharSequence loadLabel(Object pm) {
-        if (activityInfo != null) return activityInfo.loadLabel(pm);
-        if (serviceInfo  != null) return serviceInfo.loadLabel(pm);
-        if (providerInfo != null) return providerInfo.loadLabel(pm);
-        return "";
-    }
-
-    /**
-     * Retrieve the best icon associated with this resolution.
-     * @param pm  PackageManager — typed as Object to avoid dependency.
-     * @return null (stub)
-     */
-    public Object loadIcon(Object pm) {
-        return null; // stub
-    }
-
-    @Override
-    public String toString() {
-        return "ResolveInfo{priority=" + priority + ", match=" + match + "}";
-    }
+    public int describeContents() { return 0; }
+    public void dump(Printer p0, String p1) {}
+    public int getIconResource() { return 0; }
+    public boolean isCrossProfileIntentForwarderActivity() { return false; }
+    public Drawable loadIcon(PackageManager p0) { return null; }
+    public CharSequence loadLabel(PackageManager p0) { return null; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

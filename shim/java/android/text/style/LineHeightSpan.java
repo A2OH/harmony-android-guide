@@ -1,4 +1,6 @@
 package android.text.style;
+import android.graphics.Paint;
+import android.graphics.Paint;
 
 /**
  * Android-compatible LineHeightSpan shim.
@@ -37,7 +39,7 @@ public interface LineHeightSpan {
          * @param spanstartv the top of the span on this line
          * @param lineHeight the line height in pixels
          * @param fm        the font metrics to modify (Paint.FontMetricsInt, typed as Object)
-         * @param paint     the Paint used for the line (typed as Object)
+         * @param pa(int the Paint used for the line (typed as Object)
          */
         void chooseHeight(CharSequence text, int start, int end,
                 int spanstartv, int lineHeight, Object fm, Object paint);

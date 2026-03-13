@@ -1,4 +1,6 @@
 package android.view;
+import android.graphics.Rect;
+import android.graphics.Rect;
 
 import android.graphics.Rect;
 

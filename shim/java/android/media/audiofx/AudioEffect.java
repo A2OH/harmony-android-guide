@@ -5,7 +5,8 @@ import java.util.UUID;
 /**
  * Android-compatible AudioEffect shim. Abstract base stub for audio effects.
  */
-public abstract class AudioEffect {
+public class AudioEffect {
+    public AudioEffect(Object... args) {}
     public static final int SUCCESS              =  0;
     public static final int ERROR                = -1;
     public static final int ALREADY_EXISTS       = -2;
@@ -75,7 +76,7 @@ public abstract class AudioEffect {
 
         @Override
         public String toString() {
-            return "Descriptor{name=" + name + ", type=" + type + "}";
+            return "Descriptor{type=" + type + ", uuid=" + uuid + ", name=" + name + "}";
         }
     }
 

@@ -1,4 +1,10 @@
 package android.system;
+import android.os.Environment;
+import android.os.Process;
+import android.os.Environment;
+import android.os.Process;
+import java.io.File;
+import java.net.Socket;
 
 import java.io.FileDescriptor;
 import java.net.InetAddress;

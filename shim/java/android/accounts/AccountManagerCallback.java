@@ -1,8 +1,6 @@
 package android.accounts;
 
-/**
- * Android-compatible AccountManagerCallback shim. Stub interface.
- */
-public interface AccountManagerCallback<V> {
-    void run(AccountManagerFuture<V> future);
+public interface AccountManagerCallback {
+
+    void run(Object p0);
 }

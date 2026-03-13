@@ -8,7 +8,7 @@ import java.util.List;
  * Android-compatible InCallService shim. Abstract stub for mock testing.
  * In-call UI services extend this class to be notified of call events.
  */
-public abstract class InCallService {
+public class InCallService {
 
     /** Audio route: earpiece. */
     public static final int ROUTE_EARPIECE = 0x1;
@@ -28,10 +28,10 @@ public abstract class InCallService {
     // -------------------------------------------------------------------------
 
     /** Called when a new Call is added to this in-call session. */
-    public abstract void onCallAdded(Call call);
+    public void onCallAdded(Call call) {}
 
     /** Called when a Call is removed from this in-call session. */
-    public abstract void onCallRemoved(Call call);
+    public void onCallRemoved(Call call) {}
 
     // -------------------------------------------------------------------------
     // API

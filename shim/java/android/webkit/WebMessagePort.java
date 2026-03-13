@@ -8,14 +8,14 @@ package android.webkit;
  * <p>Concrete implementations must provide {@link #postMessage(WebMessage)} and
  * {@link #setWebMessageCallback(WebMessageCallback)}.
  */
-public abstract class WebMessagePort {
+public class WebMessagePort {
 
     /**
      * Posts a {@link WebMessage} to the entangled port (the JavaScript side).
      *
      * @param message the message to send
      */
-    public abstract void postMessage(WebMessage message);
+    public void postMessage(WebMessage message) {}
 
     /**
      * Registers a callback that will be invoked when a message arrives from
@@ -23,7 +23,7 @@ public abstract class WebMessagePort {
      *
      * @param callback the callback to register, or {@code null} to clear it
      */
-    public abstract void setWebMessageCallback(WebMessageCallback callback);
+    public void setWebMessageCallback(WebMessageCallback callback) {}
 
     // ------------------------------------------------------------------
     // Inner callback class

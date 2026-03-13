@@ -1,9 +1,11 @@
 package android.service.dreams;
+import android.content.res.Configuration;
+import android.content.res.Configuration;
 
 /**
  * Android-compatible DreamService shim. Stub — no-op implementation.
  */
-public abstract class DreamService {
+public class DreamService {
 
     private boolean interactive = false;
     private boolean fullscreen = false;

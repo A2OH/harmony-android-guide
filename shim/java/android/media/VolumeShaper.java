@@ -1,4 +1,6 @@
 package android.media;
+import android.content.res.Configuration;
+import android.content.res.Configuration;
 
 /**
  * Android-compatible VolumeShaper shim. Stub for volume shaping control.
@@ -108,7 +110,6 @@ public class VolumeShaper implements AutoCloseable {
         public static class Builder {
             private int mOp;
 
-            public Builder() {}
 
             public Builder(Operation operation) {
                 mOp = operation.mOp;

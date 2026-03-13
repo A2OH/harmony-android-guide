@@ -1,4 +1,12 @@
 package android.text.util;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.widget.MultiAutoCompleteTextView;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.widget.MultiAutoCompleteTextView;
 
 import android.widget.MultiAutoCompleteTextView;
 

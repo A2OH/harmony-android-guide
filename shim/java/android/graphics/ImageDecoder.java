@@ -1,4 +1,12 @@
 package android.graphics;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.Config;
+import android.util.Size;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.Config;
+import android.util.Size;
 
 import android.graphics.drawable.Drawable;
 
@@ -37,8 +45,9 @@ public final class ImageDecoder {
     // ------------------------------------------------------------------ //
 
     public static final class ImageInfo {
-        private final int mWidth;
-        private final int mHeight;
+    public ImageInfo(Object... args) {}
+        private int mWidth;
+        private int mHeight;
 
         ImageInfo(int width, int height) {
             mWidth = width;
@@ -114,7 +123,7 @@ public final class ImageDecoder {
             throws IOException {
         if (listener != null) {
             ImageDecoder decoder = new ImageDecoder();
-            ImageInfo info = new ImageInfo(1, 1);
+            ImageInfo info = new ImageInfo(1);
             listener.onHeaderDecoded(decoder, info, source);
         }
         return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
@@ -134,7 +143,7 @@ public final class ImageDecoder {
             throws IOException {
         if (listener != null) {
             ImageDecoder decoder = new ImageDecoder();
-            ImageInfo info = new ImageInfo(1, 1);
+            ImageInfo info = new ImageInfo(1);
             listener.onHeaderDecoded(decoder, info, source);
         }
         return new StubDrawable();

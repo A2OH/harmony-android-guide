@@ -1,4 +1,6 @@
 package android.widget;
+import android.telecom.Call;
+import android.telecom.Call;
 
 /**
  * Android-compatible Scroller shim for smooth scrolling animation.
@@ -37,7 +39,7 @@ public class Scroller {
 
     /** Start a scroll from (startX, startY) by (dx, dy) over 250 ms. */
     public void startScroll(int startX, int startY, int dx, int dy) {
-        startScroll(startX, startY, dx, dy, 250);
+        startScroll(startX, startY, dx, dy);
     }
 
     /** Start a fling from (startX, startY) with given velocities, clamped to min/max. */

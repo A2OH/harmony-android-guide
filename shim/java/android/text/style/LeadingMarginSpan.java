@@ -1,4 +1,10 @@
 package android.text.style;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.text.Layout;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.text.Layout;
 
 /**
  * Android shim: LeadingMarginSpan
@@ -19,7 +25,7 @@ public interface LeadingMarginSpan {
      * Renders the leading margin decoration (e.g. a bullet or quote bar).
      *
      * @param canvas    the Canvas to draw onto (typed as Object for shim compatibility)
-     * @param paint     the Paint to use (typed as Object for shim compatibility)
+     * @param pa(int the Paint to use (typed as Object for shim compatibility)
      * @param x         x-coordinate of the leading margin
      * @param dir       paragraph direction: +1 for LTR, -1 for RTL
      * @param top       top of the first line in the paragraph

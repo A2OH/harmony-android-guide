@@ -23,7 +23,7 @@ public interface BluetoothProfile {
     int getConnectionState(BluetoothDevice device);
 
     /**
-     * Listener for profile proxy connection events.
+     * Object for profile proxy connection events.
      */
     interface ServiceListener {
         void onServiceConnected(int profile, BluetoothProfile proxy);

@@ -1,4 +1,10 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.graphics.Canvas;
 
@@ -6,7 +12,7 @@ import android.graphics.Canvas;
  * Android-compatible DrawableContainer shim. Abstract drawable that manages a
  * collection of child drawables, selecting one at a time.
  */
-public abstract class DrawableContainer extends Drawable {
+public class DrawableContainer extends Drawable {
 
     private DrawableContainerState mDrawableContainerState;
     private int mCurrentIndex = -1;

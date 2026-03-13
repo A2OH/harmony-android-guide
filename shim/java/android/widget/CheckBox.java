@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 import com.ohos.shim.bridge.OHBridge;
@@ -46,7 +48,7 @@ public class CheckBox extends Button {
         }
     }
 
-    @Override
+    
     public void onNativeEvent(int eventId, int eventKind, String stringData) {
         if (eventKind == EVENT_CHECKBOX_ON_CHANGE) {
             // data[0].i32: 1=checked, 0=unchecked

@@ -1,4 +1,6 @@
 package android.text.style;
+import android.util.Size;
+import android.util.Size;
 
 /**
  * Android-compatible AbsoluteSizeSpan shim.

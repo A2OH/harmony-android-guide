@@ -1,11 +1,12 @@
 package android.database.sqlite;
+import java.io.Closeable;
 
 /**
  * Android-compatible SQLiteClosable shim.
  * Abstract base class for objects that can be closed (released) once all
  * references to them are dropped. Tracks a simple reference count.
  */
-public abstract class SQLiteClosable implements java.io.Closeable {
+public class SQLiteClosable implements java.io.Closeable {
 
     private int mReferenceCount = 1;
 
@@ -13,7 +14,7 @@ public abstract class SQLiteClosable implements java.io.Closeable {
      * Called when the last reference to this object is released and the object
      * should be freed / cleaned up.
      */
-    protected abstract void onAllReferencesReleased();
+    protected void onAllReferencesReleased() {}
 
     /**
      * Acquires a reference to this closable, preventing it from being released

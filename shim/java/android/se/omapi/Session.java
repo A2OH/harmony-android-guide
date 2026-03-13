@@ -1,4 +1,6 @@
 package android.se.omapi;
+import android.renderscript.Element;
+import android.renderscript.Element;
 
 /**
  * Android-compatible Session shim. Represents a connection session with a Secure Element.

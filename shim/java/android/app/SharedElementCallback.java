@@ -1,4 +1,6 @@
 package android.app;
+import android.view.View;
+import android.view.View;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +10,7 @@ import java.util.Map;
  * Provides callbacks for customising shared element transitions between activities.
  * Stub implementation — no actual transitions in the shim layer.
  */
-public abstract class SharedElementCallback {
+public class SharedElementCallback {
 
     /**
      * Called at the start of a shared element transition; allows modification of the

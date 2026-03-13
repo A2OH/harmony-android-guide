@@ -1,44 +1,27 @@
 package android.widget;
-
 import android.content.Context;
 
-import com.ohos.shim.bridge.OHBridge;
-
-/**
- * Shim: android.widget.Toast → @ohos.promptAction.showToast
- * Tier 1 — direct mapping.
- */
 public class Toast {
+    public static final int LENGTH_LONG = 0;
     public static final int LENGTH_SHORT = 0;
-    public static final int LENGTH_LONG = 1;
 
-    private final Context context;
-    private String text;
-    private int duration;
+    public Toast(Context p0) {}
 
-    private Toast(Context context) {
-        this.context = context;
-    }
-
-    public static Toast makeText(Context context, CharSequence text, int duration) {
-        Toast toast = new Toast(context);
-        toast.text = text.toString();
-        toast.duration = duration;
-        return toast;
-    }
-
-    public static Toast makeText(Context context, int resId, int duration) {
-        Toast toast = new Toast(context);
-        toast.text = context.getString(resId);
-        toast.duration = duration;
-        return toast;
-    }
-
-    public void show() {
-        OHBridge.showToast(text, duration == LENGTH_LONG ? 3000 : 1500);
-    }
-
-    public void setText(CharSequence s) { this.text = s.toString(); }
-    public void setText(int resId) { this.text = context.getString(resId); }
-    public void setDuration(int duration) { this.duration = duration; }
+    public void addCallback(Object p0) {}
+    public void cancel() {}
+    public int getDuration() { return 0; }
+    public int getGravity() { return 0; }
+    public float getHorizontalMargin() { return 0f; }
+    public float getVerticalMargin() { return 0f; }
+    public int getXOffset() { return 0; }
+    public int getYOffset() { return 0; }
+    public static Toast makeText(Context p0, CharSequence p1, int p2) { return null; }
+    public void removeCallback(Object p0) {}
+    public void setDuration(int p0) {}
+    public void setGravity(int p0, int p1, int p2) {}
+    public void setMargin(float p0, float p1) {}
+    public void setText(int p0) {}
+    public void show() {}
+    public void onToastHidden() {}
+    public void onToastShown() {}
 }

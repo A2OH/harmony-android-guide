@@ -3,6 +3,7 @@ package android.net.wifi.p2p;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Android-compatible WifiP2pGroup shim. Stub — empty group info.

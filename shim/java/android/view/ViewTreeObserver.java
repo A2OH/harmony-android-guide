@@ -61,18 +61,18 @@ public class ViewTreeObserver {
 
     // ── Listener interfaces ──────────────────────────────────────────────────
 
-    /** Callback for global layout changes. */
+    /** Object for global layout changes. */
     public interface OnGlobalLayoutListener {
         void onGlobalLayout();
     }
 
-    /** Callback invoked before the view tree is drawn. */
+    /** Object invoked before the view tree is drawn. */
     public interface OnPreDrawListener {
         /** Return true to proceed with the draw, false to cancel. */
         boolean onPreDraw();
     }
 
-    /** Callback for scroll-position changes. */
+    /** Object for scroll-position changes. */
     public interface OnScrollChangedListener {
         void onScrollChanged();
     }

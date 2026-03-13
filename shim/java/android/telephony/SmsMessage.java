@@ -1,138 +1,44 @@
 package android.telephony;
 
-/**
- * Android-compatible SmsMessage shim. Stub implementation for mock testing.
- * Represents a single SMS/MMS message received or read from the ICC.
- */
 public class SmsMessage {
+    public SmsMessage() {}
 
-    // -------------------------------------------------------------------------
-    // Status constants (ICC storage status)
-    // -------------------------------------------------------------------------
-
-    /** Status for a message that has been read from the ICC. */
-    public static final int STATUS_ON_ICC_READ = 1;
-    /** Status for a message that has not yet been read from the ICC. */
-    public static final int STATUS_ON_ICC_UNREAD = 3;
-    /** Status for a sent message stored on the ICC. */
-    public static final int STATUS_ON_ICC_SENT = 5;
-
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
-
-    private String mOriginatingAddress;
-    private String mMessageBody;
-    private long mTimestampMillis;
-    private int mStatus;
-    private byte[] mPdu;
-
-    private SmsMessage() {}
-
-    // -------------------------------------------------------------------------
-    // Factory
-    // -------------------------------------------------------------------------
-
-    /**
-     * Creates an SmsMessage from a raw PDU byte array.
-     * In the shim this produces a stub object with empty fields; a non-null
-     * pdu is required to return a non-null result.
-     *
-     * @param pdu    the raw PDU bytes
-     * @param format PDU format string (ignored in shim)
-     * @return an SmsMessage, or null if pdu is null
-     */
-    public static SmsMessage createFromPdu(byte[] pdu, String format) {
-        if (pdu == null) return null;
-        SmsMessage msg = new SmsMessage();
-        msg.mPdu = pdu;
-        msg.mTimestampMillis = System.currentTimeMillis();
-        msg.mStatus = STATUS_ON_ICC_UNREAD;
-        return msg;
-    }
-
-    /**
-     * Creates an SmsMessage from a raw PDU byte array using the default format.
-     *
-     * @param pdu the raw PDU bytes
-     * @return an SmsMessage, or null if pdu is null
-     */
-    public static SmsMessage createFromPdu(byte[] pdu) {
-        return createFromPdu(pdu, "3gpp");
-    }
-
-    // -------------------------------------------------------------------------
-    // Getters
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the originating address (sender phone number) of this message,
-     * or null if unknown.
-     */
-    public String getDisplayOriginatingAddress() {
-        return mOriginatingAddress;
-    }
-
-    /**
-     * Returns the originating address (same as display version in shim).
-     */
-    public String getOriginatingAddress() {
-        return mOriginatingAddress;
-    }
-
-    /** Returns the body text of this message, or null if not a text message. */
-    public String getMessageBody() {
-        return mMessageBody;
-    }
-
-    /**
-     * Returns the service centre timestamp of this message in milliseconds
-     * since the Unix epoch.
-     */
-    public long getTimestampMillis() {
-        return mTimestampMillis;
-    }
-
-    /** Returns the status of this message (one of the STATUS_ON_ICC_* constants). */
-    public int getStatus() {
-        return mStatus;
-    }
-
-    /** Returns the raw PDU bytes, or null if not constructed from PDU. */
-    public byte[] getPdu() {
-        return mPdu;
-    }
-
-    // -------------------------------------------------------------------------
-    // Shim-internal setters (for test construction)
-    // -------------------------------------------------------------------------
-
-    /** Sets the originating address (for shim simulation). */
-    public void setOriginatingAddress(String address) {
-        mOriginatingAddress = address;
-    }
-
-    /** Sets the message body text (for shim simulation). */
-    public void setMessageBody(String body) {
-        mMessageBody = body;
-    }
-
-    /** Sets the timestamp in milliseconds (for shim simulation). */
-    public void setTimestampMillis(long millis) {
-        mTimestampMillis = millis;
-    }
-
-    /** Sets the ICC status (for shim simulation). */
-    public void setStatus(int status) {
-        mStatus = status;
-    }
-
-    @Override
-    public String toString() {
-        return "SmsMessage{from=" + mOriginatingAddress
-                + ", body=" + (mMessageBody != null
-                        ? mMessageBody.substring(0, Math.min(mMessageBody.length(), 30))
-                        : "null")
-                + ", ts=" + mTimestampMillis + "}";
-    }
+    public static final int ENCODING_16BIT = 0;
+    public static final int ENCODING_7BIT = 0;
+    public static final int ENCODING_8BIT = 0;
+    public static final int ENCODING_UNKNOWN = 0;
+    public static final int FORMAT_3GPP = 0;
+    public static final int FORMAT_3GPP2 = 0;
+    public static final int MAX_USER_DATA_BYTES = 0;
+    public static final int MAX_USER_DATA_BYTES_WITH_HEADER = 0;
+    public static final int MAX_USER_DATA_SEPTETS = 0;
+    public static final int MAX_USER_DATA_SEPTETS_WITH_HEADER = 0;
+    public static int calculateLength(Object p0, Object p1) { return 0; }
+    public static Object createFromPdu(Object p0, Object p1) { return null; }
+    public Object getDisplayMessageBody() { return null; }
+    public Object getDisplayOriginatingAddress() { return null; }
+    public Object getEmailBody() { return null; }
+    public Object getEmailFrom() { return null; }
+    public int getIndexOnIcc() { return 0; }
+    public Object getMessageBody() { return null; }
+    public Object getMessageClass() { return null; }
+    public byte getPdu() { return 0; }
+    public int getProtocolIdentifier() { return 0; }
+    public Object getPseudoSubject() { return null; }
+    public Object getServiceCenterAddress() { return null; }
+    public int getStatus() { return 0; }
+    public int getStatusOnIcc() { return 0; }
+    public static Object getSubmitPdu(Object p0, Object p1, Object p2, Object p3) { return null; }
+    public static Object getSubmitPdu(Object p0, Object p1, Object p2, Object p3, Object p4) { return null; }
+    public static int getTPLayerLengthForPDU(Object p0) { return 0; }
+    public long getTimestampMillis() { return 0L; }
+    public byte getUserData() { return 0; }
+    public boolean isCphsMwiMessage() { return false; }
+    public boolean isEmail() { return false; }
+    public boolean isMWIClearMessage() { return false; }
+    public boolean isMWISetMessage() { return false; }
+    public boolean isMwiDontStore() { return false; }
+    public boolean isReplace() { return false; }
+    public boolean isReplyPathPresent() { return false; }
+    public boolean isStatusReportMessage() { return false; }
 }

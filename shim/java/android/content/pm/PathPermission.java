@@ -1,4 +1,6 @@
 package android.content.pm;
+import android.os.PatternMatcher;
+import android.os.PatternMatcher;
 
 // Shim: android.content.pm.PathPermission
 // android.os.PatternMatcher does not exist in this shim set; Object is used as the superclass

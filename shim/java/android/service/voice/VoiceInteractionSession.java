@@ -1,9 +1,11 @@
 package android.service.voice;
+import android.service.controls.Control;
+import android.service.controls.Control;
 
 /**
  * Android-compatible VoiceInteractionSession shim. Stub — no-op implementation.
  */
-public abstract class VoiceInteractionSession {
+public class VoiceInteractionSession {
 
     // --- Lifecycle callbacks ---
 
@@ -23,10 +25,10 @@ public abstract class VoiceInteractionSession {
 
     // --- Request inner class ---
 
-    public static class Request {
+    public static class Object {
         private String packageName;
 
-        public Request() {}
+        public Object() {}
 
         public String getCallingPackage() { return packageName; }
 

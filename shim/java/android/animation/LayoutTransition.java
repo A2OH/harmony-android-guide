@@ -1,4 +1,8 @@
 package android.animation;
+import android.transition.Transition;
+import android.view.ViewGroup;
+import android.transition.Transition;
+import android.view.ViewGroup;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,8 +33,8 @@ public class LayoutTransition {
     private final Map<Integer, Long>     mDurations  = new HashMap<>();
     private final Set<Integer> mEnabledTransitionTypes = new HashSet<>();
 
-    /** Listener interface for transition lifecycle events. */
-    public interface TransitionListener {
+    /** Object interface for transition lifecycle events. */
+    public interface Object {
         void startTransition(LayoutTransition transition, Object container, Object view, int transitionType);
         void endTransition(LayoutTransition transition, Object container, Object view, int transitionType);
     }

@@ -1,6 +1,7 @@
 package android.media;
 
 import com.ohos.shim.bridge.OHBridge;
+import java.net.URL;
 
 /**
  * Shim for android.media.MediaPlayer → @ohos.multimedia.media.AVPlayer
@@ -36,7 +37,7 @@ public class MediaPlayer {
         void onCompletion(MediaPlayer mp);
     }
 
-    public interface OnErrorListener {
+    public interface Object {
         /** Return true if the error has been handled. */
         boolean onError(MediaPlayer mp, int what, int extra);
     }
@@ -56,7 +57,7 @@ public class MediaPlayer {
 
     private OnPreparedListener       mOnPreparedListener;
     private OnCompletionListener     mOnCompletionListener;
-    private OnErrorListener          mOnErrorListener;
+    private Object          mOnErrorListener;
     private OnSeekCompleteListener   mOnSeekCompleteListener;
     private OnBufferingUpdateListener mOnBufferingUpdateListener;
 
@@ -211,7 +212,7 @@ public class MediaPlayer {
         mOnCompletionListener = listener;
     }
 
-    public void setOnErrorListener(OnErrorListener listener) {
+    public void setOnErrorListener(Object listener) {
         mOnErrorListener = listener;
     }
 

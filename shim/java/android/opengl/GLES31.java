@@ -1,4 +1,6 @@
 package android.opengl;
+import android.media.Image;
+import android.media.Image;
 
 /**
  * Android-compatible GLES31 shim for A2OH migration.

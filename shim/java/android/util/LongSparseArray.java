@@ -1,65 +1,21 @@
 package android.util;
 
-/**
- * Stub for android.util.LongSparseArray — sparse array keyed by long.
- */
-public class LongSparseArray<E> {
-    private static final Object DELETED = new Object();
-
+public class LongSparseArray {
     public LongSparseArray() {}
 
-    public LongSparseArray(int initialCapacity) {}
-
-    public E get(long key) {
-        return null;
-    }
-
-    public E get(long key, E valueIfKeyNotFound) {
-        return valueIfKeyNotFound;
-    }
-
-    public void put(long key, E value) {}
-
-    public void remove(long key) {}
-
-    public void delete(long key) {}
-
-    public void removeAt(int index) {}
-
-    public int size() {
-        return 0;
-    }
-
-    public long keyAt(int index) {
-        return 0;
-    }
-
-    @SuppressWarnings("unchecked")
-    public E valueAt(int index) {
-        return null;
-    }
-
-    public void setValueAt(int index, E value) {}
-
-    public int indexOfKey(long key) {
-        return -1;
-    }
-
-    public int indexOfValue(E value) {
-        return -1;
-    }
-
+    public void append(Object p0, Object p1) {}
     public void clear() {}
-
-    public void append(long key, E value) {}
-
-    @Override
-    public LongSparseArray<E> clone() {
-        return new LongSparseArray<>();
-    }
-
-    @Override
-    public String toString() {
-        return "LongSparseArray{}";
-    }
+    public Object clone() { return null; }
+    public void delete(Object p0) {}
+    public Object get(Object p0) { return null; }
+    public Object get(Object p0, Object p1) { return null; }
+    public int indexOfKey(Object p0) { return 0; }
+    public int indexOfValue(Object p0) { return 0; }
+    public long keyAt(Object p0) { return 0L; }
+    public void put(Object p0, Object p1) {}
+    public void remove(Object p0) {}
+    public void removeAt(Object p0) {}
+    public void setValueAt(Object p0, Object p1) {}
+    public int size() { return 0; }
+    public Object valueAt(Object p0) { return null; }
 }

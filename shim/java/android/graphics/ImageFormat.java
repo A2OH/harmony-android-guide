@@ -15,7 +15,7 @@ public class ImageFormat {
     public static final int NV16             = 0x10;
     /** YCbCr 4:2:2 packed (YUYV). */
     public static final int YUY2             = 0x14;
-    /** YV12: 4:2:0 planar, Y-V-U order. */
+    /** YV12: 4:2:0 planar, Y-Object-U order. */
     public static final int YV12             = 0x32315659;
     /** 16-bit RGB 5:6:5. */
     public static final int RGB_565          = 0x4;
@@ -33,7 +33,7 @@ public class ImageFormat {
     public static final int RAW12            = 0x26;
     /** Depth image: 16 bits per pixel. */
     public static final int DEPTH16          = 0x44363159;
-    /** Depth point cloud. */
+    /** Depth po(int cloud. */
     public static final int DEPTH_POINT_CLOUD = 0x101;
     /** Opaque/implementation-defined private format. */
     public static final int PRIVATE          = 0x22;

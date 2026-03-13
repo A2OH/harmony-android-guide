@@ -1,4 +1,5 @@
 package android.net.wifi.rtt;
+import java.util.concurrent.Executor;
 
 /**
  * Android-compatible WifiRttManager shim. Stub.

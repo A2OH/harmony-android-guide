@@ -1,6 +1,7 @@
 package android.media;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Android-compatible MediaMetadataRetriever shim. Stub — returns null/empty data.

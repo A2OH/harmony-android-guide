@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.ViewGroup;
+import android.view.ViewGroup;
 
 import android.view.ViewGroup;
 
@@ -66,7 +68,7 @@ public class TableLayout extends LinearLayout {
             super(width, height);
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
     }

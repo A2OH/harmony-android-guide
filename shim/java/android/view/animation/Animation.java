@@ -1,4 +1,8 @@
 package android.view.animation;
+import android.icu.number.Scale;
+import android.service.autofill.Transformation;
+import android.icu.number.Scale;
+import android.service.autofill.Transformation;
 
 /**
  * Shim: android.view.animation.Animation — pure Java stub.
@@ -6,7 +10,7 @@ package android.view.animation;
  * Represents a legacy view animation (tween). No actual rendering is performed
  * here; the shim is used for compilation compatibility only.
  */
-public abstract class Animation {
+public class Animation {
 
     // ── Repeat constants ──
     public static final int INFINITE = -1;

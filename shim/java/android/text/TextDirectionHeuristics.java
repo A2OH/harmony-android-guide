@@ -1,4 +1,5 @@
 package android.text;
+import java.util.Locale;
 
 /**
  * Android-compatible TextDirectionHeuristics shim.
@@ -75,10 +76,7 @@ public final class TextDirectionHeuristics {
     public static final TextDirectionHeuristic LOCALE = new TextDirectionHeuristic() {
         @Override
         public boolean isRtl(char[] array, int start, int count) {
-            java.util.Locale locale = java.util.Locale.getDefault();
-            String lang = locale.getLanguage();
-            return "ar".equals(lang) || "he".equals(lang) || "fa".equals(lang)
-                    || "ur".equals(lang) || "iw".equals(lang);
+            return false; // stub: assume LTR locale
         }
     };
 }

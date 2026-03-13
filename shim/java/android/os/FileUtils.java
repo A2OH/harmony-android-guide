@@ -50,13 +50,13 @@ public class FileUtils {
     }
 
     public static long copy(FileDescriptor in, FileDescriptor out) throws IOException {
-        return copy(new FileInputStream(in), new FileOutputStream(out));
+        return copy(new java.io.FileInputStream(in), new java.io.FileOutputStream(out));
     }
 
     public static long copy(FileDescriptor in, FileDescriptor out,
                             CancellationSignal signal,
                             java.util.concurrent.Executor executor,
                             ProgressListener listener) throws IOException {
-        return copy(new FileInputStream(in), new FileOutputStream(out), signal, executor, listener);
+        return copy(new java.io.FileInputStream(in), new java.io.FileOutputStream(out), signal, executor, listener);
     }
 }

@@ -1,4 +1,6 @@
 package android.hardware;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 /**
  * Android-compatible SensorAdditionalInfo shim.

@@ -1,4 +1,8 @@
 package android.support.v4.view;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +13,7 @@ import android.view.ViewGroup;
  * Abstract base class for adapters used with ViewPager. Provides the data
  * model for pages. Subclasses must implement getCount() and isViewFromObject().
  */
-public abstract class PagerAdapter {
+public class PagerAdapter {
 
     /** Returned by getItemPosition(Object) when the item position is unchanged. */
     public static final int POSITION_UNCHANGED = -1;
@@ -22,7 +26,7 @@ public abstract class PagerAdapter {
     /**
      * Return the number of views available.
      */
-    public abstract int getCount();
+    public int getCount() { return 0; }
 
     /**
      * Determines whether a page View is associated with a specific key object
@@ -33,7 +37,7 @@ public abstract class PagerAdapter {
      * @param object Object to check for association with view
      * @return true if view is associated with the key object object
      */
-    public abstract boolean isViewFromObject(View view, Object object);
+    public boolean isViewFromObject(View view, Object object) { return false; }
 
     // ── Lifecycle callbacks ──
 

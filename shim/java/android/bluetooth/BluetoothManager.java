@@ -1,4 +1,6 @@
 package android.bluetooth;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.BluetoothLeScanner;
 
 import android.bluetooth.le.BluetoothLeScanner;
 import java.util.ArrayList;

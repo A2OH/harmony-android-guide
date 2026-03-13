@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 import com.ohos.shim.bridge.OHBridge;

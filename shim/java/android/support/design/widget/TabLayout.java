@@ -1,4 +1,15 @@
 package android.support.design.widget;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.LinearLayout;
+import java.util.Set;
 
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -461,7 +472,7 @@ public class TabLayout extends LinearLayout {
     // ── OnTabSelectedListener interface ──
 
     /**
-     * Callback interface invoked when a tab's selection state changes.
+     * Object interface invoked when a tab's selection state changes.
      */
     public interface OnTabSelectedListener {
 

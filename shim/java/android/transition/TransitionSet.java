@@ -1,18 +1,15 @@
 package android.transition;
 
-import java.util.ArrayList;
-
 /**
  * Android-compatible TransitionSet shim.
- * Holds a collection of Transition objects. Stub — no animation on OpenHarmony.
+ * Holds a collection of Transition objects. Stub -- no animation on OpenHarmony.
  */
 public class TransitionSet extends Transition {
 
-    public static final int ORDERING_TOGETHER    = 0;
-    public static final int ORDERING_SEQUENTIAL  = 1;
+    public static final int ORDERING_TOGETHER   = 0;
+    public static final int ORDERING_SEQUENTIAL = 1;
 
     private int mOrdering = ORDERING_TOGETHER;
-    private final ArrayList<Transition> mTransitions = new ArrayList<>();
 
     public TransitionSet() {
     }
@@ -26,24 +23,21 @@ public class TransitionSet extends Transition {
         return mOrdering;
     }
 
-    public TransitionSet addTransition(Transition transition) {
-        if (transition != null) {
-            mTransitions.add(transition);
-        }
+    public TransitionSet addTransition(Object transition) {
+        // No-op stub; real Android adds to internal list
         return this;
     }
 
-    public TransitionSet removeTransition(Transition transition) {
-        mTransitions.remove(transition);
+    public TransitionSet removeTransition(Object transition) {
+        // No-op stub
         return this;
     }
 
     public int getTransitionCount() {
-        return mTransitions.size();
+        return 0;
     }
 
-    public Transition getTransitionAt(int index) {
-        if (index < 0 || index >= mTransitions.size()) return null;
-        return mTransitions.get(index);
+    public Object getTransitionAt(int index) {
+        return null;
     }
 }

@@ -1,36 +1,15 @@
 package android.service.autofill;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.util.Collections;
-import java.util.List;
+public final class FillRequest implements Parcelable {
+    public static final int FLAG_COMPATIBILITY_MODE_REQUEST = 0;
+    public static final int FLAG_MANUAL_REQUEST = 0;
 
-/**
- * Android-compatible FillRequest shim. Represents a request to fill an Activity's fields.
- */
-public final class FillRequest {
+    public FillRequest() {}
 
-    public static final int FLAG_MANUAL_REQUEST              = 1;
-    public static final int FLAG_COMPATIBILITY_MODE_REQUEST  = 2;
-
-    private final int  mId;
-    private final int  mFlags;
-    private final List<Object> mFillContexts;
-
-    /** Package-private constructor used by Builder-style creation in real Android. */
-    FillRequest(int id, int flags, List<Object> fillContexts) {
-        mId           = id;
-        mFlags        = flags;
-        mFillContexts = fillContexts != null ? fillContexts : Collections.emptyList();
-    }
-
-    public int getId() {
-        return mId;
-    }
-
-    public int getFlags() {
-        return mFlags;
-    }
-
-    public List<Object> getFillContexts() {
-        return mFillContexts;
-    }
+    public int describeContents() { return 0; }
+    public int getFlags() { return 0; }
+    public int getId() { return 0; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

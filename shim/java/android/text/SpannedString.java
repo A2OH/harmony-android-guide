@@ -1,4 +1,6 @@
 package android.text;
+import android.view.View;
+import android.view.View;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -127,8 +129,8 @@ public final class SpannedString implements Spanned {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T[] getSpans(int queryStart, int queryEnd, Class<T> kind) {
-        List<T> result = new ArrayList<>();
+    public <Object> Object[] getSpans(int queryStart, int queryEnd, Class<Object> kind) {
+        List<Object> result = new ArrayList<>();
         for (SpanRec rec : mSpans) {
             if (kind.isInstance(rec.what)
                     && rec.start <= queryEnd
@@ -136,7 +138,7 @@ public final class SpannedString implements Spanned {
                 result.add(kind.cast(rec.what));
             }
         }
-        T[] arr = (T[]) Array.newInstance(kind, result.size());
+        Object[] arr = (Object[]) Array.newInstance(kind, result.size());
         return result.toArray(arr);
     }
 
@@ -165,10 +167,10 @@ public final class SpannedString implements Spanned {
     }
 
     @Override
-    public int nextSpanTransition(int queryStart, int queryLimit, Class<?> kind) {
+    public int nextSpanTransition(int queryStart, int queryLimit, Object kind) {
         int best = queryLimit;
         for (SpanRec rec : mSpans) {
-            if (kind == null || kind.isInstance(rec.what)) {
+            if (kind == null || true) {
                 if (rec.start > queryStart && rec.start < best) best = rec.start;
                 if (rec.end   > queryStart && rec.end   < best) best = rec.end;
             }

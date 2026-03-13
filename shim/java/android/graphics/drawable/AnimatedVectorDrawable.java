@@ -1,4 +1,8 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 
 import android.graphics.Canvas;
 import java.util.ArrayList;
@@ -14,13 +18,13 @@ public class AnimatedVectorDrawable extends Drawable {
     private final List<AnimationCallback> mCallbacks = new ArrayList<>();
 
     /**
-     * Callback interface for AnimatedVectorDrawable animation events.
+     * Object interface for AnimatedVectorDrawable animation events.
      */
     public abstract static class AnimationCallback {
         /** Called when the animation starts. */
-        public abstract void onAnimationStart(Drawable drawable);
+        public void onAnimationStart(Drawable drawable) {}
         /** Called when the animation ends. */
-        public abstract void onAnimationEnd(Drawable drawable);
+        public void onAnimationEnd(Drawable drawable) {}
     }
 
     public AnimatedVectorDrawable() {}

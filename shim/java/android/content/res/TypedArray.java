@@ -1,4 +1,6 @@
 package android.content.res;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Drawable;
 
 public class TypedArray {
     public String getString(int index) {

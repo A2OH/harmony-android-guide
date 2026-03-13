@@ -97,7 +97,7 @@ public class ToggleButton extends Button {
         this.onCheckedChangeListener = listener;
     }
 
-    @Override
+    
     public void onNativeEvent(int eventId, int eventKind, String stringData) {
         if (eventKind == EVENT_TOGGLE_ON_CHANGE) {
             checked = !checked;

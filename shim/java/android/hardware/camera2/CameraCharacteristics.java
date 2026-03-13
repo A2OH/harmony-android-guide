@@ -7,7 +7,7 @@ package android.hardware.camera2;
 public class CameraCharacteristics {
 
     /** Typed key used to query a camera characteristic. */
-    public static final class Key<T> {
+    public static final class Key<Object> {
         private final String name;
 
         public Key(String name) {
@@ -41,7 +41,7 @@ public class CameraCharacteristics {
      * populate characteristics data.
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(Key<T> key) {
+    public <Object> Object get(Key<Object> key) {
         // Stub: real behaviour would delegate to native camera metadata.
         return null;
     }

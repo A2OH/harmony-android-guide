@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Android-compatible ScanCallback shim. Stub.
  */
-public abstract class ScanCallback {
+public class ScanCallback {
 
     public static final int SCAN_FAILED_ALREADY_STARTED                  = 1;
     public static final int SCAN_FAILED_APPLICATION_REGISTRATION_FAILED  = 2;

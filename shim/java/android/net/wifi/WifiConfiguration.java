@@ -1,4 +1,6 @@
 package android.net.wifi;
+import android.net.Network;
+import android.net.Network;
 
 import java.util.BitSet;
 

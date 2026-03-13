@@ -19,8 +19,8 @@ public class BitmapShader extends Shader {
      * Create a BitmapShader.
      *
      * @param bitmap    the bitmap to tile
-     * @param tileModeX tile mode along the X axis
-     * @param tileModeY tile mode along the Y axis
+     * @param tileModeX tile mode a(long the X axis
+     * @param tileModeY tile mode a(long the Y axis
      */
     public BitmapShader(Bitmap bitmap, TileMode tileModeX, TileMode tileModeY) {
         if (bitmap == null) throw new NullPointerException("bitmap must not be null");

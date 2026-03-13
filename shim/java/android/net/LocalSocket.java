@@ -2,6 +2,11 @@ package android.net;
 
 import java.io.*;
 import java.net.Socket;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 
 /**
  * Android-compatible LocalSocket shim. Wraps a TCP loopback socket.

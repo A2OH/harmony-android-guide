@@ -1,4 +1,6 @@
 package android.icu.text;
+import android.icu.util.ULocale;
+import android.icu.util.ULocale;
 
 import android.icu.util.ULocale;
 import java.text.CollationKey;
@@ -6,7 +8,8 @@ import java.text.CollationKey;
 /**
  * Android ICU Collator shim. Abstract wrapper around java.text.Collator.
  */
-public abstract class Collator {
+public class Collator {
+    public Collator() {}
 
     public static final int PRIMARY   = java.text.Collator.PRIMARY;
     public static final int SECONDARY = java.text.Collator.SECONDARY;

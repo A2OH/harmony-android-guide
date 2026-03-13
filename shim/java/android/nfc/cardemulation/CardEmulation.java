@@ -1,78 +1,30 @@
 package android.nfc.cardemulation;
-
+import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.nfc.NfcAdapter;
 import java.util.List;
 
-/**
- * Android-compatible CardEmulation stub.
- * Provides an interface to the card emulation features of NFC.
- */
 public final class CardEmulation {
-    public static final String CATEGORY_PAYMENT = "payment";
-    public static final String CATEGORY_OTHER   = "other";
-    public static final String ACTION_CHANGE_DEFAULT =
-            "android.nfc.cardemulation.action.ACTION_CHANGE_DEFAULT";
+    public static final int ACTION_CHANGE_DEFAULT = 0;
+    public static final int CATEGORY_OTHER = 0;
+    public static final int CATEGORY_PAYMENT = 0;
+    public static final int EXTRA_CATEGORY = 0;
+    public static final int EXTRA_SERVICE_COMPONENT = 0;
+    public static final int SELECTION_MODE_ALWAYS_ASK = 0;
+    public static final int SELECTION_MODE_ASK_IF_CONFLICT = 0;
+    public static final int SELECTION_MODE_PREFER_DEFAULT = 0;
 
-    private static final CardEmulation sInstance = new CardEmulation();
+    public CardEmulation() {}
 
-    private CardEmulation() {}
-
-    /**
-     * Returns the CardEmulation instance for the given NfcAdapter.
-     * Context and adapter are ignored in the shim.
-     */
-    public static CardEmulation getInstance(NfcAdapter adapter) {
-        return sInstance;
-    }
-
-    /**
-     * Returns true if the given service is the default handler for the given category.
-     */
-    public boolean isDefaultServiceForCategory(ComponentName service, String category) {
-        return false;
-    }
-
-    /**
-     * Returns true if the given service is the default handler for the given AID.
-     */
-    public boolean isDefaultServiceForAid(ComponentName service, String aid) {
-        return false;
-    }
-
-    /**
-     * Returns true if the given category allows the user to configure a foreground preferred service.
-     */
-    public boolean categoryAllowsForegroundPreference(String category) {
-        return false;
-    }
-
-    /**
-     * Sets the default service for the given category.
-     */
-    public boolean setDefaultServiceForCategory(ComponentName service, String category) {
-        return false;
-    }
-
-    /**
-     * Sets the default service for the next tap.
-     */
-    public boolean setDefaultForNextTap(ComponentName service) {
-        return false;
-    }
-
-    /**
-     * Registers a list of AIDs for the given service.
-     */
-    public boolean registerAidsForService(ComponentName service, String category, List<String> aids) {
-        return false;
-    }
-
-    /**
-     * Removes AIDs registered for the given service and category.
-     */
-    public boolean removeAidsForService(ComponentName service, String category) {
-        return false;
-    }
+    public boolean categoryAllowsForegroundPreference(String p0) { return false; }
+    public List<?> getAidsForService(ComponentName p0, String p1) { return null; }
+    public static CardEmulation getInstance(NfcAdapter p0) { return null; }
+    public int getSelectionModeForCategory(String p0) { return 0; }
+    public boolean isDefaultServiceForAid(ComponentName p0, String p1) { return false; }
+    public boolean isDefaultServiceForCategory(ComponentName p0, String p1) { return false; }
+    public boolean registerAidsForService(ComponentName p0, String p1, java.util.List<Object> p2) { return false; }
+    public boolean removeAidsForService(ComponentName p0, String p1) { return false; }
+    public boolean setPreferredService(Activity p0, ComponentName p1) { return false; }
+    public boolean supportsAidPrefixRegistration() { return false; }
+    public boolean unsetPreferredService(Activity p0) { return false; }
 }

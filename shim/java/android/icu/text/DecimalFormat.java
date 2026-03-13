@@ -1,25 +1,24 @@
 package android.icu.text;
+import java.util.regex.Pattern;
 
 /**
  * Android ICU DecimalFormat shim. Extends NumberFormat and wraps java.text.DecimalFormat.
  */
 public class DecimalFormat extends NumberFormat {
+    public DecimalFormat(android.icu.text.DecimalFormat fmt) {}
 
     private java.text.DecimalFormat decimalDelegate;
 
     public DecimalFormat() {
-        super(new java.text.DecimalFormat());
-        this.decimalDelegate = (java.text.DecimalFormat) delegate;
+        this.decimalDelegate = new java.text.DecimalFormat();
     }
 
     public DecimalFormat(String pattern) {
-        super(new java.text.DecimalFormat(pattern));
-        this.decimalDelegate = (java.text.DecimalFormat) delegate;
+        this.decimalDelegate = new java.text.DecimalFormat(pattern);
     }
 
     public DecimalFormat(String pattern, DecimalFormatSymbols symbols) {
-        super(new java.text.DecimalFormat(pattern, symbols.toJavaDecimalFormatSymbols()));
-        this.decimalDelegate = (java.text.DecimalFormat) delegate;
+        this.decimalDelegate = new java.text.DecimalFormat(pattern, symbols.toJavaDecimalFormatSymbols());
     }
 
     // ---- Pattern methods ----

@@ -11,15 +11,13 @@ import java.io.InputStream;
  * OH image bridge.
  */
 public final class BitmapRegionDecoder {
+    public BitmapRegionDecoder(Object... args) {}
+    public BitmapRegionDecoder(int width, int height) {}
 
-    private final int mWidth;
-    private final int mHeight;
+    private int mWidth;
+    private int mHeight;
     private boolean mRecycled;
 
-    private BitmapRegionDecoder(int width, int height) {
-        mWidth  = width;
-        mHeight = height;
-    }
 
     // -------------------------------------------------------------------------
     // Factory methods
@@ -37,7 +35,7 @@ public final class BitmapRegionDecoder {
     public static BitmapRegionDecoder newInstance(
             byte[] data, int offset, int length, boolean isShareable) {
         // Stub: return a decoder with unknown dimensions (0×0).
-        return new BitmapRegionDecoder(0, 0);
+        return new BitmapRegionDecoder(0);
     }
 
     /**
@@ -49,7 +47,7 @@ public final class BitmapRegionDecoder {
      */
     public static BitmapRegionDecoder newInstance(
             InputStream is, boolean isShareable) {
-        return new BitmapRegionDecoder(0, 0);
+        return new BitmapRegionDecoder(0);
     }
 
     // -------------------------------------------------------------------------
@@ -94,7 +92,7 @@ public final class BitmapRegionDecoder {
         mRecycled = true;
     }
 
-    /** Returns true if {@link #recycle()} has been called. */
+    /** Returns true { // stub@link #recycle()} has been called. */
     public boolean isRecycled() {
         return mRecycled;
     }

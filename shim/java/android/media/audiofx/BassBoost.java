@@ -1,4 +1,6 @@
 package android.media.audiofx;
+import android.provider.Settings;
+import android.provider.Settings;
 
 import java.util.UUID;
 

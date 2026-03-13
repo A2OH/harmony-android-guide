@@ -2,7 +2,7 @@ package android.graphics;
 
 /**
  * Android-compatible PathDashPathEffect shim. Creates a dash effect by stamping
- * the specified shape at regular intervals along the path.
+ * the specified shape at regular intervals a(long the path.
  */
 public class PathDashPathEffect extends PathEffect {
 

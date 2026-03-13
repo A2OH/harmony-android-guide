@@ -1,4 +1,8 @@
 package android.provider;
+import android.net.Uri;
+import android.renderscript.Type;
+import android.net.Uri;
+import android.renderscript.Type;
 
 import android.net.Uri;
 

@@ -23,7 +23,7 @@ public class BackupManager {
     }
 
     /**
-     * Request an immediate backup. Stub — always calls onRestoreFinished(0).
+     * Object an immediate backup. Stub — always calls onRestoreFinished(0).
      */
     public int requestRestore(RestoreObserver observer) {
         if (observer != null) {
@@ -53,6 +53,6 @@ public class BackupManager {
          * Called when the restore is finished.
          * @param error 0 on success, non-zero on failure.
          */
-        public abstract void restoreFinished(int error);
+        public void restoreFinished(int error) {}
     }
 }

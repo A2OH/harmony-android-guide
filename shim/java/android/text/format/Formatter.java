@@ -1,58 +1,24 @@
 package android.text.format;
 
 /**
- * Android-compatible Formatter shim. Provides human-readable byte-size strings.
+ * Shim for android.text.format.Formatter.
+ * Provides file size formatting utilities.
  */
-public final class Formatter {
+public class Formatter {
 
-    private Formatter() {}
-
-    private static final long KB = 1_024L;
-    private static final long MB = 1_024L * KB;
-    private static final long GB = 1_024L * MB;
-    private static final long TB = 1_024L * GB;
-    private static final long PB = 1_024L * TB;
-
-    /**
-     * Formats the given number of bytes into a short human-readable string,
-     * e.g. "1.2 MB". Uses binary (1024-based) prefixes, matching Android behaviour.
-     */
-    public static String formatFileSize(android.content.Context context, long sizeBytes) {
-        return formatSize(sizeBytes, false);
-    }
-
-    /**
-     * Like {@link #formatFileSize} but limits the precision to one significant
-     * digit, e.g. "1 MB" instead of "1.2 MB".
-     */
-    public static String formatShortFileSize(android.content.Context context, long sizeBytes) {
-        return formatSize(sizeBytes, true);
-    }
-
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
-
-    private static String formatSize(long bytes, boolean shortForm) {
-        if (bytes < 0) bytes = 0;
-        if (bytes < KB) return bytes + " B";
-
-        double value;
-        String suffix;
-        if (bytes < MB)      { value = (double) bytes / KB; suffix = "KB"; }
-        else if (bytes < GB) { value = (double) bytes / MB; suffix = "MB"; }
-        else if (bytes < TB) { value = (double) bytes / GB; suffix = "GB"; }
-        else if (bytes < PB) { value = (double) bytes / TB; suffix = "TB"; }
-        else                 { value = (double) bytes / PB; suffix = "PB"; }
-
-        String formatted;
-        if (shortForm || value >= 100) {
-            formatted = String.valueOf(Math.round(value));
-        } else if (value >= 10) {
-            formatted = String.format("%.1f", value);
+    public static String formatFileSize(Object context, long sizeBytes) {
+        if (sizeBytes < 1024L) {
+            return sizeBytes + " B";
+        } else if (sizeBytes < 1024L * 1024L) {
+            return String.format("%.1f KB", sizeBytes / 1024.0);
+        } else if (sizeBytes < 1024L * 1024L * 1024L) {
+            return String.format("%.1f MB", sizeBytes / (1024.0 * 1024.0));
         } else {
-            formatted = String.format("%.2f", value);
+            return String.format("%.1f GB", sizeBytes / (1024.0 * 1024.0 * 1024.0));
         }
-        return formatted + " " + suffix;
+    }
+
+    public static String formatShortFileSize(Object context, long sizeBytes) {
+        return formatFileSize(context, sizeBytes);
     }
 }

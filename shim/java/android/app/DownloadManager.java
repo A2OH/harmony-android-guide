@@ -1,4 +1,6 @@
 package android.app;
+import android.net.Network;
+import android.net.Network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,13 +60,13 @@ public class DownloadManager {
     public static final String EXTRA_DOWNLOAD_ID        = "extra_download_id";
 
     private long mNextId = 1;
-    private final Map<Long, Request> mQueue = new HashMap<>();
+    private final Map<Long, Object> mQueue = new HashMap<>();
 
     // -------------------------------------------------------------------------
     // Request inner class
     // -------------------------------------------------------------------------
 
-    public static class Request {
+    public static class Object {
         private String mUri;
         private String mDestinationUri;
         private String mTitle = "";
@@ -75,55 +77,55 @@ public class DownloadManager {
         private boolean mNotificationVisibility = true;
         private boolean mVisibleInDownloadsUi = true;
 
-        public Request(String uri) {
+        public Object(String uri) {
             mUri = uri;
         }
 
-        public Request setTitle(CharSequence title) {
+        public Object setTitle(CharSequence title) {
             mTitle = title != null ? title.toString() : "";
             return this;
         }
 
-        public Request setDescription(CharSequence description) {
+        public Object setDescription(CharSequence description) {
             mDescription = description != null ? description.toString() : "";
             return this;
         }
 
-        public Request setMimeType(String type) {
+        public Object setMimeType(String type) {
             mMimeType = type;
             return this;
         }
 
-        public Request setDestinationUri(String uri) {
+        public Object setDestinationUri(String uri) {
             mDestinationUri = uri;
             return this;
         }
 
-        public Request setAllowedNetworkTypes(int flags) {
+        public Object setAllowedNetworkTypes(int flags) {
             mAllowedNetworkTypes = flags;
             return this;
         }
 
-        public Request setAllowedOverRoaming(boolean allowed) {
+        public Object setAllowedOverRoaming(boolean allowed) {
             mAllowRoaming = allowed;
             return this;
         }
 
-        public Request setAllowedOverMetered(boolean allowed) {
+        public Object setAllowedOverMetered(boolean allowed) {
             return this; // absorbed into network type logic
         }
 
-        public Request setNotificationVisibility(int visibility) {
+        public Object setNotificationVisibility(int visibility) {
             mNotificationVisibility = (visibility != 0);
             return this;
         }
 
-        public Request setVisibleInDownloadsUi(boolean isVisible) {
+        public Object setVisibleInDownloadsUi(boolean isVisible) {
             mVisibleInDownloadsUi = isVisible;
             return this;
         }
 
-        public Request addRequestHeader(String header, String value) {
+        public Object addRequestHeader(String header, String value) {
             return this; // stub — HTTP headers not forwarded in shim
         }
 
@@ -213,7 +215,7 @@ public class DownloadManager {
     // DownloadManager API
     // -------------------------------------------------------------------------
 
-    public long enqueue(Request request) {
+    public long enqueue(Object request) {
         long id = mNextId++;
         mQueue.put(id, request);
         System.out.println("[DownloadManager] enqueue id=" + id + " uri=" + request.getUri());

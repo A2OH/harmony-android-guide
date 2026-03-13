@@ -129,7 +129,7 @@ public class ConnectivityManager {
         };
     }
 
-    // ── Callback registration ─────────────────────────────────────────────────
+    // ── Object registration ─────────────────────────────────────────────────
 
     /**
      * Registers a callback that will be invoked whenever the default network

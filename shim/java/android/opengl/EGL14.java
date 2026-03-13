@@ -1,144 +1,153 @@
 package android.opengl;
 
-/**
- * Android-compatible EGL14 shim for A2OH migration.
- * All methods return stub/no-op values.
- */
 public class EGL14 {
+    public static final int EGL_ALPHA_MASK_SIZE = 0;
+    public static final int EGL_ALPHA_SIZE = 0;
+    public static final int EGL_BACK_BUFFER = 0;
+    public static final int EGL_BAD_ACCESS = 0;
+    public static final int EGL_BAD_ALLOC = 0;
+    public static final int EGL_BAD_ATTRIBUTE = 0;
+    public static final int EGL_BAD_CONFIG = 0;
+    public static final int EGL_BAD_CONTEXT = 0;
+    public static final int EGL_BAD_CURRENT_SURFACE = 0;
+    public static final int EGL_BAD_DISPLAY = 0;
+    public static final int EGL_BAD_MATCH = 0;
+    public static final int EGL_BAD_NATIVE_PIXMAP = 0;
+    public static final int EGL_BAD_NATIVE_WINDOW = 0;
+    public static final int EGL_BAD_PARAMETER = 0;
+    public static final int EGL_BAD_SURFACE = 0;
+    public static final int EGL_BIND_TO_TEXTURE_RGB = 0;
+    public static final int EGL_BIND_TO_TEXTURE_RGBA = 0;
+    public static final int EGL_BLUE_SIZE = 0;
+    public static final int EGL_BUFFER_DESTROYED = 0;
+    public static final int EGL_BUFFER_PRESERVED = 0;
+    public static final int EGL_BUFFER_SIZE = 0;
+    public static final int EGL_CLIENT_APIS = 0;
+    public static final int EGL_COLOR_BUFFER_TYPE = 0;
+    public static final int EGL_CONFIG_CAVEAT = 0;
+    public static final int EGL_CONFIG_ID = 0;
+    public static final int EGL_CONFORMANT = 0;
+    public static final int EGL_CONTEXT_CLIENT_TYPE = 0;
+    public static final int EGL_CONTEXT_CLIENT_VERSION = 0;
+    public static final int EGL_CONTEXT_LOST = 0;
+    public static final int EGL_CORE_NATIVE_ENGINE = 0;
+    public static final int EGL_DEFAULT_DISPLAY = 0;
+    public static final int EGL_DEPTH_SIZE = 0;
+    public static final int EGL_DISPLAY_SCALING = 0;
+    public static final int EGL_DRAW = 0;
+    public static final int EGL_EXTENSIONS = 0;
+    public static final int EGL_FALSE = 0;
+    public static final int EGL_GREEN_SIZE = 0;
+    public static final int EGL_HEIGHT = 0;
+    public static final int EGL_HORIZONTAL_RESOLUTION = 0;
+    public static final int EGL_LARGEST_PBUFFER = 0;
+    public static final int EGL_LEVEL = 0;
+    public static final int EGL_LUMINANCE_BUFFER = 0;
+    public static final int EGL_LUMINANCE_SIZE = 0;
+    public static final int EGL_MATCH_NATIVE_PIXMAP = 0;
+    public static final int EGL_MAX_PBUFFER_HEIGHT = 0;
+    public static final int EGL_MAX_PBUFFER_PIXELS = 0;
+    public static final int EGL_MAX_PBUFFER_WIDTH = 0;
+    public static final int EGL_MAX_SWAP_INTERVAL = 0;
+    public static final int EGL_MIN_SWAP_INTERVAL = 0;
+    public static final int EGL_MIPMAP_LEVEL = 0;
+    public static final int EGL_MIPMAP_TEXTURE = 0;
+    public static final int EGL_MULTISAMPLE_RESOLVE = 0;
+    public static final int EGL_MULTISAMPLE_RESOLVE_BOX = 0;
+    public static final int EGL_MULTISAMPLE_RESOLVE_BOX_BIT = 0;
+    public static final int EGL_MULTISAMPLE_RESOLVE_DEFAULT = 0;
+    public static final int EGL_NATIVE_RENDERABLE = 0;
+    public static final int EGL_NATIVE_VISUAL_ID = 0;
+    public static final int EGL_NATIVE_VISUAL_TYPE = 0;
+    public static final int EGL_NONE = 0;
+    public static final int EGL_NON_CONFORMANT_CONFIG = 0;
+    public static final int EGL_NOT_INITIALIZED = 0;
+    public static final int EGL_NO_CONTEXT = 0;
+    public static final int EGL_NO_DISPLAY = 0;
+    public static final int EGL_NO_SURFACE = 0;
+    public static final int EGL_NO_TEXTURE = 0;
+    public static final int EGL_OPENGL_API = 0;
+    public static final int EGL_OPENGL_BIT = 0;
+    public static final int EGL_OPENGL_ES2_BIT = 0;
+    public static final int EGL_OPENGL_ES_API = 0;
+    public static final int EGL_OPENGL_ES_BIT = 0;
+    public static final int EGL_OPENVG_API = 0;
+    public static final int EGL_OPENVG_BIT = 0;
+    public static final int EGL_OPENVG_IMAGE = 0;
+    public static final int EGL_PBUFFER_BIT = 0;
+    public static final int EGL_PIXEL_ASPECT_RATIO = 0;
+    public static final int EGL_PIXMAP_BIT = 0;
+    public static final int EGL_READ = 0;
+    public static final int EGL_RED_SIZE = 0;
+    public static final int EGL_RENDERABLE_TYPE = 0;
+    public static final int EGL_RENDER_BUFFER = 0;
+    public static final int EGL_RGB_BUFFER = 0;
+    public static final int EGL_SAMPLES = 0;
+    public static final int EGL_SAMPLE_BUFFERS = 0;
+    public static final int EGL_SINGLE_BUFFER = 0;
+    public static final int EGL_SLOW_CONFIG = 0;
+    public static final int EGL_STENCIL_SIZE = 0;
+    public static final int EGL_SUCCESS = 0;
+    public static final int EGL_SURFACE_TYPE = 0;
+    public static final int EGL_SWAP_BEHAVIOR = 0;
+    public static final int EGL_SWAP_BEHAVIOR_PRESERVED_BIT = 0;
+    public static final int EGL_TEXTURE_2D = 0;
+    public static final int EGL_TEXTURE_FORMAT = 0;
+    public static final int EGL_TEXTURE_RGB = 0;
+    public static final int EGL_TEXTURE_RGBA = 0;
+    public static final int EGL_TEXTURE_TARGET = 0;
+    public static final int EGL_TRANSPARENT_BLUE_VALUE = 0;
+    public static final int EGL_TRANSPARENT_GREEN_VALUE = 0;
+    public static final int EGL_TRANSPARENT_RED_VALUE = 0;
+    public static final int EGL_TRANSPARENT_RGB = 0;
+    public static final int EGL_TRANSPARENT_TYPE = 0;
+    public static final int EGL_TRUE = 0;
+    public static final int EGL_VENDOR = 0;
+    public static final int EGL_VERSION = 0;
+    public static final int EGL_VERTICAL_RESOLUTION = 0;
+    public static final int EGL_VG_ALPHA_FORMAT = 0;
+    public static final int EGL_VG_ALPHA_FORMAT_NONPRE = 0;
+    public static final int EGL_VG_ALPHA_FORMAT_PRE = 0;
+    public static final int EGL_VG_ALPHA_FORMAT_PRE_BIT = 0;
+    public static final int EGL_VG_COLORSPACE = 0;
+    public static final int EGL_VG_COLORSPACE_LINEAR = 0;
+    public static final int EGL_VG_COLORSPACE_LINEAR_BIT = 0;
+    public static final int EGL_VG_COLORSPACE_sRGB = 0;
+    public static final int EGL_WIDTH = 0;
+    public static final int EGL_WINDOW_BIT = 0;
 
-    /** Sentinel object representing EGL_DEFAULT_DISPLAY (native value 0). */
-    public static final EGLDisplay EGL_DEFAULT_DISPLAY  = new EGLDisplay(0);
+    public EGL14() {}
 
-    /** Sentinel representing EGL_NO_CONTEXT. */
-    public static final EGLContext EGL_NO_CONTEXT  = new EGLContext(0);
-
-    /** Sentinel representing EGL_NO_DISPLAY. */
-    public static final EGLDisplay EGL_NO_DISPLAY  = new EGLDisplay(-1);
-
-    /** Sentinel representing EGL_NO_SURFACE. */
-    public static final EGLSurface EGL_NO_SURFACE  = new EGLSurface(0);
-
-    // EGL error codes
-    public static final int EGL_SUCCESS             = 0x3000;
-    public static final int EGL_NOT_INITIALIZED     = 0x3001;
-    public static final int EGL_BAD_ACCESS          = 0x3002;
-    public static final int EGL_BAD_ALLOC           = 0x3003;
-    public static final int EGL_BAD_ATTRIBUTE       = 0x3004;
-    public static final int EGL_BAD_CONFIG          = 0x3005;
-    public static final int EGL_BAD_CONTEXT         = 0x3006;
-    public static final int EGL_BAD_CURRENT_SURFACE = 0x3007;
-    public static final int EGL_BAD_DISPLAY         = 0x3008;
-    public static final int EGL_BAD_MATCH           = 0x3009;
-    public static final int EGL_BAD_NATIVE_PIXMAP   = 0x300A;
-    public static final int EGL_BAD_NATIVE_WINDOW   = 0x300B;
-    public static final int EGL_BAD_PARAMETER       = 0x300C;
-    public static final int EGL_BAD_SURFACE         = 0x300D;
-    public static final int EGL_CONTEXT_LOST        = 0x300E;
-
-    // Config attributes
-    public static final int EGL_NONE               = 0x3038;
-    public static final int EGL_RED_SIZE           = 0x3024;
-    public static final int EGL_GREEN_SIZE         = 0x3023;
-    public static final int EGL_BLUE_SIZE          = 0x3022;
-    public static final int EGL_ALPHA_SIZE         = 0x3021;
-    public static final int EGL_DEPTH_SIZE         = 0x3025;
-    public static final int EGL_STENCIL_SIZE       = 0x3026;
-    public static final int EGL_RENDERABLE_TYPE    = 0x3040;
-    public static final int EGL_OPENGL_ES2_BIT     = 0x0004;
-    public static final int EGL_OPENGL_ES3_BIT     = 0x0040;
-
-    // Context attributes
-    public static final int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
-
-    // Surface type
-    public static final int EGL_SURFACE_TYPE  = 0x3033;
-    public static final int EGL_WINDOW_BIT    = 0x0004;
-    public static final int EGL_PBUFFER_BIT   = 0x0001;
-
-    // ---- API ----
-
-    public static EGLDisplay eglGetDisplay(int display_id) {
-        return EGL_DEFAULT_DISPLAY;
-    }
-
-    public static boolean eglInitialize(EGLDisplay dpy, int[] major, int majorOffset,
-            int[] minor, int minorOffset) {
-        if (major != null && major.length > majorOffset) major[majorOffset] = 1;
-        if (minor != null && minor.length > minorOffset) minor[minorOffset] = 4;
-        return true;
-    }
-
-    public static boolean eglChooseConfig(EGLDisplay dpy, int[] attrib_list,
-            int attrib_listOffset, EGLConfig[] configs, int configsOffset,
-            int config_size, int[] num_config, int num_configOffset) {
-        if (num_config != null && num_config.length > num_configOffset)
-            num_config[num_configOffset] = 0;
-        return true;
-    }
-
-    public static EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config,
-            EGLContext share_context, int[] attrib_list, int offset) {
-        return EGL_NO_CONTEXT;
-    }
-
-    public static EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
-            Object win, int[] attrib_list, int offset) {
-        return EGL_NO_SURFACE;
-    }
-
-    public static EGLSurface eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config,
-            int[] attrib_list, int offset) {
-        return EGL_NO_SURFACE;
-    }
-
-    public static boolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw,
-            EGLSurface read, EGLContext ctx) {
-        return true;
-    }
-
-    public static boolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
-        return true;
-    }
-
-    public static boolean eglDestroyContext(EGLDisplay dpy, EGLContext ctx) {
-        return true;
-    }
-
-    public static boolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface) {
-        return true;
-    }
-
-    public static boolean eglTerminate(EGLDisplay dpy) {
-        return true;
-    }
-
-    public static int eglGetError() {
-        return EGL_SUCCESS;
-    }
-
-    public static String eglQueryString(EGLDisplay dpy, int name) {
-        return "";
-    }
-
-    // ---- Lightweight handle wrappers ----
-
-    public static class EGLDisplay {
-        public final long nativeHandle;
-        public EGLDisplay(long handle) { this.nativeHandle = handle; }
-    }
-
-    public static class EGLContext {
-        public final long nativeHandle;
-        public EGLContext(long handle) { this.nativeHandle = handle; }
-    }
-
-    public static class EGLSurface {
-        public final long nativeHandle;
-        public EGLSurface(long handle) { this.nativeHandle = handle; }
-    }
-
-    public static class EGLConfig {
-        public final long nativeHandle;
-        public EGLConfig(long handle) { this.nativeHandle = handle; }
-    }
+    public static boolean eglBindAPI(int p0) { return false; }
+    public static boolean eglBindTexImage(EGLDisplay p0, EGLSurface p1, int p2) { return false; }
+    public static boolean eglChooseConfig(EGLDisplay p0, int[] p1, int p2, EGLConfig[] p3, int p4, int p5, int[] p6, int p7) { return false; }
+    public static boolean eglCopyBuffers(EGLDisplay p0, EGLSurface p1, int p2) { return false; }
+    public static EGLContext eglCreateContext(EGLDisplay p0, EGLConfig p1, EGLContext p2, int[] p3, int p4) { return null; }
+    public static EGLSurface eglCreatePbufferFromClientBuffer(EGLDisplay p0, int p1, int p2, EGLConfig p3, int[] p4, int p5) { return null; }
+    public static EGLSurface eglCreatePbufferSurface(EGLDisplay p0, EGLConfig p1, int[] p2, int p3) { return null; }
+    public static EGLSurface eglCreateWindowSurface(EGLDisplay p0, EGLConfig p1, Object p2, int[] p3, int p4) { return null; }
+    public static boolean eglDestroyContext(EGLDisplay p0, EGLContext p1) { return false; }
+    public static boolean eglDestroySurface(EGLDisplay p0, EGLSurface p1) { return false; }
+    public static boolean eglGetConfigAttrib(EGLDisplay p0, EGLConfig p1, int p2, int[] p3, int p4) { return false; }
+    public static boolean eglGetConfigs(EGLDisplay p0, EGLConfig[] p1, int p2, int p3, int[] p4, int p5) { return false; }
+    public static EGLContext eglGetCurrentContext() { return null; }
+    public static EGLDisplay eglGetCurrentDisplay() { return null; }
+    public static EGLSurface eglGetCurrentSurface(int p0) { return null; }
+    public static EGLDisplay eglGetDisplay(int p0) { return null; }
+    public static int eglGetError() { return 0; }
+    public static boolean eglInitialize(EGLDisplay p0, int[] p1, int p2, int[] p3, int p4) { return false; }
+    public static boolean eglMakeCurrent(EGLDisplay p0, EGLSurface p1, EGLSurface p2, EGLContext p3) { return false; }
+    public static int eglQueryAPI() { return 0; }
+    public static boolean eglQueryContext(EGLDisplay p0, EGLContext p1, int p2, int[] p3, int p4) { return false; }
+    public static String eglQueryString(EGLDisplay p0, int p1) { return null; }
+    public static boolean eglQuerySurface(EGLDisplay p0, EGLSurface p1, int p2, int[] p3, int p4) { return false; }
+    public static boolean eglReleaseTexImage(EGLDisplay p0, EGLSurface p1, int p2) { return false; }
+    public static boolean eglReleaseThread() { return false; }
+    public static boolean eglSurfaceAttrib(EGLDisplay p0, EGLSurface p1, int p2, int p3) { return false; }
+    public static boolean eglSwapBuffers(EGLDisplay p0, EGLSurface p1) { return false; }
+    public static boolean eglSwapInterval(EGLDisplay p0, int p1) { return false; }
+    public static boolean eglTerminate(EGLDisplay p0) { return false; }
+    public static boolean eglWaitClient() { return false; }
+    public static boolean eglWaitGL() { return false; }
+    public static boolean eglWaitNative(int p0) { return false; }
 }

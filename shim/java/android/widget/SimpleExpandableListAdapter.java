@@ -1,5 +1,11 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
+import android.view.View;
+import android.view.ViewGroup;
 import java.util.List;
 import java.util.Map;
 
@@ -18,19 +24,6 @@ public class SimpleExpandableListAdapter extends BaseExpandableListAdapter {
     private final int mGroupLayout;
     private final int mChildLayout;
 
-    /**
-     * Full constructor.
-     *
-     * @param context       ignored in shim
-     * @param groupData     list of maps, one per group
-     * @param groupLayout   resource id for the group row layout (unused in shim)
-     * @param groupFrom     keys to pull from each group map
-     * @param groupTo       view ids to bind group values into (unused in shim)
-     * @param childData     list of lists of maps, one list per group, one map per child
-     * @param childLayout   resource id for the child row layout (unused in shim)
-     * @param childFrom     keys to pull from each child map
-     * @param childTo       view ids to bind child values into (unused in shim)
-     */
     public SimpleExpandableListAdapter(
             Object context,
             List<? extends Map<String, ?>> groupData,
@@ -51,9 +44,6 @@ public class SimpleExpandableListAdapter extends BaseExpandableListAdapter {
         mChildTo = childTo;
     }
 
-    /**
-     * Convenience constructor using the same layout for expanded and collapsed groups.
-     */
     public SimpleExpandableListAdapter(
             Object context,
             List<? extends Map<String, ?>> groupData,
@@ -103,15 +93,15 @@ public class SimpleExpandableListAdapter extends BaseExpandableListAdapter {
     public boolean hasStableIds() { return true; }
 
     @Override
-    public Object getGroupView(int groupPosition, boolean isExpanded,
-                                Object convertView, Object parent) {
+    public View getGroupView(int groupPosition, boolean isExpanded,
+                              View convertView, ViewGroup parent) {
         // Stub — returns null; a real implementation would inflate mGroupLayout
         return null;
     }
 
     @Override
-    public Object getChildView(int groupPosition, int childPosition,
-                                boolean isLastChild, Object convertView, Object parent) {
+    public View getChildView(int groupPosition, int childPosition,
+                              boolean isLastChild, View convertView, ViewGroup parent) {
         // Stub — returns null; a real implementation would inflate mChildLayout
         return null;
     }

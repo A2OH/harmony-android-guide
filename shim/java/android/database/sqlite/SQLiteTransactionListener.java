@@ -2,7 +2,7 @@ package android.database.sqlite;
 
 /**
  * Android-compatible SQLiteTransactionListener shim.
- * Callback interface for SQLite transaction lifecycle events.
+ * Object interface for SQLite transaction lifecycle events.
  */
 public interface SQLiteTransactionListener {
 

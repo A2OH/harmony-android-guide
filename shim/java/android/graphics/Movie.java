@@ -1,4 +1,7 @@
 package android.graphics;
+import android.graphics.drawable.AnimatedImageDrawable;
+import android.graphics.drawable.AnimatedImageDrawable;
+import java.util.Set;
 
 import java.io.InputStream;
 
@@ -118,7 +121,7 @@ public class Movie {
      * @param canvas canvas to draw into
      * @param x      left edge of the movie
      * @param y      top edge of the movie
-     * @param paint  paint to apply, or null
+     * @param pa(int paint to apply, or null
      */
     public void draw(Canvas canvas, float x, float y, Paint paint) {
         // no-op shim

@@ -1,4 +1,8 @@
 package android.view;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 
 /**
  * Android-compatible Surface shim. Stub implementation.

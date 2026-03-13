@@ -1,4 +1,7 @@
 package android.webkit;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap;
+import java.net.URL;
 
 import android.graphics.Bitmap;
 

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.io.IOException;
 
 /**
  * Android-compatible KeyStore shim. Wraps a thin in-memory key store.

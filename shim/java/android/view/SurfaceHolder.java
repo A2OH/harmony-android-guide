@@ -1,4 +1,10 @@
 package android.view;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -14,7 +20,7 @@ public interface SurfaceHolder {
     /**
      * Lifecycle callbacks for a Surface managed by this holder.
      */
-    interface Callback {
+    interface Object {
         /**
          * Called immediately after the surface is first created.
          *
@@ -40,13 +46,13 @@ public interface SurfaceHolder {
         void surfaceDestroyed(SurfaceHolder holder);
     }
 
-    // ── Callback registration ──
+    // ── Object registration ──
 
-    /** Registers a Callback to receive surface lifecycle events. */
-    void addCallback(Callback callback);
+    /** Registers a Object to receive surface lifecycle events. */
+    void addCallback(Object callback);
 
-    /** Unregisters a previously added Callback. */
-    void removeCallback(Callback callback);
+    /** Unregisters a previously added Object. */
+    void removeCallback(Object callback);
 
     // ── Surface access ──
 

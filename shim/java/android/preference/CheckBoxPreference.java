@@ -1,4 +1,6 @@
 package android.preference;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences;
 
 /**
  * Android-compatible CheckBoxPreference shim.

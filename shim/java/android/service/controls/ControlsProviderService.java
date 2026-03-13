@@ -1,31 +1,17 @@
 package android.service.controls;
-
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.service.controls.actions.ControlAction;
+import java.util.function.Consumer;
 
-/**
- * Android-compatible ControlsProviderService shim. Stub for device-controls provider service.
- */
-public abstract class ControlsProviderService extends Service {
+public class ControlsProviderService extends Service {
+    public static final int SERVICE_CONTROLS = 0;
 
-    /**
-     * Returns a publisher that emits all available controls.
-     * Callers should treat the returned Object as a {@code Publisher<Control>}.
-     */
-    public abstract Object createPublisherForAllAvailable();
+    public ControlsProviderService() {}
 
-    /**
-     * Returns a publisher that emits suggested controls.
-     * Callers should treat the returned Object as a {@code Publisher<Control>}.
-     */
-    public abstract Object createPublisherForSuggested();
-
-    /**
-     * Performs the given action on the identified control.
-     *
-     * @param controlId  identifier of the target control
-     * @param action     the action to perform (ControlAction or compatible Object)
-     * @param consumer   callback that accepts a boolean indicating success
-     */
-    public abstract void performControlAction(String controlId,
-            Object action, Object consumer);
+    public boolean onUnbind(Intent p0) { return false; }
+    public void performControlAction(String p0, ControlAction p1, Object p2) {}
+    public static void requestAddControl(Context p0, ComponentName p1, Control p2) {}
 }

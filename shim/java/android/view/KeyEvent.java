@@ -1,204 +1,380 @@
 package android.view;
 
-/**
- * Shim: android.view.KeyEvent — keyboard / hardware-button input event.
- *
- * Pure Java stub. The shim populates instances from the ArkUI key-event
- * callback and delivers them to the focused view via dispatchKeyEvent().
- * No native bridge calls are needed: the data is entirely captured at the
- * moment the ArkUI callback fires.
- */
-public final class KeyEvent {
+public class KeyEvent {
+    public KeyEvent() {}
 
-    // ── Action constants ──
-
-    public static final int ACTION_DOWN     = 0;
-    public static final int ACTION_UP       = 1;
-    public static final int ACTION_MULTIPLE = 2;
-
-    // ── Keycode constants ──
-
-    public static final int KEYCODE_UNKNOWN       = 0;
-    public static final int KEYCODE_HOME          = 3;
-    public static final int KEYCODE_BACK          = 4;
-    public static final int KEYCODE_CALL          = 5;
-    public static final int KEYCODE_ENDCALL       = 6;
-    public static final int KEYCODE_0             = 7;
-    public static final int KEYCODE_1             = 8;
-    public static final int KEYCODE_2             = 9;
-    public static final int KEYCODE_3             = 10;
-    public static final int KEYCODE_4             = 11;
-    public static final int KEYCODE_5             = 12;
-    public static final int KEYCODE_6             = 13;
-    public static final int KEYCODE_7             = 14;
-    public static final int KEYCODE_8             = 15;
-    public static final int KEYCODE_9             = 16;
-    public static final int KEYCODE_STAR          = 17;
-    public static final int KEYCODE_POUND         = 18;
-    public static final int KEYCODE_DPAD_UP       = 19;
-    public static final int KEYCODE_DPAD_DOWN     = 20;
-    public static final int KEYCODE_DPAD_LEFT     = 21;
-    public static final int KEYCODE_DPAD_RIGHT    = 22;
-    public static final int KEYCODE_DPAD_CENTER   = 23;
-    public static final int KEYCODE_VOLUME_UP     = 24;
-    public static final int KEYCODE_VOLUME_DOWN   = 25;
-    public static final int KEYCODE_POWER         = 26;
-    public static final int KEYCODE_CAMERA        = 27;
-    public static final int KEYCODE_CLEAR         = 28;
-    public static final int KEYCODE_A             = 29;
-    public static final int KEYCODE_B             = 30;
-    public static final int KEYCODE_C             = 31;
-    public static final int KEYCODE_D             = 32;
-    public static final int KEYCODE_E             = 33;
-    public static final int KEYCODE_F             = 34;
-    public static final int KEYCODE_G             = 35;
-    public static final int KEYCODE_H             = 36;
-    public static final int KEYCODE_I             = 37;
-    public static final int KEYCODE_J             = 38;
-    public static final int KEYCODE_K             = 39;
-    public static final int KEYCODE_L             = 40;
-    public static final int KEYCODE_M             = 41;
-    public static final int KEYCODE_N             = 42;
-    public static final int KEYCODE_O             = 43;
-    public static final int KEYCODE_P             = 44;
-    public static final int KEYCODE_Q             = 45;
-    public static final int KEYCODE_R             = 46;
-    public static final int KEYCODE_S             = 47;
-    public static final int KEYCODE_T             = 48;
-    public static final int KEYCODE_U             = 49;
-    public static final int KEYCODE_V             = 50;
-    public static final int KEYCODE_W             = 51;
-    public static final int KEYCODE_X             = 52;
-    public static final int KEYCODE_Y             = 53;
-    public static final int KEYCODE_Z             = 54;
-    public static final int KEYCODE_COMMA         = 55;
-    public static final int KEYCODE_PERIOD        = 56;
-    public static final int KEYCODE_ALT_LEFT      = 57;
-    public static final int KEYCODE_ALT_RIGHT     = 58;
-    public static final int KEYCODE_SHIFT_LEFT    = 59;
-    public static final int KEYCODE_SHIFT_RIGHT   = 60;
-    public static final int KEYCODE_TAB           = 61;
-    public static final int KEYCODE_SPACE         = 62;
-    public static final int KEYCODE_SYM           = 63;
-    public static final int KEYCODE_EXPLORER      = 64;
-    public static final int KEYCODE_ENVELOPE      = 65;
-    public static final int KEYCODE_ENTER         = 66;
-    public static final int KEYCODE_DEL           = 67;
-    public static final int KEYCODE_GRAVE         = 68;
-    public static final int KEYCODE_MINUS         = 69;
-    public static final int KEYCODE_EQUALS        = 70;
-    public static final int KEYCODE_LEFT_BRACKET  = 71;
-    public static final int KEYCODE_RIGHT_BRACKET = 72;
-    public static final int KEYCODE_BACKSLASH     = 73;
-    public static final int KEYCODE_SEMICOLON     = 74;
-    public static final int KEYCODE_APOSTROPHE    = 75;
-    public static final int KEYCODE_SLASH         = 76;
-    public static final int KEYCODE_AT            = 77;
-    public static final int KEYCODE_MENU          = 82;
-    public static final int KEYCODE_SEARCH        = 84;
-    public static final int KEYCODE_ESCAPE        = 111;
-    public static final int KEYCODE_FORWARD_DEL   = 112;
-    public static final int KEYCODE_CTRL_LEFT     = 113;
-    public static final int KEYCODE_CTRL_RIGHT    = 114;
-    public static final int KEYCODE_CAPS_LOCK     = 115;
-    public static final int KEYCODE_SCROLL_LOCK   = 116;
-    public static final int KEYCODE_META_LEFT     = 117;
-    public static final int KEYCODE_META_RIGHT    = 118;
-    public static final int KEYCODE_FUNCTION      = 119;
-    public static final int KEYCODE_SYSRQ         = 120;
-    public static final int KEYCODE_BREAK         = 121;
-    public static final int KEYCODE_MOVE_HOME     = 122;
-    public static final int KEYCODE_MOVE_END      = 123;
-    public static final int KEYCODE_INSERT        = 124;
-    public static final int KEYCODE_FORWARD       = 125;
-    public static final int KEYCODE_PAGE_UP       = 92;
-    public static final int KEYCODE_PAGE_DOWN     = 93;
-
-    // ── Modifier meta-state bit flags ──
-
-    public static final int META_ALT_ON     = 0x02;
-    public static final int META_ALT_LEFT_ON  = 0x10;
-    public static final int META_ALT_RIGHT_ON = 0x20;
-    public static final int META_SHIFT_ON   = 0x01;
-    public static final int META_SHIFT_LEFT_ON  = 0x40;
-    public static final int META_SHIFT_RIGHT_ON = 0x80;
-    public static final int META_CTRL_ON    = 0x1000;
-    public static final int META_CTRL_LEFT_ON  = 0x2000;
-    public static final int META_CTRL_RIGHT_ON = 0x4000;
-    public static final int META_META_ON    = 0x10000;
-    public static final int META_CAPS_LOCK_ON = 0x100000;
-
-    // ── Fields ──
-
-    private final int  action;
-    private final int  keyCode;
-    private final int  repeatCount;
-    private final int  metaState;
-    private final long eventTime;
-    private final long downTime;
-
-    // ── Constructors ──
-
-    public KeyEvent(int action, int keyCode) {
-        this(action, keyCode, 0, 0, 0L, 0L);
-    }
-
-    public KeyEvent(int action, int keyCode, int repeatCount, int metaState,
-                    long downTime, long eventTime) {
-        this.action      = action;
-        this.keyCode     = keyCode;
-        this.repeatCount = repeatCount;
-        this.metaState   = metaState;
-        this.downTime    = downTime;
-        this.eventTime   = eventTime;
-    }
-
-    // ── Accessors ──
-
-    public int  getAction()      { return action; }
-    public int  getKeyCode()     { return keyCode; }
-    public int  getRepeatCount() { return repeatCount; }
-    public int  getMetaState()   { return metaState; }
-    public long getDownTime()    { return downTime; }
-    public long getEventTime()   { return eventTime; }
-
-    /** True if any Shift modifier key was held. */
-    public boolean isShiftPressed() {
-        return (metaState & META_SHIFT_ON) != 0
-            || (metaState & META_SHIFT_LEFT_ON) != 0
-            || (metaState & META_SHIFT_RIGHT_ON) != 0;
-    }
-
-    /** True if any Ctrl modifier key was held. */
-    public boolean isCtrlPressed() {
-        return (metaState & META_CTRL_ON) != 0
-            || (metaState & META_CTRL_LEFT_ON) != 0
-            || (metaState & META_CTRL_RIGHT_ON) != 0;
-    }
-
-    /** True if any Alt modifier key was held. */
-    public boolean isAltPressed() {
-        return (metaState & META_ALT_ON) != 0
-            || (metaState & META_ALT_LEFT_ON) != 0
-            || (metaState & META_ALT_RIGHT_ON) != 0;
-    }
-
-    /** True if Caps Lock was active at the time of this event. */
-    public boolean isCapsLockOn() {
-        return (metaState & META_CAPS_LOCK_ON) != 0;
-    }
-
-    /**
-     * Returns true if this is a BACK key-up event.
-     * Convenience for the common "intercept back press" pattern.
-     */
-    public boolean isBackKey() {
-        return keyCode == KEYCODE_BACK && action == ACTION_UP;
-    }
-
-    @Override
-    public String toString() {
-        return "KeyEvent{action=" + action + " keyCode=" + keyCode
-                + " repeat=" + repeatCount + " meta=0x" + Integer.toHexString(metaState) + "}";
-    }
+    public static final int ACTION_DOWN = 0;
+    public static final int ACTION_UP = 0;
+    public static final int FLAG_CANCELED = 0;
+    public static final int FLAG_CANCELED_LONG_PRESS = 0;
+    public static final int FLAG_EDITOR_ACTION = 0;
+    public static final int FLAG_FALLBACK = 0;
+    public static final int FLAG_FROM_SYSTEM = 0;
+    public static final int FLAG_KEEP_TOUCH_MODE = 0;
+    public static final int FLAG_LONG_PRESS = 0;
+    public static final int FLAG_SOFT_KEYBOARD = 0;
+    public static final int FLAG_TRACKING = 0;
+    public static final int FLAG_VIRTUAL_HARD_KEY = 0;
+    public static final int KEYCODE_0 = 0;
+    public static final int KEYCODE_1 = 0;
+    public static final int KEYCODE_11 = 0;
+    public static final int KEYCODE_12 = 0;
+    public static final int KEYCODE_2 = 0;
+    public static final int KEYCODE_3 = 0;
+    public static final int KEYCODE_3D_MODE = 0;
+    public static final int KEYCODE_4 = 0;
+    public static final int KEYCODE_5 = 0;
+    public static final int KEYCODE_6 = 0;
+    public static final int KEYCODE_7 = 0;
+    public static final int KEYCODE_8 = 0;
+    public static final int KEYCODE_9 = 0;
+    public static final int KEYCODE_A = 0;
+    public static final int KEYCODE_ALL_APPS = 0;
+    public static final int KEYCODE_ALT_LEFT = 0;
+    public static final int KEYCODE_ALT_RIGHT = 0;
+    public static final int KEYCODE_APOSTROPHE = 0;
+    public static final int KEYCODE_APP_SWITCH = 0;
+    public static final int KEYCODE_ASSIST = 0;
+    public static final int KEYCODE_AT = 0;
+    public static final int KEYCODE_AVR_INPUT = 0;
+    public static final int KEYCODE_AVR_POWER = 0;
+    public static final int KEYCODE_B = 0;
+    public static final int KEYCODE_BACK = 0;
+    public static final int KEYCODE_BACKSLASH = 0;
+    public static final int KEYCODE_BOOKMARK = 0;
+    public static final int KEYCODE_BREAK = 0;
+    public static final int KEYCODE_BRIGHTNESS_DOWN = 0;
+    public static final int KEYCODE_BRIGHTNESS_UP = 0;
+    public static final int KEYCODE_BUTTON_1 = 0;
+    public static final int KEYCODE_BUTTON_10 = 0;
+    public static final int KEYCODE_BUTTON_11 = 0;
+    public static final int KEYCODE_BUTTON_12 = 0;
+    public static final int KEYCODE_BUTTON_13 = 0;
+    public static final int KEYCODE_BUTTON_14 = 0;
+    public static final int KEYCODE_BUTTON_15 = 0;
+    public static final int KEYCODE_BUTTON_16 = 0;
+    public static final int KEYCODE_BUTTON_2 = 0;
+    public static final int KEYCODE_BUTTON_3 = 0;
+    public static final int KEYCODE_BUTTON_4 = 0;
+    public static final int KEYCODE_BUTTON_5 = 0;
+    public static final int KEYCODE_BUTTON_6 = 0;
+    public static final int KEYCODE_BUTTON_7 = 0;
+    public static final int KEYCODE_BUTTON_8 = 0;
+    public static final int KEYCODE_BUTTON_9 = 0;
+    public static final int KEYCODE_BUTTON_A = 0;
+    public static final int KEYCODE_BUTTON_B = 0;
+    public static final int KEYCODE_BUTTON_C = 0;
+    public static final int KEYCODE_BUTTON_L1 = 0;
+    public static final int KEYCODE_BUTTON_L2 = 0;
+    public static final int KEYCODE_BUTTON_MODE = 0;
+    public static final int KEYCODE_BUTTON_R1 = 0;
+    public static final int KEYCODE_BUTTON_R2 = 0;
+    public static final int KEYCODE_BUTTON_SELECT = 0;
+    public static final int KEYCODE_BUTTON_START = 0;
+    public static final int KEYCODE_BUTTON_THUMBL = 0;
+    public static final int KEYCODE_BUTTON_THUMBR = 0;
+    public static final int KEYCODE_BUTTON_X = 0;
+    public static final int KEYCODE_BUTTON_Y = 0;
+    public static final int KEYCODE_BUTTON_Z = 0;
+    public static final int KEYCODE_C = 0;
+    public static final int KEYCODE_CALCULATOR = 0;
+    public static final int KEYCODE_CALENDAR = 0;
+    public static final int KEYCODE_CALL = 0;
+    public static final int KEYCODE_CAMERA = 0;
+    public static final int KEYCODE_CAPS_LOCK = 0;
+    public static final int KEYCODE_CAPTIONS = 0;
+    public static final int KEYCODE_CHANNEL_DOWN = 0;
+    public static final int KEYCODE_CHANNEL_UP = 0;
+    public static final int KEYCODE_CLEAR = 0;
+    public static final int KEYCODE_COMMA = 0;
+    public static final int KEYCODE_CONTACTS = 0;
+    public static final int KEYCODE_COPY = 0;
+    public static final int KEYCODE_CTRL_LEFT = 0;
+    public static final int KEYCODE_CTRL_RIGHT = 0;
+    public static final int KEYCODE_CUT = 0;
+    public static final int KEYCODE_D = 0;
+    public static final int KEYCODE_DEL = 0;
+    public static final int KEYCODE_DPAD_CENTER = 0;
+    public static final int KEYCODE_DPAD_DOWN = 0;
+    public static final int KEYCODE_DPAD_DOWN_LEFT = 0;
+    public static final int KEYCODE_DPAD_DOWN_RIGHT = 0;
+    public static final int KEYCODE_DPAD_LEFT = 0;
+    public static final int KEYCODE_DPAD_RIGHT = 0;
+    public static final int KEYCODE_DPAD_UP = 0;
+    public static final int KEYCODE_DPAD_UP_LEFT = 0;
+    public static final int KEYCODE_DPAD_UP_RIGHT = 0;
+    public static final int KEYCODE_DVR = 0;
+    public static final int KEYCODE_E = 0;
+    public static final int KEYCODE_EISU = 0;
+    public static final int KEYCODE_ENDCALL = 0;
+    public static final int KEYCODE_ENTER = 0;
+    public static final int KEYCODE_ENVELOPE = 0;
+    public static final int KEYCODE_EQUALS = 0;
+    public static final int KEYCODE_ESCAPE = 0;
+    public static final int KEYCODE_EXPLORER = 0;
+    public static final int KEYCODE_F = 0;
+    public static final int KEYCODE_F1 = 0;
+    public static final int KEYCODE_F10 = 0;
+    public static final int KEYCODE_F11 = 0;
+    public static final int KEYCODE_F12 = 0;
+    public static final int KEYCODE_F2 = 0;
+    public static final int KEYCODE_F3 = 0;
+    public static final int KEYCODE_F4 = 0;
+    public static final int KEYCODE_F5 = 0;
+    public static final int KEYCODE_F6 = 0;
+    public static final int KEYCODE_F7 = 0;
+    public static final int KEYCODE_F8 = 0;
+    public static final int KEYCODE_F9 = 0;
+    public static final int KEYCODE_FOCUS = 0;
+    public static final int KEYCODE_FORWARD = 0;
+    public static final int KEYCODE_FORWARD_DEL = 0;
+    public static final int KEYCODE_FUNCTION = 0;
+    public static final int KEYCODE_G = 0;
+    public static final int KEYCODE_GRAVE = 0;
+    public static final int KEYCODE_GUIDE = 0;
+    public static final int KEYCODE_H = 0;
+    public static final int KEYCODE_HEADSETHOOK = 0;
+    public static final int KEYCODE_HELP = 0;
+    public static final int KEYCODE_HENKAN = 0;
+    public static final int KEYCODE_HOME = 0;
+    public static final int KEYCODE_I = 0;
+    public static final int KEYCODE_INFO = 0;
+    public static final int KEYCODE_INSERT = 0;
+    public static final int KEYCODE_J = 0;
+    public static final int KEYCODE_K = 0;
+    public static final int KEYCODE_KANA = 0;
+    public static final int KEYCODE_KATAKANA_HIRAGANA = 0;
+    public static final int KEYCODE_L = 0;
+    public static final int KEYCODE_LANGUAGE_SWITCH = 0;
+    public static final int KEYCODE_LAST_CHANNEL = 0;
+    public static final int KEYCODE_LEFT_BRACKET = 0;
+    public static final int KEYCODE_M = 0;
+    public static final int KEYCODE_MANNER_MODE = 0;
+    public static final int KEYCODE_MEDIA_AUDIO_TRACK = 0;
+    public static final int KEYCODE_MEDIA_CLOSE = 0;
+    public static final int KEYCODE_MEDIA_EJECT = 0;
+    public static final int KEYCODE_MEDIA_FAST_FORWARD = 0;
+    public static final int KEYCODE_MEDIA_NEXT = 0;
+    public static final int KEYCODE_MEDIA_PAUSE = 0;
+    public static final int KEYCODE_MEDIA_PLAY = 0;
+    public static final int KEYCODE_MEDIA_PLAY_PAUSE = 0;
+    public static final int KEYCODE_MEDIA_PREVIOUS = 0;
+    public static final int KEYCODE_MEDIA_RECORD = 0;
+    public static final int KEYCODE_MEDIA_REWIND = 0;
+    public static final int KEYCODE_MEDIA_SKIP_BACKWARD = 0;
+    public static final int KEYCODE_MEDIA_SKIP_FORWARD = 0;
+    public static final int KEYCODE_MEDIA_STEP_BACKWARD = 0;
+    public static final int KEYCODE_MEDIA_STEP_FORWARD = 0;
+    public static final int KEYCODE_MEDIA_STOP = 0;
+    public static final int KEYCODE_MEDIA_TOP_MENU = 0;
+    public static final int KEYCODE_MENU = 0;
+    public static final int KEYCODE_META_LEFT = 0;
+    public static final int KEYCODE_META_RIGHT = 0;
+    public static final int KEYCODE_MINUS = 0;
+    public static final int KEYCODE_MOVE_END = 0;
+    public static final int KEYCODE_MOVE_HOME = 0;
+    public static final int KEYCODE_MUHENKAN = 0;
+    public static final int KEYCODE_MUSIC = 0;
+    public static final int KEYCODE_MUTE = 0;
+    public static final int KEYCODE_N = 0;
+    public static final int KEYCODE_NAVIGATE_IN = 0;
+    public static final int KEYCODE_NAVIGATE_NEXT = 0;
+    public static final int KEYCODE_NAVIGATE_OUT = 0;
+    public static final int KEYCODE_NAVIGATE_PREVIOUS = 0;
+    public static final int KEYCODE_NOTIFICATION = 0;
+    public static final int KEYCODE_NUM = 0;
+    public static final int KEYCODE_NUMPAD_0 = 0;
+    public static final int KEYCODE_NUMPAD_1 = 0;
+    public static final int KEYCODE_NUMPAD_2 = 0;
+    public static final int KEYCODE_NUMPAD_3 = 0;
+    public static final int KEYCODE_NUMPAD_4 = 0;
+    public static final int KEYCODE_NUMPAD_5 = 0;
+    public static final int KEYCODE_NUMPAD_6 = 0;
+    public static final int KEYCODE_NUMPAD_7 = 0;
+    public static final int KEYCODE_NUMPAD_8 = 0;
+    public static final int KEYCODE_NUMPAD_9 = 0;
+    public static final int KEYCODE_NUMPAD_ADD = 0;
+    public static final int KEYCODE_NUMPAD_COMMA = 0;
+    public static final int KEYCODE_NUMPAD_DIVIDE = 0;
+    public static final int KEYCODE_NUMPAD_DOT = 0;
+    public static final int KEYCODE_NUMPAD_ENTER = 0;
+    public static final int KEYCODE_NUMPAD_EQUALS = 0;
+    public static final int KEYCODE_NUMPAD_LEFT_PAREN = 0;
+    public static final int KEYCODE_NUMPAD_MULTIPLY = 0;
+    public static final int KEYCODE_NUMPAD_RIGHT_PAREN = 0;
+    public static final int KEYCODE_NUMPAD_SUBTRACT = 0;
+    public static final int KEYCODE_NUM_LOCK = 0;
+    public static final int KEYCODE_O = 0;
+    public static final int KEYCODE_P = 0;
+    public static final int KEYCODE_PAGE_DOWN = 0;
+    public static final int KEYCODE_PAGE_UP = 0;
+    public static final int KEYCODE_PAIRING = 0;
+    public static final int KEYCODE_PASTE = 0;
+    public static final int KEYCODE_PERIOD = 0;
+    public static final int KEYCODE_PICTSYMBOLS = 0;
+    public static final int KEYCODE_PLUS = 0;
+    public static final int KEYCODE_POUND = 0;
+    public static final int KEYCODE_POWER = 0;
+    public static final int KEYCODE_PROFILE_SWITCH = 0;
+    public static final int KEYCODE_PROG_BLUE = 0;
+    public static final int KEYCODE_PROG_GREEN = 0;
+    public static final int KEYCODE_PROG_RED = 0;
+    public static final int KEYCODE_PROG_YELLOW = 0;
+    public static final int KEYCODE_Q = 0;
+    public static final int KEYCODE_R = 0;
+    public static final int KEYCODE_REFRESH = 0;
+    public static final int KEYCODE_RIGHT_BRACKET = 0;
+    public static final int KEYCODE_RO = 0;
+    public static final int KEYCODE_S = 0;
+    public static final int KEYCODE_SCROLL_LOCK = 0;
+    public static final int KEYCODE_SEARCH = 0;
+    public static final int KEYCODE_SEMICOLON = 0;
+    public static final int KEYCODE_SETTINGS = 0;
+    public static final int KEYCODE_SHIFT_LEFT = 0;
+    public static final int KEYCODE_SHIFT_RIGHT = 0;
+    public static final int KEYCODE_SLASH = 0;
+    public static final int KEYCODE_SLEEP = 0;
+    public static final int KEYCODE_SOFT_LEFT = 0;
+    public static final int KEYCODE_SOFT_RIGHT = 0;
+    public static final int KEYCODE_SOFT_SLEEP = 0;
+    public static final int KEYCODE_SPACE = 0;
+    public static final int KEYCODE_STAR = 0;
+    public static final int KEYCODE_STB_INPUT = 0;
+    public static final int KEYCODE_STB_POWER = 0;
+    public static final int KEYCODE_STEM_1 = 0;
+    public static final int KEYCODE_STEM_2 = 0;
+    public static final int KEYCODE_STEM_3 = 0;
+    public static final int KEYCODE_STEM_PRIMARY = 0;
+    public static final int KEYCODE_SWITCH_CHARSET = 0;
+    public static final int KEYCODE_SYM = 0;
+    public static final int KEYCODE_SYSRQ = 0;
+    public static final int KEYCODE_SYSTEM_NAVIGATION_DOWN = 0;
+    public static final int KEYCODE_SYSTEM_NAVIGATION_LEFT = 0;
+    public static final int KEYCODE_SYSTEM_NAVIGATION_RIGHT = 0;
+    public static final int KEYCODE_SYSTEM_NAVIGATION_UP = 0;
+    public static final int KEYCODE_T = 0;
+    public static final int KEYCODE_TAB = 0;
+    public static final int KEYCODE_THUMBS_DOWN = 0;
+    public static final int KEYCODE_THUMBS_UP = 0;
+    public static final int KEYCODE_TV = 0;
+    public static final int KEYCODE_TV_ANTENNA_CABLE = 0;
+    public static final int KEYCODE_TV_AUDIO_DESCRIPTION = 0;
+    public static final int KEYCODE_TV_AUDIO_DESCRIPTION_MIX_DOWN = 0;
+    public static final int KEYCODE_TV_AUDIO_DESCRIPTION_MIX_UP = 0;
+    public static final int KEYCODE_TV_CONTENTS_MENU = 0;
+    public static final int KEYCODE_TV_DATA_SERVICE = 0;
+    public static final int KEYCODE_TV_INPUT = 0;
+    public static final int KEYCODE_TV_INPUT_COMPONENT_1 = 0;
+    public static final int KEYCODE_TV_INPUT_COMPONENT_2 = 0;
+    public static final int KEYCODE_TV_INPUT_COMPOSITE_1 = 0;
+    public static final int KEYCODE_TV_INPUT_COMPOSITE_2 = 0;
+    public static final int KEYCODE_TV_INPUT_HDMI_1 = 0;
+    public static final int KEYCODE_TV_INPUT_HDMI_2 = 0;
+    public static final int KEYCODE_TV_INPUT_HDMI_3 = 0;
+    public static final int KEYCODE_TV_INPUT_HDMI_4 = 0;
+    public static final int KEYCODE_TV_INPUT_VGA_1 = 0;
+    public static final int KEYCODE_TV_MEDIA_CONTEXT_MENU = 0;
+    public static final int KEYCODE_TV_NETWORK = 0;
+    public static final int KEYCODE_TV_NUMBER_ENTRY = 0;
+    public static final int KEYCODE_TV_POWER = 0;
+    public static final int KEYCODE_TV_RADIO_SERVICE = 0;
+    public static final int KEYCODE_TV_SATELLITE = 0;
+    public static final int KEYCODE_TV_SATELLITE_BS = 0;
+    public static final int KEYCODE_TV_SATELLITE_CS = 0;
+    public static final int KEYCODE_TV_SATELLITE_SERVICE = 0;
+    public static final int KEYCODE_TV_TELETEXT = 0;
+    public static final int KEYCODE_TV_TERRESTRIAL_ANALOG = 0;
+    public static final int KEYCODE_TV_TERRESTRIAL_DIGITAL = 0;
+    public static final int KEYCODE_TV_TIMER_PROGRAMMING = 0;
+    public static final int KEYCODE_TV_ZOOM_MODE = 0;
+    public static final int KEYCODE_U = 0;
+    public static final int KEYCODE_UNKNOWN = 0;
+    public static final int KEYCODE_V = 0;
+    public static final int KEYCODE_VOICE_ASSIST = 0;
+    public static final int KEYCODE_VOLUME_DOWN = 0;
+    public static final int KEYCODE_VOLUME_MUTE = 0;
+    public static final int KEYCODE_VOLUME_UP = 0;
+    public static final int KEYCODE_W = 0;
+    public static final int KEYCODE_WAKEUP = 0;
+    public static final int KEYCODE_WINDOW = 0;
+    public static final int KEYCODE_X = 0;
+    public static final int KEYCODE_Y = 0;
+    public static final int KEYCODE_YEN = 0;
+    public static final int KEYCODE_Z = 0;
+    public static final int KEYCODE_ZENKAKU_HANKAKU = 0;
+    public static final int KEYCODE_ZOOM_IN = 0;
+    public static final int KEYCODE_ZOOM_OUT = 0;
+    public static final int META_ALT_LEFT_ON = 0;
+    public static final int META_ALT_MASK = 0;
+    public static final int META_ALT_ON = 0;
+    public static final int META_ALT_RIGHT_ON = 0;
+    public static final int META_CAPS_LOCK_ON = 0;
+    public static final int META_CTRL_LEFT_ON = 0;
+    public static final int META_CTRL_MASK = 0;
+    public static final int META_CTRL_ON = 0;
+    public static final int META_CTRL_RIGHT_ON = 0;
+    public static final int META_FUNCTION_ON = 0;
+    public static final int META_META_LEFT_ON = 0;
+    public static final int META_META_MASK = 0;
+    public static final int META_META_ON = 0;
+    public static final int META_META_RIGHT_ON = 0;
+    public static final int META_NUM_LOCK_ON = 0;
+    public static final int META_SCROLL_LOCK_ON = 0;
+    public static final int META_SHIFT_LEFT_ON = 0;
+    public static final int META_SHIFT_MASK = 0;
+    public static final int META_SHIFT_ON = 0;
+    public static final int META_SHIFT_RIGHT_ON = 0;
+    public static final int META_SYM_ON = 0;
+    public static Object changeAction(Object p0, Object p1) { return null; }
+    public static Object changeFlags(Object p0, Object p1) { return null; }
+    public static Object changeTimeRepeat(Object p0, Object p1, Object p2) { return null; }
+    public static Object changeTimeRepeat(Object p0, Object p1, Object p2, Object p3) { return null; }
+    public boolean dispatch(Object p0, Object p1, Object p2) { return false; }
+    public int getAction() { return 0; }
+    public static int getDeadChar(Object p0, Object p1) { return 0; }
+    public int getDeviceId() { return 0; }
+    public char getDisplayLabel() { return ' '; }
+    public long getDownTime() { return 0L; }
+    public long getEventTime() { return 0L; }
+    public int getFlags() { return 0; }
+    public Object getKeyCharacterMap() { return null; }
+    public int getKeyCode() { return 0; }
+    public char getMatch(Object p0) { return ' '; }
+    public char getMatch(Object p0, Object p1) { return ' '; }
+    public static int getMaxKeyCode() { return 0; }
+    public int getMetaState() { return 0; }
+    public static int getModifierMetaStateMask() { return 0; }
+    public int getModifiers() { return 0; }
+    public char getNumber() { return ' '; }
+    public int getRepeatCount() { return 0; }
+    public int getScanCode() { return 0; }
+    public int getSource() { return 0; }
+    public int getUnicodeChar() { return 0; }
+    public int getUnicodeChar(Object p0) { return 0; }
+    public boolean hasModifiers(Object p0) { return false; }
+    public boolean hasNoModifiers() { return false; }
+    public boolean isAltPressed() { return false; }
+    public boolean isCanceled() { return false; }
+    public boolean isCapsLockOn() { return false; }
+    public boolean isCtrlPressed() { return false; }
+    public boolean isFunctionPressed() { return false; }
+    public static boolean isGamepadButton(Object p0) { return false; }
+    public boolean isLongPress() { return false; }
+    public boolean isMetaPressed() { return false; }
+    public static boolean isModifierKey(Object p0) { return false; }
+    public boolean isNumLockOn() { return false; }
+    public boolean isPrintingKey() { return false; }
+    public boolean isScrollLockOn() { return false; }
+    public boolean isShiftPressed() { return false; }
+    public boolean isSymPressed() { return false; }
+    public boolean isSystem() { return false; }
+    public boolean isTracking() { return false; }
+    public static int keyCodeFromString(Object p0) { return 0; }
+    public static Object keyCodeToString(Object p0) { return null; }
+    public static boolean metaStateHasModifiers(Object p0, Object p1) { return false; }
+    public static boolean metaStateHasNoModifiers(Object p0) { return false; }
+    public static int normalizeMetaState(Object p0) { return 0; }
+    public void setSource(Object p0) {}
+    public void startTracking() {}
+    public void writeToParcel(Object p0, Object p1) {}
 }

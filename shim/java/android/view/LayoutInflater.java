@@ -1,37 +1,24 @@
 package android.view;
-
 import android.content.Context;
+import android.util.AttributeSet;
+import android.widget.Filter;
 
-/**
- * Shim: android.view.LayoutInflater
- *
- * Stub for XML layout inflation. Full implementation requires parsing
- * Android XML layouts and creating corresponding ArkUI nodes.
- * For now, provides the API surface that apps compile against.
- *
- * Apps that use LayoutInflater.inflate(R.layout.xxx, parent) will need
- * the XML parser implementation (future work).
- */
-public abstract class LayoutInflater {
+public class LayoutInflater {
+    public LayoutInflater(Context p0) {}
+    public LayoutInflater(LayoutInflater p0, Context p1) {}
 
-    public static LayoutInflater from(Context context) {
-        // Return a stub inflater
-        return new LayoutInflater() {
-            @Override
-            public View inflate(int resource, ViewGroup root) {
-                return inflate(resource, root, root != null);
-            }
-
-            @Override
-            public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-                // XML parsing not yet implemented
-                // In production, this would parse the layout XML and create
-                // View hierarchy from the resource ID
-                return null;
-            }
-        };
-    }
-
-    public abstract View inflate(int resource, ViewGroup root);
-    public abstract View inflate(int resource, ViewGroup root, boolean attachToRoot);
+    public LayoutInflater cloneInContext(Context p0) { return null; }
+    public View createView(String p0, String p1, AttributeSet p2) { return null; }
+    public static LayoutInflater from(Context p0) { return null; }
+    public Context getContext() { return null; }
+    public Object getFactory() { return null; }
+    public Object getFactory2() { return null; }
+    public Filter getFilter() { return null; }
+    public View inflate(int p0, ViewGroup p1) { return null; }
+    public View inflate(int p0, ViewGroup p1, boolean p2) { return null; }
+    public View onCreateView(String p0, AttributeSet p1) { return null; }
+    public View onCreateView(View p0, String p1, AttributeSet p2) { return null; }
+    public void setFactory(Object p0) {}
+    public void setFactory2(Object p0) {}
+    public void setFilter(Filter p0) {}
 }

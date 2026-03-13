@@ -4,7 +4,7 @@ package android.graphics;
  * Shim: android.graphics.Paint
  * OH mapping: drawing.OH_Drawing_Pen / OH_Drawing_Brush
  *
- * Pure Java stub — stores paint attributes; no actual rendering.
+ * Pure Java stub — stores pa(int attributes; no actual rendering.
  */
 public class Paint {
 

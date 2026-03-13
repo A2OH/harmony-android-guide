@@ -1,4 +1,13 @@
 package android.support.design.widget;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import java.util.Set;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,9 +47,9 @@ public class CoordinatorLayout extends ViewGroup {
      * A Behavior implements one or more interactions that a user can take on a child view.
      * These interactions may include drags, swipes, flings, or any other gestures.
      *
-     * @param <V> the child View type that this Behavior acts upon
+     * @param <Object> the child View type that this Behavior acts upon
      */
-    public static abstract class Behavior<V extends View> {
+    public static abstract class Behavior<Object extends View> {
 
         public Behavior() {}
 
@@ -57,7 +66,7 @@ public class CoordinatorLayout extends ViewGroup {
          * @return return true if the behavior changed the child view's size or position,
          *         false otherwise
          */
-        public boolean onDependentViewChanged(CoordinatorLayout parent, V child, View dependency) {
+        public boolean onDependentViewChanged(CoordinatorLayout parent, Object child, View dependency) {
             return false;
         }
 
@@ -75,7 +84,7 @@ public class CoordinatorLayout extends ViewGroup {
          * @param nestedScrollAxes  the axes that this nested scroll applies to
          * @return true if the Behavior wishes to accept this nested scroll
          */
-        public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, V child,
+        public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, Object child,
                                            View directTargetChild, View target,
                                            int nestedScrollAxes) {
             return false;
@@ -96,7 +105,7 @@ public class CoordinatorLayout extends ViewGroup {
          * @param dxUnconsumed      horizontal pixels not consumed by the target's own scroll
          * @param dyUnconsumed      vertical pixels not consumed by the target's own scroll
          */
-        public void onNestedScroll(CoordinatorLayout coordinatorLayout, V child, View target,
+        public void onNestedScroll(CoordinatorLayout coordinatorLayout, Object child, View target,
                                    int dxConsumed, int dyConsumed,
                                    int dxUnconsumed, int dyUnconsumed) {}
     }
@@ -114,21 +123,19 @@ public class CoordinatorLayout extends ViewGroup {
             super(width, height);
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
-            super(source);
-        }
-
         public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
 
+        
+
         public LayoutParams(LayoutParams source) {
-            super(source);
+            super((ViewGroup.MarginLayoutParams) source);
             this.mBehavior = source.mBehavior;
         }
 
         /**
-         * Set the Behavior associated with the child view this LayoutParams instance is
+         * Set the Behavior associated with the child view this Object instance is
          * associated with.
          *
          * @param behavior behavior to set
@@ -138,7 +145,7 @@ public class CoordinatorLayout extends ViewGroup {
         }
 
         /**
-         * Get the Behavior currently associated with this LayoutParams instance and its
+         * Get the Behavior currently associated with this Object instance and its
          * associated child view.
          *
          * @return the currently associated Behavior

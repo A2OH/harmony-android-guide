@@ -1,4 +1,6 @@
 package android.gesture;
+import android.view.ViewGroup;
+import android.view.ViewGroup;
 
 import android.view.ViewGroup;
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ public class GestureOverlayView extends ViewGroup {
     // Listener interfaces
     // -------------------------------------------------------------------------
 
-    /** Callback invoked when the user has performed a gesture. */
+    /** Object invoked when the user has performed a gesture. */
     public interface OnGesturePerformedListener {
         void onGesturePerformed(GestureOverlayView overlay, Gesture gesture);
     }
@@ -32,7 +34,7 @@ public class GestureOverlayView extends ViewGroup {
     }
 
     /** Callbacks for individual gesture stroke events. */
-    public interface OnGestureListener {
+    public interface Object {
         void onGestureStarted(GestureOverlayView overlay, Object event);
         void onGesture(GestureOverlayView overlay, Object event);
         void onGestureEnded(GestureOverlayView overlay, Object event);

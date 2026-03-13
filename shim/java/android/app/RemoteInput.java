@@ -1,94 +1,36 @@
 package android.app;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import java.util.Map;
+import java.util.Set;
 
-/**
- * Android-compatible RemoteInput shim.
- * Used by Notification.Action to accept inline text replies from notification UI.
- */
-public final class RemoteInput {
+public final class RemoteInput implements Parcelable {
+    public static final int EDIT_CHOICES_BEFORE_SENDING_AUTO = 0;
+    public static final int EDIT_CHOICES_BEFORE_SENDING_DISABLED = 0;
+    public static final int EDIT_CHOICES_BEFORE_SENDING_ENABLED = 0;
+    public static final int EXTRA_RESULTS_DATA = 0;
+    public static final int RESULTS_CLIP_LABEL = 0;
+    public static final int SOURCE_CHOICE = 0;
+    public static final int SOURCE_FREE_FORM_INPUT = 0;
 
-    private final String      mResultKey;
-    private final CharSequence mLabel;
-    private final CharSequence[] mChoices;
-    private final boolean     mAllowFreeFormInput;
+    public RemoteInput() {}
 
-    private RemoteInput(Builder b) {
-        mResultKey          = b.mResultKey;
-        mLabel              = b.mLabel;
-        mChoices            = b.mChoices;
-        mAllowFreeFormInput = b.mAllowFreeFormInput;
-    }
-
-    // -------------------------------------------------------------------------
-    // Accessors
-    // -------------------------------------------------------------------------
-
-    /** The key used to identify the result in the reply Intent extras. */
-    public String getResultKey() { return mResultKey; }
-
-    /** Human-readable label shown next to the input field, or null. */
-    public CharSequence getLabel() { return mLabel; }
-
-    /** Pre-defined choices the user can select, or null. */
-    public CharSequence[] getChoices() { return mChoices; }
-
-    /** Whether the user may type arbitrary text in addition to (or instead of) choices. */
-    public boolean getAllowFreeFormInput() { return mAllowFreeFormInput; }
-
-    // -------------------------------------------------------------------------
-    // Static helper
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the results bundle stored in an intent by the system after the
-     * user has entered a reply.  Always returns null in the shim.
-     *
-     * @param intent the reply Intent (as Object to avoid android.content.Intent dependency)
-     * @return null in shim environment
-     */
-    public static Object getResultsFromIntent(Object intent) {
-        return null;
-    }
-
-    // -------------------------------------------------------------------------
-    // Builder
-    // -------------------------------------------------------------------------
-
-    public static final class Builder {
-
-        private final String mResultKey;
-        private CharSequence  mLabel              = null;
-        private CharSequence[] mChoices           = null;
-        private boolean       mAllowFreeFormInput = true;
-
-        /**
-         * @param resultKey the key used to look up the result in the reply Intent extras
-         */
-        public Builder(String resultKey) {
-            if (resultKey == null) throw new IllegalArgumentException("resultKey must not be null");
-            mResultKey = resultKey;
-        }
-
-        /** Sets the human-readable label to display next to the input control. */
-        public Builder setLabel(CharSequence label) {
-            mLabel = label;
-            return this;
-        }
-
-        /** Sets a list of pre-defined choices the user can pick. */
-        public Builder setChoices(CharSequence[] choices) {
-            mChoices = choices;
-            return this;
-        }
-
-        /** Controls whether the user can enter arbitrary text. Default is true. */
-        public Builder setAllowFreeFormInput(boolean allowFreeFormInput) {
-            mAllowFreeFormInput = allowFreeFormInput;
-            return this;
-        }
-
-        /** Builds and returns the RemoteInput. */
-        public RemoteInput build() {
-            return new RemoteInput(this);
-        }
-    }
+    public static void addDataResultToIntent(RemoteInput p0, Intent p1, java.util.Map<Object,Object> p2) {}
+    public static void addResultsToIntent(RemoteInput[] p0, Intent p1, Bundle p2) {}
+    public int describeContents() { return 0; }
+    public boolean getAllowFreeFormInput() { return false; }
+    public Set<?> getAllowedDataTypes() { return null; }
+    public CharSequence[] getChoices() { return null; }
+    public static Map<?,?> getDataResultsFromIntent(Intent p0, String p1) { return null; }
+    public int getEditChoicesBeforeSending() { return 0; }
+    public Bundle getExtras() { return null; }
+    public CharSequence getLabel() { return null; }
+    public String getResultKey() { return null; }
+    public static Bundle getResultsFromIntent(Intent p0) { return null; }
+    public static int getResultsSource(Intent p0) { return 0; }
+    public boolean isDataOnly() { return false; }
+    public static void setResultsSource(Intent p0, int p1) {}
+    public void writeToParcel(Parcel p0, int p1) {}
 }

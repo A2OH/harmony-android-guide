@@ -1,4 +1,6 @@
 package android.opengl;
+import android.os.Debug;
+import android.os.Debug;
 
 import java.nio.Buffer;
 

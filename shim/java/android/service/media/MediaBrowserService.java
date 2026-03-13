@@ -5,13 +5,13 @@ import java.util.List;
 /**
  * Android-compatible MediaBrowserService shim. Stub — no-op implementation.
  */
-public abstract class MediaBrowserService {
+public class MediaBrowserService {
 
     // --- Abstract methods ---
 
-    public abstract BrowserRoot onGetRoot(String clientPackageName, int clientUid, Object rootHints);
+    public BrowserRoot onGetRoot(String clientPackageName, int clientUid, Object rootHints) { return null; }
 
-    public abstract void onLoadChildren(String parentId, Result<List<Object>> result);
+    public void onLoadChildren(String parentId, Result<List<Object>> result) {}
 
     // --- BrowserRoot inner class ---
 
@@ -31,13 +31,13 @@ public abstract class MediaBrowserService {
 
     // --- Result inner class ---
 
-    public static class Result<T> {
-        private T value;
+    public static class Result<Object> {
+        private Object value;
         private boolean detached = false;
 
         public Result() {}
 
-        public void sendResult(T result) {
+        public void sendResult(Object result) {
             this.value = result;
         }
 

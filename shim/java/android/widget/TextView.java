@@ -1,148 +1,219 @@
 package android.widget;
 
-import android.view.View;
-import com.ohos.shim.bridge.OHBridge;
+public class TextView extends android.view.View {
+    public TextView(android.content.Context context) {}
+    public TextView(int nodeType) {}
+    public TextView() {}
 
-/**
- * Shim: android.widget.TextView → ARKUI_NODE_TEXT
- *
- * Maps setText/setTextColor/setTextSize to ArkUI text node attributes.
- */
-public class TextView extends View {
-    // ArkUI text attribute constants (must match oh_ffi::attr)
-    static final int ATTR_TEXT_CONTENT = 1000;
-    static final int ATTR_FONT_COLOR = 1001;
-    static final int ATTR_FONT_SIZE = 1002;
-    static final int ATTR_FONT_STYLE = 1003;
-    static final int ATTR_FONT_WEIGHT = 1004;
-    static final int ATTR_TEXT_LINE_HEIGHT = 1005;
-    static final int ATTR_TEXT_MAX_LINES = 1009;
-    static final int ATTR_TEXT_ALIGN = 1010;
-
-    // ArkUI node type for Text
-    static final int NODE_TYPE_TEXT = 1;
-
-    private CharSequence text = "";
-    private int textColor = 0xFF000000; // default black
-    private float textSize = 16.0f;     // default 16sp → vp
-    private int maxLines = Integer.MAX_VALUE;
-    private int gravity = 0;
-
-    public TextView() {
-        super(NODE_TYPE_TEXT);
-    }
-
-    /** Used by subclasses (Button) that create a different node type */
-    protected TextView(int arkuiNodeType) {
-        super(arkuiNodeType);
-    }
-
-    // ── Text content ──
-
-    public CharSequence getText() { return text; }
-
-    public void setText(CharSequence text) {
-        this.text = text != null ? text : "";
-        if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrString(nativeHandle, ATTR_TEXT_CONTENT, this.text.toString());
-        }
-    }
-
-    public void setText(int resId) {
-        // Resource lookup not yet implemented — store the ID
-        setText("@" + resId);
-    }
-
-    // ── Text color ──
-
-    public void setTextColor(int color) {
-        this.textColor = color;
-        if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrColor(nativeHandle, ATTR_FONT_COLOR, color);
-        }
-    }
-
-    public int getCurrentTextColor() { return textColor; }
-
-    // ── Text size ──
-
-    public void setTextSize(float size) {
-        this.textSize = size;
-        if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_FONT_SIZE, size, 0, 0, 0, 1);
-        }
-    }
-
-    /** setTextSize with unit — we treat all units as vp for now */
-    public void setTextSize(int unit, float size) {
-        setTextSize(size);
-    }
-
-    public float getTextSize() { return textSize; }
-
-    // ── Max lines ──
-
-    public void setMaxLines(int maxLines) {
-        this.maxLines = maxLines;
-        if (nativeHandle != 0) {
-            OHBridge.nodeSetAttrInt(nativeHandle, ATTR_TEXT_MAX_LINES, maxLines);
-        }
-    }
-
-    public int getMaxLines() { return maxLines; }
-
-    public void setSingleLine(boolean singleLine) {
-        setMaxLines(singleLine ? 1 : Integer.MAX_VALUE);
-    }
-
-    // ── Gravity / text alignment ──
-
-    public void setGravity(int gravity) {
-        this.gravity = gravity;
-        if (nativeHandle != 0) {
-            // Map Android Gravity to ArkUI TextAlign
-            // CENTER_HORIZONTAL=1, LEFT=3(START), RIGHT=5(END)
-            int arkAlign;
-            if ((gravity & 0x01) != 0) {       // CENTER_HORIZONTAL
-                arkAlign = 1; // ARKUI_TEXT_ALIGN_CENTER
-            } else if ((gravity & 0x05) != 0) { // RIGHT/END
-                arkAlign = 2; // ARKUI_TEXT_ALIGN_END
-            } else {
-                arkAlign = 0; // ARKUI_TEXT_ALIGN_START
-            }
-            OHBridge.nodeSetAttrInt(nativeHandle, ATTR_TEXT_ALIGN, arkAlign);
-        }
-    }
-
-    // ── Font weight ──
-
-    public void setTypeface(Object typeface, int style) {
-        if (nativeHandle == 0) return;
-        // style: 0=NORMAL, 1=BOLD, 2=ITALIC, 3=BOLD_ITALIC
-        if ((style & 1) != 0) { // BOLD
-            OHBridge.nodeSetAttrInt(nativeHandle, ATTR_FONT_WEIGHT, 9); // ARKUI_FONT_WEIGHT_BOLD
-        }
-        if ((style & 2) != 0) { // ITALIC
-            OHBridge.nodeSetAttrInt(nativeHandle, ATTR_FONT_STYLE, 1); // ARKUI_FONT_STYLE_ITALIC
-        }
-    }
-
-    public void setTypeface(Object typeface) {
-        setTypeface(typeface, 0);
-    }
-
-    // ── Line height ──
-
-    public void setLineSpacing(float add, float mult) {
-        if (nativeHandle != 0 && add > 0) {
-            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_TEXT_LINE_HEIGHT, add, 0, 0, 0, 1);
-        }
-    }
-
-    // ── Text event handling ──
-
-    @Override
-    public void onNativeEvent(int eventId, int eventKind, String stringData) {
-        super.onNativeEvent(eventId, eventKind, stringData);
-    }
+    public static final int AUTO_SIZE_TEXT_TYPE_NONE = 0;
+    public static final int AUTO_SIZE_TEXT_TYPE_UNIFORM = 0;
+    public void addTextChangedListener(Object p0) {}
+    public void append(Object p0) {}
+    public void append(Object p0, Object p1, Object p2) {}
+    public void beginBatchEdit() {}
+    public boolean bringPointIntoView(Object p0) { return false; }
+    public void clearComposingText() {}
+    public void debug(Object p0) {}
+    public boolean didTouchFocusSelect() { return false; }
+    public void endBatchEdit() {}
+    public boolean extractText(Object p0, Object p1) { return false; }
+    public int getAutoLinkMask() { return 0; }
+    public int getAutoSizeMaxTextSize() { return 0; }
+    public int getAutoSizeMinTextSize() { return 0; }
+    public int getAutoSizeStepGranularity() { return 0; }
+    public int getAutoSizeTextAvailableSizes() { return 0; }
+    public int getAutoSizeTextType() { return 0; }
+    public int getBreakStrategy() { return 0; }
+    public int getCompoundDrawablePadding() { return 0; }
+    public Object getCompoundDrawableTintList() { return null; }
+    public Object getCompoundDrawableTintMode() { return null; }
+    public int getCompoundPaddingBottom() { return 0; }
+    public int getCompoundPaddingEnd() { return 0; }
+    public int getCompoundPaddingLeft() { return 0; }
+    public int getCompoundPaddingRight() { return 0; }
+    public int getCompoundPaddingStart() { return 0; }
+    public int getCompoundPaddingTop() { return 0; }
+    public Object getCustomInsertionActionModeCallback() { return null; }
+    public Object getCustomSelectionActionModeCallback() { return null; }
+    public boolean getDefaultEditable() { return false; }
+    public Object getDefaultMovementMethod() { return null; }
+    public Object getEditableText() { return null; }
+    public Object getError() { return null; }
+    public int getExtendedPaddingBottom() { return 0; }
+    public int getExtendedPaddingTop() { return 0; }
+    public Object getFilters() { return null; }
+    public int getFirstBaselineToTopHeight() { return 0; }
+    public boolean getFreezesText() { return false; }
+    public int getGravity() { return 0; }
+    public Object getHintTextColors() { return null; }
+    public int getHyphenationFrequency() { return 0; }
+    public int getImeActionId() { return 0; }
+    public Object getImeActionLabel() { return null; }
+    public int getImeOptions() { return 0; }
+    public boolean getIncludeFontPadding() { return false; }
+    public Object getInputExtras(Object p0) { return null; }
+    public int getInputType() { return 0; }
+    public int getJustificationMode() { return 0; }
+    public Object getKeyListener() { return null; }
+    public int getLastBaselineToBottomHeight() { return 0; }
+    public Object getLayout() { return null; }
+    public float getLetterSpacing() { return 0f; }
+    public int getLineBounds(Object p0, Object p1) { return 0; }
+    public int getLineCount() { return 0; }
+    public int getLineHeight() { return 0; }
+    public float getLineSpacingExtra() { return 0f; }
+    public float getLineSpacingMultiplier() { return 0f; }
+    public Object getLinkTextColors() { return null; }
+    public boolean getLinksClickable() { return false; }
+    public int getMarqueeRepeatLimit() { return 0; }
+    public int getMaxEms() { return 0; }
+    public int getMaxHeight() { return 0; }
+    public int getMaxLines() { return 0; }
+    public int getMaxWidth() { return 0; }
+    public int getMinEms() { return 0; }
+    public int getMinHeight() { return 0; }
+    public int getMinLines() { return 0; }
+    public int getMinWidth() { return 0; }
+    public Object getMovementMethod() { return null; }
+    public int getOffsetForPosition(Object p0, Object p1) { return 0; }
+    public Object getPaint() { return null; }
+    public int getPaintFlags() { return 0; }
+    public Object getPrivateImeOptions() { return null; }
+    public float getShadowDx() { return 0f; }
+    public float getShadowDy() { return 0f; }
+    public float getShadowRadius() { return 0f; }
+    public boolean getShowSoftInputOnFocus() { return false; }
+    public Object getTextColors() { return null; }
+    public float getTextScaleX() { return 0f; }
+    public int getTextSizeUnit() { return 0; }
+    public int getTotalPaddingBottom() { return 0; }
+    public int getTotalPaddingEnd() { return 0; }
+    public int getTotalPaddingLeft() { return 0; }
+    public int getTotalPaddingRight() { return 0; }
+    public int getTotalPaddingStart() { return 0; }
+    public int getTotalPaddingTop() { return 0; }
+    public Object getTransformationMethod() { return null; }
+    public Object getTypeface() { return null; }
+    public Object getUrls() { return null; }
+    public boolean hasSelection() { return false; }
+    public boolean isAllCaps() { return false; }
+    public boolean isCursorVisible() { return false; }
+    public boolean isElegantTextHeight() { return false; }
+    public boolean isFallbackLineSpacing() { return false; }
+    public boolean isHorizontallyScrollable() { return false; }
+    public boolean isInputMethodTarget() { return false; }
+    public boolean isSingleLine() { return false; }
+    public boolean isSuggestionsEnabled() { return false; }
+    public boolean isTextSelectable() { return false; }
+    public int length() { return 0; }
+    public boolean moveCursorToVisibleOffset() { return false; }
+    public void onBeginBatchEdit() {}
+    public void onCommitCompletion(Object p0) {}
+    public void onCommitCorrection(Object p0) {}
+    public void onEditorAction(Object p0) {}
+    public void onEndBatchEdit() {}
+    public boolean onPreDraw() { return false; }
+    public boolean onPrivateIMECommand(Object p0, Object p1) { return false; }
+    public void onRestoreInstanceState(Object p0) {}
+    public Object onSaveInstanceState() { return null; }
+    public void onTextChanged(Object p0, Object p1, Object p2, Object p3) {}
+    public boolean onTextContextMenuItem(Object p0) { return false; }
+    public void removeTextChangedListener(Object p0) {}
+    public void setAllCaps(Object p0) {}
+    public void setAutoLinkMask(Object p0) {}
+    public void setAutoSizeTextTypeUniformWithConfiguration(Object p0, Object p1, Object p2, Object p3) {}
+    public void setAutoSizeTextTypeUniformWithPresetSizes(Object p0, Object p1) {}
+    public void setAutoSizeTextTypeWithDefaults(Object p0) {}
+    public void setBreakStrategy(Object p0) {}
+    public void setCompoundDrawablePadding(Object p0) {}
+    public void setCompoundDrawableTintBlendMode(Object p0) {}
+    public void setCompoundDrawableTintList(Object p0) {}
+    public void setCompoundDrawableTintMode(Object p0) {}
+    public void setCompoundDrawables(Object p0, Object p1, Object p2, Object p3) {}
+    public void setCompoundDrawablesRelative(Object p0, Object p1, Object p2, Object p3) {}
+    public void setCompoundDrawablesRelativeWithIntrinsicBounds(Object p0, Object p1, Object p2, Object p3) {}
+    public void setCompoundDrawablesWithIntrinsicBounds(Object p0, Object p1, Object p2, Object p3) {}
+    public void setCursorVisible(Object p0) {}
+    public void setCustomInsertionActionModeCallback(Object p0) {}
+    public void setCustomSelectionActionModeCallback(Object p0) {}
+    public void setEditableFactory(Object p0) {}
+    public void setElegantTextHeight(Object p0) {}
+    public void setEllipsize(Object p0) {}
+    public void setEms(Object p0) {}
+    public void setError(Object p0) {}
+    public void setError(Object p0, Object p1) {}
+    public void setExtractedText(Object p0) {}
+    public void setFallbackLineSpacing(Object p0) {}
+    public void setFilters(Object p0) {}
+    public void setFirstBaselineToTopHeight(Object p0) {}
+    public void setFontFeatureSettings(Object p0) {}
+    public boolean setFontVariationSettings(Object p0) { return false; }
+    public boolean setFrame(Object p0, Object p1, Object p2, Object p3) { return false; }
+    public void setFreezesText(Object p0) {}
+    public void setGravity(Object p0) {}
+    public void setHeight(Object p0) {}
+    public void setHighlightColor(Object p0) {}
+    public void setHint(Object p0) {}
+    public void setHintTextColor(Object p0) {}
+    public void setHorizontallyScrolling(Object p0) {}
+    public void setHyphenationFrequency(Object p0) {}
+    public void setImeActionLabel(Object p0, Object p1) {}
+    public void setImeHintLocales(Object p0) {}
+    public void setImeOptions(Object p0) {}
+    public void setIncludeFontPadding(Object p0) {}
+    public void setInputExtras(Object p0) {}
+    public void setInputType(Object p0) {}
+    public void setJustificationMode(Object p0) {}
+    public void setKeyListener(Object p0) {}
+    public void setLastBaselineToBottomHeight(Object p0) {}
+    public void setLetterSpacing(Object p0) {}
+    public void setLineHeight(Object p0) {}
+    public void setLineSpacing(Object p0, Object p1) {}
+    public void setLines(Object p0) {}
+    public void setLinkTextColor(Object p0) {}
+    public void setLinksClickable(Object p0) {}
+    public void setMarqueeRepeatLimit(Object p0) {}
+    public void setMaxEms(Object p0) {}
+    public void setMaxHeight(Object p0) {}
+    public void setMaxLines(Object p0) {}
+    public void setMaxWidth(Object p0) {}
+    public void setMinEms(Object p0) {}
+    public void setMinHeight(Object p0) {}
+    public void setMinLines(Object p0) {}
+    public void setMinWidth(Object p0) {}
+    public void setMovementMethod(Object p0) {}
+    public void setOnEditorActionListener(Object p0) {}
+    public void setPaintFlags(Object p0) {}
+    public void setPrivateImeOptions(Object p0) {}
+    public void setRawInputType(Object p0) {}
+    public void setScroller(Object p0) {}
+    public void setSelectAllOnFocus(Object p0) {}
+    public void setShadowLayer(Object p0, Object p1, Object p2, Object p3) {}
+    public void setShowSoftInputOnFocus(Object p0) {}
+    public void setSingleLine() {}
+    public void setSingleLine(Object p0) {}
+    public void setSpannableFactory(Object p0) {}
+    public void setText(Object p0) {}
+    public void setText(Object p0, Object p1) {}
+    public void setText(Object p0, Object p1, Object p2) {}
+    public void setTextAppearance(Object p0) {}
+    public void setTextClassifier(Object p0) {}
+    public void setTextColor(Object p0) {}
+    public void setTextCursorDrawable(Object p0) {}
+    public void setTextIsSelectable(Object p0) {}
+    public void setTextKeepState(Object p0) {}
+    public void setTextKeepState(Object p0, Object p1) {}
+    public void setTextLocale(Object p0) {}
+    public void setTextLocales(Object p0) {}
+    public void setTextMetricsParams(Object p0) {}
+    public void setTextScaleX(Object p0) {}
+    public void setTextSelectHandle(Object p0) {}
+    public void setTextSelectHandleLeft(Object p0) {}
+    public void setTextSelectHandleRight(Object p0) {}
+    public void setTextSize(Object p0) {}
+    public void setTextSize(Object p0, Object p1) {}
+    public void setTransformationMethod(Object p0) {}
+    public void setTypeface(Object p0, Object p1) {}
+    public void setTypeface(Object p0) {}
+    public void setWidth(Object p0) {}
 }

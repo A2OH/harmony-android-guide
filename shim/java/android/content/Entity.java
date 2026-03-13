@@ -1,6 +1,7 @@
 package android.content;
 
 import java.util.ArrayList;
+import java.net.URI;
 
 /**
  * Android-compatible Entity shim.

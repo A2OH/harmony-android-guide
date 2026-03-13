@@ -1,4 +1,6 @@
 package android.widget;
+import android.view.View;
+import android.view.View;
 
 import android.view.View;
 
@@ -13,7 +15,7 @@ import android.view.View;
  * The preferred way to create a Magnifier is via {@link Builder}:
  * <pre>
  *   Magnifier magnifier = new Magnifier.Builder(view)
- *       .setSize(200, 100)
+ *       .setSize(200)
  *       .setInitialZoom(1.5f)
  *       .build();
  * </pre>
@@ -52,9 +54,9 @@ public final class Magnifier {
      * Shows the magnifier at the position relative to the magnified view
      * specified by the {@code (x, y)} coordinates.
      *
-     * @param x horizontal coordinate of the centre point to magnify, in view-
+     * @param x horizontal coordinate of the centre po(int to magnify, in view-
      *          local pixels
-     * @param y vertical coordinate of the centre point to magnify, in view-
+     * @param y vertical coordinate of the centre po(int to magnify, in view-
      *          local pixels
      */
     public void show(float x, float y) {

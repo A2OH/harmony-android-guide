@@ -3,14 +3,14 @@ package android.accounts;
 /**
  * Android-compatible AbstractAccountAuthenticator shim. Stub abstract class.
  */
-public abstract class AbstractAccountAuthenticator {
+public class AbstractAccountAuthenticator {
     public AbstractAccountAuthenticator(Object context) {
         // stub
     }
 
-    public abstract Object addAccount(AccountAuthenticatorResponse response,
+    public Object addAccount(AccountAuthenticatorResponse response,
             String accountType, String authTokenType,
-            String[] requiredFeatures, Object options) throws AccountsException;
+            String[] requiredFeatures, Object options)throws AccountsException { return null; }
 
     public Object confirmCredentials(AccountAuthenticatorResponse response,
             Object account, Object options) throws AccountsException {

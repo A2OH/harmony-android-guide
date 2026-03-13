@@ -1,4 +1,9 @@
 package android.os;
+import android.util.Size;
+import android.util.Size;
+import java.io.FileDescriptor;
+import java.util.Map;
+import java.util.Set;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;

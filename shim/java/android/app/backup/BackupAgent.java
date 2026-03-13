@@ -1,4 +1,6 @@
 package android.app.backup;
+import android.os.ParcelFileDescriptor;
+import android.os.ParcelFileDescriptor;
 
 /**
  * Android-compatible BackupAgent shim. Abstract stub — no-op on OpenHarmony.
@@ -9,7 +11,7 @@ package android.app.backup;
  * Subclass this and implement onBackup() and onRestore() to preserve
  * compile-time compatibility with Android backup code.
  */
-public abstract class BackupAgent {
+public class BackupAgent {
 
     /** Backup data type constant: a regular file. */
     public static final int TYPE_FILE = 1;
@@ -41,8 +43,7 @@ public abstract class BackupAgent {
      * @param data       output stream for the backup data
      * @param newState   output stream to write the new backup state
      */
-    public abstract void onBackup(Object oldState, Object data, Object newState)
-            throws Exception;
+    public void onBackup(Object oldState, Object data, Object newState)throws Exception {}
 
     /**
      * Called by the backup system when it is time to restore data.
@@ -53,6 +54,5 @@ public abstract class BackupAgent {
      * @param appVersionCode version of the app that produced the backup
      * @param newState  output stream to write the post-restore state
      */
-    public abstract void onRestore(Object data, int appVersionCode, Object newState)
-            throws Exception;
+    public void onRestore(Object data, int appVersionCode, Object newState)throws Exception {}
 }

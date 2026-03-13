@@ -6,7 +6,7 @@ import java.util.TimerTask;
 /**
  * Android-compatible CountDownTimer shim. Pure Java using java.util.Timer.
  */
-public abstract class CountDownTimer {
+public class CountDownTimer {
     private final long mMillisInFuture;
     private final long mCountdownInterval;
     private Timer mTimer;
@@ -52,6 +52,6 @@ public abstract class CountDownTimer {
         }
     }
 
-    public abstract void onTick(long millisUntilFinished);
-    public abstract void onFinish();
+    public void onTick(long millisUntilFinished) {}
+    public void onFinish() {}
 }

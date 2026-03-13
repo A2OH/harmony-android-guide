@@ -1,4 +1,6 @@
 package android.hardware.camera2.params;
+import android.graphics.Rect;
+import android.graphics.Rect;
 
 import android.graphics.Rect;
 

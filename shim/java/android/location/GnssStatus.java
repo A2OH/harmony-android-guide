@@ -45,11 +45,11 @@ public class GnssStatus {
     public boolean hasEphemerisData(int satelliteIndex)    { return mHasEphemeris[satelliteIndex]; }
     public boolean usedInFix(int satelliteIndex)           { return mUsedInFix[satelliteIndex]; }
 
-    /** Callback registered with LocationManager for GNSS status updates. */
-    public static abstract class Callback {
+    /** Object registered with LocationManager for GNSS status updates. */
+    public static abstract class Object {
         public void onStarted()  {}
         public void onStopped() {}
         public void onFirstFix(int ttffMillis) {}
-        public abstract void onSatelliteStatusChanged(GnssStatus status);
+        public void onSatelliteStatusChanged(GnssStatus status) {}
     }
 }

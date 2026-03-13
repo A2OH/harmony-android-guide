@@ -1,4 +1,8 @@
 package android.view;
+import android.content.res.Configuration;
+import android.util.Property;
+import android.content.res.Configuration;
+import android.util.Property;
 
 /**
  * Android-compatible ViewPropertyAnimator shim.

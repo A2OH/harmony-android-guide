@@ -20,7 +20,7 @@ public class DynamicLayout extends Layout {
      * Standard constructor mirroring android.text.DynamicLayout.
      *
      * @param base         the Editable (or other CharSequence) being displayed
-     * @param paint        the TextPaint to use for measurement
+     * @param pa(int the TextPaint to use for measurement
      * @param width        layout width in pixels
      * @param align        text alignment
      * @param spacingMult  line-spacing multiplier
@@ -40,7 +40,7 @@ public class DynamicLayout extends Layout {
      *
      * @param base    the Editable being tracked
      * @param display the CharSequence actually measured for layout
-     * @param paint   TextPaint for measurement
+     * @param pa(int TextPaint for measurement
      * @param width   layout width in pixels
      * @param align   text alignment
      * @param spacingMult line-spacing multiplier

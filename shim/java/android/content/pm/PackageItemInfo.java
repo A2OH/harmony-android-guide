@@ -1,31 +1,29 @@
 package android.content.pm;
+import android.content.res.XmlResourceParser;
+import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.util.Printer;
 
-/**
- * Android-compatible PackageItemInfo shim. Base class for components in a package.
- * Stub — no-op implementation for A2OH migration.
- */
 public class PackageItemInfo {
-    public String name;
-    public String packageName;
-    public int labelRes;
-    public int icon;
-    /** Bundle represented as Object to avoid dependency on android.os.Bundle. */
-    public Object metaData;
-    public CharSequence nonLocalizedLabel;
+    public int banner = 0;
+    public int icon = 0;
+    public int labelRes = 0;
+    public int logo = 0;
+    public int metaData = 0;
+    public int name = 0;
+    public int nonLocalizedLabel = 0;
+    public int packageName = 0;
 
     public PackageItemInfo() {}
+    public PackageItemInfo(PackageItemInfo p0) {}
+    public PackageItemInfo(Parcel p0) {}
 
-    public PackageItemInfo(PackageItemInfo orig) {
-        name = orig.name;
-        packageName = orig.packageName;
-        labelRes = orig.labelRes;
-        icon = orig.icon;
-        metaData = orig.metaData;
-        nonLocalizedLabel = orig.nonLocalizedLabel;
-    }
-
-    public CharSequence loadLabel(Object pm) {
-        if (nonLocalizedLabel != null) return nonLocalizedLabel;
-        return name != null ? name : "";
-    }
+    public void dumpBack(Printer p0, String p1) {}
+    public void dumpFront(Printer p0, String p1) {}
+    public Drawable loadBanner(PackageManager p0) { return null; }
+    public Drawable loadIcon(PackageManager p0) { return null; }
+    public Drawable loadLogo(PackageManager p0) { return null; }
+    public Drawable loadUnbadgedIcon(PackageManager p0) { return null; }
+    public XmlResourceParser loadXmlMetaData(PackageManager p0, String p1) { return null; }
+    public void writeToParcel(Parcel p0, int p1) {}
 }

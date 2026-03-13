@@ -1,4 +1,5 @@
 package android.telephony;
+import java.util.List;
 
 /**
  * Shim for android.telephony.PhoneStateListener.
@@ -74,11 +75,11 @@ public class PhoneStateListener {
     public PhoneStateListener() {}
 
     // -------------------------------------------------------------------------
-    // Callback methods — override in subclasses
+    // Object methods — override in subclasses
     // -------------------------------------------------------------------------
 
     /**
-     * Callback invoked when the device call state changes.
+     * Object invoked when the device call state changes.
      *
      * @param state       one of {@link TelephonyManager#CALL_STATE_IDLE},
      *                    {@link TelephonyManager#CALL_STATE_RINGING}, or
@@ -91,7 +92,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the network signal strengths change.
+     * Object invoked when the network signal strengths change.
      *
      * @param signalStrength a {@code SignalStrength} object (typed as Object for shim compatibility)
      */
@@ -100,7 +101,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the device's cell location changes.
+     * Object invoked when the device's cell location changes.
      *
      * @param location a {@code CellLocation} object (typed as Object for shim compatibility)
      */
@@ -109,7 +110,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the data connection state (and its network type) changes.
+     * Object invoked when the data connection state (and its network type) changes.
      *
      * @param state       the data connection state; one of
      *                    {@link TelephonyManager#DATA_DISCONNECTED},
@@ -123,7 +124,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the service state changes.
+     * Object invoked when the service state changes.
      *
      * @param serviceState a {@code ServiceState} object (typed as Object for shim compatibility)
      */
@@ -132,7 +133,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the message-waiting indicator changes.
+     * Object invoked when the message-waiting indicator changes.
      *
      * @param mwi true if a message is waiting, false otherwise
      */
@@ -141,7 +142,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the call-forwarding indicator changes.
+     * Object invoked when the call-forwarding indicator changes.
      *
      * @param cfi true if call forwarding is enabled, false otherwise
      */
@@ -150,7 +151,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when the over-the-air activation completes.
+     * Object invoked when the over-the-air activation completes.
      *
      * @param state the OTA provisioning state
      */
@@ -159,7 +160,7 @@ public class PhoneStateListener {
     }
 
     /**
-     * Callback invoked when a observed cell info has changed or new cells have
+     * Object invoked when a observed cell info has changed or new cells have
      * been added or removed.
      *
      * @param cellInfo list of CellInfo (typed as Object for shim compatibility)

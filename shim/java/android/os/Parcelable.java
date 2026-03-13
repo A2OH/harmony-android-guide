@@ -27,25 +27,25 @@ public interface Parcelable {
      * Interface that must be implemented and provided as a public CREATOR
      * field that generates instances of your Parcelable class from a Parcel.
      */
-    public interface Creator<T> {
+    public interface Creator<Object> {
         /**
          * Create a new instance of the Parcelable class, instantiating it
          * from the given Parcel whose data had previously been written by
          * {@link Parcelable#writeToParcel}.
          */
-        T createFromParcel(Parcel source);
+        Object createFromParcel(Parcel source);
 
         /**
          * Create a new array of the Parcelable class.
          */
-        T[] newArray(int size);
+        Object[] newArray(int size);
     }
 
     /**
      * Specialization of {@link Creator} that allows you to receive the
      * ClassLoader the object is being created in.
      */
-    public interface ClassLoaderCreator<T> extends Creator<T> {
-        T createFromParcel(Parcel source, ClassLoader loader);
+    public interface ClassLoaderCreator<Object> extends Creator<Object> {
+        Object createFromParcel(Parcel source, ClassLoader loader);
     }
 }

@@ -23,7 +23,7 @@ public final class MacAddress {
         if (addr == null || addr.length != 6) {
             throw new IllegalArgumentException("MAC address must be exactly 6 bytes");
         }
-        mAddr = Arrays.copyOf(addr, 6);
+        mAddr = Arrays.copyOf(addr, addr.length);
     }
 
     // ---- Factory methods ----
@@ -44,7 +44,7 @@ public final class MacAddress {
         }
         byte[] bytes = new byte[6];
         for (int i = 0; i < 6; i++) {
-            int val = Integer.parseInt(parts[i], 16);
+            int val = Integer.parseInt(parts[i]);
             if (val < 0 || val > 255) {
                 throw new IllegalArgumentException("Octet out of range in: " + addr);
             }
@@ -66,7 +66,7 @@ public final class MacAddress {
 
     /** Returns a copy of the 6-byte representation of this MAC address. */
     public byte[] toByteArray() {
-        return Arrays.copyOf(mAddr, 6);
+        return Arrays.copyOf(mAddr, mAddr.length);
     }
 
     /** Returns {@code true} if this is the all-ones broadcast address. */

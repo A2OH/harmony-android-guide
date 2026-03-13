@@ -1,4 +1,5 @@
 package android.webkit;
+import java.net.URL;
 
 /**
  * Shim for android.webkit.DownloadListener.

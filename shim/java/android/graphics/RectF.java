@@ -5,6 +5,8 @@ package android.graphics;
  * Pure Java — no OHBridge calls.
  */
 public class RectF {
+    public RectF(Object... args) {}
+    public RectF(int left, int top, int right) {}
 
     public float left, top, right, bottom;
 

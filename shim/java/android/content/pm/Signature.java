@@ -35,7 +35,7 @@ public class Signature {
         if ((len & 1) != 0) throw new IllegalArgumentException("odd-length hex string");
         mBytes = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            mBytes[i / 2] = (byte) Integer.parseInt(text.substring(i, i + 2), 16);
+            mBytes[i / 2] = (byte) Integer.parseInt(text.substring(i, i + 2));
         }
     }
 

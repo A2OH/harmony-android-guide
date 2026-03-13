@@ -1,4 +1,7 @@
 package android.graphics;
+import android.view.Surface;
+import android.view.Surface;
+import java.util.Set;
 
 /**
  * Shim: android.graphics.HardwareRenderer

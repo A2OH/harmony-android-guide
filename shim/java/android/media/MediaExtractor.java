@@ -2,6 +2,7 @@ package android.media;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
  * Android-compatible MediaExtractor shim. Stub — returns empty data.

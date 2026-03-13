@@ -1,162 +1,270 @@
 package android.app;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.os.PersistableBundle;
 
-import com.ohos.shim.bridge.OHBridge;
-
-/**
- * Shim: android.app.Activity → OH UIAbility + page lifecycle
- * Tier 2 — composite mapping.
- *
- * In OH, Activity is split into:
- * - UIAbility (app-level lifecycle: onCreate, onForeground, onBackground, onDestroy)
- * - @Entry @Component page (UI rendering via build())
- *
- * This shim merges both into a single Activity class that Android apps expect.
- * The OH runtime bridge manages the mapping between Activity lifecycle callbacks
- * and the underlying UIAbility + page events.
- */
 public class Activity extends Context {
-    private Intent intent;
-    private boolean isFinishing = false;
 
-    // ── Lifecycle callbacks (called by the OH bridge runtime) ──
+    /* ── Framework-managed state ── */
+    Intent mIntent;
+    ComponentName mComponent;
+    Application mApplication;
+    boolean mFinished;
+    boolean mDestroyed;
+    boolean mStarted;
+    boolean mResumed;
+    int mResultCode = RESULT_CANCELED;
+    Intent mResultData;
+    String mTitle;
 
-    protected void onCreate(Bundle savedInstanceState) {
-        // Default no-op — apps override this
+    public Activity() {}
+
+    public static final int DEFAULT_KEYS_DIALER = 1;
+    public static final int DEFAULT_KEYS_DISABLE = 0;
+    public static final int DEFAULT_KEYS_SEARCH_GLOBAL = 4;
+    public static final int DEFAULT_KEYS_SEARCH_LOCAL = 3;
+    public static final int DEFAULT_KEYS_SHORTCUT = 2;
+    public static final int FOCUSED_STATE_SET = 0;
+    public static final int RESULT_CANCELED = 0;
+    public static final int RESULT_FIRST_USER = 1;
+    public static final int RESULT_OK = -1;
+
+    /* ── Lifecycle (proper Bundle signatures) ── */
+
+    protected void onCreate(Bundle savedInstanceState) {}
+
+    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
+        onCreate(savedInstanceState);
     }
 
     protected void onStart() {}
     protected void onResume() {}
     protected void onPause() {}
     protected void onStop() {}
-
     protected void onDestroy() {}
+    protected void onRestart() {}
 
-    protected void onRestart() {
-        onStart();
+    protected void onPostCreate(Bundle savedInstanceState) {}
+    public void onPostCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
+        onPostCreate(savedInstanceState);
     }
 
-    protected void onNewIntent(Intent intent) {
-        this.intent = intent;
-    }
+    protected void onPostResume() {}
 
     protected void onSaveInstanceState(Bundle outState) {}
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        onSaveInstanceState(outState);
+    }
+
     protected void onRestoreInstanceState(Bundle savedInstanceState) {}
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        onRestoreInstanceState(savedInstanceState);
+    }
 
-    // ── Activity result ──
-
+    protected void onNewIntent(Intent intent) {}
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {}
 
-    public void startActivityForResult(Intent intent, int requestCode) {
-        // TODO: implement via OH ability result callback
-        startActivity(intent);
-    }
+    /* ── Core getters/setters ── */
 
-    public static final int RESULT_OK = -1;
-    public static final int RESULT_CANCELED = 0;
-    public static final int RESULT_FIRST_USER = 1;
-
-    public void setResult(int resultCode) {}
-    public void setResult(int resultCode, Intent data) {}
-
-    // ── View / Layout ──
-
-    /**
-     * In AOSP this inflates XML and sets the view hierarchy.
-     * In the shim, this signals the bridge to load the corresponding
-     * ArkUI page. The mapping from R.layout.xxx to page name is
-     * maintained by the bridge runtime.
-     */
-    public void setContentView(int layoutResID) {
-        // Bridge handles this — maps layoutResID to an ArkUI page
-        // The actual UI rendering is done by the View shim layer
-    }
-
-    public void setContentView(android.view.View view) {
-        // Direct view setting — bridge renders via ArkUI canvas
-    }
-
-    /**
-     * findViewById replacement.
-     * In the shim, views are registered by ID when the layout is inflated.
-     * Returns the View shim object with the matching ID.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends android.view.View> T findViewById(int id) {
-        // TODO: implement via ViewRegistry managed by layout inflater shim
-        return null;
-    }
-
-    // ── Intent ──
-
-    public Intent getIntent() {
-        return intent;
-    }
-
-    public void setIntent(Intent newIntent) {
-        this.intent = newIntent;
-    }
-
-    // ── Navigation ──
+    public Intent getIntent() { return mIntent; }
+    public void setIntent(Intent newIntent) { mIntent = newIntent; }
+    public Application getApplication() { return mApplication; }
+    public ComponentName getComponentName() { return mComponent; }
+    public CharSequence getTitle() { return mTitle; }
+    public void setTitle(CharSequence title) { mTitle = title != null ? title.toString() : null; }
 
     public void finish() {
-        isFinishing = true;
-        OHBridge.terminateSelf();
+        mFinished = true;
+    }
+    public boolean isFinishing() { return mFinished; }
+    public boolean isDestroyed() { return mDestroyed; }
+
+    public void setResult(int resultCode) {
+        mResultCode = resultCode;
+        mResultData = null;
+    }
+    public void setResult(int resultCode, Intent data) {
+        mResultCode = resultCode;
+        mResultData = data;
     }
 
-    public boolean isFinishing() {
-        return isFinishing;
+    public void startActivity(Intent intent) {}
+    public void startActivity(Intent intent, Bundle options) {}
+    public void startActivityForResult(Intent intent, int requestCode) {}
+    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {}
+
+    @Override
+    public String getPackageName() {
+        return mComponent != null ? mComponent.getPackageName() : null;
     }
 
-    public void finishAffinity() {
-        finish();
+    @Override
+    public Context getApplicationContext() {
+        return mApplication;
     }
 
-    // ── System services shortcut ──
+    /* ── Remaining stubs ── */
 
-    public Object getSystemService(Class<?> serviceClass) {
-        // Map class → service name
-        if (serviceClass == NotificationManager.class) {
-            return getSystemService(NOTIFICATION_SERVICE);
-        }
-        if (serviceClass == AlarmManager.class) {
-            return getSystemService(ALARM_SERVICE);
-        }
-        return null;
-    }
-
-    // ── Toast shortcut ──
-
-    public void runOnUiThread(Runnable action) {
-        // In OH, all UI runs on the main thread already
-        // TODO: use OH taskpool or main thread handler if needed
-        action.run();
-    }
-
-    // ── Window features (stubs) ──
-
-    public void requestWindowFeature(int featureId) {}
+    public void addContentView(Object p0, Object p1) {}
+    public void closeContextMenu() {}
+    public void closeOptionsMenu() {}
+    public Object createPendingResult(Object p0, Object p1, Object p2) { return null; }
+    public void dismissKeyboardShortcutsHelper() {}
+    public boolean dispatchGenericMotionEvent(Object p0) { return false; }
+    public boolean dispatchKeyEvent(Object p0) { return false; }
+    public boolean dispatchKeyShortcutEvent(Object p0) { return false; }
+    public boolean dispatchPopulateAccessibilityEvent(Object p0) { return false; }
+    public boolean dispatchTouchEvent(Object p0) { return false; }
+    public boolean dispatchTrackballEvent(Object p0) { return false; }
+    public void dump(Object p0, Object p1, Object p2, Object p3) {}
+    public boolean enterPictureInPictureMode(Object p0) { return false; }
+    public Object findViewById(Object p0) { return null; }
+    public void finishActivity(Object p0) {}
+    public void finishAffinity() {}
+    public void finishAfterTransition() {}
+    public void finishAndRemoveTask() {}
+    public int getChangingConfigurations() { return 0; }
+    public Object getContentScene() { return null; }
+    public Object getContentTransitionManager() { return null; }
+    public int getMaxNumPictureInPictureActions() { return 0; }
+    public Object getMediaController() { return null; }
+    public Object getParent() { return null; }
+    public Object getPreferences(Object p0) { return null; }
+    public int getRequestedOrientation() { return 0; }
+    public Object getSearchEvent() { return null; }
+    public int getTaskId() { return 0; }
+    public int getTitleColor() { return 0; }
+    public Object getVoiceInteractor() { return null; }
+    public int getVolumeControlStream() { return 0; }
     public Object getWindow() { return null; }
-
-    // ── Title ──
-
-    public void setTitle(CharSequence title) {}
-    public void setTitle(int titleId) {}
-
-    // ── Permissions ──
-
-    public void requestPermissions(String[] permissions, int requestCode) {
-        // TODO: map to abilityAccessCtrl.requestPermissionsFromUser via bridge
-    }
-
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {}
-
-    public int checkSelfPermission(String permission) {
-        // TODO: map to atManager.checkAccessToken via bridge
-        return 0; // PERMISSION_GRANTED
-    }
+    public Object getWindowManager() { return null; }
+    public boolean hasWindowFocus() { return false; }
+    public void invalidateOptionsMenu() {}
+    public boolean isActivityTransitionRunning() { return false; }
+    public boolean isChangingConfigurations() { return false; }
+    public boolean isChild() { return false; }
+    public boolean isImmersive() { return false; }
+    public boolean isInMultiWindowMode() { return false; }
+    public boolean isInPictureInPictureMode() { return false; }
+    public boolean isLocalVoiceInteractionSupported() { return false; }
+    public boolean isTaskRoot() { return false; }
+    public boolean isVoiceInteraction() { return false; }
+    public boolean isVoiceInteractionRoot() { return false; }
+    public boolean moveTaskToBack(Object p0) { return false; }
+    public boolean navigateUpTo(Object p0) { return false; }
+    public void onActivityReenter(Object p0, Object p1) {}
+    public void onAttachedToWindow() {}
+    public void onBackPressed() {}
+    public void onChildTitleChanged(Object p0, Object p1) {}
+    public void onConfigurationChanged(Object p0) {}
+    public void onContentChanged() {}
+    public boolean onContextItemSelected(Object p0) { return false; }
+    public void onContextMenuClosed(Object p0) {}
+    public void onCreateContextMenu(Object p0, Object p1, Object p2) {}
+    public void onCreateNavigateUpTaskStack(Object p0) {}
+    public boolean onCreateOptionsMenu(Object p0) { return false; }
+    public boolean onCreatePanelMenu(Object p0, Object p1) { return false; }
+    public void onDetachedFromWindow() {}
+    public void onEnterAnimationComplete() {}
+    public boolean onGenericMotionEvent(Object p0) { return false; }
+    public void onGetDirectActions(Object p0, Object p1) {}
+    public boolean onKeyDown(Object p0, Object p1) { return false; }
+    public boolean onKeyLongPress(Object p0, Object p1) { return false; }
+    public boolean onKeyMultiple(Object p0, Object p1, Object p2) { return false; }
+    public boolean onKeyShortcut(Object p0, Object p1) { return false; }
+    public boolean onKeyUp(Object p0, Object p1) { return false; }
+    public void onLocalVoiceInteractionStarted() {}
+    public void onLocalVoiceInteractionStopped() {}
+    public void onLowMemory() {}
+    public boolean onMenuItemSelected(Object p0, Object p1) { return false; }
+    public boolean onMenuOpened(Object p0, Object p1) { return false; }
+    public void onMultiWindowModeChanged(Object p0, Object p1) {}
+    public boolean onNavigateUp() { return false; }
+    public boolean onOptionsItemSelected(Object p0) { return false; }
+    public void onOptionsMenuClosed(Object p0) {}
+    public void onPanelClosed(Object p0, Object p1) {}
+    public void onPerformDirectAction(Object p0, Object p1, Object p2, Object p3) {}
+    public void onPictureInPictureModeChanged(Object p0, Object p1) {}
+    public boolean onPictureInPictureRequested() { return false; }
+    public void onPrepareNavigateUpTaskStack(Object p0) {}
+    public boolean onPrepareOptionsMenu(Object p0) { return false; }
+    public boolean onPreparePanel(Object p0, Object p1, Object p2) { return false; }
+    public void onProvideAssistContent(Object p0) {}
+    public void onProvideAssistData(Object p0) {}
+    public Object onProvideReferrer() { return null; }
+    public void onRequestPermissionsResult(Object p0, Object p1, Object p2) {}
+    public Object onRetainNonConfigurationInstance() { return null; }
+    public boolean onSearchRequested(Object p0) { return false; }
+    public boolean onSearchRequested() { return false; }
+    public void onTitleChanged(Object p0, Object p1) {}
+    public void onTopResumedActivityChanged(Object p0) {}
+    public boolean onTouchEvent(Object p0) { return false; }
+    public boolean onTrackballEvent(Object p0) { return false; }
+    public void onTrimMemory(Object p0) {}
+    public void onUserInteraction() {}
+    public void onUserLeaveHint() {}
+    public void onWindowAttributesChanged(Object p0) {}
+    public void onWindowFocusChanged(Object p0) {}
+    public void openContextMenu(Object p0) {}
+    public void openOptionsMenu() {}
+    public void overridePendingTransition(Object p0, Object p1) {}
+    public void postponeEnterTransition() {}
+    public void recreate() {}
+    public void registerActivityLifecycleCallbacks(Object p0) {}
+    public void registerForContextMenu(Object p0) {}
+    public boolean releaseInstance() { return false; }
+    public void reportFullyDrawn() {}
+    public Object requestDragAndDropPermissions(Object p0) { return null; }
+    public void requestPermissions(Object p0, Object p1) {}
+    public void requestShowKeyboardShortcuts() {}
+    public boolean requestWindowFeature(Object p0) { return false; }
+    public void runOnUiThread(Object p0) {}
+    public void setActionBar(Object p0) {}
+    public void setContentTransitionManager(Object p0) {}
+    public void setContentView(Object p0) {}
+    public void setContentView(Object p0, Object p1) {}
+    public void setDefaultKeyMode(Object p0) {}
+    public void setEnterSharedElementCallback(Object p0) {}
+    public void setExitSharedElementCallback(Object p0) {}
+    public void setFeatureDrawable(Object p0, Object p1) {}
+    public void setFeatureDrawableAlpha(Object p0, Object p1) {}
+    public void setFeatureDrawableResource(Object p0, Object p1) {}
+    public void setFeatureDrawableUri(Object p0, Object p1) {}
+    public void setFinishOnTouchOutside(Object p0) {}
+    public void setImmersive(Object p0) {}
+    public void setInheritShowWhenLocked(Object p0) {}
+    public void setLocusContext(Object p0, Object p1) {}
+    public void setMediaController(Object p0) {}
+    public void setPictureInPictureParams(Object p0) {}
+    public void setRequestedOrientation(Object p0) {}
+    public void setShowWhenLocked(Object p0) {}
+    public void setTaskDescription(Object p0) {}
+    public boolean setTranslucent(Object p0) { return false; }
+    public void setTurnScreenOn(Object p0) {}
+    public void setVisible(Object p0) {}
+    public void setVolumeControlStream(Object p0) {}
+    public void setVrModeEnabled(Object p0, Object p1) {}
+    public boolean shouldShowRequestPermissionRationale(Object p0) { return false; }
+    public boolean shouldUpRecreateTask(Object p0) { return false; }
+    public boolean showAssist(Object p0) { return false; }
+    public void showLockTaskEscapeMessage() {}
+    public boolean startActivityIfNeeded(Object p0, Object p1) { return false; }
+    public boolean startActivityIfNeeded(Object p0, Object p1, Object p2) { return false; }
+    public void startIntentSenderForResult(Object p0, Object p1, Object p2, Object p3, Object p4, Object p5) {}
+    public void startIntentSenderForResult(Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6) {}
+    public void startLocalVoiceInteraction(Object p0) {}
+    public void startLockTask() {}
+    public boolean startNextMatchingActivity(Object p0) { return false; }
+    public boolean startNextMatchingActivity(Object p0, Object p1) { return false; }
+    public void startPostponedEnterTransition() {}
+    public void startSearch(Object p0, Object p1, Object p2, Object p3) {}
+    public void stopLocalVoiceInteraction() {}
+    public void stopLockTask() {}
+    public void takeKeyEvents(Object p0) {}
+    public void triggerSearch(Object p0, Object p1) {}
+    public void unregisterActivityLifecycleCallbacks(Object p0) {}
+    public void unregisterForContextMenu(Object p0) {}
 }

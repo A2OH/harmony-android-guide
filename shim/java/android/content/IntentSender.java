@@ -1,91 +1,19 @@
 package android.content;
+import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.UserHandle;
 
-import android.os.Bundle;
+public class IntentSender implements Parcelable {
+    public IntentSender() {}
 
-/**
- * Android-compatible IntentSender shim. Stub implementation.
- */
-public class IntentSender {
-
-    private final String mPackage;
-
-    public IntentSender() {
-        mPackage = null;
-    }
-
-    public IntentSender(String packageName) {
-        mPackage = packageName;
-    }
-
-    /**
-     * Send an intent. Stub -- does nothing.
-     */
-    public void sendIntent(Context context, int code, Intent intent,
-                           OnFinished onFinished, android.os.Handler handler)
-            throws SendIntentException {
-        // stub -- no-op
-    }
-
-    /**
-     * Send an intent with extras. Stub -- does nothing.
-     */
-    public void sendIntent(Context context, int code, Intent intent,
-                           OnFinished onFinished, android.os.Handler handler,
-                           String requiredPermission)
-            throws SendIntentException {
-        // stub -- no-op
-    }
-
-    public String getTargetPackage() {
-        return mPackage;
-    }
-
-    public String getCreatorPackage() {
-        return mPackage;
-    }
-
-    public int getCreatorUid() {
-        return 0; // stub
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof IntentSender)) return false;
-        return true; // stub
-    }
-
-    @Override
-    public int hashCode() {
-        return mPackage != null ? mPackage.hashCode() : 0;
-    }
-
-    /**
-     * Exception thrown when sendIntent fails.
-     */
-    public static class SendIntentException extends Exception {
-        public SendIntentException() {
-            super();
-        }
-
-        public SendIntentException(String message) {
-            super(message);
-        }
-
-        public SendIntentException(Throwable cause) {
-            super(cause);
-        }
-
-        public SendIntentException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    /**
-     * Callback for when a sent intent completes.
-     */
-    public interface OnFinished {
-        void onSendFinished(IntentSender intentSender, Intent intent,
-                            int resultCode, String resultData, Bundle resultExtras);
-    }
+    public int describeContents() { return 0; }
+    public String getCreatorPackage() { return null; }
+    public int getCreatorUid() { return 0; }
+    public UserHandle getCreatorUserHandle() { return null; }
+    public static IntentSender readIntentSenderOrNullFromParcel(Parcel p0) { return null; }
+    public void sendIntent(Context p0, int p1, Intent p2, Object p3, Handler p4) {}
+    public void sendIntent(Context p0, int p1, Intent p2, Object p3, Handler p4, String p5) {}
+    public static void writeIntentSenderOrNullToParcel(IntentSender p0, Parcel p1) {}
+    public void writeToParcel(Parcel p0, int p1) {}
 }

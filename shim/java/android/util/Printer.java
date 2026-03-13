@@ -8,7 +8,6 @@ public interface Printer {
     /**
      * Print a line of text.
      *
-     * @param x the text to print
-     */
+     * @param x the text to pr(int */
     void println(String x);
 }

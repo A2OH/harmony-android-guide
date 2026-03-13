@@ -1,4 +1,8 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +52,7 @@ public class LinearLayout extends ViewGroup {
             this.weight = weight;
         }
 
-        public LayoutParams(ViewGroup.LayoutParams source) {
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
             super(source);
         }
     }

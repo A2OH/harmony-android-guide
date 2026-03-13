@@ -1,66 +1,33 @@
 package android.telecom;
-
 import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import java.util.Collection;
 
-/**
- * Shim for android.telecom.ConnectionService.
- * An abstract Service that provides phone call connections to the Telecom system.
- *
- * Concrete subclasses must implement
- * {@link #onCreateIncomingConnection} and {@link #onCreateOutgoingConnection}.
- */
-public abstract class ConnectionService extends Service {
+public class ConnectionService extends Service {
+    public static final int SERVICE_INTERFACE = 0;
 
-    /**
-     * Called by the Telecom framework to create a new incoming connection.
-     *
-     * @param connectionManagerPhoneAccount the phone account handle for the connection manager
-     *                                      that is routing the call, or null if the call is not
-     *                                      being routed through a connection manager
-     * @param request                       the details of the incoming connection request
-     * @return a new {@link Connection} object, or null to reject the call
-     */
-    public abstract Connection onCreateIncomingConnection(
-            PhoneAccountHandle connectionManagerPhoneAccount,
-            Object request);
+    public ConnectionService() {}
 
-    /**
-     * Called by the Telecom framework to create a new outgoing connection.
-     *
-     * @param connectionManagerPhoneAccount the phone account handle for the connection manager
-     *                                      routing the call, or null if no connection manager
-     * @param request                       the details of the outgoing connection request
-     * @return a new {@link Connection} object, or null to deny the call
-     */
-    public abstract Connection onCreateOutgoingConnection(
-            PhoneAccountHandle connectionManagerPhoneAccount,
-            Object request);
-
-    /**
-     * Called when a call has been added to this connection service.
-     * Subclasses may override to receive notification.
-     */
-    public void onCreateIncomingConnectionFailed(
-            PhoneAccountHandle connectionManagerPhoneAccount,
-            Object request) {
-        // no-op shim
-    }
-
-    /**
-     * Called when an outgoing call has failed to be created.
-     * Subclasses may override to receive notification.
-     */
-    public void onCreateOutgoingConnectionFailed(
-            PhoneAccountHandle connectionManagerPhoneAccount,
-            Object request) {
-        // no-op shim
-    }
-
-    /**
-     * Subclasses may override to supply an IBinder for bound service usage.
-     * Returns null in this shim implementation.
-     */
-    public Object onBind(Object intent) {
-        return null;
-    }
+    public void addConference(Conference p0) {}
+    public void addExistingConnection(PhoneAccountHandle p0, Connection p1) {}
+    public void conferenceRemoteConnections(RemoteConnection p0, RemoteConnection p1) {}
+    public void connectionServiceFocusReleased() {}
+    public RemoteConnection createRemoteIncomingConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public RemoteConnection createRemoteOutgoingConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public Collection<?> getAllConferences() { return null; }
+    public Collection<?> getAllConnections() { return null; }
+    public IBinder onBind(Intent p0) { return null; }
+    public void onConference(Connection p0, Connection p1) {}
+    public void onConnectionServiceFocusGained() {}
+    public void onConnectionServiceFocusLost() {}
+    public Connection onCreateIncomingConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public void onCreateIncomingConnectionFailed(PhoneAccountHandle p0, ConnectionRequest p1) {}
+    public Connection onCreateIncomingHandoverConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public Connection onCreateOutgoingConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public void onCreateOutgoingConnectionFailed(PhoneAccountHandle p0, ConnectionRequest p1) {}
+    public Connection onCreateOutgoingHandoverConnection(PhoneAccountHandle p0, ConnectionRequest p1) { return null; }
+    public void onHandoverFailed(ConnectionRequest p0, int p1) {}
+    public void onRemoteConferenceAdded(RemoteConference p0) {}
+    public void onRemoteExistingConnectionAdded(RemoteConnection p0) {}
 }

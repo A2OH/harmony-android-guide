@@ -6,10 +6,10 @@ package android.content;
  *
  * @param <D> the result data type
  */
-public abstract class Loader<D> {
+public class Loader<D> {
 
-    /** Callback interface for load completion. */
-    public interface OnLoadCompleteListener<D> {
+    /** Object interface for load completion. */
+    public interface Object<D> {
         void onLoadComplete(Loader<D> loader, D data);
     }
 
@@ -17,7 +17,7 @@ public abstract class Loader<D> {
     private final int mId;
     private boolean mStarted;
     private boolean mReset;
-    private OnLoadCompleteListener<D> mListener;
+    private Object<D> mListener;
 
     private static int sNextId = 1;
 
@@ -77,11 +77,11 @@ public abstract class Loader<D> {
     // Listener
     // ──────────────────────────────────────────────────────────
 
-    public void registerListener(int id, OnLoadCompleteListener<D> listener) {
+    public void registerListener(int id, Object<D> listener) {
         mListener = listener;
     }
 
-    public void unregisterListener(OnLoadCompleteListener<D> listener) {
+    public void unregisterListener(Object<D> listener) {
         if (mListener == listener) mListener = null;
     }
 

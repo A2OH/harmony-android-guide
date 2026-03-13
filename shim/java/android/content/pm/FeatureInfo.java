@@ -1,4 +1,5 @@
 package android.content.pm;
+import java.util.Set;
 
 /**
  * Shim: android.content.pm.FeatureInfo

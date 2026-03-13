@@ -1,4 +1,6 @@
 package android.se.omapi;
+import android.renderscript.Element;
+import android.renderscript.Element;
 
 /**
  * Android-compatible Reader shim. Represents a Secure Element reader (slot) in the Open Mobile API.

@@ -1,4 +1,6 @@
 package android.bluetooth.le;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothDevice;
 
 import android.bluetooth.BluetoothDevice;
 

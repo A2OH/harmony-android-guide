@@ -1,4 +1,6 @@
 package android.provider;
+import android.location.Location;
+import android.location.Location;
 
 /**
  * Android-compatible Settings shim.
@@ -62,25 +64,25 @@ public class Settings {
         public System() {}
 
         public static String getString(Object cr, String name) { return null; }
-        public static boolean putString(Object cr, String name, String value) { return true; }
+        public static boolean putString(Object cr, String name, String value) { return false; }
 
         public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
         public static int getInt(Object cr, String name, int def) { return def; }
-        public static boolean putInt(Object cr, String name, int value) { return true; }
+        public static boolean putInt(Object cr, String name, int value) { return false; }
 
         public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
         public static float getFloat(Object cr, String name, float def) { return def; }
-        public static boolean putFloat(Object cr, String name, float value) { return true; }
+        public static boolean putFloat(Object cr, String name, float value) { return false; }
 
         public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
         public static long getLong(Object cr, String name, long def) { return def; }
-        public static boolean putLong(Object cr, String name, long value) { return true; }
+        public static boolean putLong(Object cr, String name, long value) { return false; }
     }
 
     // -------------------------------------------------------------------------
@@ -97,6 +99,7 @@ public class Settings {
         public static final String DEFAULT_INPUT_METHOD      = "default_input_method";
         public static final String ENABLED_INPUT_METHODS     = "enabled_input_methods";
         public static final String INSTALL_NON_MARKET_APPS   = "install_non_market_apps";
+        public static final String ENABLED_ACCESSIBILITY_SERVICES = "enabled_accessibility_services";
         public static final String SCREENSAVER_ENABLED       = "screensaver_enabled";
         public static final String SCREENSAVER_ACTIVATE_ON_DOCK = "screensaver_activate_on_dock";
         public static final String SCREENSAVER_ACTIVATE_ON_SLEEP = "screensaver_activate_on_sleep";
@@ -119,26 +122,18 @@ public class Settings {
 
         public Secure() {}
 
-        public static String getString(Object cr, String name) { return null; }
-        public static boolean putString(Object cr, String name, String value) { return true; }
 
         public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static int getInt(Object cr, String name, int def) { return def; }
-        public static boolean putInt(Object cr, String name, int value) { return true; }
 
         public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static float getFloat(Object cr, String name, float def) { return def; }
-        public static boolean putFloat(Object cr, String name, float value) { return true; }
 
         public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static long getLong(Object cr, String name, long def) { return def; }
-        public static boolean putLong(Object cr, String name, long value) { return true; }
     }
 
     // -------------------------------------------------------------------------
@@ -170,26 +165,18 @@ public class Settings {
 
         public Global() {}
 
-        public static String getString(Object cr, String name) { return null; }
-        public static boolean putString(Object cr, String name, String value) { return true; }
 
         public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static int getInt(Object cr, String name, int def) { return def; }
-        public static boolean putInt(Object cr, String name, int value) { return true; }
 
         public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static float getFloat(Object cr, String name, float def) { return def; }
-        public static boolean putFloat(Object cr, String name, float value) { return true; }
 
         public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
             throw new SettingNotFoundException(name);
         }
-        public static long getLong(Object cr, String name, long def) { return def; }
-        public static boolean putLong(Object cr, String name, long value) { return true; }
     }
 
     // -------------------------------------------------------------------------

@@ -9,7 +9,7 @@ public class SipAudioCall {
     // -----------------------------------------------------------------------
     // Listener interface
 
-    public static abstract class Listener {
+    public static abstract class Object {
         public void onReadyToCall(SipAudioCall call) {}
         public void onCalling(SipAudioCall call) {}
         public void onRinging(SipAudioCall call, SipProfile caller) {}
@@ -70,10 +70,10 @@ public class SipAudioCall {
     public boolean isInCall() { return mInCall; }
 
     /** Sets the listener for call events. */
-    public void setListener(Listener listener) {}
+    public void setListener(Object listener) {}
 
     /** Sets the listener, optionally calling back immediately with current state. */
-    public void setListener(Listener listener, boolean callbackImmediately) {}
+    public void setListener(Object listener, boolean callbackImmediately) {}
 
     /** Returns the local SIP profile. */
     public SipProfile getLocalProfile() { return null; }

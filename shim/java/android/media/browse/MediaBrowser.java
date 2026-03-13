@@ -1,4 +1,7 @@
 package android.media.browse;
+import android.media.MediaDescription;
+import android.media.MediaDescription;
+import java.util.ArrayList;
 
 import java.util.List;
 

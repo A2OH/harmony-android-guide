@@ -1,4 +1,6 @@
 package android.icu.text;
+import android.icu.util.ULocale;
+import android.icu.util.ULocale;
 
 import android.icu.util.ULocale;
 

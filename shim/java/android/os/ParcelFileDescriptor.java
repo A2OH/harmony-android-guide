@@ -65,7 +65,7 @@ public class ParcelFileDescriptor implements Closeable {
     }
 
     // ---- AutoCloseInputStream ----
-    public static class AutoCloseInputStream extends FileInputStream {
+    public static class AutoCloseInputStream extends java.io.FileInputStream {
         private final ParcelFileDescriptor mPfd;
 
         public AutoCloseInputStream(ParcelFileDescriptor pfd) {
@@ -75,16 +75,13 @@ public class ParcelFileDescriptor implements Closeable {
 
         @Override
         public void close() throws IOException {
-            try {
-                mPfd.close();
-            } finally {
-                super.close();
-            }
+            super.close();
+            mPfd.close();
         }
     }
 
     // ---- AutoCloseOutputStream ----
-    public static class AutoCloseOutputStream extends FileOutputStream {
+    public static class AutoCloseOutputStream extends java.io.FileOutputStream {
         private final ParcelFileDescriptor mPfd;
 
         public AutoCloseOutputStream(ParcelFileDescriptor pfd) {
@@ -94,11 +91,8 @@ public class ParcelFileDescriptor implements Closeable {
 
         @Override
         public void close() throws IOException {
-            try {
-                mPfd.close();
-            } finally {
-                super.close();
-            }
+            super.close();
+            mPfd.close();
         }
     }
 }

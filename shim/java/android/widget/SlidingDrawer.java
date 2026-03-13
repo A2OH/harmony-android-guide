@@ -1,4 +1,8 @@
 package android.widget;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +23,7 @@ public class SlidingDrawer extends ViewGroup {
     public static final int ORIENTATION_VERTICAL   = 1;
 
     /**
-     * Callback interface for drawer open/close events.
+     * Object interface for drawer open/close events.
      */
     public interface OnDrawerOpenListener {
         void onDrawerOpened();

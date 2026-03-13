@@ -1,4 +1,6 @@
 package android.gesture;
+import android.graphics.RectF;
+import android.graphics.RectF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,8 @@ public class Gesture {
     // Inner class: RectF  (minimal stub — avoids android.graphics dependency)
     // -------------------------------------------------------------------------
     public static class RectF {
+    public RectF(Object... args) {}
+    public RectF() {}
         public float left, top, right, bottom;
 
         public RectF(float left, float top, float right, float bottom) {
@@ -86,7 +90,7 @@ public class Gesture {
      * Returns the bounding box that encloses all strokes.
      */
     public RectF getBoundingBox() {
-        if (mStrokes.isEmpty()) return new RectF(0, 0, 0, 0);
+        if (mStrokes.isEmpty()) return new RectF(0, 0, 0);
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
         for (GestureStroke stroke : mStrokes) {
@@ -105,11 +109,6 @@ public class Gesture {
     /**
      * Returns the total length of all strokes.
      */
-    public float getLength() {
-        float total = 0f;
-        for (GestureStroke s : mStrokes) total += s.getLength();
-        return total;
-    }
 
     /**
      * Serialize this gesture to a byte array. Stub — returns empty array.

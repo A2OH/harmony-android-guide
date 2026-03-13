@@ -37,7 +37,7 @@ public class Choreographer {
     }
 
     /**
-     * Callback invoked on each display frame.
+     * Object invoked on each display frame.
      */
     public interface FrameCallback {
         /**

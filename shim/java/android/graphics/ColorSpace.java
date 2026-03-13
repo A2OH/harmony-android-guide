@@ -10,6 +10,7 @@ package android.graphics;
  * without pulling in the full ART implementation.
  */
 public abstract class ColorSpace {
+    public ColorSpace() {}
 
     // -------------------------------------------------------------------------
     // Named — well-known color space identifiers
@@ -72,7 +73,7 @@ public abstract class ColorSpace {
      * {@link Named} constant. Never returns null.
      */
     public static ColorSpace get(Named name) {
-        return new Rgb(name.name(), Model.RGB, 3);
+        return new Rgb(name.name(), Model.RGB);
     }
 
     // -------------------------------------------------------------------------
@@ -80,13 +81,13 @@ public abstract class ColorSpace {
     // -------------------------------------------------------------------------
 
     /** Returns the name of this color space. */
-    public abstract String getName();
+    public String getName() { return null; }
 
     /** Returns the color model of this color space. */
-    public abstract Model getModel();
+    public Model getModel() { return null; }
 
     /** Returns the number of components of this color space's color model. */
-    public abstract int getComponentCount();
+    public int getComponentCount() { return 0; }
 
     // -------------------------------------------------------------------------
     // Rgb subclass
@@ -105,6 +106,10 @@ public abstract class ColorSpace {
          * Construct an Rgb color space with explicit parameters.
          * All arguments are stored verbatim; no validation occurs in this shim.
          */
+        public Rgb(String name, Model model) {
+            this(name, model, model.getComponentCount());
+        }
+
         public Rgb(String name, Model model, int componentCount) {
             mName           = name;
             mModel          = model;

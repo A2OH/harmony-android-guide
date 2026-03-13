@@ -1,4 +1,7 @@
 package android.content.pm;
+import android.inputmethodservice.Keyboard;
+import android.text.method.Touch;
+import android.inputmethodservice.Keyboard;
 
 /**
  * Shim for android.content.pm.ConfigurationInfo — device configuration requirements.

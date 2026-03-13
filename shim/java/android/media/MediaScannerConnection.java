@@ -1,4 +1,6 @@
 package android.media;
+import android.net.Uri;
+import android.net.Uri;
 
 /**
  * Shim stub for android.media.MediaScannerConnection.
@@ -76,7 +78,7 @@ public class MediaScannerConnection {
     }
 
     /**
-     * Request the media scanner to scan a file.
+     * Object the media scanner to scan a file.
      *
      * @param path     the path to the file to be scanned
      * @param mimeType optional MIME type of the file (may be null)

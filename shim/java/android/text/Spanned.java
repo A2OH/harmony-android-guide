@@ -31,7 +31,7 @@ public interface Spanned extends CharSequence {
      * Returns all spans of the specified type attached to this text between
      * {@code queryStart} (inclusive) and {@code queryEnd} (exclusive).
      */
-    <T> T[] getSpans(int queryStart, int queryEnd, Class<T> kind);
+    <Object> Object[] getSpans(int queryStart, int queryEnd, Class<Object> kind);
 
     /** Returns the start of the range to which {@code tag} is attached, or -1. */
     int getSpanStart(Object tag);
@@ -46,5 +46,5 @@ public interface Spanned extends CharSequence {
      * Returns the first offset >= {@code queryStart} where a span of type
      * {@code kind} begins or ends, or {@code queryLimit} if there is none.
      */
-    int nextSpanTransition(int queryStart, int queryLimit, Class<?> kind);
+    int nextSpanTransition(int queryStart, int queryLimit, Object kind);
 }

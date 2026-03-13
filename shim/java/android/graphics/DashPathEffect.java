@@ -6,7 +6,7 @@ package android.graphics;
  *
  * Strokes a path with alternating on/off dash segments defined by
  * {@code intervals} (must have even length, all values positive).
- * {@code phase} shifts the starting point within the dash pattern.
+ * {@code phase} shifts the starting po(int within the dash pattern.
  */
 public class DashPathEffect extends PathEffect {
 

@@ -1,33 +1,33 @@
 package android.app;
 
-import android.content.ContextWrapper;
+import android.content.Context;
 
-/**
- * Android-compatible Application shim. Stub — lifecycle hooks are no-ops.
- */
-public class Application extends ContextWrapper {
-    public Application() { super(null); }
+public class Application extends Context {
+
+    private String mPackageName;
+
+    public Application() {}
 
     public void onCreate() {}
+
     public void onTerminate() {}
-    public void onConfigurationChanged(Object newConfig) {}
+
     public void onLowMemory() {}
+
     public void onTrimMemory(int level) {}
 
-    public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
-    public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
+    @Override
+    public String getPackageName() { return mPackageName; }
 
-    public interface ActivityLifecycleCallbacks {
-        void onActivityCreated(Object activity, Object savedInstanceState);
-        void onActivityStarted(Object activity);
-        void onActivityResumed(Object activity);
-        void onActivityPaused(Object activity);
-        void onActivityStopped(Object activity);
-        void onActivitySaveInstanceState(Object activity, Object outState);
-        void onActivityDestroyed(Object activity);
-    }
+    @Override
+    public Context getApplicationContext() { return this; }
 
-    public interface OnProvideAssistDataListener {
-        void onProvideAssistData(Object activity, Object data);
-    }
+    /* Framework-internal */
+    void setPackageName(String pkg) { mPackageName = pkg; }
+
+    public static String getProcessName() { return null; }
+    public void registerActivityLifecycleCallbacks(Object p0) {}
+    public void registerOnProvideAssistDataListener(Object p0) {}
+    public void unregisterActivityLifecycleCallbacks(Object p0) {}
+    public void unregisterOnProvideAssistDataListener(Object p0) {}
 }

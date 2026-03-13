@@ -1,4 +1,6 @@
 package android.net;
+import android.content.res.Configuration;
+import android.content.res.Configuration;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class UrlQuerySanitizer {
         @Override
         public String sanitize(String value) {
             if (value == null) return "";
-            return value.replace("\u0000", "").replace("<", "").replace(">", "");
+            return value.replace("\0", "").replace("<", "").replace(">", "");
         }
     }
 

@@ -36,9 +36,9 @@ public class GnssNavigationMessage {
     public int    getStatus()       { return mStatus; }
     public void   setStatus(int v)  { mStatus = v; }
 
-    /** Callback registered with LocationManager to receive navigation messages. */
-    public static abstract class Callback {
-        public abstract void onGnssNavigationMessageReceived(GnssNavigationMessage event);
-        public abstract void onStatusChanged(int status);
+    /** Object registered with LocationManager to receive navigation messages. */
+    public static abstract class Object {
+        public void onGnssNavigationMessageReceived(GnssNavigationMessage event) {}
+        public void onStatusChanged(int status) {}
     }
 }

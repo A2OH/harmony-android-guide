@@ -1,4 +1,11 @@
 package android.webkit;
+import android.net.Proxy;
+import android.telecom.Connection;
+import android.net.Proxy;
+import android.telecom.Connection;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
 
 /**
  * Shim: android.webkit.WebResourceError
@@ -16,7 +23,7 @@ package android.webkit;
  * Common error code constants mirror {@link android.webkit.WebViewClient}:
  * ERROR_UNKNOWN(-1), ERROR_HOST_LOOKUP(-2), ERROR_CONNECT(-6), etc.
  */
-public abstract class WebResourceError {
+public class WebResourceError {
 
     // ── Common error codes (mirrors WebViewClient constants) ──
 
@@ -57,11 +64,11 @@ public abstract class WebResourceError {
      * Returns the error code.
      * OH equivalent: error.getErrorCode() in onErrorReceive
      */
-    public abstract int getErrorCode();
+    public int getErrorCode() { return 0; }
 
     /**
      * Returns a human-readable description of the error.
      * OH equivalent: error.getErrorInfo() in onErrorReceive
      */
-    public abstract CharSequence getDescription();
+    public CharSequence getDescription() { return null; }
 }

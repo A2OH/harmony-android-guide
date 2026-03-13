@@ -1,4 +1,6 @@
 package android.content;
+import android.util.Log;
+import android.util.Log;
 
 import com.ohos.shim.bridge.OHBridge;
 

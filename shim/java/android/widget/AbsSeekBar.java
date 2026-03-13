@@ -1,4 +1,12 @@
 package android.widget;
+import android.content.res.ColorStateList;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.content.res.ColorStateList;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -13,7 +21,7 @@ import android.graphics.drawable.Drawable;
  * integration; this class provides the correct Android class hierarchy for
  * code that references AbsSeekBar explicitly (e.g. custom seek bar subclasses).
  */
-public abstract class AbsSeekBar extends ProgressBar {
+public class AbsSeekBar extends ProgressBar {
 
     // ── State ────────────────────────────────────────────────────────────────
 
@@ -87,19 +95,19 @@ public abstract class AbsSeekBar extends ProgressBar {
         return keyProgressIncrement;
     }
 
-    // ── Thumb tint ───────────────────────────────────────────────────────────
+    // ── Thumb t(int ───────────────────────────────────────────────────────────
 
     /**
-     * Applies a tint color to the thumb drawable. No-op in this shim.
+     * Applies a t(int color to the thumb drawable. No-op in this shim.
      *
-     * @param tint the tint color as an ARGB int
+     * @param t(int the t(int color as an ARGB int
      */
     public void setThumbTintList(Object tint) {
         // no-op: ColorStateList tinting not implemented in shim
     }
 
     /**
-     * Returns the tint applied to the thumb, always null in this shim.
+     * Returns the t(int applied to the thumb, always null in this shim.
      *
      * @return null
      */

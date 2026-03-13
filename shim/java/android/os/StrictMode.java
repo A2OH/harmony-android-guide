@@ -51,9 +51,6 @@ public final class StrictMode {
         private VmPolicy() {}
 
         public static final class Builder {
-            public Builder detectAll()  { return this; }
-            public Builder penaltyLog() { return this; }
-            public Builder penaltyDeath() { return this; }
             public Builder detectLeakedSqlLiteObjects() { return this; }
             public Builder detectLeakedClosableObjects() { return this; }
             public VmPolicy build() { return new VmPolicy(); }

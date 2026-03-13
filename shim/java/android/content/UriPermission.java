@@ -1,4 +1,6 @@
 package android.content;
+import android.net.Uri;
+import android.net.Uri;
 
 /**
  * Android-compatible UriPermission shim.

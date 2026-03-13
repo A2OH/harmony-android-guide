@@ -4,7 +4,7 @@ package android.view;
  * Android-compatible OrientationEventListener shim.
  * Abstract base for listening to device orientation changes.
  */
-public abstract class OrientationEventListener {
+public class OrientationEventListener {
 
     public static final int ORIENTATION_UNKNOWN = -1;
 
@@ -30,5 +30,5 @@ public abstract class OrientationEventListener {
         return false;
     }
 
-    public abstract void onOrientationChanged(int orientation);
+    public void onOrientationChanged(int orientation) {}
 }

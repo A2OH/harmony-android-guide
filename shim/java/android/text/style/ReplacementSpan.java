@@ -1,4 +1,8 @@
 package android.text.style;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 
 /**
  * Android-compatible ReplacementSpan shim.
@@ -7,19 +11,19 @@ package android.text.style;
  * Parameter types that don't exist in the shim (Paint, Canvas, Paint.FontMetricsInt)
  * are represented as Object to avoid dependency chains.
  */
-public abstract class ReplacementSpan extends MetricAffectingSpan {
+public class ReplacementSpan extends MetricAffectingSpan {
 
     /**
      * Returns the width of the span. Called during measurement.
      *
-     * @param paint      the Paint being used for rendering (typed as Object)
+     * @param pa(int the Paint being used for rendering (typed as Object)
      * @param text       the text being measured
      * @param start      start index (inclusive) of the span within text
      * @param end        end index (exclusive) of the span within text
      * @param fm         the font metrics (Paint.FontMetricsInt, typed as Object); may be null
      * @return           the measured width in pixels
      */
-    public abstract int getSize(Object paint, CharSequence text, int start, int end, Object fm);
+    public int getSize(Object paint, CharSequence text, int start, int end, Object fm) { return 0; }
 
     /**
      * Renders the span.
@@ -32,10 +36,10 @@ public abstract class ReplacementSpan extends MetricAffectingSpan {
      * @param top        top of the line
      * @param y          baseline of the text
      * @param bottom     bottom of the line
-     * @param paint      the Paint to use (typed as Object)
+     * @param pa(int the Paint to use (typed as Object)
      */
-    public abstract void draw(Object canvas, CharSequence text, int start, int end,
-            float x, int top, int y, int bottom, Object paint);
+    public void draw(Object canvas, CharSequence text, int start, int end,
+            float x, int top, int y, int bottom, Object paint) {}
 
     /**
      * {@inheritDoc}

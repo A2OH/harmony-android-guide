@@ -1,4 +1,6 @@
 package android.view.animation;
+import android.renderscript.Type;
+import android.renderscript.Type;
 
 /**
  * Android-compatible TranslateAnimation shim. Animates the position of a view

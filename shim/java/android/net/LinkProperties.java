@@ -20,7 +20,7 @@ public class LinkProperties {
     public LinkProperties() {
         // Mock: a typical Wi-Fi link address + common DNS servers
         try {
-            linkAddresses.add(new LinkAddress(InetAddress.getByName("192.168.1.100"), 24));
+            linkAddresses.add(new LinkAddress(InetAddress.getByName("192.168.1.100")));
             dnsServers.add(InetAddress.getByName("8.8.8.8"));
             dnsServers.add(InetAddress.getByName("8.8.4.4"));
         } catch (UnknownHostException e) {
@@ -79,6 +79,15 @@ public class LinkProperties {
         private final InetAddress address;
         private final int prefixLength;
 
+        public LinkAddress() {
+            this.address = null;
+            this.prefixLength = 0;
+        }
+
+        public LinkAddress(InetAddress address) {
+            this(address, 24);
+        }
+
         public LinkAddress(InetAddress address, int prefixLength) {
             this.address = address;
             this.prefixLength = prefixLength;
@@ -94,7 +103,7 @@ public class LinkProperties {
 
         @Override
         public String toString() {
-            return address.getHostAddress() + "/" + prefixLength;
+            return "LinkAddress{" + address + "/" + prefixLength + "}";
         }
     }
 }

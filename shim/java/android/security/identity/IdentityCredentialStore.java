@@ -1,9 +1,10 @@
 package android.security.identity;
+import java.util.Collection;
 
 /**
  * Android-compatible IdentityCredentialStore shim. Abstract stub for the identity credential store.
  */
-public abstract class IdentityCredentialStore {
+public class IdentityCredentialStore {
 
     public static final String CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256 =
             "CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256";
@@ -33,8 +34,8 @@ public abstract class IdentityCredentialStore {
      * @param cipherSuite    cipher suite to use
      * @return a {@link WritableIdentityCredential} for the new credential
      */
-    public abstract WritableIdentityCredential createCredential(
-            String credentialName, String cipherSuite) throws Exception;
+    public WritableIdentityCredential createCredential(
+            String credentialName, String cipherSuite)throws Exception { return null; }
 
     /**
      * Retrieves a credential by name.
@@ -43,8 +44,8 @@ public abstract class IdentityCredentialStore {
      * @param cipherSuite    cipher suite the credential was created with
      * @return the {@link IdentityCredential}, or null if not found
      */
-    public abstract IdentityCredential getCredentialByName(
-            String credentialName, String cipherSuite) throws Exception;
+    public IdentityCredential getCredentialByName(
+            String credentialName, String cipherSuite)throws Exception { return null; }
 
     /**
      * Deletes a credential by name.
@@ -52,7 +53,7 @@ public abstract class IdentityCredentialStore {
      * @param credentialName name of the credential to delete
      * @return proof-of-deletion bytes, or null if not found
      */
-    public abstract byte[] deleteCredentialByName(String credentialName) throws Exception;
+    public byte[] deleteCredentialByName(String credentialName)throws Exception { return null; }
 
     // ---------------------------------------------------------------------------
     // Inner stub class so callers that reference WritableIdentityCredential compile
@@ -64,12 +65,12 @@ public abstract class IdentityCredentialStore {
     public static abstract class WritableIdentityCredential {
         protected WritableIdentityCredential() {}
 
-        public abstract byte[] getCredentialKeyCertificateChain(byte[] challenge) throws Exception;
+        public byte[] getCredentialKeyCertificateChain(byte[] challenge)throws Exception { return null; }
 
-        public abstract void addNamespace(String namespace,
-                java.util.Collection<NamespaceEntry> entries) throws Exception;
+        public void addNamespace(String namespace,
+                java.util.Collection<NamespaceEntry> entries)throws Exception {}
 
-        public abstract byte[] finishAdding() throws Exception;
+        public byte[] finishAdding()throws Exception { return null; }
     }
 
     /** Represents a single data entry within a namespace. */

@@ -1,4 +1,10 @@
 package android.graphics.drawable;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.shapes.Shape;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.shapes.Shape;
 
 import android.graphics.Canvas;
 
@@ -106,7 +112,7 @@ public class GradientDrawable extends Drawable {
     // ── Stroke ───────────────────────────────────────────────────────────────
 
     public void setStroke(int width, int color) {
-        setStroke(width, color, 0f, 0f);
+// FIXME:         setStroke(width, color, 0f);
     }
 
     public void setStroke(int width, int color, float dashWidth, float dashGap) {

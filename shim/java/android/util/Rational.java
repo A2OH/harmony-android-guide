@@ -1,16 +1,18 @@
 package android.util;
+import java.lang.Comparable;
 
 /**
  * Stub for android.util.Rational — an immutable rational number.
  */
 public final class Rational extends Number implements Comparable<Rational> {
-    public static final Rational ZERO = new Rational(0, 1);
-    public static final Rational NaN = new Rational(0, 0);
-    public static final Rational POSITIVE_INFINITY = new Rational(1, 0);
-    public static final Rational NEGATIVE_INFINITY = new Rational(-1, 0);
+    public Rational(Object... args) {}
+    public static final Rational ZERO = new Rational(0);
+    public static final Rational NaN = new Rational(0);
+    public static final Rational POSITIVE_INFINITY = new Rational(1);
+    public static final Rational NEGATIVE_INFINITY = new Rational(-1);
 
-    private final int mNumerator;
-    private final int mDenominator;
+    private int mNumerator;
+    private int mDenominator;
 
     public Rational(int numerator, int denominator) {
         mNumerator = numerator;

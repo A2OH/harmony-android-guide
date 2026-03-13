@@ -1,40 +1,42 @@
 package android.speech;
+import android.content.Context;
+import android.content.Intent;
 
-/**
- * Android-compatible RecognizerIntent shim. Pure constants class for A2OH migration.
- */
-public final class RecognizerIntent {
+public class RecognizerIntent {
+    public static final int ACTION_GET_LANGUAGE_DETAILS = 0;
+    public static final int ACTION_RECOGNIZE_SPEECH = 0;
+    public static final int ACTION_VOICE_SEARCH_HANDS_FREE = 0;
+    public static final int ACTION_WEB_SEARCH = 0;
+    public static final int DETAILS_META_DATA = 0;
+    public static final int EXTRA_CALLING_PACKAGE = 0;
+    public static final int EXTRA_CONFIDENCE_SCORES = 0;
+    public static final int EXTRA_LANGUAGE = 0;
+    public static final int EXTRA_LANGUAGE_MODEL = 0;
+    public static final int EXTRA_LANGUAGE_PREFERENCE = 0;
+    public static final int EXTRA_MAX_RESULTS = 0;
+    public static final int EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE = 0;
+    public static final int EXTRA_ORIGIN = 0;
+    public static final int EXTRA_PARTIAL_RESULTS = 0;
+    public static final int EXTRA_PREFER_OFFLINE = 0;
+    public static final int EXTRA_PROMPT = 0;
+    public static final int EXTRA_RESULTS = 0;
+    public static final int EXTRA_RESULTS_PENDINGINTENT = 0;
+    public static final int EXTRA_RESULTS_PENDINGINTENT_BUNDLE = 0;
+    public static final int EXTRA_SECURE = 0;
+    public static final int EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS = 0;
+    public static final int EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS = 0;
+    public static final int EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS = 0;
+    public static final int EXTRA_SUPPORTED_LANGUAGES = 0;
+    public static final int EXTRA_WEB_SEARCH_ONLY = 0;
+    public static final int LANGUAGE_MODEL_FREE_FORM = 0;
+    public static final int LANGUAGE_MODEL_WEB_SEARCH = 0;
+    public static final int RESULT_AUDIO_ERROR = 0;
+    public static final int RESULT_CLIENT_ERROR = 0;
+    public static final int RESULT_NETWORK_ERROR = 0;
+    public static final int RESULT_NO_MATCH = 0;
+    public static final int RESULT_SERVER_ERROR = 0;
 
-    // Not instantiable
-    private RecognizerIntent() {}
+    public RecognizerIntent() {}
 
-    // -----------------------------------------------------------------------
-    // Intent actions
-    // -----------------------------------------------------------------------
-    public static final String ACTION_RECOGNIZE_SPEECH =
-            "android.speech.action.RECOGNIZE_SPEECH";
-    public static final String ACTION_WEB_SEARCH =
-            "android.speech.action.WEB_SEARCH";
-
-    // -----------------------------------------------------------------------
-    // Intent extras
-    // -----------------------------------------------------------------------
-    public static final String EXTRA_LANGUAGE_MODEL =
-            "android.speech.extra.LANGUAGE_MODEL";
-    public static final String EXTRA_LANGUAGE =
-            "android.speech.extra.LANGUAGE";
-    public static final String EXTRA_PROMPT =
-            "android.speech.extra.PROMPT";
-    public static final String EXTRA_MAX_RESULTS =
-            "android.speech.extra.MAX_RESULTS";
-    public static final String EXTRA_RESULTS =
-            "android.speech.extra.RESULTS";
-
-    // -----------------------------------------------------------------------
-    // Language model values
-    // -----------------------------------------------------------------------
-    public static final String LANGUAGE_MODEL_FREE_FORM =
-            "free_form";
-    public static final String LANGUAGE_MODEL_WEB_SEARCH =
-            "web_search";
+    public static Intent getVoiceDetailsIntent(Context p0) { return null; }
 }

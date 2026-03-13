@@ -1,4 +1,6 @@
 package android.media.tv;
+import android.telephony.mbms.ServiceInfo;
+import android.telephony.mbms.ServiceInfo;
 
 /**
  * Android-compatible TvInputInfo shim. Stub for TV input service metadata.

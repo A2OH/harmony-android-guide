@@ -1,212 +1,247 @@
 package android.content;
 
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import java.util.HashSet;
+import java.util.Set;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+public class Intent implements Cloneable, Parcelable {
 
-/**
- * Shim: android.content.Intent → OH Want
- * Tier 2 — composite mapping. Intent's rich API surface maps to Want's
- * simpler {bundleName, abilityName, parameters} structure.
- *
- * The shim stores extras in a Bundle and converts to Want parameters
- * when startActivity/startService is called via Context.
- */
-public class Intent {
-    // ── Standard actions ──
+    /* ── Action constants (String, matching real Android) ── */
     public static final String ACTION_MAIN = "android.intent.action.MAIN";
     public static final String ACTION_VIEW = "android.intent.action.VIEW";
+    public static final String ACTION_DEFAULT = ACTION_VIEW;
     public static final String ACTION_EDIT = "android.intent.action.EDIT";
+    public static final String ACTION_DELETE = "android.intent.action.DELETE";
     public static final String ACTION_SEND = "android.intent.action.SEND";
     public static final String ACTION_SENDTO = "android.intent.action.SENDTO";
-    public static final String ACTION_CALL = "android.intent.action.CALL";
-    public static final String ACTION_DIAL = "android.intent.action.DIAL";
+    public static final String ACTION_SEND_MULTIPLE = "android.intent.action.SEND_MULTIPLE";
     public static final String ACTION_PICK = "android.intent.action.PICK";
-    public static final String ACTION_DELETE = "android.intent.action.DELETE";
     public static final String ACTION_GET_CONTENT = "android.intent.action.GET_CONTENT";
+    public static final String ACTION_DIAL = "android.intent.action.DIAL";
+    public static final String ACTION_CALL = "android.intent.action.CALL";
+    public static final String ACTION_ANSWER = "android.intent.action.ANSWER";
     public static final String ACTION_INSERT = "android.intent.action.INSERT";
     public static final String ACTION_SEARCH = "android.intent.action.SEARCH";
+    public static final String ACTION_RUN = "android.intent.action.RUN";
+    public static final String ACTION_SYNC = "android.intent.action.SYNC";
+    public static final String ACTION_CHOOSER = "android.intent.action.CHOOSER";
+    public static final String ACTION_CREATE_SHORTCUT = "android.intent.action.CREATE_SHORTCUT";
+    public static final String ACTION_WEB_SEARCH = "android.intent.action.WEB_SEARCH";
     public static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
+    public static final String ACTION_SHUTDOWN = "android.intent.action.ACTION_SHUTDOWN";
+    public static final String ACTION_SCREEN_ON = "android.intent.action.SCREEN_ON";
+    public static final String ACTION_SCREEN_OFF = "android.intent.action.SCREEN_OFF";
+    public static final String ACTION_BATTERY_CHANGED = "android.intent.action.BATTERY_CHANGED";
     public static final String ACTION_BATTERY_LOW = "android.intent.action.BATTERY_LOW";
+    public static final String ACTION_BATTERY_OKAY = "android.intent.action.BATTERY_OKAY";
+    public static final String ACTION_POWER_CONNECTED = "android.intent.action.ACTION_POWER_CONNECTED";
+    public static final String ACTION_POWER_DISCONNECTED = "android.intent.action.ACTION_POWER_DISCONNECTED";
 
-    // ── Standard categories ──
+    /* ── Category constants ── */
     public static final String CATEGORY_DEFAULT = "android.intent.category.DEFAULT";
     public static final String CATEGORY_LAUNCHER = "android.intent.category.LAUNCHER";
+    public static final String CATEGORY_HOME = "android.intent.category.HOME";
     public static final String CATEGORY_BROWSABLE = "android.intent.category.BROWSABLE";
+    public static final String CATEGORY_INFO = "android.intent.category.INFO";
+    public static final String CATEGORY_ALTERNATIVE = "android.intent.category.ALTERNATIVE";
+    public static final String CATEGORY_TAB = "android.intent.category.TAB";
+    public static final String CATEGORY_EMBED = "android.intent.category.EMBED";
 
-    // ── Flags ──
+    /* ── Extra key constants ── */
+    public static final String EXTRA_TEXT = "android.intent.extra.TEXT";
+    public static final String EXTRA_SUBJECT = "android.intent.extra.SUBJECT";
+    public static final String EXTRA_EMAIL = "android.intent.extra.EMAIL";
+    public static final String EXTRA_STREAM = "android.intent.extra.STREAM";
+    public static final String EXTRA_INTENT = "android.intent.extra.INTENT";
+    public static final String EXTRA_TITLE = "android.intent.extra.TITLE";
+
+    /* ── Flags ── */
     public static final int FLAG_ACTIVITY_NEW_TASK = 0x10000000;
     public static final int FLAG_ACTIVITY_CLEAR_TOP = 0x04000000;
     public static final int FLAG_ACTIVITY_SINGLE_TOP = 0x20000000;
     public static final int FLAG_ACTIVITY_NO_HISTORY = 0x40000000;
+    public static final int FLAG_ACTIVITY_CLEAR_TASK = 0x00008000;
+    public static final int FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS = 0x00800000;
+    public static final int FLAG_ACTIVITY_FORWARD_RESULT = 0x02000000;
+    public static final int FLAG_ACTIVITY_MULTIPLE_TASK = 0x08000000;
+    public static final int FLAG_ACTIVITY_NO_ANIMATION = 0x00010000;
+    public static final int FLAG_ACTIVITY_REORDER_TO_FRONT = 0x00020000;
+    public static final int FLAG_GRANT_READ_URI_PERMISSION = 0x00000001;
+    public static final int FLAG_GRANT_WRITE_URI_PERMISSION = 0x00000002;
 
-    private String action;
-    private Uri data;
-    private String type;
-    private String packageName;
-    private String className;  // target component
-    private int flags;
-    private Bundle extras;
-    private final java.util.List<String> categories = new java.util.ArrayList<>();
+    /* ── Instance fields ── */
+    private String mAction;
+    private Uri mData;
+    private String mType;
+    private ComponentName mComponent;
+    private Bundle mExtras;
+    private HashSet<String> mCategories;
+    private int mFlags;
+    private String mPackage;
 
-    // ── Constructors ──
+    /* ── Constructors ── */
 
-    public Intent() {
-        this.extras = new Bundle();
+    public Intent() {}
+
+    public Intent(Intent o) {
+        if (o != null) {
+            this.mAction = o.mAction;
+            this.mData = o.mData;
+            this.mType = o.mType;
+            this.mComponent = o.mComponent;
+            this.mFlags = o.mFlags;
+            this.mPackage = o.mPackage;
+            if (o.mExtras != null) this.mExtras = new Bundle(o.mExtras);
+            if (o.mCategories != null) this.mCategories = new HashSet<String>(o.mCategories);
+        }
     }
 
     public Intent(String action) {
-        this();
-        this.action = action;
+        mAction = action;
     }
 
     public Intent(String action, Uri uri) {
-        this(action);
-        this.data = uri;
+        mAction = action;
+        mData = uri;
     }
 
     public Intent(Context packageContext, Class<?> cls) {
-        this();
-        this.packageName = packageContext.getPackageName();
-        this.className = cls.getName();
+        mComponent = new ComponentName(packageContext, cls);
     }
 
-    public Intent(Intent other) {
-        this.action = other.action;
-        this.data = other.data;
-        this.type = other.type;
-        this.packageName = other.packageName;
-        this.className = other.className;
-        this.flags = other.flags;
-        this.extras = new Bundle(other.extras);
-        this.categories.addAll(other.categories);
+    public Intent(String action, Uri uri, Context packageContext, Class<?> cls) {
+        mAction = action;
+        mData = uri;
+        mComponent = new ComponentName(packageContext, cls);
     }
 
-    // ── Component ──
+    /* ── Fluent setters ── */
 
-    public Intent setClass(Context packageContext, Class<?> cls) {
-        this.packageName = packageContext.getPackageName();
-        this.className = cls.getName();
-        return this;
-    }
-
+    public Intent setAction(String action) { mAction = action; return this; }
+    public Intent setData(Uri data) { mData = data; mType = null; return this; }
+    public Intent setType(String type) { mType = type; mData = null; return this; }
+    public Intent setDataAndType(Uri data, String type) { mData = data; mType = type; return this; }
+    public Intent setComponent(ComponentName component) { mComponent = component; return this; }
     public Intent setClassName(String packageName, String className) {
-        this.packageName = packageName;
-        this.className = className;
+        mComponent = new ComponentName(packageName, className);
         return this;
     }
-
-    public String getComponent() { return className; }
-
-    // ── Action ──
-
-    public Intent setAction(String action) { this.action = action; return this; }
-    public String getAction() { return action; }
-
-    // ── Data ──
-
-    public Intent setData(Uri data) { this.data = data; this.type = null; return this; }
-    public Uri getData() { return data; }
-
-    public Intent setType(String type) { this.type = type; this.data = null; return this; }
-    public String getType() { return type; }
-
-    public Intent setDataAndType(Uri data, String type) {
-        this.data = data;
-        this.type = type;
+    public Intent setClassName(Context packageContext, String className) {
+        mComponent = new ComponentName(packageContext, className);
         return this;
     }
+    public Intent setPackage(String packageName) { mPackage = packageName; return this; }
+    public Intent setFlags(int flags) { mFlags = flags; return this; }
+    public Intent addFlags(int flags) { mFlags |= flags; return this; }
+    public void removeFlags(int flags) { mFlags &= ~flags; }
 
-    // ── Categories ──
-
-    public Intent addCategory(String category) { categories.add(category); return this; }
-    public java.util.Set<String> getCategories() { return new java.util.HashSet<>(categories); }
-    public boolean hasCategory(String category) { return categories.contains(category); }
-
-    // ── Flags ──
-
-    public Intent setFlags(int flags) { this.flags = flags; return this; }
-    public Intent addFlags(int flags) { this.flags |= flags; return this; }
-    public int getFlags() { return flags; }
-
-    // ── Extras (putExtra / getXxxExtra) ──
-
-    public Intent putExtra(String name, String value) { extras.putString(name, value); return this; }
-    public Intent putExtra(String name, int value) { extras.putInt(name, value); return this; }
-    public Intent putExtra(String name, long value) { extras.putLong(name, value); return this; }
-    public Intent putExtra(String name, float value) { extras.putFloat(name, value); return this; }
-    public Intent putExtra(String name, double value) { extras.putDouble(name, value); return this; }
-    public Intent putExtra(String name, boolean value) { extras.putBoolean(name, value); return this; }
-    public Intent putExtra(String name, byte[] value) { extras.putByteArray(name, value); return this; }
-    public Intent putExtra(String name, String[] value) { extras.putStringArray(name, value); return this; }
-    public Intent putExtra(String name, int[] value) { extras.putIntArray(name, value); return this; }
-    public Intent putExtra(String name, Serializable value) { extras.putSerializable(name, value); return this; }
-    public Intent putExtra(String name, Bundle value) { extras.putBundle(name, value); return this; }
-
-    public Intent putExtras(Bundle extras) { this.extras.putAll(extras); return this; }
-
-    public String getStringExtra(String name) { return extras.getString(name); }
-    public int getIntExtra(String name, int defaultValue) { return extras.getInt(name, defaultValue); }
-    public long getLongExtra(String name, long defaultValue) { return extras.getLong(name, defaultValue); }
-    public float getFloatExtra(String name, float defaultValue) { return extras.getFloat(name, defaultValue); }
-    public double getDoubleExtra(String name, double defaultValue) { return extras.getDouble(name, defaultValue); }
-    public boolean getBooleanExtra(String name, boolean defaultValue) { return extras.getBoolean(name, defaultValue); }
-    public byte[] getByteArrayExtra(String name) { return extras.getByteArray(name); }
-    public String[] getStringArrayExtra(String name) { return extras.getStringArray(name); }
-    public int[] getIntArrayExtra(String name) { return extras.getIntArray(name); }
-    public Serializable getSerializableExtra(String name) { return extras.getSerializable(name); }
-    public Bundle getBundleExtra(String name) { return extras.getBundle(name); }
-
-    public Bundle getExtras() { return extras; }
-    public boolean hasExtra(String name) { return extras.containsKey(name); }
-    public void removeExtra(String name) { extras.remove(name); }
-
-    // ── Package ──
-
-    public Intent setPackage(String packageName) { this.packageName = packageName; return this; }
-    public String getPackage() { return packageName; }
-
-    // ── Bridge helpers (used by Context shim internally) ──
-
-    /**
-     * Returns the target ability name derived from the class name.
-     * e.g., "com.example.app.DetailActivity" → "DetailActivity"
-     */
-    public String getTargetAbilityName() {
-        if (className == null) return null;
-        int dot = className.lastIndexOf('.');
-        return dot >= 0 ? className.substring(dot + 1) : className;
+    public Intent addCategory(String category) {
+        if (mCategories == null) mCategories = new HashSet<String>();
+        mCategories.add(category);
+        return this;
+    }
+    public void removeCategory(String category) {
+        if (mCategories != null) mCategories.remove(category);
     }
 
-    /**
-     * Serialize extras to JSON for passing through the JNI bridge.
-     */
-    public String getExtrasJson() {
-        Map<String, Object> map = extras.toMap();
-        // Simple JSON serialization for primitive types
-        StringBuilder sb = new StringBuilder("{");
-        boolean first = true;
-        for (Map.Entry<String, Object> e : map.entrySet()) {
-            if (!first) sb.append(",");
-            sb.append("\"").append(escapeJson(e.getKey())).append("\":");
-            Object v = e.getValue();
-            if (v instanceof String) {
-                sb.append("\"").append(escapeJson((String) v)).append("\"");
-            } else if (v instanceof Number || v instanceof Boolean) {
-                sb.append(v);
-            } else {
-                sb.append("\"").append(escapeJson(String.valueOf(v))).append("\"");
-            }
-            first = false;
-        }
-        sb.append("}");
+    /* ── Getters ── */
+
+    public String getAction() { return mAction; }
+    public Uri getData() { return mData; }
+    public String getType() { return mType; }
+    public ComponentName getComponent() { return mComponent; }
+    public String getPackage() { return mPackage; }
+    public int getFlags() { return mFlags; }
+    public Set<String> getCategories() { return mCategories; }
+    public boolean hasCategory(String category) {
+        return mCategories != null && mCategories.contains(category);
+    }
+
+    /* ── Extras ── */
+
+    public Bundle getExtras() { return mExtras; }
+
+    public Intent putExtra(String name, boolean value) { ensureExtras(); mExtras.putBoolean(name, value); return this; }
+    public Intent putExtra(String name, int value) { ensureExtras(); mExtras.putInt(name, value); return this; }
+    public Intent putExtra(String name, long value) { ensureExtras(); mExtras.putLong(name, value); return this; }
+    public Intent putExtra(String name, double value) { ensureExtras(); mExtras.putDouble(name, value); return this; }
+    public Intent putExtra(String name, String value) { ensureExtras(); mExtras.putString(name, value); return this; }
+    public Intent putExtras(Bundle extras) { ensureExtras(); mExtras.putAll(extras); return this; }
+    public Intent putExtras(Intent src) { if (src.mExtras != null) { ensureExtras(); mExtras.putAll(src.mExtras); } return this; }
+
+    public boolean getBooleanExtra(String name, boolean defaultValue) { return mExtras != null ? mExtras.getBoolean(name, defaultValue) : defaultValue; }
+    public int getIntExtra(String name, int defaultValue) { return mExtras != null ? mExtras.getInt(name, defaultValue) : defaultValue; }
+    public long getLongExtra(String name, long defaultValue) { return mExtras != null ? mExtras.getLong(name, defaultValue) : defaultValue; }
+    public double getDoubleExtra(String name, double defaultValue) { return mExtras != null ? mExtras.getDouble(name, defaultValue) : defaultValue; }
+    public String getStringExtra(String name) { return mExtras != null ? mExtras.getString(name) : null; }
+    public Bundle getBundleExtra(String name) { return mExtras != null ? (Bundle) mExtras.get(name) : null; }
+    public boolean hasExtra(String name) { return mExtras != null && mExtras.containsKey(name); }
+    public void removeExtra(String name) { if (mExtras != null) mExtras.remove(name); }
+
+    private void ensureExtras() { if (mExtras == null) mExtras = new Bundle(); }
+
+    /* ── Factory methods ── */
+
+    public static Intent createChooser(Intent target, CharSequence title) {
+        Intent intent = new Intent(ACTION_CHOOSER);
+        intent.putExtra(EXTRA_INTENT, title != null ? title.toString() : "");
+        return intent;
+    }
+
+    public static Intent makeMainActivity(ComponentName mainActivity) {
+        Intent intent = new Intent(ACTION_MAIN);
+        intent.setComponent(mainActivity);
+        intent.addCategory(CATEGORY_LAUNCHER);
+        return intent;
+    }
+
+    /* ── Object methods ── */
+
+    @Override
+    public Object clone() { return new Intent(this); }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Intent { ");
+        if (mAction != null) sb.append("act=").append(mAction).append(' ');
+        if (mCategories != null) sb.append("cat=").append(mCategories).append(' ');
+        if (mData != null) sb.append("dat=").append(mData).append(' ');
+        if (mType != null) sb.append("typ=").append(mType).append(' ');
+        if (mComponent != null) sb.append("cmp=").append(mComponent.flattenToShortString()).append(' ');
+        if (mExtras != null) sb.append("(has extras) ");
+        sb.append('}');
         return sb.toString();
     }
 
-    private static String escapeJson(String s) {
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
-    }
+    /* ── Parcelable stubs ── */
+    public int describeContents() { return 0; }
+    public void readFromParcel(Parcel in) {}
+    public void writeToParcel(Parcel dest, int flags) {}
+
+    /* ── Remaining stubs ── */
+    public byte getByteExtra(String name, byte defaultValue) { return defaultValue; }
+    public char getCharExtra(String name, char defaultValue) { return defaultValue; }
+    public float getFloatExtra(String name, float defaultValue) { return defaultValue; }
+    public short getShortExtra(String name, short defaultValue) { return defaultValue; }
+    public int fillIn(Intent other, int flags) { return 0; }
+    public boolean filterEquals(Intent other) { return false; }
+    public int filterHashCode() { return 0; }
+    public ComponentName resolveActivity(PackageManager pm) { return mComponent; }
+    public ActivityInfo resolveActivityInfo(PackageManager pm, int flags) { return null; }
+    public void setClipData(ClipData clip) {}
+    public void setExtrasClassLoader(ClassLoader loader) {}
+    public void setSelector(Intent selector) {}
+    public void setSourceBounds(Rect r) {}
+    public String toUri(int flags) { return toString(); }
+    public boolean hasFileDescriptors() { return false; }
+    public static Intent parseUri(String uri, int flags) { return null; }
+    public static Intent getIntentOld(String uri) { return null; }
+    public static Intent makeMainSelectorActivity(String selectorAction, String selectorCategory) { return null; }
+    public static Intent makeRestartActivityTask(ComponentName mainActivity) { return null; }
 }

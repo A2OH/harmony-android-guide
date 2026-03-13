@@ -1,4 +1,11 @@
 package android.widget;
+import android.database.DataSetObserver;
+import android.view.View;
+import android.view.ViewGroup;
+import android.database.DataSetObserver;
+import android.view.View;
+import android.view.ViewGroup;
+import java.util.Observer;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +19,7 @@ import java.util.List;
  * implementations of areAllItemsEnabled() / isEnabled() so subclasses only need
  * to implement the four abstract methods.
  */
-public abstract class BaseAdapter implements ListAdapter {
+public class BaseAdapter implements ListAdapter {
 
     /** Simple observer interface (mirrors android.database.DataSetObserver). */
     public interface DataSetObserver {
@@ -25,16 +32,16 @@ public abstract class BaseAdapter implements ListAdapter {
     // ── Abstract methods ──
 
     @Override
-    public abstract int getCount();
+    public int getCount() { return 0; }
 
     @Override
-    public abstract Object getItem(int position);
+    public Object getItem(int position) { return null; }
 
     @Override
-    public abstract long getItemId(int position);
+    public long getItemId(int position) { return 0; }
 
     @Override
-    public abstract View getView(int position, View convertView, ViewGroup parent);
+    public View getView(int position, View convertView, ViewGroup parent) { return null; }
 
     // ── ListAdapter defaults ──
 

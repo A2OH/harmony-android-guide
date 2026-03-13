@@ -1,4 +1,6 @@
 package android.text.style;
+import android.icu.number.Scale;
+import android.icu.number.Scale;
 
 /**
  * Android-compatible RelativeSizeSpan shim.

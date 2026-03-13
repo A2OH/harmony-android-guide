@@ -4,9 +4,10 @@ package android.os.health;
  * A2OH shim: TimerStat - holds a count and total time for a timer.
  */
 public final class TimerStat {
+    public TimerStat(Object... args) {}
 
-    private final int mCount;
-    private final long mTime;
+    private int mCount;
+    private long mTime;
 
     public TimerStat(int count, long time) {
         mCount = count;

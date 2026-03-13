@@ -1,4 +1,6 @@
 package android.text;
+import android.graphics.Paint;
+import android.graphics.Paint;
 
 import android.graphics.Paint;
 
@@ -13,7 +15,7 @@ public class StaticLayout extends Layout {
     // -----------------------------------------------------------------------
     public static final class Builder {
         private CharSequence mText    = "";
-        private Paint        mPaint   = new Paint();
+        private Paint mPaint   = new Paint();
         private int          mWidth   = 0;
         private Alignment    mAlign   = Alignment.ALIGN_NORMAL;
         private float        mSpacingMult = 1.0f;
@@ -105,7 +107,7 @@ public class StaticLayout extends Layout {
     // -----------------------------------------------------------------------
 
     private static int computeLineHeight(Paint paint, float spacingMult, float spacingAdd) {
-        // Approximate: use font metrics if paint provides them; default to 16.
+        // Approximate: use font metrics if pa(int provides them; default to 16.
         int base = 16;
         return Math.round(base * spacingMult + spacingAdd);
     }

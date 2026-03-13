@@ -49,7 +49,7 @@ public class ZoomButton extends ImageButton {
      * Enables or disables the button.  When disabled the button does not
      * deliver click events.  No-op in the shim beyond storing the state.
      */
-    @Override
+    
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
     }

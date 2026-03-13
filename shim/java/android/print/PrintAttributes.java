@@ -2,7 +2,7 @@ package android.print;
 
 /**
  * Android-compatible PrintAttributes shim.
- * Stores print job configuration; no actual printing.
+ * Stores pr(int job configuration; no actual printing.
  */
 public final class PrintAttributes {
 
@@ -13,19 +13,21 @@ public final class PrintAttributes {
     // Inner class: MediaSize
     // -------------------------------------------------------------------------
     public static final class MediaSize {
-        public static final MediaSize ISO_A0 = new MediaSize("ISO_A0", 84100, 118900);
-        public static final MediaSize ISO_A1 = new MediaSize("ISO_A1", 59400, 84100);
-        public static final MediaSize ISO_A2 = new MediaSize("ISO_A2", 42000, 59400);
-        public static final MediaSize ISO_A3 = new MediaSize("ISO_A3", 29700, 42000);
-        public static final MediaSize ISO_A4 = new MediaSize("ISO_A4", 21000, 29700);
-        public static final MediaSize ISO_A5 = new MediaSize("ISO_A5", 14800, 21000);
-        public static final MediaSize NA_LETTER = new MediaSize("NA_LETTER", 21590, 27940);
-        public static final MediaSize NA_LEGAL  = new MediaSize("NA_LEGAL",  21590, 35560);
-        public static final MediaSize NA_TABLOID = new MediaSize("NA_TABLOID", 27940, 43180);
+    public MediaSize(String id, String label, int widthMils, int heightMils) {}
+    public MediaSize(String id, int widthMils) {}
+        public static final MediaSize ISO_A0 = new MediaSize("ISO_A0", 84100);
+        public static final MediaSize ISO_A1 = new MediaSize("ISO_A1", 59400);
+        public static final MediaSize ISO_A2 = new MediaSize("ISO_A2", 42000);
+        public static final MediaSize ISO_A3 = new MediaSize("ISO_A3", 29700);
+        public static final MediaSize ISO_A4 = new MediaSize("ISO_A4", 21000);
+        public static final MediaSize ISO_A5 = new MediaSize("ISO_A5", 14800);
+        public static final MediaSize NA_LETTER = new MediaSize("NA_LETTER", 21590);
+        public static final MediaSize NA_LEGAL  = new MediaSize("NA_LEGAL",  21590);
+        public static final MediaSize NA_TABLOID = new MediaSize("NA_TABLOID", 27940);
 
-        private final String mId;
-        private final int mWidthMils;
-        private final int mHeightMils;
+        private String mId;
+        private int mWidthMils;
+        private int mHeightMils;
 
         public MediaSize(String id, int widthMils, int heightMils) {
             mId        = id;
@@ -49,10 +51,11 @@ public final class PrintAttributes {
     // Inner class: Resolution
     // -------------------------------------------------------------------------
     public static final class Resolution {
-        private final String mId;
-        private final String mLabel;
-        private final int mHorizontalDpi;
-        private final int mVerticalDpi;
+    public Resolution(Object... args) {}
+        private String mId;
+        private String mLabel;
+        private int mHorizontalDpi;
+        private int mVerticalDpi;
 
         public Resolution(String id, String label, int horizontalDpi, int verticalDpi) {
             mId            = id;
@@ -61,7 +64,6 @@ public final class PrintAttributes {
             mVerticalDpi   = verticalDpi;
         }
 
-        public String getId()            { return mId; }
         public String getLabel()         { return mLabel; }
         public int getHorizontalDpi()    { return mHorizontalDpi; }
         public int getVerticalDpi()      { return mVerticalDpi; }
@@ -75,12 +77,13 @@ public final class PrintAttributes {
     // Inner class: Margins
     // -------------------------------------------------------------------------
     public static final class Margins {
-        public static final Margins NO_MARGINS = new Margins(0, 0, 0, 0);
+    public Margins(Object... args) {}
+        public static final Margins NO_MARGINS = new Margins(0, 0, 0);
 
-        private final int mLeftMils;
-        private final int mTopMils;
-        private final int mRightMils;
-        private final int mBottomMils;
+        private int mLeftMils;
+        private int mTopMils;
+        private int mRightMils;
+        private int mBottomMils;
 
         public Margins(int leftMils, int topMils, int rightMils, int bottomMils) {
             mLeftMils   = leftMils;
@@ -125,7 +128,7 @@ public final class PrintAttributes {
     // -------------------------------------------------------------------------
     public static final class Builder {
         private MediaSize  mMediaSize  = MediaSize.ISO_A4;
-        private Resolution mResolution = new Resolution("RES_300", "300dpi", 300, 300);
+        private Resolution mResolution = new Resolution("RES_300", "300dpi", 300);
         private Margins    mMinMargins = Margins.NO_MARGINS;
         private int        mColorMode  = COLOR_MODE_COLOR;
 

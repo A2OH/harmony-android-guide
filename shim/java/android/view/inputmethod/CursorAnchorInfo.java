@@ -2,7 +2,7 @@ package android.view.inputmethod;
 
 /**
  * Android-compatible CursorAnchorInfo shim.
- * Positional information about the text insertion point and composing text.
+ * Positional information about the text insertion po(int and composing text.
  */
 public class CursorAnchorInfo {
     private int mSelectionStart;

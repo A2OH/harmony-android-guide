@@ -1,4 +1,6 @@
 package android.net;
+import java.net.URI;
+import java.net.URL;
 
 /**
  * Android-compatible ProxyInfo stub — describes HTTP proxy settings.

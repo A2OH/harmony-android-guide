@@ -1,4 +1,6 @@
 package android.hardware;
+import android.view.Gravity;
+import android.view.Gravity;
 
 import java.util.ArrayList;
 import java.util.HashMap;

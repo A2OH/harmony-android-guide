@@ -1,11 +1,13 @@
 package android.icu.text;
+import android.icu.util.ULocale;
+import android.icu.util.ULocale;
 
 import android.icu.util.ULocale;
 
 /**
  * Android ICU BreakIterator shim. Abstract wrapper around java.text.BreakIterator.
  */
-public abstract class BreakIterator {
+public class BreakIterator {
 
     public static final int DONE = -1;
 

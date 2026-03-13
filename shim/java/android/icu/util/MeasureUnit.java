@@ -4,6 +4,7 @@ package android.icu.util;
  * Android ICU MeasureUnit shim. Static constant units with type/subtype metadata.
  */
 public class MeasureUnit {
+    public MeasureUnit() {}
 
     // Length
     public static final MeasureUnit METER     = new MeasureUnit("length",   "meter");
@@ -45,8 +46,8 @@ public class MeasureUnit {
     public static final MeasureUnit PERCENT   = new MeasureUnit("concentr", "percent");
     public static final MeasureUnit KNOT      = new MeasureUnit("speed",    "knot");
 
-    private final String type;
-    private final String subtype;
+    private String type;
+    private String subtype;
 
     protected MeasureUnit(String type, String subtype) {
         this.type    = type;

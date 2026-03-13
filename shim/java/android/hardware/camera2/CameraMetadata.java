@@ -4,7 +4,7 @@ package android.hardware.camera2;
  * Android-compatible CameraMetadata stub.
  * Base class for camera metadata containers (CaptureRequest, CaptureResult, CameraCharacteristics).
  */
-public abstract class CameraMetadata {
+public class CameraMetadata {
 
     // -----------------------------------------------------------------------
     // CONTROL_MODE constants
