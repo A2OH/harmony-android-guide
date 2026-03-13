@@ -47,6 +47,11 @@ public class HeadlessTest {
         testDropBoxManager();
         testInflateException();
         testEventLog();
+        testSystemClock();
+        testConditionVariable();
+        testStatFs();
+        testAtomicFile();
+        testProcess();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -667,5 +672,111 @@ public class HeadlessTest {
         check("readEvents count", events.size() >= 2);
         check("event tag", events.size() > 0 && events.get(0).getTag() == 1001);
         check("event data", events.size() > 0 && Integer.valueOf(42).equals(events.get(0).getData()));
+    }
+
+    // ── SystemClock ──
+
+    static void testSystemClock() {
+        section("android.os.SystemClock");
+        long uptime = android.os.SystemClock.uptimeMillis();
+        check("uptimeMillis > 0", uptime > 0);
+
+        long realtime = android.os.SystemClock.elapsedRealtime();
+        check("elapsedRealtime > 0", realtime > 0);
+
+        long nanos = android.os.SystemClock.elapsedRealtimeNanos();
+        check("elapsedRealtimeNanos > 0", nanos > 0);
+
+        android.os.SystemClock.sleep(10);
+        long uptime2 = android.os.SystemClock.uptimeMillis();
+        check("sleep advances clock", uptime2 >= uptime + 5);
+    }
+
+    // ── ConditionVariable ──
+
+    static void testConditionVariable() {
+        section("android.os.ConditionVariable");
+        android.os.ConditionVariable cv = new android.os.ConditionVariable(false);
+        check("block(timeout) returns false when closed", !cv.block(10));
+
+        cv.open();
+        check("block returns true when open", cv.block(10));
+
+        cv.close();
+        check("block after close times out", !cv.block(10));
+
+        // Thread signaling
+        final android.os.ConditionVariable cv2 = new android.os.ConditionVariable(false);
+        new Thread(() -> {
+            try { Thread.sleep(30); } catch (InterruptedException e) {}
+            cv2.open();
+        }).start();
+        boolean result = cv2.block(500);
+        check("block unblocked by another thread", result);
+    }
+
+    // ── StatFs ──
+
+    static void testStatFs() {
+        section("android.os.StatFs");
+        android.os.StatFs sf = new android.os.StatFs("/tmp");
+        check("getTotalBytes > 0", sf.getTotalBytes() > 0);
+        check("getAvailableBytes > 0", sf.getAvailableBytes() > 0);
+        check("getFreeBytes > 0", sf.getFreeBytes() > 0);
+        check("getBlockSizeLong", sf.getBlockSizeLong() == 4096);
+        check("getBlockCountLong > 0", sf.getBlockCountLong() > 0);
+    }
+
+    // ── AtomicFile ──
+
+    static void testAtomicFile() {
+        section("android.util.AtomicFile");
+        try {
+            java.io.File tmpFile = java.io.File.createTempFile("atomictest", ".dat");
+            tmpFile.deleteOnExit();
+            android.util.AtomicFile af = new android.util.AtomicFile(tmpFile);
+            check("getBaseFile", af.getBaseFile().equals(tmpFile));
+
+            // Write
+            java.io.FileOutputStream fos = af.startWrite();
+            fos.write("hello atomic".getBytes());
+            af.finishWrite(fos);
+
+            // Read
+            byte[] data = af.readFully();
+            check("readFully", "hello atomic".equals(new String(data)));
+
+            // Overwrite
+            fos = af.startWrite();
+            fos.write("updated".getBytes());
+            af.finishWrite(fos);
+            data = af.readFully();
+            check("overwrite + readFully", "updated".equals(new String(data)));
+
+            // Failed write (should restore backup)
+            fos = af.startWrite();
+            fos.write("BAD DATA".getBytes());
+            af.failWrite(fos);
+            data = af.readFully();
+            check("failWrite restores backup", "updated".equals(new String(data)));
+
+            af.delete();
+            check("delete", !tmpFile.exists());
+        } catch (Exception e) {
+            check("AtomicFile no exception: " + e.getMessage(), false);
+        }
+    }
+
+    // ── Process ──
+
+    static void testProcess() {
+        section("android.os.Process");
+        check("myPid > 0", android.os.Process.myPid() > 0);
+        check("myTid > 0", android.os.Process.myTid() > 0);
+        check("myUid is app UID", android.os.Process.myUid() >= android.os.Process.FIRST_APPLICATION_UID);
+        check("isApplicationUid", android.os.Process.isApplicationUid(android.os.Process.myUid()));
+        check("isApplicationUid system", !android.os.Process.isApplicationUid(android.os.Process.SYSTEM_UID));
+        check("isIsolated", !android.os.Process.isIsolated());
+        check("supportsProcesses", android.os.Process.supportsProcesses());
     }
 }
