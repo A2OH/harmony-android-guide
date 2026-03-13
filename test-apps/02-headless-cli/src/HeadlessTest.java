@@ -37,6 +37,16 @@ public class HeadlessTest {
         testBase64();
         testSensorDirectChannel();
         testSmsManager();
+        testSizeF();
+        testCloseGuard();
+        testStatsLog();
+        testTimeUtils();
+        testCountDownTimer();
+        testBatteryManager();
+        testVibrator();
+        testDropBoxManager();
+        testInflateException();
+        testEventLog();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -507,5 +517,155 @@ public class HeadlessTest {
 
         String json = cv.toJson();
         check("toJson non-null", json != null && json.contains("Alice"));
+    }
+
+    // ── SizeF (pure Java) ──
+
+    static void testSizeF() {
+        section("android.util.SizeF (pure Java)");
+        android.util.SizeF sf = new android.util.SizeF(19.20f, 10.80f);
+        check("getWidth", Math.abs(sf.getWidth() - 19.20f) < 0.01f);
+        check("getHeight", Math.abs(sf.getHeight() - 10.80f) < 0.01f);
+        check("toString", sf.toString().contains("19.2"));
+        check("equals same", sf.equals(new android.util.SizeF(19.20f, 10.80f)));
+        check("equals diff", !sf.equals(new android.util.SizeF(10.80f, 19.20f)));
+
+        boolean threw = false;
+        try { new android.util.SizeF(Float.NaN, 1.0f); } catch (IllegalArgumentException e) { threw = true; }
+        check("NaN throws", threw);
+    }
+
+    // ── CloseGuard ──
+
+    static void testCloseGuard() {
+        section("android.util.CloseGuard");
+        android.util.CloseGuard guard = android.util.CloseGuard.get();
+        check("get() non-null", guard != null);
+        guard.open("close");
+        guard.warnIfOpen(); // should print warning (but not throw)
+        guard.close();
+        check("close+warnIfOpen no crash", true);
+    }
+
+    // ── StatsLog ──
+
+    static void testStatsLog() {
+        section("android.util.StatsLog (stub)");
+        check("logEvent", android.util.StatsLog.logEvent(100));
+        check("logStart", android.util.StatsLog.logStart(200));
+        check("logStop", android.util.StatsLog.logStop(200));
+    }
+
+    // ── TimeUtils ──
+
+    static void testTimeUtils() {
+        section("android.util.TimeUtils");
+        java.util.TimeZone tz = android.util.TimeUtils.getTimeZone(0, false, System.currentTimeMillis(), "GB");
+        check("getTimeZone non-null", tz != null);
+
+        String ver = android.util.TimeUtils.getTimeZoneDatabaseVersion();
+        check("getTimeZoneDatabaseVersion non-null", ver != null && !ver.isEmpty());
+
+        String dur = android.util.TimeUtils.formatDuration(3661500);
+        check("formatDuration 1h1m1s", dur.contains("1h") && dur.contains("1m") && dur.contains("1s"));
+    }
+
+    // ── CountDownTimer ──
+
+    static void testCountDownTimer() {
+        section("android.os.CountDownTimer");
+        final boolean[] finished = {false};
+        final int[] ticks = {0};
+        android.os.CountDownTimer timer = new android.os.CountDownTimer(150, 50) {
+            @Override public void onTick(long remaining) { ticks[0]++; }
+            @Override public void onFinish() { finished[0] = true; }
+        };
+        timer.start();
+        try { Thread.sleep(300); } catch (InterruptedException e) {}
+        check("onFinish called", finished[0]);
+        check("onTick called", ticks[0] > 0);
+
+        // Test cancel
+        final boolean[] finished2 = {false};
+        android.os.CountDownTimer timer2 = new android.os.CountDownTimer(500, 100) {
+            @Override public void onTick(long remaining) {}
+            @Override public void onFinish() { finished2[0] = true; }
+        };
+        timer2.start();
+        timer2.cancel();
+        try { Thread.sleep(100); } catch (InterruptedException e) {}
+        check("cancel prevents finish", !finished2[0]);
+    }
+
+    // ── BatteryManager ──
+
+    static void testBatteryManager() {
+        section("android.os.BatteryManager (stub)");
+        android.os.BatteryManager bm = new android.os.BatteryManager();
+        int capacity = bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        check("getIntProperty capacity", capacity == 75);
+        check("isCharging", !bm.isCharging());
+        check("computeChargeTimeRemaining", bm.computeChargeTimeRemaining() == -1);
+    }
+
+    // ── Vibrator ──
+
+    static void testVibrator() {
+        section("android.os.Vibrator (stub)");
+        android.os.Vibrator v = new android.os.Vibrator();
+        check("hasVibrator", v.hasVibrator());
+        try {
+            v.vibrate(100);
+            v.vibrate(new long[]{0, 100, 50, 100}, -1);
+            v.cancel();
+            check("vibrate+cancel no throw", true);
+        } catch (Exception e) {
+            check("vibrate+cancel no throw", false);
+        }
+    }
+
+    // ── DropBoxManager ──
+
+    static void testDropBoxManager() {
+        section("android.os.DropBoxManager");
+        android.os.DropBoxManager db = new android.os.DropBoxManager();
+        check("isTagEnabled", db.isTagEnabled("test"));
+        db.addText("crash", "NullPointerException at line 42");
+        android.os.DropBoxManager.Entry entry = db.getNextEntry("crash", 0);
+        check("getNextEntry non-null", entry != null);
+        check("entry getText", entry != null && "NullPointerException at line 42".equals(entry.getText(1000)));
+        check("entry getTag", entry != null && "crash".equals(entry.getTag()));
+        check("getNextEntry wrong tag", db.getNextEntry("other", 0) == null);
+    }
+
+    // ── InflateException ──
+
+    static void testInflateException() {
+        section("android.view.InflateException");
+        try {
+            throw new android.view.InflateException("test inflate error");
+        } catch (android.view.InflateException e) {
+            check("message", "test inflate error".equals(e.getMessage()));
+        }
+        try {
+            throw new android.view.InflateException("wrap", new RuntimeException("cause"));
+        } catch (android.view.InflateException e) {
+            check("cause", e.getCause() instanceof RuntimeException);
+        }
+    }
+
+    // ── EventLog ──
+
+    static void testEventLog() {
+        section("android.util.EventLog");
+        android.util.EventLog.writeEvent(1001, 42);
+        android.util.EventLog.writeEvent(1002, "hello");
+        android.util.EventLog.writeEvent(1001, 99);
+
+        java.util.ArrayList<android.util.EventLog.Event> events = new java.util.ArrayList<>();
+        android.util.EventLog.readEvents(new int[]{1001}, events);
+        check("readEvents count", events.size() >= 2);
+        check("event tag", events.size() > 0 && events.get(0).getTag() == 1001);
+        check("event data", events.size() > 0 && Integer.valueOf(42).equals(events.get(0).getData()));
     }
 }
