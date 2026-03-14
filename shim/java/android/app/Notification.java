@@ -92,6 +92,12 @@ public class Notification implements Parcelable {
     public int visibility = 0;
     public int when = 0;
 
+    // ── Shim fields for bridge data extraction ──────────────────
+    String shimTitle;
+    String shimText;
+    String shimChannelId;
+    int shimPriority;
+
     public Notification() {}
     public Notification(Parcel p0) {}
 
@@ -99,7 +105,7 @@ public class Notification implements Parcelable {
     public int describeContents() { return 0; }
     public boolean getAllowSystemGeneratedContextualActions() { return false; }
     public int getBadgeIconType() { return 0; }
-    public String getChannelId() { return null; }
+    public String getChannelId() { return shimChannelId; }
     public String getGroup() { return null; }
     public int getGroupAlertBehavior() { return 0; }
     public Icon getLargeIcon() { return null; }
@@ -109,4 +115,81 @@ public class Notification implements Parcelable {
     public String getSortKey() { return null; }
     public long getTimeoutAfter() { return 0L; }
     public void writeToParcel(Parcel p0, int p1) {}
+
+    // ── Builder (commonly used by Android apps) ─────────────────
+    public static class Builder {
+        private String title;
+        private String text;
+        private String channelId;
+        private int priority;
+        private int smallIcon;
+
+        public Builder(android.content.Context context, String channelId) {
+            this.channelId = channelId;
+        }
+
+        /** @deprecated Use Builder(Context, String) instead. */
+        public Builder(android.content.Context context) {
+            this.channelId = "";
+        }
+
+        public Builder setContentTitle(CharSequence title) {
+            this.title = title != null ? title.toString() : null;
+            return this;
+        }
+
+        public Builder setContentText(CharSequence text) {
+            this.text = text != null ? text.toString() : null;
+            return this;
+        }
+
+        public Builder setSmallIcon(int icon) {
+            this.smallIcon = icon;
+            return this;
+        }
+
+        public Builder setChannelId(String channelId) {
+            this.channelId = channelId;
+            return this;
+        }
+
+        public Builder setPriority(int priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        public Builder setAutoCancel(boolean autoCancel) { return this; }
+        public Builder setOngoing(boolean ongoing) { return this; }
+        public Builder setContentIntent(Object intent) { return this; }
+        public Builder setDeleteIntent(Object intent) { return this; }
+        public Builder setCategory(String category) { return this; }
+        public Builder setVisibility(int visibility) { return this; }
+        public Builder setGroup(String groupKey) { return this; }
+        public Builder setGroupSummary(boolean isGroupSummary) { return this; }
+        public Builder setSortKey(String sortKey) { return this; }
+        public Builder setStyle(Object style) { return this; }
+        public Builder setColor(int argb) { return this; }
+        public Builder setNumber(int number) { return this; }
+        public Builder setSubText(CharSequence text) { return this; }
+        public Builder setShowWhen(boolean show) { return this; }
+        public Builder setWhen(long when) { return this; }
+        public Builder setUsesChronometer(boolean b) { return this; }
+        public Builder setOnlyAlertOnce(boolean onlyAlertOnce) { return this; }
+        public Builder setTicker(CharSequence tickerText) { return this; }
+        public Builder setLargeIcon(Object icon) { return this; }
+        public Builder setDefaults(int defaults) { return this; }
+        public Builder setVibrate(long[] pattern) { return this; }
+        public Builder setSound(Object sound) { return this; }
+        public Builder setLights(int argb, int onMs, int offMs) { return this; }
+        public Builder addAction(int icon, CharSequence title, Object intent) { return this; }
+
+        public Notification build() {
+            Notification n = new Notification();
+            n.shimTitle = this.title;
+            n.shimText = this.text;
+            n.shimChannelId = this.channelId;
+            n.shimPriority = this.priority;
+            return n;
+        }
+    }
 }

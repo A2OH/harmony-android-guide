@@ -1,13 +1,10 @@
 package android.media;
 
-import com.ohos.shim.bridge.OHBridge;
-import java.net.URL;
-
 /**
  * Shim for android.media.MediaPlayer → @ohos.multimedia.media.AVPlayer
  *
  * Maps the Android MediaPlayer state machine onto OpenHarmony AVPlayer via
- * the OHBridge JNI layer.
+ * the OHBridge JNI layer (accessed by reflection to avoid static init crash).
  *
  * State machine: IDLE → INITIALIZED → PREPARING → PREPARED →
  *                STARTED → PAUSED → STOPPED → END
@@ -37,7 +34,7 @@ public class MediaPlayer {
         void onCompletion(MediaPlayer mp);
     }
 
-    public interface Object {
+    public interface OnErrorListener {
         /** Return true if the error has been handled. */
         boolean onError(MediaPlayer mp, int what, int extra);
     }
@@ -57,51 +54,65 @@ public class MediaPlayer {
 
     private OnPreparedListener       mOnPreparedListener;
     private OnCompletionListener     mOnCompletionListener;
-    private Object          mOnErrorListener;
+    private OnErrorListener          mOnErrorListener;
     private OnSeekCompleteListener   mOnSeekCompleteListener;
     private OnBufferingUpdateListener mOnBufferingUpdateListener;
+
+    // ── Bridge helper (reflection, no static OHBridge dep) ────────
+
+    private static Object callBridge(String method, Class<?>[] types, Object... args) {
+        try {
+            Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
+            return c.getMethod(method, types).invoke(null, args);
+        } catch (Throwable t) { return null; }
+    }
+
+    private static long callBridgeLong(String method, Class<?>[] types, Object... args) {
+        Object r = callBridge(method, types, args);
+        return r instanceof Number ? ((Number) r).longValue() : 0L;
+    }
+
+    private static int callBridgeInt(String method, Class<?>[] types, Object... args) {
+        Object r = callBridge(method, types, args);
+        return r instanceof Number ? ((Number) r).intValue() : 0;
+    }
+
+    private static boolean callBridgeBool(String method, Class<?>[] types, Object... args) {
+        Object r = callBridge(method, types, args);
+        return r instanceof Boolean && (Boolean) r;
+    }
 
     // ── Constructor ────────────────────────────────────────────────
 
     public MediaPlayer() {
-        mHandle = OHBridge.mediaPlayerCreate();
+        mHandle = callBridgeLong("mediaPlayerCreate", new Class<?>[0]);
         mState = State.IDLE;
     }
 
     // ── Data source ────────────────────────────────────────────────
 
-    /**
-     * Sets the data source (file path or URL).
-     * Corresponds to AVPlayer.url.
-     */
     public void setDataSource(String path) {
         checkState("setDataSource", State.IDLE);
-        OHBridge.mediaPlayerSetDataSource(mHandle, path);
+        callBridge("mediaPlayerSetDataSource", new Class<?>[]{long.class, String.class}, mHandle, path);
         mState = State.INITIALIZED;
     }
 
     // ── Prepare ────────────────────────────────────────────────────
 
-    /** Synchronous prepare → AVPlayer.prepare. */
     public void prepare() throws IllegalStateException {
         checkState("prepare", State.INITIALIZED, State.STOPPED);
         mState = State.PREPARING;
-        OHBridge.mediaPlayerPrepare(mHandle);
+        callBridge("mediaPlayerPrepare", new Class<?>[]{long.class}, mHandle);
         mState = State.PREPARED;
         if (mOnPreparedListener != null) {
             mOnPreparedListener.onPrepared(this);
         }
     }
 
-    /**
-     * Asynchronous prepare → AVPlayer.prepare (async).
-     * Fires onPrepared callback when ready.
-     */
     public void prepareAsync() throws IllegalStateException {
         checkState("prepareAsync", State.INITIALIZED, State.STOPPED);
         mState = State.PREPARING;
-        // Bridge call is the same; callback delivery is simulated synchronously here.
-        OHBridge.mediaPlayerPrepare(mHandle);
+        callBridge("mediaPlayerPrepare", new Class<?>[]{long.class}, mHandle);
         mState = State.PREPARED;
         if (mOnPreparedListener != null) {
             mOnPreparedListener.onPrepared(this);
@@ -110,41 +121,36 @@ public class MediaPlayer {
 
     // ── Playback control ───────────────────────────────────────────
 
-    /** Start/resume playback → AVPlayer.play. */
     public void start() throws IllegalStateException {
         checkState("start", State.PREPARED, State.PAUSED, State.STARTED);
-        OHBridge.mediaPlayerStart(mHandle);
+        callBridge("mediaPlayerStart", new Class<?>[]{long.class}, mHandle);
         mState = State.STARTED;
     }
 
-    /** Pause playback → AVPlayer.pause. */
     public void pause() throws IllegalStateException {
         checkState("pause", State.STARTED, State.PAUSED);
-        OHBridge.mediaPlayerPause(mHandle);
+        callBridge("mediaPlayerPause", new Class<?>[]{long.class}, mHandle);
         mState = State.PAUSED;
     }
 
-    /** Stop playback → AVPlayer.stop. */
     public void stop() throws IllegalStateException {
         checkState("stop", State.PREPARED, State.STARTED, State.PAUSED, State.STOPPED);
-        OHBridge.mediaPlayerStop(mHandle);
+        callBridge("mediaPlayerStop", new Class<?>[]{long.class}, mHandle);
         mState = State.STOPPED;
     }
 
-    /** Release all resources → AVPlayer.release. */
     public void release() {
         if (mState != State.END) {
-            OHBridge.mediaPlayerRelease(mHandle);
+            callBridge("mediaPlayerRelease", new Class<?>[]{long.class}, mHandle);
             mState = State.END;
         }
     }
 
     // ── Seek ───────────────────────────────────────────────────────
 
-    /** Seek to position in milliseconds → AVPlayer.seek. */
     public void seekTo(int msec) throws IllegalStateException {
         checkState("seekTo", State.PREPARED, State.STARTED, State.PAUSED, State.STOPPED);
-        OHBridge.mediaPlayerSeekTo(mHandle, msec);
+        callBridge("mediaPlayerSeekTo", new Class<?>[]{long.class, int.class}, mHandle, msec);
         if (mOnSeekCompleteListener != null) {
             mOnSeekCompleteListener.onSeekComplete(this);
         }
@@ -152,53 +158,43 @@ public class MediaPlayer {
 
     // ── Reset ──────────────────────────────────────────────────────
 
-    /** Reset to IDLE state → AVPlayer.reset. */
     public void reset() {
-        OHBridge.mediaPlayerReset(mHandle);
+        callBridge("mediaPlayerReset", new Class<?>[]{long.class}, mHandle);
         mState = State.IDLE;
     }
 
     // ── Queries ────────────────────────────────────────────────────
 
-    /** Returns total duration in milliseconds → AVPlayer.duration. */
     public int getDuration() {
         checkNotEnd("getDuration");
-        return OHBridge.mediaPlayerGetDuration(mHandle);
+        return callBridgeInt("mediaPlayerGetDuration", new Class<?>[]{long.class}, mHandle);
     }
 
-    /** Returns current playback position in milliseconds → AVPlayer.currentTime. */
     public int getCurrentPosition() {
         checkNotEnd("getCurrentPosition");
-        return OHBridge.mediaPlayerGetCurrentPosition(mHandle);
+        return callBridgeInt("mediaPlayerGetCurrentPosition", new Class<?>[]{long.class}, mHandle);
     }
 
-    /** Returns true if currently playing → AVPlayer.state check. */
     public boolean isPlaying() {
         if (mState == State.END) return false;
-        return OHBridge.mediaPlayerIsPlaying(mHandle);
+        return callBridgeBool("mediaPlayerIsPlaying", new Class<?>[]{long.class}, mHandle);
     }
 
     // ── Volume ─────────────────────────────────────────────────────
 
-    /**
-     * Sets left and right channel volumes (0.0–1.0) → AVPlayer.setVolume.
-     */
     public void setVolume(float leftVolume, float rightVolume) {
         checkNotEnd("setVolume");
-        OHBridge.mediaPlayerSetVolume(mHandle, leftVolume, rightVolume);
+        callBridge("mediaPlayerSetVolume", new Class<?>[]{long.class, float.class, float.class}, mHandle, leftVolume, rightVolume);
     }
 
     // ── Looping ────────────────────────────────────────────────────
 
-    /** Enable/disable looping → AVPlayer.loop. */
     public void setLooping(boolean looping) {
         checkNotEnd("setLooping");
-        OHBridge.mediaPlayerSetLooping(mHandle, looping);
+        callBridge("mediaPlayerSetLooping", new Class<?>[]{long.class, boolean.class}, mHandle, looping);
     }
 
     public boolean isLooping() {
-        // State not tracked locally; bridge would need a getter.
-        // Returning false as a safe default.
         return false;
     }
 
@@ -212,7 +208,7 @@ public class MediaPlayer {
         mOnCompletionListener = listener;
     }
 
-    public void setOnErrorListener(Object listener) {
+    public void setOnErrorListener(OnErrorListener listener) {
         mOnErrorListener = listener;
     }
 
@@ -226,7 +222,6 @@ public class MediaPlayer {
 
     // ── State accessor ─────────────────────────────────────────────
 
-    /** Returns the current internal state (not an Android API, useful for testing). */
     public State getState() {
         return mState;
     }

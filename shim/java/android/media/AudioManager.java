@@ -1,12 +1,10 @@
 package android.media;
 
-import com.ohos.shim.bridge.OHBridge;
-
 /**
  * Shim for android.media.AudioManager → @ohos.multimedia.audio.AudioManager
  *
  * Maps Android audio management APIs onto OpenHarmony audio APIs via
- * the OHBridge JNI layer.
+ * the OHBridge JNI layer (accessed by reflection to avoid static init crash).
  */
 public class AudioManager {
 
@@ -50,43 +48,59 @@ public class AudioManager {
         void onAudioFocusChange(int focusChange);
     }
 
-    // ── Audio mode (in-process state) ─────────────────────────────
+    // ── Bridge helper (reflection, no static OHBridge dep) ────────
+
+    private static Object callBridge(String method, Class<?>[] types, Object... args) {
+        try {
+            Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
+            return c.getMethod(method, types).invoke(null, args);
+        } catch (Throwable t) { return null; }
+    }
+
+    private static int callBridgeInt(String method, Class<?>[] types, Object... args) {
+        Object r = callBridge(method, types, args);
+        return r instanceof Number ? ((Number) r).intValue() : 0;
+    }
+
+    private static boolean callBridgeBool(String method, Class<?>[] types, Object... args) {
+        Object r = callBridge(method, types, args);
+        return r instanceof Boolean && (Boolean) r;
+    }
+
+    // ── In-process state ───────────────────────────────────────────
 
     private int mMode = MODE_NORMAL;
-
-    // ── Speakerphone state (in-process state) ──────────────────────
-
     private boolean mSpeakerphoneOn = false;
 
     // ── Volume ─────────────────────────────────────────────────────
 
     public int getStreamVolume(int streamType) {
-        return OHBridge.audioGetStreamVolume(streamType);
+        return callBridgeInt("audioGetStreamVolume", new Class<?>[]{int.class}, streamType);
     }
 
     public int getStreamMaxVolume(int streamType) {
-        return OHBridge.audioGetStreamMaxVolume(streamType);
+        return callBridgeInt("audioGetStreamMaxVolume", new Class<?>[]{int.class}, streamType);
     }
 
     public void setStreamVolume(int streamType, int index, int flags) {
-        OHBridge.audioSetStreamVolume(streamType, index, flags);
+        callBridge("audioSetStreamVolume", new Class<?>[]{int.class, int.class, int.class}, streamType, index, flags);
     }
 
     public void adjustStreamVolume(int streamType, int direction, int flags) {
-        int current = OHBridge.audioGetStreamVolume(streamType);
-        int max     = OHBridge.audioGetStreamMaxVolume(streamType);
+        int current = getStreamVolume(streamType);
+        int max     = getStreamMaxVolume(streamType);
         int next    = Math.max(0, Math.min(max, current + direction));
-        OHBridge.audioSetStreamVolume(streamType, next, flags);
+        setStreamVolume(streamType, next, flags);
     }
 
     // ── Ringer mode ────────────────────────────────────────────────
 
     public int getRingerMode() {
-        return OHBridge.audioGetRingerMode();
+        return callBridgeInt("audioGetRingerMode", new Class<?>[0]);
     }
 
     public void setRingerMode(int mode) {
-        OHBridge.audioSetRingerMode(mode);
+        callBridge("audioSetRingerMode", new Class<?>[]{int.class}, mode);
     }
 
     // ── Audio mode ─────────────────────────────────────────────────
@@ -102,7 +116,7 @@ public class AudioManager {
     // ── Music active ───────────────────────────────────────────────
 
     public boolean isMusicActive() {
-        return OHBridge.audioIsMusicActive();
+        return callBridgeBool("audioIsMusicActive", new Class<?>[0]);
     }
 
     // ── Speakerphone ───────────────────────────────────────────────
@@ -120,7 +134,6 @@ public class AudioManager {
     public int requestAudioFocus(OnAudioFocusChangeListener listener,
                                  int streamType,
                                  int durationHint) {
-        // OpenHarmony audio focus is managed natively; shim always grants.
         return AUDIOFOCUS_REQUEST_GRANTED;
     }
 

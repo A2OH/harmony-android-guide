@@ -1,8 +1,34 @@
 package android.app;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Shim: android.app.NotificationManager → OH ANS (Advanced Notification Service)
+ *
+ * Bridges to OHBridge via reflection to avoid Dalvik crash from System.loadLibrary
+ * in the static initializer of OHBridge.
+ */
 public class NotificationManager {
+
+    // ── Track active notification IDs and channels ──────────────
+    private final Set<Integer> activeIds = new HashSet<Integer>();
+    private final List<NotificationChannel> channels = new ArrayList<NotificationChannel>();
+
     public NotificationManager() {}
 
+    // ── Importance constants (match Android values) ─────────────
+    public static final int IMPORTANCE_UNSPECIFIED = -1000;
+    public static final int IMPORTANCE_NONE = 0;
+    public static final int IMPORTANCE_MIN = 1;
+    public static final int IMPORTANCE_LOW = 2;
+    public static final int IMPORTANCE_DEFAULT = 3;
+    public static final int IMPORTANCE_HIGH = 4;
+    public static final int IMPORTANCE_MAX = 5;
+
+    // ── Other constants (stubs) ─────────────────────────────────
     public static final int ACTION_APP_BLOCK_STATE_CHANGED = 0;
     public static final int ACTION_AUTOMATIC_ZEN_RULE = 0;
     public static final int ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED = 0;
@@ -21,13 +47,6 @@ public class NotificationManager {
     public static final int EXTRA_BLOCKED_STATE = 0;
     public static final int EXTRA_NOTIFICATION_CHANNEL_GROUP_ID = 0;
     public static final int EXTRA_NOTIFICATION_CHANNEL_ID = 0;
-    public static final int IMPORTANCE_DEFAULT = 0;
-    public static final int IMPORTANCE_HIGH = 0;
-    public static final int IMPORTANCE_LOW = 0;
-    public static final int IMPORTANCE_MAX = 0;
-    public static final int IMPORTANCE_MIN = 0;
-    public static final int IMPORTANCE_NONE = 0;
-    public static final int IMPORTANCE_UNSPECIFIED = 0;
     public static final int INTERRUPTION_FILTER_ALARMS = 0;
     public static final int INTERRUPTION_FILTER_ALL = 0;
     public static final int INTERRUPTION_FILTER_NONE = 0;
@@ -35,41 +54,170 @@ public class NotificationManager {
     public static final int INTERRUPTION_FILTER_UNKNOWN = 0;
     public static final int META_DATA_AUTOMATIC_RULE_TYPE = 0;
     public static final int META_DATA_RULE_INSTANCE_LIMIT = 0;
-    public Object addAutomaticZenRule(Object p0) { return null; }
-    public boolean areBubblesAllowed() { return false; }
-    public boolean areNotificationsEnabled() { return false; }
+
+    // ── Reflection-based bridge call (avoids direct OHBridge import) ──
+
+    private static Object callBridge(String methodName, Class<?>[] types, Object... args) {
+        try {
+            Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
+            return c.getMethod(methodName, types).invoke(null, args);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    // ── Core notification methods ───────────────────────────────
+
+    /**
+     * Post a notification to be shown in the status bar.
+     */
+    public void notify(int id, Notification notification) {
+        if (notification == null) return;
+        String title = notification.shimTitle != null ? notification.shimTitle : "";
+        String text = notification.shimText != null ? notification.shimText : "";
+        String channelId = notification.shimChannelId != null ? notification.shimChannelId : "";
+        int priority = notification.shimPriority;
+
+        callBridge("notificationPublish",
+                new Class<?>[]{ int.class, String.class, String.class, String.class, int.class },
+                id, title, text, channelId, priority);
+        activeIds.add(Integer.valueOf(id));
+    }
+
+    /**
+     * Post a notification to be shown in the status bar (with tag).
+     * The tag is ignored on the OH side; we use only the numeric id.
+     */
+    public void notify(String tag, int id, Notification notification) {
+        notify(id, notification);
+    }
+
+    /**
+     * Cancel a previously shown notification by id.
+     */
+    public void cancel(int id) {
+        callBridge("notificationCancel",
+                new Class<?>[]{ int.class },
+                id);
+        activeIds.remove(Integer.valueOf(id));
+    }
+
+    /**
+     * Cancel a previously shown notification by tag and id.
+     */
+    public void cancel(String tag, int id) {
+        cancel(id);
+    }
+
+    /**
+     * Cancel all previously shown notifications.
+     */
+    public void cancelAll() {
+        for (Integer id : new ArrayList<Integer>(activeIds)) {
+            callBridge("notificationCancel",
+                    new Class<?>[]{ int.class },
+                    id.intValue());
+        }
+        activeIds.clear();
+    }
+
+    // ── Channel management ──────────────────────────────────────
+
+    /**
+     * Creates a notification channel (maps to OH notification slot).
+     */
+    public void createNotificationChannel(NotificationChannel channel) {
+        if (channel == null) return;
+        String id = channel.getId() != null ? channel.getId() : "";
+        String name = channel.getName() != null ? channel.getName().toString() : "";
+        int importance = channel.getImportance();
+
+        callBridge("notificationAddSlot",
+                new Class<?>[]{ String.class, String.class, int.class },
+                id, name, importance);
+
+        // Track locally (replace if same id already exists)
+        for (int i = 0; i < channels.size(); i++) {
+            if (id.equals(channels.get(i).getId())) {
+                channels.set(i, channel);
+                return;
+            }
+        }
+        channels.add(channel);
+    }
+
+    /**
+     * Creates multiple notification channels at once.
+     */
+    public void createNotificationChannels(List<NotificationChannel> channelList) {
+        if (channelList == null) return;
+        for (NotificationChannel ch : channelList) {
+            createNotificationChannel(ch);
+        }
+    }
+
+    /**
+     * Returns all notification channels belonging to the calling package.
+     */
+    public List<NotificationChannel> getNotificationChannels() {
+        return new ArrayList<NotificationChannel>(channels);
+    }
+
+    /**
+     * Returns a specific notification channel by id.
+     */
+    public NotificationChannel getNotificationChannel(String channelId) {
+        if (channelId == null) return null;
+        for (NotificationChannel ch : channels) {
+            if (channelId.equals(ch.getId())) {
+                return ch;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Deletes a notification channel by id.
+     */
+    public void deleteNotificationChannel(String channelId) {
+        if (channelId == null) return;
+        for (int i = 0; i < channels.size(); i++) {
+            if (channelId.equals(channels.get(i).getId())) {
+                channels.remove(i);
+                return;
+            }
+        }
+    }
+
+    // ── Stub methods (non-essential, return defaults) ───────────
+
+    public boolean areNotificationsEnabled() { return true; }
     public boolean areNotificationsPaused() { return false; }
-    public boolean canNotifyAsPackage(Object p0) { return false; }
-    public void cancel(Object p0) {}
-    public void cancel(Object p0, Object p1) {}
-    public void cancelAll() {}
-    public void cancelAsPackage(Object p0, Object p1, Object p2) {}
-    public void createNotificationChannel(Object p0) {}
-    public void createNotificationChannelGroup(Object p0) {}
-    public void createNotificationChannelGroups(Object p0) {}
-    public void createNotificationChannels(Object p0) {}
-    public void deleteNotificationChannel(Object p0) {}
-    public void deleteNotificationChannelGroup(Object p0) {}
-    public Object getActiveNotifications() { return null; }
-    public Object getAutomaticZenRule(Object p0) { return null; }
-    public Object getAutomaticZenRules() { return null; }
+    public boolean areBubblesAllowed() { return false; }
+    public boolean canNotifyAsPackage(String pkg) { return false; }
+    public int getImportance() { return IMPORTANCE_DEFAULT; }
     public int getCurrentInterruptionFilter() { return 0; }
-    public int getImportance() { return 0; }
-    public Object getNotificationChannel(Object p0) { return null; }
-    public Object getNotificationChannelGroup(Object p0) { return null; }
-    public Object getNotificationChannelGroups() { return null; }
-    public Object getNotificationChannels() { return null; }
+    public Object getActiveNotifications() { return null; }
     public Object getNotificationPolicy() { return null; }
-    public boolean isNotificationListenerAccessGranted(Object p0) { return false; }
+    public boolean isNotificationListenerAccessGranted(Object component) { return false; }
     public boolean isNotificationPolicyAccessGranted() { return false; }
-    public void notify(Object p0, Object p1) {}
-    public void notify(Object p0, Object p1, Object p2) {}
-    public void notifyAsPackage(Object p0, Object p1, Object p2, Object p3) {}
-    public boolean removeAutomaticZenRule(Object p0) { return false; }
-    public void setAutomaticZenRuleState(Object p0, Object p1) {}
-    public void setInterruptionFilter(Object p0) {}
-    public void setNotificationDelegate(Object p0) {}
-    public void setNotificationPolicy(Object p0) {}
     public boolean shouldHideSilentStatusBarIcons() { return false; }
-    public boolean updateAutomaticZenRule(Object p0, Object p1) { return false; }
+
+    public Object addAutomaticZenRule(Object rule) { return null; }
+    public Object getAutomaticZenRule(Object id) { return null; }
+    public Object getAutomaticZenRules() { return null; }
+    public boolean removeAutomaticZenRule(Object ruleId) { return false; }
+    public boolean updateAutomaticZenRule(Object ruleId, Object rule) { return false; }
+
+    public void cancelAsPackage(String targetPackage, String tag, int id) {}
+    public void createNotificationChannelGroup(Object group) {}
+    public void createNotificationChannelGroups(Object groups) {}
+    public void deleteNotificationChannelGroup(String groupId) {}
+    public Object getNotificationChannelGroup(String groupId) { return null; }
+    public Object getNotificationChannelGroups() { return null; }
+    public void notifyAsPackage(String targetPackage, String tag, int id, Notification notification) {}
+    public void setAutomaticZenRuleState(Object ruleId, Object condition) {}
+    public void setInterruptionFilter(int interruptionFilter) {}
+    public void setNotificationDelegate(Object delegate) {}
+    public void setNotificationPolicy(Object policy) {}
 }

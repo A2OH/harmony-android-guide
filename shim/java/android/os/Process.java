@@ -1,8 +1,8 @@
 package android.os;
-import java.util.Map;
 
 /**
  * Android-compatible Process shim. Uses Java Runtime for process info.
+ * Compatible with Java 8 compilation target.
  */
 public class Process {
     public static final int FIRST_APPLICATION_UID = 10000;
@@ -26,8 +26,32 @@ public class Process {
     public static final int THREAD_PRIORITY_AUDIO = -16;
     public static final int THREAD_PRIORITY_URGENT_AUDIO = -19;
 
+    /** Cached PID, resolved once via /proc/self or fallback. */
+    private static int sCachedPid = -1;
+
+    /**
+     * Returns the PID of this process. Uses Java 8 compatible approach.
+     */
     public static int myPid() {
-        return (int) ProcessHandle.current().pid();
+        if (sCachedPid == -1) {
+            sCachedPid = resolvePid();
+        }
+        return sCachedPid;
+    }
+
+    private static int resolvePid() {
+        // java.lang.management approach: "pid@hostname"
+        try {
+            String name = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+            int idx = name.indexOf('@');
+            if (idx > 0) {
+                return Integer.parseInt(name.substring(0, idx));
+            }
+        } catch (Exception e) {
+            // fall through
+        }
+        // Fallback: return a mock PID
+        return 1000;
     }
 
     public static int myTid() {
@@ -64,7 +88,8 @@ public class Process {
     }
 
     public static void killProcess(int pid) {
-        ProcessHandle.of(pid).ifPresent(ProcessHandle::destroy);
+        // Java 8 has no portable way to kill by PID; log and no-op
+        System.out.println("[Process] killProcess(" + pid + ") - stub");
     }
 
     public static void sendSignal(int pid, int signal) {
@@ -74,8 +99,12 @@ public class Process {
     }
 
     public static long getElapsedCpuTime() {
-        return java.lang.management.ManagementFactory.getThreadMXBean()
-            .getCurrentThreadCpuTime() / 1_000_000;
+        try {
+            return java.lang.management.ManagementFactory.getThreadMXBean()
+                .getCurrentThreadCpuTime() / 1_000_000;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static boolean isApplicationUid(int uid) {
