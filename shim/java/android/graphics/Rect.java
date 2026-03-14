@@ -122,6 +122,28 @@ public class Rect {
         bottom -= dy;
     }
 
+    // ── Flatten / unflatten ──────────────────────────────────────────────────
+
+    public String flattenToString() {
+        return left + " " + top + " " + right + " " + bottom;
+    }
+
+    public static Rect unflattenFromString(String str) {
+        if (str == null) return null;
+        String[] parts = str.split(" ");
+        if (parts.length != 4) return null;
+        try {
+            return new Rect(
+                Integer.parseInt(parts[0]),
+                Integer.parseInt(parts[1]),
+                Integer.parseInt(parts[2]),
+                Integer.parseInt(parts[3])
+            );
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override

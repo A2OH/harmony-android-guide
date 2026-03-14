@@ -1,131 +1,168 @@
 package android.content;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Shim: android.content.SharedPreferences -> @ohos.data.preferences
- * Tier 1 -- near-direct mapping.
+ * Shim: android.content.SharedPreferences
  *
- * OH Preferences is async; this shim wraps it synchronously to match
- * the Android API contract. The Editor.apply() batches writes and
- * calls OHBridge.preferencesFlush() on commit.
- *
- * All OHBridge calls are done via reflection to avoid compile-time
- * dependency on the native bridge class.
+ * Backed by a HashMap (pure Java, no JNI/OHBridge needed).
+ * Each named SharedPreferences instance maintains its own in-memory map.
+ * Editor supports put*, remove, clear, commit, and apply.
+ * Change listeners are notified on commit/apply.
  */
 public class SharedPreferences {
     private static final String TAG = "SharedPreferences";
 
-    private final long handle;
-    private final String name;
+    /** Global registry of named preference stores, so the same name returns the same data. */
+    private static final Map<String, SharedPreferences> sInstances =
+            new HashMap<String, SharedPreferences>();
 
+    private final String name;
+    private final Map<String, Object> store = new HashMap<String, Object>();
+    private final List<OnSharedPreferenceChangeListener> listeners =
+            new ArrayList<OnSharedPreferenceChangeListener>();
+
+    /**
+     * Package-private constructor. Use Context.getSharedPreferences() or
+     * SharedPreferences.getInstance() to obtain instances.
+     */
     SharedPreferences(String name) {
         this.name = name;
-        Object result = callBridge("preferencesOpen",
-                new Class<?>[]{ String.class }, name);
-        this.handle = (result instanceof Number) ? ((Number) result).longValue() : 0L;
     }
 
-    // ── Reflection helper ───────────────────────────────────────────
-
-    private static Object callBridge(String method, Class<?>[] types, Object... args) {
-        try {
-            Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
-            return c.getMethod(method, types).invoke(null, args);
-        } catch (Throwable t) { return null; }
+    /**
+     * Returns a named SharedPreferences instance, creating it if needed.
+     * Multiple callers with the same name share the same backing map.
+     */
+    public static synchronized SharedPreferences getInstance(String name) {
+        SharedPreferences sp = sInstances.get(name);
+        if (sp == null) {
+            sp = new SharedPreferences(name);
+            sInstances.put(name, sp);
+        }
+        return sp;
     }
 
     // ── Getters ─────────────────────────────────────────────────────
 
+    @SuppressWarnings("unchecked")
+    public Map<String, ?> getAll() {
+        synchronized (store) {
+            // Return a defensive copy
+            Map<String, Object> copy = new HashMap<String, Object>();
+            for (Map.Entry<String, Object> e : store.entrySet()) {
+                Object v = e.getValue();
+                // Deep-copy StringSets so caller can't mutate our store
+                if (v instanceof Set) {
+                    copy.put(e.getKey(), new HashSet<String>((Set<String>) v));
+                } else {
+                    copy.put(e.getKey(), v);
+                }
+            }
+            return copy;
+        }
+    }
+
     public String getString(String key, String defValue) {
-        Object result = callBridge("preferencesGetString",
-                new Class<?>[]{ long.class, String.class, String.class },
-                handle, key, defValue);
-        return (result instanceof String) ? (String) result : defValue;
+        synchronized (store) {
+            Object v = store.get(key);
+            return (v instanceof String) ? (String) v : defValue;
+        }
     }
 
     public int getInt(String key, int defValue) {
-        Object result = callBridge("preferencesGetInt",
-                new Class<?>[]{ long.class, String.class, int.class },
-                handle, key, defValue);
-        return (result instanceof Number) ? ((Number) result).intValue() : defValue;
+        synchronized (store) {
+            Object v = store.get(key);
+            return (v instanceof Integer) ? (Integer) v : defValue;
+        }
     }
 
     public long getLong(String key, long defValue) {
-        Object result = callBridge("preferencesGetLong",
-                new Class<?>[]{ long.class, String.class, long.class },
-                handle, key, defValue);
-        return (result instanceof Number) ? ((Number) result).longValue() : defValue;
+        synchronized (store) {
+            Object v = store.get(key);
+            return (v instanceof Long) ? (Long) v : defValue;
+        }
     }
 
     public float getFloat(String key, float defValue) {
-        Object result = callBridge("preferencesGetFloat",
-                new Class<?>[]{ long.class, String.class, float.class },
-                handle, key, defValue);
-        return (result instanceof Number) ? ((Number) result).floatValue() : defValue;
+        synchronized (store) {
+            Object v = store.get(key);
+            return (v instanceof Float) ? (Float) v : defValue;
+        }
     }
 
     public boolean getBoolean(String key, boolean defValue) {
-        Object result = callBridge("preferencesGetBoolean",
-                new Class<?>[]{ long.class, String.class, boolean.class },
-                handle, key, defValue);
-        return (result instanceof Boolean) ? (Boolean) result : defValue;
-    }
-
-    public Set<String> getStringSet(String key, Set<String> defValues) {
-        // OH Preferences doesn't have native string set support.
-        // Store as unit-separator-joined string internally.
-        Object result = callBridge("preferencesGetString",
-                new Class<?>[]{ long.class, String.class, String.class },
-                handle, key, null);
-        if (!(result instanceof String)) return defValues;
-        String raw = (String) result;
-        Set<String> out = new HashSet<String>();
-        for (String s : raw.split("\u001F")) { // unit separator
-            if (!s.isEmpty()) out.add(s);
+        synchronized (store) {
+            Object v = store.get(key);
+            return (v instanceof Boolean) ? (Boolean) v : defValue;
         }
-        return out;
     }
 
-    public Map<String, ?> getAll() {
-        // Limited implementation -- OH Preferences doesn't expose getAll easily.
-        // Return empty map as fallback.
-        return new HashMap<String, Object>();
+    @SuppressWarnings("unchecked")
+    public Set<String> getStringSet(String key, Set<String> defValues) {
+        synchronized (store) {
+            Object v = store.get(key);
+            if (v instanceof Set) {
+                // Return a defensive copy
+                return new HashSet<String>((Set<String>) v);
+            }
+            return defValues;
+        }
     }
 
     public boolean contains(String key) {
-        // Check by reading with a sentinel default
-        Object result = callBridge("preferencesGetString",
-                new Class<?>[]{ long.class, String.class, String.class },
-                handle, key, null);
-        return result != null;
+        synchronized (store) {
+            return store.containsKey(key);
+        }
     }
 
     public Editor edit() {
-        return new Editor(handle);
+        return new Editor(this);
     }
 
     public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-        // TODO: Map to OH Preferences.on('change') via bridge
+        if (listener == null) return;
+        synchronized (listeners) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
     }
 
     public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-        // TODO: Map to OH Preferences.off('change') via bridge
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    private void notifyListeners(Set<String> changedKeys) {
+        List<OnSharedPreferenceChangeListener> snapshot;
+        synchronized (listeners) {
+            if (listeners.isEmpty()) return;
+            snapshot = new ArrayList<OnSharedPreferenceChangeListener>(listeners);
+        }
+        for (String key : changedKeys) {
+            for (OnSharedPreferenceChangeListener l : snapshot) {
+                l.onSharedPreferenceChanged(this, key);
+            }
+        }
     }
 
     // ── Editor ──────────────────────────────────────────────────────
 
     public static class Editor {
-        private final long handle;
+        private final SharedPreferences prefs;
         private final Map<String, Object> pending = new HashMap<String, Object>();
         private final Set<String> removals = new HashSet<String>();
         private boolean clearRequested = false;
 
-        Editor(long handle) {
-            this.handle = handle;
+        Editor(SharedPreferences prefs) {
+            this.prefs = prefs;
         }
 
         public Editor putString(String key, String value) {
@@ -162,13 +199,8 @@ public class SharedPreferences {
             if (values == null) {
                 return remove(key);
             }
-            // Store as unit-separator-joined string
-            StringBuilder sb = new StringBuilder();
-            for (String s : values) {
-                if (sb.length() > 0) sb.append('\u001F');
-                sb.append(s);
-            }
-            pending.put(key, sb.toString());
+            // Store a defensive copy
+            pending.put(key, new HashSet<String>(values));
             removals.remove(key);
             return this;
         }
@@ -187,12 +219,13 @@ public class SharedPreferences {
         }
 
         /**
-         * Writes to OH Preferences and flushes to disk.
-         * Android commit() is synchronous and returns success.
+         * Writes pending changes to the backing store synchronously.
+         * Returns true on success.
          */
         public boolean commit() {
             try {
-                applyInternal();
+                Set<String> changed = applyInternal();
+                prefs.notifyListeners(changed);
                 return true;
             } catch (Exception e) {
                 return false;
@@ -200,59 +233,48 @@ public class SharedPreferences {
         }
 
         /**
-         * Writes to OH Preferences and flushes asynchronously.
-         * In the shim we still flush synchronously since OH flush() must be called.
+         * Writes pending changes to the backing store.
+         * In real Android this is asynchronous; in the shim it's synchronous.
          */
         public void apply() {
             try {
-                applyInternal();
+                Set<String> changed = applyInternal();
+                prefs.notifyListeners(changed);
             } catch (Exception e) {
-                android.util.Log.e(TAG, "apply() failed", e);
+                // swallow, matching Android behavior
             }
         }
 
-        private void applyInternal() {
-            if (clearRequested) {
-                callBridge("preferencesClear",
-                        new Class<?>[]{ long.class }, handle);
-            }
+        private Set<String> applyInternal() {
+            Set<String> changedKeys = new HashSet<String>();
+            synchronized (prefs.store) {
+                if (clearRequested) {
+                    changedKeys.addAll(prefs.store.keySet());
+                    prefs.store.clear();
+                }
 
-            for (String key : removals) {
-                callBridge("preferencesRemove",
-                        new Class<?>[]{ long.class, String.class }, handle, key);
-            }
+                for (String key : removals) {
+                    if (prefs.store.containsKey(key)) {
+                        changedKeys.add(key);
+                        prefs.store.remove(key);
+                    }
+                }
 
-            for (Map.Entry<String, Object> entry : pending.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                if (value instanceof String) {
-                    callBridge("preferencesPutString",
-                            new Class<?>[]{ long.class, String.class, String.class },
-                            handle, key, (String) value);
-                } else if (value instanceof Integer) {
-                    callBridge("preferencesPutInt",
-                            new Class<?>[]{ long.class, String.class, int.class },
-                            handle, key, (Integer) value);
-                } else if (value instanceof Long) {
-                    callBridge("preferencesPutLong",
-                            new Class<?>[]{ long.class, String.class, long.class },
-                            handle, key, (Long) value);
-                } else if (value instanceof Float) {
-                    callBridge("preferencesPutFloat",
-                            new Class<?>[]{ long.class, String.class, float.class },
-                            handle, key, (Float) value);
-                } else if (value instanceof Boolean) {
-                    callBridge("preferencesPutBoolean",
-                            new Class<?>[]{ long.class, String.class, boolean.class },
-                            handle, key, (Boolean) value);
+                for (Map.Entry<String, Object> entry : pending.entrySet()) {
+                    String key = entry.getKey();
+                    Object newVal = entry.getValue();
+                    Object oldVal = prefs.store.get(key);
+                    if (oldVal == null || !oldVal.equals(newVal)) {
+                        changedKeys.add(key);
+                    }
+                    prefs.store.put(key, newVal);
                 }
             }
 
-            callBridge("preferencesFlush",
-                    new Class<?>[]{ long.class }, handle);
             pending.clear();
             removals.clear();
             clearRequested = false;
+            return changedKeys;
         }
     }
 

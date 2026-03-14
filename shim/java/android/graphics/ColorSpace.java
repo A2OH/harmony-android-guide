@@ -68,12 +68,101 @@ public abstract class ColorSpace {
     // Static factory
     // -------------------------------------------------------------------------
 
+    // Cache of singleton ColorSpace instances keyed by Named ordinal.
+    private static final ColorSpace[] sNamedColorSpaces =
+            new ColorSpace[Named.values().length];
+
     /**
      * Returns the {@link ColorSpace} instance identified by the specified
      * {@link Named} constant. Never returns null.
+     *
+     * The returned color space has the AOSP-canonical display name and the
+     * correct {@link Model} for that color space.
      */
     public static ColorSpace get(Named name) {
-        return new Rgb(name.name(), Model.RGB);
+        int ordinal = name.ordinal();
+        ColorSpace cs = sNamedColorSpaces[ordinal];
+        if (cs == null) {
+            String displayName;
+            Model model;
+            switch (name) {
+                case SRGB:
+                    displayName = "sRGB IEC61966-2.1";
+                    model = Model.RGB;
+                    break;
+                case LINEAR_SRGB:
+                    displayName = "sRGB IEC61966-2.1 (Linear)";
+                    model = Model.RGB;
+                    break;
+                case EXTENDED_SRGB:
+                    displayName = "scRGB-nl IEC 61966-2-2:2003";
+                    model = Model.RGB;
+                    break;
+                case LINEAR_EXTENDED_SRGB:
+                    displayName = "scRGB IEC 61966-2-2:2003";
+                    model = Model.RGB;
+                    break;
+                case BT709:
+                    displayName = "Rec. ITU-R BT.709-5";
+                    model = Model.RGB;
+                    break;
+                case BT2020:
+                    displayName = "Rec. ITU-R BT.2020-1";
+                    model = Model.RGB;
+                    break;
+                case DCI_P3:
+                    displayName = "SMPTE RP 431-2-2007 DCI (P3)";
+                    model = Model.RGB;
+                    break;
+                case DISPLAY_P3:
+                    displayName = "Display P3";
+                    model = Model.RGB;
+                    break;
+                case NTSC_1953:
+                    displayName = "NTSC (1953)";
+                    model = Model.RGB;
+                    break;
+                case SMPTE_C:
+                    displayName = "SMPTE-C RGB";
+                    model = Model.RGB;
+                    break;
+                case ADOBE_RGB:
+                    displayName = "Adobe RGB (1998)";
+                    model = Model.RGB;
+                    break;
+                case PRO_PHOTO_RGB:
+                    displayName = "ROMM RGB ISO 22028-2:2013";
+                    model = Model.RGB;
+                    break;
+                case ACES:
+                    displayName = "SMPTE ST 2065-1:2012 ACES";
+                    model = Model.RGB;
+                    break;
+                case ACESCG:
+                    displayName = "Academy S-2014-004 ACEScg";
+                    model = Model.RGB;
+                    break;
+                case CIE_XYZ:
+                    displayName = "Generic XYZ";
+                    model = Model.XYZ;
+                    break;
+                case CIE_LAB:
+                    displayName = "Generic L*a*b*";
+                    model = Model.LAB;
+                    break;
+                case OKLAB:
+                    displayName = "Oklab";
+                    model = Model.LAB;
+                    break;
+                default:
+                    displayName = name.name();
+                    model = Model.RGB;
+                    break;
+            }
+            cs = new Rgb(displayName, model);
+            sNamedColorSpaces[ordinal] = cs;
+        }
+        return cs;
     }
 
     // -------------------------------------------------------------------------
@@ -88,6 +177,17 @@ public abstract class ColorSpace {
 
     /** Returns the number of components of this color space's color model. */
     public int getComponentCount() { return 0; }
+
+    /** Returns whether this color space is the sRGB color space or equivalent. */
+    public boolean isSrgb() { return false; }
+
+    /** Returns whether this color space has a wide color gamut. */
+    public boolean isWideGamut() { return false; }
+
+    @Override
+    public String toString() {
+        return getName() + " (id=0, model=" + getModel() + ")";
+    }
 
     // -------------------------------------------------------------------------
     // Rgb subclass

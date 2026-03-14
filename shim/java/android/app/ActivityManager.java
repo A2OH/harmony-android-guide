@@ -99,7 +99,7 @@ public class ActivityManager {
     // RunningServiceInfo inner class (commonly used)
     // -------------------------------------------------------------------------
 
-    public static class RunningServiceInfo {
+    public static class RunningServiceInfo implements android.os.Parcelable {
         /** The service component name. */
         public android.content.ComponentName service;
         /** The pid of the process this service runs in. */
@@ -122,8 +122,119 @@ public class ActivityManager {
         public long lastActivityTime;
         /** Running duration in milliseconds. */
         public long restarting;
+        /** Bit flags for {@link #flags} field. */
+        public static final int FLAG_STARTED = 1;
+        /** Indicates this service is a foreground service. */
+        public static final int FLAG_FOREGROUND = 2;
+        /** Indicates this service is a system process. */
+        public static final int FLAG_SYSTEM_PROCESS = 4;
+        /** Indicates this service is a persistent process. */
+        public static final int FLAG_PERSISTENT_PROCESS = 8;
+        /** Combination of flags describing the running service. */
+        public int flags;
+        /** The package that is the client of this service. */
+        public String clientPackage;
+        /** The label to use for this service's client. */
+        public int clientLabel;
 
-        public RunningServiceInfo() {}
+        public RunningServiceInfo() {
+            // Sensible defaults
+            this.pid = android.os.Process.myPid();
+            this.uid = android.os.Process.myUid();
+            this.process = "";
+            this.foreground = false;
+            this.started = false;
+            this.clientCount = 0;
+            this.crashCount = 0;
+            this.activeSince = 0;
+            this.lastActivityTime = 0;
+            this.restarting = 0;
+            this.flags = 0;
+            this.clientPackage = null;
+            this.clientLabel = 0;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            // Write ComponentName as two strings (package, class)
+            if (service != null) {
+                dest.writeInt(1);
+                dest.writeString(service.getPackageName());
+                dest.writeString(service.getClassName());
+            } else {
+                dest.writeInt(0);
+            }
+            dest.writeInt(pid);
+            dest.writeInt(uid);
+            dest.writeString(process);
+            dest.writeInt(foreground ? 1 : 0);
+            dest.writeLong(activeSince);
+            dest.writeInt(started ? 1 : 0);
+            dest.writeInt(clientCount);
+            dest.writeInt(crashCount);
+            dest.writeLong(lastActivityTime);
+            dest.writeLong(restarting);
+            dest.writeInt(this.flags);
+            dest.writeString(clientPackage);
+            dest.writeInt(clientLabel);
+        }
+
+        public static final android.os.Parcelable.Creator<RunningServiceInfo> CREATOR =
+            new android.os.Parcelable.Creator<RunningServiceInfo>() {
+                @Override
+                public RunningServiceInfo createFromParcel(android.os.Parcel source) {
+                    RunningServiceInfo info = new RunningServiceInfo();
+                    int hasService = source.readInt();
+                    if (hasService != 0) {
+                        String pkg = source.readString();
+                        String cls = source.readString();
+                        info.service = new android.content.ComponentName(pkg, cls);
+                    }
+                    info.pid = source.readInt();
+                    info.uid = source.readInt();
+                    info.process = source.readString();
+                    info.foreground = source.readInt() != 0;
+                    info.activeSince = source.readLong();
+                    info.started = source.readInt() != 0;
+                    info.clientCount = source.readInt();
+                    info.crashCount = source.readInt();
+                    info.lastActivityTime = source.readLong();
+                    info.restarting = source.readLong();
+                    info.flags = source.readInt();
+                    info.clientPackage = source.readString();
+                    info.clientLabel = source.readInt();
+                    return info;
+                }
+
+                @Override
+                public RunningServiceInfo[] newArray(int size) {
+                    return new RunningServiceInfo[size];
+                }
+            };
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder("RunningServiceInfo{");
+            if (service != null) {
+                sb.append("service=").append(service.flattenToShortString());
+            }
+            sb.append(", pid=").append(pid);
+            sb.append(", uid=").append(uid);
+            if (process != null && !process.isEmpty()) {
+                sb.append(", process=").append(process);
+            }
+            if (foreground) sb.append(", foreground");
+            if (started) sb.append(", started");
+            if (clientCount > 0) sb.append(", clients=").append(clientCount);
+            if (crashCount > 0) sb.append(", crashes=").append(crashCount);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     // -------------------------------------------------------------------------

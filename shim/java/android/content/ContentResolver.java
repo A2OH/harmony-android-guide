@@ -60,6 +60,7 @@ public class ContentResolver {
     public static void cancelSync(SyncRequest p0) {}
     public int delete(Uri p0, String p1, String[] p2) { return 0; }
     public int delete(Uri p0, Bundle p1) { return 0; }
+    public String getType(Uri p0) { return null; }
     public static List<?> getCurrentSyncs() { return null; }
     public static int getIsSyncable(Account p0, String p1) { return 0; }
     public static boolean getMasterSyncAutomatically() { return false; }

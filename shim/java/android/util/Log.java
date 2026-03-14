@@ -31,38 +31,51 @@ public final class Log {
     private static void nativeLog(String level, String tag, String msg) {
         try {
             Class<?> c = (Class<?>) bridge;
-            if ("D".equals(level)) c.getMethod("logDebug", String.class, String.class).invoke(null, tag, msg);
-            else if ("I".equals(level)) c.getMethod("logInfo", String.class, String.class).invoke(null, tag, msg);
-            else if ("W".equals(level)) c.getMethod("logWarn", String.class, String.class).invoke(null, tag, msg);
-            else c.getMethod("logError", String.class, String.class).invoke(null, tag, msg);
+            if ("V".equals(level) || "D".equals(level))
+                c.getMethod("logDebug", String.class, String.class).invoke(null, tag, msg);
+            else if ("I".equals(level))
+                c.getMethod("logInfo", String.class, String.class).invoke(null, tag, msg);
+            else if ("W".equals(level))
+                c.getMethod("logWarn", String.class, String.class).invoke(null, tag, msg);
+            else
+                c.getMethod("logError", String.class, String.class).invoke(null, tag, msg);
         } catch (Throwable t) {
             bridge = null;
-            System.out.println(level + "/" + tag + ": " + msg);
+            String line = level + "/" + tag + ": " + msg;
+            if ("W".equals(level) || "E".equals(level) || "A".equals(level)) {
+                System.err.println(line);
+            } else {
+                System.out.println(line);
+            }
         }
     }
 
-    private static void log(String level, String tag, String msg) {
+    private static int log(String level, String tag, String msg) {
+        String line = level + "/" + tag + ": " + msg;
         if (tryBridge()) {
             nativeLog(level, tag, msg);
+        } else if ("W".equals(level) || "E".equals(level) || "A".equals(level)) {
+            System.err.println(line);
         } else {
-            System.out.println(level + "/" + tag + ": " + msg);
+            System.out.println(line);
         }
+        return line.length();
     }
 
-    public static int v(String tag, String msg) { log("D", tag, msg); return 0; }
-    public static int v(String tag, String msg, Throwable tr) { log("D", tag, msg + '\n' + getStackTraceString(tr)); return 0; }
-    public static int d(String tag, String msg) { log("D", tag, msg); return 0; }
-    public static int d(String tag, String msg, Throwable tr) { log("D", tag, msg + '\n' + getStackTraceString(tr)); return 0; }
-    public static int i(String tag, String msg) { log("I", tag, msg); return 0; }
-    public static int i(String tag, String msg, Throwable tr) { log("I", tag, msg + '\n' + getStackTraceString(tr)); return 0; }
-    public static int w(String tag, String msg) { log("W", tag, msg); return 0; }
-    public static int w(String tag, String msg, Throwable tr) { log("W", tag, msg + '\n' + getStackTraceString(tr)); return 0; }
-    public static int w(String tag, Throwable tr) { log("W", tag, getStackTraceString(tr)); return 0; }
-    public static int e(String tag, String msg) { log("E", tag, msg); return 0; }
-    public static int e(String tag, String msg, Throwable tr) { log("E", tag, msg + '\n' + getStackTraceString(tr)); return 0; }
-    public static int wtf(String tag, String msg) { log("E", tag, "WTF: " + msg); return 0; }
-    public static int wtf(String tag, Throwable tr) { log("E", tag, "WTF: " + getStackTraceString(tr)); return 0; }
-    public static int wtf(String tag, String msg, Throwable tr) { log("E", tag, "WTF: " + msg + '\n' + getStackTraceString(tr)); return 0; }
+    public static int v(String tag, String msg) { return log("V", tag, msg); }
+    public static int v(String tag, String msg, Throwable tr) { return log("V", tag, msg + '\n' + getStackTraceString(tr)); }
+    public static int d(String tag, String msg) { return log("D", tag, msg); }
+    public static int d(String tag, String msg, Throwable tr) { return log("D", tag, msg + '\n' + getStackTraceString(tr)); }
+    public static int i(String tag, String msg) { return log("I", tag, msg); }
+    public static int i(String tag, String msg, Throwable tr) { return log("I", tag, msg + '\n' + getStackTraceString(tr)); }
+    public static int w(String tag, String msg) { return log("W", tag, msg); }
+    public static int w(String tag, String msg, Throwable tr) { return log("W", tag, msg + '\n' + getStackTraceString(tr)); }
+    public static int w(String tag, Throwable tr) { return log("W", tag, getStackTraceString(tr)); }
+    public static int e(String tag, String msg) { return log("E", tag, msg); }
+    public static int e(String tag, String msg, Throwable tr) { return log("E", tag, msg + '\n' + getStackTraceString(tr)); }
+    public static int wtf(String tag, String msg) { return log("E", tag, "WTF: " + msg); }
+    public static int wtf(String tag, Throwable tr) { return log("E", tag, "WTF: " + getStackTraceString(tr)); }
+    public static int wtf(String tag, String msg, Throwable tr) { return log("E", tag, "WTF: " + msg + '\n' + getStackTraceString(tr)); }
 
     public static String getStackTraceString(Throwable tr) {
         if (tr == null) return "";
@@ -79,14 +92,13 @@ public final class Log {
 
     public static int println(int priority, String tag, String msg) {
         switch (priority) {
-            case VERBOSE:
-            case DEBUG:   log("D", tag, msg); break;
-            case INFO:    log("I", tag, msg); break;
-            case WARN:    log("W", tag, msg); break;
-            case ERROR:
-            case ASSERT:  log("E", tag, msg); break;
-            default:      log("D", tag, msg); break;
+            case VERBOSE: return log("V", tag, msg);
+            case DEBUG:   return log("D", tag, msg);
+            case INFO:    return log("I", tag, msg);
+            case WARN:    return log("W", tag, msg);
+            case ERROR:   return log("E", tag, msg);
+            case ASSERT:  return log("A", tag, msg);
+            default:      return log("V", tag, msg);
         }
-        return 0;
     }
 }

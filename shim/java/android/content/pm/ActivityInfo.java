@@ -82,12 +82,52 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public int taskAffinity = 0;
     public int theme = 0;
     public int uiOptions = 0;
-    public int windowLayout = 0;
+    public WindowLayout windowLayout = null;
 
     public ActivityInfo() {}
-    public ActivityInfo(ActivityInfo p0) {}
+    public ActivityInfo(ActivityInfo p0) {
+        if (p0 != null) {
+            this.colorMode = p0.colorMode;
+            this.configChanges = p0.configChanges;
+            this.documentLaunchMode = p0.documentLaunchMode;
+            this.flags = p0.flags;
+            this.launchMode = p0.launchMode;
+            this.maxRecents = p0.maxRecents;
+            this.parentActivityName = p0.parentActivityName;
+            this.permission = p0.permission;
+            this.persistableMode = p0.persistableMode;
+            this.screenOrientation = p0.screenOrientation;
+            this.softInputMode = p0.softInputMode;
+            this.targetActivity = p0.targetActivity;
+            this.taskAffinity = p0.taskAffinity;
+            this.theme = p0.theme;
+            this.uiOptions = p0.uiOptions;
+            this.windowLayout = p0.windowLayout;
+        }
+    }
 
     public int describeContents() { return 0; }
     public void dump(Printer p0, String p1) {}
     public int getThemeResource() { return 0; }
+
+    public static final class WindowLayout {
+        public final int width;
+        public final float widthFraction;
+        public final int height;
+        public final float heightFraction;
+        public final int gravity;
+        public final int minWidth;
+        public final int minHeight;
+
+        public WindowLayout(int width, float widthFraction, int height, float heightFraction,
+                int gravity, int minWidth, int minHeight) {
+            this.width = width;
+            this.widthFraction = widthFraction;
+            this.height = height;
+            this.heightFraction = heightFraction;
+            this.gravity = gravity;
+            this.minWidth = minWidth;
+            this.minHeight = minHeight;
+        }
+    }
 }

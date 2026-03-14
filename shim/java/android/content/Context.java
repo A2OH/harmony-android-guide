@@ -155,7 +155,7 @@ public class Context {
     public String getPackageName() { return null; }
     public String getPackageResourcePath() { return null; }
     public Resources getResources() { return null; }
-    public SharedPreferences getSharedPreferences(String p0, int p1) { return new SharedPreferences(p0); }
+    public SharedPreferences getSharedPreferences(String p0, int p1) { return SharedPreferences.getInstance(p0); }
     public Object getSystemService(String p0) { return null; }
     public void grantUriPermission(String p0, Uri p1, int p2) {}
     public boolean isDeviceProtectedStorage() { return false; }

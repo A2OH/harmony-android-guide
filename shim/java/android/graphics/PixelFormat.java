@@ -54,6 +54,26 @@ public class PixelFormat {
         }
     }
 
+    public static String formatToString(int format) {
+        switch (format) {
+            case UNKNOWN:     return "UNKNOWN";
+            case TRANSLUCENT: return "TRANSLUCENT";
+            case TRANSPARENT: return "TRANSPARENT";
+            case OPAQUE:      return "OPAQUE";
+            case RGBA_8888:   return "RGBA_8888";
+            case RGBX_8888:   return "RGBX_8888";
+            case RGB_888:     return "RGB_888";
+            case RGB_565:     return "RGB_565";
+            case RGBA_5551:   return "RGBA_5551";
+            case RGBA_4444:   return "RGBA_4444";
+            case A_8:         return "A_8";
+            case L_8:         return "L_8";
+            case LA_88:       return "LA_88";
+            case RGB_332:     return "RGB_332";
+            default:          return "UNKNOWN(" + format + ")";
+        }
+    }
+
     public static boolean formatHasAlpha(int format) {
         switch (format) {
             case RGBA_8888:
