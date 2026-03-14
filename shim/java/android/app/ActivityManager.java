@@ -238,6 +238,38 @@ public class ActivityManager {
     }
 
     // -------------------------------------------------------------------------
+    // ProcessErrorStateInfo inner class
+    // -------------------------------------------------------------------------
+
+    public static class ProcessErrorStateInfo {
+        /** Condition constants. */
+        public static final int NO_ERROR = 0;
+        public static final int CRASHED = 1;
+        public static final int NOT_RESPONDING = 2;
+
+        /** The condition that the process is in. */
+        public int condition;
+        /** The process name in which the crash or error occurred. */
+        public String processName;
+        /** The pid of the process in error. */
+        public int pid;
+        /** The uid of the process in error. */
+        public int uid;
+        /** The tag of the crash (activity, service, etc). */
+        public String tag;
+        /** A short message describing the error condition. */
+        public String shortMsg;
+        /** A long message describing the error condition. */
+        public String longMsg;
+        /** The stack trace string. */
+        public String stackTrace;
+
+        public ProcessErrorStateInfo() {
+            this.condition = NO_ERROR;
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // RunningTaskInfo inner class
     // -------------------------------------------------------------------------
 

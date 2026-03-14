@@ -5,11 +5,10 @@ import java.lang.Comparable;
  * Stub for android.util.Rational — an immutable rational number.
  */
 public final class Rational extends Number implements Comparable<Rational> {
-    public Rational(Object... args) {}
-    public static final Rational ZERO = new Rational(0);
-    public static final Rational NaN = new Rational(0);
-    public static final Rational POSITIVE_INFINITY = new Rational(1);
-    public static final Rational NEGATIVE_INFINITY = new Rational(-1);
+    public static final Rational ZERO = new Rational(0, 1);
+    public static final Rational NaN = new Rational(0, 0);
+    public static final Rational POSITIVE_INFINITY = new Rational(1, 0);
+    public static final Rational NEGATIVE_INFINITY = new Rational(-1, 0);
 
     private int mNumerator;
     private int mDenominator;
@@ -112,6 +111,25 @@ public final class Rational extends Number implements Comparable<Rational> {
     }
 
     public static Rational parseRational(String string) {
-        return NaN;
+        if (string == null) return NaN;
+        string = string.trim();
+        if ("NaN".equals(string)) return NaN;
+        if ("Infinity".equals(string)) return POSITIVE_INFINITY;
+        if ("-Infinity".equals(string)) return NEGATIVE_INFINITY;
+        int sep = string.indexOf('/');
+        if (sep < 0) {
+            try {
+                return new Rational(Integer.parseInt(string), 1);
+            } catch (NumberFormatException e) {
+                return NaN;
+            }
+        }
+        try {
+            int num = Integer.parseInt(string.substring(0, sep).trim());
+            int den = Integer.parseInt(string.substring(sep + 1).trim());
+            return new Rational(num, den);
+        } catch (NumberFormatException e) {
+            return NaN;
+        }
     }
 }

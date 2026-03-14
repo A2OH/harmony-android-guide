@@ -55,5 +55,12 @@ public class Service {
 
     public boolean isStopRequested() { return mStopRequested; }
 
-    public boolean stopSelfResult(Object p0) { return false; }
+    public boolean stopSelfResult(int startId) {
+        if (startId == mLastStartId) {
+            mStopRequested = true;
+            onDestroy();
+            return true;
+        }
+        return false;
+    }
 }
