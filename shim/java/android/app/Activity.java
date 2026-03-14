@@ -78,6 +78,7 @@ public class Activity extends Context {
 
     public void finish() {
         mFinished = true;
+        MiniServer.get().getActivityManager().finishActivity(this);
     }
     public boolean isFinishing() { return mFinished; }
     public boolean isDestroyed() { return mDestroyed; }
@@ -91,10 +92,18 @@ public class Activity extends Context {
         mResultData = data;
     }
 
-    public void startActivity(Intent intent) {}
-    public void startActivity(Intent intent, Bundle options) {}
-    public void startActivityForResult(Intent intent, int requestCode) {}
-    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {}
+    public void startActivity(Intent intent) {
+        startActivityForResult(intent, -1, null);
+    }
+    public void startActivity(Intent intent, Bundle options) {
+        startActivityForResult(intent, -1, options);
+    }
+    public void startActivityForResult(Intent intent, int requestCode) {
+        startActivityForResult(intent, requestCode, null);
+    }
+    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
+        MiniServer.get().getActivityManager().startActivity(this, intent, requestCode);
+    }
 
     @Override
     public String getPackageName() {
@@ -157,7 +166,9 @@ public class Activity extends Context {
     public boolean navigateUpTo(Object p0) { return false; }
     public void onActivityReenter(Object p0, Object p1) {}
     public void onAttachedToWindow() {}
-    public void onBackPressed() {}
+    public void onBackPressed() {
+        finish();
+    }
     public void onChildTitleChanged(Object p0, Object p1) {}
     public void onConfigurationChanged(Object p0) {}
     public void onContentChanged() {}

@@ -81,6 +81,7 @@ public class HeadlessTest {
         testWifiManager();
         testTelephonyManager();
         testGraphics();
+        testMiniServer();
         testMatrixCursor();
         testMergeCursor();
         testMatrix();
@@ -2690,5 +2691,107 @@ public class HeadlessTest {
         // intersects (non-mutating)
         check("intersects true", a.intersects(5f, 5f, 15f, 15f));
         check("intersects false", !a.intersects(20f, 20f, 30f, 30f));
+    }
+
+    // ── MiniServer / Activity Lifecycle Tests ─────────────────────────────
+
+    // Test Activity that tracks lifecycle calls
+    public static class TestActivity extends android.app.Activity {
+        static java.util.ArrayList<String> log = new java.util.ArrayList<>();
+        static void clearLog() { log.clear(); }
+
+        @Override protected void onCreate(android.os.Bundle b) { super.onCreate(b); log.add("onCreate"); }
+        @Override protected void onStart() { super.onStart(); log.add("onStart"); }
+        @Override protected void onResume() { super.onResume(); log.add("onResume"); }
+        @Override protected void onPause() { super.onPause(); log.add("onPause"); }
+        @Override protected void onStop() { super.onStop(); log.add("onStop"); }
+        @Override protected void onDestroy() { super.onDestroy(); log.add("onDestroy"); }
+        @Override protected void onRestart() { super.onRestart(); log.add("onRestart"); }
+    }
+
+    public static class SecondActivity extends android.app.Activity {
+        static java.util.ArrayList<String> log = new java.util.ArrayList<>();
+        static void clearLog() { log.clear(); }
+
+        @Override protected void onCreate(android.os.Bundle b) { super.onCreate(b); log.add("onCreate"); }
+        @Override protected void onStart() { super.onStart(); log.add("onStart"); }
+        @Override protected void onResume() { super.onResume(); log.add("onResume"); }
+        @Override protected void onPause() { super.onPause(); log.add("onPause"); }
+        @Override protected void onStop() { super.onStop(); log.add("onStop"); }
+        @Override protected void onDestroy() { super.onDestroy(); log.add("onDestroy"); }
+
+        @Override protected void onActivityResult(int req, int res, android.content.Intent data) {
+            log.add("onActivityResult:" + req + ":" + res);
+        }
+    }
+
+    static void testMiniServer() {
+        section("MiniServer / Activity Lifecycle");
+
+        android.app.MiniServer.init("com.test");
+        android.app.MiniServer server = android.app.MiniServer.get();
+        android.app.MiniActivityManager am = server.getActivityManager();
+
+        // Test 1: Launch an activity
+        TestActivity.clearLog();
+        android.content.Intent intent1 = new android.content.Intent();
+        intent1.setComponent(new android.content.ComponentName("com.test", "HeadlessTest$TestActivity"));
+        am.startActivity(null, intent1, -1);
+
+        check("stack size = 1", am.getStackSize() == 1);
+        check("lifecycle: onCreate", TestActivity.log.contains("onCreate"));
+        check("lifecycle: onStart", TestActivity.log.contains("onStart"));
+        check("lifecycle: onResume", TestActivity.log.contains("onResume"));
+        check("resumed activity not null", am.getResumedActivity() != null);
+        check("resumed is TestActivity", am.getResumedActivity() instanceof TestActivity);
+
+        // Test 2: Launch a second activity (first should pause+stop)
+        TestActivity.clearLog();
+        SecondActivity.clearLog();
+        android.content.Intent intent2 = new android.content.Intent();
+        intent2.setComponent(new android.content.ComponentName("com.test", "HeadlessTest$SecondActivity"));
+        am.startActivity(null, intent2, -1);
+
+        check("stack size = 2", am.getStackSize() == 2);
+        check("first paused", TestActivity.log.contains("onPause"));
+        check("first stopped", TestActivity.log.contains("onStop"));
+        check("second created", SecondActivity.log.contains("onCreate"));
+        check("second resumed", SecondActivity.log.contains("onResume"));
+        check("resumed is SecondActivity", am.getResumedActivity() instanceof SecondActivity);
+
+        // Test 3: Finish second activity (first should restart+resume)
+        TestActivity.clearLog();
+        SecondActivity.clearLog();
+        android.app.Activity second = am.getResumedActivity();
+        second.setResult(android.app.Activity.RESULT_OK);
+        am.finishActivity(second);
+
+        check("stack size = 1 after finish", am.getStackSize() == 1);
+        check("second destroyed", SecondActivity.log.contains("onDestroy"));
+        check("first restarted", TestActivity.log.contains("onRestart"));
+        check("first resumed again", TestActivity.log.contains("onResume"));
+        check("resumed is TestActivity again", am.getResumedActivity() instanceof TestActivity);
+
+        // Test 4: startActivityForResult round-trip
+        SecondActivity.clearLog();
+        android.content.Intent intent3 = new android.content.Intent();
+        intent3.setComponent(new android.content.ComponentName("com.test", "HeadlessTest$SecondActivity"));
+        // Use the calling activity from the stack
+        android.app.Activity caller = am.getResumedActivity();
+        am.startActivity(caller, intent3, 42);
+        check("stack size = 2 for forResult", am.getStackSize() == 2);
+
+        // Finish with result
+        android.app.Activity callee = am.getResumedActivity();
+        callee.setResult(android.app.Activity.RESULT_OK);
+        am.finishActivity(callee);
+        // Since caller is TestActivity (not SecondActivity), the result goes to TestActivity
+        // but TestActivity doesn't override onActivityResult, so just check stack
+        check("stack size = 1 after forResult finish", am.getStackSize() == 1);
+
+        // Test 5: finishAll (shutdown)
+        server.shutdown();
+        check("stack empty after shutdown", am.getStackSize() == 0);
+        check("no resumed after shutdown", am.getResumedActivity() == null);
     }
 }
