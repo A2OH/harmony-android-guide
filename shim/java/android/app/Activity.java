@@ -158,7 +158,9 @@ public class Activity extends Context {
     public Object getVoiceInteractor() { return null; }
     public int getVolumeControlStream() { return 0; }
     public android.view.Window getWindow() { return mWindow; }
-    public Object getWindowManager() { return null; } // TODO: MiniWindowManager
+    public Object getWindowManager() {
+        return getSystemService(Context.WINDOW_SERVICE);
+    }
     public boolean hasWindowFocus() { return false; }
     public void invalidateOptionsMenu() {}
     public boolean isActivityTransitionRunning() { return false; }

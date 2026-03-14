@@ -14,13 +14,15 @@ public class View {
     public void onNativeEvent(int eventType, int eventCode, String data) {}
 
     // ── State storage for properly-typed API ──
-    private int mId;
+    private int mId = NO_ID;
     private int mVisibility = VISIBLE;
     private boolean mEnabled = true;
     private int mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom;
     private float mAlpha = 1.0f;
     private Object mTag;
     private OnClickListener mClickListener;
+    ViewGroup mParent;
+    private Object mLayoutParams;
 
     public interface OnClickListener {
         void onClick(View v);
@@ -141,7 +143,7 @@ public class View {
     public static final int MEASURED_STATE_MASK = 0;
     public static final int MEASURED_STATE_TOO_SMALL = 0;
     public static final int NOT_FOCUSABLE = 0;
-    public static final int NO_ID = 0;
+    public static final int NO_ID = -1;
     public static final int OVER_SCROLL_ALWAYS = 0;
     public static final int OVER_SCROLL_IF_CONTENT_SCROLLS = 0;
     public static final int OVER_SCROLL_NEVER = 0;
@@ -288,7 +290,15 @@ public class View {
     public void dispatchWindowInsetsAnimationPrepare(Object p0) {}
     public void dispatchWindowVisibilityChanged(Object p0) {}
     public Object findFocus() { return null; }
-    public Object findViewById(Object p0) { return null; }
+    public View findViewById(int id) {
+        if (id == NO_ID) return null;
+        if (mId == id) return this;
+        return null;
+    }
+    public Object findViewById(Object p0) {
+        if (p0 instanceof Integer) return findViewById(((Integer) p0).intValue());
+        return null;
+    }
     public Object findViewWithTag(Object p0) { return null; }
     public void findViewsWithText(Object p0, Object p1, Object p2) {}
     public Object focusSearch(Object p0) { return null; }
@@ -354,14 +364,18 @@ public class View {
     public int getPaddingRight() { return mPaddingRight; }
     public int getPaddingStart() { return mPaddingLeft; }
     public int getPaddingTop() { return mPaddingTop; }
-    public Object getParent() { return null; }
+    public Object getParent() { return mParent; }
     public Object getParentForAccessibility() { return null; }
     public Object getPointerIcon() { return null; }
     public Object getResources() { return null; }
     public boolean getRevealOnFocusHint() { return false; }
     public float getRightFadingEdgeStrength() { return 0f; }
     public int getRightPaddingOffset() { return 0; }
-    public Object getRootView() { return null; }
+    public Object getRootView() {
+        View root = this;
+        while (root.mParent != null) root = root.mParent;
+        return root;
+    }
     public Object getRootWindowInsets() { return null; }
     public int getScrollBarDefaultDelayBeforeFade() { return 0; }
     public int getScrollBarFadeDuration() { return 0; }
@@ -588,7 +602,8 @@ public class View {
     public void setLayerPaint(Object p0) {}
     public void setLayerType(Object p0, Object p1) {}
     public void setLayoutDirection(Object p0) {}
-    public void setLayoutParams(Object p0) {}
+    public void setLayoutParams(Object p0) { mLayoutParams = p0; }
+    public Object getLayoutParams() { return mLayoutParams; }
     public void setLeft(Object p0) {}
     public void setLeftTopRightBottom(Object p0, Object p1, Object p2, Object p3) {}
     public void setLongClickable(Object p0) {}

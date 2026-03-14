@@ -48,10 +48,33 @@ public class ViewGroup extends View {
     public boolean addStatesFromChildren() { return false; }
 
     public void addView(View child) {
-        if (child != null) mChildren.add(child);
+        if (child != null) {
+            if (child.mParent != null) {
+                child.mParent.removeView(child);
+            }
+            mChildren.add(child);
+            child.mParent = this;
+        }
     }
     public void addView(View child, int index) {
-        if (child != null) mChildren.add(index, child);
+        if (child != null) {
+            if (child.mParent != null) {
+                child.mParent.removeView(child);
+            }
+            mChildren.add(index, child);
+            child.mParent = this;
+        }
+    }
+
+    @Override
+    public View findViewById(int id) {
+        if (id == NO_ID) return null;
+        if (getId() == id) return this;
+        for (int i = 0; i < mChildren.size(); i++) {
+            View found = mChildren.get(i).findViewById(id);
+            if (found != null) return found;
+        }
+        return null;
     }
     public void addView(Object p0) { if (p0 instanceof View) addView((View) p0); }
     public void addView(Object p0, Object p1) { if (p0 instanceof View) addView((View) p0); }
@@ -100,7 +123,10 @@ public class ViewGroup extends View {
     public Object getLayoutTransition() { return null; }
     public int getNestedScrollAxes() { return 0; }
     public Object getOverlay() { return null; }
-    public int indexOfChild(Object p0) { return 0; }
+    public int indexOfChild(Object p0) {
+        if (p0 instanceof View) return mChildren.indexOf(p0);
+        return -1;
+    }
     public boolean isLayoutSuppressed() { return false; }
     public boolean isMotionEventSplittingEnabled() { return false; }
     public boolean isTransitionGroup() { return false; }
@@ -127,12 +153,28 @@ public class ViewGroup extends View {
     public void onViewAdded(Object p0) {}
     public void onViewRemoved(Object p0) {}
     public void recomputeViewAttributes(Object p0) {}
-    public void removeAllViews() { mChildren.clear(); }
-    public void removeAllViewsInLayout() { mChildren.clear(); }
+    public void removeAllViews() {
+        for (View child : mChildren) child.mParent = null;
+        mChildren.clear();
+    }
+    public void removeAllViewsInLayout() {
+        for (View child : mChildren) child.mParent = null;
+        mChildren.clear();
+    }
     public void removeDetachedView(Object p0, Object p1) {}
-    public void removeView(View child) { mChildren.remove(child); }
+    public void removeView(View child) {
+        if (mChildren.remove(child)) child.mParent = null;
+    }
     public void removeView(Object p0) { if (p0 instanceof View) removeView((View) p0); }
-    public void removeViewAt(Object p0) {}
+    public void removeViewAt(Object p0) {
+        if (p0 instanceof Integer) {
+            int index = (Integer) p0;
+            if (index >= 0 && index < mChildren.size()) {
+                View child = mChildren.remove(index);
+                if (child != null) child.mParent = null;
+            }
+        }
+    }
     public void removeViewInLayout(Object p0) {}
     public void removeViews(Object p0, Object p1) {}
     public void removeViewsInLayout(Object p0, Object p1) {}
