@@ -1,15 +1,9 @@
 package android.provider;
-import android.location.Location;
-import android.location.Location;
 
-/**
- * Android-compatible Settings shim.
- * Provides nested System/Secure/Global classes with stub get/put methods
- * and common constant definitions.
- */
+import java.util.HashMap;
+
 public class Settings {
 
-    // Top-level intent action constants
     public static final String ACTION_SETTINGS                     = "android.settings.SETTINGS";
     public static final String ACTION_WIRELESS_SETTINGS            = "android.settings.WIRELESS_SETTINGS";
     public static final String ACTION_AIRPLANE_MODE_SETTINGS       = "android.settings.AIRPLANE_MODE_SETTINGS";
@@ -28,14 +22,19 @@ public class Settings {
     public static final String ACTION_LOCALE_SETTINGS              = "android.settings.LOCALE_SETTINGS";
     public static final String ACTION_PRIVACY_SETTINGS             = "android.settings.PRIVACY_SETTINGS";
     public static final String ACTION_NFCSHARING_SETTINGS          = "android.settings.NFCSHARING_SETTINGS";
+    public static final String ACTION_MANAGE_OVERLAY_PERMISSION    = "android.settings.action.MANAGE_OVERLAY_PERMISSION";
+    public static final String ACTION_MANAGE_WRITE_SETTINGS        = "android.settings.action.MANAGE_WRITE_SETTINGS";
+    public static final String ACTION_NFC_SETTINGS                 = "android.settings.NFC_SETTINGS";
 
     public Settings() {}
 
-    // -------------------------------------------------------------------------
-    // System
-    // -------------------------------------------------------------------------
+    public static boolean canDrawOverlays(Object context) { return false; }
+
+    // ── System ──────────────────────────────────────────────────────────────
 
     public static class System {
+        private static final HashMap<String, String> sStore = new HashMap<String, String>();
+
         public static final String SCREEN_BRIGHTNESS        = "screen_brightness";
         public static final String SCREEN_BRIGHTNESS_MODE   = "screen_brightness_mode";
         public static final String SCREEN_OFF_TIMEOUT       = "screen_off_timeout";
@@ -63,33 +62,51 @@ public class Settings {
 
         public System() {}
 
-        public static String getString(Object cr, String name) { return null; }
-        public static boolean putString(Object cr, String name, String value) { return false; }
+        public static String getString(Object cr, String name) { return sStore.get(name); }
+        public static boolean putString(Object cr, String name, String value) { sStore.put(name, value); return true; }
 
-        public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static int getInt(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
-        public static int getInt(Object cr, String name, int def) { return def; }
-        public static boolean putInt(Object cr, String name, int value) { return false; }
+        public static int getInt(Object cr, String name, int def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putInt(Object cr, String name, int value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static float getFloat(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
-        public static float getFloat(Object cr, String name, float def) { return def; }
-        public static boolean putFloat(Object cr, String name, float value) { return false; }
+        public static float getFloat(Object cr, String name, float def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putFloat(Object cr, String name, float value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static long getLong(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
-        public static long getLong(Object cr, String name, long def) { return def; }
-        public static boolean putLong(Object cr, String name, long value) { return false; }
+        public static long getLong(Object cr, String name, long def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putLong(Object cr, String name, long value) { sStore.put(name, String.valueOf(value)); return true; }
     }
 
-    // -------------------------------------------------------------------------
-    // Secure
-    // -------------------------------------------------------------------------
+    // ── Secure ──────────────────────────────────────────────────────────────
 
     public static class Secure {
+        private static final HashMap<String, String> sStore = new HashMap<String, String>();
+
         public static final String ANDROID_ID                = "android_id";
         public static final String LOCATION_MODE             = "location_mode";
         public static final String LOCATION_PROVIDERS_ALLOWED = "location_providers_allowed";
@@ -114,33 +131,58 @@ public class Settings {
         public static final String BACKUP_ENABLED            = "backup_enabled";
         public static final String BACKUP_AUTO_RESTORE       = "backup_auto_restore";
 
-        // Location mode constants
-        public static final int LOCATION_MODE_OFF                          = 0;
-        public static final int LOCATION_MODE_SENSORS_ONLY                 = 1;
-        public static final int LOCATION_MODE_BATTERY_SAVING               = 2;
-        public static final int LOCATION_MODE_HIGH_ACCURACY                = 3;
+        public static final int LOCATION_MODE_OFF              = 0;
+        public static final int LOCATION_MODE_SENSORS_ONLY     = 1;
+        public static final int LOCATION_MODE_BATTERY_SAVING   = 2;
+        public static final int LOCATION_MODE_HIGH_ACCURACY    = 3;
 
         public Secure() {}
 
+        public static String getString(Object cr, String name) { return sStore.get(name); }
+        public static boolean putString(Object cr, String name, String value) { sStore.put(name, value); return true; }
 
-        public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static int getInt(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static int getInt(Object cr, String name, int def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putInt(Object cr, String name, int value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static float getFloat(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static float getFloat(Object cr, String name, float def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putFloat(Object cr, String name, float value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static long getLong(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static long getLong(Object cr, String name, long def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putLong(Object cr, String name, long value) { sStore.put(name, String.valueOf(value)); return true; }
     }
 
-    // -------------------------------------------------------------------------
-    // Global
-    // -------------------------------------------------------------------------
+    // ── Global ──────────────────────────────────────────────────────────────
 
     public static class Global {
+        private static final HashMap<String, String> sStore = new HashMap<String, String>();
+
         public static final String AIRPLANE_MODE_ON          = "airplane_mode_on";
         public static final String AIRPLANE_MODE_RADIOS      = "airplane_mode_radios";
         public static final String DEVICE_NAME               = "device_name";
@@ -165,23 +207,47 @@ public class Settings {
 
         public Global() {}
 
+        public static String getString(Object cr, String name) { return sStore.get(name); }
+        public static boolean putString(Object cr, String name, String value) { sStore.put(name, value); return true; }
 
-        public static int getInt(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static int getInt(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static int getInt(Object cr, String name, int def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Integer.parseInt(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putInt(Object cr, String name, int value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static float getFloat(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static float getFloat(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static float getFloat(Object cr, String name, float def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Float.parseFloat(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putFloat(Object cr, String name, float value) { sStore.put(name, String.valueOf(value)); return true; }
 
-        public static long getLong(Object cr, String name) throws android.provider.Settings.SettingNotFoundException {
-            throw new SettingNotFoundException(name);
+        public static long getLong(Object cr, String name) throws SettingNotFoundException {
+            String v = sStore.get(name);
+            if (v == null) throw new SettingNotFoundException(name);
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { throw new SettingNotFoundException(name); }
         }
+        public static long getLong(Object cr, String name, long def) {
+            String v = sStore.get(name);
+            if (v == null) return def;
+            try { return Long.parseLong(v); } catch (NumberFormatException e) { return def; }
+        }
+        public static boolean putLong(Object cr, String name, long value) { sStore.put(name, String.valueOf(value)); return true; }
     }
 
-    // -------------------------------------------------------------------------
-    // SettingNotFoundException
-    // -------------------------------------------------------------------------
+    // ── SettingNotFoundException ─────────────────────────────────────────────
 
     public static class SettingNotFoundException extends Exception {
         public SettingNotFoundException(String name) {
