@@ -9,84 +9,106 @@
 | **Class** | `android.graphics.Matrix` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 48 |
-| **Avg Score** | 1.3 |
-| **Scenario** | S8: No Mapping (Stub) |
-| **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (12%) |
-| **No Mapping** | 42 (87%) |
+| **Avg Score** | 4.9 |
+| **Scenario** | S3: Partial Coverage |
+| **Strategy** | Implement feasible methods, stub the rest |
+| **Direct/Near** | 15 (31%) |
+| **Partial/Composite** | 33 (68%) |
+| **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 1 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Stub APIs (score < 5): 48 methods
+## Implementable APIs (score >= 5): 15 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `Matrix` | `Matrix()` | 9 | direct | impossible | `OH_Drawing_MatrixCreate` | `native_drawing.OH_Drawing_Matrix` |
+| `Matrix` | `Matrix(android.graphics.Matrix)` | 9 | direct | impossible | `OH_Drawing_MatrixCreate` | `native_drawing.OH_Drawing_Matrix` |
+| `setValues` | `void setValues(float[])` | 9 | direct | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `reset` | `void reset()` | 7 | near | hard | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `set` | `void set(android.graphics.Matrix)` | 7 | near | hard | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setRotate` | `void setRotate(float, float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setRotate` | `void setRotate(float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setScale` | `void setScale(float, float, float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setScale` | `void setScale(float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setSinCos` | `void setSinCos(float, float, float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setSinCos` | `void setSinCos(float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setSkew` | `void setSkew(float, float, float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setSkew` | `void setSkew(float, float)` | 7 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setTranslate` | `void setTranslate(float, float)` | 7 | near | hard | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+| `setRectToRect` | `boolean setRectToRect(android.graphics.RectF, android.graphics.RectF, android.graphics.Matrix.ScaleToFit)` | 6 | near | impossible | `OH_Drawing_MatrixSetMatrix` | `native_drawing.OH_Drawing_Matrix` |
+
+## Gap Descriptions (per method)
+
+- **`Matrix`**: Constructor
+- **`Matrix`**: Constructor
+- **`setValues`**: Direct mapping; pass all 9 float values
+- **`reset`**: Set to identity values (1,0,0,0,1,0,0,0,1)
+- **`set`**: Copy all 9 values via SetMatrix
+- **`setRotate`**: Compute cos/sin and set via SetMatrix
+- **`setRotate`**: Compute cos/sin and set via SetMatrix
+- **`setScale`**: Set scale matrix via SetMatrix(sx,0,0,0,sy,0,0,0,1)
+- **`setScale`**: Set scale matrix via SetMatrix(sx,0,0,0,sy,0,0,0,1)
+- **`setSinCos`**: Set rotation via sin/cos values
+- **`setSinCos`**: Set rotation via sin/cos values
+- **`setSkew`**: Set skew matrix via SetMatrix(1,kx,0,ky,1,0,0,0,1)
+- **`setSkew`**: Set skew matrix via SetMatrix(1,kx,0,ky,1,0,0,0,1)
+- **`setTranslate`**: Set translate matrix via SetMatrix(1,0,tx,0,1,ty,0,0,1)
+- **`setRectToRect`**: Compute transform from src to dst rect; call SetMatrix
+
+## Stub APIs (score < 5): 33 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `invert` | 4 | partial | throw UnsupportedOperationException |
-| `reset` | 3 | composite | Log warning + no-op |
-| `set` | 3 | composite | Log warning + no-op |
-| `setTranslate` | 3 | composite | Log warning + no-op |
-| `postTranslate` | 2 | composite | throw UnsupportedOperationException |
-| `preTranslate` | 2 | composite | throw UnsupportedOperationException |
-| `Matrix` | 1 | none | throw UnsupportedOperationException |
-| `Matrix` | 1 | none | throw UnsupportedOperationException |
-| `getValues` | 1 | none | Return safe default (null/false/0/empty) |
-| `isAffine` | 1 | none | Return safe default (null/false/0/empty) |
-| `isIdentity` | 1 | none | Return safe default (null/false/0/empty) |
-| `mapPoints` | 1 | none | throw UnsupportedOperationException |
-| `mapPoints` | 1 | none | throw UnsupportedOperationException |
-| `mapPoints` | 1 | none | throw UnsupportedOperationException |
-| `mapRadius` | 1 | none | throw UnsupportedOperationException |
-| `mapRect` | 1 | none | throw UnsupportedOperationException |
-| `mapRect` | 1 | none | throw UnsupportedOperationException |
-| `mapVectors` | 1 | none | throw UnsupportedOperationException |
-| `mapVectors` | 1 | none | throw UnsupportedOperationException |
-| `mapVectors` | 1 | none | throw UnsupportedOperationException |
-| `postConcat` | 1 | none | Store callback, never fire |
-| `postRotate` | 1 | none | throw UnsupportedOperationException |
-| `postRotate` | 1 | none | throw UnsupportedOperationException |
-| `postScale` | 1 | none | throw UnsupportedOperationException |
-| `postScale` | 1 | none | throw UnsupportedOperationException |
-| `postSkew` | 1 | none | throw UnsupportedOperationException |
-| `postSkew` | 1 | none | throw UnsupportedOperationException |
-| `preConcat` | 1 | none | Store callback, never fire |
-| `preRotate` | 1 | none | throw UnsupportedOperationException |
-| `preRotate` | 1 | none | throw UnsupportedOperationException |
-| `preScale` | 1 | none | throw UnsupportedOperationException |
-| `preScale` | 1 | none | throw UnsupportedOperationException |
-| `preSkew` | 1 | none | throw UnsupportedOperationException |
-| `preSkew` | 1 | none | throw UnsupportedOperationException |
-| `rectStaysRect` | 1 | none | throw UnsupportedOperationException |
-| `setConcat` | 1 | none | Log warning + no-op |
-| `setPolyToPoly` | 1 | none | Log warning + no-op |
-| `setRectToRect` | 1 | none | Log warning + no-op |
-| `setRotate` | 1 | none | Log warning + no-op |
-| `setRotate` | 1 | none | Log warning + no-op |
-| `setScale` | 1 | none | Log warning + no-op |
-| `setScale` | 1 | none | Log warning + no-op |
-| `setSinCos` | 1 | none | Log warning + no-op |
-| `setSinCos` | 1 | none | Log warning + no-op |
-| `setSkew` | 1 | none | Log warning + no-op |
-| `setSkew` | 1 | none | Log warning + no-op |
-| `setValues` | 1 | none | Log warning + no-op |
-| `toShortString` | 1 | none | throw UnsupportedOperationException |
+| `isAffine` | 4 | partial | Return safe default (null/false/0/empty) |
+| `isIdentity` | 4 | partial | Return safe default (null/false/0/empty) |
+| `mapPoints` | 4 | partial | throw UnsupportedOperationException |
+| `mapPoints` | 4 | partial | throw UnsupportedOperationException |
+| `mapPoints` | 4 | partial | throw UnsupportedOperationException |
+| `mapRect` | 4 | partial | throw UnsupportedOperationException |
+| `mapRect` | 4 | partial | throw UnsupportedOperationException |
+| `mapVectors` | 4 | partial | throw UnsupportedOperationException |
+| `mapVectors` | 4 | partial | throw UnsupportedOperationException |
+| `mapVectors` | 4 | partial | throw UnsupportedOperationException |
+| `postConcat` | 4 | partial | Store callback, never fire |
+| `postRotate` | 4 | partial | throw UnsupportedOperationException |
+| `postRotate` | 4 | partial | throw UnsupportedOperationException |
+| `postScale` | 4 | partial | throw UnsupportedOperationException |
+| `postScale` | 4 | partial | throw UnsupportedOperationException |
+| `postSkew` | 4 | partial | throw UnsupportedOperationException |
+| `postSkew` | 4 | partial | throw UnsupportedOperationException |
+| `postTranslate` | 4 | partial | throw UnsupportedOperationException |
+| `preConcat` | 4 | partial | Store callback, never fire |
+| `preRotate` | 4 | partial | throw UnsupportedOperationException |
+| `preRotate` | 4 | partial | throw UnsupportedOperationException |
+| `preScale` | 4 | partial | throw UnsupportedOperationException |
+| `preScale` | 4 | partial | throw UnsupportedOperationException |
+| `preSkew` | 4 | partial | throw UnsupportedOperationException |
+| `preSkew` | 4 | partial | throw UnsupportedOperationException |
+| `preTranslate` | 4 | partial | throw UnsupportedOperationException |
+| `setConcat` | 4 | partial | Log warning + no-op |
+| `getValues` | 3 | composite | Return safe default (null/false/0/empty) |
+| `invert` | 3 | composite | throw UnsupportedOperationException |
+| `mapRadius` | 3 | composite | throw UnsupportedOperationException |
+| `rectStaysRect` | 3 | composite | throw UnsupportedOperationException |
+| `setPolyToPoly` | 3 | composite | Log warning + no-op |
+| `toShortString` | 3 | composite | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S8 — No Mapping (Stub)**
+**Scenario: S3 — Partial Coverage**
 
-1. Create minimal stub class matching AOSP package/class name
-2. All lifecycle methods (create/destroy): no-op, return dummy
-3. All computation methods: throw UnsupportedOperationException with message
-4. All query methods: return safe defaults
-5. Log a warning on first use: "X is not supported on OHOS"
-6. Only test: no crash on construction, expected exceptions
+1. Implement 15 methods that have score >= 5
+2. Stub 33 methods using the Stub Strategy column above
+3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
+4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
+5. Test both working methods AND verify stubs behave predictably
 
 ## Dependencies
 
@@ -99,6 +121,6 @@ Before marking `android.graphics.Matrix` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 48 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 15 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock
