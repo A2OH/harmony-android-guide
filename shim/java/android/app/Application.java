@@ -25,7 +25,9 @@ public class Application extends Context {
     /* Framework-internal */
     void setPackageName(String pkg) { mPackageName = pkg; }
 
-    public static String getProcessName() { return null; }
+    public static String getProcessName() {
+        return ProcessHandle.current().info().command().orElse("unknown");
+    }
     public void registerActivityLifecycleCallbacks(Object p0) {}
     public void registerOnProvideAssistDataListener(Object p0) {}
     public void unregisterActivityLifecycleCallbacks(Object p0) {}

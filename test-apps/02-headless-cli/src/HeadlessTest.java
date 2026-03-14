@@ -113,6 +113,9 @@ public class HeadlessTest {
         testColorSpace();
         testPath();
         testBitmap();
+        testAsyncTask();
+        testUriExtended();
+        testApplicationBasic();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -3547,5 +3550,116 @@ public class HeadlessTest {
         android.graphics.Bitmap cp = android.graphics.Bitmap.createBitmap(src);
         check("createBitmap(src) non-null", cp != null);
         check("createBitmap(src) width", cp.getWidth() == 10);
+    }
+
+    // ── AsyncTask tests ─────────────────────────────────────────────────
+
+    static void testAsyncTask() {
+        section("android.os.AsyncTask");
+
+        final boolean[] callbacks = {false, false, false}; // pre, background, post
+        final String[] result = {null};
+
+        android.os.AsyncTask<String, Void, String> task = new android.os.AsyncTask<String, Void, String>() {
+            @Override
+            protected void onPreExecute() { callbacks[0] = true; }
+            @Override
+            protected String doInBackground(String... params) {
+                callbacks[1] = true;
+                return params.length > 0 ? params[0] + "_done" : "done";
+            }
+            @Override
+            protected void onPostExecute(String r) {
+                callbacks[2] = true;
+                result[0] = r;
+            }
+        };
+
+        check("status PENDING", task.getStatus() == android.os.AsyncTask.Status.PENDING);
+        task.execute("test");
+
+        // Wait briefly for async completion
+        try { Thread.sleep(200); } catch (InterruptedException e) {}
+
+        check("onPreExecute called", callbacks[0]);
+        check("doInBackground called", callbacks[1]);
+        check("onPostExecute called", callbacks[2]);
+        check("result correct", "test_done".equals(result[0]));
+        check("status FINISHED", task.getStatus() == android.os.AsyncTask.Status.FINISHED);
+
+        // Cancellation test
+        final boolean[] cancelled = {false};
+        android.os.AsyncTask<Void, Void, Void> cancelTask = new android.os.AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try { Thread.sleep(1000); } catch (InterruptedException e) {}
+                return null;
+            }
+            @Override
+            protected void onCancelled() { cancelled[0] = true; }
+        };
+        cancelTask.execute();
+        cancelTask.cancel(true);
+        try { Thread.sleep(200); } catch (InterruptedException e) {}
+        check("isCancelled after cancel", cancelTask.isCancelled());
+    }
+
+    // ── Uri extended tests ──────────────────────────────────────────────
+
+    static void testUriExtended() {
+        section("android.net.Uri (extended)");
+
+        // Builder
+        android.net.Uri uri = new android.net.Uri.Builder()
+            .scheme("https")
+            .authority("example.com")
+            .appendPath("api")
+            .appendPath("v1")
+            .appendQueryParameter("key", "value")
+            .build();
+        check("builder scheme", "https".equals(uri.getScheme()));
+        check("builder authority", "example.com".equals(uri.getAuthority()));
+        check("builder path contains api", uri.getPath() != null && uri.getPath().contains("api"));
+        check("builder query param", "value".equals(uri.getQueryParameter("key")));
+
+        // parse edge cases
+        android.net.Uri empty = android.net.Uri.parse("");
+        check("parse empty non-null", empty != null);
+
+        android.net.Uri withPort = android.net.Uri.parse("http://host:8080/path");
+        check("withPort host", "host".equals(withPort.getHost()));
+        check("withPort port", withPort.getPort() == 8080);
+
+        // getLastPathSegment
+        android.net.Uri segmented = android.net.Uri.parse("content://auth/a/b/c");
+        check("lastPathSegment == c", "c".equals(segmented.getLastPathSegment()));
+
+        // EMPTY
+        check("EMPTY non-null", android.net.Uri.EMPTY != null);
+    }
+
+    // ── Application basic tests ─────────────────────────────────────────
+
+    static void testApplicationBasic() {
+        section("android.app.Application");
+
+        android.app.Application app = new android.app.Application();
+        check("getApplicationContext == self", app.getApplicationContext() == app);
+
+        // lifecycle methods don't throw
+        app.onCreate();
+        app.onTerminate();
+        app.onLowMemory();
+        app.onTrimMemory(0);
+        check("lifecycle methods no throw", true);
+
+        // getProcessName
+        String proc = android.app.Application.getProcessName();
+        check("getProcessName non-null", proc != null);
+
+        // register/unregister don't throw
+        app.registerActivityLifecycleCallbacks(null);
+        app.unregisterActivityLifecycleCallbacks(null);
+        check("lifecycle callbacks no throw", true);
     }
 }
