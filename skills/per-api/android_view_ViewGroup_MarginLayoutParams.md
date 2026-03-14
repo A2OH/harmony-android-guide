@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewGroup.MarginLayoutParams` |
 | **Package** | `android.view.ViewGroup` |
 | **Total Methods** | 12 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 7 (58%) |
-| **No Mapping** | 5 (41%) |
+| **Partial/Composite** | 1 (8%) |
+| **No Mapping** | 11 (91%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
 | **Has Async Gap** | 8 |
@@ -28,18 +28,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getLayoutDirection` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getMarginEnd` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMarginStart` | 3 | composite | Return dummy instance / no-op |
-| `setMarginEnd` | 3 | composite | Log warning + no-op |
-| `setMarginStart` | 3 | composite | Return dummy instance / no-op |
-| `setMargins` | 3 | composite | Log warning + no-op |
-| `setLayoutDirection` | 2 | composite | Log warning + no-op |
 | `MarginLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `MarginLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `MarginLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `MarginLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getLayoutDirection` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMarginStart` | 1 | none | Return dummy instance / no-op |
 | `isMarginRelative` | 1 | none | Return safe default (null/false/0/empty) |
+| `setLayoutDirection` | 1 | none | Log warning + no-op |
+| `setMarginEnd` | 1 | none | Log warning + no-op |
+| `setMarginStart` | 1 | none | Return dummy instance / no-op |
+| `setMargins` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

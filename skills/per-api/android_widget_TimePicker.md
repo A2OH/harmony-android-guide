@@ -9,15 +9,15 @@
 | **Class** | `android.widget.TimePicker` |
 | **Package** | `android.widget` |
 | **Total Methods** | 12 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (50%) |
-| **No Mapping** | 6 (50%) |
+| **Partial/Composite** | 1 (8%) |
+| **No Mapping** | 11 (91%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
-| **Has Async Gap** | 8 |
+| **Has Async Gap** | 12 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -29,16 +29,16 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getHour` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMinute` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setIs24HourView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setMinute` | 3 | composite | Log warning + no-op |
-| `setOnTimeChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setHour` | 2 | composite | Log warning + no-op |
 | `TimePicker` | 1 | none | throw UnsupportedOperationException |
 | `TimePicker` | 1 | none | throw UnsupportedOperationException |
 | `TimePicker` | 1 | none | throw UnsupportedOperationException |
 | `TimePicker` | 1 | none | throw UnsupportedOperationException |
+| `getMinute` | 1 | none | Return safe default (null/false/0/empty) |
 | `is24HourView` | 1 | none | Return safe default (null/false/0/empty) |
+| `setHour` | 1 | none | Log warning + no-op |
+| `setIs24HourView` | 1 | none | Return safe default (null/false/0/empty) |
+| `setMinute` | 1 | none | Log warning + no-op |
+| `setOnTimeChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `validateInput` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions

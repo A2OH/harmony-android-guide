@@ -9,12 +9,12 @@
 | **Class** | `android.view.SurfaceHolder` |
 | **Package** | `android.view` |
 | **Total Methods** | 13 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (61%) |
-| **No Mapping** | 5 (38%) |
+| **Partial/Composite** | 1 (7%) |
+| **No Mapping** | 12 (92%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 13 |
 | **Has Async Gap** | 13 |
@@ -28,18 +28,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addCallback` | 3 | composite | Log warning + no-op |
-| `getSurface` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSurfaceFrame` | 3 | composite | Return safe default (null/false/0/empty) |
-| `removeCallback` | 3 | composite | Log warning + no-op |
-| `setFixedSize` | 3 | composite | Log warning + no-op |
-| `setFormat` | 3 | composite | Log warning + no-op |
-| `setKeepScreenOn` | 3 | composite | Log warning + no-op |
-| `setSizeFromLayout` | 3 | composite | Log warning + no-op |
+| `addCallback` | 2 | composite | Log warning + no-op |
+| `getSurface` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSurfaceFrame` | 1 | none | Return safe default (null/false/0/empty) |
 | `isCreating` | 1 | none | Return safe default (null/false/0/empty) |
 | `lockCanvas` | 1 | none | Return safe default (null/false/0/empty) |
 | `lockCanvas` | 1 | none | Return safe default (null/false/0/empty) |
 | `lockHardwareCanvas` | 1 | none | Return safe default (null/false/0/empty) |
+| `removeCallback` | 1 | none | Log warning + no-op |
+| `setFixedSize` | 1 | none | Log warning + no-op |
+| `setFormat` | 1 | none | Log warning + no-op |
+| `setKeepScreenOn` | 1 | none | Log warning + no-op |
+| `setSizeFromLayout` | 1 | none | Log warning + no-op |
 | `unlockCanvasAndPost` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions

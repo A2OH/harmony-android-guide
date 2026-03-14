@@ -9,7 +9,7 @@
 | **Class** | `android.widget.RelativeLayout.LayoutParams` |
 | **Package** | `android.widget.RelativeLayout` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 2.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
@@ -30,10 +30,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `addRule` | 3 | composite | Log warning + no-op |
 | `addRule` | 3 | composite | Log warning + no-op |
-| `debug` | 3 | composite | throw UnsupportedOperationException |
 | `getRule` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRules` | 3 | composite | Return safe default (null/false/0/empty) |
 | `removeRule` | 3 | composite | Log warning + no-op |
+| `debug` | 3 | composite | throw UnsupportedOperationException |
+| `getRules` | 2 | composite | Return safe default (null/false/0/empty) |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |

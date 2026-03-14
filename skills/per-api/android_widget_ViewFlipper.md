@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ViewFlipper` |
 | **Package** | `android.widget` |
 | **Total Methods** | 8 |
-| **Avg Score** | 1.5 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (25%) |
-| **No Mapping** | 6 (75%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 8 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setAutoStart` | 3 | composite | Return dummy instance / no-op |
-| `setFlipInterval` | 3 | composite | Log warning + no-op |
 | `ViewFlipper` | 1 | none | throw UnsupportedOperationException |
 | `ViewFlipper` | 1 | none | throw UnsupportedOperationException |
 | `isAutoStart` | 1 | none | Return dummy instance / no-op |
 | `isFlipping` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAutoStart` | 1 | none | Return dummy instance / no-op |
+| `setFlipInterval` | 1 | none | Log warning + no-op |
 | `startFlipping` | 1 | none | Return dummy instance / no-op |
 | `stopFlipping` | 1 | none | No-op |
 

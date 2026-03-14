@@ -9,12 +9,12 @@
 | **Class** | `android.telephony.ClosedSubscriberGroupInfo` |
 | **Package** | `android.telephony` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.3 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (66%) |
-| **No Mapping** | 1 (33%) |
+| **Partial/Composite** | 1 (33%) |
+| **No Mapping** | 2 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,20 +22,15 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getCsgIndicator` | `boolean getCsgIndicator()` | 6 | partial | moderate | `getSignalInformation` | `getSignalInformation(slotId: number, callback: AsyncCallback<Array<SignalInformation>>): void` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 3 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `getCsgIndicator` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -59,6 +54,6 @@ Before marking `android.telephony.ClosedSubscriberGroupInfo` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 3 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

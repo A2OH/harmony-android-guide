@@ -9,12 +9,12 @@
 | **Class** | `android.view.TouchDelegate` |
 | **Package** | `android.view` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.2 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (33%) |
+| **No Mapping** | 2 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 2 |
 | **Has Async Gap** | 2 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `TouchDelegate` | 3 | composite | throw UnsupportedOperationException |
-| `onTouchEvent` | 3 | composite | Store callback, never fire |
-| `onTouchExplorationHoverEvent` | 3 | composite | Store callback, never fire |
+| `onTouchEvent` | 2 | composite | Store callback, never fire |
+| `TouchDelegate` | 1 | none | throw UnsupportedOperationException |
+| `onTouchExplorationHoverEvent` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

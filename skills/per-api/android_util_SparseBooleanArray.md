@@ -9,11 +9,11 @@
 | **Class** | `android.util.SparseBooleanArray` |
 | **Package** | `android.util` |
 | **Total Methods** | 16 |
-| **Avg Score** | 6.6 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 12 (75%) |
-| **Partial/Composite** | 0 (0%) |
+| **Avg Score** | 3.5 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 12 (75%) |
 | **No Mapping** | 4 (25%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,29 +22,29 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 12 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `clear` | `void clear()` | 10 | direct | trivial | `clear` | `clear(): void` |
-| `get` | `boolean get(int)` | 10 | direct | trivial | `getOAID` | `getOAID(callback: AsyncCallback<string>): void` |
-| `get` | `boolean get(int, boolean)` | 10 | direct | trivial | `getOAID` | `getOAID(callback: AsyncCallback<string>): void` |
-| `size` | `int size()` | 10 | direct | trivial | `size` | `size: number` |
-| `setValueAt` | `void setValueAt(int, boolean)` | 9 | direct | easy | `setValue` | `setValue(value: number): void` |
-| `removeAt` | `void removeAt(int)` | 9 | direct | easy | `remove` | `remove(logType: string, logName: string): void` |
-| `valueAt` | `boolean valueAt(int)` | 8 | direct | easy | `value` | `value: number` |
-| `append` | `void append(int, boolean)` | 8 | direct | easy | `append` | `append?: boolean` |
-| `indexOfKey` | `int indexOfKey(int)` | 8 | near | easy | `indexOfLink` | `indexOfLink?: string` |
-| `keyAt` | `int keyAt(int)` | 8 | near | easy | `key` | `key: string]: BundleStateInfo` |
-| `indexOfValue` | `int indexOfValue(boolean)` | 7 | near | moderate | `indexOfLink` | `indexOfLink?: string` |
-| `delete` | `void delete(int)` | 6 | near | moderate | `deleteContact` | `deleteContact(key: string, callback: AsyncCallback<void>): void` |
+| `size` | `int size()` | 6 | partial | moderate | `size` | `size: number` |
+| `clear` | `void clear()` | 6 | partial | moderate | `clear` | `clear(): void` |
 
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 14 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `valueAt` | 5 | partial | throw UnsupportedOperationException |
+| `indexOfKey` | 5 | partial | throw UnsupportedOperationException |
+| `keyAt` | 5 | partial | throw UnsupportedOperationException |
+| `indexOfValue` | 5 | partial | throw UnsupportedOperationException |
+| `append` | 4 | partial | throw UnsupportedOperationException |
+| `setValueAt` | 4 | composite | Log warning + no-op |
+| `removeAt` | 4 | composite | Log warning + no-op |
+| `delete` | 3 | composite | throw UnsupportedOperationException |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
 | `SparseBooleanArray` | 1 | none | throw UnsupportedOperationException |
 | `SparseBooleanArray` | 1 | none | throw UnsupportedOperationException |
 | `clone` | 1 | none | Store callback, never fire |
@@ -52,13 +52,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 12 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -71,6 +71,6 @@ Before marking `android.util.SparseBooleanArray` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 16 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 12 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

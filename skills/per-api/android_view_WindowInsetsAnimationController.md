@@ -9,7 +9,7 @@
 | **Class** | `android.view.WindowInsetsAnimationController` |
 | **Package** | `android.view` |
 | **Total Methods** | 7 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.9 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
@@ -29,9 +29,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `finish` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentAlpha` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTypes` | 3 | composite | Return safe default (null/false/0/empty) |
 | `setInsetsAndAlpha` | 3 | composite | Log warning + no-op |
+| `getTypes` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getCurrentAlpha` | 2 | composite | Return safe default (null/false/0/empty) |
 | `isCancelled` | 1 | none | Return safe default (null/false/0/empty) |
 | `isFinished` | 1 | none | Return safe default (null/false/0/empty) |
 | `isReady` | 1 | none | Return safe default (null/false/0/empty) |

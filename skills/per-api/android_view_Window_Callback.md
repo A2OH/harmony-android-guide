@@ -9,12 +9,12 @@
 | **Class** | `android.view.Window.Callback` |
 | **Package** | `android.view.Window` |
 | **Total Methods** | 22 |
-| **Avg Score** | 2.9 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 22 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (4%) |
+| **No Mapping** | 21 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 22 |
 | **Has Async Gap** | 22 |
@@ -28,28 +28,28 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `dispatchGenericMotionEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `dispatchKeyEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `dispatchKeyShortcutEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `dispatchPopulateAccessibilityEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `dispatchTouchEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `dispatchTrackballEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onActionModeFinished` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onActionModeStarted` | 3 | composite | Return dummy instance / no-op |
-| `onAttachedToWindow` | 3 | composite | Store callback, never fire |
-| `onContentChanged` | 3 | composite | Store callback, never fire |
-| `onCreatePanelMenu` | 3 | composite | Return dummy instance / no-op |
-| `onDetachedFromWindow` | 3 | composite | Store callback, never fire |
-| `onMenuOpened` | 3 | composite | Return dummy instance / no-op |
-| `onPanelClosed` | 3 | composite | No-op |
-| `onPreparePanel` | 3 | composite | Store callback, never fire |
-| `onSearchRequested` | 3 | composite | Store callback, never fire |
-| `onSearchRequested` | 3 | composite | Store callback, never fire |
-| `onPointerCaptureChanged` | 3 | composite | Store callback, never fire |
-| `onMenuItemSelected` | 2 | composite | Store callback, never fire |
-| `onProvideKeyboardShortcuts` | 2 | composite | Store callback, never fire |
-| `onWindowAttributesChanged` | 2 | composite | Store callback, never fire |
-| `onWindowFocusChanged` | 2 | composite | Store callback, never fire |
+| `dispatchTouchEvent` | 2 | composite | Return safe default (null/false/0/empty) |
+| `dispatchGenericMotionEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `dispatchKeyEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `dispatchKeyShortcutEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `dispatchPopulateAccessibilityEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `dispatchTrackballEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `onActionModeFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `onActionModeStarted` | 1 | none | Return dummy instance / no-op |
+| `onAttachedToWindow` | 1 | none | Store callback, never fire |
+| `onContentChanged` | 1 | none | Store callback, never fire |
+| `onCreatePanelMenu` | 1 | none | Return dummy instance / no-op |
+| `onDetachedFromWindow` | 1 | none | Store callback, never fire |
+| `onMenuItemSelected` | 1 | none | Store callback, never fire |
+| `onMenuOpened` | 1 | none | Return dummy instance / no-op |
+| `onPanelClosed` | 1 | none | No-op |
+| `onPointerCaptureChanged` | 1 | none | Store callback, never fire |
+| `onPreparePanel` | 1 | none | Store callback, never fire |
+| `onProvideKeyboardShortcuts` | 1 | none | Store callback, never fire |
+| `onSearchRequested` | 1 | none | Store callback, never fire |
+| `onSearchRequested` | 1 | none | Store callback, never fire |
+| `onWindowAttributesChanged` | 1 | none | Store callback, never fire |
+| `onWindowFocusChanged` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

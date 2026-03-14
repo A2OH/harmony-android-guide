@@ -9,11 +9,11 @@
 | **Class** | `android.os.SharedMemory` |
 | **Package** | `android.os` |
 | **Total Methods** | 6 |
-| **Avg Score** | 5.2 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 3 (50%) |
-| **Partial/Composite** | 1 (16%) |
+| **Avg Score** | 2.8 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 4 (66%) |
 | **No Mapping** | 2 (33%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,33 +22,28 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 4 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `close` | `void close()` | 10 | direct | trivial | `close` | `close(fd: number): Promise<void>` |
-| `getSize` | `int getSize()` | 8 | near | easy | `imageSize` | `imageSize?: Size` |
-| `setProtect` | `boolean setProtect(int)` | 6 | near | moderate | `setPowerMode` | `setPowerMode(mode: DevicePowerMode, callback: AsyncCallback<void>): void` |
-| `writeToParcel` | `void writeToParcel(@NonNull android.os.Parcel, int)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 6 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `getSize` | 5 | partial | Return safe default (null/false/0/empty) |
+| `close` | 4 | partial | No-op |
+| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `setProtect` | 3 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `unmap` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 4 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -61,6 +56,6 @@ Before marking `android.os.SharedMemory` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 6 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

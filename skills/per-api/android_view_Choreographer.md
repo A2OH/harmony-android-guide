@@ -9,12 +9,12 @@
 | **Class** | `android.view.Choreographer` |
 | **Package** | `android.view` |
 | **Total Methods** | 4 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 2.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 3 (75%) |
+| **No Mapping** | 1 (25%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -29,9 +29,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getInstance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `postFrameCallback` | 3 | composite | throw UnsupportedOperationException |
-| `postFrameCallbackDelayed` | 3 | composite | throw UnsupportedOperationException |
-| `removeFrameCallback` | 3 | composite | Log warning + no-op |
+| `postFrameCallback` | 2 | composite | throw UnsupportedOperationException |
+| `postFrameCallbackDelayed` | 2 | composite | throw UnsupportedOperationException |
+| `removeFrameCallback` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

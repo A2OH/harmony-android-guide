@@ -9,12 +9,12 @@
 | **Class** | `android.app.ActivityManager.TaskDescription` |
 | **Package** | `android.app.ActivityManager` |
 | **Total Methods** | 10 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (30%) |
-| **No Mapping** | 7 (70%) |
+| **Partial/Composite** | 1 (10%) |
+| **No Mapping** | 9 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,27 +22,22 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getLabel` | `String getLabel()` | 6 | partial | moderate | `getTopAbility` | `getTopAbility(): Promise<ElementName>` |
-
-## Stub APIs (score < 5): 9 methods
+## Stub APIs (score < 5): 10 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getPrimaryColor` | 5 | partial | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `getLabel` | 4 | partial | Return safe default (null/false/0/empty) |
 | `TaskDescription` | 1 | none | Store callback, never fire |
 | `TaskDescription` | 1 | none | Store callback, never fire |
 | `TaskDescription` | 1 | none | Store callback, never fire |
 | `TaskDescription` | 1 | none | Store callback, never fire |
 | `TaskDescription` | 1 | none | Store callback, never fire |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getPrimaryColor` | 1 | none | Return safe default (null/false/0/empty) |
 | `readFromParcel` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -66,6 +61,6 @@ Before marking `android.app.ActivityManager.TaskDescription` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 10 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,49 +9,45 @@
 | **Class** | `android.media.MediaRouter.SimpleCallback` |
 | **Package** | `android.media.MediaRouter` |
 | **Total Methods** | 9 |
-| **Avg Score** | 4.3 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 2 (22%) |
-| **Partial/Composite** | 7 (77%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 1.8 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 2 (22%) |
+| **No Mapping** | 7 (77%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-MEDIA.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `SimpleCallback` | `MediaRouter.SimpleCallback()` | 7 | near | easy | `callback` | `callback: AsyncCallback<boolean>): void` |
-| `onRouteAdded` | `void onRouteAdded(android.media.MediaRouter, android.media.MediaRouter.RouteInfo)` | 7 | near | moderate | `dateAdded` | `readonly dateAdded: number` |
-
-## Stub APIs (score < 5): 7 methods
+## Stub APIs (score < 5): 9 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onRouteVolumeChanged` | 4 | partial | Store callback, never fire |
-| `onRouteChanged` | 3 | composite | Store callback, never fire |
-| `onRouteGrouped` | 3 | composite | Store callback, never fire |
-| `onRouteRemoved` | 3 | composite | Log warning + no-op |
-| `onRouteSelected` | 3 | composite | Store callback, never fire |
-| `onRouteUngrouped` | 3 | composite | Store callback, never fire |
-| `onRouteUnselected` | 3 | composite | Store callback, never fire |
+| `SimpleCallback` | 5 | partial | throw UnsupportedOperationException |
+| `onRouteAdded` | 4 | partial | Log warning + no-op |
+| `onRouteChanged` | 1 | none | Store callback, never fire |
+| `onRouteGrouped` | 1 | none | Store callback, never fire |
+| `onRouteRemoved` | 1 | none | Log warning + no-op |
+| `onRouteSelected` | 1 | none | Store callback, never fire |
+| `onRouteUngrouped` | 1 | none | Store callback, never fire |
+| `onRouteUnselected` | 1 | none | Store callback, never fire |
+| `onRouteVolumeChanged` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -64,6 +60,6 @@ Before marking `android.media.MediaRouter.SimpleCallback` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 9 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

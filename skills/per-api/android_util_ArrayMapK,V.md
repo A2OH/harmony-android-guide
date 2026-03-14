@@ -9,66 +9,75 @@
 | **Class** | `android.util.ArrayMap<K, V>` |
 | **Package** | `android.util` |
 | **Total Methods** | 26 |
-| **Avg Score** | 6.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 15 (57%) |
-| **Partial/Composite** | 8 (30%) |
-| **No Mapping** | 3 (11%) |
+| **Avg Score** | 3.9 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 5 (19%) |
+| **Partial/Composite** | 14 (53%) |
+| **No Mapping** | 7 (26%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `SHIM-INDEX.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 20 methods
+## Implementable APIs (score >= 5): 7 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `clear` | `void clear()` | 10 | direct | trivial | `clear` | `clear(): void` |
-| `get` | `V get(Object)` | 10 | direct | trivial | `getOAID` | `getOAID(callback: AsyncCallback<string>): void` |
-| `remove` | `V remove(Object)` | 10 | direct | trivial | `remove` | `remove(logType: string, logName: string): void` |
-| `removeAll` | `boolean removeAll(java.util.Collection<?>)` | 10 | direct | trivial | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `size` | `int size()` | 10 | direct | trivial | `size` | `size: number` |
-| `setValueAt` | `V setValueAt(int, V)` | 9 | direct | easy | `setValue` | `setValue(value: number): void` |
-| `removeAt` | `V removeAt(int)` | 9 | direct | easy | `remove` | `remove(logType: string, logName: string): void` |
-| `containsAll` | `boolean containsAll(java.util.Collection<?>)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `containsKey` | `boolean containsKey(Object)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `valueAt` | `V valueAt(int)` | 8 | direct | easy | `value` | `value: number` |
-| `containsValue` | `boolean containsValue(Object)` | 8 | near | easy | `contains` | `contains(rule: bigint): boolean` |
-| `indexOfKey` | `int indexOfKey(Object)` | 8 | near | easy | `indexOfLink` | `indexOfLink?: string` |
-| `keyAt` | `K keyAt(int)` | 8 | near | easy | `key` | `key: string]: BundleStateInfo` |
-| `indexOfValue` | `int indexOfValue(Object)` | 7 | near | moderate | `indexOfLink` | `indexOfLink?: string` |
-| `keySet` | `java.util.Set<K> keySet()` | 7 | near | moderate | `key` | `key: string]: BundleStateInfo` |
-| `isEmpty` | `boolean isEmpty()` | 6 | partial | moderate | `isKeepData` | `isKeepData: boolean` |
-| `retainAll` | `boolean retainAll(java.util.Collection<?>)` | 6 | partial | moderate | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `entrySet` | `java.util.Set<java.util.Map.Entry<K,V>> entrySet()` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `putAll` | `void putAll(android.util.ArrayMap<? extends K,? extends V>)` | 5 | partial | moderate | `cancelAll` | `cancelAll(callback: AsyncCallback<void>): void` |
-| `putAll` | `void putAll(java.util.Map<? extends K,? extends V>)` | 5 | partial | moderate | `cancelAll` | `cancelAll(callback: AsyncCallback<void>): void` |
+| `remove` | `V remove(Object)` | 9 | direct | hard | `remove` | `@ohos.util.LightWeightMap.LightWeightMap` |
+| `containsKey` | `boolean containsKey(Object)` | 7 | near | hard | `hasKey` | `@ohos.util.LightWeightMap.LightWeightMap` |
+| `get` | `V get(Object)` | 7 | near | hard | `get` | `@ohos.util.LightWeightMap.LightWeightMap` |
+| `put` | `V put(K, V)` | 7 | near | impossible | `set` | `@ohos.util.LightWeightMap.LightWeightMap` |
+| `size` | `int size()` | 7 | near | moderate | `length` | `@ohos.util.LightWeightMap.LightWeightMap` |
+| `clear` | `void clear()` | 6 | partial | moderate | `clear` | `clear(): void` |
+| `isEmpty` | `boolean isEmpty()` | 5 | partial | moderate | `isKeepData` | `isKeepData: boolean` |
 
-## Stub APIs (score < 5): 6 methods
+## Gap Descriptions (per method)
+
+- **`remove`**: Direct
+- **`containsKey`**: Name: hasKey
+- **`get`**: Direct
+- **`put`**: Name: set vs put
+- **`size`**: Property
+
+## Stub APIs (score < 5): 19 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `ArrayMap` | 3 | composite | throw UnsupportedOperationException |
-| `ArrayMap` | 3 | composite | throw UnsupportedOperationException |
-| `ArrayMap` | 3 | composite | throw UnsupportedOperationException |
+| `valueAt` | 5 | partial | throw UnsupportedOperationException |
+| `indexOfKey` | 5 | partial | throw UnsupportedOperationException |
+| `keyAt` | 5 | partial | throw UnsupportedOperationException |
+| `indexOfValue` | 4 | partial | throw UnsupportedOperationException |
+| `keySet` | 4 | partial | Log warning + no-op |
+| `containsAll` | 4 | composite | Store callback, never fire |
+| `containsValue` | 4 | composite | Store callback, never fire |
+| `removeAll` | 3 | composite | Log warning + no-op |
+| `setValueAt` | 3 | composite | Log warning + no-op |
+| `removeAt` | 3 | composite | Log warning + no-op |
+| `entrySet` | 3 | composite | Log warning + no-op |
+| `retainAll` | 2 | composite | throw UnsupportedOperationException |
+| `ArrayMap` | 1 | none | throw UnsupportedOperationException |
+| `ArrayMap` | 1 | none | throw UnsupportedOperationException |
+| `ArrayMap` | 1 | none | throw UnsupportedOperationException |
 | `ensureCapacity` | 1 | none | throw UnsupportedOperationException |
-| `put` | 1 | none | Log warning + no-op |
+| `putAll` | 1 | none | Log warning + no-op |
+| `putAll` | 1 | none | Log warning + no-op |
 | `values` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 20 methods that have score >= 5
-2. Stub 6 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -81,6 +90,6 @@ Before marking `android.util.ArrayMap<K, V>` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 26 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 20 test methods for implemented APIs
+3. **Test Coverage**: At least 7 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

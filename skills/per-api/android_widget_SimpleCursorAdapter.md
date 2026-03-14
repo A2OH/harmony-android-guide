@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SimpleCursorAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (72%) |
-| **No Mapping** | 3 (27%) |
+| **Partial/Composite** | 1 (9%) |
+| **No Mapping** | 10 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getCursorToStringConverter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStringConversionColumn` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getViewBinder` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setCursorToStringConverter` | 3 | composite | Log warning + no-op |
-| `setStringConversionColumn` | 3 | composite | Log warning + no-op |
-| `setViewBinder` | 3 | composite | Log warning + no-op |
-| `setViewImage` | 3 | composite | Log warning + no-op |
-| `setViewText` | 3 | composite | Log warning + no-op |
 | `SimpleCursorAdapter` | 1 | none | throw UnsupportedOperationException |
 | `bindView` | 1 | none | throw UnsupportedOperationException |
 | `changeCursorAndColumns` | 1 | none | throw UnsupportedOperationException |
+| `getCursorToStringConverter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStringConversionColumn` | 1 | none | Return safe default (null/false/0/empty) |
+| `setCursorToStringConverter` | 1 | none | Log warning + no-op |
+| `setStringConversionColumn` | 1 | none | Log warning + no-op |
+| `setViewBinder` | 1 | none | Log warning + no-op |
+| `setViewImage` | 1 | none | Log warning + no-op |
+| `setViewText` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

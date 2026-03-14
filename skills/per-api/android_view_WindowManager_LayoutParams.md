@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowManager.LayoutParams` |
 | **Package** | `android.view.WindowManager` |
 | **Total Methods** | 22 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (54%) |
-| **No Mapping** | 10 (45%) |
+| **Partial/Composite** | 2 (9%) |
+| **No Mapping** | 20 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 15 |
 | **Has Async Gap** | 15 |
@@ -28,18 +28,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `copyFrom` | 3 | composite | throw UnsupportedOperationException |
 | `debug` | 3 | composite | throw UnsupportedOperationException |
-| `getColorMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFitInsetsSides` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFitInsetsTypes` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setFitInsetsIgnoringVisibility` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setFitInsetsSides` | 3 | composite | Log warning + no-op |
-| `setFitInsetsTypes` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setColorMode` | 3 | composite | Log warning + no-op |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getTitle` | 2 | composite | Return safe default (null/false/0/empty) |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
@@ -47,9 +37,19 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `copyFrom` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getColorMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFitInsetsSides` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFitInsetsTypes` | 1 | none | Return safe default (null/false/0/empty) |
 | `isFitInsetsIgnoringVisibility` | 1 | none | Return safe default (null/false/0/empty) |
 | `mayUseInputMethod` | 1 | none | Log warning + no-op |
+| `setColorMode` | 1 | none | Log warning + no-op |
+| `setFitInsetsIgnoringVisibility` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFitInsetsSides` | 1 | none | Log warning + no-op |
+| `setFitInsetsTypes` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

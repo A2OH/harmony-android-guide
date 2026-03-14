@@ -9,12 +9,12 @@
 | **Class** | `android.location.GnssClock` |
 | **Package** | `android.location` |
 | **Total Methods** | 22 |
-| **Avg Score** | 5.1 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 6 (27%) |
-| **Partial/Composite** | 15 (68%) |
-| **No Mapping** | 1 (4%) |
+| **Avg Score** | 2.2 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 11 (50%) |
+| **No Mapping** | 11 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,50 +22,44 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 12 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getTimeNanos` | `long getTimeNanos()` | 7 | near | easy | `getTime` | `getTime(isNanoseconds?: boolean): number` |
-| `getElapsedRealtimeNanos` | `long getElapsedRealtimeNanos()` | 6 | near | moderate | `getRealTime` | `getRealTime(isNano: boolean, callback: AsyncCallback<number>): void` |
-| `getLeapSecond` | `int getLeapSecond()` | 6 | near | moderate | `getLastLocation` | `getLastLocation(): Location` |
-| `hasLeapSecond` | `boolean hasLeapSecond()` | 6 | near | moderate | `second` | `second?: number` |
-| `hasReferenceCarrierFrequencyHzForIsb` | `boolean hasReferenceCarrierFrequencyHzForIsb()` | 6 | near | moderate | `carrierFrequencies` | `carrierFrequencies: Array<number>` |
-| `getBiasNanos` | `double getBiasNanos()` | 6 | near | moderate | `getInstance` | `getInstance(locale?: string): IndexUtil` |
-| `getDriftNanosPerSecond` | `double getDriftNanosPerSecond()` | 6 | partial | moderate | `getListenerCount` | `getListenerCount(eventId: number | string): number` |
-| `writeToParcel` | `void writeToParcel(android.os.Parcel, int)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `getFullBiasNanos` | `long getFullBiasNanos()` | 6 | partial | moderate | `getAllScreens` | `getAllScreens(callback: AsyncCallback<Array<Screen>>): void` |
-| `getHardwareClockDiscontinuityCount` | `int getHardwareClockDiscontinuityCount()` | 5 | partial | moderate | `getHardwareUnitPowerValue` | `getHardwareUnitPowerValue(type: ConsumptionType): number` |
-| `getReferenceConstellationTypeForIsb` | `int getReferenceConstellationTypeForIsb()` | 5 | partial | moderate | `getRemoteAbilityInfos` | `getRemoteAbilityInfos(elementNames: Array<ElementName>,
-    callback: AsyncCallback<Array<RemoteAbilityInfo>>): void` |
-| `hasBiasNanos` | `boolean hasBiasNanos()` | 5 | partial | moderate | `hasPrivateWindow` | `hasPrivateWindow(displayId: number): boolean` |
-
-## Stub APIs (score < 5): 10 methods
+## Stub APIs (score < 5): 22 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `hasDriftNanosPerSecond` | 5 | partial | Return safe default (null/false/0/empty) |
-| `hasBiasUncertaintyNanos` | 5 | partial | Return safe default (null/false/0/empty) |
-| `hasElapsedRealtimeNanos` | 5 | partial | Return safe default (null/false/0/empty) |
-| `hasTimeUncertaintyNanos` | 5 | partial | Return safe default (null/false/0/empty) |
-| `hasFullBiasNanos` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasReferenceCodeTypeForIsb` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasDriftUncertaintyNanosPerSecond` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasReferenceConstellationTypeForIsb` | 4 | composite | Return safe default (null/false/0/empty) |
-| `hasElapsedRealtimeUncertaintyNanos` | 4 | composite | Return safe default (null/false/0/empty) |
+| `hasLeapSecond` | 4 | partial | Return safe default (null/false/0/empty) |
+| `hasReferenceCarrierFrequencyHzForIsb` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getLeapSecond` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getTimeNanos` | 4 | composite | Return safe default (null/false/0/empty) |
+| `getDriftNanosPerSecond` | 3 | composite | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `getHardwareClockDiscontinuityCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getElapsedRealtimeNanos` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getBiasNanos` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getFullBiasNanos` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getReferenceConstellationTypeForIsb` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `hasBiasNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasBiasUncertaintyNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasDriftNanosPerSecond` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasDriftUncertaintyNanosPerSecond` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasElapsedRealtimeNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasElapsedRealtimeUncertaintyNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasFullBiasNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasReferenceCodeTypeForIsb` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasReferenceConstellationTypeForIsb` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasTimeUncertaintyNanos` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 12 methods that have score >= 5
-2. Stub 10 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -79,6 +73,6 @@ Before marking `android.location.GnssClock` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 22 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 12 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

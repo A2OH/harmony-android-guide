@@ -9,11 +9,11 @@
 | **Class** | `android.util.SparseLongArray` |
 | **Package** | `android.util` |
 | **Total Methods** | 15 |
-| **Avg Score** | 6.5 |
+| **Avg Score** | 3.6 |
 | **Scenario** | S3: Partial Coverage |
 | **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 11 (73%) |
-| **Partial/Composite** | 0 (0%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 11 (73%) |
 | **No Mapping** | 4 (26%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,28 +22,28 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 11 methods
+## Implementable APIs (score >= 5): 3 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `clear` | `void clear()` | 10 | direct | trivial | `clear` | `clear(): void` |
-| `get` | `long get(int)` | 10 | direct | trivial | `getOAID` | `getOAID(callback: AsyncCallback<string>): void` |
-| `get` | `long get(int, long)` | 10 | direct | trivial | `getOAID` | `getOAID(callback: AsyncCallback<string>): void` |
-| `size` | `int size()` | 10 | direct | trivial | `size` | `size: number` |
-| `removeAt` | `void removeAt(int)` | 9 | direct | easy | `remove` | `remove(logType: string, logName: string): void` |
-| `valueAt` | `long valueAt(int)` | 8 | direct | easy | `value` | `value: number` |
-| `append` | `void append(int, long)` | 8 | direct | easy | `append` | `append?: boolean` |
-| `indexOfKey` | `int indexOfKey(int)` | 8 | near | easy | `indexOfLink` | `indexOfLink?: string` |
-| `keyAt` | `int keyAt(int)` | 8 | near | easy | `key` | `key: string]: BundleStateInfo` |
-| `indexOfValue` | `int indexOfValue(long)` | 7 | near | moderate | `indexOfLink` | `indexOfLink?: string` |
-| `delete` | `void delete(int)` | 6 | near | moderate | `deleteContact` | `deleteContact(key: string, callback: AsyncCallback<void>): void` |
+| `size` | `int size()` | 6 | partial | moderate | `size` | `size: number` |
+| `clear` | `void clear()` | 6 | partial | moderate | `clear` | `clear(): void` |
+| `valueAt` | `long valueAt(int)` | 6 | partial | moderate | `value` | `value: number` |
 
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `indexOfKey` | 5 | partial | throw UnsupportedOperationException |
+| `keyAt` | 5 | partial | throw UnsupportedOperationException |
+| `indexOfValue` | 4 | partial | throw UnsupportedOperationException |
+| `append` | 4 | partial | throw UnsupportedOperationException |
+| `removeAt` | 4 | composite | Log warning + no-op |
+| `delete` | 3 | composite | throw UnsupportedOperationException |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
 | `SparseLongArray` | 1 | none | Store callback, never fire |
 | `SparseLongArray` | 1 | none | Store callback, never fire |
 | `clone` | 1 | none | Store callback, never fire |
@@ -53,8 +53,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 **Scenario: S3 — Partial Coverage**
 
-1. Implement 11 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
+1. Implement 3 methods that have score >= 5
+2. Stub 12 methods using the Stub Strategy column above
 3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
 4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
 5. Test both working methods AND verify stubs behave predictably
@@ -70,6 +70,6 @@ Before marking `android.util.SparseLongArray` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 15 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 11 test methods for implemented APIs
+3. **Test Coverage**: At least 3 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

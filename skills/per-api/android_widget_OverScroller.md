@@ -9,12 +9,12 @@
 | **Class** | `android.widget.OverScroller` |
 | **Package** | `android.widget` |
 | **Total Methods** | 22 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (40%) |
-| **No Mapping** | 13 (59%) |
+| **Partial/Composite** | 2 (9%) |
+| **No Mapping** | 20 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 20 |
 | **Has Async Gap** | 20 |
@@ -28,25 +28,25 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `computeScrollOffset` | 3 | composite | Log warning + no-op |
-| `getCurrVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFinalX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFinalY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStartX` | 3 | composite | Return dummy instance / no-op |
-| `getStartY` | 3 | composite | Return dummy instance / no-op |
-| `setFriction` | 3 | composite | Log warning + no-op |
+| `getCurrX` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getCurrY` | 2 | composite | Return safe default (null/false/0/empty) |
 | `OverScroller` | 1 | none | throw UnsupportedOperationException |
 | `OverScroller` | 1 | none | throw UnsupportedOperationException |
 | `abortAnimation` | 1 | none | Store callback, never fire |
+| `computeScrollOffset` | 1 | none | Log warning + no-op |
 | `fling` | 1 | none | throw UnsupportedOperationException |
 | `fling` | 1 | none | throw UnsupportedOperationException |
 | `forceFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFinalX` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFinalY` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStartX` | 1 | none | Return dummy instance / no-op |
+| `getStartY` | 1 | none | Return dummy instance / no-op |
 | `isFinished` | 1 | none | Return safe default (null/false/0/empty) |
 | `isOverScrolled` | 1 | none | Return safe default (null/false/0/empty) |
 | `notifyHorizontalEdgeReached` | 1 | none | Store callback, never fire |
 | `notifyVerticalEdgeReached` | 1 | none | throw UnsupportedOperationException |
+| `setFriction` | 1 | none | Log warning + no-op |
 | `springBack` | 1 | none | throw UnsupportedOperationException |
 | `startScroll` | 1 | none | Return dummy instance / no-op |
 | `startScroll` | 1 | none | Return dummy instance / no-op |

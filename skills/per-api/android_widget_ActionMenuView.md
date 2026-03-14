@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ActionMenuView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 16 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (56%) |
-| **No Mapping** | 7 (43%) |
+| **Partial/Composite** | 1 (6%) |
+| **No Mapping** | 15 (93%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 14 |
 | **Has Async Gap** | 14 |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `ActionMenuView` | 4 | partial | Store callback, never fire |
-| `ActionMenuView` | 4 | partial | Store callback, never fire |
 | `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPopupTheme` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onConfigurationChanged` | 3 | composite | Store callback, never fire |
-| `onDetachedFromWindow` | 3 | composite | Store callback, never fire |
-| `setOnMenuItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setPopupTheme` | 3 | composite | Log warning + no-op |
-| `setOverflowIcon` | 2 | composite | Log warning + no-op |
+| `ActionMenuView` | 1 | none | Store callback, never fire |
+| `ActionMenuView` | 1 | none | Store callback, never fire |
 | `dismissPopupMenus` | 1 | none | Return safe default (null/false/0/empty) |
 | `generateDefaultLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getPopupTheme` | 1 | none | Return safe default (null/false/0/empty) |
 | `hideOverflowMenu` | 1 | none | throw UnsupportedOperationException |
 | `isOverflowMenuShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `onConfigurationChanged` | 1 | none | Store callback, never fire |
+| `onDetachedFromWindow` | 1 | none | Store callback, never fire |
+| `setOnMenuItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOverflowIcon` | 1 | none | Log warning + no-op |
+| `setPopupTheme` | 1 | none | Log warning + no-op |
 | `showOverflowMenu` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

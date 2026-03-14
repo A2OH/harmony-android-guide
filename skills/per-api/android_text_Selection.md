@@ -9,12 +9,12 @@
 | **Class** | `android.text.Selection` |
 | **Package** | `android.text` |
 | **Total Methods** | 19 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 7 (36%) |
-| **No Mapping** | 12 (63%) |
+| **Partial/Composite** | 1 (5%) |
+| **No Mapping** | 18 (94%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,36 +22,31 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getSelectionEnd` | `static final int getSelectionEnd(CharSequence)` | 5 | partial | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-
-## Stub APIs (score < 5): 18 methods
+## Stub APIs (score < 5): 19 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getSelectionStart` | 5 | partial | Return dummy instance / no-op |
-| `removeSelection` | 4 | partial | Log warning + no-op |
-| `setSelection` | 4 | composite | Log warning + no-op |
-| `setSelection` | 4 | composite | Log warning + no-op |
-| `extendToLeftEdge` | 2 | composite | throw UnsupportedOperationException |
-| `extendToRightEdge` | 2 | composite | throw UnsupportedOperationException |
-| `moveToLeftEdge` | 2 | none | throw UnsupportedOperationException |
-| `moveToRightEdge` | 2 | none | throw UnsupportedOperationException |
+| `getSelectionEnd` | 2 | composite | Return safe default (null/false/0/empty) |
 | `extendDown` | 1 | none | throw UnsupportedOperationException |
 | `extendLeft` | 1 | none | throw UnsupportedOperationException |
 | `extendRight` | 1 | none | throw UnsupportedOperationException |
 | `extendSelection` | 1 | none | Store callback, never fire |
+| `extendToLeftEdge` | 1 | none | throw UnsupportedOperationException |
+| `extendToRightEdge` | 1 | none | throw UnsupportedOperationException |
 | `extendUp` | 1 | none | throw UnsupportedOperationException |
+| `getSelectionStart` | 1 | none | Return dummy instance / no-op |
 | `moveDown` | 1 | none | throw UnsupportedOperationException |
 | `moveLeft` | 1 | none | throw UnsupportedOperationException |
 | `moveRight` | 1 | none | throw UnsupportedOperationException |
+| `moveToLeftEdge` | 1 | none | throw UnsupportedOperationException |
+| `moveToRightEdge` | 1 | none | throw UnsupportedOperationException |
 | `moveUp` | 1 | none | throw UnsupportedOperationException |
+| `removeSelection` | 1 | none | Log warning + no-op |
 | `selectAll` | 1 | none | throw UnsupportedOperationException |
+| `setSelection` | 1 | none | Log warning + no-op |
+| `setSelection` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -75,6 +70,6 @@ Before marking `android.text.Selection` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 19 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

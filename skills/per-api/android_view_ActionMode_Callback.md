@@ -9,12 +9,12 @@
 | **Class** | `android.view.ActionMode.Callback` |
 | **Package** | `android.view.ActionMode` |
 | **Total Methods** | 6 |
-| **Avg Score** | 3.3 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 2 (33%) |
+| **No Mapping** | 4 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `Callback2` | 5 | partial | throw UnsupportedOperationException |
-| `onActionItemClicked` | 3 | composite | Store callback, never fire |
 | `onCreateActionMode` | 3 | composite | Return dummy instance / no-op |
-| `onDestroyActionMode` | 3 | composite | No-op |
-| `onPrepareActionMode` | 3 | composite | Store callback, never fire |
-| `onGetContentRect` | 3 | composite | Return safe default (null/false/0/empty) |
+| `onPrepareActionMode` | 2 | composite | Store callback, never fire |
+| `Callback2` | 1 | none | throw UnsupportedOperationException |
+| `onActionItemClicked` | 1 | none | Store callback, never fire |
+| `onDestroyActionMode` | 1 | none | No-op |
+| `onGetContentRect` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

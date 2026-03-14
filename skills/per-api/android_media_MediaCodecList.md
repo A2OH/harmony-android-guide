@@ -9,9 +9,9 @@
 | **Class** | `android.media.MediaCodecList` |
 | **Package** | `android.media` |
 | **Total Methods** | 4 |
-| **Avg Score** | 5.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
+| **Avg Score** | 3.0 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 4 (100%) |
 | **No Mapping** | 0 (0%) |
@@ -22,24 +22,26 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 4 methods
+## Stub APIs (score < 5): 4 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getCodecInfos` | `android.media.MediaCodecInfo[] getCodecInfos()` | 6 | partial | moderate | `getCount` | `getCount(): number` |
-| `MediaCodecList` | `MediaCodecList(int)` | 6 | partial | moderate | `OH_AudioCodec_Stop` | `OH_AVErrCode OH_AudioCodec_Stop(OH_AVCodec *codec)` |
-| `findDecoderForFormat` | `String findDecoderForFormat(android.media.MediaFormat)` | 5 | partial | moderate | `OH_VideoDecoder_Start` | `OH_AVErrCode OH_VideoDecoder_Start(OH_AVCodec *codec)` |
-| `findEncoderForFormat` | `String findEncoderForFormat(android.media.MediaFormat)` | 5 | partial | moderate | `OH_VideoEncoder_Start` | `OH_AVErrCode OH_VideoEncoder_Start(OH_AVCodec *codec)` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `getCodecInfos` | 4 | partial | Return safe default (null/false/0/empty) |
+| `MediaCodecList` | 3 | composite | Return safe default (null/false/0/empty) |
+| `findDecoderForFormat` | 2 | composite | Return safe default (null/false/0/empty) |
+| `findEncoderForFormat` | 2 | composite | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 4 methods that have score >= 5
-2. Stub 0 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -53,6 +55,6 @@ Before marking `android.media.MediaCodecList` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

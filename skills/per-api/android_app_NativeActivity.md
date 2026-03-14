@@ -9,12 +9,12 @@
 | **Class** | `android.app.NativeActivity` |
 | **Package** | `android.app` |
 | **Total Methods** | 8 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (37%) |
-| **No Mapping** | 5 (62%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 8 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,21 +22,16 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `onInputQueueCreated` | `void onInputQueueCreated(android.view.InputQueue)` | 5 | partial | moderate | `onPrepare` | `onPrepare(): void` |
-
-## Stub APIs (score < 5): 7 methods
+## Stub APIs (score < 5): 8 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onGlobalLayout` | 3 | composite | Store callback, never fire |
-| `onInputQueueDestroyed` | 3 | composite | No-op |
 | `NativeActivity` | 1 | none | throw UnsupportedOperationException |
+| `onGlobalLayout` | 1 | none | Store callback, never fire |
+| `onInputQueueCreated` | 1 | none | Return dummy instance / no-op |
+| `onInputQueueDestroyed` | 1 | none | No-op |
 | `surfaceChanged` | 1 | none | throw UnsupportedOperationException |
 | `surfaceCreated` | 1 | none | Return dummy instance / no-op |
 | `surfaceDestroyed` | 1 | none | No-op |
@@ -65,6 +60,6 @@ Before marking `android.app.NativeActivity` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 8 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,15 +9,15 @@
 | **Class** | `android.widget.VideoView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 30 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 20 (66%) |
-| **No Mapping** | 10 (33%) |
+| **Partial/Composite** | 6 (20%) |
+| **No Mapping** | 24 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 26 |
-| **Has Async Gap** | 26 |
+| **Has Async Gap** | 30 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,35 +28,35 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addSubtitleSource` | 3 | composite | Log warning + no-op |
-| `getAudioSessionId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getBufferPercentage` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentPosition` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDuration` | 3 | composite | Return safe default (null/false/0/empty) |
 | `pause` | 3 | composite | throw UnsupportedOperationException |
-| `resolveAdjustedSize` | 3 | composite | throw UnsupportedOperationException |
 | `resume` | 3 | composite | throw UnsupportedOperationException |
-| `setAudioAttributes` | 3 | composite | Log warning + no-op |
-| `setMediaController` | 3 | composite | Log warning + no-op |
-| `setOnCompletionListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnErrorListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnInfoListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnPreparedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setVideoPath` | 3 | composite | Log warning + no-op |
-| `setVideoURI` | 3 | composite | Log warning + no-op |
-| `setVideoURI` | 3 | composite | Log warning + no-op |
 | `start` | 3 | composite | Return dummy instance / no-op |
 | `suspend` | 3 | composite | throw UnsupportedOperationException |
-| `setAudioFocusRequest` | 3 | composite | Log warning + no-op |
-| `seekTo` | 2 | none | throw UnsupportedOperationException |
+| `getBufferPercentage` | 2 | composite | Return safe default (null/false/0/empty) |
 | `VideoView` | 1 | none | throw UnsupportedOperationException |
 | `VideoView` | 1 | none | throw UnsupportedOperationException |
 | `VideoView` | 1 | none | throw UnsupportedOperationException |
 | `VideoView` | 1 | none | throw UnsupportedOperationException |
+| `addSubtitleSource` | 1 | none | Log warning + no-op |
 | `canPause` | 1 | none | Return safe default (null/false/0/empty) |
 | `canSeekBackward` | 1 | none | Return safe default (null/false/0/empty) |
 | `canSeekForward` | 1 | none | Return safe default (null/false/0/empty) |
+| `getAudioSessionId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrentPosition` | 1 | none | Return safe default (null/false/0/empty) |
 | `isPlaying` | 1 | none | Return safe default (null/false/0/empty) |
+| `resolveAdjustedSize` | 1 | none | throw UnsupportedOperationException |
+| `seekTo` | 1 | none | throw UnsupportedOperationException |
+| `setAudioAttributes` | 1 | none | Log warning + no-op |
+| `setAudioFocusRequest` | 1 | none | Log warning + no-op |
+| `setMediaController` | 1 | none | Log warning + no-op |
+| `setOnCompletionListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnErrorListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnInfoListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnPreparedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setVideoPath` | 1 | none | Log warning + no-op |
+| `setVideoURI` | 1 | none | Log warning + no-op |
+| `setVideoURI` | 1 | none | Log warning + no-op |
 | `stopPlayback` | 1 | none | No-op |
 
 ## AI Agent Instructions

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.CheckedTextView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 12 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 7 (58%) |
-| **No Mapping** | 5 (41%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 12 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
 | **Has Async Gap** | 8 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getCheckMarkDrawable` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setCheckMarkDrawable` | 3 | composite | Log warning + no-op |
-| `setCheckMarkDrawable` | 3 | composite | Log warning + no-op |
-| `setCheckMarkTintBlendMode` | 3 | composite | Log warning + no-op |
-| `setCheckMarkTintList` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setCheckMarkTintMode` | 3 | composite | Log warning + no-op |
-| `setChecked` | 3 | composite | Log warning + no-op |
 | `CheckedTextView` | 1 | none | throw UnsupportedOperationException |
 | `CheckedTextView` | 1 | none | throw UnsupportedOperationException |
 | `CheckedTextView` | 1 | none | throw UnsupportedOperationException |
 | `CheckedTextView` | 1 | none | throw UnsupportedOperationException |
+| `getCheckMarkDrawable` | 1 | none | Return safe default (null/false/0/empty) |
+| `setCheckMarkDrawable` | 1 | none | Log warning + no-op |
+| `setCheckMarkDrawable` | 1 | none | Log warning + no-op |
+| `setCheckMarkTintBlendMode` | 1 | none | Log warning + no-op |
+| `setCheckMarkTintList` | 1 | none | Return safe default (null/false/0/empty) |
+| `setCheckMarkTintMode` | 1 | none | Log warning + no-op |
+| `setChecked` | 1 | none | Log warning + no-op |
 | `toggle` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

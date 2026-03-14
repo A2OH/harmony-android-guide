@@ -9,12 +9,12 @@
 | **Class** | `android.view.InputDevice` |
 | **Package** | `android.view` |
 | **Total Methods** | 23 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 19 (82%) |
-| **No Mapping** | 4 (17%) |
+| **Partial/Composite** | 12 (52%) |
+| **No Mapping** | 11 (47%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 23 |
 | **Has Async Gap** | 23 |
@@ -28,29 +28,29 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getControllerNumber` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDescriptor` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getId` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDevice` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDeviceIds` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getKeyCharacterMap` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getKeyboardType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMotionRange` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMotionRange` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMotionRanges` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getName` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getProductId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSources` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getVendorId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getVibrator` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isExternal` | 3 | composite | Return safe default (null/false/0/empty) |
-| `supportsSource` | 3 | composite | throw UnsupportedOperationException |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getProductId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `isExternal` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getMotionRange` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getMotionRange` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getVendorId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getMotionRanges` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getControllerNumber` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDescriptor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getKeyCharacterMap` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSources` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVibrator` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasKeys` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasMicrophone` | 1 | none | Return safe default (null/false/0/empty) |
 | `isVirtual` | 1 | none | Return safe default (null/false/0/empty) |
+| `supportsSource` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

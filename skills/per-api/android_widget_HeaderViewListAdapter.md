@@ -9,12 +9,12 @@
 | **Class** | `android.widget.HeaderViewListAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 19 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 15 (78%) |
-| **No Mapping** | 4 (21%) |
+| **Partial/Composite** | 9 (47%) |
+| **No Mapping** | 10 (52%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 18 |
 | **Has Async Gap** | 18 |
@@ -29,24 +29,24 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFootersCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getHeadersCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getItemViewType` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getViewTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getWrappedAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
 | `isEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
 | `registerDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
-| `removeFooter` | 3 | composite | Log warning + no-op |
-| `removeHeader` | 3 | composite | Log warning + no-op |
+| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
 | `unregisterDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `HeaderViewListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
 | `areAllItemsEnabled` | 1 | none | throw UnsupportedOperationException |
+| `getFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFootersCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getHeadersCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getViewTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `removeFooter` | 1 | none | Log warning + no-op |
+| `removeHeader` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

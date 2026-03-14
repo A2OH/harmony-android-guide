@@ -9,12 +9,12 @@
 | **Class** | `android.view.VerifiedInputEvent` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 1 (16%) |
+| **No Mapping** | 5 (83%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -29,11 +29,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getDeviceId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDisplayId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getEventTimeNanos` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSource` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getDisplayId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getEventTimeNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSource` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

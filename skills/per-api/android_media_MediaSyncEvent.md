@@ -9,37 +9,39 @@
 | **Class** | `android.media.MediaSyncEvent` |
 | **Package** | `android.media` |
 | **Total Methods** | 4 |
-| **Avg Score** | 7.2 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 4 (100%) |
-| **Partial/Composite** | 0 (0%) |
+| **Avg Score** | 4.2 |
+| **Scenario** | S3: Partial Coverage |
+| **Strategy** | Implement feasible methods, stub the rest |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 4 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-MEDIA.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 4 methods
+## Stub APIs (score < 5): 4 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getType` | `int getType()` | 8 | near | easy | `eventType` | `eventType: InterruptType` |
-| `createEvent` | `static android.media.MediaSyncEvent createEvent(int) throws java.lang.IllegalArgumentException` | 7 | near | easy | `createAsset` | `createAsset(mediaType: MediaType, displayName: string, relativePath: string, callback: AsyncCallback<FileAsset>): void` |
-| `getAudioSessionId` | `int getAudioSessionId()` | 7 | near | moderate | `sessionId` | `readonly sessionId: string` |
-| `setAudioSessionId` | `android.media.MediaSyncEvent setAudioSessionId(int) throws java.lang.IllegalArgumentException` | 7 | near | moderate | `sessionId` | `readonly sessionId: string` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `getType` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getAudioSessionId` | 5 | partial | Return safe default (null/false/0/empty) |
+| `setAudioSessionId` | 5 | partial | Log warning + no-op |
+| `createEvent` | 3 | composite | Return dummy instance / no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S3 — Partial Coverage**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Implement 0 methods that have score >= 5
+2. Stub 4 methods using the Stub Strategy column above
+3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
+4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
+5. Test both working methods AND verify stubs behave predictably
 
 ## Dependencies
 
@@ -53,6 +55,6 @@ Before marking `android.media.MediaSyncEvent` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

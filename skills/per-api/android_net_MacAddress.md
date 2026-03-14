@@ -9,12 +9,12 @@
 | **Class** | `android.net.MacAddress` |
 | **Package** | `android.net` |
 | **Total Methods** | 5 |
-| **Avg Score** | 3.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 1 (20%) |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 1 (20%) |
-| **No Mapping** | 3 (60%) |
+| **No Mapping** | 4 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,20 +22,15 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getAddressType` | `int getAddressType()` | 8 | near | easy | `getAddressesByName` | `getAddressesByName(host: string, callback: AsyncCallback<Array<NetAddress>>): void` |
-
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isLocallyAssigned` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getAddressType` | 3 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `isLocallyAssigned` | 1 | none | Return safe default (null/false/0/empty) |
 | `matches` | 1 | none | throw UnsupportedOperationException |
 | `writeToParcel` | 1 | none | Log warning + no-op |
 
@@ -62,6 +57,6 @@ Before marking `android.net.MacAddress` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

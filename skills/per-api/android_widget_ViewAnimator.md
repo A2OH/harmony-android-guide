@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ViewAnimator` |
 | **Package** | `android.widget` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 11 (73%) |
-| **No Mapping** | 4 (26%) |
+| **Partial/Composite** | 2 (13%) |
+| **No Mapping** | 13 (86%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 13 |
 | **Has Async Gap** | 13 |
@@ -30,17 +30,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getAnimateFirstView` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getCurrentView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDisplayedChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInAnimation` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOutAnimation` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAnimateFirstView` | 3 | composite | Log warning + no-op |
-| `setInAnimation` | 3 | composite | Log warning + no-op |
-| `setInAnimation` | 3 | composite | Log warning + no-op |
-| `setOutAnimation` | 3 | composite | Log warning + no-op |
-| `setOutAnimation` | 3 | composite | Log warning + no-op |
-| `setDisplayedChild` | 3 | composite | Return safe default (null/false/0/empty) |
 | `ViewAnimator` | 1 | none | throw UnsupportedOperationException |
 | `ViewAnimator` | 1 | none | throw UnsupportedOperationException |
+| `getDisplayedChild` | 1 | none | Return safe default (null/false/0/empty) |
+| `getInAnimation` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOutAnimation` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAnimateFirstView` | 1 | none | Log warning + no-op |
+| `setDisplayedChild` | 1 | none | Return safe default (null/false/0/empty) |
+| `setInAnimation` | 1 | none | Log warning + no-op |
+| `setInAnimation` | 1 | none | Log warning + no-op |
+| `setOutAnimation` | 1 | none | Log warning + no-op |
+| `setOutAnimation` | 1 | none | Log warning + no-op |
 | `showNext` | 1 | none | throw UnsupportedOperationException |
 | `showPrevious` | 1 | none | throw UnsupportedOperationException |
 

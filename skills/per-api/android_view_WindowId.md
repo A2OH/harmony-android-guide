@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowId` |
 | **Package** | `android.view` |
 | **Total Methods** | 8 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (75%) |
-| **No Mapping** | 2 (25%) |
+| **Partial/Composite** | 2 (25%) |
+| **No Mapping** | 6 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 7 |
 | **Has Async Gap** | 7 |
@@ -22,25 +22,20 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `FocusObserver` | `WindowId.FocusObserver()` | 5 | partial | moderate | `createComponentObserver` | `createComponentObserver(id: string): ComponentObserver` |
-
-## Stub APIs (score < 5): 7 methods
+## Stub APIs (score < 5): 8 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `registerFocusObserver` | 3 | composite | Return safe default (null/false/0/empty) |
-| `unregisterFocusObserver` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onFocusGained` | 3 | composite | Store callback, never fire |
-| `onFocusLost` | 3 | composite | Store callback, never fire |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `unregisterFocusObserver` | 2 | composite | Return safe default (null/false/0/empty) |
+| `FocusObserver` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `isFocused` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
+| `onFocusGained` | 1 | none | Store callback, never fire |
+| `onFocusLost` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
@@ -66,6 +61,6 @@ Before marking `android.view.WindowId` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 8 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

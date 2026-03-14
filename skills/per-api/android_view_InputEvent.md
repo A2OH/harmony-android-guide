@@ -9,12 +9,12 @@
 | **Class** | `android.view.InputEvent` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 2 (33%) |
+| **No Mapping** | 4 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDevice` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDeviceId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getEventTime` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSource` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isFromSource` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDevice` | 3 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getEventTime` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSource` | 1 | none | Return safe default (null/false/0/empty) |
+| `isFromSource` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

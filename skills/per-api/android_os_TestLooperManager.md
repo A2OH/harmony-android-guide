@@ -9,12 +9,12 @@
 | **Class** | `android.os.TestLooperManager` |
 | **Package** | `android.os` |
 | **Total Methods** | 7 |
-| **Avg Score** | 4.9 |
+| **Avg Score** | 2.3 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 3 (42%) |
-| **Partial/Composite** | 2 (28%) |
-| **No Mapping** | 2 (28%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 3 (42%) |
+| **No Mapping** | 4 (57%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,22 +22,17 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 5 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `execute` | `void execute(android.os.Message)` | 10 | direct | trivial | `execute` | `execute(func: Function, ...args: Object[]): Promise<Object>` |
-| `getMessageQueue` | `android.os.MessageQueue getMessageQueue()` | 6 | near | moderate | `message` | `readonly message: string` |
-| `release` | `void release()` | 6 | near | moderate | `releaseInterface` | `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `hasMessages` | `boolean hasMessages(android.os.Handler, Object, int)` | 5 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-| `hasMessages` | `boolean hasMessages(android.os.Handler, Object, Runnable)` | 5 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `getMessageQueue` | 4 | partial | Return safe default (null/false/0/empty) |
+| `execute` | 4 | partial | throw UnsupportedOperationException |
+| `release` | 4 | composite | No-op |
+| `hasMessages` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasMessages` | 1 | none | Return safe default (null/false/0/empty) |
 | `next` | 1 | none | throw UnsupportedOperationException |
 | `recycle` | 1 | none | throw UnsupportedOperationException |
 
@@ -63,6 +58,6 @@ Before marking `android.os.TestLooperManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 7 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 5 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

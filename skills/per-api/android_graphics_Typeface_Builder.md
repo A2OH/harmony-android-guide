@@ -9,12 +9,12 @@
 | **Class** | `android.graphics.Typeface.Builder` |
 | **Package** | `android.graphics.Typeface` |
 | **Total Methods** | 11 |
-| **Avg Score** | 4.6 |
+| **Avg Score** | 1.7 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 11 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 4 (36%) |
+| **No Mapping** | 7 (63%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,28 +22,23 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 4 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `Builder` | `Typeface.Builder(@NonNull java.io.File)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `Builder` | `Typeface.Builder(@NonNull java.io.FileDescriptor)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `Builder` | `Typeface.Builder(@NonNull String)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `Builder` | `Typeface.Builder(@NonNull android.content.res.AssetManager, @NonNull String)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-
-## Stub APIs (score < 5): 7 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setItalic` | 5 | partial | Log warning + no-op |
-| `setWeight` | 4 | partial | Log warning + no-op |
-| `setFontVariationSettings` | 4 | composite | Log warning + no-op |
-| `setFontVariationSettings` | 4 | composite | Log warning + no-op |
-| `setTtcIndex` | 4 | composite | Log warning + no-op |
-| `build` | 4 | composite | throw UnsupportedOperationException |
-| `setFallback` | 4 | composite | Log warning + no-op |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `build` | 1 | none | throw UnsupportedOperationException |
+| `setFallback` | 1 | none | Log warning + no-op |
+| `setFontVariationSettings` | 1 | none | Log warning + no-op |
+| `setFontVariationSettings` | 1 | none | Log warning + no-op |
+| `setItalic` | 1 | none | Log warning + no-op |
+| `setTtcIndex` | 1 | none | Log warning + no-op |
+| `setWeight` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -66,6 +61,6 @@ Before marking `android.graphics.Typeface.Builder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

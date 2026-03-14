@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowContentFrameStats` |
 | **Package** | `android.view` |
 | **Total Methods** | 4 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (75%) |
-| **No Mapping** | 1 (25%) |
+| **Partial/Composite** | 1 (25%) |
+| **No Mapping** | 3 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,10 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getFramePostedTimeNano` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getFrameReadyTimeNano` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getFramePostedTimeNano` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

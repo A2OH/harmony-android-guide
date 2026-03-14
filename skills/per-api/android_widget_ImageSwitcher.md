@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ImageSwitcher` |
 | **Package** | `android.widget` |
 | **Total Methods** | 5 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (60%) |
-| **No Mapping** | 2 (40%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 5 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,11 +28,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setImageDrawable` | 3 | composite | Log warning + no-op |
-| `setImageResource` | 3 | composite | Log warning + no-op |
-| `setImageURI` | 3 | composite | Log warning + no-op |
 | `ImageSwitcher` | 1 | none | throw UnsupportedOperationException |
 | `ImageSwitcher` | 1 | none | throw UnsupportedOperationException |
+| `setImageDrawable` | 1 | none | Log warning + no-op |
+| `setImageResource` | 1 | none | Log warning + no-op |
+| `setImageURI` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

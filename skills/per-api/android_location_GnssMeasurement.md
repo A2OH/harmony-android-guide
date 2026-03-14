@@ -9,12 +9,12 @@
 | **Class** | `android.location.GnssMeasurement` |
 | **Package** | `android.location` |
 | **Total Methods** | 28 |
-| **Avg Score** | 5.6 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 9 (32%) |
+| **Avg Score** | 2.7 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 18 (64%) |
-| **No Mapping** | 1 (3%) |
+| **No Mapping** | 10 (35%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,55 +22,55 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 20 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getState` | `int getState()` | 10 | direct | trivial | `getState` | `getState(): BluetoothState` |
-| `getSvid` | `int getSvid()` | 8 | direct | easy | `getId` | `getId(): HiTraceId` |
-| `getCarrierFrequencyHz` | `float getCarrierFrequencyHz()` | 8 | near | easy | `carrierFrequencies` | `carrierFrequencies: Array<number>` |
-| `hasCarrierFrequencyHz` | `boolean hasCarrierFrequencyHz()` | 8 | near | easy | `carrierFrequencies` | `carrierFrequencies: Array<number>` |
-| `getSnrInDb` | `double getSnrInDb()` | 7 | near | easy | `getUserId` | `getUserId(name: string): string` |
-| `hasCodeType` | `boolean hasCodeType()` | 7 | near | easy | `coordType` | `coordType?: string` |
-| `getReceivedSvTimeNanos` | `long getReceivedSvTimeNanos()` | 7 | near | moderate | `getRealActiveTime` | `getRealActiveTime(isNano: boolean, callback: AsyncCallback<number>): void` |
-| `getConstellationType` | `int getConstellationType()` | 6 | near | moderate | `getBtConnectionState` | `getBtConnectionState(): ProfileConnectionState` |
-| `getTimeOffsetNanos` | `double getTimeOffsetNanos()` | 6 | near | moderate | `getTimeZone` | `getTimeZone(zoneID?: string): TimeZone` |
-| `getAccumulatedDeltaRangeMeters` | `double getAccumulatedDeltaRangeMeters()` | 6 | partial | moderate | `getCalendarManager` | `getCalendarManager(context: Context): CalendarManager` |
-| `getMultipathIndicator` | `int getMultipathIndicator()` | 6 | partial | moderate | `getDLPGatheringPolicy` | `getDLPGatheringPolicy(): Promise<GatheringPolicyType>` |
-| `writeToParcel` | `void writeToParcel(android.os.Parcel, int)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `hasSnrInDb` | `boolean hasSnrInDb()` | 6 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-| `getAccumulatedDeltaRangeState` | `int getAccumulatedDeltaRangeState()` | 6 | partial | moderate | `getCalendarManager` | `getCalendarManager(context: Context): CalendarManager` |
-| `getAutomaticGainControlLevelDb` | `double getAutomaticGainControlLevelDb()` | 5 | partial | moderate | `getThermalLevel` | `getThermalLevel(): ThermalLevel` |
-| `getPseudorangeRateMetersPerSecond` | `double getPseudorangeRateMetersPerSecond()` | 5 | partial | moderate | `getDLPSupportedFileTypes` | `getDLPSupportedFileTypes(): Promise<Array<string>>` |
-| `getFullInterSignalBiasNanos` | `double getFullInterSignalBiasNanos()` | 5 | partial | moderate | `getOriginalFileName` | `getOriginalFileName(fileName: string): string` |
-| `getReceivedSvTimeUncertaintyNanos` | `long getReceivedSvTimeUncertaintyNanos()` | 5 | partial | moderate | `getRealActiveTime` | `getRealActiveTime(isNano: boolean, callback: AsyncCallback<number>): void` |
-| `getSatelliteInterSignalBiasNanos` | `double getSatelliteInterSignalBiasNanos()` | 5 | partial | moderate | `satelliteIds` | `satelliteIds: Array<number>` |
-| `hasSatelliteInterSignalBiasNanos` | `boolean hasSatelliteInterSignalBiasNanos()` | 5 | partial | moderate | `satelliteIds` | `satelliteIds: Array<number>` |
+| `getCarrierFrequencyHz` | `float getCarrierFrequencyHz()` | 5 | partial | moderate | `carrierFrequencies` | `carrierFrequencies: Array<number>` |
 
-## Stub APIs (score < 5): 8 methods
+## Stub APIs (score < 5): 27 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAccumulatedDeltaRangeUncertaintyMeters` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getPseudorangeRateUncertaintyMetersPerSecond` | 5 | partial | Return safe default (null/false/0/empty) |
-| `hasBasebandCn0DbHz` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasAutomaticGainControlLevelDb` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasSatelliteInterSignalBiasUncertaintyNanos` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasFullInterSignalBiasNanos` | 3 | composite | Return safe default (null/false/0/empty) |
-| `hasFullInterSignalBiasUncertaintyNanos` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getState` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getSvid` | 5 | partial | Return safe default (null/false/0/empty) |
+| `hasCarrierFrequencyHz` | 5 | partial | Return safe default (null/false/0/empty) |
+| `hasCodeType` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getConstellationType` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getMultipathIndicator` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getAutomaticGainControlLevelDb` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getPseudorangeRateMetersPerSecond` | 4 | partial | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `hasSnrInDb` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSnrInDb` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getReceivedSvTimeNanos` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTimeOffsetNanos` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getAccumulatedDeltaRangeMeters` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getAccumulatedDeltaRangeState` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getFullInterSignalBiasNanos` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getReceivedSvTimeUncertaintyNanos` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getAccumulatedDeltaRangeUncertaintyMeters` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPseudorangeRateUncertaintyMetersPerSecond` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSatelliteInterSignalBiasNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasAutomaticGainControlLevelDb` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasBasebandCn0DbHz` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasFullInterSignalBiasNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasFullInterSignalBiasUncertaintyNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasSatelliteInterSignalBiasNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasSatelliteInterSignalBiasUncertaintyNanos` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 20 methods that have score >= 5
-2. Stub 8 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -84,6 +84,6 @@ Before marking `android.location.GnssMeasurement` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 28 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 20 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.app.ActivityManager.ProcessErrorStateInfo` |
 | **Package** | `android.app.ActivityManager` |
 | **Total Methods** | 4 |
-| **Avg Score** | 2.8 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (50%) |
-| **No Mapping** | 2 (50%) |
+| **Partial/Composite** | 1 (25%) |
+| **No Mapping** | 3 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,21 +22,16 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `ProcessErrorStateInfo` | `ActivityManager.ProcessErrorStateInfo()` | 6 | partial | moderate | `getProcessRunningInfos` | `getProcessRunningInfos(): Promise<Array<ProcessRunningInfo>>` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `ProcessErrorStateInfo` | 4 | partial | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `readFromParcel` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -60,6 +55,6 @@ Before marking `android.app.ActivityManager.ProcessErrorStateInfo` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.view.SurfaceView` |
 | **Package** | `android.view` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (54%) |
-| **No Mapping** | 5 (45%) |
+| **Partial/Composite** | 1 (9%) |
+| **No Mapping** | 10 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 7 |
 | **Has Async Gap** | 7 |
@@ -22,23 +22,32 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Stub APIs (score < 5): 11 methods
+## Implementable APIs (score >= 5): 1 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `getHolder` | `android.view.SurfaceHolder getHolder()` | 5 | partial | impossible | `getXComponentSurfaceId` | `@internal/component/ets/xcomponent.XComponentController` |
+
+## Gap Descriptions (per method)
+
+- **`getHolder`**: XComponent surface ID
+
+## Stub APIs (score < 5): 10 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getHolder` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSurfaceControl` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setChildSurfacePackage` | 3 | composite | Log warning + no-op |
-| `setSecure` | 3 | composite | Log warning + no-op |
-| `setZOrderMediaOverlay` | 3 | composite | Log warning + no-op |
-| `setZOrderOnTop` | 3 | composite | Log warning + no-op |
 | `SurfaceView` | 1 | none | throw UnsupportedOperationException |
 | `SurfaceView` | 1 | none | throw UnsupportedOperationException |
 | `SurfaceView` | 1 | none | throw UnsupportedOperationException |
 | `SurfaceView` | 1 | none | throw UnsupportedOperationException |
 | `gatherTransparentRegion` | 1 | none | Store callback, never fire |
+| `getSurfaceControl` | 1 | none | Return safe default (null/false/0/empty) |
+| `setChildSurfacePackage` | 1 | none | Log warning + no-op |
+| `setSecure` | 1 | none | Log warning + no-op |
+| `setZOrderMediaOverlay` | 1 | none | Log warning + no-op |
+| `setZOrderOnTop` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -64,6 +73,6 @@ Before marking `android.view.SurfaceView` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.view.Display` |
 | **Package** | `android.view` |
 | **Total Methods** | 18 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 2.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 15 (83%) |
-| **No Mapping** | 3 (16%) |
+| **Partial/Composite** | 11 (61%) |
+| **No Mapping** | 7 (38%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 18 |
 | **Has Async Gap** | 18 |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAppVsyncOffsetNanos` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentSizeRange` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDisplayId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFlags` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getHdrCapabilities` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getState` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isValid` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedModes` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getMode` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getName` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPresentationDeadlineNanos` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getRealMetrics` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getRealSize` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRefreshRate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRotation` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getState` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSupportedModes` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isValid` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCurrentSizeRange` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getFlags` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getRotation` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getAppVsyncOffsetNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDisplayId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPresentationDeadlineNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRefreshRate` | 1 | none | Return safe default (null/false/0/empty) |
 | `isHdr` | 1 | none | Return safe default (null/false/0/empty) |
 | `isMinimalPostProcessingSupported` | 1 | none | Return safe default (null/false/0/empty) |
 | `isWideColorGamut` | 1 | none | Return safe default (null/false/0/empty) |

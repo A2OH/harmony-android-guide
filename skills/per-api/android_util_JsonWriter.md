@@ -9,57 +9,57 @@
 | **Class** | `android.util.JsonWriter` |
 | **Package** | `android.util` |
 | **Total Methods** | 17 |
-| **Avg Score** | 7.3 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 12 (70%) |
-| **Partial/Composite** | 4 (23%) |
-| **No Mapping** | 1 (5%) |
+| **Avg Score** | 3.6 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 14 (82%) |
+| **No Mapping** | 3 (17%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `SHIM-INDEX.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 15 methods
+## Implementable APIs (score >= 5): 6 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `close` | `void close() throws java.io.IOException` | 10 | direct | trivial | `close` | `close(fd: number): Promise<void>` |
-| `name` | `android.util.JsonWriter name(String) throws java.io.IOException` | 10 | direct | trivial | `name` | `name: string` |
-| `value` | `android.util.JsonWriter value(String) throws java.io.IOException` | 10 | direct | trivial | `value` | `value: number` |
-| `value` | `android.util.JsonWriter value(boolean) throws java.io.IOException` | 10 | direct | trivial | `value` | `value: number` |
-| `value` | `android.util.JsonWriter value(double) throws java.io.IOException` | 10 | direct | trivial | `value` | `value: number` |
-| `value` | `android.util.JsonWriter value(long) throws java.io.IOException` | 10 | direct | trivial | `value` | `value: number` |
-| `value` | `android.util.JsonWriter value(Number) throws java.io.IOException` | 10 | direct | trivial | `value` | `value: number` |
-| `nullValue` | `android.util.JsonWriter nullValue() throws java.io.IOException` | 7 | near | easy | `value` | `value: number` |
-| `setIndent` | `void setIndent(String)` | 7 | near | easy | `setId` | `setId(id: HiTraceId): void` |
-| `beginArray` | `android.util.JsonWriter beginArray() throws java.io.IOException` | 7 | near | moderate | `begin` | `begin(name: string, flags?: number): HiTraceId` |
-| `isLenient` | `boolean isLenient()` | 6 | near | moderate | `isEncoding` | `isEncoding(encoding: string): boolean` |
-| `beginObject` | `android.util.JsonWriter beginObject() throws java.io.IOException` | 6 | near | moderate | `begin` | `begin(name: string, flags?: number): HiTraceId` |
-| `setLenient` | `void setLenient(boolean)` | 6 | partial | moderate | `setTimezone` | `setTimezone(timezone: string, callback: AsyncCallback<void>): void` |
-| `endArray` | `android.util.JsonWriter endArray() throws java.io.IOException` | 5 | partial | moderate | `end` | `end(id: HiTraceId): void` |
-| `endObject` | `android.util.JsonWriter endObject() throws java.io.IOException` | 5 | partial | moderate | `end` | `end(id: HiTraceId): void` |
+| `value` | `android.util.JsonWriter value(String) throws java.io.IOException` | 5 | partial | moderate | `value` | `value: number` |
+| `value` | `android.util.JsonWriter value(boolean) throws java.io.IOException` | 5 | partial | moderate | `value` | `value: number` |
+| `value` | `android.util.JsonWriter value(double) throws java.io.IOException` | 5 | partial | moderate | `value` | `value: number` |
+| `value` | `android.util.JsonWriter value(long) throws java.io.IOException` | 5 | partial | moderate | `value` | `value: number` |
+| `value` | `android.util.JsonWriter value(Number) throws java.io.IOException` | 5 | partial | moderate | `value` | `value: number` |
+| `name` | `android.util.JsonWriter name(String) throws java.io.IOException` | 5 | partial | moderate | `name` | `name: string` |
 
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `flush` | 3 | composite | throw UnsupportedOperationException |
+| `nullValue` | 5 | partial | throw UnsupportedOperationException |
+| `close` | 4 | partial | No-op |
+| `setIndent` | 4 | composite | Log warning + no-op |
+| `isLenient` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setLenient` | 3 | composite | Log warning + no-op |
+| `beginArray` | 3 | composite | throw UnsupportedOperationException |
+| `beginObject` | 3 | composite | throw UnsupportedOperationException |
+| `endArray` | 2 | composite | throw UnsupportedOperationException |
 | `JsonWriter` | 1 | none | Log warning + no-op |
+| `endObject` | 1 | none | throw UnsupportedOperationException |
+| `flush` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -72,6 +72,6 @@ Before marking `android.util.JsonWriter` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 17 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 15 test methods for implemented APIs
+3. **Test Coverage**: At least 6 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

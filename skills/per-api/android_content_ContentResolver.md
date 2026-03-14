@@ -9,77 +9,86 @@
 | **Class** | `android.content.ContentResolver` |
 | **Package** | `android.content` |
 | **Total Methods** | 34 |
-| **Avg Score** | 5.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 17 (50%) |
-| **Partial/Composite** | 16 (47%) |
-| **No Mapping** | 1 (2%) |
+| **Avg Score** | 3.3 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 4 (11%) |
+| **Partial/Composite** | 22 (64%) |
+| **No Mapping** | 8 (23%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 5 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md / A2OH-DATA-LAYER.md` |
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 27 methods
+## Implementable APIs (score >= 5): 9 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `delete` | `final int delete(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable String, @Nullable String[])` | 9 | direct | easy | `deleteId` | `deleteId(uri: string): string` |
-| `delete` | `final int delete(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.os.Bundle)` | 9 | direct | easy | `deleteId` | `deleteId(uri: string): string` |
-| `unregisterContentObserver` | `final void unregisterContentObserver(@NonNull android.database.ContentObserver)` | 8 | near | easy | `unregisterApplicationStateObserver` | `unregisterApplicationStateObserver(observerId: number, callback: AsyncCallback<void>): void` |
-| `registerContentObserver` | `final void registerContentObserver(@NonNull android.net.Uri, boolean, @NonNull android.database.ContentObserver)` | 8 | near | easy | `registerApplicationStateObserver` | `registerApplicationStateObserver(observer: ApplicationStateObserver): number` |
-| `cancelSync` | `static void cancelSync(android.accounts.Account, String)` | 8 | near | easy | `cancel` | `cancel(agent: WantAgent, callback: AsyncCallback<void>): void` |
-| `cancelSync` | `static void cancelSync(android.content.SyncRequest)` | 8 | near | easy | `cancel` | `cancel(agent: WantAgent, callback: AsyncCallback<void>): void` |
-| `update` | `final int update(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.content.ContentValues, @Nullable String, @Nullable String[])` | 7 | near | easy | `update` | `update(query: AssetMap, attributesToUpdate: AssetMap): Promise<void>` |
-| `update` | `final int update(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.content.ContentValues, @Nullable android.os.Bundle)` | 7 | near | easy | `update` | `update(query: AssetMap, attributesToUpdate: AssetMap): Promise<void>` |
-| `getCurrentSyncs` | `static java.util.List<android.content.SyncInfo> getCurrentSyncs()` | 7 | near | moderate | `getPreferencesSync` | `getPreferencesSync(context: Context, options: Options): Preferences` |
-| `getSyncAutomatically` | `static boolean getSyncAutomatically(android.accounts.Account, String)` | 7 | near | moderate | `getPreferencesSync` | `getPreferencesSync(context: Context, options: Options): Preferences` |
-| `releasePersistableUriPermission` | `void releasePersistableUriPermission(@NonNull android.net.Uri, int)` | 7 | near | moderate | `grantUriPermission` | `grantUriPermission(uri: string,
-    flag: wantConstant.Flags,
-    targetBundleName: string,
-    callback: AsyncCallback<number>): void` |
-| `getPeriodicSyncs` | `static java.util.List<android.content.PeriodicSync> getPeriodicSyncs(android.accounts.Account, String)` | 6 | near | moderate | `getPreferencesSync` | `getPreferencesSync(context: Context, options: Options): Preferences` |
-| `requestSync` | `static void requestSync(android.accounts.Account, String, android.os.Bundle)` | 6 | near | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `requestSync` | `static void requestSync(android.content.SyncRequest)` | 6 | near | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `takePersistableUriPermission` | `void takePersistableUriPermission(@NonNull android.net.Uri, int)` | 6 | near | moderate | `revokeUriPermission` | `revokeUriPermission(uri: string, targetBundleName: string, callback: AsyncCallback<number>): void` |
-| `removePeriodicSync` | `static void removePeriodicSync(android.accounts.Account, String, android.os.Bundle)` | 6 | near | moderate | `removeStorageFromCacheSync` | `removeStorageFromCacheSync(path: string): void` |
-| `bulkInsert` | `final int bulkInsert(@NonNull @RequiresPermission.Write android.net.Uri, @NonNull android.content.ContentValues[])` | 6 | near | moderate | `OH_Rdb_Insert` | `int OH_Rdb_Insert(OH_Rdb_Store *store, const char *table, OH_VBucket *valuesBucket)` |
-| `getIsSyncable` | `static int getIsSyncable(android.accounts.Account, String)` | 6 | partial | moderate | `getStorageSync` | `getStorageSync(path: string): Storage` |
-| `getSyncAdapterTypes` | `static android.content.SyncAdapterType[] getSyncAdapterTypes()` | 6 | partial | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `removeStatusChangeListener` | `static void removeStatusChangeListener(Object)` | 6 | partial | moderate | `registerMissionListener` | `registerMissionListener(listener: MissionListener): number` |
-| `notifyChange` | `void notifyChange(@NonNull android.net.Uri, @Nullable android.database.ContentObserver)` | 5 | partial | moderate | `notifySaveAsResult` | `notifySaveAsResult(parameter: AbilityResult, requestCode: number, callback: AsyncCallback<void>): void` |
-| `notifyChange` | `void notifyChange(@NonNull android.net.Uri, @Nullable android.database.ContentObserver, int)` | 5 | partial | moderate | `notifySaveAsResult` | `notifySaveAsResult(parameter: AbilityResult, requestCode: number, callback: AsyncCallback<void>): void` |
-| `notifyChange` | `void notifyChange(@NonNull java.util.Collection<android.net.Uri>, @Nullable android.database.ContentObserver, int)` | 5 | partial | moderate | `notifySaveAsResult` | `notifySaveAsResult(parameter: AbilityResult, requestCode: number, callback: AsyncCallback<void>): void` |
-| `isSyncPending` | `static boolean isSyncPending(android.accounts.Account, String)` | 5 | partial | moderate | `isSharedBundleRunning` | `isSharedBundleRunning(bundleName: string, versionCode: number): Promise<boolean>` |
-| `addPeriodicSync` | `static void addPeriodicSync(android.accounts.Account, String, android.os.Bundle, long)` | 5 | partial | moderate | `autoSync` | `autoSync?: boolean` |
-| `addStatusChangeListener` | `static Object addStatusChangeListener(int, android.content.SyncStatusObserver)` | 5 | partial | moderate | `registerMissionListener` | `registerMissionListener(listener: MissionListener): number` |
-| `getMasterSyncAutomatically` | `static boolean getMasterSyncAutomatically()` | 5 | partial | moderate | `getPreferencesSync` | `getPreferencesSync(context: Context, options: Options): Preferences` |
+| `bulkInsert` | `final int bulkInsert(@NonNull @RequiresPermission.Write android.net.Uri, @NonNull android.content.ContentValues[])` | 7 | near | hard | `batchInsert` | `@ohos.data.dataShare.DataShareHelper` |
+| `notifyChange` | `void notifyChange(@NonNull android.net.Uri, @Nullable android.database.ContentObserver)` | 7 | near | hard | `notifyChange` | `@ohos.data.dataShare.DataShareHelper` |
+| `notifyChange` | `void notifyChange(@NonNull android.net.Uri, @Nullable android.database.ContentObserver, int)` | 7 | near | hard | `notifyChange` | `@ohos.data.dataShare.DataShareHelper` |
+| `notifyChange` | `void notifyChange(@NonNull java.util.Collection<android.net.Uri>, @Nullable android.database.ContentObserver, int)` | 7 | near | hard | `notifyChange` | `@ohos.data.dataShare.DataShareHelper` |
+| `delete` | `final int delete(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable String, @Nullable String[])` | 5 | partial | hard | `delete` | `@ohos.data.dataShare.DataShareHelper` |
+| `delete` | `final int delete(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.os.Bundle)` | 5 | partial | hard | `delete` | `@ohos.data.dataShare.DataShareHelper` |
+| `registerContentObserver` | `final void registerContentObserver(@NonNull android.net.Uri, boolean, @NonNull android.database.ContentObserver)` | 5 | partial | rewrite | `on` | `@ohos.data.dataShare.DataShareHelper` |
+| `update` | `final int update(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.content.ContentValues, @Nullable String, @Nullable String[])` | 5 | partial | rewrite | `update` | `@ohos.data.dataShare.DataShareHelper` |
+| `update` | `final int update(@NonNull @RequiresPermission.Write android.net.Uri, @Nullable android.content.ContentValues, @Nullable android.os.Bundle)` | 5 | partial | rewrite | `update` | `@ohos.data.dataShare.DataShareHelper` |
 
-## Stub APIs (score < 5): 7 methods
+## Gap Descriptions (per method)
+
+- **`bulkInsert`**: Array of ValuesBuckets
+- **`notifyChange`**: No observer param needed
+- **`notifyChange`**: No observer param needed
+- **`notifyChange`**: No observer param needed
+- **`delete`**: Predicate-based
+- **`delete`**: Predicate-based
+- **`registerContentObserver`**: Event-based observer
+- **`update`**: Predicate-based
+- **`update`**: Predicate-based
+
+## Stub APIs (score < 5): 25 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `refresh` | 5 | partial | throw UnsupportedOperationException |
-| `setMasterSyncAutomatically` | 5 | partial | Log warning + no-op |
-| `setIsSyncable` | 4 | partial | Return safe default (null/false/0/empty) |
-| `isSyncActive` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setSyncAutomatically` | 4 | partial | Log warning + no-op |
-| `validateSyncExtrasBundle` | 4 | partial | throw UnsupportedOperationException |
+| `addPeriodicSync` | 4 | partial | Log warning + no-op |
+| `unregisterContentObserver` | 4 | composite | Return safe default (null/false/0/empty) |
+| `cancelSync` | 4 | composite | Return safe default (null/false/0/empty) |
+| `cancelSync` | 4 | composite | Return safe default (null/false/0/empty) |
+| `releasePersistableUriPermission` | 3 | composite | No-op |
+| `takePersistableUriPermission` | 3 | composite | Return safe default (null/false/0/empty) |
+| `removePeriodicSync` | 3 | composite | Log warning + no-op |
+| `isSyncPending` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCurrentSyncs` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSyncAutomatically` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getPeriodicSyncs` | 3 | composite | Return safe default (null/false/0/empty) |
+| `requestSync` | 3 | composite | throw UnsupportedOperationException |
+| `requestSync` | 3 | composite | throw UnsupportedOperationException |
+| `getIsSyncable` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSyncAdapterTypes` | 2 | composite | Return safe default (null/false/0/empty) |
+| `removeStatusChangeListener` | 2 | composite | Return safe default (null/false/0/empty) |
+| `addStatusChangeListener` | 2 | composite | Return safe default (null/false/0/empty) |
 | `ContentResolver` | 1 | none | Store callback, never fire |
+| `getMasterSyncAutomatically` | 1 | none | Return safe default (null/false/0/empty) |
+| `isSyncActive` | 1 | none | Return safe default (null/false/0/empty) |
+| `refresh` | 1 | none | throw UnsupportedOperationException |
+| `setIsSyncable` | 1 | none | Return safe default (null/false/0/empty) |
+| `setMasterSyncAutomatically` | 1 | none | Log warning + no-op |
+| `setSyncAutomatically` | 1 | none | Log warning + no-op |
+| `validateSyncExtrasBundle` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 27 methods that have score >= 5
-2. Stub 7 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -95,6 +104,6 @@ Before marking `android.content.ContentResolver` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 34 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 27 test methods for implemented APIs
+3. **Test Coverage**: At least 9 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

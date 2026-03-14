@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SeekBar.OnSeekBarChangeListener` |
 | **Package** | `android.widget.SeekBar` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 3 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onProgressChanged` | 3 | composite | Store callback, never fire |
-| `onStartTrackingTouch` | 3 | composite | Return dummy instance / no-op |
-| `onStopTrackingTouch` | 3 | composite | No-op |
+| `onProgressChanged` | 1 | none | Store callback, never fire |
+| `onStartTrackingTouch` | 1 | none | Return dummy instance / no-op |
+| `onStopTrackingTouch` | 1 | none | No-op |
 
 ## AI Agent Instructions
 

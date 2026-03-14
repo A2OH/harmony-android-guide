@@ -9,12 +9,12 @@
 | **Class** | `android.util.ArraySet<E>` |
 | **Package** | `android.util` |
 | **Total Methods** | 24 |
-| **Avg Score** | 6.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 13 (54%) |
-| **Partial/Composite** | 9 (37%) |
-| **No Mapping** | 2 (8%) |
+| **Avg Score** | 3.5 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 20 (83%) |
+| **No Mapping** | 4 (16%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,51 +22,51 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 20 methods
+## Implementable APIs (score >= 5): 6 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `add` | `boolean add(E)` | 10 | direct | trivial | `add` | `add: (bundleName: string, userId: number) => void` |
-| `clear` | `void clear()` | 10 | direct | trivial | `clear` | `clear(): void` |
-| `contains` | `boolean contains(Object)` | 10 | direct | trivial | `contains` | `contains(rule: bigint): boolean` |
-| `remove` | `boolean remove(Object)` | 10 | direct | trivial | `remove` | `remove(logType: string, logName: string): void` |
-| `removeAll` | `boolean removeAll(android.util.ArraySet<? extends E>)` | 10 | direct | trivial | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `removeAll` | `boolean removeAll(java.util.Collection<?>)` | 10 | direct | trivial | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `size` | `int size()` | 10 | direct | trivial | `size` | `size: number` |
-| `removeAt` | `E removeAt(int)` | 9 | direct | easy | `remove` | `remove(logType: string, logName: string): void` |
-| `containsAll` | `boolean containsAll(java.util.Collection<?>)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `indexOf` | `int indexOf(Object)` | 8 | direct | easy | `index` | `index: number` |
-| `valueAt` | `E valueAt(int)` | 8 | direct | easy | `value` | `value: number` |
-| `addAll` | `void addAll(android.util.ArraySet<? extends E>)` | 7 | near | moderate | `add` | `add: (bundleName: string, userId: number) => void` |
-| `addAll` | `boolean addAll(java.util.Collection<? extends E>)` | 7 | near | moderate | `add` | `add: (bundleName: string, userId: number) => void` |
-| `isEmpty` | `boolean isEmpty()` | 6 | partial | moderate | `isKeepData` | `isKeepData: boolean` |
-| `retainAll` | `boolean retainAll(java.util.Collection<?>)` | 6 | partial | moderate | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `ArraySet` | `ArraySet()` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `ArraySet` | `ArraySet(int)` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `ArraySet` | `ArraySet(android.util.ArraySet<E>)` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `ArraySet` | `ArraySet(java.util.Collection<? extends E>)` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `ArraySet` | `ArraySet(@Nullable E[])` | 5 | partial | moderate | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
+| `size` | `int size()` | 6 | partial | moderate | `size` | `size: number` |
+| `clear` | `void clear()` | 6 | partial | moderate | `clear` | `clear(): void` |
+| `indexOf` | `int indexOf(Object)` | 6 | partial | moderate | `index` | `index: number` |
+| `addAll` | `void addAll(android.util.ArraySet<? extends E>)` | 5 | partial | moderate | `add` | `add: (bundleName: string, userId: number) => void` |
+| `isEmpty` | `boolean isEmpty()` | 5 | partial | moderate | `isKeepData` | `isKeepData: boolean` |
+| `add` | `boolean add(E)` | 5 | partial | moderate | `add` | `add: (bundleName: string, userId: number) => void` |
 
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 18 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `toArray` | 3 | composite | throw UnsupportedOperationException |
-| `toArray` | 3 | composite | throw UnsupportedOperationException |
+| `valueAt` | 5 | partial | throw UnsupportedOperationException |
+| `addAll` | 4 | partial | Log warning + no-op |
+| `contains` | 4 | partial | Store callback, never fire |
+| `containsAll` | 4 | composite | Store callback, never fire |
+| `remove` | 3 | composite | Log warning + no-op |
+| `removeAll` | 3 | composite | Log warning + no-op |
+| `removeAll` | 3 | composite | Log warning + no-op |
+| `removeAt` | 3 | composite | Log warning + no-op |
+| `ArraySet` | 3 | composite | Log warning + no-op |
+| `ArraySet` | 3 | composite | Log warning + no-op |
+| `ArraySet` | 3 | composite | Log warning + no-op |
+| `ArraySet` | 3 | composite | Log warning + no-op |
+| `ArraySet` | 3 | composite | Log warning + no-op |
+| `retainAll` | 2 | composite | throw UnsupportedOperationException |
 | `ensureCapacity` | 1 | none | throw UnsupportedOperationException |
 | `iterator` | 1 | none | throw UnsupportedOperationException |
+| `toArray` | 1 | none | throw UnsupportedOperationException |
+| `toArray` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 20 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -79,6 +79,6 @@ Before marking `android.util.ArraySet<E>` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 24 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 20 test methods for implemented APIs
+3. **Test Coverage**: At least 6 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

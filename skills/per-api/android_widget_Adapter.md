@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Adapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 10 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 2.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (80%) |
-| **No Mapping** | 2 (20%) |
+| **Partial/Composite** | 7 (70%) |
+| **No Mapping** | 3 (30%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -29,13 +29,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getItemViewType` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getViewTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
 | `registerDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
 | `unregisterDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getViewTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
 

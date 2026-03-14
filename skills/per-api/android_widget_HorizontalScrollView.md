@@ -9,15 +9,15 @@
 | **Class** | `android.widget.HorizontalScrollView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 20 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (45%) |
-| **No Mapping** | 11 (55%) |
+| **Partial/Composite** | 1 (5%) |
+| **No Mapping** | 19 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 16 |
-| **Has Async Gap** | 16 |
+| **Has Async Gap** | 20 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,26 +28,26 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `computeScrollDeltaToGetChildRectOnScreen` | 3 | composite | Return safe default (null/false/0/empty) |
-| `executeKeyEvent` | 3 | composite | throw UnsupportedOperationException |
-| `getMaxScrollAmount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setEdgeEffectColor` | 3 | composite | Log warning + no-op |
-| `setFillViewport` | 3 | composite | Log warning + no-op |
-| `setRightEdgeEffectColor` | 3 | composite | Log warning + no-op |
-| `smoothScrollBy` | 3 | composite | throw UnsupportedOperationException |
-| `setSmoothScrollingEnabled` | 3 | composite | Log warning + no-op |
-| `setLeftEdgeEffectColor` | 3 | composite | Log warning + no-op |
-| `smoothScrollTo` | 2 | none | throw UnsupportedOperationException |
+| `executeKeyEvent` | 2 | composite | throw UnsupportedOperationException |
 | `HorizontalScrollView` | 1 | none | Store callback, never fire |
 | `HorizontalScrollView` | 1 | none | Store callback, never fire |
 | `HorizontalScrollView` | 1 | none | Store callback, never fire |
 | `HorizontalScrollView` | 1 | none | Store callback, never fire |
 | `arrowScroll` | 1 | none | throw UnsupportedOperationException |
+| `computeScrollDeltaToGetChildRectOnScreen` | 1 | none | Return safe default (null/false/0/empty) |
 | `fling` | 1 | none | throw UnsupportedOperationException |
 | `fullScroll` | 1 | none | throw UnsupportedOperationException |
+| `getMaxScrollAmount` | 1 | none | Return safe default (null/false/0/empty) |
 | `isFillViewport` | 1 | none | Return safe default (null/false/0/empty) |
 | `isSmoothScrollingEnabled` | 1 | none | Return safe default (null/false/0/empty) |
 | `pageScroll` | 1 | none | throw UnsupportedOperationException |
+| `setEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setFillViewport` | 1 | none | Log warning + no-op |
+| `setLeftEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setRightEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setSmoothScrollingEnabled` | 1 | none | Log warning + no-op |
+| `smoothScrollBy` | 1 | none | throw UnsupportedOperationException |
+| `smoothScrollTo` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 

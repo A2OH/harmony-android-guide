@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowInsetsController` |
 | **Package** | `android.view` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 7 (77%) |
-| **No Mapping** | 2 (22%) |
+| **Partial/Composite** | 1 (11%) |
+| **No Mapping** | 8 (88%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addOnControllableInsetsChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSystemBarsAppearance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSystemBarsBehavior` | 3 | composite | Return safe default (null/false/0/empty) |
-| `removeOnControllableInsetsChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSystemBarsAppearance` | 3 | composite | Log warning + no-op |
-| `setSystemBarsBehavior` | 3 | composite | Log warning + no-op |
 | `show` | 3 | composite | throw UnsupportedOperationException |
+| `addOnControllableInsetsChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `controlWindowInsetsAnimation` | 1 | none | Log warning + no-op |
+| `getSystemBarsAppearance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSystemBarsBehavior` | 1 | none | Return safe default (null/false/0/empty) |
 | `hide` | 1 | none | throw UnsupportedOperationException |
+| `removeOnControllableInsetsChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSystemBarsAppearance` | 1 | none | Log warning + no-op |
+| `setSystemBarsBehavior` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

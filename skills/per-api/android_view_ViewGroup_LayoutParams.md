@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewGroup.LayoutParams` |
 | **Package** | `android.view.ViewGroup` |
 | **Total Methods** | 5 |
-| **Avg Score** | 1.4 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (20%) |
-| **No Mapping** | 4 (80%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 5 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 2 |
 | **Has Async Gap** | 2 |
@@ -28,11 +28,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setBaseAttributes` | 3 | composite | Log warning + no-op |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `resolveLayoutDirection` | 1 | none | Store callback, never fire |
+| `setBaseAttributes` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

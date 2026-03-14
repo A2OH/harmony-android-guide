@@ -9,12 +9,12 @@
 | **Class** | `android.view.Menu` |
 | **Package** | `android.view` |
 | **Total Methods** | 25 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 2.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 22 (88%) |
-| **No Mapping** | 3 (12%) |
+| **Partial/Composite** | 9 (36%) |
+| **No Mapping** | 16 (64%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 25 |
 | **Has Async Gap** | 25 |
@@ -22,37 +22,49 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Stub APIs (score < 5): 25 methods
+## Implementable APIs (score >= 5): 4 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `add` | `android.view.MenuItem add(CharSequence)` | 5 | partial | rewrite | `.bindMenu` | `@internal/component/ets/common.CommonMethod` |
+| `add` | `android.view.MenuItem add(@StringRes int)` | 5 | partial | rewrite | `.bindMenu` | `@internal/component/ets/common.CommonMethod` |
+| `add` | `android.view.MenuItem add(int, int, int, CharSequence)` | 5 | partial | rewrite | `.bindMenu` | `@internal/component/ets/common.CommonMethod` |
+| `add` | `android.view.MenuItem add(int, int, int, @StringRes int)` | 5 | partial | rewrite | `.bindMenu` | `@internal/component/ets/common.CommonMethod` |
+
+## Gap Descriptions (per method)
+
+- **`add`**: MenuElement array
+- **`add`**: MenuElement array
+- **`add`**: MenuElement array
+- **`add`**: MenuElement array
+
+## Stub APIs (score < 5): 21 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `add` | 3 | composite | Log warning + no-op |
-| `add` | 3 | composite | Log warning + no-op |
-| `add` | 3 | composite | Log warning + no-op |
-| `add` | 3 | composite | Log warning + no-op |
-| `addIntentOptions` | 3 | composite | Log warning + no-op |
-| `addSubMenu` | 3 | composite | Log warning + no-op |
-| `addSubMenu` | 3 | composite | Log warning + no-op |
-| `addSubMenu` | 3 | composite | Log warning + no-op |
-| `addSubMenu` | 3 | composite | Log warning + no-op |
 | `clear` | 3 | composite | throw UnsupportedOperationException |
 | `close` | 3 | composite | No-op |
-| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isShortcutKey` | 3 | composite | Return safe default (null/false/0/empty) |
-| `performIdentifierAction` | 3 | composite | Store callback, never fire |
 | `removeGroup` | 3 | composite | Log warning + no-op |
-| `removeItem` | 3 | composite | Log warning + no-op |
-| `setGroupCheckable` | 3 | composite | Log warning + no-op |
-| `setGroupVisible` | 3 | composite | Return safe default (null/false/0/empty) |
 | `size` | 3 | composite | throw UnsupportedOperationException |
-| `setQwertyMode` | 3 | composite | Log warning + no-op |
-| `setGroupEnabled` | 3 | composite | Log warning + no-op |
-| `setGroupDividerEnabled` | 3 | composite | Log warning + no-op |
+| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
+| `addIntentOptions` | 1 | none | Log warning + no-op |
+| `addSubMenu` | 1 | none | Log warning + no-op |
+| `addSubMenu` | 1 | none | Log warning + no-op |
+| `addSubMenu` | 1 | none | Log warning + no-op |
+| `addSubMenu` | 1 | none | Log warning + no-op |
 | `findItem` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasVisibleItems` | 1 | none | Return safe default (null/false/0/empty) |
+| `isShortcutKey` | 1 | none | Return safe default (null/false/0/empty) |
+| `performIdentifierAction` | 1 | none | Store callback, never fire |
 | `performShortcut` | 1 | none | throw UnsupportedOperationException |
+| `removeItem` | 1 | none | Log warning + no-op |
+| `setGroupCheckable` | 1 | none | Log warning + no-op |
+| `setGroupDividerEnabled` | 1 | none | Log warning + no-op |
+| `setGroupEnabled` | 1 | none | Log warning + no-op |
+| `setGroupVisible` | 1 | none | Return safe default (null/false/0/empty) |
+| `setQwertyMode` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -78,6 +90,6 @@ Before marking `android.view.Menu` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 25 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 4 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

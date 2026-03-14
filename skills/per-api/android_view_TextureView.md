@@ -9,12 +9,12 @@
 | **Class** | `android.view.TextureView` |
 | **Package** | `android.view` |
 | **Total Methods** | 13 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (46%) |
-| **No Mapping** | 7 (53%) |
+| **Partial/Composite** | 1 (7%) |
+| **No Mapping** | 12 (92%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -28,18 +28,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onDraw` | 3 | composite | Store callback, never fire |
-| `setBackgroundDrawable` | 3 | composite | Log warning + no-op |
-| `setOpaque` | 3 | composite | Log warning + no-op |
-| `setSurfaceTexture` | 3 | composite | Log warning + no-op |
 | `setSurfaceTextureListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setTransform` | 3 | composite | Log warning + no-op |
 | `TextureView` | 1 | none | throw UnsupportedOperationException |
 | `TextureView` | 1 | none | throw UnsupportedOperationException |
 | `TextureView` | 1 | none | throw UnsupportedOperationException |
 | `TextureView` | 1 | none | throw UnsupportedOperationException |
 | `draw` | 1 | none | throw UnsupportedOperationException |
 | `isAvailable` | 1 | none | Return safe default (null/false/0/empty) |
+| `onDraw` | 1 | none | Store callback, never fire |
+| `setBackgroundDrawable` | 1 | none | Log warning + no-op |
+| `setOpaque` | 1 | none | Log warning + no-op |
+| `setSurfaceTexture` | 1 | none | Log warning + no-op |
+| `setTransform` | 1 | none | Log warning + no-op |
 | `unlockCanvasAndPost` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.MediaController` |
 | **Package** | `android.widget` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (54%) |
-| **No Mapping** | 5 (45%) |
+| **Partial/Composite** | 2 (18%) |
+| **No Mapping** | 9 (81%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
 | **Has Async Gap** | 8 |
@@ -28,10 +28,6 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onFinishInflate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAnchorView` | 3 | composite | Log warning + no-op |
-| `setMediaPlayer` | 3 | composite | Log warning + no-op |
-| `setPrevNextListeners` | 3 | composite | Return safe default (null/false/0/empty) |
 | `show` | 3 | composite | throw UnsupportedOperationException |
 | `show` | 3 | composite | throw UnsupportedOperationException |
 | `MediaController` | 1 | none | Store callback, never fire |
@@ -39,6 +35,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `MediaController` | 1 | none | Store callback, never fire |
 | `hide` | 1 | none | throw UnsupportedOperationException |
 | `isShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `onFinishInflate` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAnchorView` | 1 | none | Log warning + no-op |
+| `setMediaPlayer` | 1 | none | Log warning + no-op |
+| `setPrevNextListeners` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

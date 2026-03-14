@@ -9,12 +9,12 @@
 | **Class** | `android.widget.RatingBar` |
 | **Package** | `android.widget` |
 | **Total Methods** | 14 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (64%) |
-| **No Mapping** | 5 (35%) |
+| **Partial/Composite** | 1 (7%) |
+| **No Mapping** | 13 (92%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -28,20 +28,20 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getNumStars` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOnRatingBarChangeListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRating` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStepSize` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setIsIndicator` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setNumStars` | 3 | composite | Log warning + no-op |
-| `setOnRatingBarChangeListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setRating` | 3 | composite | Log warning + no-op |
-| `setStepSize` | 3 | composite | Log warning + no-op |
+| `getRating` | 2 | composite | Return safe default (null/false/0/empty) |
 | `RatingBar` | 1 | none | throw UnsupportedOperationException |
 | `RatingBar` | 1 | none | throw UnsupportedOperationException |
 | `RatingBar` | 1 | none | throw UnsupportedOperationException |
 | `RatingBar` | 1 | none | throw UnsupportedOperationException |
+| `getNumStars` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOnRatingBarChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStepSize` | 1 | none | Return safe default (null/false/0/empty) |
 | `isIndicator` | 1 | none | Return safe default (null/false/0/empty) |
+| `setIsIndicator` | 1 | none | Return safe default (null/false/0/empty) |
+| `setNumStars` | 1 | none | Log warning + no-op |
+| `setOnRatingBarChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setRating` | 1 | none | Log warning + no-op |
+| `setStepSize` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

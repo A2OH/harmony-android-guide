@@ -9,12 +9,12 @@
 | **Class** | `android.view.TextureView.SurfaceTextureListener` |
 | **Package** | `android.view.TextureView` |
 | **Total Methods** | 4 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 4 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,10 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onSurfaceTextureSizeChanged` | 3 | composite | Store callback, never fire |
-| `onSurfaceTextureAvailable` | 2 | composite | Store callback, never fire |
-| `onSurfaceTextureDestroyed` | 2 | composite | No-op |
-| `onSurfaceTextureUpdated` | 2 | composite | Log warning + no-op |
+| `onSurfaceTextureAvailable` | 1 | none | Store callback, never fire |
+| `onSurfaceTextureDestroyed` | 1 | none | No-op |
+| `onSurfaceTextureSizeChanged` | 1 | none | Store callback, never fire |
+| `onSurfaceTextureUpdated` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

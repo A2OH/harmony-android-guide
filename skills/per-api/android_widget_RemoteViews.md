@@ -9,12 +9,12 @@
 | **Class** | `android.widget.RemoteViews` |
 | **Package** | `android.widget` |
 | **Total Methods** | 57 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 48 (84%) |
-| **No Mapping** | 9 (15%) |
+| **Partial/Composite** | 2 (3%) |
+| **No Mapping** | 55 (96%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 53 |
 | **Has Async Gap** | 53 |
@@ -28,63 +28,63 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addView` | 3 | composite | Log warning + no-op |
-| `getLayoutId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackage` | 3 | composite | Return safe default (null/false/0/empty) |
-| `removeAllViews` | 3 | composite | Log warning + no-op |
-| `setAccessibilityTraversalAfter` | 3 | composite | Log warning + no-op |
-| `setAccessibilityTraversalBefore` | 3 | composite | Log warning + no-op |
-| `setBitmap` | 3 | composite | Log warning + no-op |
-| `setBoolean` | 3 | composite | Log warning + no-op |
-| `setBundle` | 3 | composite | Log warning + no-op |
-| `setByte` | 3 | composite | Log warning + no-op |
-| `setChar` | 3 | composite | Log warning + no-op |
-| `setCharSequence` | 3 | composite | Log warning + no-op |
-| `setChronometer` | 3 | composite | Log warning + no-op |
-| `setChronometerCountDown` | 3 | composite | Log warning + no-op |
-| `setFloat` | 3 | composite | Log warning + no-op |
-| `setIcon` | 3 | composite | Log warning + no-op |
-| `setImageViewBitmap` | 3 | composite | Log warning + no-op |
-| `setImageViewIcon` | 3 | composite | Log warning + no-op |
-| `setImageViewResource` | 3 | composite | Log warning + no-op |
-| `setImageViewUri` | 3 | composite | Log warning + no-op |
-| `setInt` | 3 | composite | Log warning + no-op |
-| `setIntent` | 3 | composite | Log warning + no-op |
-| `setLabelFor` | 3 | composite | Log warning + no-op |
-| `setLightBackgroundLayoutId` | 3 | composite | Log warning + no-op |
-| `setOnClickPendingIntent` | 3 | composite | Log warning + no-op |
-| `setOnClickResponse` | 3 | composite | Log warning + no-op |
-| `setPendingIntentTemplate` | 3 | composite | Log warning + no-op |
-| `setRelativeScrollPosition` | 3 | composite | Log warning + no-op |
-| `setRemoteAdapter` | 3 | composite | Log warning + no-op |
-| `setScrollPosition` | 3 | composite | Log warning + no-op |
-| `setShort` | 3 | composite | Log warning + no-op |
-| `setString` | 3 | composite | Log warning + no-op |
-| `setTextColor` | 3 | composite | Log warning + no-op |
-| `setTextViewCompoundDrawables` | 3 | composite | Log warning + no-op |
-| `setTextViewCompoundDrawablesRelative` | 3 | composite | Log warning + no-op |
-| `setTextViewText` | 3 | composite | Log warning + no-op |
-| `setViewVisibility` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setEmptyView` | 3 | composite | Log warning + no-op |
-| `setTextViewTextSize` | 3 | composite | Log warning + no-op |
-| `setUri` | 3 | composite | Log warning + no-op |
-| `setProgressBar` | 3 | composite | Log warning + no-op |
-| `setViewPadding` | 3 | composite | Log warning + no-op |
-| `setLong` | 3 | composite | Log warning + no-op |
-| `setOnClickFillInIntent` | 3 | composite | Log warning + no-op |
-| `setDouble` | 3 | composite | Log warning + no-op |
-| `setDisplayedChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setContentDescription` | 2 | composite | Log warning + no-op |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getLayoutId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `setIntent` | 2 | composite | Log warning + no-op |
 | `RemoteViews` | 1 | none | throw UnsupportedOperationException |
 | `RemoteViews` | 1 | none | throw UnsupportedOperationException |
 | `RemoteViews` | 1 | none | throw UnsupportedOperationException |
 | `RemoteViews` | 1 | none | throw UnsupportedOperationException |
+| `addView` | 1 | none | Log warning + no-op |
 | `apply` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getPackage` | 1 | none | Return safe default (null/false/0/empty) |
 | `reapply` | 1 | none | throw UnsupportedOperationException |
+| `removeAllViews` | 1 | none | Log warning + no-op |
+| `setAccessibilityTraversalAfter` | 1 | none | Log warning + no-op |
+| `setAccessibilityTraversalBefore` | 1 | none | Log warning + no-op |
+| `setBitmap` | 1 | none | Log warning + no-op |
+| `setBoolean` | 1 | none | Log warning + no-op |
+| `setBundle` | 1 | none | Log warning + no-op |
+| `setByte` | 1 | none | Log warning + no-op |
+| `setChar` | 1 | none | Log warning + no-op |
+| `setCharSequence` | 1 | none | Log warning + no-op |
+| `setChronometer` | 1 | none | Log warning + no-op |
+| `setChronometerCountDown` | 1 | none | Log warning + no-op |
+| `setContentDescription` | 1 | none | Log warning + no-op |
+| `setDisplayedChild` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDouble` | 1 | none | Log warning + no-op |
+| `setEmptyView` | 1 | none | Log warning + no-op |
+| `setFloat` | 1 | none | Log warning + no-op |
+| `setIcon` | 1 | none | Log warning + no-op |
+| `setImageViewBitmap` | 1 | none | Log warning + no-op |
+| `setImageViewIcon` | 1 | none | Log warning + no-op |
+| `setImageViewResource` | 1 | none | Log warning + no-op |
+| `setImageViewUri` | 1 | none | Log warning + no-op |
+| `setInt` | 1 | none | Log warning + no-op |
+| `setLabelFor` | 1 | none | Log warning + no-op |
+| `setLightBackgroundLayoutId` | 1 | none | Log warning + no-op |
+| `setLong` | 1 | none | Log warning + no-op |
+| `setOnClickFillInIntent` | 1 | none | Log warning + no-op |
+| `setOnClickPendingIntent` | 1 | none | Log warning + no-op |
+| `setOnClickResponse` | 1 | none | Log warning + no-op |
+| `setPendingIntentTemplate` | 1 | none | Log warning + no-op |
+| `setProgressBar` | 1 | none | Log warning + no-op |
+| `setRelativeScrollPosition` | 1 | none | Log warning + no-op |
+| `setRemoteAdapter` | 1 | none | Log warning + no-op |
+| `setScrollPosition` | 1 | none | Log warning + no-op |
+| `setShort` | 1 | none | Log warning + no-op |
+| `setString` | 1 | none | Log warning + no-op |
+| `setTextColor` | 1 | none | Log warning + no-op |
+| `setTextViewCompoundDrawables` | 1 | none | Log warning + no-op |
+| `setTextViewCompoundDrawablesRelative` | 1 | none | Log warning + no-op |
+| `setTextViewText` | 1 | none | Log warning + no-op |
+| `setTextViewTextSize` | 1 | none | Log warning + no-op |
+| `setUri` | 1 | none | Log warning + no-op |
+| `setViewPadding` | 1 | none | Log warning + no-op |
+| `setViewVisibility` | 1 | none | Return safe default (null/false/0/empty) |
 | `showNext` | 1 | none | throw UnsupportedOperationException |
 | `showPrevious` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

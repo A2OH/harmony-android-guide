@@ -9,12 +9,12 @@
 | **Class** | `android.app.SearchableInfo` |
 | **Package** | `android.app` |
 | **Total Methods** | 23 |
-| **Avg Score** | 4.7 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 3 (13%) |
-| **Partial/Composite** | 19 (82%) |
-| **No Mapping** | 1 (4%) |
+| **Avg Score** | 1.8 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 10 (43%) |
+| **No Mapping** | 13 (56%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,50 +22,45 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 13 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getHintId` | `int getHintId()` | 7 | near | easy | `getId` | `getId(uri: string): number` |
-| `getInputType` | `int getInputType()` | 7 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `getImeOptions` | `int getImeOptions()` | 6 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `getSuggestPackage` | `String getSuggestPackage()` | 6 | partial | moderate | `getRequestCallback` | `getRequestCallback(want: Want): RequestCallback` |
-| `getSuggestIntentAction` | `String getSuggestIntentAction()` | 6 | partial | moderate | `getRunningProcessInformation` | `getRunningProcessInformation(): Promise<Array<ProcessInformation>>` |
-| `getSearchActivity` | `android.content.ComponentName getSearchActivity()` | 5 | partial | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `getSuggestSelection` | `String getSuggestSelection()` | 5 | partial | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `getSuggestIntentData` | `String getSuggestIntentData()` | 5 | partial | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `getVoiceSearchEnabled` | `boolean getVoiceSearchEnabled()` | 5 | partial | moderate | `getProcessMemoryByPid` | `getProcessMemoryByPid(pid: number): Promise<number>` |
-| `getSuggestPath` | `String getSuggestPath()` | 5 | partial | moderate | `getTopAbility` | `getTopAbility(): Promise<ElementName>` |
-| `getSettingsDescriptionId` | `int getSettingsDescriptionId()` | 5 | partial | moderate | `getId` | `getId(uri: string): number` |
-| `getSuggestAuthority` | `String getSuggestAuthority()` | 5 | partial | moderate | `getTopAbility` | `getTopAbility(): Promise<ElementName>` |
-| `getVoiceMaxResults` | `int getVoiceMaxResults()` | 5 | partial | moderate | `getContext` | `getContext(): Context` |
-
-## Stub APIs (score < 5): 10 methods
+## Stub APIs (score < 5): 23 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getSuggestThreshold` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getVoiceSearchLaunchRecognizer` | 5 | partial | Return safe default (null/false/0/empty) |
-| `shouldRewriteQueryFromData` | 4 | partial | Return safe default (null/false/0/empty) |
-| `getVoiceSearchLaunchWebSearch` | 4 | partial | Return safe default (null/false/0/empty) |
-| `queryAfterZeroResults` | 4 | partial | Return safe default (null/false/0/empty) |
-| `autoUrlDetect` | 4 | composite | throw UnsupportedOperationException |
-| `writeToParcel` | 3 | composite | Log warning + no-op |
-| `shouldIncludeInGlobalSearch` | 3 | composite | throw UnsupportedOperationException |
-| `shouldRewriteQueryFromText` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSuggestIntentAction` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getSuggestPath` | 4 | composite | Return safe default (null/false/0/empty) |
+| `getHintId` | 4 | composite | Return safe default (null/false/0/empty) |
+| `getInputType` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getImeOptions` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSuggestPackage` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSearchActivity` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSuggestSelection` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSuggestIntentData` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getVoiceSearchEnabled` | 2 | composite | Return safe default (null/false/0/empty) |
+| `autoUrlDetect` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getSettingsDescriptionId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSuggestAuthority` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSuggestThreshold` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVoiceMaxResults` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVoiceSearchLaunchRecognizer` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVoiceSearchLaunchWebSearch` | 1 | none | Return safe default (null/false/0/empty) |
+| `queryAfterZeroResults` | 1 | none | Return safe default (null/false/0/empty) |
+| `shouldIncludeInGlobalSearch` | 1 | none | throw UnsupportedOperationException |
+| `shouldRewriteQueryFromData` | 1 | none | Return safe default (null/false/0/empty) |
+| `shouldRewriteQueryFromText` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 13 methods that have score >= 5
-2. Stub 10 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -79,6 +74,6 @@ Before marking `android.app.SearchableInfo` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 23 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 13 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

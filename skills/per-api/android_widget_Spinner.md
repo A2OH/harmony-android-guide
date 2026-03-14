@@ -9,15 +9,15 @@
 | **Class** | `android.widget.Spinner` |
 | **Package** | `android.widget` |
 | **Total Methods** | 23 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 16 (69%) |
-| **No Mapping** | 7 (30%) |
+| **Partial/Composite** | 1 (4%) |
+| **No Mapping** | 22 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 16 |
-| **Has Async Gap** | 16 |
+| **Has Async Gap** | 23 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,22 +28,7 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDropDownHorizontalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownVerticalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownWidth` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getGravity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPopupBackground` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPopupContext` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPrompt` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onClick` | 3 | composite | Store callback, never fire |
-| `setDropDownHorizontalOffset` | 3 | composite | Log warning + no-op |
-| `setDropDownVerticalOffset` | 3 | composite | Log warning + no-op |
-| `setGravity` | 3 | composite | Log warning + no-op |
-| `setPopupBackgroundDrawable` | 3 | composite | Log warning + no-op |
-| `setPromptId` | 3 | composite | Log warning + no-op |
-| `setPopupBackgroundResource` | 3 | composite | Log warning + no-op |
-| `setDropDownWidth` | 3 | composite | Log warning + no-op |
-| `setPrompt` | 3 | composite | Log warning + no-op |
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
@@ -51,6 +36,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
 | `Spinner` | 1 | none | throw UnsupportedOperationException |
+| `getDropDownHorizontalOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownVerticalOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownWidth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPopupBackground` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPopupContext` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPrompt` | 1 | none | Return safe default (null/false/0/empty) |
+| `onClick` | 1 | none | Store callback, never fire |
+| `setDropDownHorizontalOffset` | 1 | none | Log warning + no-op |
+| `setDropDownVerticalOffset` | 1 | none | Log warning + no-op |
+| `setDropDownWidth` | 1 | none | Log warning + no-op |
+| `setGravity` | 1 | none | Log warning + no-op |
+| `setPopupBackgroundDrawable` | 1 | none | Log warning + no-op |
+| `setPopupBackgroundResource` | 1 | none | Log warning + no-op |
+| `setPrompt` | 1 | none | Log warning + no-op |
+| `setPromptId` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

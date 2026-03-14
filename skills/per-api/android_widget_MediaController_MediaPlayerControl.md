@@ -9,12 +9,12 @@
 | **Class** | `android.widget.MediaController.MediaPlayerControl` |
 | **Package** | `android.widget.MediaController` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.7 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (54%) |
-| **No Mapping** | 5 (45%) |
+| **Partial/Composite** | 4 (36%) |
+| **No Mapping** | 7 (63%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAudioSessionId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getBufferPercentage` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentPosition` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDuration` | 3 | composite | Return safe default (null/false/0/empty) |
 | `pause` | 3 | composite | throw UnsupportedOperationException |
 | `start` | 3 | composite | Return dummy instance / no-op |
-| `seekTo` | 2 | none | throw UnsupportedOperationException |
+| `getBufferPercentage` | 2 | composite | Return safe default (null/false/0/empty) |
 | `canPause` | 1 | none | Return safe default (null/false/0/empty) |
 | `canSeekBackward` | 1 | none | Return safe default (null/false/0/empty) |
 | `canSeekForward` | 1 | none | Return safe default (null/false/0/empty) |
+| `getAudioSessionId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrentPosition` | 1 | none | Return safe default (null/false/0/empty) |
 | `isPlaying` | 1 | none | Return safe default (null/false/0/empty) |
+| `seekTo` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 

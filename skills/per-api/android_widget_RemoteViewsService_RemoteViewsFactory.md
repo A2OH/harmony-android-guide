@@ -9,12 +9,12 @@
 | **Class** | `android.widget.RemoteViewsService.RemoteViewsFactory` |
 | **Package** | `android.widget.RemoteViewsService` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.8 |
+| **Avg Score** | 2.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (88%) |
-| **No Mapping** | 1 (11%) |
+| **Partial/Composite** | 5 (55%) |
+| **No Mapping** | 4 (44%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -29,14 +29,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getLoadingView` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getViewAt` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getViewTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onCreate` | 3 | composite | Return dummy instance / no-op |
-| `onDataSetChanged` | 3 | composite | Log warning + no-op |
 | `onDestroy` | 3 | composite | No-op |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getViewTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
+| `onCreate` | 1 | none | Return dummy instance / no-op |
+| `onDataSetChanged` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

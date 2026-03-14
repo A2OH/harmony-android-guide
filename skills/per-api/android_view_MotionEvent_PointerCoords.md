@@ -9,12 +9,12 @@
 | **Class** | `android.view.MotionEvent.PointerCoords` |
 | **Package** | `android.view.MotionEvent` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (66%) |
-| **No Mapping** | 2 (33%) |
+| **Partial/Composite** | 1 (16%) |
+| **No Mapping** | 5 (83%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -29,11 +29,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `clear` | 3 | composite | throw UnsupportedOperationException |
-| `copyFrom` | 3 | composite | throw UnsupportedOperationException |
-| `getAxisValue` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAxisValue` | 3 | composite | Return safe default (null/false/0/empty) |
 | `PointerCoords` | 1 | none | throw UnsupportedOperationException |
 | `PointerCoords` | 1 | none | throw UnsupportedOperationException |
+| `copyFrom` | 1 | none | throw UnsupportedOperationException |
+| `getAxisValue` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAxisValue` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

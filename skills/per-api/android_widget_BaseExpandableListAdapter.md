@@ -9,12 +9,12 @@
 | **Class** | `android.widget.BaseExpandableListAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (80%) |
-| **No Mapping** | 3 (20%) |
+| **Partial/Composite** | 2 (13%) |
+| **No Mapping** | 13 (86%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 14 |
 | **Has Async Gap** | 14 |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getChildType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCombinedChildId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCombinedGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `notifyDataSetChanged` | 3 | composite | Log warning + no-op |
-| `notifyDataSetInvalidated` | 3 | composite | Log warning + no-op |
-| `onGroupCollapsed` | 3 | composite | Store callback, never fire |
-| `onGroupExpanded` | 3 | composite | Store callback, never fire |
 | `registerDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
 | `unregisterDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
 | `BaseExpandableListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
 | `areAllItemsEnabled` | 1 | none | throw UnsupportedOperationException |
+| `getChildType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getChildTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCombinedChildId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCombinedGroupId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 | `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `notifyDataSetChanged` | 1 | none | Log warning + no-op |
+| `notifyDataSetInvalidated` | 1 | none | Log warning + no-op |
+| `onGroupCollapsed` | 1 | none | Store callback, never fire |
+| `onGroupExpanded` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

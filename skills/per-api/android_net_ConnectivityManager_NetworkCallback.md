@@ -9,48 +9,55 @@
 | **Class** | `android.net.ConnectivityManager.NetworkCallback` |
 | **Package** | `android.net.ConnectivityManager` |
 | **Total Methods** | 8 |
-| **Avg Score** | 4.6 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 2 (25%) |
-| **Partial/Composite** | 5 (62%) |
-| **No Mapping** | 1 (12%) |
+| **Avg Score** | 4.3 |
+| **Scenario** | S7: Async/Threading Gap |
+| **Strategy** | Promise wrapping, Handler/Looper emulation |
+| **Direct/Near** | 3 (37%) |
+| **Partial/Composite** | 1 (12%) |
+| **No Mapping** | 4 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 3 |
 | **Related Skill Doc** | `A2OH-NETWORKING.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 3-5 |
+| **Test Level** | Level 1 (Mock with concurrency tests) |
 
-## Implementable APIs (score >= 5): 6 methods
+## Implementable APIs (score >= 5): 3 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `onCapabilitiesChanged` | `void onCapabilitiesChanged(@NonNull android.net.Network, @NonNull android.net.NetworkCapabilities)` | 7 | near | moderate | `getNetCapabilities` | `getNetCapabilities(netHandle: NetHandle, callback: AsyncCallback<NetCapabilities>): void` |
-| `onLinkPropertiesChanged` | `void onLinkPropertiesChanged(@NonNull android.net.Network, @NonNull android.net.LinkProperties)` | 6 | near | moderate | `getConnectionProperties` | `getConnectionProperties(netHandle: NetHandle, callback: AsyncCallback<ConnectionProperties>): void` |
-| `onAvailable` | `void onAvailable(@NonNull android.net.Network)` | 5 | partial | moderate | `on` | `on(type: 'interfaceStateChange', callback: Callback<InterfaceStateInfo>): void` |
-| `onLosing` | `void onLosing(@NonNull android.net.Network, int)` | 5 | partial | moderate | `on` | `on(type: 'interfaceStateChange', callback: Callback<InterfaceStateInfo>): void` |
-| `onLost` | `void onLost(@NonNull android.net.Network)` | 5 | partial | moderate | `on` | `on(type: 'interfaceStateChange', callback: Callback<InterfaceStateInfo>): void` |
-| `onUnavailable` | `void onUnavailable()` | 5 | partial | moderate | `on` | `on(type: 'interfaceStateChange', callback: Callback<InterfaceStateInfo>): void` |
+| `onAvailable` | `void onAvailable(@NonNull android.net.Network)` | 9 | direct | impossible | `on(netAvailable)` | `@ohos.net.connection.NetConnection` |
+| `onCapabilitiesChanged` | `void onCapabilitiesChanged(@NonNull android.net.Network, @NonNull android.net.NetworkCapabilities)` | 9 | direct | hard | `on(netCapabilitiesChange)` | `@ohos.net.connection.NetConnection` |
+| `onLost` | `void onLost(@NonNull android.net.Network)` | 9 | direct | impossible | `on(netLost)` | `@ohos.net.connection.NetConnection` |
 
-## Stub APIs (score < 5): 2 methods
+## Gap Descriptions (per method)
+
+- **`onAvailable`**: Direct callback mapping
+- **`onCapabilitiesChanged`**: Direct callback mapping
+- **`onLost`**: Direct callback mapping
+
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onBlockedStatusChanged` | 3 | composite | Store callback, never fire |
+| `onLinkPropertiesChanged` | 3 | composite | Store callback, never fire |
 | `NetworkCallback` | 1 | none | throw UnsupportedOperationException |
+| `onBlockedStatusChanged` | 1 | none | Store callback, never fire |
+| `onLosing` | 1 | none | Store callback, never fire |
+| `onUnavailable` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S7 — Async/Threading Gap**
 
-1. Implement 6 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Implement using Java concurrency primitives (ExecutorService, BlockingQueue)
+2. For Handler: single-thread executor + message queue
+3. For AsyncTask: thread pool + callbacks
+4. For sync-over-async: CompletableFuture wrapping OH Promise (in bridge)
+5. Test with concurrent calls to verify thread safety
+6. Add timeout to all blocking operations to prevent deadlock
 
 ## Dependencies
 
@@ -63,6 +70,6 @@ Before marking `android.net.ConnectivityManager.NetworkCallback` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 8 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 3 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

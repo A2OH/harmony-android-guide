@@ -9,25 +9,25 @@
 | **Class** | `android.content.SyncResult` |
 | **Package** | `android.content` |
 | **Total Methods** | 9 |
-| **Avg Score** | 4.3 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 1 (11%) |
-| **Partial/Composite** | 7 (77%) |
-| **No Mapping** | 1 (11%) |
+| **Avg Score** | 1.9 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 2 (22%) |
+| **No Mapping** | 7 (77%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md / A2OH-DATA-LAYER.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
 ## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `SyncResult` | `SyncResult()` | 8 | near | easy | `result` | `result: number` |
-| `clear` | `void clear()` | 6 | partial | moderate | `clearMission` | `clearMission(missionId: number, callback: AsyncCallback<void>): void` |
+| `SyncResult` | `SyncResult()` | 5 | partial | moderate | `result` | `result: number` |
+| `clear` | `void clear()` | 5 | partial | moderate | `clear` | `clear(): void` |
 
 ## Stub APIs (score < 5): 7 methods
 
@@ -35,23 +35,24 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `toDebugString` | 4 | partial | throw UnsupportedOperationException |
-| `writeToParcel` | 4 | partial | Log warning + no-op |
-| `madeSomeProgress` | 4 | partial | throw UnsupportedOperationException |
-| `hasHardError` | 4 | composite | Return safe default (null/false/0/empty) |
-| `hasError` | 4 | composite | Return safe default (null/false/0/empty) |
-| `hasSoftError` | 3 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `hasError` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasHardError` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasSoftError` | 1 | none | Return safe default (null/false/0/empty) |
+| `madeSomeProgress` | 1 | none | throw UnsupportedOperationException |
+| `toDebugString` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 

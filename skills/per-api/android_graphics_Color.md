@@ -9,61 +9,71 @@
 | **Class** | `android.graphics.Color` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 21 |
-| **Avg Score** | 5.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 9 (42%) |
-| **Partial/Composite** | 7 (33%) |
-| **No Mapping** | 5 (23%) |
+| **Avg Score** | 3.1 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 6 (28%) |
+| **Partial/Composite** | 5 (23%) |
+| **No Mapping** | 10 (47%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 11 methods
+## Implementable APIs (score >= 5): 8 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `blue` | `float blue()` | 10 | direct | trivial | `blueX` | `blueX: number` |
-| `blue` | `static float blue(@ColorLong long)` | 10 | direct | trivial | `blueX` | `blueX: number` |
-| `green` | `float green()` | 10 | direct | trivial | `greenX` | `greenX: number` |
-| `green` | `static float green(@ColorLong long)` | 10 | direct | trivial | `greenX` | `greenX: number` |
-| `red` | `float red()` | 10 | direct | trivial | `redX` | `redX: number` |
-| `red` | `static float red(@ColorLong long)` | 10 | direct | trivial | `redX` | `redX: number` |
-| `alpha` | `float alpha()` | 8 | direct | easy | `alpha` | `alpha: number` |
-| `alpha` | `static float alpha(@ColorLong long)` | 8 | direct | easy | `alpha` | `alpha: number` |
-| `getComponent` | `float getComponent(@IntRange(from=0, to=4) int)` | 6 | near | moderate | `createComponentObserver` | `createComponentObserver(id: string): ComponentObserver` |
-| `isInColorSpace` | `static boolean isInColorSpace(@ColorLong long, @NonNull android.graphics.ColorSpace)` | 6 | partial | moderate | `OH_NativeBuffer_SetColorSpace` | `int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace)` |
-| `getModel` | `android.graphics.ColorSpace.Model getModel()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
+| `blue` | `float blue()` | 6 | near | moderate | `blueX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `blue` | `static float blue(@ColorLong long)` | 6 | near | moderate | `blueX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `green` | `float green()` | 6 | near | moderate | `greenX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `green` | `static float green(@ColorLong long)` | 6 | near | moderate | `greenX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `red` | `float red()` | 6 | near | moderate | `redX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `red` | `static float red(@ColorLong long)` | 6 | near | moderate | `redX` | `@ohos.graphics.colorSpaceManager.ColorSpacePrimaries` |
+| `alpha` | `float alpha()` | 6 | partial | moderate | `alpha` | `alpha: number` |
+| `alpha` | `static float alpha(@ColorLong long)` | 6 | partial | moderate | `alpha` | `alpha: number` |
 
-## Stub APIs (score < 5): 10 methods
+## Gap Descriptions (per method)
+
+- **`blue`**: Auto-promoted: near score=6.0625
+- **`blue`**: Auto-promoted: near score=6.0625
+- **`green`**: Auto-promoted: near score=6.0625
+- **`green`**: Auto-promoted: near score=6.0625
+- **`red`**: Auto-promoted: near score=6.0625
+- **`red`**: Auto-promoted: near score=6.0625
+
+## Stub APIs (score < 5): 13 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `Color` | 4 | composite | throw UnsupportedOperationException |
-| `colorToHSV` | 4 | composite | throw UnsupportedOperationException |
-| `RGBToHSV` | 3 | composite | throw UnsupportedOperationException |
-| `isWideGamut` | 2 | composite | Return safe default (null/false/0/empty) |
-| `isWideGamut` | 2 | composite | Return safe default (null/false/0/empty) |
-| `isSrgb` | 2 | none | Return safe default (null/false/0/empty) |
-| `isSrgb` | 2 | none | Return safe default (null/false/0/empty) |
+| `getComponent` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isInColorSpace` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getModel` | 2 | composite | Return safe default (null/false/0/empty) |
+| `Color` | 1 | none | throw UnsupportedOperationException |
+| `RGBToHSV` | 1 | none | throw UnsupportedOperationException |
+| `colorToHSV` | 1 | none | throw UnsupportedOperationException |
+| `isSrgb` | 1 | none | Return safe default (null/false/0/empty) |
+| `isSrgb` | 1 | none | Return safe default (null/false/0/empty) |
+| `isWideGamut` | 1 | none | Return safe default (null/false/0/empty) |
+| `isWideGamut` | 1 | none | Return safe default (null/false/0/empty) |
 | `luminance` | 1 | none | throw UnsupportedOperationException |
 | `luminance` | 1 | none | throw UnsupportedOperationException |
 | `luminance` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 11 methods that have score >= 5
-2. Stub 10 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -76,6 +86,6 @@ Before marking `android.graphics.Color` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 21 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 11 test methods for implemented APIs
+3. **Test Coverage**: At least 8 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

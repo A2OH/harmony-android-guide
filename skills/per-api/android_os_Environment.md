@@ -9,12 +9,12 @@
 | **Class** | `android.os.Environment` |
 | **Package** | `android.os` |
 | **Total Methods** | 13 |
-| **Avg Score** | 5.7 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 4 (30%) |
-| **Partial/Composite** | 9 (69%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.3 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 1 (7%) |
+| **Partial/Composite** | 10 (76%) |
+| **No Mapping** | 2 (15%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,40 +22,44 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 11 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `Environment` | `Environment()` | 8 | near | easy | `getEnvironmentVar` | `getEnvironmentVar(name: string): string` |
-| `getDataDirectory` | `static java.io.File getDataDirectory()` | 7 | near | moderate | `getDataSummary` | `getDataSummary(): Array<Summary>` |
-| `isExternalStorageManager` | `static boolean isExternalStorageManager()` | 6 | near | moderate | `getSystemResourceManager` | `getSystemResourceManager(): ResourceManager` |
-| `isExternalStorageManager` | `static boolean isExternalStorageManager(@NonNull java.io.File)` | 6 | near | moderate | `getSystemResourceManager` | `getSystemResourceManager(): ResourceManager` |
-| `getExternalStorageState` | `static String getExternalStorageState()` | 6 | partial | moderate | `getAttestStatus` | `getAttestStatus(callback: AsyncCallback<AttestResultInfo>): void` |
-| `getExternalStorageState` | `static String getExternalStorageState(java.io.File)` | 6 | partial | moderate | `getAttestStatus` | `getAttestStatus(callback: AsyncCallback<AttestResultInfo>): void` |
-| `getDownloadCacheDirectory` | `static java.io.File getDownloadCacheDirectory()` | 5 | partial | moderate | `getDLPFileAccessRecords` | `getDLPFileAccessRecords(): Promise<Array<AccessedDLPFileInfo>>` |
-| `isExternalStorageRemovable` | `static boolean isExternalStorageRemovable()` | 5 | partial | moderate | `isFlagEnabled` | `isFlagEnabled(id: HiTraceId, flag: HiTraceFlag): boolean` |
-| `isExternalStorageRemovable` | `static boolean isExternalStorageRemovable(@NonNull java.io.File)` | 5 | partial | moderate | `isFlagEnabled` | `isFlagEnabled(id: HiTraceId, flag: HiTraceFlag): boolean` |
-| `isExternalStorageEmulated` | `static boolean isExternalStorageEmulated()` | 5 | partial | moderate | `isFeatureSupported` | `isFeatureSupported(featureId: number): boolean` |
-| `isExternalStorageEmulated` | `static boolean isExternalStorageEmulated(@NonNull java.io.File)` | 5 | partial | moderate | `isFeatureSupported` | `isFeatureSupported(featureId: number): boolean` |
+| `getDataDirectory` | `static java.io.File getDataDirectory()` | 7 | near | hard | `getStorageDataDir` | `@ohos.file.environment.Environment` |
 
-## Stub APIs (score < 5): 2 methods
+## Gap Descriptions (per method)
+
+- **`getDataDirectory`**: Both return data dir
+
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isExternalStorageLegacy` | 5 | partial | Return safe default (null/false/0/empty) |
-| `isExternalStorageLegacy` | 5 | partial | Return safe default (null/false/0/empty) |
+| `isExternalStorageManager` | 4 | partial | Return safe default (null/false/0/empty) |
+| `isExternalStorageManager` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getDownloadCacheDirectory` | 4 | partial | Return safe default (null/false/0/empty) |
+| `Environment` | 3 | composite | Store callback, never fire |
+| `isExternalStorageRemovable` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isExternalStorageRemovable` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isExternalStorageEmulated` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isExternalStorageEmulated` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getExternalStorageState` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getExternalStorageState` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isExternalStorageLegacy` | 1 | none | Return safe default (null/false/0/empty) |
+| `isExternalStorageLegacy` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 11 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -68,6 +72,6 @@ Before marking `android.os.Environment` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 13 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 11 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

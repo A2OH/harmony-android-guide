@@ -9,12 +9,12 @@
 | **Class** | `android.view.VerifiedMotionEvent` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 2 (33%) |
+| **No Mapping** | 4 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getActionMasked` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getButtonState` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDownTimeNanos` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMetaState` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getRawX` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getRawY` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getActionMasked` | 1 | none | Return safe default (null/false/0/empty) |
+| `getButtonState` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDownTimeNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMetaState` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

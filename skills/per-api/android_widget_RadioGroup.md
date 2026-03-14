@@ -9,15 +9,15 @@
 | **Class** | `android.widget.RadioGroup` |
 | **Package** | `android.widget` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (50%) |
-| **No Mapping** | 3 (50%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
-| **Has Async Gap** | 4 |
+| **Has Async Gap** | 6 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `check` | 3 | composite | throw UnsupportedOperationException |
-| `clearCheck` | 3 | composite | throw UnsupportedOperationException |
-| `setOnCheckedChangeListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `RadioGroup` | 1 | none | throw UnsupportedOperationException |
 | `RadioGroup` | 1 | none | throw UnsupportedOperationException |
+| `check` | 1 | none | throw UnsupportedOperationException |
+| `clearCheck` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `setOnCheckedChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

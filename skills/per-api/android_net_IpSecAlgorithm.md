@@ -9,7 +9,7 @@
 | **Class** | `android.net.IpSecAlgorithm` |
 | **Package** | `android.net` |
 | **Total Methods** | 5 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
@@ -22,18 +22,13 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getTruncationLengthBits` | `int getTruncationLengthBits()` | 6 | partial | moderate | `getConnectionProperties` | `getConnectionProperties(netHandle: NetHandle, callback: AsyncCallback<ConnectionProperties>): void` |
-
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `getTruncationLengthBits` | 2 | composite | Return safe default (null/false/0/empty) |
 | `IpSecAlgorithm` | 1 | none | throw UnsupportedOperationException |
 | `IpSecAlgorithm` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
@@ -62,6 +57,6 @@ Before marking `android.net.IpSecAlgorithm` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

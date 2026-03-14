@@ -9,12 +9,12 @@
 | **Class** | `android.media.MediaSync` |
 | **Package** | `android.media` |
 | **Total Methods** | 13 |
-| **Avg Score** | 6.1 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 6 (46%) |
-| **Partial/Composite** | 6 (46%) |
-| **No Mapping** | 1 (7%) |
+| **Avg Score** | 3.1 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 9 (69%) |
+| **No Mapping** | 4 (30%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,40 +22,40 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 10 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `Callback` | `MediaSync.Callback()` | 10 | direct | trivial | `callback` | `callback: AsyncCallback<boolean>): void` |
-| `release` | `void release()` | 10 | direct | trivial | `release` | `release(callback: AsyncCallback<void>): void` |
-| `setCallback` | `void setCallback(@Nullable android.media.MediaSync.Callback, @Nullable android.os.Handler)` | 8 | direct | easy | `callback` | `callback: AsyncCallback<boolean>): void` |
-| `MediaSync` | `MediaSync()` | 7 | near | moderate | `mediaType` | `readonly mediaType: MediaType` |
-| `setAudioTrack` | `void setAudioTrack(@Nullable android.media.AudioTrack)` | 6 | near | moderate | `castAudio` | `castAudio(session: SessionToken | 'all', audioDevices: Array<audio.AudioDeviceDescriptor>, callback: AsyncCallback<void>): void` |
-| `setPlaybackParams` | `void setPlaybackParams(@NonNull android.media.PlaybackParams)` | 6 | near | moderate | `startAVPlayback` | `startAVPlayback(bundleName: string, assetId: string): Promise<void>` |
-| `onAudioBufferConsumed` | `abstract void onAudioBufferConsumed(@NonNull android.media.MediaSync, @NonNull java.nio.ByteBuffer, int)` | 6 | partial | moderate | `OH_AudioDecoder_Configure` | `OH_AVErrCode OH_AudioDecoder_Configure(OH_AVCodec *codec, OH_AVFormat *format)` |
-| `setSurface` | `void setSurface(@Nullable android.view.Surface)` | 6 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
-| `queueAudio` | `void queueAudio(@NonNull java.nio.ByteBuffer, int, long)` | 5 | partial | moderate | `castAudio` | `castAudio(session: SessionToken | 'all', audioDevices: Array<audio.AudioDeviceDescriptor>, callback: AsyncCallback<void>): void` |
-| `setSyncParams` | `void setSyncParams(@NonNull android.media.SyncParams)` | 5 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
+| `setCallback` | `void setCallback(@Nullable android.media.MediaSync.Callback, @Nullable android.os.Handler)` | 6 | partial | moderate | `callback` | `callback: AsyncCallback<boolean>): void` |
+| `Callback` | `MediaSync.Callback()` | 6 | partial | moderate | `callback` | `callback: AsyncCallback<boolean>): void` |
 
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setOnErrorListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `flush` | 4 | partial | throw UnsupportedOperationException |
+| `MediaSync` | 5 | partial | throw UnsupportedOperationException |
+| `release` | 5 | partial | No-op |
+| `setAudioTrack` | 3 | composite | Log warning + no-op |
+| `setPlaybackParams` | 3 | composite | Log warning + no-op |
+| `setSurface` | 3 | composite | Log warning + no-op |
+| `queueAudio` | 3 | composite | throw UnsupportedOperationException |
+| `onAudioBufferConsumed` | 2 | composite | Store callback, never fire |
 | `finalize` | 1 | none | throw UnsupportedOperationException |
+| `flush` | 1 | none | throw UnsupportedOperationException |
+| `setOnErrorListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSyncParams` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 10 methods that have score >= 5
-2. Stub 3 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -69,6 +69,6 @@ Before marking `android.media.MediaSync` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 13 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 10 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

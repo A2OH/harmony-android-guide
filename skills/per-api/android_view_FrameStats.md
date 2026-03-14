@@ -9,12 +9,12 @@
 | **Class** | `android.view.FrameStats` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.9 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getEndTimeNano` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFrameCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFramePresentedTimeNano` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRefreshPeriodNano` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStartTimeNano` | 3 | composite | Return dummy instance / no-op |
-| `FrameStats` | 3 | composite | throw UnsupportedOperationException |
+| `FrameStats` | 1 | none | throw UnsupportedOperationException |
+| `getEndTimeNano` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFrameCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFramePresentedTimeNano` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRefreshPeriodNano` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStartTimeNano` | 1 | none | Return dummy instance / no-op |
 
 ## AI Agent Instructions
 

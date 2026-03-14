@@ -9,12 +9,12 @@
 | **Class** | `android.widget.MultiAutoCompleteTextView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 6 |
-| **Avg Score** | 1.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (16%) |
-| **No Mapping** | 5 (83%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 2 |
 | **Has Async Gap** | 2 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setTokenizer` | 3 | composite | Log warning + no-op |
 | `MultiAutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `MultiAutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `MultiAutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `MultiAutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `performFiltering` | 1 | none | throw UnsupportedOperationException |
+| `setTokenizer` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

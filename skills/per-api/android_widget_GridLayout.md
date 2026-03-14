@@ -9,12 +9,12 @@
 | **Class** | `android.widget.GridLayout` |
 | **Package** | `android.widget` |
 | **Total Methods** | 29 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (41%) |
-| **No Mapping** | 17 (58%) |
+| **Partial/Composite** | 1 (3%) |
+| **No Mapping** | 28 (96%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 25 |
 | **Has Async Gap** | 25 |
@@ -28,18 +28,7 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAlignmentMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getColumnCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOrientation` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRowCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getUseDefaultMargins` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAlignmentMode` | 3 | composite | Log warning + no-op |
-| `setColumnCount` | 3 | composite | Log warning + no-op |
-| `setOrientation` | 3 | composite | Log warning + no-op |
-| `setRowCount` | 3 | composite | Log warning + no-op |
-| `setUseDefaultMargins` | 3 | composite | Log warning + no-op |
-| `setColumnOrderPreserved` | 3 | composite | Log warning + no-op |
-| `setRowOrderPreserved` | 3 | composite | Log warning + no-op |
+| `getOrientation` | 2 | composite | Return safe default (null/false/0/empty) |
 | `GridLayout` | 1 | none | throw UnsupportedOperationException |
 | `GridLayout` | 1 | none | throw UnsupportedOperationException |
 | `GridLayout` | 1 | none | throw UnsupportedOperationException |
@@ -47,8 +36,19 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `generateDefaultLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getAlignmentMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getColumnCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRowCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getUseDefaultMargins` | 1 | none | Return safe default (null/false/0/empty) |
 | `isColumnOrderPreserved` | 1 | none | Return safe default (null/false/0/empty) |
 | `isRowOrderPreserved` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAlignmentMode` | 1 | none | Log warning + no-op |
+| `setColumnCount` | 1 | none | Log warning + no-op |
+| `setColumnOrderPreserved` | 1 | none | Log warning + no-op |
+| `setOrientation` | 1 | none | Log warning + no-op |
+| `setRowCount` | 1 | none | Log warning + no-op |
+| `setRowOrderPreserved` | 1 | none | Log warning + no-op |
+| `setUseDefaultMargins` | 1 | none | Log warning + no-op |
 | `spec` | 1 | none | throw UnsupportedOperationException |
 | `spec` | 1 | none | throw UnsupportedOperationException |
 | `spec` | 1 | none | throw UnsupportedOperationException |

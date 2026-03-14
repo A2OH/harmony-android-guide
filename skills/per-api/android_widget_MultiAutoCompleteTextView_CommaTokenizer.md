@@ -9,12 +9,12 @@
 | **Class** | `android.widget.MultiAutoCompleteTextView.CommaTokenizer` |
 | **Package** | `android.widget.MultiAutoCompleteTextView` |
 | **Total Methods** | 4 |
-| **Avg Score** | 1.5 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (25%) |
-| **No Mapping** | 3 (75%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 4 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,8 +28,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `findTokenEnd` | 3 | composite | Return safe default (null/false/0/empty) |
 | `CommaTokenizer` | 1 | none | throw UnsupportedOperationException |
+| `findTokenEnd` | 1 | none | Return safe default (null/false/0/empty) |
 | `findTokenStart` | 1 | none | Return dummy instance / no-op |
 | `terminateToken` | 1 | none | throw UnsupportedOperationException |
 

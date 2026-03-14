@@ -9,12 +9,12 @@
 | **Class** | `android.widget.PopupMenu` |
 | **Package** | `android.widget` |
 | **Total Methods** | 14 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (64%) |
-| **No Mapping** | 5 (35%) |
+| **Partial/Composite** | 4 (28%) |
+| **No Mapping** | 10 (71%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -30,18 +30,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getDragToOpenListener` | 3 | composite | Return dummy instance / no-op |
 | `getGravity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMenuInflater` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setGravity` | 3 | composite | Log warning + no-op |
-| `setOnDismissListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnMenuItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `show` | 3 | composite | throw UnsupportedOperationException |
-| `setForceShowIcon` | 3 | composite | Log warning + no-op |
+| `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
 | `PopupMenu` | 1 | none | throw UnsupportedOperationException |
 | `PopupMenu` | 1 | none | throw UnsupportedOperationException |
 | `PopupMenu` | 1 | none | throw UnsupportedOperationException |
 | `dismiss` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMenuInflater` | 1 | none | Return safe default (null/false/0/empty) |
 | `inflate` | 1 | none | throw UnsupportedOperationException |
+| `setForceShowIcon` | 1 | none | Log warning + no-op |
+| `setGravity` | 1 | none | Log warning + no-op |
+| `setOnDismissListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnMenuItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

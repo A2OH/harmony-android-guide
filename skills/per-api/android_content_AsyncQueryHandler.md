@@ -9,12 +9,12 @@
 | **Class** | `android.content.AsyncQueryHandler` |
 | **Package** | `android.content` |
 | **Total Methods** | 11 |
-| **Avg Score** | 5.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 8 (72%) |
-| **Partial/Composite** | 3 (27%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.0 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 9 (81%) |
+| **No Mapping** | 2 (18%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,38 +22,33 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 10 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `createHandler` | `android.os.Handler createHandler(android.os.Looper)` | 6 | near | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `cancelOperation` | `final void cancelOperation(int)` | 6 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `startDelete` | `final void startDelete(int, Object, android.net.Uri, String, String[])` | 6 | near | moderate | `deleteId` | `deleteId(uri: string): string` |
-| `startUpdate` | `final void startUpdate(int, Object, android.net.Uri, android.content.ContentValues, String, String[])` | 6 | near | moderate | `updateId` | `updateId(uri: string, id: number): string` |
-| `onDeleteComplete` | `void onDeleteComplete(int, Object, int)` | 6 | near | moderate | `deleteEntries` | `deleteEntries: Entry[]` |
-| `onInsertComplete` | `void onInsertComplete(int, Object, android.net.Uri)` | 6 | near | moderate | `insertEntries` | `insertEntries: Entry[]` |
-| `onUpdateComplete` | `void onUpdateComplete(int, Object, int)` | 6 | near | moderate | `updateEntries` | `updateEntries: Entry[]` |
-| `startInsert` | `final void startInsert(int, Object, android.net.Uri, android.content.ContentValues)` | 6 | near | moderate | `startAbility` | `startAbility(parameter: StartAbilityParameter, callback: AsyncCallback<number>): void` |
-| `startQuery` | `void startQuery(int, Object, android.net.Uri, String[], String, String[], String)` | 5 | partial | moderate | `startAbility` | `startAbility(parameter: StartAbilityParameter, callback: AsyncCallback<number>): void` |
-| `onQueryComplete` | `void onQueryComplete(int, Object, android.database.Cursor)` | 5 | partial | moderate | `queryParticipants` | `queryParticipants(sharingResource: string, callback: AsyncCallback<Result<Array<Participant>>>): void` |
-
-## Stub APIs (score < 5): 1 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `AsyncQueryHandler` | 5 | partial | Return safe default (null/false/0/empty) |
+| `onDeleteComplete` | 4 | partial | Store callback, never fire |
+| `onInsertComplete` | 4 | partial | Store callback, never fire |
+| `onUpdateComplete` | 4 | partial | Log warning + no-op |
+| `cancelOperation` | 3 | composite | Return safe default (null/false/0/empty) |
+| `startInsert` | 3 | composite | Return dummy instance / no-op |
+| `startQuery` | 3 | composite | Return dummy instance / no-op |
+| `createHandler` | 3 | composite | Return dummy instance / no-op |
+| `startDelete` | 3 | composite | Return dummy instance / no-op |
+| `startUpdate` | 3 | composite | Return dummy instance / no-op |
+| `AsyncQueryHandler` | 1 | none | Return safe default (null/false/0/empty) |
+| `onQueryComplete` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 10 methods that have score >= 5
-2. Stub 1 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -67,6 +62,6 @@ Before marking `android.content.AsyncQueryHandler` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 10 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.view.SurfaceControl.Transaction` |
 | **Package** | `android.view.SurfaceControl` |
 | **Total Methods** | 5 |
-| **Avg Score** | 1.6 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (40%) |
-| **No Mapping** | 3 (60%) |
+| **Partial/Composite** | 1 (20%) |
+| **No Mapping** | 4 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -29,10 +29,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `close` | 3 | composite | No-op |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `Transaction` | 1 | none | Store callback, never fire |
 | `apply` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

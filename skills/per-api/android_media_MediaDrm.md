@@ -9,74 +9,75 @@
 | **Class** | `android.media.MediaDrm` |
 | **Package** | `android.media` |
 | **Total Methods** | 34 |
-| **Avg Score** | 5.2 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 7 (20%) |
-| **Partial/Composite** | 27 (79%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 2.2 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 15 (44%) |
+| **No Mapping** | 19 (55%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-MEDIA.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 18 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `close` | `void close()` | 10 | direct | trivial | `close` | `close(fd: number, callback: AsyncCallback<void>): void` |
-| `closeSession` | `void closeSession(@NonNull byte[])` | 7 | near | moderate | `sessionId` | `readonly sessionId: string` |
-| `getCryptoSession` | `android.media.MediaDrm.CryptoSession getCryptoSession(@NonNull byte[], @NonNull String, @NonNull String)` | 6 | near | moderate | `createAVSession` | `createAVSession(context: Context, tag: string, type: AVSessionType, callback: AsyncCallback<AVSession>): void` |
-| `isCryptoSchemeSupported` | `static boolean isCryptoSchemeSupported(@NonNull java.util.UUID)` | 6 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `isCryptoSchemeSupported` | `static boolean isCryptoSchemeSupported(@NonNull java.util.UUID, @NonNull String)` | 6 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `isCryptoSchemeSupported` | `static boolean isCryptoSchemeSupported(@NonNull java.util.UUID, @NonNull String, @android.media.MediaDrm.SecurityLevel int)` | 6 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `getMaxSessionCount` | `int getMaxSessionCount()` | 6 | near | moderate | `getAllSessionDescriptors` | `getAllSessionDescriptors(callback: AsyncCallback<Array<Readonly<AVSessionDescriptor>>>): void` |
-| `getOpenSessionCount` | `int getOpenSessionCount()` | 6 | partial | moderate | `getCount` | `getCount(): number` |
-| `MediaDrm` | `MediaDrm(@NonNull java.util.UUID) throws android.media.UnsupportedSchemeException` | 6 | partial | moderate | `mediaType` | `readonly mediaType: MediaType` |
-| `getMetrics` | `android.os.PersistableBundle getMetrics()` | 6 | partial | moderate | `getAllPeers` | `getAllPeers(callback: AsyncCallback<Array<PeerInfo>>): void` |
-| `releaseSecureStops` | `void releaseSecureStops(@NonNull byte[])` | 6 | partial | moderate | `release` | `release(callback: AsyncCallback<void>): void` |
-| `setOnEventListener` | `void setOnEventListener(@Nullable android.media.MediaDrm.OnEventListener)` | 5 | partial | moderate | `eventType` | `eventType: InterruptType` |
-| `setOnEventListener` | `void setOnEventListener(@Nullable android.media.MediaDrm.OnEventListener, @Nullable android.os.Handler)` | 5 | partial | moderate | `eventType` | `eventType: InterruptType` |
-| `setOnEventListener` | `void setOnEventListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaDrm.OnEventListener)` | 5 | partial | moderate | `eventType` | `eventType: InterruptType` |
-| `getOfflineLicenseState` | `int getOfflineLicenseState(@NonNull byte[])` | 5 | partial | moderate | `getFileAssets` | `getFileAssets(callback: AsyncCallback<FetchFileResult>): void` |
-| `getMaxSecurityLevel` | `static int getMaxSecurityLevel()` | 5 | partial | moderate | `getLastObject` | `getLastObject(callback: AsyncCallback<FileAsset>): void` |
-| `removeAllSecureStops` | `void removeAllSecureStops()` | 5 | partial | moderate | `getAllSessionDescriptors` | `getAllSessionDescriptors(callback: AsyncCallback<Array<Readonly<AVSessionDescriptor>>>): void` |
-| `removeSecureStop` | `void removeSecureStop(@NonNull byte[])` | 5 | partial | moderate | `OH_VideoDecoder_Stop` | `OH_AVErrCode OH_VideoDecoder_Stop(OH_AVCodec *codec)` |
+| `getOpenSessionCount` | `int getOpenSessionCount()` | 5 | partial | moderate | `getCount` | `getCount(): number` |
 
-## Stub APIs (score < 5): 16 methods
+## Stub APIs (score < 5): 33 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `clearOnEventListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `clearOnSessionLostStateListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setOnSessionLostStateListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setOnSessionLostStateListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setPropertyString` | 5 | partial | Log warning + no-op |
-| `setPropertyByteArray` | 5 | partial | Log warning + no-op |
-| `provideProvisionResponse` | 5 | partial | Return safe default (null/false/0/empty) |
-| `removeOfflineLicense` | 5 | partial | Log warning + no-op |
-| `setOnExpirationUpdateListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setOnExpirationUpdateListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `clearOnKeyStatusChangeListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `restoreKeys` | 4 | partial | throw UnsupportedOperationException |
-| `setOnKeyStatusChangeListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setOnKeyStatusChangeListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `clearOnExpirationUpdateListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `removeKeys` | 3 | composite | Log warning + no-op |
+| `MediaDrm` | 5 | partial | throw UnsupportedOperationException |
+| `closeSession` | 4 | partial | No-op |
+| `close` | 4 | partial | No-op |
+| `setOnEventListener` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setOnEventListener` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setOnEventListener` | 4 | partial | Return safe default (null/false/0/empty) |
+| `releaseSecureStops` | 4 | composite | No-op |
+| `isCryptoSchemeSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isCryptoSchemeSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isCryptoSchemeSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMetrics` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCryptoSession` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMaxSessionCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getOfflineLicenseState` | 2 | composite | Return safe default (null/false/0/empty) |
+| `clearOnEventListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `clearOnExpirationUpdateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `clearOnKeyStatusChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `clearOnSessionLostStateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMaxSecurityLevel` | 1 | none | Return safe default (null/false/0/empty) |
+| `provideProvisionResponse` | 1 | none | Return safe default (null/false/0/empty) |
+| `removeAllSecureStops` | 1 | none | No-op |
+| `removeKeys` | 1 | none | Log warning + no-op |
+| `removeOfflineLicense` | 1 | none | Log warning + no-op |
+| `removeSecureStop` | 1 | none | No-op |
+| `restoreKeys` | 1 | none | throw UnsupportedOperationException |
+| `setOnExpirationUpdateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnExpirationUpdateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnKeyStatusChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnKeyStatusChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnSessionLostStateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnSessionLostStateListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setPropertyByteArray` | 1 | none | Log warning + no-op |
+| `setPropertyString` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 18 methods that have score >= 5
-2. Stub 16 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -90,6 +91,6 @@ Before marking `android.media.MediaDrm` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 34 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 18 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

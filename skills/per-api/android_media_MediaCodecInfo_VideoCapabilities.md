@@ -9,11 +9,11 @@
 | **Class** | `android.media.MediaCodecInfo.VideoCapabilities` |
 | **Package** | `android.media.MediaCodecInfo` |
 | **Total Methods** | 11 |
-| **Avg Score** | 6.0 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 7 (63%) |
-| **Partial/Composite** | 4 (36%) |
+| **Avg Score** | 2.6 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 11 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,32 +22,33 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 11 methods
+## Stub APIs (score < 5): 11 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `isSizeSupported` | `boolean isSizeSupported(int, int)` | 6 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `getBitrateRange` | `android.util.Range<java.lang.Integer> getBitrateRange()` | 6 | near | moderate | `getCameraManager` | `getCameraManager(context: Context): CameraManager` |
-| `getSupportedFrameRates` | `android.util.Range<java.lang.Integer> getSupportedFrameRates()` | 6 | near | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
-| `areSizeAndRateSupported` | `boolean areSizeAndRateSupported(int, int, double)` | 6 | near | moderate | `OH_AVCapability_AreVideoSizeAndFrameRateSupported` | `bool OH_AVCapability_AreVideoSizeAndFrameRateSupported(OH_AVCapability *capability, int32_t width, int32_t height,
-                                                       int32_t frameRate)` |
-| `getHeightAlignment` | `int getHeightAlignment()` | 6 | near | moderate | `OH_AVCapability_GetVideoHeightAlignment` | `OH_AVErrCode OH_AVCapability_GetVideoHeightAlignment(OH_AVCapability *capability, int32_t *heightAlignment)` |
-| `getWidthAlignment` | `int getWidthAlignment()` | 6 | near | moderate | `OH_AVCapability_GetVideoWidthAlignment` | `OH_AVErrCode OH_AVCapability_GetVideoWidthAlignment(OH_AVCapability *capability, int32_t *widthAlignment)` |
-| `getSupportedFrameRatesFor` | `android.util.Range<java.lang.Double> getSupportedFrameRatesFor(int, int)` | 6 | near | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
-| `getSupportedWidthsFor` | `android.util.Range<java.lang.Integer> getSupportedWidthsFor(int)` | 5 | partial | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
-| `getSupportedWidths` | `android.util.Range<java.lang.Integer> getSupportedWidths()` | 5 | partial | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
-| `getSupportedHeightsFor` | `android.util.Range<java.lang.Integer> getSupportedHeightsFor(int)` | 5 | partial | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
-| `getSupportedHeights` | `android.util.Range<java.lang.Integer> getSupportedHeights()` | 5 | partial | moderate | `OH_ImageSource_GetSupportedFormats` | `int32_t OH_ImageSource_GetSupportedFormats(struct OhosImageSourceSupportedFormatList* res)` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `isSizeSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getBitrateRange` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedFrameRates` | 3 | composite | Return safe default (null/false/0/empty) |
+| `areSizeAndRateSupported` | 3 | composite | throw UnsupportedOperationException |
+| `getHeightAlignment` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getWidthAlignment` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedFrameRatesFor` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedWidthsFor` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedWidths` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedHeightsFor` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getSupportedHeights` | 2 | composite | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 11 methods that have score >= 5
-2. Stub 0 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -60,6 +61,6 @@ Before marking `android.media.MediaCodecInfo.VideoCapabilities` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 11 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

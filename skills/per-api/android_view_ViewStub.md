@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewStub` |
 | **Package** | `android.view` |
 | **Total Methods** | 11 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (45%) |
-| **No Mapping** | 6 (54%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 11 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getLayoutInflater` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setInflatedId` | 3 | composite | Log warning + no-op |
-| `setLayoutInflater` | 3 | composite | Log warning + no-op |
-| `setLayoutResource` | 3 | composite | Log warning + no-op |
-| `setOnInflateListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `ViewStub` | 1 | none | throw UnsupportedOperationException |
 | `ViewStub` | 1 | none | throw UnsupportedOperationException |
 | `ViewStub` | 1 | none | throw UnsupportedOperationException |
 | `ViewStub` | 1 | none | throw UnsupportedOperationException |
 | `ViewStub` | 1 | none | throw UnsupportedOperationException |
+| `getLayoutInflater` | 1 | none | Return safe default (null/false/0/empty) |
 | `inflate` | 1 | none | throw UnsupportedOperationException |
+| `setInflatedId` | 1 | none | Log warning + no-op |
+| `setLayoutInflater` | 1 | none | Log warning + no-op |
+| `setLayoutResource` | 1 | none | Log warning + no-op |
+| `setOnInflateListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

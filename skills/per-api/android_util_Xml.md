@@ -9,47 +9,52 @@
 | **Class** | `android.util.Xml` |
 | **Package** | `android.util` |
 | **Total Methods** | 7 |
-| **Avg Score** | 7.4 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 4 (57%) |
-| **Partial/Composite** | 3 (42%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 4.0 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 2 (28%) |
+| **Partial/Composite** | 4 (57%) |
+| **No Mapping** | 1 (14%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 1 |
 | **Related Skill Doc** | `SHIM-INDEX.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 6 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `parse` | `static void parse(String, org.xml.sax.ContentHandler) throws org.xml.sax.SAXException` | 10 | direct | trivial | `parseUUID` | `parseUUID(uuid: string): Uint8Array` |
-| `parse` | `static void parse(java.io.Reader, org.xml.sax.ContentHandler) throws java.io.IOException, org.xml.sax.SAXException` | 10 | direct | trivial | `parseUUID` | `parseUUID(uuid: string): Uint8Array` |
-| `parse` | `static void parse(java.io.InputStream, android.util.Xml.Encoding, org.xml.sax.ContentHandler) throws java.io.IOException, org.xml.sax.SAXException` | 10 | direct | trivial | `parseUUID` | `parseUUID(uuid: string): Uint8Array` |
-| `findEncodingByName` | `static android.util.Xml.Encoding findEncodingByName(String) throws java.io.UnsupportedEncodingException` | 6 | near | moderate | `isEncoding` | `isEncoding(encoding: string): boolean` |
-| `newSerializer` | `static org.xmlpull.v1.XmlSerializer newSerializer()` | 6 | partial | moderate | `newSEService` | `newSEService(type: 'serviceState', callback: Callback<ServiceState>): SEService` |
-| `asAttributeSet` | `static android.util.AttributeSet asAttributeSet(org.xmlpull.v1.XmlPullParser)` | 5 | partial | moderate | `attributeValueCallbackFunction` | `attributeValueCallbackFunction?: (name: string, value: string) => boolean` |
+| `newPullParser` | `static org.xmlpull.v1.XmlPullParser newPullParser()` | 7 | near | impossible | `constructor` | `@ohos.xml.XmlPullParser` |
+| `newSerializer` | `static org.xmlpull.v1.XmlSerializer newSerializer()` | 7 | near | rewrite | `constructor` | `@ohos.xml.XmlSerializer` |
 
-## Stub APIs (score < 5): 1 methods
+## Gap Descriptions (per method)
+
+- **`newPullParser`**: Callback-based parse
+- **`newSerializer`**: Similar methods
+
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `newPullParser` | 5 | partial | throw UnsupportedOperationException |
+| `parse` | 3 | composite | throw UnsupportedOperationException |
+| `parse` | 3 | composite | throw UnsupportedOperationException |
+| `parse` | 3 | composite | throw UnsupportedOperationException |
+| `findEncodingByName` | 3 | composite | Return safe default (null/false/0/empty) |
+| `asAttributeSet` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -62,6 +67,6 @@ Before marking `android.util.Xml` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 7 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

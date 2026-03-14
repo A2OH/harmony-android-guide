@@ -9,12 +9,12 @@
 | **Class** | `android.provider.ContactsContract.Directory` |
 | **Package** | `android.provider.ContactsContract` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.9 |
+| **Avg Score** | 1.7 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (33%) |
+| **No Mapping** | 2 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isRemoteDirectoryId` | 4 | partial | Return safe default (null/false/0/empty) |
-| `isEnterpriseDirectoryId` | 4 | partial | Return safe default (null/false/0/empty) |
 | `notifyDirectoryChange` | 3 | composite | throw UnsupportedOperationException |
+| `isEnterpriseDirectoryId` | 1 | none | Return safe default (null/false/0/empty) |
+| `isRemoteDirectoryId` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

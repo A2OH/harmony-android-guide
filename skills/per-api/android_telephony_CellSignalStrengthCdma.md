@@ -9,12 +9,12 @@
 | **Class** | `android.telephony.CellSignalStrengthCdma` |
 | **Package** | `android.telephony` |
 | **Total Methods** | 11 |
-| **Avg Score** | 5.2 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 3 (27%) |
-| **Partial/Composite** | 7 (63%) |
-| **No Mapping** | 1 (9%) |
+| **Avg Score** | 2.2 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 9 (81%) |
+| **No Mapping** | 2 (18%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,38 +22,33 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 9 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getCdmaEcio` | `int getCdmaEcio()` | 7 | near | moderate | `getIMEI` | `getIMEI(slotId: number, callback: AsyncCallback<string>): void` |
-| `getDbm` | `int getDbm()` | 6 | near | moderate | `getIMEI` | `getIMEI(slotId: number, callback: AsyncCallback<string>): void` |
-| `getEvdoEcio` | `int getEvdoEcio()` | 6 | near | moderate | `getRadioTech` | `getRadioTech(slotId: number, callback: AsyncCallback<NetworkRadioTech>): void` |
-| `getEvdoDbm` | `int getEvdoDbm()` | 6 | partial | moderate | `getMEID` | `getMEID(slotId: number, callback: AsyncCallback<string>): void` |
-| `getEvdoSnr` | `int getEvdoSnr()` | 6 | partial | moderate | `getMEID` | `getMEID(slotId: number, callback: AsyncCallback<string>): void` |
-| `getCdmaLevel` | `int getCdmaLevel()` | 6 | partial | moderate | `getCallState` | `getCallState(callback: AsyncCallback<CallState>): void` |
-| `getCdmaDbm` | `int getCdmaDbm()` | 6 | partial | moderate | `getSmscAddr` | `getSmscAddr(slotId: number, callback: AsyncCallback<string>): void` |
-| `getEvdoLevel` | `int getEvdoLevel()` | 5 | partial | moderate | `getMEID` | `getMEID(slotId: number, callback: AsyncCallback<string>): void` |
-| `getAsuLevel` | `int getAsuLevel()` | 5 | partial | moderate | `getCallState` | `getCallState(callback: AsyncCallback<CallState>): void` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `getCdmaEcio` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDbm` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getEvdoEcio` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getEvdoDbm` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getEvdoSnr` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCdmaLevel` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCdmaDbm` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getEvdoLevel` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getAsuLevel` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 9 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -67,6 +62,6 @@ Before marking `android.telephony.CellSignalStrengthCdma` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 9 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

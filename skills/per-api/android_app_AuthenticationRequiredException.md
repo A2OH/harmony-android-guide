@@ -9,12 +9,12 @@
 | **Class** | `android.app.AuthenticationRequiredException` |
 | **Package** | `android.app` |
 | **Total Methods** | 4 |
-| **Avg Score** | 3.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 1 (25%) |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 1 (25%) |
-| **No Mapping** | 2 (50%) |
+| **No Mapping** | 3 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,21 +22,16 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getUserAction` | `android.app.PendingIntent getUserAction()` | 7 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `getUserAction` | 3 | composite | Return safe default (null/false/0/empty) |
 | `AuthenticationRequiredException` | 1 | none | Store callback, never fire |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -61,6 +56,6 @@ Before marking `android.app.AuthenticationRequiredException` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

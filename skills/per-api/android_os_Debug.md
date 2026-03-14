@@ -9,12 +9,12 @@
 | **Class** | `android.os.Debug` |
 | **Package** | `android.os` |
 | **Total Methods** | 30 |
-| **Avg Score** | 6.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 18 (60%) |
-| **Partial/Composite** | 12 (40%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.5 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 27 (90%) |
+| **No Mapping** | 3 (10%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,57 +22,57 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 27 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getNativeHeapAllocatedSize` | `static long getNativeHeapAllocatedSize()` | 10 | direct | trivial | `getNativeHeapAllocatedSize` | `getNativeHeapAllocatedSize(): bigint` |
-| `getNativeHeapFreeSize` | `static long getNativeHeapFreeSize()` | 10 | direct | trivial | `getNativeHeapFreeSize` | `getNativeHeapFreeSize(): bigint` |
-| `getNativeHeapSize` | `static long getNativeHeapSize()` | 10 | direct | trivial | `getNativeHeapSize` | `getNativeHeapSize(): bigint` |
-| `getPss` | `static long getPss()` | 10 | direct | trivial | `getPss` | `getPss(): bigint` |
-| `dumpHprofData` | `static void dumpHprofData(String) throws java.io.IOException` | 8 | direct | easy | `dumpHeapData` | `dumpHeapData(filename: string): void` |
-| `isDebuggerConnected` | `static boolean isDebuggerConnected()` | 7 | near | easy | `isConnected` | `isConnected(): boolean` |
-| `getRuntimeStat` | `static String getRuntimeStat(String)` | 7 | near | moderate | `getUptime` | `getUptime(timeType: TimeType, isNanoseconds?: boolean): number` |
-| `getMemoryInfo` | `static void getMemoryInfo(android.os.Debug.MemoryInfo)` | 7 | near | moderate | `getRemoteAbilityInfo` | `getRemoteAbilityInfo(elementName: ElementName, callback: AsyncCallback<RemoteAbilityInfo>): void` |
-| `getRuntimeStats` | `static java.util.Map<java.lang.String,java.lang.String> getRuntimeStats()` | 7 | near | moderate | `getBatteryStats` | `getBatteryStats(): Promise<Array<BatteryStatsInfo>>` |
-| `startMethodTracing` | `static void startMethodTracing()` | 6 | near | moderate | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `startMethodTracing` | `static void startMethodTracing(String)` | 6 | near | moderate | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `startMethodTracing` | `static void startMethodTracing(String, int)` | 6 | near | moderate | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `startMethodTracing` | `static void startMethodTracing(String, int, int)` | 6 | near | moderate | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `startNativeTracing` | `static void startNativeTracing()` | 6 | near | moderate | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `getBinderSentTransactions` | `static int getBinderSentTransactions()` | 6 | near | moderate | `getCurrentFunctions` | `getCurrentFunctions(): FunctionType` |
-| `stopNativeTracing` | `static void stopNativeTracing()` | 6 | near | moderate | `stopTimer` | `stopTimer(timer: number, callback: AsyncCallback<void>): void` |
-| `getLoadedClassCount` | `static int getLoadedClassCount()` | 6 | near | moderate | `getDisplayCountry` | `getDisplayCountry(country: string, locale: string, sentenceCase?: boolean): string` |
-| `dumpService` | `static boolean dumpService(String, java.io.FileDescriptor, String[])` | 6 | near | moderate | `newSEService` | `newSEService(type: 'serviceState', callback: Callback<ServiceState>): SEService` |
-| `getBinderDeathObjectCount` | `static int getBinderDeathObjectCount()` | 6 | partial | moderate | `getListenerCount` | `getListenerCount(eventId: number | string): number` |
-| `getBinderLocalObjectCount` | `static int getBinderLocalObjectCount()` | 6 | partial | moderate | `getListenerCount` | `getListenerCount(eventId: number | string): number` |
-| `getBinderProxyObjectCount` | `static int getBinderProxyObjectCount()` | 6 | partial | moderate | `getListenerCount` | `getListenerCount(eventId: number | string): number` |
-| `getBinderReceivedTransactions` | `static int getBinderReceivedTransactions()` | 6 | partial | moderate | `getCurrentFunctions` | `getCurrentFunctions(): FunctionType` |
-| `threadCpuTimeNanos` | `static long threadCpuTimeNanos()` | 6 | partial | moderate | `getPastCpuTime` | `getPastCpuTime(): number` |
-| `attachJvmtiAgent` | `static void attachJvmtiAgent(@NonNull String, @Nullable String, @Nullable ClassLoader) throws java.io.IOException` | 6 | partial | moderate | `wantAgent` | `wantAgent?: WantAgent` |
-| `startMethodTracingSampling` | `static void startMethodTracingSampling(String, int, int)` | 6 | partial | moderate | `startProfiling` | `startProfiling(filename: string): void` |
-| `stopMethodTracing` | `static void stopMethodTracing()` | 5 | partial | moderate | `getInputMethodEngine` | `getInputMethodEngine(): InputMethodEngine` |
-| `enableEmulatorTraceOutput` | `static void enableEmulatorTraceOutput()` | 5 | partial | moderate | `enableAlertBeforeBackPage` | `enableAlertBeforeBackPage(options: EnableAlertOptions): void` |
+| `isDebuggerConnected` | `static boolean isDebuggerConnected()` | 5 | partial | moderate | `isConnected` | `isConnected(): boolean` |
 
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 29 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `printLoadedClasses` | 4 | partial | throw UnsupportedOperationException |
-| `waitingForDebugger` | 4 | partial | throw UnsupportedOperationException |
-| `waitForDebugger` | 4 | composite | throw UnsupportedOperationException |
+| `getNativeHeapAllocatedSize` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getNativeHeapFreeSize` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getNativeHeapSize` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getPss` | 5 | partial | Return safe default (null/false/0/empty) |
+| `threadCpuTimeNanos` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getRuntimeStats` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getBinderSentTransactions` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getBinderReceivedTransactions` | 4 | partial | Return safe default (null/false/0/empty) |
+| `stopMethodTracing` | 4 | partial | No-op |
+| `dumpHprofData` | 4 | composite | throw UnsupportedOperationException |
+| `getMemoryInfo` | 4 | composite | Return safe default (null/false/0/empty) |
+| `startMethodTracing` | 3 | composite | Return dummy instance / no-op |
+| `startMethodTracing` | 3 | composite | Return dummy instance / no-op |
+| `startMethodTracing` | 3 | composite | Return dummy instance / no-op |
+| `startMethodTracing` | 3 | composite | Return dummy instance / no-op |
+| `startNativeTracing` | 3 | composite | Return dummy instance / no-op |
+| `stopNativeTracing` | 3 | composite | No-op |
+| `getBinderDeathObjectCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getBinderLocalObjectCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getBinderProxyObjectCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `startMethodTracingSampling` | 3 | composite | Return dummy instance / no-op |
+| `enableEmulatorTraceOutput` | 3 | composite | Log warning + no-op |
+| `getRuntimeStat` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getLoadedClassCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `dumpService` | 3 | composite | throw UnsupportedOperationException |
+| `attachJvmtiAgent` | 3 | composite | throw UnsupportedOperationException |
+| `printLoadedClasses` | 1 | none | throw UnsupportedOperationException |
+| `waitForDebugger` | 1 | none | throw UnsupportedOperationException |
+| `waitingForDebugger` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 27 methods that have score >= 5
-2. Stub 3 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -85,6 +85,6 @@ Before marking `android.os.Debug` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 30 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 27 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,28 +9,36 @@
 | **Class** | `android.os.PowerManager.WakeLock` |
 | **Package** | `android.os.PowerManager` |
 | **Total Methods** | 7 |
-| **Avg Score** | 4.7 |
-| **Scenario** | S8: No Mapping (Stub) |
-| **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 4 (57%) |
-| **Partial/Composite** | 1 (14%) |
-| **No Mapping** | 2 (28%) |
+| **Avg Score** | 7.4 |
+| **Scenario** | S2: Signature Adaptation |
+| **Strategy** | Type conversion at boundary |
+| **Direct/Near** | 5 (71%) |
+| **Partial/Composite** | 2 (28%) |
+| **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DEVICE-API.md` |
-| **Expected AI Iterations** | 1 |
+| **Expected AI Iterations** | 1-2 |
 | **Test Level** | Level 1 (Mock only) |
 
 ## Implementable APIs (score >= 5): 5 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `isHeld` | `boolean isHeld()` | 7 | near | moderate | `isEnabled` | `readonly isEnabled?: boolean` |
-| `setReferenceCounted` | `void setReferenceCounted(boolean)` | 6 | near | moderate | `setRetentionState` | `setRetentionState(docUris: Array<string>): Promise<void>` |
-| `release` | `void release()` | 6 | near | moderate | `releaseInterface` | `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `release` | `void release(int)` | 6 | near | moderate | `releaseInterface` | `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `setWorkSource` | `void setWorkSource(android.os.WorkSource)` | 6 | partial | moderate | `setDarkMode` | `setDarkMode(mode: DarkMode, callback: AsyncCallback<void>): void` |
+| `acquire` | `void acquire()` | 9 | direct | moderate | `lock` | `isRunningLockTypeSupported(type: RunningLockType, callback: AsyncCallback<boolean>): void` |
+| `acquire` | `void acquire(long)` | 9 | direct | moderate | `lock` | `isRunningLockTypeSupported(type: RunningLockType, callback: AsyncCallback<boolean>): void` |
+| `isHeld` | `boolean isHeld()` | 9 | direct | moderate | `isHolding` | `@ohos.runningLock.RunningLock` |
+| `release` | `void release()` | 9 | direct | trivial | `unlock` | `BACKGROUND = 1` |
+| `release` | `void release(int)` | 9 | direct | trivial | `unlock` | `BACKGROUND = 1` |
+
+## Gap Descriptions (per method)
+
+- **`acquire`**: Wake lock
+- **`acquire`**: Wake lock
+- **`isHeld`**: Direct equivalent
+- **`release`**: Wake lock
+- **`release`**: Wake lock
 
 ## Stub APIs (score < 5): 2 methods
 
@@ -38,19 +46,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `acquire` | 1 | none | throw UnsupportedOperationException |
-| `acquire` | 1 | none | throw UnsupportedOperationException |
+| `setReferenceCounted` | 3 | composite | Log warning + no-op |
+| `setWorkSource` | 3 | composite | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S8 — No Mapping (Stub)**
+**Scenario: S2 — Signature Adaptation**
 
-1. Create minimal stub class matching AOSP package/class name
-2. All lifecycle methods (create/destroy): no-op, return dummy
-3. All computation methods: throw UnsupportedOperationException with message
-4. All query methods: return safe defaults
-5. Log a warning on first use: "X is not supported on OHOS"
-6. Only test: no crash on construction, expected exceptions
+1. Create Java shim with type conversion at boundaries
+2. Map parameter types: check the Gap Descriptions above for each method
+3. For enum/constant conversions, create a mapping table in the shim
+4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
+5. Verify return types match AOSP exactly
 
 ## Dependencies
 

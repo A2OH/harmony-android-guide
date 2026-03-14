@@ -9,97 +9,118 @@
 | **Class** | `android.graphics.Bitmap` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 56 |
-| **Avg Score** | 4.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
+| **Avg Score** | 3.5 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 18 (32%) |
-| **Partial/Composite** | 33 (58%) |
-| **No Mapping** | 5 (8%) |
+| **Partial/Composite** | 16 (28%) |
+| **No Mapping** | 22 (39%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 13 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 34 methods
+## Implementable APIs (score >= 5): 18 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `copy` | `android.graphics.Bitmap copy(android.graphics.Bitmap.Config, boolean)` | 8 | direct | easy | `copy` | `copy(srcUri: string, destUri: string, options?: CopyOptions): Promise<void>` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap, int, int, int, int)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap, int, int, int, int, @Nullable android.graphics.Matrix, boolean)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config, boolean)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config, boolean, @NonNull android.graphics.ColorSpace)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config, boolean)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config, boolean, @NonNull android.graphics.ColorSpace)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@ColorInt @NonNull int[], int, int, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.util.DisplayMetrics, @ColorInt @NonNull int[], int, int, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@ColorInt @NonNull int[], int, int, android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, @ColorInt @NonNull int[], int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `setColorSpace` | `void setColorSpace(@NonNull android.graphics.ColorSpace)` | 6 | near | moderate | `OH_NativeBuffer_SetColorSpace` | `int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace)` |
-| `getScaledWidth` | `int getScaledWidth(android.graphics.Canvas)` | 6 | near | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `getScaledWidth` | `int getScaledWidth(android.util.DisplayMetrics)` | 6 | near | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `getScaledWidth` | `int getScaledWidth(int)` | 6 | near | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `eraseColor` | `void eraseColor(@ColorInt int)` | 6 | partial | moderate | `OH_Drawing_PenSetColor` | `void OH_Drawing_PenSetColor(OH_Drawing_Pen*, uint32_t color)` |
-| `eraseColor` | `void eraseColor(@ColorLong long)` | 6 | partial | moderate | `OH_Drawing_PenSetColor` | `void OH_Drawing_PenSetColor(OH_Drawing_Pen*, uint32_t color)` |
-| `getWidth` | `int getWidth()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
-| `copyPixelsFromBuffer` | `void copyPixelsFromBuffer(java.nio.Buffer)` | 5 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `hasAlpha` | `boolean hasAlpha()` | 5 | partial | moderate | `OH_Drawing_PenSetAlpha` | `void OH_Drawing_PenSetAlpha(OH_Drawing_Pen*, uint8_t alpha)` |
-| `setWidth` | `void setWidth(int)` | 5 | partial | moderate | `OH_Drawing_PenSetWidth` | `void OH_Drawing_PenSetWidth(OH_Drawing_Pen*, float width)` |
-| `getConfig` | `android.graphics.Bitmap.Config getConfig()` | 5 | partial | moderate | `OH_NativeBuffer_GetConfig` | `void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* config)` |
-| `getPixels` | `void getPixels(@ColorInt int[], int, int, int, int, int, int)` | 5 | partial | moderate | `getDragPreview` | `getDragPreview(): DragPreview` |
-| `getScaledHeight` | `int getScaledHeight(android.graphics.Canvas)` | 5 | partial | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `getScaledHeight` | `int getScaledHeight(android.util.DisplayMetrics)` | 5 | partial | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `getScaledHeight` | `int getScaledHeight(int)` | 5 | partial | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
-| `getHeight` | `int getHeight()` | 5 | partial | moderate | `OH_Drawing_BitmapGetHeight` | `uint32_t OH_Drawing_BitmapGetHeight(OH_Drawing_Bitmap*)` |
-| `copyPixelsToBuffer` | `void copyPixelsToBuffer(java.nio.Buffer)` | 5 | partial | moderate | `OH_Drawing_RegisterFontBuffer` | `uint32_t OH_Drawing_RegisterFontBuffer(OH_Drawing_FontCollection*, const char* fontFamily, uint8_t* fontBuffer,
-    size_t length)` |
-| `createScaledBitmap` | `static android.graphics.Bitmap createScaledBitmap(@NonNull android.graphics.Bitmap, int, int, boolean)` | 5 | partial | moderate | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `getDensity` | `int getDensity()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
-| `getGenerationId` | `int getGenerationId()` | 5 | partial | moderate | `getRectangleById` | `getRectangleById(id: string): ComponentInfo` |
+| `getHeight` | `int getHeight()` | 9 | direct | rewrite | `OH_Drawing_BitmapGetHeight` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `getWidth` | `int getWidth()` | 9 | direct | rewrite | `OH_Drawing_BitmapGetWidth` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `recycle` | `void recycle()` | 9 | direct | impossible | `OH_Drawing_BitmapDestroy` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap, int, int, int, int)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.graphics.Bitmap, int, int, int, int, @Nullable android.graphics.Matrix, boolean)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config, boolean)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(int, int, @NonNull android.graphics.Bitmap.Config, boolean, @NonNull android.graphics.ColorSpace)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config, boolean)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, int, int, @NonNull android.graphics.Bitmap.Config, boolean, @NonNull android.graphics.ColorSpace)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@ColorInt @NonNull int[], int, int, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@NonNull android.util.DisplayMetrics, @ColorInt @NonNull int[], int, int, int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@ColorInt @NonNull int[], int, int, android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `createBitmap` | `static android.graphics.Bitmap createBitmap(@Nullable android.util.DisplayMetrics, @ColorInt @NonNull int[], int, int, @NonNull android.graphics.Bitmap.Config)` | 7 | near | rewrite | `OH_Drawing_BitmapCreate+Build` | `@ohos.graphics.drawing (NDK).OH_Drawing_Bitmap` |
+| `getByteCount` | `int getByteCount()` | 7 | near | impossible | `getPixelBytesNumber` | `@ohos.multimedia.image.PixelMap` |
+| `isMutable` | `boolean isMutable()` | 7 | near | impossible | `isEditable` | `@ohos.multimedia.image.PixelMap` |
 
-## Stub APIs (score < 5): 22 methods
+## Gap Descriptions (per method)
+
+- **`getHeight`**: Direct
+- **`getWidth`**: Direct
+- **`recycle`**: Direct
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`createBitmap`**: Separate create and build
+- **`getByteCount`**: Naming diff
+- **`isMutable`**: Naming diff
+
+## Stub APIs (score < 5): 38 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setHasAlpha` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setConfig` | 5 | partial | Log warning + no-op |
-| `setHeight` | 5 | partial | Log warning + no-op |
-| `setPixels` | 5 | partial | Log warning + no-op |
-| `getRowBytes` | 4 | partial | Return safe default (null/false/0/empty) |
-| `getByteCount` | 4 | partial | Return safe default (null/false/0/empty) |
-| `getAllocationByteCount` | 4 | partial | Return safe default (null/false/0/empty) |
-| `hasMipMap` | 4 | partial | Return safe default (null/false/0/empty) |
-| `getNinePatchChunk` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setPremultiplied` | 4 | composite | Log warning + no-op |
-| `setDensity` | 4 | composite | Log warning + no-op |
-| `writeToParcel` | 4 | composite | Log warning + no-op |
-| `setPixel` | 3 | composite | Log warning + no-op |
-| `setHasMipMap` | 3 | composite | Return safe default (null/false/0/empty) |
-| `prepareToDraw` | 3 | composite | throw UnsupportedOperationException |
-| `isPremultiplied` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isMutable` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isRecycled` | 2 | none | Return safe default (null/false/0/empty) |
+| `getPixels` | 4 | composite | Return safe default (null/false/0/empty) |
+| `eraseColor` | 3 | composite | throw UnsupportedOperationException |
+| `eraseColor` | 3 | composite | throw UnsupportedOperationException |
+| `copyPixelsFromBuffer` | 3 | composite | throw UnsupportedOperationException |
+| `setWidth` | 3 | composite | Log warning + no-op |
+| `copy` | 3 | composite | throw UnsupportedOperationException |
+| `setColorSpace` | 3 | composite | Log warning + no-op |
+| `getScaledWidth` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getScaledWidth` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getScaledWidth` | 3 | composite | Return safe default (null/false/0/empty) |
+| `hasAlpha` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getConfig` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getScaledHeight` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getScaledHeight` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getScaledHeight` | 2 | composite | Return safe default (null/false/0/empty) |
+| `copyPixelsToBuffer` | 2 | composite | throw UnsupportedOperationException |
+| `createScaledBitmap` | 1 | none | Return dummy instance / no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getAllocationByteCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDensity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGenerationId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getNinePatchChunk` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRowBytes` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasMipMap` | 1 | none | Return safe default (null/false/0/empty) |
+| `isPremultiplied` | 1 | none | Return safe default (null/false/0/empty) |
+| `isRecycled` | 1 | none | Return safe default (null/false/0/empty) |
+| `prepareToDraw` | 1 | none | throw UnsupportedOperationException |
 | `reconfigure` | 1 | none | Store callback, never fire |
-| `recycle` | 1 | none | throw UnsupportedOperationException |
 | `sameAs` | 1 | none | throw UnsupportedOperationException |
+| `setConfig` | 1 | none | Log warning + no-op |
+| `setDensity` | 1 | none | Log warning + no-op |
+| `setHasAlpha` | 1 | none | Return safe default (null/false/0/empty) |
+| `setHasMipMap` | 1 | none | Return safe default (null/false/0/empty) |
+| `setHeight` | 1 | none | Log warning + no-op |
+| `setPixel` | 1 | none | Log warning + no-op |
+| `setPixels` | 1 | none | Log warning + no-op |
+| `setPremultiplied` | 1 | none | Log warning + no-op |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 34 methods that have score >= 5
-2. Stub 22 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -112,6 +133,6 @@ Before marking `android.graphics.Bitmap` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 56 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 34 test methods for implemented APIs
+3. **Test Coverage**: At least 18 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

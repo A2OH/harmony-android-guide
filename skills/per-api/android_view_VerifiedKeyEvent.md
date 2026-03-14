@@ -9,12 +9,12 @@
 | **Class** | `android.view.VerifiedKeyEvent` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 2 (33%) |
+| **No Mapping** | 4 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAction` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDownTimeNanos` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getKeyCode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMetaState` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRepeatCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScanCode` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getAction` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getScanCode` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getDownTimeNanos` | 1 | none | Return safe default (null/false/0/empty) |
+| `getKeyCode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMetaState` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRepeatCount` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

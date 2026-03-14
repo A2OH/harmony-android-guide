@@ -9,12 +9,12 @@
 | **Class** | `android.view.Surface` |
 | **Package** | `android.view` |
 | **Total Methods** | 11 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (45%) |
-| **No Mapping** | 6 (54%) |
+| **Partial/Composite** | 3 (27%) |
+| **No Mapping** | 8 (72%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -31,14 +31,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `isValid` | 3 | composite | Return safe default (null/false/0/empty) |
 | `readFromParcel` | 3 | composite | Return safe default (null/false/0/empty) |
 | `release` | 3 | composite | No-op |
-| `setFrameRate` | 3 | composite | Log warning + no-op |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `Surface` | 1 | none | throw UnsupportedOperationException |
 | `Surface` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `lockCanvas` | 1 | none | Return safe default (null/false/0/empty) |
 | `lockHardwareCanvas` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFrameRate` | 1 | none | Log warning + no-op |
 | `unlockCanvasAndPost` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

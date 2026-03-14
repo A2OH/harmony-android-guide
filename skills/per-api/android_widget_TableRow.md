@@ -9,12 +9,12 @@
 | **Class** | `android.widget.TableRow` |
 | **Package** | `android.widget` |
 | **Total Methods** | 5 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (40%) |
-| **No Mapping** | 3 (60%) |
+| **Partial/Composite** | 1 (20%) |
+| **No Mapping** | 4 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,11 +28,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getVirtualChildAt` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getVirtualChildCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getVirtualChildAt` | 2 | composite | Return safe default (null/false/0/empty) |
 | `TableRow` | 1 | none | throw UnsupportedOperationException |
 | `TableRow` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getVirtualChildCount` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

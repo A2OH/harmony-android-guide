@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ToggleButton` |
 | **Package** | `android.widget` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (55%) |
-| **No Mapping** | 4 (44%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 9 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getTextOff` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTextOn` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setBackgroundDrawable` | 3 | composite | Log warning + no-op |
-| `setTextOff` | 3 | composite | Log warning + no-op |
-| `setTextOn` | 3 | composite | Log warning + no-op |
 | `ToggleButton` | 1 | none | Store callback, never fire |
 | `ToggleButton` | 1 | none | Store callback, never fire |
 | `ToggleButton` | 1 | none | Store callback, never fire |
 | `ToggleButton` | 1 | none | Store callback, never fire |
+| `getTextOff` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTextOn` | 1 | none | Return safe default (null/false/0/empty) |
+| `setBackgroundDrawable` | 1 | none | Log warning + no-op |
+| `setTextOff` | 1 | none | Log warning + no-op |
+| `setTextOn` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

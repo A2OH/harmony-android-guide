@@ -9,45 +9,60 @@
 | **Class** | `android.graphics.BitmapFactory` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 10 |
-| **Avg Score** | 2.4 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (50%) |
-| **No Mapping** | 5 (50%) |
+| **Avg Score** | 5.0 |
+| **Scenario** | S7: Async/Threading Gap |
+| **Strategy** | Promise wrapping, Handler/Looper emulation |
+| **Direct/Near** | 6 (60%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 4 (40%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 4 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 3-5 |
+| **Test Level** | Level 1 (Mock with concurrency tests) |
 
-## Stub APIs (score < 5): 10 methods
+## Implementable APIs (score >= 5): 6 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `decodeFileDescriptor` | `static android.graphics.Bitmap decodeFileDescriptor(java.io.FileDescriptor, android.graphics.Rect, android.graphics.BitmapFactory.Options)` | 9 | direct | impossible | `createImageSource(fd)` | `@ohos.multimedia.image.ImageSource` |
+| `decodeFileDescriptor` | `static android.graphics.Bitmap decodeFileDescriptor(java.io.FileDescriptor)` | 9 | direct | impossible | `createImageSource(fd)` | `@ohos.multimedia.image.ImageSource` |
+| `decodeByteArray` | `static android.graphics.Bitmap decodeByteArray(byte[], int, int, android.graphics.BitmapFactory.Options)` | 7 | near | impossible | `createImageSource(ArrayBuffer)+createPixelMap` | `@ohos.multimedia.image.ImageSource` |
+| `decodeByteArray` | `static android.graphics.Bitmap decodeByteArray(byte[], int, int)` | 7 | near | impossible | `createImageSource(ArrayBuffer)+createPixelMap` | `@ohos.multimedia.image.ImageSource` |
+| `decodeFile` | `static android.graphics.Bitmap decodeFile(String, android.graphics.BitmapFactory.Options)` | 7 | near | impossible | `createImageSource+createPixelMap` | `@ohos.multimedia.image.ImageSource` |
+| `decodeFile` | `static android.graphics.Bitmap decodeFile(String)` | 7 | near | impossible | `createImageSource+createPixelMap` | `@ohos.multimedia.image.ImageSource` |
+
+## Gap Descriptions (per method)
+
+- **`decodeFileDescriptor`**: Direct
+- **`decodeFileDescriptor`**: Direct
+- **`decodeByteArray`**: byte[]→ArrayBuffer
+- **`decodeByteArray`**: byte[]→ArrayBuffer
+- **`decodeFile`**: Two-step decode
+- **`decodeFile`**: Two-step decode
+
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `BitmapFactory` | 5 | partial | throw UnsupportedOperationException |
-| `decodeFile` | 4 | composite | throw UnsupportedOperationException |
-| `decodeFile` | 4 | composite | throw UnsupportedOperationException |
-| `decodeFileDescriptor` | 3 | composite | throw UnsupportedOperationException |
-| `decodeFileDescriptor` | 3 | composite | throw UnsupportedOperationException |
-| `decodeByteArray` | 1 | none | throw UnsupportedOperationException |
-| `decodeByteArray` | 1 | none | throw UnsupportedOperationException |
+| `BitmapFactory` | 1 | none | throw UnsupportedOperationException |
 | `decodeResource` | 1 | none | throw UnsupportedOperationException |
 | `decodeResource` | 1 | none | throw UnsupportedOperationException |
 | `decodeStream` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S7 — Async/Threading Gap**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Implement using Java concurrency primitives (ExecutorService, BlockingQueue)
+2. For Handler: single-thread executor + message queue
+3. For AsyncTask: thread pool + callbacks
+4. For sync-over-async: CompletableFuture wrapping OH Promise (in bridge)
+5. Test with concurrent calls to verify thread safety
+6. Add timeout to all blocking operations to prevent deadlock
 
 ## Dependencies
 
@@ -60,6 +75,6 @@ Before marking `android.graphics.BitmapFactory` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 10 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 6 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

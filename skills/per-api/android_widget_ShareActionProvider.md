@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ShareActionProvider` |
 | **Package** | `android.widget` |
 | **Total Methods** | 5 |
-| **Avg Score** | 3.3 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (20%) |
+| **No Mapping** | 4 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,11 +28,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `ShareActionProvider` | 5 | partial | Store callback, never fire |
 | `onCreateActionView` | 3 | composite | Return dummy instance / no-op |
-| `setOnShareTargetSelectedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setShareHistoryFileName` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setShareIntent` | 3 | composite | Log warning + no-op |
+| `ShareActionProvider` | 1 | none | Store callback, never fire |
+| `setOnShareTargetSelectedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setShareHistoryFileName` | 1 | none | Return safe default (null/false/0/empty) |
+| `setShareIntent` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,42 +9,55 @@
 | **Class** | `android.app.KeyguardManager` |
 | **Package** | `android.app` |
 | **Total Methods** | 9 |
-| **Avg Score** | 7.5 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 8 (88%) |
-| **Partial/Composite** | 1 (11%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.6 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 2 (22%) |
+| **Partial/Composite** | 3 (33%) |
+| **No Mapping** | 4 (44%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md` |
-| **Expected AI Iterations** | 1-2 |
+| **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 9 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `isDeviceLocked` | `boolean isDeviceLocked()` | 9 | direct | trivial | `isLocked` | `isLocked(): boolean` |
-| `isDeviceSecure` | `boolean isDeviceSecure()` | 9 | direct | easy | `isSecureMode` | `isSecureMode(callback: AsyncCallback<boolean>): void` |
-| `isKeyguardLocked` | `boolean isKeyguardLocked()` | 9 | direct | easy | `isScreenLocked` | `isScreenLocked(callback: AsyncCallback<boolean>): void` |
-| `isKeyguardSecure` | `boolean isKeyguardSecure()` | 9 | direct | easy | `isSecureMode` | `isSecureMode(callback: AsyncCallback<boolean>): void` |
-| `onDismissCancelled` | `void onDismissCancelled()` | 7 | near | easy | `isScreenLocked` | `isScreenLocked(callback: AsyncCallback<boolean>): void` |
-| `onDismissSucceeded` | `void onDismissSucceeded()` | 7 | near | easy | `isScreenLocked` | `isScreenLocked(callback: AsyncCallback<boolean>): void` |
-| `onDismissError` | `void onDismissError()` | 7 | near | moderate | `isSecureMode` | `isSecureMode(callback: AsyncCallback<boolean>): void` |
-| `requestDismissKeyguard` | `void requestDismissKeyguard(@NonNull android.app.Activity, @Nullable android.app.KeyguardManager.KeyguardDismissCallback)` | 6 | near | moderate | `isSecureMode` | `isSecureMode(callback: AsyncCallback<boolean>): void` |
-| `KeyguardDismissCallback` | `KeyguardManager.KeyguardDismissCallback()` | 6 | partial | moderate | `isScreenLocked` | `isScreenLocked(callback: AsyncCallback<boolean>): void` |
+| `isDeviceSecure` | `boolean isDeviceSecure()` | 9 | direct | moderate | `isSecure` | `isSecureMode(callback: AsyncCallback<boolean>): void` |
+| `isKeyguardLocked` | `boolean isKeyguardLocked()` | 9 | direct | easy | `isLocked` | `isLocked(): boolean` |
+
+## Gap Descriptions (per method)
+
+- **`isDeviceSecure`**: Secure state
+- **`isKeyguardLocked`**: Lock state
+
+## Stub APIs (score < 5): 7 methods
+
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `onDismissSucceeded` | 5 | partial | Return safe default (null/false/0/empty) |
+| `requestDismissKeyguard` | 3 | composite | Return safe default (null/false/0/empty) |
+| `KeyguardDismissCallback` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isDeviceLocked` | 1 | none | Return safe default (null/false/0/empty) |
+| `isKeyguardSecure` | 1 | none | Return safe default (null/false/0/empty) |
+| `onDismissCancelled` | 1 | none | Return safe default (null/false/0/empty) |
+| `onDismissError` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -58,6 +71,6 @@ Before marking `android.app.KeyguardManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 9 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 9 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

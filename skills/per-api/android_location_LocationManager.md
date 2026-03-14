@@ -9,47 +9,60 @@
 | **Class** | `android.location.LocationManager` |
 | **Package** | `android.location` |
 | **Total Methods** | 14 |
-| **Avg Score** | 7.1 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 10 (71%) |
-| **Partial/Composite** | 4 (28%) |
+| **Avg Score** | 5.7 |
+| **Scenario** | S3: Partial Coverage |
+| **Strategy** | Implement feasible methods, stub the rest |
+| **Direct/Near** | 3 (21%) |
+| **Partial/Composite** | 11 (78%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DEVICE-API.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 14 methods
+## Implementable APIs (score >= 5): 7 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `isLocationEnabled` | `boolean isLocationEnabled()` | 10 | direct | trivial | `isLocationEnabled` | `isLocationEnabled(): boolean` |
-| `sendExtraCommand` | `boolean sendExtraCommand(@NonNull String, @NonNull String, @Nullable android.os.Bundle)` | 10 | direct | trivial | `sendCommand` | `sendCommand(command: LocationCommand, callback: AsyncCallback<void>): void` |
+| `isLocationEnabled` | `boolean isLocationEnabled()` | 9 | direct | easy | `isLocationEnabled` | `@ohos.geoLocationManager.geoLocationManager` |
 | `isProviderEnabled` | `boolean isProviderEnabled(@NonNull String)` | 9 | direct | easy | `isLocationEnabled` | `isLocationEnabled(): boolean` |
-| `setTestProviderLocation` | `void setTestProviderLocation(@NonNull String, @NonNull android.location.Location)` | 8 | direct | easy | `setMockedLocations` | `setMockedLocations(config: LocationMockConfig): void` |
-| `removeUpdates` | `void removeUpdates(@NonNull android.app.PendingIntent)` | 7 | near | easy | `setMockedLocations` | `setMockedLocations(config: LocationMockConfig): void` |
-| `setTestProviderEnabled` | `void setTestProviderEnabled(@NonNull String, boolean)` | 7 | near | easy | `isLocationEnabled` | `isLocationEnabled(): boolean` |
-| `unregisterGnssNavigationMessageCallback` | `void unregisterGnssNavigationMessageCallback(@NonNull android.location.GnssNavigationMessage.Callback)` | 7 | near | moderate | `getCachedGnssLocationsSize` | `getCachedGnssLocationsSize(callback: AsyncCallback<number>): void` |
-| `getGnssYearOfHardware` | `int getGnssYearOfHardware()` | 6 | near | moderate | `getAddressesFromLocationName` | `getAddressesFromLocationName(request: GeoCodeRequest, callback: AsyncCallback<Array<GeoAddress>>): void` |
-| `removeTestProvider` | `void removeTestProvider(@NonNull String)` | 6 | near | moderate | `getCountryCode` | `getCountryCode(callback: AsyncCallback<CountryCode>): void` |
-| `addTestProvider` | `void addTestProvider(@NonNull String, boolean, boolean, boolean, boolean, boolean, boolean, boolean, int, int)` | 6 | near | moderate | `getAddressesFromLocationName` | `getAddressesFromLocationName(request: GeoCodeRequest, callback: AsyncCallback<Array<GeoAddress>>): void` |
-| `unregisterAntennaInfoListener` | `void unregisterAntennaInfoListener(@NonNull android.location.GnssAntennaInfo.Listener)` | 6 | partial | moderate | `isLocationEnabled` | `isLocationEnabled(): boolean` |
-| `removeNmeaListener` | `void removeNmeaListener(@NonNull android.location.OnNmeaMessageListener)` | 6 | partial | moderate | `enableLocation` | `enableLocation(callback: AsyncCallback<void>): void` |
-| `unregisterGnssStatusCallback` | `void unregisterGnssStatusCallback(@NonNull android.location.GnssStatus.Callback)` | 6 | partial | moderate | `getCachedGnssLocationsSize` | `getCachedGnssLocationsSize(callback: AsyncCallback<number>): void` |
-| `unregisterGnssMeasurementsCallback` | `void unregisterGnssMeasurementsCallback(@NonNull android.location.GnssMeasurementsEvent.Callback)` | 5 | partial | moderate | `getCurrentLocation` | `getCurrentLocation(request: CurrentLocationRequest, callback: AsyncCallback<Location>): void` |
+| `removeUpdates` | `void removeUpdates(@NonNull android.app.PendingIntent)` | 9 | direct | easy | `off('locationChange')` | `UNSET = 0x200` |
+| `setTestProviderEnabled` | `void setTestProviderEnabled(@NonNull String, boolean)` | 6 | partial | moderate | `isLocationEnabled` | `isLocationEnabled(): boolean` |
+| `unregisterAntennaInfoListener` | `void unregisterAntennaInfoListener(@NonNull android.location.GnssAntennaInfo.Listener)` | 5 | partial | moderate | `isLocationEnabled` | `isLocationEnabled(): boolean` |
+| `sendExtraCommand` | `boolean sendExtraCommand(@NonNull String, @NonNull String, @Nullable android.os.Bundle)` | 5 | partial | moderate | `sendCommand` | `sendCommand(command: LocationCommand, callback: AsyncCallback<void>): void` |
+| `setTestProviderLocation` | `void setTestProviderLocation(@NonNull String, @NonNull android.location.Location)` | 5 | partial | moderate | `setMockedLocations` | `setMockedLocations(config: LocationMockConfig): void` |
+
+## Gap Descriptions (per method)
+
+- **`isLocationEnabled`**: Direct equivalent
+- **`isProviderEnabled`**: Provider status
+- **`removeUpdates`**: Stop updates
+
+## Stub APIs (score < 5): 7 methods
+
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `removeTestProvider` | 5 | partial | Log warning + no-op |
+| `unregisterGnssStatusCallback` | 5 | partial | Return safe default (null/false/0/empty) |
+| `unregisterGnssNavigationMessageCallback` | 5 | partial | Return safe default (null/false/0/empty) |
+| `addTestProvider` | 5 | partial | Log warning + no-op |
+| `removeNmeaListener` | 4 | partial | Return safe default (null/false/0/empty) |
+| `unregisterGnssMeasurementsCallback` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getGnssYearOfHardware` | 4 | composite | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S3 — Partial Coverage**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Implement 7 methods that have score >= 5
+2. Stub 7 methods using the Stub Strategy column above
+3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
+4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
+5. Test both working methods AND verify stubs behave predictably
 
 ## Dependencies
 
@@ -63,6 +76,6 @@ Before marking `android.location.LocationManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 14 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 14 test methods for implemented APIs
+3. **Test Coverage**: At least 7 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

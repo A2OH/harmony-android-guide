@@ -9,12 +9,12 @@
 | **Class** | `android.graphics.SurfaceTexture` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 14 |
-| **Avg Score** | 5.3 |
+| **Avg Score** | 2.0 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 5 (35%) |
-| **Partial/Composite** | 9 (64%) |
-| **No Mapping** | 0 (0%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 8 (57%) |
+| **No Mapping** | 6 (42%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,31 +22,26 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 8 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `release` | `void release()` | 8 | direct | easy | `release` | `release(callback: AsyncCallback<void>): void` |
-| `setOnFrameAvailableListener` | `void setOnFrameAvailableListener(@Nullable android.graphics.SurfaceTexture.OnFrameAvailableListener)` | 8 | near | easy | `OH_NativeImage_SetOnFrameAvailableListener` | `int32_t OH_NativeImage_SetOnFrameAvailableListener(OH_NativeImage* image, OH_OnFrameAvailableListener listener)` |
-| `setOnFrameAvailableListener` | `void setOnFrameAvailableListener(@Nullable android.graphics.SurfaceTexture.OnFrameAvailableListener, @Nullable android.os.Handler)` | 8 | near | easy | `OH_NativeImage_SetOnFrameAvailableListener` | `int32_t OH_NativeImage_SetOnFrameAvailableListener(OH_NativeImage* image, OH_OnFrameAvailableListener listener)` |
-| `getTransformMatrix` | `void getTransformMatrix(float[])` | 7 | near | easy | `OH_NativeImage_GetTransformMatrix` | `int32_t OH_NativeImage_GetTransformMatrix(OH_NativeImage* image, float matrix[16])` |
-| `getTimestamp` | `long getTimestamp()` | 6 | near | moderate | `OH_NativeImage_GetTimestamp` | `int64_t OH_NativeImage_GetTimestamp(OH_NativeImage* image)` |
-| `attachToGLContext` | `void attachToGLContext(int)` | 6 | partial | moderate | `OH_NativeImage_AttachContext` | `int32_t OH_NativeImage_AttachContext(OH_NativeImage* image, uint32_t textureId)` |
-| `detachFromGLContext` | `void detachFromGLContext()` | 6 | partial | moderate | `OH_NativeImage_DetachContext` | `int32_t OH_NativeImage_DetachContext(OH_NativeImage* image)` |
-| `updateTexImage` | `void updateTexImage()` | 5 | partial | moderate | `OH_NativeImage_UpdateSurfaceImage` | `int32_t OH_NativeImage_UpdateSurfaceImage(OH_NativeImage* image)` |
-
-## Stub APIs (score < 5): 6 methods
+## Stub APIs (score < 5): 14 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setDefaultBufferSize` | 4 | partial | Log warning + no-op |
-| `SurfaceTexture` | 3 | composite | throw UnsupportedOperationException |
-| `SurfaceTexture` | 3 | composite | throw UnsupportedOperationException |
-| `SurfaceTexture` | 3 | composite | throw UnsupportedOperationException |
-| `releaseTexImage` | 3 | composite | No-op |
-| `isReleased` | 3 | composite | No-op |
+| `release` | 4 | composite | No-op |
+| `setOnFrameAvailableListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setOnFrameAvailableListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTransformMatrix` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTimestamp` | 3 | composite | Return safe default (null/false/0/empty) |
+| `attachToGLContext` | 3 | composite | Store callback, never fire |
+| `detachFromGLContext` | 2 | composite | Store callback, never fire |
+| `updateTexImage` | 2 | composite | Log warning + no-op |
+| `SurfaceTexture` | 1 | none | throw UnsupportedOperationException |
+| `SurfaceTexture` | 1 | none | throw UnsupportedOperationException |
+| `SurfaceTexture` | 1 | none | throw UnsupportedOperationException |
+| `isReleased` | 1 | none | No-op |
+| `releaseTexImage` | 1 | none | No-op |
+| `setDefaultBufferSize` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -69,6 +64,6 @@ Before marking `android.graphics.SurfaceTexture` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 14 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 8 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.graphics.Rect` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 28 |
-| **Avg Score** | 3.7 |
+| **Avg Score** | 2.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 8 (28%) |
-| **Partial/Composite** | 7 (25%) |
-| **No Mapping** | 13 (46%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 9 (32%) |
+| **No Mapping** | 19 (67%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,33 +22,29 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 9 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `contains` | `boolean contains(int, int)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `contains` | `boolean contains(int, int, int, int)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `contains` | `boolean contains(@NonNull android.graphics.Rect)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `height` | `int height()` | 8 | direct | easy | `height` | `height: number` |
-| `offset` | `void offset(int, int)` | 8 | direct | easy | `offset` | `offset: number): boolean` |
-| `set` | `void set(int, int, int, int)` | 8 | direct | easy | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `set` | `void set(@NonNull android.graphics.Rect)` | 8 | direct | easy | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `width` | `int width()` | 8 | direct | easy | `width` | `width: number` |
-| `readFromParcel` | `void readFromParcel(@NonNull android.os.Parcel)` | 5 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
+| `height` | `int height()` | 6 | partial | moderate | `height` | `height: number` |
+| `width` | `int width()` | 6 | partial | moderate | `width` | `width: number` |
 
-## Stub APIs (score < 5): 19 methods
+## Stub APIs (score < 5): 26 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 4 | composite | Log warning + no-op |
-| `setEmpty` | 3 | composite | Log warning + no-op |
-| `Rect` | 3 | composite | throw UnsupportedOperationException |
-| `Rect` | 3 | composite | throw UnsupportedOperationException |
-| `Rect` | 3 | composite | throw UnsupportedOperationException |
-| `offsetTo` | 3 | composite | Log warning + no-op |
-| `isEmpty` | 2 | none | Return safe default (null/false/0/empty) |
+| `offset` | 4 | partial | Log warning + no-op |
+| `contains` | 3 | composite | Store callback, never fire |
+| `contains` | 3 | composite | Store callback, never fire |
+| `contains` | 3 | composite | Store callback, never fire |
+| `set` | 3 | composite | Log warning + no-op |
+| `set` | 3 | composite | Log warning + no-op |
+| `readFromParcel` | 3 | composite | Return safe default (null/false/0/empty) |
+| `Rect` | 1 | none | throw UnsupportedOperationException |
+| `Rect` | 1 | none | throw UnsupportedOperationException |
+| `Rect` | 1 | none | throw UnsupportedOperationException |
 | `centerX` | 1 | none | throw UnsupportedOperationException |
 | `centerY` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
@@ -57,10 +53,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `inset` | 1 | none | Log warning + no-op |
 | `intersects` | 1 | none | throw UnsupportedOperationException |
 | `intersects` | 1 | none | throw UnsupportedOperationException |
+| `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `offsetTo` | 1 | none | Log warning + no-op |
+| `setEmpty` | 1 | none | Log warning + no-op |
 | `sort` | 1 | none | throw UnsupportedOperationException |
 | `union` | 1 | none | Store callback, never fire |
 | `union` | 1 | none | Store callback, never fire |
 | `union` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -84,6 +84,6 @@ Before marking `android.graphics.Rect` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 28 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 9 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

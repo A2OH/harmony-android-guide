@@ -9,93 +9,97 @@
 | **Class** | `android.content.IntentFilter` |
 | **Package** | `android.content` |
 | **Total Methods** | 53 |
-| **Avg Score** | 4.1 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 7 (13%) |
-| **Partial/Composite** | 31 (58%) |
-| **No Mapping** | 15 (28%) |
+| **Avg Score** | 1.9 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 22 (41%) |
+| **No Mapping** | 31 (58%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 1 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md / A2OH-DATA-LAYER.md` |
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 23 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `create` | `static android.content.IntentFilter create(String, String)` | 10 | direct | trivial | `create` | `create(context: Context, source: object): DataObject` |
-| `getAction` | `final String getAction(int)` | 7 | near | easy | `getPosition` | `getPosition(): number` |
-| `getDataType` | `final String getDataType(int)` | 7 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `getPriority` | `final int getPriority()` | 7 | near | moderate | `getTopAbility` | `getTopAbility(): Promise<ElementName>` |
-| `getCategory` | `final String getCategory(int)` | 6 | near | moderate | `getEntry` | `getEntry(): Entry` |
-| `matchData` | `final int matchData(String, String, android.net.Uri)` | 6 | near | moderate | `updateData` | `updateData(options: Options, data: UnifiedData, callback: AsyncCallback<void>): void` |
-| `getDataPath` | `final android.os.PatternMatcher getDataPath(int)` | 6 | near | moderate | `getWantAgent` | `getWantAgent(info: WantAgentInfo, callback: AsyncCallback<WantAgent>): void` |
-| `getDataScheme` | `final String getDataScheme(int)` | 6 | partial | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `hasDataPath` | `final boolean hasDataPath(String)` | 6 | partial | moderate | `OH_Data_Asset_SetPath` | `int OH_Data_Asset_SetPath(Data_Asset *asset, const char *path)` |
-| `setPriority` | `final void setPriority(int)` | 6 | partial | moderate | `setRouterProxy` | `setRouterProxy(formIds: Array<string>, proxy: Callback<Want>, callback: AsyncCallback<void>): void` |
-| `hasDataType` | `final boolean hasDataType(String)` | 5 | partial | moderate | `kvStoreType` | `kvStoreType?: KVStoreType` |
-| `countDataSchemes` | `final int countDataSchemes()` | 5 | partial | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `addDataPath` | `final void addDataPath(String, int)` | 5 | partial | moderate | `data` | `data: string | ArrayBuffer` |
-| `addDataType` | `final void addDataType(String) throws android.content.IntentFilter.MalformedMimeTypeException` | 5 | partial | moderate | `data` | `data: string | ArrayBuffer` |
-| `addDataScheme` | `final void addDataScheme(String)` | 5 | partial | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `hasDataScheme` | `final boolean hasDataScheme(String)` | 5 | partial | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `countDataTypes` | `final int countDataTypes()` | 5 | partial | moderate | `acquireDataAbilityHelper` | `acquireDataAbilityHelper(uri: string): DataAbilityHelper` |
-| `getDataSchemeSpecificPart` | `final android.os.PatternMatcher getDataSchemeSpecificPart(int)` | 5 | partial | moderate | `createDataShareHelper` | `createDataShareHelper(context: Context, uri: string, callback: AsyncCallback<DataShareHelper>): void` |
-| `getDataAuthority` | `final android.content.IntentFilter.AuthorityEntry getDataAuthority(int)` | 5 | partial | moderate | `getRdbStore` | `getRdbStore(context: Context, config: StoreConfig, version: number, callback: AsyncCallback<RdbStore>): void` |
-| `countDataPaths` | `final int countDataPaths()` | 5 | partial | moderate | `OH_Data_Asset_SetPath` | `int OH_Data_Asset_SetPath(Data_Asset *asset, const char *path)` |
-| `countDataAuthorities` | `final int countDataAuthorities()` | 5 | partial | moderate | `OH_Data_Asset_SetModifyTime` | `int OH_Data_Asset_SetModifyTime(Data_Asset *asset, int64_t modifyTime)` |
-| `countActions` | `final int countActions()` | 5 | partial | moderate | `getCount` | `getCount(): number` |
-| `hasDataAuthority` | `final boolean hasDataAuthority(android.net.Uri)` | 5 | partial | moderate | `OH_Data_Asset_SetUri` | `int OH_Data_Asset_SetUri(Data_Asset *asset, const char *uri)` |
+| `addAction` | `final void addAction(String)` | 5 | partial | impossible | `events` | `@ohos.commonEventManager.CommonEventSubscribeInfo` |
 
-## Stub APIs (score < 5): 30 methods
+## Gap Descriptions (per method)
+
+- **`addAction`**: Event-name list vs action filter
+
+## Stub APIs (score < 5): 52 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `countDataSchemeSpecificParts` | 5 | partial | throw UnsupportedOperationException |
-| `addDataSchemeSpecificPart` | 5 | partial | Log warning + no-op |
-| `hasDataSchemeSpecificPart` | 5 | partial | Return safe default (null/false/0/empty) |
-| `matchDataAuthority` | 5 | partial | throw UnsupportedOperationException |
-| `IntentFilter` | 5 | partial | throw UnsupportedOperationException |
-| `IntentFilter` | 5 | partial | throw UnsupportedOperationException |
-| `IntentFilter` | 5 | partial | throw UnsupportedOperationException |
-| `IntentFilter` | 5 | partial | throw UnsupportedOperationException |
-| `addDataAuthority` | 4 | partial | Log warning + no-op |
-| `writeToParcel` | 4 | partial | Log warning + no-op |
-| `countCategories` | 4 | partial | throw UnsupportedOperationException |
-| `readFromXml` | 4 | partial | Return safe default (null/false/0/empty) |
-| `writeToXml` | 4 | partial | Log warning + no-op |
-| `hasAction` | 3 | composite | Return safe default (null/false/0/empty) |
-| `hasCategory` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getAction` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getCategory` | 4 | partial | Return safe default (null/false/0/empty) |
+| `hasDataType` | 4 | partial | Return safe default (null/false/0/empty) |
+| `addDataPath` | 4 | partial | Log warning + no-op |
+| `addDataType` | 4 | partial | Log warning + no-op |
+| `getPriority` | 3 | composite | Return safe default (null/false/0/empty) |
+| `create` | 3 | composite | Return dummy instance / no-op |
+| `addDataScheme` | 3 | composite | Log warning + no-op |
+| `countDataPaths` | 3 | composite | throw UnsupportedOperationException |
+| `countDataAuthorities` | 3 | composite | throw UnsupportedOperationException |
+| `getDataType` | 3 | composite | Return safe default (null/false/0/empty) |
+| `matchData` | 3 | composite | throw UnsupportedOperationException |
+| `setPriority` | 3 | composite | Log warning + no-op |
+| `getDataPath` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDataScheme` | 3 | composite | Return safe default (null/false/0/empty) |
+| `hasDataPath` | 2 | composite | Return safe default (null/false/0/empty) |
+| `countDataSchemes` | 2 | composite | throw UnsupportedOperationException |
+| `hasDataScheme` | 2 | composite | Return safe default (null/false/0/empty) |
+| `countDataTypes` | 2 | composite | throw UnsupportedOperationException |
+| `getDataSchemeSpecificPart` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getDataAuthority` | 2 | composite | Return safe default (null/false/0/empty) |
+| `IntentFilter` | 1 | none | throw UnsupportedOperationException |
+| `IntentFilter` | 1 | none | throw UnsupportedOperationException |
+| `IntentFilter` | 1 | none | throw UnsupportedOperationException |
+| `IntentFilter` | 1 | none | throw UnsupportedOperationException |
 | `actionsIterator` | 1 | none | Store callback, never fire |
-| `addAction` | 1 | none | Log warning + no-op |
 | `addCategory` | 1 | none | Log warning + no-op |
+| `addDataAuthority` | 1 | none | Log warning + no-op |
+| `addDataSchemeSpecificPart` | 1 | none | Log warning + no-op |
 | `authoritiesIterator` | 1 | none | throw UnsupportedOperationException |
 | `categoriesIterator` | 1 | none | throw UnsupportedOperationException |
+| `countActions` | 1 | none | Store callback, never fire |
+| `countCategories` | 1 | none | throw UnsupportedOperationException |
+| `countDataSchemeSpecificParts` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `dump` | 1 | none | throw UnsupportedOperationException |
+| `hasAction` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasCategory` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasDataAuthority` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasDataSchemeSpecificPart` | 1 | none | Return safe default (null/false/0/empty) |
 | `match` | 1 | none | throw UnsupportedOperationException |
 | `match` | 1 | none | throw UnsupportedOperationException |
 | `matchAction` | 1 | none | Store callback, never fire |
 | `matchCategories` | 1 | none | throw UnsupportedOperationException |
+| `matchDataAuthority` | 1 | none | throw UnsupportedOperationException |
 | `pathsIterator` | 1 | none | throw UnsupportedOperationException |
+| `readFromXml` | 1 | none | Return safe default (null/false/0/empty) |
 | `schemeSpecificPartsIterator` | 1 | none | throw UnsupportedOperationException |
 | `schemesIterator` | 1 | none | throw UnsupportedOperationException |
 | `typesIterator` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
+| `writeToXml` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 23 methods that have score >= 5
-2. Stub 30 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -109,6 +113,6 @@ Before marking `android.content.IntentFilter` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 53 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 23 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

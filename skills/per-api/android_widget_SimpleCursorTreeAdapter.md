@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SimpleCursorTreeAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 9 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (44%) |
-| **No Mapping** | 5 (55%) |
+| **Partial/Composite** | 1 (11%) |
+| **No Mapping** | 8 (88%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -29,14 +29,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getViewBinder` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setViewBinder` | 3 | composite | Log warning + no-op |
-| `setViewImage` | 3 | composite | Log warning + no-op |
-| `setViewText` | 3 | composite | Log warning + no-op |
 | `SimpleCursorTreeAdapter` | 1 | none | throw UnsupportedOperationException |
 | `SimpleCursorTreeAdapter` | 1 | none | throw UnsupportedOperationException |
 | `SimpleCursorTreeAdapter` | 1 | none | throw UnsupportedOperationException |
 | `bindChildView` | 1 | none | throw UnsupportedOperationException |
 | `bindGroupView` | 1 | none | throw UnsupportedOperationException |
+| `setViewBinder` | 1 | none | Log warning + no-op |
+| `setViewImage` | 1 | none | Log warning + no-op |
+| `setViewText` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

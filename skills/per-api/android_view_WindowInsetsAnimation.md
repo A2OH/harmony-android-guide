@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowInsetsAnimation` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDurationMillis` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInterpolatedFraction` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTypeMask` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAlpha` | 3 | composite | Log warning + no-op |
-| `setFraction` | 3 | composite | Log warning + no-op |
 | `WindowInsetsAnimation` | 1 | none | Log warning + no-op |
+| `getDurationMillis` | 1 | none | Return safe default (null/false/0/empty) |
+| `getInterpolatedFraction` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTypeMask` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAlpha` | 1 | none | Log warning + no-op |
+| `setFraction` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

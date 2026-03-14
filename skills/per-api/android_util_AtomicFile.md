@@ -9,11 +9,11 @@
 | **Class** | `android.util.AtomicFile` |
 | **Package** | `android.util` |
 | **Total Methods** | 8 |
-| **Avg Score** | 6.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 8 (100%) |
-| **Partial/Composite** | 0 (0%) |
+| **Avg Score** | 3.4 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 8 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,28 +22,30 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 8 methods
+## Stub APIs (score < 5): 8 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getBaseFile` | `java.io.File getBaseFile()` | 8 | near | easy | `getFile` | `getFile(wallpaperType: WallpaperType, callback: AsyncCallback<number>): void` |
-| `finishWrite` | `void finishWrite(java.io.FileOutputStream)` | 7 | near | easy | `finishTrace` | `finishTrace(name: string, taskId: number): void` |
-| `failWrite` | `void failWrite(java.io.FileOutputStream)` | 7 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `startWrite` | `java.io.FileOutputStream startWrite() throws java.io.IOException` | 7 | near | easy | `startTrace` | `startTrace(name: string, taskId: number, expectedTime?: number): void` |
-| `openRead` | `java.io.FileInputStream openRead() throws java.io.FileNotFoundException` | 7 | near | moderate | `read` | `read(): Promise<number[]>` |
-| `delete` | `void delete()` | 6 | near | moderate | `deleteContact` | `deleteContact(key: string, callback: AsyncCallback<void>): void` |
-| `readFully` | `byte[] readFully() throws java.io.IOException` | 6 | near | moderate | `read` | `read(): Promise<number[]>` |
-| `AtomicFile` | `AtomicFile(java.io.File)` | 6 | near | moderate | `getOneCfgFile` | `getOneCfgFile(relPath: string): Promise<string>` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `openRead` | 4 | partial | Return dummy instance / no-op |
+| `readFully` | 4 | partial | Return safe default (null/false/0/empty) |
+| `finishWrite` | 4 | composite | Return safe default (null/false/0/empty) |
+| `failWrite` | 4 | composite | Log warning + no-op |
+| `delete` | 3 | composite | throw UnsupportedOperationException |
+| `getBaseFile` | 3 | composite | Return safe default (null/false/0/empty) |
+| `AtomicFile` | 3 | composite | throw UnsupportedOperationException |
+| `startWrite` | 3 | composite | Return dummy instance / no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 8 methods that have score >= 5
-2. Stub 0 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -56,6 +58,6 @@ Before marking `android.util.AtomicFile` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 8 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 8 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

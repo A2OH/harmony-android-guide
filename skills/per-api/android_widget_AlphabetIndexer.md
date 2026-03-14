@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AlphabetIndexer` |
 | **Package** | `android.widget` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 3 (50%) |
+| **No Mapping** | 3 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `compare` | 3 | composite | throw UnsupportedOperationException |
-| `getPositionForSection` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSectionForPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSections` | 3 | composite | Return safe default (null/false/0/empty) |
 | `setCursor` | 3 | composite | Log warning + no-op |
+| `compare` | 3 | composite | throw UnsupportedOperationException |
+| `getSections` | 2 | composite | Return safe default (null/false/0/empty) |
 | `AlphabetIndexer` | 1 | none | throw UnsupportedOperationException |
+| `getPositionForSection` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSectionForPosition` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

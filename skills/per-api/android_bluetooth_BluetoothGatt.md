@@ -9,53 +9,65 @@
 | **Class** | `android.bluetooth.BluetoothGatt` |
 | **Package** | `android.bluetooth` |
 | **Total Methods** | 23 |
-| **Avg Score** | 4.9 |
+| **Avg Score** | 4.7 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 9 (39%) |
-| **Partial/Composite** | 9 (39%) |
-| **No Mapping** | 5 (21%) |
+| **Partial/Composite** | 7 (30%) |
+| **No Mapping** | 7 (30%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 3 |
 | **Related Skill Doc** | `A2OH-NETWORKING.md` |
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 12 methods
+## Implementable APIs (score >= 5): 9 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getConnectedDevices` | `java.util.List<android.bluetooth.BluetoothDevice> getConnectedDevices()` | 10 | direct | trivial | `getConnectedBLEDevices` | `getConnectedBLEDevices(): Array<string>` |
-| `getConnectionState` | `int getConnectionState(android.bluetooth.BluetoothDevice)` | 9 | direct | trivial | `getBtConnectionState` | `getBtConnectionState(): ProfileConnectionState` |
-| `close` | `void close()` | 8 | direct | easy | `close` | `close(file: number | File): Promise<void>` |
-| `getDevice` | `android.bluetooth.BluetoothDevice getDevice()` | 7 | near | easy | `getPairedDevices` | `getPairedDevices(): Array<string>` |
-| `getDevicesMatchingConnectionStates` | `java.util.List<android.bluetooth.BluetoothDevice> getDevicesMatchingConnectionStates(int[])` | 7 | near | easy | `getBtConnectionState` | `getBtConnectionState(): ProfileConnectionState` |
-| `connect` | `boolean connect()` | 7 | near | easy | `connect` | `int connect(int, const struct sockaddr *, socklen_t)` |
-| `disconnect` | `void disconnect()` | 7 | near | easy | `disconnect` | `disconnect(): boolean` |
-| `getServices` | `java.util.List<android.bluetooth.BluetoothGattService> getServices()` | 7 | near | moderate | `getPairedDevices` | `getPairedDevices(): Array<string>` |
-| `getService` | `android.bluetooth.BluetoothGattService getService(java.util.UUID)` | 6 | near | moderate | `getPairedDevices` | `getPairedDevices(): Array<string>` |
-| `requestConnectionPriority` | `boolean requestConnectionPriority(int)` | 6 | partial | moderate | `getBtConnectionState` | `getBtConnectionState(): ProfileConnectionState` |
-| `readRemoteRssi` | `boolean readRemoteRssi()` | 6 | partial | moderate | `getRemoteProductId` | `getRemoteProductId(deviceId: string): string` |
-| `setCharacteristicNotification` | `boolean setCharacteristicNotification(android.bluetooth.BluetoothGattCharacteristic, boolean)` | 6 | partial | moderate | `setDevicePairingConfirmation` | `setDevicePairingConfirmation(deviceId: string, accept: boolean): void` |
+| `close` | `void close()` | 9 | direct | hard | `close` | `@ohos.bluetooth.GattClientDevice` |
+| `connect` | `boolean connect()` | 9 | direct | easy | `connect` | `getConnectedBLEDevices(): Array<string>` |
+| `disconnect` | `void disconnect()` | 9 | direct | easy | `disconnect` | `createGattServer(): GattServer` |
+| `discoverServices` | `boolean discoverServices()` | 9 | direct | moderate | `getServices` | `createGattServer(): GattServer` |
+| `readCharacteristic` | `boolean readCharacteristic(android.bluetooth.BluetoothGattCharacteristic)` | 7 | near | impossible | `readCharacteristicValue` | `@ohos.bluetooth.GattClientDevice` |
+| `readRemoteRssi` | `boolean readRemoteRssi()` | 7 | near | rewrite | `getRssiValue` | `@ohos.bluetooth.GattClientDevice` |
+| `requestMtu` | `boolean requestMtu(int)` | 7 | near | impossible | `setBLEMtuSize` | `@ohos.bluetooth.GattClientDevice` |
+| `setCharacteristicNotification` | `boolean setCharacteristicNotification(android.bluetooth.BluetoothGattCharacteristic, boolean)` | 7 | near | rewrite | `setNotifyCharacteristicChanged` | `@ohos.bluetooth.GattClientDevice` |
+| `writeCharacteristic` | `boolean writeCharacteristic(android.bluetooth.BluetoothGattCharacteristic)` | 7 | near | impossible | `writeCharacteristicValue` | `@ohos.bluetooth.GattClientDevice` |
 
-## Stub APIs (score < 5): 11 methods
+## Gap Descriptions (per method)
+
+- **`close`**: Direct
+- **`connect`**: BLE connect
+- **`disconnect`**: BLE disconnect
+- **`discoverServices`**: BLE services
+- **`readCharacteristic`**: Returns Promise
+- **`readRemoteRssi`**: Returns Promise
+- **`requestMtu`**: Returns boolean sync
+- **`setCharacteristicNotification`**: Direct
+- **`writeCharacteristic`**: Returns boolean
+
+## Stub APIs (score < 5): 14 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeDescriptor` | 4 | partial | Log warning + no-op |
-| `abortReliableWrite` | 4 | composite | Log warning + no-op |
-| `beginReliableWrite` | 4 | composite | Log warning + no-op |
-| `writeCharacteristic` | 4 | composite | Return safe default (null/false/0/empty) |
-| `executeReliableWrite` | 4 | composite | Log warning + no-op |
-| `setPreferredPhy` | 3 | composite | Log warning + no-op |
-| `discoverServices` | 1 | none | Return safe default (null/false/0/empty) |
-| `readCharacteristic` | 1 | none | Return safe default (null/false/0/empty) |
+| `getConnectedDevices` | 5 | partial | Return dummy instance / no-op |
+| `getConnectionState` | 5 | partial | Return dummy instance / no-op |
+| `getDevicesMatchingConnectionStates` | 4 | partial | Return dummy instance / no-op |
+| `getServices` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getService` | 4 | partial | Return safe default (null/false/0/empty) |
+| `requestConnectionPriority` | 4 | partial | Return dummy instance / no-op |
+| `getDevice` | 3 | composite | Return safe default (null/false/0/empty) |
+| `abortReliableWrite` | 1 | none | Log warning + no-op |
+| `beginReliableWrite` | 1 | none | Log warning + no-op |
+| `executeReliableWrite` | 1 | none | Log warning + no-op |
 | `readDescriptor` | 1 | none | Return safe default (null/false/0/empty) |
 | `readPhy` | 1 | none | Return safe default (null/false/0/empty) |
-| `requestMtu` | 1 | none | throw UnsupportedOperationException |
+| `setPreferredPhy` | 1 | none | Log warning + no-op |
+| `writeDescriptor` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -79,6 +91,6 @@ Before marking `android.bluetooth.BluetoothGatt` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 23 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 12 test methods for implemented APIs
+3. **Test Coverage**: At least 9 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

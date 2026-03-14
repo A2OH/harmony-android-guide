@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewConfiguration` |
 | **Package** | `android.view` |
 | **Total Methods** | 31 |
-| **Avg Score** | 2.9 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 30 (96%) |
-| **No Mapping** | 1 (3%) |
+| **Partial/Composite** | 3 (9%) |
+| **No Mapping** | 28 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 31 |
 | **Has Async Gap** | 31 |
@@ -29,35 +29,35 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `get` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDefaultActionModeHideDuration` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDoubleTapTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getJumpTapTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getKeyRepeatDelay` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getKeyRepeatTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getLongPressTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPressedStateDuration` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledDoubleTapSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledEdgeSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledFadingEdgeLength` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledHorizontalScrollFactor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledHoverSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledMaximumDrawingCacheSize` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledMaximumFlingVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledMinimumFlingVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledMinimumScalingSpan` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledOverflingDistance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledOverscrollDistance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledPagingTouchSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledScrollBarSize` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledTouchSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledVerticalScrollFactor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaledWindowTouchSlop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScrollBarFadeDuration` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScrollDefaultDelay` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScrollFriction` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getTapTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getZoomControlsTimeout` | 3 | composite | Return safe default (null/false/0/empty) |
-| `hasPermanentMenuKey` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDefaultActionModeHideDuration` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDoubleTapTimeout` | 1 | none | Return safe default (null/false/0/empty) |
+| `getJumpTapTimeout` | 1 | none | Return safe default (null/false/0/empty) |
+| `getKeyRepeatDelay` | 1 | none | Return safe default (null/false/0/empty) |
+| `getKeyRepeatTimeout` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPressedStateDuration` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledDoubleTapSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledEdgeSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledFadingEdgeLength` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledHorizontalScrollFactor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledHoverSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledMaximumDrawingCacheSize` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledMaximumFlingVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledMinimumFlingVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledMinimumScalingSpan` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledOverflingDistance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledOverscrollDistance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledPagingTouchSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledScrollBarSize` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledTouchSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledVerticalScrollFactor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaledWindowTouchSlop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScrollBarFadeDuration` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScrollDefaultDelay` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScrollFriction` | 1 | none | Return safe default (null/false/0/empty) |
+| `getZoomControlsTimeout` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasPermanentMenuKey` | 1 | none | Return safe default (null/false/0/empty) |
 | `shouldShowMenuShortcutsWhenKeyboardPresent` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

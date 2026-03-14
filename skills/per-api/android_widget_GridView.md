@@ -9,15 +9,15 @@
 | **Class** | `android.widget.GridView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 20 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 16 (80%) |
-| **No Mapping** | 4 (20%) |
+| **Partial/Composite** | 1 (5%) |
+| **No Mapping** | 19 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 16 |
-| **Has Async Gap** | 16 |
+| **Has Async Gap** | 20 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,26 +28,26 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getColumnWidth` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getGravity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getHorizontalSpacing` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRequestedColumnWidth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getRequestedHorizontalSpacing` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStretchMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getVerticalSpacing` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setColumnWidth` | 3 | composite | Log warning + no-op |
-| `setGravity` | 3 | composite | Log warning + no-op |
-| `setHorizontalSpacing` | 3 | composite | Log warning + no-op |
-| `setSelection` | 3 | composite | Log warning + no-op |
-| `setStretchMode` | 3 | composite | Log warning + no-op |
-| `smoothScrollByOffset` | 3 | composite | Log warning + no-op |
-| `setNumColumns` | 3 | composite | Log warning + no-op |
-| `setVerticalSpacing` | 3 | composite | Log warning + no-op |
 | `GridView` | 1 | none | throw UnsupportedOperationException |
 | `GridView` | 1 | none | throw UnsupportedOperationException |
 | `GridView` | 1 | none | throw UnsupportedOperationException |
 | `GridView` | 1 | none | throw UnsupportedOperationException |
+| `getAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getColumnWidth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getHorizontalSpacing` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRequestedColumnWidth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getRequestedHorizontalSpacing` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStretchMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVerticalSpacing` | 1 | none | Return safe default (null/false/0/empty) |
+| `setColumnWidth` | 1 | none | Log warning + no-op |
+| `setGravity` | 1 | none | Log warning + no-op |
+| `setHorizontalSpacing` | 1 | none | Log warning + no-op |
+| `setNumColumns` | 1 | none | Log warning + no-op |
+| `setSelection` | 1 | none | Log warning + no-op |
+| `setStretchMode` | 1 | none | Log warning + no-op |
+| `setVerticalSpacing` | 1 | none | Log warning + no-op |
+| `smoothScrollByOffset` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

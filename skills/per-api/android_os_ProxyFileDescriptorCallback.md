@@ -9,39 +9,46 @@
 | **Class** | `android.os.ProxyFileDescriptorCallback` |
 | **Package** | `android.os` |
 | **Total Methods** | 6 |
-| **Avg Score** | 7.3 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 6 (100%) |
-| **Partial/Composite** | 0 (0%) |
+| **Avg Score** | 3.9 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 6 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DEVICE-API.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 6 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `onFsync` | `void onFsync() throws android.system.ErrnoException` | 8 | direct | easy | `fsync` | `fsync(fd: number): Promise<void>` |
-| `onWrite` | `int onWrite(long, int, byte[]) throws android.system.ErrnoException` | 8 | direct | easy | `write` | `write(data: number[]): Promise<void>` |
-| `onRead` | `int onRead(long, int, byte[]) throws android.system.ErrnoException` | 8 | direct | easy | `read` | `read(): Promise<number[]>` |
-| `onGetSize` | `long onGetSize() throws android.system.ErrnoException` | 7 | near | moderate | `imageSize` | `imageSize?: Size` |
-| `ProxyFileDescriptorCallback` | `ProxyFileDescriptorCallback()` | 6 | near | moderate | `getFileDescriptor` | `getFileDescriptor(pipe: USBDevicePipe): number` |
-| `onRelease` | `abstract void onRelease()` | 6 | near | moderate | `onResponse` | `onResponse?: (notificationId: number, buttonOptions: ButtonOptions) => void` |
+| `onRead` | `int onRead(long, int, byte[]) throws android.system.ErrnoException` | 5 | partial | moderate | `read` | `read(): Promise<number[]>` |
+
+## Stub APIs (score < 5): 5 methods
+
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `onGetSize` | 4 | partial | Return safe default (null/false/0/empty) |
+| `onFsync` | 4 | composite | Store callback, never fire |
+| `onRelease` | 4 | composite | No-op |
+| `onWrite` | 3 | composite | Log warning + no-op |
+| `ProxyFileDescriptorCallback` | 3 | composite | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -54,6 +61,6 @@ Before marking `android.os.ProxyFileDescriptorCallback` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 6 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

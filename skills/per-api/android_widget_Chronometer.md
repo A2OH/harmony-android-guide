@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Chronometer` |
 | **Package** | `android.widget` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (60%) |
-| **No Mapping** | 6 (40%) |
+| **Partial/Composite** | 3 (20%) |
+| **No Mapping** | 12 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getBase` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFormat` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOnChronometerTickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setBase` | 3 | composite | Log warning + no-op |
-| `setFormat` | 3 | composite | Log warning + no-op |
-| `setOnChronometerTickListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `start` | 3 | composite | Return dummy instance / no-op |
 | `stop` | 3 | composite | No-op |
-| `setCountDown` | 3 | composite | Log warning + no-op |
+| `getBase` | 3 | composite | Return safe default (null/false/0/empty) |
 | `Chronometer` | 1 | none | Store callback, never fire |
 | `Chronometer` | 1 | none | Store callback, never fire |
 | `Chronometer` | 1 | none | Store callback, never fire |
 | `Chronometer` | 1 | none | Store callback, never fire |
+| `getFormat` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOnChronometerTickListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `isCountDown` | 1 | none | Return safe default (null/false/0/empty) |
 | `isTheFinalCountDown` | 1 | none | Return safe default (null/false/0/empty) |
+| `setBase` | 1 | none | Log warning + no-op |
+| `setCountDown` | 1 | none | Log warning + no-op |
+| `setFormat` | 1 | none | Log warning + no-op |
+| `setOnChronometerTickListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

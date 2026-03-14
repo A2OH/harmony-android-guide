@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Magnifier` |
 | **Package** | `android.widget` |
 | **Total Methods** | 7 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 2.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (71%) |
-| **No Mapping** | 2 (28%) |
+| **Partial/Composite** | 4 (57%) |
+| **No Mapping** | 3 (42%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 7 |
 | **Has Async Gap** | 7 |
@@ -28,13 +28,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getZoom` | 3 | composite | Return safe default (null/false/0/empty) |
 | `show` | 3 | composite | throw UnsupportedOperationException |
 | `show` | 3 | composite | throw UnsupportedOperationException |
 | `update` | 3 | composite | Log warning + no-op |
-| `setZoom` | 2 | composite | Log warning + no-op |
+| `getZoom` | 3 | composite | Return safe default (null/false/0/empty) |
 | `dismiss` | 1 | none | Return safe default (null/false/0/empty) |
 | `isClippingEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setZoom` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

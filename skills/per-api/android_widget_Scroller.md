@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Scroller` |
 | **Package** | `android.widget` |
 | **Total Methods** | 23 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (52%) |
-| **No Mapping** | 11 (47%) |
+| **Partial/Composite** | 3 (13%) |
+| **No Mapping** | 20 (86%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 20 |
 | **Has Async Gap** | 20 |
@@ -28,26 +28,26 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `computeScrollOffset` | 3 | composite | Log warning + no-op |
-| `getCurrVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrY` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDuration` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFinalX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFinalY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStartX` | 3 | composite | Return dummy instance / no-op |
-| `getStartY` | 3 | composite | Return dummy instance / no-op |
-| `setFinalX` | 3 | composite | Log warning + no-op |
-| `setFinalY` | 3 | composite | Log warning + no-op |
-| `setFriction` | 3 | composite | Log warning + no-op |
+| `getCurrX` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getCurrY` | 2 | composite | Return safe default (null/false/0/empty) |
 | `Scroller` | 1 | none | throw UnsupportedOperationException |
 | `Scroller` | 1 | none | throw UnsupportedOperationException |
 | `Scroller` | 1 | none | throw UnsupportedOperationException |
 | `abortAnimation` | 1 | none | Store callback, never fire |
+| `computeScrollOffset` | 1 | none | Log warning + no-op |
 | `extendDuration` | 1 | none | Store callback, never fire |
 | `fling` | 1 | none | throw UnsupportedOperationException |
 | `forceFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFinalX` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFinalY` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStartX` | 1 | none | Return dummy instance / no-op |
+| `getStartY` | 1 | none | Return dummy instance / no-op |
 | `isFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFinalX` | 1 | none | Log warning + no-op |
+| `setFinalY` | 1 | none | Log warning + no-op |
+| `setFriction` | 1 | none | Log warning + no-op |
 | `startScroll` | 1 | none | Return dummy instance / no-op |
 | `startScroll` | 1 | none | Return dummy instance / no-op |
 | `timePassed` | 1 | none | throw UnsupportedOperationException |

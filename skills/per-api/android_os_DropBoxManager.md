@@ -9,43 +9,40 @@
 | **Class** | `android.os.DropBoxManager` |
 | **Package** | `android.os` |
 | **Total Methods** | 5 |
-| **Avg Score** | 7.4 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 4 (80%) |
-| **Partial/Composite** | 1 (20%) |
+| **Avg Score** | 3.6 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 5 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DEVICE-API.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 5 methods
+## Stub APIs (score < 5): 5 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `isTagEnabled` | `boolean isTagEnabled(String)` | 9 | direct | easy | `isFlagEnabled` | `isFlagEnabled(id: HiTraceId, flag: HiTraceFlag): boolean` |
-| `addText` | `void addText(String, String)` | 8 | direct | easy | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `addData` | `void addData(String, byte[], int)` | 7 | near | easy | `data` | `data: string[]` |
-| `addFile` | `void addFile(String, java.io.File, int) throws java.io.IOException` | 7 | near | easy | `addRule` | `addRule(rule: bigint): void` |
-| `DropBoxManager` | `DropBoxManager()` | 6 | partial | moderate | `getCalendarManager` | `getCalendarManager(context: Context): CalendarManager` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `addData` | 5 | partial | Log warning + no-op |
+| `isTagEnabled` | 4 | composite | Return safe default (null/false/0/empty) |
+| `addFile` | 4 | composite | Log warning + no-op |
+| `addText` | 3 | composite | Log warning + no-op |
+| `DropBoxManager` | 3 | composite | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -58,6 +55,6 @@ Before marking `android.os.DropBoxManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 5 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

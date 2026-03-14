@@ -9,12 +9,12 @@
 | **Class** | `android.text.Editable` |
 | **Package** | `android.text` |
 | **Total Methods** | 12 |
-| **Avg Score** | 5.1 |
+| **Avg Score** | 2.5 |
 | **Scenario** | S3: Partial Coverage |
 | **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 6 (50%) |
-| **Partial/Composite** | 2 (16%) |
-| **No Mapping** | 4 (33%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 6 (50%) |
+| **No Mapping** | 6 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,36 +22,36 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 7 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `append` | `android.text.Editable append(CharSequence)` | 8 | direct | easy | `append` | `append?: boolean` |
-| `append` | `android.text.Editable append(CharSequence, int, int)` | 8 | direct | easy | `append` | `append?: boolean` |
-| `append` | `android.text.Editable append(char)` | 8 | direct | easy | `append` | `append?: boolean` |
-| `clear` | `void clear()` | 8 | direct | easy | `clear` | `clear(): void` |
-| `replace` | `android.text.Editable replace(int, int, CharSequence, int, int)` | 8 | direct | easy | `replace` | `replace(options: RouterOptions): void` |
-| `replace` | `android.text.Editable replace(int, int, CharSequence)` | 8 | direct | easy | `replace` | `replace(options: RouterOptions): void` |
-| `getFilters` | `android.text.InputFilter[] getFilters()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
+| `clear` | `void clear()` | 5 | partial | moderate | `clear` | `clear(): void` |
 
-## Stub APIs (score < 5): 5 methods
+## Stub APIs (score < 5): 11 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setFilters` | 4 | composite | Log warning + no-op |
+| `append` | 4 | partial | throw UnsupportedOperationException |
+| `append` | 4 | partial | throw UnsupportedOperationException |
+| `append` | 4 | partial | throw UnsupportedOperationException |
+| `replace` | 3 | composite | throw UnsupportedOperationException |
+| `replace` | 3 | composite | throw UnsupportedOperationException |
 | `clearSpans` | 1 | none | throw UnsupportedOperationException |
 | `delete` | 1 | none | throw UnsupportedOperationException |
+| `getFilters` | 1 | none | Return safe default (null/false/0/empty) |
 | `insert` | 1 | none | throw UnsupportedOperationException |
 | `insert` | 1 | none | throw UnsupportedOperationException |
+| `setFilters` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
 **Scenario: S3 — Partial Coverage**
 
-1. Implement 7 methods that have score >= 5
-2. Stub 5 methods using the Stub Strategy column above
+1. Implement 1 methods that have score >= 5
+2. Stub 11 methods using the Stub Strategy column above
 3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
 4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
 5. Test both working methods AND verify stubs behave predictably
@@ -67,6 +67,6 @@ Before marking `android.text.Editable` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 12 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 7 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

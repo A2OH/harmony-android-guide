@@ -9,11 +9,11 @@
 | **Class** | `android.util.Base64` |
 | **Package** | `android.util` |
 | **Total Methods** | 7 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 2 (28%) |
-| **Partial/Composite** | 0 (0%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 2 (28%) |
 | **No Mapping** | 5 (71%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,19 +22,14 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `encodeToString` | `static String encodeToString(byte[], int)` | 8 | direct | easy | `errnoToString` | `errnoToString(errno: number): string` |
-| `encodeToString` | `static String encodeToString(byte[], int, int, int)` | 8 | direct | easy | `errnoToString` | `errnoToString(errno: number): string` |
-
-## Stub APIs (score < 5): 5 methods
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `encodeToString` | 4 | composite | throw UnsupportedOperationException |
+| `encodeToString` | 4 | composite | throw UnsupportedOperationException |
 | `decode` | 1 | none | throw UnsupportedOperationException |
 | `decode` | 1 | none | throw UnsupportedOperationException |
 | `decode` | 1 | none | throw UnsupportedOperationException |
@@ -63,6 +58,6 @@ Before marking `android.util.Base64` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 7 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

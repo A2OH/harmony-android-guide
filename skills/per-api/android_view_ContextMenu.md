@@ -9,12 +9,12 @@
 | **Class** | `android.view.ContextMenu` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setHeaderTitle` | 3 | composite | Log warning + no-op |
-| `setHeaderTitle` | 3 | composite | Log warning + no-op |
-| `setHeaderIcon` | 3 | composite | Log warning + no-op |
-| `setHeaderIcon` | 3 | composite | Log warning + no-op |
-| `setHeaderView` | 3 | composite | Log warning + no-op |
 | `clearHeader` | 1 | none | throw UnsupportedOperationException |
+| `setHeaderIcon` | 1 | none | Log warning + no-op |
+| `setHeaderIcon` | 1 | none | Log warning + no-op |
+| `setHeaderTitle` | 1 | none | Log warning + no-op |
+| `setHeaderTitle` | 1 | none | Log warning + no-op |
+| `setHeaderView` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

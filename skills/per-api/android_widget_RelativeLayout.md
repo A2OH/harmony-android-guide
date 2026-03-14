@@ -9,15 +9,15 @@
 | **Class** | `android.widget.RelativeLayout` |
 | **Package** | `android.widget` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (54%) |
-| **No Mapping** | 5 (45%) |
+| **Partial/Composite** | 2 (18%) |
+| **No Mapping** | 9 (81%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 7 |
-| **Has Async Gap** | 7 |
+| **Has Async Gap** | 11 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -30,15 +30,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getGravity` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getIgnoreGravity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setGravity` | 3 | composite | Log warning + no-op |
-| `setHorizontalGravity` | 3 | composite | Log warning + no-op |
-| `setIgnoreGravity` | 3 | composite | Log warning + no-op |
-| `setVerticalGravity` | 3 | composite | Log warning + no-op |
 | `RelativeLayout` | 1 | none | throw UnsupportedOperationException |
 | `RelativeLayout` | 1 | none | throw UnsupportedOperationException |
 | `RelativeLayout` | 1 | none | throw UnsupportedOperationException |
 | `RelativeLayout` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `setGravity` | 1 | none | Log warning + no-op |
+| `setHorizontalGravity` | 1 | none | Log warning + no-op |
+| `setIgnoreGravity` | 1 | none | Log warning + no-op |
+| `setVerticalGravity` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

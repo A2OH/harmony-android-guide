@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AbsSeekBar` |
 | **Package** | `android.widget` |
 | **Total Methods** | 20 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 16 (80%) |
-| **No Mapping** | 4 (20%) |
+| **Partial/Composite** | 1 (5%) |
+| **No Mapping** | 19 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 16 |
 | **Has Async Gap** | 16 |
@@ -28,26 +28,26 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getKeyProgressIncrement` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSplitTrack` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getThumb` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getThumbOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTickMark` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setKeyProgressIncrement` | 3 | composite | Log warning + no-op |
-| `setSplitTrack` | 3 | composite | Log warning + no-op |
-| `setThumbOffset` | 3 | composite | Log warning + no-op |
-| `setThumbTintBlendMode` | 3 | composite | Log warning + no-op |
-| `setThumbTintList` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setThumbTintMode` | 3 | composite | Log warning + no-op |
-| `setTickMark` | 3 | composite | Log warning + no-op |
-| `setTickMarkTintBlendMode` | 3 | composite | Log warning + no-op |
-| `setTickMarkTintList` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setTickMarkTintMode` | 3 | composite | Log warning + no-op |
-| `setThumb` | 3 | composite | Log warning + no-op |
+| `getThumb` | 2 | composite | Return safe default (null/false/0/empty) |
 | `AbsSeekBar` | 1 | none | throw UnsupportedOperationException |
 | `AbsSeekBar` | 1 | none | throw UnsupportedOperationException |
 | `AbsSeekBar` | 1 | none | throw UnsupportedOperationException |
 | `AbsSeekBar` | 1 | none | throw UnsupportedOperationException |
+| `getKeyProgressIncrement` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSplitTrack` | 1 | none | Return safe default (null/false/0/empty) |
+| `getThumbOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTickMark` | 1 | none | Return safe default (null/false/0/empty) |
+| `setKeyProgressIncrement` | 1 | none | Log warning + no-op |
+| `setSplitTrack` | 1 | none | Log warning + no-op |
+| `setThumb` | 1 | none | Log warning + no-op |
+| `setThumbOffset` | 1 | none | Log warning + no-op |
+| `setThumbTintBlendMode` | 1 | none | Log warning + no-op |
+| `setThumbTintList` | 1 | none | Return safe default (null/false/0/empty) |
+| `setThumbTintMode` | 1 | none | Log warning + no-op |
+| `setTickMark` | 1 | none | Log warning + no-op |
+| `setTickMarkTintBlendMode` | 1 | none | Log warning + no-op |
+| `setTickMarkTintList` | 1 | none | Return safe default (null/false/0/empty) |
+| `setTickMarkTintMode` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

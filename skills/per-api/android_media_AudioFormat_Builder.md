@@ -9,12 +9,12 @@
 | **Class** | `android.media.AudioFormat.Builder` |
 | **Package** | `android.media.AudioFormat` |
 | **Total Methods** | 5 |
-| **Avg Score** | 4.6 |
+| **Avg Score** | 2.5 |
 | **Scenario** | S3: Partial Coverage |
 | **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 2 (40%) |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 2 (40%) |
-| **No Mapping** | 1 (20%) |
+| **No Mapping** | 3 (60%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,29 +22,24 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `setSampleRate` | `android.media.AudioFormat.Builder setSampleRate(int) throws java.lang.IllegalArgumentException` | 7 | near | easy | `samplingRate` | `samplingRate: AudioSamplingRate` |
-| `setEncoding` | `android.media.AudioFormat.Builder setEncoding(int) throws java.lang.IllegalArgumentException` | 7 | near | moderate | `encodingType` | `encodingType: AudioEncodingType` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `Builder` | 4 | partial | throw UnsupportedOperationException |
-| `Builder` | 4 | partial | throw UnsupportedOperationException |
+| `setSampleRate` | 5 | partial | Log warning + no-op |
+| `setEncoding` | 5 | partial | Log warning + no-op |
+| `Builder` | 1 | none | throw UnsupportedOperationException |
+| `Builder` | 1 | none | throw UnsupportedOperationException |
 | `build` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
 **Scenario: S3 — Partial Coverage**
 
-1. Implement 2 methods that have score >= 5
-2. Stub 3 methods using the Stub Strategy column above
+1. Implement 0 methods that have score >= 5
+2. Stub 5 methods using the Stub Strategy column above
 3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
 4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
 5. Test both working methods AND verify stubs behave predictably
@@ -60,6 +55,6 @@ Before marking `android.media.AudioFormat.Builder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

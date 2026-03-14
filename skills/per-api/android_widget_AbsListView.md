@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AbsListView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 78 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 58 (74%) |
-| **No Mapping** | 20 (25%) |
+| **Partial/Composite** | 4 (5%) |
+| **No Mapping** | 74 (94%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 74 |
 | **Has Async Gap** | 74 |
@@ -28,65 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `deferNotifyDataSetChanged` | 3 | composite | Log warning + no-op |
-| `getCheckedItemCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCheckedItemIds` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCheckedItemPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCheckedItemPositions` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChoiceMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getListPaddingBottom` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getListPaddingLeft` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getListPaddingRight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getListPaddingTop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSelector` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTextFilter` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getTranscriptMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `handleDataChanged` | 3 | composite | throw UnsupportedOperationException |
-| `onFilterComplete` | 3 | composite | Store callback, never fire |
-| `onGlobalLayout` | 3 | composite | Store callback, never fire |
-| `onRemoteAdapterConnected` | 3 | composite | Return dummy instance / no-op |
-| `onRemoteAdapterDisconnected` | 3 | composite | Return dummy instance / no-op |
-| `onRestoreInstanceState` | 3 | composite | Store callback, never fire |
 | `onSaveInstanceState` | 3 | composite | Store callback, never fire |
-| `onTextChanged` | 3 | composite | Store callback, never fire |
-| `onTouchModeChanged` | 3 | composite | Store callback, never fire |
-| `pointToPosition` | 3 | composite | Store callback, never fire |
-| `pointToRowId` | 3 | composite | throw UnsupportedOperationException |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setCacheColorHint` | 3 | composite | Log warning + no-op |
-| `setChoiceMode` | 3 | composite | Log warning + no-op |
-| `setEdgeEffectColor` | 3 | composite | Log warning + no-op |
-| `setFastScrollAlwaysVisible` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setFastScrollEnabled` | 3 | composite | Log warning + no-op |
-| `setFastScrollStyle` | 3 | composite | Log warning + no-op |
-| `setFilterText` | 3 | composite | Log warning + no-op |
-| `setFriction` | 3 | composite | Log warning + no-op |
-| `setItemChecked` | 3 | composite | Log warning + no-op |
-| `setMultiChoiceModeListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnScrollListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setRecyclerListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setRemoteViewsAdapter` | 3 | composite | Log warning + no-op |
-| `setScrollIndicators` | 3 | composite | Log warning + no-op |
-| `setScrollingCacheEnabled` | 3 | composite | Log warning + no-op |
-| `setSelectionFromTop` | 3 | composite | Log warning + no-op |
-| `setSelector` | 3 | composite | Log warning + no-op |
-| `setSelector` | 3 | composite | Log warning + no-op |
-| `setSmoothScrollbarEnabled` | 3 | composite | Log warning + no-op |
-| `setStackFromBottom` | 3 | composite | Log warning + no-op |
-| `setTextFilterEnabled` | 3 | composite | Log warning + no-op |
-| `setTopEdgeEffectColor` | 3 | composite | Log warning + no-op |
-| `setTranscriptMode` | 3 | composite | Log warning + no-op |
-| `setVelocityScale` | 3 | composite | Log warning + no-op |
-| `smoothScrollBy` | 3 | composite | throw UnsupportedOperationException |
-| `smoothScrollToPositionFromTop` | 3 | composite | Store callback, never fire |
-| `smoothScrollToPositionFromTop` | 3 | composite | Store callback, never fire |
-| `scrollListBy` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setDrawSelectorOnTop` | 3 | composite | Log warning + no-op |
-| `smoothScrollToPosition` | 2 | composite | Store callback, never fire |
-| `smoothScrollToPosition` | 2 | composite | Store callback, never fire |
-| `setBottomEdgeEffectColor` | 2 | composite | Log warning + no-op |
-| `onInitializeAccessibilityNodeInfoForItem` | 2 | composite | Return dummy instance / no-op |
-| `isDrawSelectorOnTop` | 2 | none | Return safe default (null/false/0/empty) |
+| `onRestoreInstanceState` | 3 | composite | Store callback, never fire |
+| `getListPaddingLeft` | 2 | composite | Return safe default (null/false/0/empty) |
 | `AbsListView` | 1 | none | Return safe default (null/false/0/empty) |
 | `AbsListView` | 1 | none | Return safe default (null/false/0/empty) |
 | `AbsListView` | 1 | none | Return safe default (null/false/0/empty) |
@@ -96,15 +41,70 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `canScrollList` | 1 | none | Return safe default (null/false/0/empty) |
 | `clearChoices` | 1 | none | throw UnsupportedOperationException |
 | `clearTextFilter` | 1 | none | throw UnsupportedOperationException |
+| `deferNotifyDataSetChanged` | 1 | none | Log warning + no-op |
 | `fling` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getCheckedItemCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCheckedItemIds` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCheckedItemPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCheckedItemPositions` | 1 | none | Return safe default (null/false/0/empty) |
+| `getChoiceMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getListPaddingBottom` | 1 | none | Return safe default (null/false/0/empty) |
+| `getListPaddingRight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getListPaddingTop` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSelector` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTextFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `handleDataChanged` | 1 | none | throw UnsupportedOperationException |
 | `hasTextFilter` | 1 | none | Return safe default (null/false/0/empty) |
 | `invalidateViews` | 1 | none | throw UnsupportedOperationException |
+| `isDrawSelectorOnTop` | 1 | none | Return safe default (null/false/0/empty) |
 | `isFastScrollAlwaysVisible` | 1 | none | Return safe default (null/false/0/empty) |
 | `isInFilterMode` | 1 | none | Return safe default (null/false/0/empty) |
 | `isItemChecked` | 1 | none | Return safe default (null/false/0/empty) |
 | `layoutChildren` | 1 | none | throw UnsupportedOperationException |
+| `onFilterComplete` | 1 | none | Store callback, never fire |
+| `onGlobalLayout` | 1 | none | Store callback, never fire |
+| `onInitializeAccessibilityNodeInfoForItem` | 1 | none | Return dummy instance / no-op |
+| `onRemoteAdapterConnected` | 1 | none | Return dummy instance / no-op |
+| `onRemoteAdapterDisconnected` | 1 | none | Return dummy instance / no-op |
+| `onTextChanged` | 1 | none | Store callback, never fire |
+| `onTouchModeChanged` | 1 | none | Store callback, never fire |
+| `pointToPosition` | 1 | none | Store callback, never fire |
+| `pointToRowId` | 1 | none | throw UnsupportedOperationException |
 | `reclaimViews` | 1 | none | throw UnsupportedOperationException |
+| `scrollListBy` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setBottomEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setCacheColorHint` | 1 | none | Log warning + no-op |
+| `setChoiceMode` | 1 | none | Log warning + no-op |
+| `setDrawSelectorOnTop` | 1 | none | Log warning + no-op |
+| `setEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setFastScrollAlwaysVisible` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFastScrollEnabled` | 1 | none | Log warning + no-op |
+| `setFastScrollStyle` | 1 | none | Log warning + no-op |
+| `setFilterText` | 1 | none | Log warning + no-op |
+| `setFriction` | 1 | none | Log warning + no-op |
+| `setItemChecked` | 1 | none | Log warning + no-op |
+| `setMultiChoiceModeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnScrollListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setRecyclerListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setRemoteViewsAdapter` | 1 | none | Log warning + no-op |
+| `setScrollIndicators` | 1 | none | Log warning + no-op |
+| `setScrollingCacheEnabled` | 1 | none | Log warning + no-op |
+| `setSelectionFromTop` | 1 | none | Log warning + no-op |
+| `setSelector` | 1 | none | Log warning + no-op |
+| `setSelector` | 1 | none | Log warning + no-op |
+| `setSmoothScrollbarEnabled` | 1 | none | Log warning + no-op |
+| `setStackFromBottom` | 1 | none | Log warning + no-op |
+| `setTextFilterEnabled` | 1 | none | Log warning + no-op |
+| `setTopEdgeEffectColor` | 1 | none | Log warning + no-op |
+| `setTranscriptMode` | 1 | none | Log warning + no-op |
+| `setVelocityScale` | 1 | none | Log warning + no-op |
+| `smoothScrollBy` | 1 | none | throw UnsupportedOperationException |
+| `smoothScrollToPosition` | 1 | none | Store callback, never fire |
+| `smoothScrollToPosition` | 1 | none | Store callback, never fire |
+| `smoothScrollToPositionFromTop` | 1 | none | Store callback, never fire |
+| `smoothScrollToPositionFromTop` | 1 | none | Store callback, never fire |
 | `verifyDrawable` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

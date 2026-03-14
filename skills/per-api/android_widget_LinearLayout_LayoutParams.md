@@ -9,7 +9,7 @@
 | **Class** | `android.widget.LinearLayout.LayoutParams` |
 | **Package** | `android.widget.LinearLayout` |
 | **Total Methods** | 7 |
-| **Avg Score** | 1.3 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |

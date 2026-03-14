@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AbsSpinner` |
 | **Package** | `android.widget` |
 | **Total Methods** | 12 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (66%) |
-| **No Mapping** | 4 (33%) |
+| **Partial/Composite** | 3 (25%) |
+| **No Mapping** | 9 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
 | **Has Async Gap** | 8 |
@@ -28,18 +28,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getSelectedView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onRestoreInstanceState` | 3 | composite | Store callback, never fire |
 | `onSaveInstanceState` | 3 | composite | Store callback, never fire |
-| `pointToPosition` | 3 | composite | Store callback, never fire |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setSelection` | 3 | composite | Log warning + no-op |
-| `setSelection` | 3 | composite | Log warning + no-op |
+| `onRestoreInstanceState` | 3 | composite | Store callback, never fire |
 | `AbsSpinner` | 1 | none | throw UnsupportedOperationException |
 | `AbsSpinner` | 1 | none | throw UnsupportedOperationException |
 | `AbsSpinner` | 1 | none | throw UnsupportedOperationException |
 | `AbsSpinner` | 1 | none | throw UnsupportedOperationException |
+| `getAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `pointToPosition` | 1 | none | Store callback, never fire |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setSelection` | 1 | none | Log warning + no-op |
+| `setSelection` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,12 +9,12 @@
 | **Class** | `android.view.ScaleGestureDetector.SimpleOnScaleGestureListener` |
 | **Package** | `android.view.ScaleGestureDetector` |
 | **Total Methods** | 4 |
-| **Avg Score** | 3.1 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (25%) |
+| **No Mapping** | 3 (75%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,10 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `SimpleOnScaleGestureListener` | 4 | composite | Return safe default (null/false/0/empty) |
-| `onScale` | 3 | composite | Store callback, never fire |
 | `onScaleBegin` | 3 | composite | Store callback, never fire |
-| `onScaleEnd` | 3 | composite | Store callback, never fire |
+| `SimpleOnScaleGestureListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `onScale` | 1 | none | Store callback, never fire |
+| `onScaleEnd` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

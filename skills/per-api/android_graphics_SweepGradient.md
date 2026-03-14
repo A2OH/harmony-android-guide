@@ -9,39 +9,45 @@
 | **Class** | `android.graphics.SweepGradient` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 4 |
-| **Avg Score** | 4.7 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
+| **Avg Score** | 9.0 |
+| **Scenario** | S1: Direct Mapping (Thin Wrapper) |
+| **Strategy** | Simple delegation to OHBridge |
+| **Direct/Near** | 4 (100%) |
+| **Partial/Composite** | 0 (0%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Stub APIs (score < 5): 4 methods
+## Implementable APIs (score >= 5): 4 methods
 
-These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `SweepGradient` | `SweepGradient(float, float, @ColorInt @NonNull int[], @Nullable float[])` | 9 | direct | impossible | `OH_Drawing_ShaderEffectCreateSweepGradient` | `@ohos.graphics.drawing (NDK).OH_Drawing_ShaderEffect` |
+| `SweepGradient` | `SweepGradient(float, float, @ColorLong @NonNull long[], @Nullable float[])` | 9 | direct | impossible | `OH_Drawing_ShaderEffectCreateSweepGradient` | `@ohos.graphics.drawing (NDK).OH_Drawing_ShaderEffect` |
+| `SweepGradient` | `SweepGradient(float, float, @ColorInt int, @ColorInt int)` | 9 | direct | impossible | `OH_Drawing_ShaderEffectCreateSweepGradient` | `@ohos.graphics.drawing (NDK).OH_Drawing_ShaderEffect` |
+| `SweepGradient` | `SweepGradient(float, float, @ColorLong long, @ColorLong long)` | 9 | direct | impossible | `OH_Drawing_ShaderEffectCreateSweepGradient` | `@ohos.graphics.drawing (NDK).OH_Drawing_ShaderEffect` |
 
-| Method | Score | Type | Stub Strategy |
-|---|---|---|---|
-| `SweepGradient` | 5 | partial | throw UnsupportedOperationException |
-| `SweepGradient` | 5 | partial | throw UnsupportedOperationException |
-| `SweepGradient` | 5 | partial | throw UnsupportedOperationException |
-| `SweepGradient` | 5 | partial | throw UnsupportedOperationException |
+## Gap Descriptions (per method)
+
+- **`SweepGradient`**: Direct
+- **`SweepGradient`**: Direct
+- **`SweepGradient`**: Direct
+- **`SweepGradient`**: Direct
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S1 — Direct Mapping (Thin Wrapper)**
 
-1. Implement 0 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create Java shim at `shim/java/android/graphics/SweepGradient.java`
+2. For each method, delegate to `OHBridge.xxx()` — one bridge call per Android call
+3. Add `static native` declarations to `OHBridge.java`
+4. Add mock implementations to `test-apps/mock/.../OHBridge.java`
+5. Add test section to `HeadlessTest.java` — call each method with valid + edge inputs
+6. Test null args, boundary values, return types
 
 ## Dependencies
 
@@ -54,6 +60,6 @@ Before marking `android.graphics.SweepGradient` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 4 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

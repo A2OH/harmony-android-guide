@@ -9,12 +9,12 @@
 | **Class** | `android.media.CamcorderProfile` |
 | **Package** | `android.media` |
 | **Total Methods** | 4 |
-| **Avg Score** | 4.6 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 2 (50%) |
+| **No Mapping** | 2 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,21 +22,16 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `get` | `static android.media.CamcorderProfile get(int)` | 5 | partial | moderate | `getCount` | `getCount(): number` |
-| `get` | `static android.media.CamcorderProfile get(int, int)` | 5 | partial | moderate | `getCount` | `getCount(): number` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `hasProfile` | 4 | composite | Return safe default (null/false/0/empty) |
-| `hasProfile` | 4 | composite | Return safe default (null/false/0/empty) |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
+| `get` | 3 | composite | Return safe default (null/false/0/empty) |
+| `hasProfile` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasProfile` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
@@ -60,6 +55,6 @@ Before marking `android.media.CamcorderProfile` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

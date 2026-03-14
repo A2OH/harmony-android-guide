@@ -9,12 +9,12 @@
 | **Class** | `android.text.PrecomputedText.Params.Builder` |
 | **Package** | `android.text.PrecomputedText.Params` |
 | **Total Methods** | 5 |
-| **Avg Score** | 4.4 |
+| **Avg Score** | 1.7 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 2 (40%) |
+| **No Mapping** | 3 (60%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,22 +22,17 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `Builder` | `PrecomputedText.Params.Builder(@NonNull android.text.TextPaint)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `Builder` | `PrecomputedText.Params.Builder(@NonNull android.text.PrecomputedText.Params)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setBreakStrategy` | 4 | composite | Log warning + no-op |
-| `setHyphenationFrequency` | 4 | composite | Log warning + no-op |
-| `setTextDirection` | 3 | composite | Log warning + no-op |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `Builder` | 3 | composite | throw UnsupportedOperationException |
+| `setBreakStrategy` | 1 | none | Log warning + no-op |
+| `setHyphenationFrequency` | 1 | none | Log warning + no-op |
+| `setTextDirection` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -60,6 +55,6 @@ Before marking `android.text.PrecomputedText.Params.Builder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

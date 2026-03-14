@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SectionIndexer` |
 | **Package** | `android.widget` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 1 (33%) |
+| **No Mapping** | 2 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getPositionForSection` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSectionForPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSections` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSections` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getPositionForSection` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSectionForPosition` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

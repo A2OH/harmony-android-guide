@@ -9,12 +9,12 @@
 | **Class** | `android.view.KeyboardShortcutGroup` |
 | **Package** | `android.view` |
 | **Total Methods** | 7 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (57%) |
-| **No Mapping** | 3 (42%) |
+| **Partial/Composite** | 2 (28%) |
+| **No Mapping** | 5 (71%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,13 +28,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addItem` | 3 | composite | Log warning + no-op |
-| `getItems` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getLabel` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getItems` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getLabel` | 2 | composite | Return safe default (null/false/0/empty) |
 | `KeyboardShortcutGroup` | 1 | none | throw UnsupportedOperationException |
 | `KeyboardShortcutGroup` | 1 | none | throw UnsupportedOperationException |
+| `addItem` | 1 | none | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

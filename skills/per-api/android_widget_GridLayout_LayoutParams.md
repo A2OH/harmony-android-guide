@@ -9,12 +9,12 @@
 | **Class** | `android.widget.GridLayout.LayoutParams` |
 | **Package** | `android.widget.GridLayout` |
 | **Total Methods** | 7 |
-| **Avg Score** | 1.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (14%) |
-| **No Mapping** | 6 (85%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 7 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 1 |
 | **Has Async Gap** | 1 |
@@ -28,13 +28,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setGravity` | 3 | composite | Log warning + no-op |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `LayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `setGravity` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

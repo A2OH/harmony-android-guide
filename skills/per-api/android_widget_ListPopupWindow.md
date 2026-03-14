@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ListPopupWindow` |
 | **Package** | `android.widget` |
 | **Total Methods** | 47 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 36 (76%) |
-| **No Mapping** | 11 (23%) |
+| **Partial/Composite** | 4 (8%) |
+| **No Mapping** | 43 (91%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 43 |
 | **Has Async Gap** | 43 |
@@ -28,53 +28,53 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `createDragToOpenListener` | 3 | composite | Return dummy instance / no-op |
-| `getHeight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getHorizontalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInputMethodMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPromptPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSelectedItemId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSelectedItemPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSoftInputMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getVerticalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getWidth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onKeyDown` | 3 | composite | Store callback, never fire |
-| `onKeyPreIme` | 3 | composite | Store callback, never fire |
-| `onKeyUp` | 3 | composite | Store callback, never fire |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setAnchorView` | 3 | composite | Log warning + no-op |
-| `setAnimationStyle` | 3 | composite | Log warning + no-op |
-| `setBackgroundDrawable` | 3 | composite | Log warning + no-op |
-| `setDropDownGravity` | 3 | composite | Log warning + no-op |
-| `setEpicenterBounds` | 3 | composite | Log warning + no-op |
-| `setHeight` | 3 | composite | Log warning + no-op |
-| `setHorizontalOffset` | 3 | composite | Log warning + no-op |
-| `setInputMethodMode` | 3 | composite | Log warning + no-op |
-| `setListSelector` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setModal` | 3 | composite | Log warning + no-op |
-| `setOnDismissListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemSelectedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSelection` | 3 | composite | Log warning + no-op |
-| `setSoftInputMode` | 3 | composite | Log warning + no-op |
-| `setVerticalOffset` | 3 | composite | Log warning + no-op |
-| `setWidth` | 3 | composite | Log warning + no-op |
-| `setWindowLayoutType` | 3 | composite | Log warning + no-op |
 | `show` | 3 | composite | throw UnsupportedOperationException |
-| `setPromptView` | 3 | composite | Log warning + no-op |
-| `setContentWidth` | 3 | composite | Log warning + no-op |
-| `setPromptPosition` | 3 | composite | Log warning + no-op |
+| `createDragToOpenListener` | 3 | composite | Return dummy instance / no-op |
+| `getSelectedItemId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getWidth` | 2 | composite | Return safe default (null/false/0/empty) |
 | `ListPopupWindow` | 1 | none | Return safe default (null/false/0/empty) |
 | `ListPopupWindow` | 1 | none | Return safe default (null/false/0/empty) |
 | `ListPopupWindow` | 1 | none | Return safe default (null/false/0/empty) |
 | `ListPopupWindow` | 1 | none | Return safe default (null/false/0/empty) |
 | `clearListSelection` | 1 | none | Return safe default (null/false/0/empty) |
 | `dismiss` | 1 | none | Return safe default (null/false/0/empty) |
+| `getHeight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getHorizontalOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getInputMethodMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPromptPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSelectedItemPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSoftInputMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getVerticalOffset` | 1 | none | Return safe default (null/false/0/empty) |
 | `isInputMethodNotNeeded` | 1 | none | Return safe default (null/false/0/empty) |
 | `isModal` | 1 | none | Return safe default (null/false/0/empty) |
 | `isShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `onKeyDown` | 1 | none | Store callback, never fire |
+| `onKeyPreIme` | 1 | none | Store callback, never fire |
+| `onKeyUp` | 1 | none | Store callback, never fire |
 | `performItemClick` | 1 | none | throw UnsupportedOperationException |
 | `postShow` | 1 | none | throw UnsupportedOperationException |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setAnchorView` | 1 | none | Log warning + no-op |
+| `setAnimationStyle` | 1 | none | Log warning + no-op |
+| `setBackgroundDrawable` | 1 | none | Log warning + no-op |
+| `setContentWidth` | 1 | none | Log warning + no-op |
+| `setDropDownGravity` | 1 | none | Log warning + no-op |
+| `setEpicenterBounds` | 1 | none | Log warning + no-op |
+| `setHeight` | 1 | none | Log warning + no-op |
+| `setHorizontalOffset` | 1 | none | Log warning + no-op |
+| `setInputMethodMode` | 1 | none | Log warning + no-op |
+| `setListSelector` | 1 | none | Return safe default (null/false/0/empty) |
+| `setModal` | 1 | none | Log warning + no-op |
+| `setOnDismissListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemSelectedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setPromptPosition` | 1 | none | Log warning + no-op |
+| `setPromptView` | 1 | none | Log warning + no-op |
+| `setSelection` | 1 | none | Log warning + no-op |
+| `setSoftInputMode` | 1 | none | Log warning + no-op |
+| `setVerticalOffset` | 1 | none | Log warning + no-op |
+| `setWidth` | 1 | none | Log warning + no-op |
+| `setWindowLayoutType` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,12 +9,12 @@
 | **Class** | `android.os.Parcel` |
 | **Package** | `android.os` |
 | **Total Methods** | 83 |
-| **Avg Score** | 5.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 39 (46%) |
-| **Partial/Composite** | 41 (49%) |
-| **No Mapping** | 3 (3%) |
+| **Avg Score** | 3.2 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 69 (83%) |
+| **No Mapping** | 14 (16%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,181 +22,110 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 74 methods
+## Implementable APIs (score >= 5): 3 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `readFileDescriptor` | `android.os.ParcelFileDescriptor readFileDescriptor()` | 9 | direct | easy | `getFileDescriptor` | `getFileDescriptor(pipe: USBDevicePipe): number` |
-| `writeFileDescriptor` | `void writeFileDescriptor(@NonNull java.io.FileDescriptor)` | 8 | direct | easy | `getFileDescriptor` | `getFileDescriptor(pipe: USBDevicePipe): number` |
-| `hasFileDescriptors` | `boolean hasFileDescriptors()` | 8 | direct | easy | `getFileDescriptor` | `getFileDescriptor(pipe: USBDevicePipe): number` |
-| `setDataSize` | `void setDataSize(int)` | 8 | near | easy | `setDate` | `setDate(date: Date, callback: AsyncCallback<void>): void` |
-| `writeInt` | `void writeInt(int)` | 8 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `writeMap` | `void writeMap(@Nullable java.util.Map)` | 8 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `readByte` | `byte readByte()` | 8 | near | easy | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `readInt` | `int readInt()` | 7 | near | easy | `read` | `read(): Promise<number[]>` |
-| `readMap` | `void readMap(@NonNull java.util.Map, @Nullable ClassLoader)` | 7 | near | easy | `read` | `read(): Promise<number[]>` |
-| `enforceInterface` | `void enforceInterface(String)` | 7 | near | easy | `setInterface` | `setInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `writeByte` | `void writeByte(byte)` | 7 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `writeList` | `void writeList(@Nullable java.util.List)` | 7 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `writeLong` | `void writeLong(long)` | 7 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `writeSize` | `void writeSize(@NonNull android.util.Size)` | 7 | near | easy | `write` | `write(data: number[]): Promise<void>` |
-| `writeString` | `void writeString(@Nullable String)` | 7 | near | easy | `writeSync` | `writeSync(fd: number,
-  buffer: ArrayBuffer | string,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-    encoding?: string;
-  }): number` |
-| `writeBundle` | `void writeBundle(@Nullable android.os.Bundle)` | 7 | near | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `dataSize` | `int dataSize()` | 7 | near | moderate | `size` | `size: number` |
-| `readException` | `void readException()` | 7 | near | moderate | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `readException` | `void readException(int, String)` | 7 | near | moderate | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `readList` | `void readList(@NonNull java.util.List, @Nullable ClassLoader)` | 7 | near | moderate | `read` | `read(): Promise<number[]>` |
-| `readLong` | `long readLong()` | 7 | near | moderate | `read` | `read(): Promise<number[]>` |
-| `readTypedList` | `<T> void readTypedList(@NonNull java.util.List<T>, @NonNull android.os.Parcelable.Creator<T>)` | 7 | near | moderate | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `writeArray` | `void writeArray(@Nullable Object[])` | 7 | near | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeBinderList` | `void writeBinderList(@Nullable java.util.List<android.os.IBinder>)` | 7 | near | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeFloat` | `void writeFloat(float)` | 7 | near | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeSizeF` | `void writeSizeF(@NonNull android.util.SizeF)` | 7 | near | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeStrongInterface` | `void writeStrongInterface(android.os.IInterface)` | 7 | near | moderate | `releaseInterface` | `releaseInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `writeValue` | `void writeValue(@Nullable Object)` | 7 | near | moderate | `setValue` | `setValue(value: number): void` |
-| `writeInterfaceToken` | `void writeInterfaceToken(String)` | 6 | near | moderate | `setInterface` | `setInterface(pipe: USBDevicePipe, iface: USBInterface): number` |
-| `writeBinderArray` | `void writeBinderArray(@Nullable android.os.IBinder[])` | 6 | near | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `readBinderList` | `void readBinderList(@NonNull java.util.List<android.os.IBinder>)` | 6 | near | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writeIntArray` | `void writeIntArray(@Nullable int[])` | 6 | near | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeDouble` | `void writeDouble(double)` | 6 | near | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeException` | `void writeException(@NonNull Exception)` | 6 | near | moderate | `writePermission` | `readonly writePermission: string` |
-| `writeTypedList` | `<T extends android.os.Parcelable> void writeTypedList(@Nullable java.util.List<T>)` | 6 | near | moderate | `writePermission` | `readonly writePermission: string` |
-| `dataAvail` | `int dataAvail()` | 6 | near | moderate | `data` | `data: string[]` |
-| `readBinderArray` | `void readBinderArray(@NonNull android.os.IBinder[])` | 6 | near | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `readFloat` | `float readFloat()` | 6 | near | moderate | `read` | `read(): Promise<number[]>` |
-| `readIntArray` | `void readIntArray(@NonNull int[])` | 6 | near | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writePersistableBundle` | `void writePersistableBundle(@Nullable android.os.PersistableBundle)` | 6 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `writeFloatArray` | `void writeFloatArray(@Nullable float[])` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeBoolean` | `void writeBoolean(boolean)` | 6 | partial | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeStringList` | `void writeStringList(@Nullable java.util.List<java.lang.String>)` | 6 | partial | moderate | `writeSync` | `writeSync(fd: number,
-  buffer: ArrayBuffer | string,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-    encoding?: string;
-  }): number` |
-| `setDataPosition` | `void setDataPosition(int)` | 6 | partial | moderate | `setHotspotConfig` | `setHotspotConfig(config: HotspotConfig): void` |
-| `writeNoException` | `void writeNoException()` | 6 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `appendFrom` | `void appendFrom(android.os.Parcel, int, int)` | 6 | partial | moderate | `from` | `from(array: number[]): Buffer` |
-| `readByteArray` | `void readByteArray(@NonNull byte[])` | 6 | partial | moderate | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `readDouble` | `double readDouble()` | 6 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writeDoubleArray` | `void writeDoubleArray(@Nullable double[])` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeSerializable` | `void writeSerializable(@Nullable java.io.Serializable)` | 6 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `readFloatArray` | `void readFloatArray(@NonNull float[])` | 6 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writeSparseArray` | `<T> void writeSparseArray(@Nullable android.util.SparseArray<T>)` | 6 | partial | moderate | `writeSync` | `writeSync(fd: number,
-  buffer: ArrayBuffer | string,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-    encoding?: string;
-  }): number` |
-| `writeStringArray` | `void writeStringArray(@Nullable String[])` | 6 | partial | moderate | `writeSync` | `writeSync(fd: number,
-  buffer: ArrayBuffer | string,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-    encoding?: string;
-  }): number` |
-| `writeTypedObject` | `<T extends android.os.Parcelable> void writeTypedObject(@Nullable T, int)` | 6 | partial | moderate | `writeSync` | `writeSync(fd: number,
-  buffer: ArrayBuffer | string,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-    encoding?: string;
-  }): number` |
-| `readStringList` | `void readStringList(@NonNull java.util.List<java.lang.String>)` | 6 | partial | moderate | `getScanInfoList` | `getScanInfoList(): Array<WifiScanInfo>` |
-| `setDataCapacity` | `void setDataCapacity(int)` | 6 | partial | moderate | `getDataSummary` | `getDataSummary(): Array<Summary>` |
-| `writeStrongBinder` | `void writeStrongBinder(android.os.IBinder)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `readBoolean` | `boolean readBoolean()` | 5 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `readTypedArray` | `<T> void readTypedArray(@NonNull T[], @NonNull android.os.Parcelable.Creator<T>)` | 5 | partial | moderate | `readText` | `readText(filePath: string,
-  options?: {
-    position?: number;
-    length?: number;
-    encoding?: string;
-  }): Promise<string>` |
-| `writeTypedArrayMap` | `<T extends android.os.Parcelable> void writeTypedArrayMap(@Nullable android.util.ArrayMap<java.lang.String,T>, int)` | 5 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `readDoubleArray` | `void readDoubleArray(@NonNull double[])` | 5 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writeByteArray` | `void writeByteArray(@Nullable byte[])` | 5 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeByteArray` | `void writeByteArray(@Nullable byte[], int, int)` | 5 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeLongArray` | `void writeLongArray(@Nullable long[])` | 5 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `writeTypedArray` | `<T extends android.os.Parcelable> void writeTypedArray(@Nullable T[], int)` | 5 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `writeParcelableList` | `<T extends android.os.Parcelable> void writeParcelableList(@Nullable java.util.List<T>, int)` | 5 | partial | moderate | `writePermission` | `readonly writePermission: string` |
-| `writeCharArray` | `void writeCharArray(@Nullable char[])` | 5 | partial | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `readStringArray` | `void readStringArray(@NonNull String[])` | 5 | partial | moderate | `readSync` | `readSync(fd: number,
-  buffer: ArrayBuffer,
-  options?: {
-    offset?: number;
-    length?: number;
-    position?: number;
-  }): number` |
-| `readStrongBinder` | `android.os.IBinder readStrongBinder()` | 5 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `dataCapacity` | `int dataCapacity()` | 5 | partial | moderate | `data` | `data: string[]` |
-| `dataPosition` | `int dataPosition()` | 5 | partial | moderate | `data` | `data: string[]` |
-| `readLongArray` | `void readLongArray(@NonNull long[])` | 5 | partial | moderate | `readNdefTag` | `readNdefTag(): Promise<string>` |
-| `writeParcelable` | `void writeParcelable(@Nullable android.os.Parcelable, int)` | 5 | partial | moderate | `write` | `write(data: number[]): Promise<void>` |
-| `writeTypedSparseArray` | `<T extends android.os.Parcelable> void writeTypedSparseArray(@Nullable android.util.SparseArray<T>, int)` | 5 | partial | moderate | `writePermission` | `readonly writePermission: string` |
+| `readInt` | `int readInt()` | 5 | partial | moderate | `read` | `read(): Promise<number[]>` |
+| `dataSize` | `int dataSize()` | 5 | partial | moderate | `dataSize` | `dataSize: number` |
+| `readLong` | `long readLong()` | 5 | partial | moderate | `read` | `read(): Promise<number[]>` |
 
-## Stub APIs (score < 5): 9 methods
+## Stub APIs (score < 5): 80 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeBooleanArray` | 5 | partial | Log warning + no-op |
-| `readCharArray` | 5 | partial | Return safe default (null/false/0/empty) |
-| `writeSparseBooleanArray` | 5 | partial | Log warning + no-op |
-| `readBooleanArray` | 4 | partial | Return safe default (null/false/0/empty) |
-| `writeParcelableCreator` | 4 | partial | Log warning + no-op |
-| `writeParcelableArray` | 4 | partial | Log warning + no-op |
+| `readFloat` | 5 | partial | Return safe default (null/false/0/empty) |
+| `writeTypedList` | 5 | partial | Return safe default (null/false/0/empty) |
+| `writeTypedArrayMap` | 5 | partial | Log warning + no-op |
+| `writeTypedArray` | 4 | partial | Log warning + no-op |
+| `writeParcelableList` | 4 | partial | Return safe default (null/false/0/empty) |
+| `dataAvail` | 4 | partial | throw UnsupportedOperationException |
+| `readMap` | 4 | partial | Return safe default (null/false/0/empty) |
+| `writeException` | 4 | partial | Log warning + no-op |
+| `writePersistableBundle` | 4 | partial | Return safe default (null/false/0/empty) |
+| `writeNoException` | 4 | partial | Log warning + no-op |
+| `readList` | 4 | partial | Return safe default (null/false/0/empty) |
+| `writeSerializable` | 4 | partial | Log warning + no-op |
+| `readBinderList` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readBinderArray` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readIntArray` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readDouble` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readFloatArray` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readStringList` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setDataCapacity` | 4 | partial | Log warning + no-op |
+| `readBoolean` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readDoubleArray` | 4 | partial | Return safe default (null/false/0/empty) |
+| `readStrongBinder` | 4 | composite | Return safe default (null/false/0/empty) |
+| `setDataSize` | 4 | composite | Log warning + no-op |
+| `writeInt` | 4 | composite | Log warning + no-op |
+| `writeMap` | 4 | composite | Log warning + no-op |
+| `writeByte` | 4 | composite | Log warning + no-op |
+| `writeList` | 4 | composite | Return safe default (null/false/0/empty) |
+| `writeLong` | 4 | composite | Log warning + no-op |
+| `writeSize` | 4 | composite | Log warning + no-op |
+| `writeBundle` | 4 | composite | Log warning + no-op |
+| `writeArray` | 3 | composite | Log warning + no-op |
+| `writeBinderList` | 3 | composite | Return safe default (null/false/0/empty) |
+| `writeFloat` | 3 | composite | Log warning + no-op |
+| `writeSizeF` | 3 | composite | Log warning + no-op |
+| `writeValue` | 3 | composite | Log warning + no-op |
+| `writeBinderArray` | 3 | composite | Log warning + no-op |
+| `writeIntArray` | 3 | composite | Log warning + no-op |
+| `writeDouble` | 3 | composite | Log warning + no-op |
+| `writeFloatArray` | 3 | composite | Log warning + no-op |
+| `writeBoolean` | 3 | composite | Log warning + no-op |
+| `setDataPosition` | 3 | composite | Log warning + no-op |
+| `writeDoubleArray` | 3 | composite | Log warning + no-op |
+| `writeStrongBinder` | 3 | composite | Log warning + no-op |
+| `writeByteArray` | 3 | composite | Log warning + no-op |
+| `writeByteArray` | 3 | composite | Log warning + no-op |
+| `writeLongArray` | 3 | composite | Log warning + no-op |
+| `writeCharArray` | 3 | composite | Log warning + no-op |
+| `readFileDescriptor` | 3 | composite | Return safe default (null/false/0/empty) |
+| `writeFileDescriptor` | 3 | composite | Log warning + no-op |
+| `readTypedList` | 3 | composite | Return safe default (null/false/0/empty) |
+| `hasFileDescriptors` | 3 | composite | Return safe default (null/false/0/empty) |
+| `readByte` | 3 | composite | Return safe default (null/false/0/empty) |
+| `enforceInterface` | 3 | composite | throw UnsupportedOperationException |
+| `writeSparseArray` | 3 | composite | Log warning + no-op |
+| `writeTypedObject` | 3 | composite | Log warning + no-op |
+| `writeString` | 3 | composite | Log warning + no-op |
+| `readTypedArray` | 3 | composite | Return safe default (null/false/0/empty) |
+| `readException` | 3 | composite | Return safe default (null/false/0/empty) |
+| `readException` | 3 | composite | Return safe default (null/false/0/empty) |
+| `writeStrongInterface` | 3 | composite | Log warning + no-op |
+| `writeInterfaceToken` | 3 | composite | Log warning + no-op |
+| `writeStringList` | 3 | composite | Return safe default (null/false/0/empty) |
+| `appendFrom` | 2 | composite | throw UnsupportedOperationException |
+| `readByteArray` | 2 | composite | Return safe default (null/false/0/empty) |
+| `writeStringArray` | 2 | composite | Log warning + no-op |
+| `readStringArray` | 2 | composite | Return safe default (null/false/0/empty) |
+| `dataCapacity` | 1 | none | throw UnsupportedOperationException |
+| `dataPosition` | 1 | none | Store callback, never fire |
 | `marshall` | 1 | none | throw UnsupportedOperationException |
+| `readBooleanArray` | 1 | none | Return safe default (null/false/0/empty) |
+| `readCharArray` | 1 | none | Return safe default (null/false/0/empty) |
+| `readLongArray` | 1 | none | Return safe default (null/false/0/empty) |
 | `recycle` | 1 | none | throw UnsupportedOperationException |
 | `unmarshall` | 1 | none | throw UnsupportedOperationException |
+| `writeBooleanArray` | 1 | none | Log warning + no-op |
+| `writeParcelable` | 1 | none | Log warning + no-op |
+| `writeParcelableArray` | 1 | none | Log warning + no-op |
+| `writeParcelableCreator` | 1 | none | Log warning + no-op |
+| `writeSparseBooleanArray` | 1 | none | Log warning + no-op |
+| `writeTypedSparseArray` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 74 methods that have score >= 5
-2. Stub 9 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -210,6 +139,6 @@ Before marking `android.os.Parcel` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 83 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 74 test methods for implemented APIs
+3. **Test Coverage**: At least 3 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

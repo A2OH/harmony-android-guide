@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Filter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 6 |
-| **Avg Score** | 1.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (16%) |
-| **No Mapping** | 5 (83%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,8 +28,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `convertResultToString` | 3 | composite | Store callback, never fire |
 | `Filter` | 1 | none | throw UnsupportedOperationException |
+| `convertResultToString` | 1 | none | Store callback, never fire |
 | `filter` | 1 | none | throw UnsupportedOperationException |
 | `filter` | 1 | none | throw UnsupportedOperationException |
 | `performFiltering` | 1 | none | throw UnsupportedOperationException |

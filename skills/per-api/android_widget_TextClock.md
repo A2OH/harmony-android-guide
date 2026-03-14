@@ -9,12 +9,12 @@
 | **Class** | `android.widget.TextClock` |
 | **Package** | `android.widget` |
 | **Total Methods** | 10 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (40%) |
-| **No Mapping** | 6 (60%) |
+| **Partial/Composite** | 2 (20%) |
+| **No Mapping** | 8 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,16 +28,16 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getTimeZone` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setFormat12Hour` | 3 | composite | Log warning + no-op |
-| `setFormat24Hour` | 3 | composite | Log warning + no-op |
 | `setTimeZone` | 3 | composite | Log warning + no-op |
+| `getTimeZone` | 3 | composite | Return safe default (null/false/0/empty) |
 | `TextClock` | 1 | none | throw UnsupportedOperationException |
 | `TextClock` | 1 | none | throw UnsupportedOperationException |
 | `TextClock` | 1 | none | throw UnsupportedOperationException |
 | `TextClock` | 1 | none | throw UnsupportedOperationException |
 | `is24HourModeEnabled` | 1 | none | Return safe default (null/false/0/empty) |
 | `refreshTime` | 1 | none | throw UnsupportedOperationException |
+| `setFormat12Hour` | 1 | none | Log warning + no-op |
+| `setFormat24Hour` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

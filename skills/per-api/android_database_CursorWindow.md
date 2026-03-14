@@ -9,68 +9,67 @@
 | **Class** | `android.database.CursorWindow` |
 | **Package** | `android.database` |
 | **Total Methods** | 27 |
-| **Avg Score** | 4.6 |
-| **Scenario** | S8: No Mapping (Stub) |
-| **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 10 (37%) |
+| **Avg Score** | 2.5 |
+| **Scenario** | S3: Partial Coverage |
+| **Strategy** | Implement feasible methods, stub the rest |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 13 (48%) |
-| **No Mapping** | 4 (14%) |
+| **No Mapping** | 14 (51%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DATA-LAYER.md` |
-| **Expected AI Iterations** | 1 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 13 methods
+## Implementable APIs (score >= 5): 5 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getStartPosition` | `int getStartPosition()` | 8 | direct | easy | `getPosition` | `getPosition(): number` |
-| `clear` | `void clear()` | 8 | direct | easy | `clear` | `clear(): void` |
-| `setStartPosition` | `void setStartPosition(int)` | 7 | near | easy | `getPosition` | `getPosition(): number` |
-| `getString` | `String getString(int, int)` | 7 | near | easy | `getStorage` | `getStorage(path: string, callback: AsyncCallback<Storage>): void` |
-| `getType` | `int getType(int, int)` | 7 | near | easy | `type` | `type: ValueType` |
-| `getInt` | `int getInt(int, int)` | 7 | near | easy | `getCount` | `getCount(): number` |
-| `getLong` | `long getLong(int, int)` | 7 | near | moderate | `getCount` | `getCount(): number` |
-| `getShort` | `short getShort(int, int)` | 7 | near | moderate | `getStorage` | `getStorage(path: string, callback: AsyncCallback<Storage>): void` |
-| `getFloat` | `float getFloat(int, int)` | 6 | near | moderate | `getCount` | `getCount(): number` |
-| `getDouble` | `double getDouble(int, int)` | 6 | near | moderate | `getRdbStore` | `getRdbStore(context: Context, config: StoreConfig, version: number, callback: AsyncCallback<RdbStore>): void` |
-| `getBlob` | `byte[] getBlob(int, int)` | 6 | partial | moderate | `getRdbStore` | `getRdbStore(context: Context, config: StoreConfig, version: number, callback: AsyncCallback<RdbStore>): void` |
-| `getNumRows` | `int getNumRows()` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `freeLastRow` | `void freeLastRow()` | 5 | partial | moderate | `isAfterLast` | `isAfterLast(): boolean` |
+| `getStartPosition` | `int getStartPosition()` | 6 | partial | moderate | `getPosition` | `getPosition(): number` |
+| `getInt` | `int getInt(int, int)` | 5 | partial | moderate | `getCount` | `getCount(): number` |
+| `getLong` | `long getLong(int, int)` | 5 | partial | moderate | `getCount` | `getCount(): number` |
+| `getFloat` | `float getFloat(int, int)` | 5 | partial | moderate | `getCount` | `getCount(): number` |
+| `clear` | `void clear()` | 5 | partial | moderate | `clear` | `clear(): void` |
 
-## Stub APIs (score < 5): 14 methods
+## Stub APIs (score < 5): 22 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `allocRow` | 5 | partial | throw UnsupportedOperationException |
-| `newFromParcel` | 5 | partial | throw UnsupportedOperationException |
-| `writeToParcel` | 4 | partial | Log warning + no-op |
-| `copyStringToBuffer` | 4 | composite | throw UnsupportedOperationException |
-| `putString` | 4 | composite | Log warning + no-op |
-| `setNumColumns` | 3 | composite | Log warning + no-op |
-| `putDouble` | 3 | composite | Log warning + no-op |
-| `putBlob` | 2 | composite | Log warning + no-op |
-| `putLong` | 2 | composite | Log warning + no-op |
-| `putNull` | 2 | composite | Log warning + no-op |
+| `setStartPosition` | 5 | partial | Return dummy instance / no-op |
+| `getType` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getNumRows` | 4 | partial | Return safe default (null/false/0/empty) |
+| `freeLastRow` | 4 | partial | throw UnsupportedOperationException |
+| `getString` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getShort` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDouble` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getBlob` | 2 | composite | Return safe default (null/false/0/empty) |
 | `CursorWindow` | 1 | none | throw UnsupportedOperationException |
 | `CursorWindow` | 1 | none | throw UnsupportedOperationException |
+| `allocRow` | 1 | none | throw UnsupportedOperationException |
+| `copyStringToBuffer` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `newFromParcel` | 1 | none | throw UnsupportedOperationException |
 | `onAllReferencesReleased` | 1 | none | No-op |
+| `putBlob` | 1 | none | Log warning + no-op |
+| `putDouble` | 1 | none | Log warning + no-op |
+| `putLong` | 1 | none | Log warning + no-op |
+| `putNull` | 1 | none | Log warning + no-op |
+| `putString` | 1 | none | Log warning + no-op |
+| `setNumColumns` | 1 | none | Log warning + no-op |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S8 — No Mapping (Stub)**
+**Scenario: S3 — Partial Coverage**
 
-1. Create minimal stub class matching AOSP package/class name
-2. All lifecycle methods (create/destroy): no-op, return dummy
-3. All computation methods: throw UnsupportedOperationException with message
-4. All query methods: return safe defaults
-5. Log a warning on first use: "X is not supported on OHOS"
-6. Only test: no crash on construction, expected exceptions
+1. Implement 5 methods that have score >= 5
+2. Stub 22 methods using the Stub Strategy column above
+3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
+4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
+5. Test both working methods AND verify stubs behave predictably
 
 ## Dependencies
 
@@ -83,6 +82,6 @@ Before marking `android.database.CursorWindow` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 27 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 13 test methods for implemented APIs
+3. **Test Coverage**: At least 5 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

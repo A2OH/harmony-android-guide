@@ -9,12 +9,12 @@
 | **Class** | `android.widget.NumberPicker` |
 | **Package** | `android.widget` |
 | **Total Methods** | 21 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 17 (80%) |
-| **No Mapping** | 4 (19%) |
+| **Partial/Composite** | 3 (14%) |
+| **No Mapping** | 18 (85%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 17 |
 | **Has Async Gap** | 17 |
@@ -28,27 +28,27 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDisplayedValues` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMaxValue` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMinValue` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getValue` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getWrapSelectorWheel` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setDisplayedValues` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setFormatter` | 3 | composite | Log warning + no-op |
-| `setMaxValue` | 3 | composite | Log warning + no-op |
-| `setMinValue` | 3 | composite | Log warning + no-op |
-| `setOnLongPressUpdateInterval` | 3 | composite | Log warning + no-op |
-| `setOnScrollListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnValueChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSelectionDividerHeight` | 3 | composite | Log warning + no-op |
-| `setTextColor` | 3 | composite | Log warning + no-op |
-| `setTextSize` | 3 | composite | Log warning + no-op |
 | `setValue` | 3 | composite | Log warning + no-op |
-| `setWrapSelectorWheel` | 3 | composite | Log warning + no-op |
+| `getValue` | 3 | composite | Return safe default (null/false/0/empty) |
 | `NumberPicker` | 1 | none | throw UnsupportedOperationException |
 | `NumberPicker` | 1 | none | throw UnsupportedOperationException |
 | `NumberPicker` | 1 | none | throw UnsupportedOperationException |
 | `NumberPicker` | 1 | none | throw UnsupportedOperationException |
+| `getDisplayedValues` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMaxValue` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMinValue` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDisplayedValues` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFormatter` | 1 | none | Log warning + no-op |
+| `setMaxValue` | 1 | none | Log warning + no-op |
+| `setMinValue` | 1 | none | Log warning + no-op |
+| `setOnLongPressUpdateInterval` | 1 | none | Log warning + no-op |
+| `setOnScrollListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnValueChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSelectionDividerHeight` | 1 | none | Log warning + no-op |
+| `setTextColor` | 1 | none | Log warning + no-op |
+| `setTextSize` | 1 | none | Log warning + no-op |
+| `setWrapSelectorWheel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

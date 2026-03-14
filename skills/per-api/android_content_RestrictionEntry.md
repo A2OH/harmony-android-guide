@@ -9,12 +9,12 @@
 | **Class** | `android.content.RestrictionEntry` |
 | **Package** | `android.content` |
 | **Total Methods** | 33 |
-| **Avg Score** | 5.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 13 (39%) |
-| **Partial/Composite** | 19 (57%) |
-| **No Mapping** | 1 (3%) |
+| **Avg Score** | 3.4 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 27 (81%) |
+| **No Mapping** | 6 (18%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,60 +22,55 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 27 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `setType` | `void setType(int)` | 8 | direct | easy | `userType` | `userType?: UserType` |
-| `getDescription` | `String getDescription()` | 8 | near | easy | `getTypeDescriptor` | `getTypeDescriptor(typeId: string): TypeDescriptor` |
-| `getType` | `int getType()` | 7 | near | easy | `type` | `type: ValueType` |
-| `getKey` | `String getKey()` | 7 | near | easy | `getEntry` | `getEntry(): Entry` |
-| `getRestrictions` | `android.content.RestrictionEntry[] getRestrictions()` | 7 | near | moderate | `getPosition` | `getPosition(): number` |
-| `getChoiceEntries` | `String[] getChoiceEntries()` | 7 | near | moderate | `deleteEntries` | `deleteEntries: Entry[]` |
-| `setChoiceEntries` | `void setChoiceEntries(String[])` | 7 | near | moderate | `insertEntries` | `insertEntries: Entry[]` |
-| `setChoiceEntries` | `void setChoiceEntries(android.content.Context, @ArrayRes int)` | 7 | near | moderate | `insertEntries` | `insertEntries: Entry[]` |
-| `setRestrictions` | `void setRestrictions(android.content.RestrictionEntry[])` | 7 | near | moderate | `setRestartWant` | `setRestartWant(want: Want): void` |
-| `getIntValue` | `int getIntValue()` | 6 | near | moderate | `value` | `value: Value` |
-| `setIntValue` | `void setIntValue(int)` | 6 | near | moderate | `value` | `value: Value` |
-| `getTitle` | `String getTitle()` | 6 | near | moderate | `getId` | `getId(uri: string): number` |
-| `createBundleEntry` | `static android.content.RestrictionEntry createBundleEntry(String, android.content.RestrictionEntry[])` | 6 | near | moderate | `getBundleName` | `getBundleName(agent: WantAgent, callback: AsyncCallback<string>): void` |
-| `RestrictionEntry` | `RestrictionEntry(int, String)` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `RestrictionEntry` | `RestrictionEntry(String, String)` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `RestrictionEntry` | `RestrictionEntry(String, boolean)` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `RestrictionEntry` | `RestrictionEntry(String, String[])` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `RestrictionEntry` | `RestrictionEntry(String, int)` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `RestrictionEntry` | `RestrictionEntry(android.os.Parcel)` | 6 | partial | moderate | `getEntry` | `getEntry(): Entry` |
-| `getSelectedString` | `String getSelectedString()` | 6 | partial | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `createBundleArrayEntry` | `static android.content.RestrictionEntry createBundleArrayEntry(String, android.content.RestrictionEntry[])` | 6 | partial | moderate | `getBundleName` | `getBundleName(agent: WantAgent, callback: AsyncCallback<string>): void` |
-| `setDescription` | `void setDescription(String)` | 6 | partial | moderate | `setRestartWant` | `setRestartWant(want: Want): void` |
-| `getSelectedState` | `boolean getSelectedState()` | 5 | partial | moderate | `getContext` | `getContext(): Context` |
-| `getAllSelectedStrings` | `String[] getAllSelectedStrings()` | 5 | partial | moderate | `getExtensionRunningInfos` | `getExtensionRunningInfos(upperLimit: number): Promise<Array<ExtensionRunningInfo>>` |
-| `setSelectedState` | `void setSelectedState(boolean)` | 5 | partial | moderate | `setRestartWant` | `setRestartWant(want: Want): void` |
-| `getChoiceValues` | `String[] getChoiceValues()` | 5 | partial | moderate | `getCount` | `getCount(): number` |
-| `setSelectedString` | `void setSelectedString(String)` | 5 | partial | moderate | `setRestartWant` | `setRestartWant(want: Want): void` |
-
-## Stub APIs (score < 5): 6 methods
+## Stub APIs (score < 5): 33 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setAllSelectedStrings` | 5 | partial | Log warning + no-op |
-| `setTitle` | 5 | partial | Log warning + no-op |
-| `writeToParcel` | 4 | partial | Log warning + no-op |
-| `setChoiceValues` | 4 | partial | Log warning + no-op |
-| `setChoiceValues` | 4 | partial | Log warning + no-op |
+| `setType` | 5 | partial | Log warning + no-op |
+| `getChoiceEntries` | 5 | partial | Return safe default (null/false/0/empty) |
+| `setChoiceEntries` | 5 | partial | Log warning + no-op |
+| `setChoiceEntries` | 5 | partial | Log warning + no-op |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `RestrictionEntry` | 5 | partial | Store callback, never fire |
+| `getKey` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getIntValue` | 5 | partial | Return safe default (null/false/0/empty) |
+| `setIntValue` | 5 | partial | Log warning + no-op |
+| `getRestrictions` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getType` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getChoiceValues` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getSelectedState` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setRestrictions` | 4 | composite | Log warning + no-op |
+| `setDescription` | 3 | composite | Log warning + no-op |
+| `setSelectedState` | 3 | composite | Log warning + no-op |
+| `setSelectedString` | 3 | composite | Log warning + no-op |
+| `getDescription` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
+| `createBundleEntry` | 3 | composite | Return dummy instance / no-op |
+| `getSelectedString` | 3 | composite | Return safe default (null/false/0/empty) |
+| `createBundleArrayEntry` | 2 | composite | Return dummy instance / no-op |
+| `getAllSelectedStrings` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `setAllSelectedStrings` | 1 | none | Log warning + no-op |
+| `setChoiceValues` | 1 | none | Log warning + no-op |
+| `setChoiceValues` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 27 methods that have score >= 5
-2. Stub 6 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -89,6 +84,6 @@ Before marking `android.content.RestrictionEntry` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 33 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 27 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

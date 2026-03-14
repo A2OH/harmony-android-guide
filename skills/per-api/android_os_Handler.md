@@ -9,12 +9,12 @@
 | **Class** | `android.os.Handler` |
 | **Package** | `android.os` |
 | **Total Methods** | 26 |
-| **Avg Score** | 5.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 13 (50%) |
-| **Partial/Composite** | 10 (38%) |
-| **No Mapping** | 3 (11%) |
+| **Avg Score** | 3.5 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 4 (15%) |
+| **Partial/Composite** | 14 (53%) |
+| **No Mapping** | 8 (30%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,53 +22,60 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 22 methods
+## Implementable APIs (score >= 5): 4 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `sendMessage` | `final boolean sendMessage(@NonNull android.os.Message)` | 8 | near | easy | `message` | `readonly message: string` |
-| `dispatchMessage` | `void dispatchMessage(@NonNull android.os.Message)` | 8 | near | easy | `disableMessage` | `readonly disableMessage: string` |
-| `removeCallbacks` | `final void removeCallbacks(@NonNull Runnable)` | 8 | near | easy | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `removeCallbacks` | `final void removeCallbacks(@NonNull Runnable, @Nullable Object)` | 8 | near | easy | `removeAll` | `removeAll(bundle: BundleOption, callback: AsyncCallback<void>): void` |
-| `handleMessage` | `void handleMessage(@NonNull android.os.Message)` | 7 | near | easy | `disableMessage` | `readonly disableMessage: string` |
-| `postAtTime` | `final boolean postAtTime(@NonNull Runnable, long)` | 7 | near | easy | `setTime` | `setTime(time: number, callback: AsyncCallback<void>): void` |
-| `postAtTime` | `final boolean postAtTime(@NonNull Runnable, @Nullable Object, long)` | 7 | near | easy | `setTime` | `setTime(time: number, callback: AsyncCallback<void>): void` |
-| `postDelayed` | `final boolean postDelayed(@NonNull Runnable, long)` | 6 | near | moderate | `executeDelayed` | `executeDelayed(delayTime: number, task: Task, priority?: Priority): Promise<Object>` |
-| `postDelayed` | `final boolean postDelayed(@NonNull Runnable, @Nullable Object, long)` | 6 | near | moderate | `executeDelayed` | `executeDelayed(delayTime: number, task: Task, priority?: Priority): Promise<Object>` |
-| `sendMessageDelayed` | `final boolean sendMessageDelayed(@NonNull android.os.Message, long)` | 6 | near | moderate | `executeDelayed` | `executeDelayed(delayTime: number, task: Task, priority?: Priority): Promise<Object>` |
-| `removeMessages` | `final void removeMessages(int)` | 6 | near | moderate | `removeProcessor` | `removeProcessor(id: number): void` |
-| `removeMessages` | `final void removeMessages(int, @Nullable Object)` | 6 | near | moderate | `removeProcessor` | `removeProcessor(id: number): void` |
-| `sendEmptyMessage` | `final boolean sendEmptyMessage(int)` | 6 | near | moderate | `statusMessage` | `statusMessage: string` |
-| `sendEmptyMessageDelayed` | `final boolean sendEmptyMessageDelayed(int, long)` | 6 | partial | moderate | `executeDelayed` | `executeDelayed(delayTime: number, task: Task, priority?: Priority): Promise<Object>` |
-| `sendMessageAtTime` | `boolean sendMessageAtTime(@NonNull android.os.Message, long)` | 6 | partial | moderate | `setTime` | `setTime(time: number, callback: AsyncCallback<void>): void` |
-| `removeCallbacksAndMessages` | `final void removeCallbacksAndMessages(@Nullable Object)` | 6 | partial | moderate | `removeAllSlots` | `removeAllSlots(callback: AsyncCallback<void>): void` |
-| `sendEmptyMessageAtTime` | `final boolean sendEmptyMessageAtTime(int, long)` | 5 | partial | moderate | `statusMessage` | `statusMessage: string` |
-| `dump` | `final void dump(@NonNull android.util.Printer, @NonNull String)` | 5 | partial | moderate | `dumpHeapData` | `dumpHeapData(filename: string): void` |
-| `hasCallbacks` | `final boolean hasCallbacks(@NonNull Runnable)` | 5 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-| `hasMessages` | `final boolean hasMessages(int)` | 5 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-| `hasMessages` | `final boolean hasMessages(int, @Nullable Object)` | 5 | partial | moderate | `hasRight` | `hasRight(deviceName: string): boolean` |
-| `sendMessageAtFrontOfQueue` | `final boolean sendMessageAtFrontOfQueue(@NonNull android.os.Message)` | 5 | partial | moderate | `messageCode` | `messageCode: number` |
+| `post` | `final boolean post(@NonNull Runnable)` | 9 | direct | hard | `execute` | `execute(func: Function, ...args: Object[]): Promise<Object>` |
+| `postDelayed` | `final boolean postDelayed(@NonNull Runnable, long)` | 9 | direct | moderate | `execute` | `execute(func: Function, ...args: Object[]): Promise<Object>` |
+| `postDelayed` | `final boolean postDelayed(@NonNull Runnable, @Nullable Object, long)` | 9 | direct | moderate | `execute` | `execute(func: Function, ...args: Object[]): Promise<Object>` |
+| `sendMessage` | `final boolean sendMessage(@NonNull android.os.Message)` | 9 | direct | moderate | `execute` | `execute(func: Function, ...args: Object[]): Promise<Object>` |
 
-## Stub APIs (score < 5): 4 methods
+## Gap Descriptions (per method)
+
+- **`post`**: Task dispatch
+- **`postDelayed`**: Delayed task
+- **`postDelayed`**: Delayed task
+- **`sendMessage`**: Message dispatch
+
+## Stub APIs (score < 5): 22 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `postAtFrontOfQueue` | 4 | partial | Store callback, never fire |
+| `dispatchMessage` | 5 | partial | Return safe default (null/false/0/empty) |
+| `handleMessage` | 5 | partial | throw UnsupportedOperationException |
+| `sendEmptyMessage` | 4 | partial | throw UnsupportedOperationException |
+| `sendEmptyMessageAtTime` | 4 | partial | throw UnsupportedOperationException |
+| `removeCallbacks` | 4 | composite | Log warning + no-op |
+| `removeCallbacks` | 4 | composite | Log warning + no-op |
+| `removeMessages` | 3 | composite | Log warning + no-op |
+| `removeMessages` | 3 | composite | Log warning + no-op |
+| `removeCallbacksAndMessages` | 3 | composite | Log warning + no-op |
+| `postAtTime` | 3 | composite | throw UnsupportedOperationException |
+| `postAtTime` | 3 | composite | throw UnsupportedOperationException |
+| `sendMessageDelayed` | 3 | composite | throw UnsupportedOperationException |
+| `sendEmptyMessageDelayed` | 3 | composite | throw UnsupportedOperationException |
+| `sendMessageAtTime` | 3 | composite | throw UnsupportedOperationException |
 | `Handler` | 1 | none | throw UnsupportedOperationException |
 | `Handler` | 1 | none | throw UnsupportedOperationException |
-| `post` | 1 | none | throw UnsupportedOperationException |
+| `dump` | 1 | none | throw UnsupportedOperationException |
+| `hasCallbacks` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasMessages` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasMessages` | 1 | none | Return safe default (null/false/0/empty) |
+| `postAtFrontOfQueue` | 1 | none | Store callback, never fire |
+| `sendMessageAtFrontOfQueue` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 22 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -83,6 +90,6 @@ Before marking `android.os.Handler` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 26 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 22 test methods for implemented APIs
+3. **Test Coverage**: At least 4 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

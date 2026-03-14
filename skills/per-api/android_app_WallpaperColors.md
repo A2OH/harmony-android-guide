@@ -9,12 +9,12 @@
 | **Class** | `android.app.WallpaperColors` |
 | **Package** | `android.app` |
 | **Total Methods** | 6 |
-| **Avg Score** | 1.4 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (16%) |
-| **No Mapping** | 5 (83%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 3 | composite | Log warning + no-op |
 | `WallpaperColors` | 1 | none | throw UnsupportedOperationException |
 | `WallpaperColors` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `fromBitmap` | 1 | none | throw UnsupportedOperationException |
 | `fromDrawable` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

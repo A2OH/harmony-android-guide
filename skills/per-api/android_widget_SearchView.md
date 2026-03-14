@@ -9,15 +9,15 @@
 | **Class** | `android.widget.SearchView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 31 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 24 (77%) |
-| **No Mapping** | 7 (22%) |
+| **Partial/Composite** | 1 (3%) |
+| **No Mapping** | 30 (96%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 27 |
-| **Has Async Gap** | 27 |
+| **Has Async Gap** | 31 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,37 +28,37 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getImeOptions` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInputType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMaxWidth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getQuery` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSuggestionsAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isIconifiedByDefault` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onActionViewCollapsed` | 3 | composite | Store callback, never fire |
-| `onActionViewExpanded` | 3 | composite | Store callback, never fire |
-| `setIconified` | 3 | composite | Log warning + no-op |
-| `setIconifiedByDefault` | 3 | composite | Log warning + no-op |
-| `setImeOptions` | 3 | composite | Log warning + no-op |
-| `setInputType` | 3 | composite | Log warning + no-op |
-| `setMaxWidth` | 3 | composite | Log warning + no-op |
-| `setOnCloseListener` | 3 | composite | No-op |
-| `setOnQueryTextFocusChangeListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnQueryTextListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnSearchClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnSuggestionListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setQueryHint` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setQueryRefinementEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSubmitButtonEnabled` | 3 | composite | Log warning + no-op |
-| `setSuggestionsAdapter` | 3 | composite | Log warning + no-op |
-| `setSearchableInfo` | 3 | composite | Log warning + no-op |
-| `setQuery` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getQuery` | 2 | composite | Return safe default (null/false/0/empty) |
 | `SearchView` | 1 | none | throw UnsupportedOperationException |
 | `SearchView` | 1 | none | throw UnsupportedOperationException |
 | `SearchView` | 1 | none | throw UnsupportedOperationException |
 | `SearchView` | 1 | none | throw UnsupportedOperationException |
+| `getImeOptions` | 1 | none | Return safe default (null/false/0/empty) |
+| `getInputType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMaxWidth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSuggestionsAdapter` | 1 | none | Return safe default (null/false/0/empty) |
 | `isIconified` | 1 | none | Return safe default (null/false/0/empty) |
+| `isIconifiedByDefault` | 1 | none | Return safe default (null/false/0/empty) |
 | `isQueryRefinementEnabled` | 1 | none | Return safe default (null/false/0/empty) |
 | `isSubmitButtonEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `onActionViewCollapsed` | 1 | none | Store callback, never fire |
+| `onActionViewExpanded` | 1 | none | Store callback, never fire |
+| `setIconified` | 1 | none | Log warning + no-op |
+| `setIconifiedByDefault` | 1 | none | Log warning + no-op |
+| `setImeOptions` | 1 | none | Log warning + no-op |
+| `setInputType` | 1 | none | Log warning + no-op |
+| `setMaxWidth` | 1 | none | Log warning + no-op |
+| `setOnCloseListener` | 1 | none | No-op |
+| `setOnQueryTextFocusChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnQueryTextListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnSearchClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnSuggestionListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setQuery` | 1 | none | Return safe default (null/false/0/empty) |
+| `setQueryHint` | 1 | none | Return safe default (null/false/0/empty) |
+| `setQueryRefinementEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSearchableInfo` | 1 | none | Log warning + no-op |
+| `setSubmitButtonEnabled` | 1 | none | Log warning + no-op |
+| `setSuggestionsAdapter` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.QuickContactBadge` |
 | **Package** | `android.widget` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 10 (66%) |
-| **No Mapping** | 5 (33%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 15 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `assignContactFromEmail` | 3 | composite | Store callback, never fire |
-| `assignContactFromEmail` | 3 | composite | Store callback, never fire |
-| `assignContactFromPhone` | 3 | composite | Store callback, never fire |
-| `assignContactFromPhone` | 3 | composite | Store callback, never fire |
-| `onClick` | 3 | composite | Store callback, never fire |
-| `setExcludeMimes` | 3 | composite | Log warning + no-op |
-| `setImageToDefault` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOverlay` | 3 | composite | Log warning + no-op |
-| `setPrioritizedMimeType` | 3 | composite | Log warning + no-op |
-| `setMode` | 3 | composite | Log warning + no-op |
 | `QuickContactBadge` | 1 | none | Store callback, never fire |
 | `QuickContactBadge` | 1 | none | Store callback, never fire |
 | `QuickContactBadge` | 1 | none | Store callback, never fire |
 | `QuickContactBadge` | 1 | none | Store callback, never fire |
+| `assignContactFromEmail` | 1 | none | Store callback, never fire |
+| `assignContactFromEmail` | 1 | none | Store callback, never fire |
+| `assignContactFromPhone` | 1 | none | Store callback, never fire |
+| `assignContactFromPhone` | 1 | none | Store callback, never fire |
 | `assignContactUri` | 1 | none | Store callback, never fire |
+| `onClick` | 1 | none | Store callback, never fire |
+| `setExcludeMimes` | 1 | none | Log warning + no-op |
+| `setImageToDefault` | 1 | none | Return safe default (null/false/0/empty) |
+| `setMode` | 1 | none | Log warning + no-op |
+| `setOverlay` | 1 | none | Log warning + no-op |
+| `setPrioritizedMimeType` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

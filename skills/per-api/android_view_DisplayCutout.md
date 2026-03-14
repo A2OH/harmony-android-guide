@@ -9,12 +9,12 @@
 | **Class** | `android.view.DisplayCutout` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (66%) |
-| **No Mapping** | 2 (33%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getSafeInsetBottom` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSafeInsetLeft` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSafeInsetRight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSafeInsetTop` | 3 | composite | Return safe default (null/false/0/empty) |
 | `DisplayCutout` | 1 | none | Return safe default (null/false/0/empty) |
 | `DisplayCutout` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSafeInsetBottom` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSafeInsetLeft` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSafeInsetRight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSafeInsetTop` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

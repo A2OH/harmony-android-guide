@@ -9,12 +9,12 @@
 | **Class** | `android.net.CaptivePortal` |
 | **Package** | `android.net` |
 | **Total Methods** | 4 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (25%) |
-| **No Mapping** | 3 (75%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 4 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `reportCaptivePortalDismissed` | 5 | partial | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `ignoreNetwork` | 1 | none | throw UnsupportedOperationException |
+| `reportCaptivePortalDismissed` | 1 | none | Return safe default (null/false/0/empty) |
 | `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.BaseAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 13 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 2.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
-| **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (69%) |
-| **No Mapping** | 4 (30%) |
+| **Direct/Near** | 1 (7%) |
+| **Partial/Composite** | 5 (38%) |
+| **No Mapping** | 7 (53%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 12 |
 | **Has Async Gap** | 12 |
@@ -22,7 +22,17 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Stub APIs (score < 5): 13 methods
+## Implementable APIs (score >= 5): 1 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `notifyDataSetChanged` | `void notifyDataSetChanged()` | 7 | near | impossible | `onDataReloaded` | `@internal/component/ets/lazy_for_each.DataChangeListener` |
+
+## Gap Descriptions (per method)
+
+- **`notifyDataSetChanged`**: Via DataChangeListener
+
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
@@ -30,17 +40,16 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getDropDownView` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getItemViewType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getViewTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
 | `isEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `notifyDataSetChanged` | 3 | composite | Log warning + no-op |
-| `notifyDataSetInvalidated` | 3 | composite | Log warning + no-op |
 | `registerDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAutofillOptions` | 3 | composite | Log warning + no-op |
 | `unregisterDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
 | `BaseAdapter` | 1 | none | throw UnsupportedOperationException |
 | `areAllItemsEnabled` | 1 | none | throw UnsupportedOperationException |
+| `getViewTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `notifyDataSetInvalidated` | 1 | none | Log warning + no-op |
+| `setAutofillOptions` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -66,6 +75,6 @@ Before marking `android.widget.BaseAdapter` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 13 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.app.ActivityOptions` |
 | **Package** | `android.app` |
 | **Total Methods** | 16 |
-| **Avg Score** | 4.0 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 2 (12%) |
-| **Partial/Composite** | 9 (56%) |
-| **No Mapping** | 5 (31%) |
+| **Avg Score** | 1.7 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 6 (37%) |
+| **No Mapping** | 10 (62%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,43 +22,38 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 7 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `update` | `void update(android.app.ActivityOptions)` | 7 | near | easy | `update` | `update(query: AssetMap, attributesToUpdate: AssetMap): Promise<void>` |
-| `toBundle` | `android.os.Bundle toBundle()` | 7 | near | moderate | `getBundleName` | `getBundleName(agent: WantAgent, callback: AsyncCallback<string>): void` |
-| `requestUsageTimeReport` | `void requestUsageTimeReport(android.app.PendingIntent)` | 6 | partial | moderate | `requestAutoSave` | `requestAutoSave(context: UIContext, callback?: AutoSaveCallback): void` |
-| `makeScaleUpAnimation` | `static android.app.ActivityOptions makeScaleUpAnimation(android.view.View, int, int, int, int)` | 6 | partial | moderate | `clearUpApplicationData` | `clearUpApplicationData(bundleName: string): Promise<void>` |
-| `setAppVerificationBundle` | `android.app.ActivityOptions setAppVerificationBundle(android.os.Bundle)` | 6 | partial | moderate | `setApplicationAutoStartup` | `setApplicationAutoStartup(info: AutoStartupInfo, callback: AsyncCallback<void>): void` |
-| `getLaunchDisplayId` | `int getLaunchDisplayId()` | 5 | partial | moderate | `getBundleName` | `getBundleName(agent: WantAgent, callback: AsyncCallback<string>): void` |
-| `getLockTaskMode` | `boolean getLockTaskMode()` | 5 | partial | moderate | `getProcessMemoryByPid` | `getProcessMemoryByPid(pid: number): Promise<number>` |
-
-## Stub APIs (score < 5): 9 methods
+## Stub APIs (score < 5): 16 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `makeThumbnailScaleUpAnimation` | 5 | partial | Store callback, never fire |
-| `setLaunchDisplayId` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setLockTaskEnabled` | 4 | partial | Log warning + no-op |
-| `setLaunchBounds` | 4 | partial | Log warning + no-op |
+| `update` | 3 | composite | Log warning + no-op |
+| `requestUsageTimeReport` | 3 | composite | Return safe default (null/false/0/empty) |
+| `toBundle` | 3 | composite | throw UnsupportedOperationException |
+| `makeScaleUpAnimation` | 2 | composite | Store callback, never fire |
+| `setAppVerificationBundle` | 2 | composite | Log warning + no-op |
+| `getLaunchDisplayId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getLockTaskMode` | 1 | none | Return safe default (null/false/0/empty) |
 | `makeBasic` | 1 | none | throw UnsupportedOperationException |
 | `makeClipRevealAnimation` | 1 | none | Store callback, never fire |
 | `makeCustomAnimation` | 1 | none | Store callback, never fire |
 | `makeSceneTransitionAnimation` | 1 | none | Store callback, never fire |
 | `makeTaskLaunchBehind` | 1 | none | throw UnsupportedOperationException |
+| `makeThumbnailScaleUpAnimation` | 1 | none | Store callback, never fire |
+| `setLaunchBounds` | 1 | none | Log warning + no-op |
+| `setLaunchDisplayId` | 1 | none | Return safe default (null/false/0/empty) |
+| `setLockTaskEnabled` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 7 methods that have score >= 5
-2. Stub 9 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -72,6 +67,6 @@ Before marking `android.app.ActivityOptions` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 16 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 7 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

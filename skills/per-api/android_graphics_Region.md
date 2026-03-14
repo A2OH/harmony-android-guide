@@ -9,12 +9,12 @@
 | **Class** | `android.graphics.Region` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 30 |
-| **Avg Score** | 3.8 |
+| **Avg Score** | 1.9 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 8 (26%) |
-| **Partial/Composite** | 8 (26%) |
-| **No Mapping** | 14 (46%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 10 (33%) |
+| **No Mapping** | 20 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,36 +22,28 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 11 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `Region` | `Region()` | 8 | direct | easy | `region` | `region?: Rect` |
-| `Region` | `Region(@NonNull android.graphics.Region)` | 8 | direct | easy | `region` | `region?: Rect` |
-| `Region` | `Region(@NonNull android.graphics.Rect)` | 8 | direct | easy | `region` | `region?: Rect` |
-| `Region` | `Region(int, int, int, int)` | 8 | direct | easy | `region` | `region?: Rect` |
-| `contains` | `boolean contains(int, int)` | 8 | direct | easy | `contains` | `contains(rule: bigint): boolean` |
-| `set` | `boolean set(@NonNull android.graphics.Region)` | 8 | direct | easy | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `set` | `boolean set(@NonNull android.graphics.Rect)` | 8 | direct | easy | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `set` | `boolean set(int, int, int, int)` | 8 | direct | easy | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `translate` | `void translate(int, int)` | 5 | partial | moderate | `OH_Drawing_CanvasTranslate` | `void OH_Drawing_CanvasTranslate(OH_Drawing_Canvas*, float dx, float dy)` |
-| `translate` | `void translate(int, int, android.graphics.Region)` | 5 | partial | moderate | `OH_Drawing_CanvasTranslate` | `void OH_Drawing_CanvasTranslate(OH_Drawing_Canvas*, float dx, float dy)` |
-| `getBounds` | `boolean getBounds(@NonNull android.graphics.Rect)` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
-
-## Stub APIs (score < 5): 19 methods
+## Stub APIs (score < 5): 30 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setPath` | 4 | partial | Log warning + no-op |
-| `getBoundaryPath` | 4 | partial | Return safe default (null/false/0/empty) |
-| `isRect` | 4 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 4 | composite | Log warning + no-op |
-| `setEmpty` | 3 | composite | Log warning + no-op |
-| `isEmpty` | 2 | none | Return safe default (null/false/0/empty) |
-| `isComplex` | 2 | none | Return safe default (null/false/0/empty) |
+| `Region` | 5 | partial | Store callback, never fire |
+| `Region` | 5 | partial | Store callback, never fire |
+| `Region` | 5 | partial | Store callback, never fire |
+| `Region` | 5 | partial | Store callback, never fire |
+| `contains` | 3 | composite | Store callback, never fire |
+| `set` | 3 | composite | Log warning + no-op |
+| `set` | 3 | composite | Log warning + no-op |
+| `set` | 3 | composite | Log warning + no-op |
+| `translate` | 3 | composite | throw UnsupportedOperationException |
+| `translate` | 3 | composite | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getBoundaryPath` | 1 | none | Return safe default (null/false/0/empty) |
+| `getBounds` | 1 | none | Return safe default (null/false/0/empty) |
+| `isComplex` | 1 | none | Return safe default (null/false/0/empty) |
+| `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `isRect` | 1 | none | Return safe default (null/false/0/empty) |
 | `op` | 1 | none | throw UnsupportedOperationException |
 | `op` | 1 | none | throw UnsupportedOperationException |
 | `op` | 1 | none | throw UnsupportedOperationException |
@@ -62,7 +54,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `quickReject` | 1 | none | throw UnsupportedOperationException |
 | `quickReject` | 1 | none | throw UnsupportedOperationException |
 | `quickReject` | 1 | none | throw UnsupportedOperationException |
+| `setEmpty` | 1 | none | Log warning + no-op |
+| `setPath` | 1 | none | Log warning + no-op |
 | `union` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
@@ -86,6 +81,6 @@ Before marking `android.graphics.Region` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 30 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 11 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

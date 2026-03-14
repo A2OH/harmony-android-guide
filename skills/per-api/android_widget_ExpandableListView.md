@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ExpandableListView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 32 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 24 (75%) |
-| **No Mapping** | 8 (25%) |
+| **Partial/Composite** | 1 (3%) |
+| **No Mapping** | 31 (96%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 28 |
 | **Has Async Gap** | 28 |
@@ -28,30 +28,7 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getExpandableListAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getExpandableListPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFlatListPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackedPositionChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackedPositionForChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackedPositionForGroup` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackedPositionGroup` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPackedPositionType` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getSelectedId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSelectedPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setChildIndicator` | 3 | composite | Log warning + no-op |
-| `setChildIndicatorBounds` | 3 | composite | Log warning + no-op |
-| `setChildIndicatorBoundsRelative` | 3 | composite | Log warning + no-op |
-| `setGroupIndicator` | 3 | composite | Log warning + no-op |
-| `setIndicatorBounds` | 3 | composite | Log warning + no-op |
-| `setIndicatorBoundsRelative` | 3 | composite | Log warning + no-op |
-| `setOnChildClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnGroupClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnGroupExpandListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSelectedChild` | 3 | composite | Log warning + no-op |
-| `setSelectedGroup` | 3 | composite | Log warning + no-op |
-| `setOnGroupCollapseListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setChildDivider` | 3 | composite | Log warning + no-op |
 | `ExpandableListView` | 1 | none | Return safe default (null/false/0/empty) |
 | `ExpandableListView` | 1 | none | Return safe default (null/false/0/empty) |
 | `ExpandableListView` | 1 | none | Return safe default (null/false/0/empty) |
@@ -59,7 +36,30 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `collapseGroup` | 1 | none | throw UnsupportedOperationException |
 | `expandGroup` | 1 | none | throw UnsupportedOperationException |
 | `expandGroup` | 1 | none | throw UnsupportedOperationException |
+| `getExpandableListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getExpandableListPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFlatListPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPackedPositionChild` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPackedPositionForChild` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPackedPositionForGroup` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPackedPositionGroup` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPackedPositionType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSelectedPosition` | 1 | none | Return safe default (null/false/0/empty) |
 | `isGroupExpanded` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setChildDivider` | 1 | none | Log warning + no-op |
+| `setChildIndicator` | 1 | none | Log warning + no-op |
+| `setChildIndicatorBounds` | 1 | none | Log warning + no-op |
+| `setChildIndicatorBoundsRelative` | 1 | none | Log warning + no-op |
+| `setGroupIndicator` | 1 | none | Log warning + no-op |
+| `setIndicatorBounds` | 1 | none | Log warning + no-op |
+| `setIndicatorBoundsRelative` | 1 | none | Log warning + no-op |
+| `setOnChildClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnGroupClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnGroupCollapseListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnGroupExpandListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSelectedChild` | 1 | none | Log warning + no-op |
+| `setSelectedGroup` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

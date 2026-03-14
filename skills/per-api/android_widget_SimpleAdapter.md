@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SimpleAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 14 |
-| **Avg Score** | 2.8 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 13 (92%) |
-| **No Mapping** | 1 (7%) |
+| **Partial/Composite** | 6 (42%) |
+| **No Mapping** | 8 (57%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 13 |
 | **Has Async Gap** | 13 |
@@ -30,18 +30,18 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDropDownViewTheme` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getView` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getViewBinder` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setDropDownViewResource` | 3 | composite | Log warning + no-op |
-| `setViewBinder` | 3 | composite | Log warning + no-op |
-| `setViewImage` | 3 | composite | Log warning + no-op |
-| `setViewImage` | 3 | composite | Log warning + no-op |
-| `setViewText` | 3 | composite | Log warning + no-op |
-| `setDropDownViewTheme` | 2 | composite | Log warning + no-op |
+| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `SimpleAdapter` | 1 | none | throw UnsupportedOperationException |
+| `getFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDropDownViewResource` | 1 | none | Log warning + no-op |
+| `setDropDownViewTheme` | 1 | none | Log warning + no-op |
+| `setViewBinder` | 1 | none | Log warning + no-op |
+| `setViewImage` | 1 | none | Log warning + no-op |
+| `setViewImage` | 1 | none | Log warning + no-op |
+| `setViewText` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

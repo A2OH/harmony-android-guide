@@ -9,12 +9,12 @@
 | **Class** | `android.view.Display.HdrCapabilities` |
 | **Package** | `android.view.Display` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (83%) |
-| **No Mapping** | 1 (16%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 6 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDesiredMaxAverageLuminance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDesiredMaxLuminance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDesiredMinLuminance` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSupportedHdrTypes` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getDesiredMaxAverageLuminance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDesiredMaxLuminance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDesiredMinLuminance` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSupportedHdrTypes` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

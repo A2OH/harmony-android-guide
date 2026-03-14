@@ -9,12 +9,12 @@
 | **Class** | `android.os.Debug.MemoryInfo` |
 | **Package** | `android.os.Debug` |
 | **Total Methods** | 12 |
-| **Avg Score** | 6.2 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 7 (58%) |
-| **Partial/Composite** | 4 (33%) |
-| **No Mapping** | 1 (8%) |
+| **Avg Score** | 3.2 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 10 (83%) |
+| **No Mapping** | 2 (16%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,39 +22,34 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 10 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getTotalPrivateDirty` | `int getTotalPrivateDirty()` | 9 | direct | easy | `getPrivateDirty` | `getPrivateDirty(): bigint` |
-| `getTotalSharedDirty` | `int getTotalSharedDirty()` | 8 | direct | easy | `getSharedDirty` | `getSharedDirty(): bigint` |
-| `getMemoryStats` | `java.util.Map<java.lang.String,java.lang.String> getMemoryStats()` | 8 | near | easy | `getBatteryStats` | `getBatteryStats(): Promise<Array<BatteryStatsInfo>>` |
-| `getTotalPss` | `int getTotalPss()` | 8 | near | easy | `getTotalBytes` | `getTotalBytes(path: string, callback: AsyncCallback<number>): void` |
-| `getMemoryStat` | `String getMemoryStat(String)` | 7 | near | easy | `getBatteryStats` | `getBatteryStats(): Promise<Array<BatteryStatsInfo>>` |
-| `getTotalSharedClean` | `int getTotalSharedClean()` | 6 | near | moderate | `getAllScreens` | `getAllScreens(callback: AsyncCallback<Array<Screen>>): void` |
-| `getTotalPrivateClean` | `int getTotalPrivateClean()` | 6 | near | moderate | `getTotalBytes` | `getTotalBytes(path: string, callback: AsyncCallback<number>): void` |
-| `MemoryInfo` | `Debug.MemoryInfo()` | 6 | partial | moderate | `info` | `info(domain: number, tag: string, format: string, ...args: any[]): void` |
-| `writeToParcel` | `void writeToParcel(android.os.Parcel, int)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
-| `getTotalSwappablePss` | `int getTotalSwappablePss()` | 5 | partial | moderate | `getTotalBytes` | `getTotalBytes(path: string, callback: AsyncCallback<number>): void` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `readFromParcel` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getTotalPrivateDirty` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getTotalSharedDirty` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getMemoryStats` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getMemoryStat` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getTotalSwappablePss` | 4 | partial | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 3 | composite | Log warning + no-op |
+| `MemoryInfo` | 3 | composite | throw UnsupportedOperationException |
+| `getTotalPss` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTotalSharedClean` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTotalPrivateClean` | 3 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `readFromParcel` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 10 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -67,6 +62,6 @@ Before marking `android.os.Debug.MemoryInfo` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 12 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 10 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

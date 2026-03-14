@@ -9,12 +9,12 @@
 | **Class** | `android.app.VoiceInteractor` |
 | **Package** | `android.app` |
 | **Total Methods** | 9 |
-| **Avg Score** | 5.2 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 2 (22%) |
+| **Avg Score** | 2.0 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 6 (66%) |
-| **No Mapping** | 1 (11%) |
+| **No Mapping** | 3 (33%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,36 +22,31 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 7 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getActiveRequest` | `android.app.VoiceInteractor.Request getActiveRequest(String)` | 7 | near | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `getActiveRequests` | `android.app.VoiceInteractor.Request[] getActiveRequests()` | 6 | near | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `submitRequest` | `boolean submitRequest(android.app.VoiceInteractor.Request)` | 6 | partial | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `submitRequest` | `boolean submitRequest(android.app.VoiceInteractor.Request, String)` | 6 | partial | moderate | `getRequestInfo` | `getRequestInfo(want: Want): RequestInfo` |
-| `registerOnDestroyedCallback` | `boolean registerOnDestroyedCallback(@NonNull java.util.concurrent.Executor, @NonNull Runnable)` | 6 | partial | moderate | `getRequestCallback` | `getRequestCallback(want: Want): RequestCallback` |
-| `unregisterOnDestroyedCallback` | `boolean unregisterOnDestroyedCallback(@NonNull Runnable)` | 6 | partial | moderate | `unregisterMissionListener` | `unregisterMissionListener(listenerId: number, callback: AsyncCallback<void>): void` |
-| `isDestroyed` | `boolean isDestroyed()` | 5 | partial | moderate | `isSystemReady` | `isSystemReady(callback: AsyncCallback<void>): void` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 9 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `notifyDirectActionsChanged` | 5 | partial | Store callback, never fire |
+| `getActiveRequest` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getActiveRequests` | 3 | composite | Return safe default (null/false/0/empty) |
+| `submitRequest` | 3 | composite | throw UnsupportedOperationException |
+| `submitRequest` | 3 | composite | throw UnsupportedOperationException |
+| `registerOnDestroyedCallback` | 3 | composite | No-op |
+| `unregisterOnDestroyedCallback` | 2 | composite | No-op |
+| `isDestroyed` | 1 | none | No-op |
+| `notifyDirectActionsChanged` | 1 | none | Store callback, never fire |
 | `supportsCommands` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 7 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -65,6 +60,6 @@ Before marking `android.app.VoiceInteractor` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 9 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 7 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

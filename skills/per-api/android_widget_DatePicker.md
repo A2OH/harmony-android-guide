@@ -9,15 +9,15 @@
 | **Class** | `android.widget.DatePicker` |
 | **Package** | `android.widget` |
 | **Total Methods** | 16 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 11 (68%) |
-| **No Mapping** | 5 (31%) |
+| **Partial/Composite** | 3 (18%) |
+| **No Mapping** | 13 (81%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 12 |
-| **Has Async Gap** | 12 |
+| **Has Async Gap** | 16 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,21 +28,21 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDayOfMonth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFirstDayOfWeek` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMaxDate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMinDate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMonth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getYear` | 3 | composite | Return safe default (null/false/0/empty) |
 | `init` | 3 | composite | Return dummy instance / no-op |
-| `setFirstDayOfWeek` | 3 | composite | Log warning + no-op |
-| `setMaxDate` | 3 | composite | Log warning + no-op |
-| `setMinDate` | 3 | composite | Log warning + no-op |
-| `setOnDateChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getYear` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMonth` | 2 | composite | Return safe default (null/false/0/empty) |
 | `DatePicker` | 1 | none | throw UnsupportedOperationException |
 | `DatePicker` | 1 | none | throw UnsupportedOperationException |
 | `DatePicker` | 1 | none | throw UnsupportedOperationException |
 | `DatePicker` | 1 | none | throw UnsupportedOperationException |
+| `getDayOfMonth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFirstDayOfWeek` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMaxDate` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMinDate` | 1 | none | Return safe default (null/false/0/empty) |
+| `setFirstDayOfWeek` | 1 | none | Log warning + no-op |
+| `setMaxDate` | 1 | none | Log warning + no-op |
+| `setMinDate` | 1 | none | Log warning + no-op |
+| `setOnDateChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `updateDate` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions

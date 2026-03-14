@@ -9,49 +9,54 @@
 | **Class** | `android.graphics.Typeface` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 9 |
-| **Avg Score** | 6.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 5 (55%) |
-| **Partial/Composite** | 4 (44%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.4 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 2 (22%) |
+| **Partial/Composite** | 5 (55%) |
+| **No Mapping** | 2 (22%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 2 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 7 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `create` | `static android.graphics.Typeface create(String, int)` | 10 | direct | trivial | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `create` | `static android.graphics.Typeface create(android.graphics.Typeface, int)` | 10 | direct | trivial | `create` | `create(colorSpaceName: ColorSpace): ColorSpaceManager` |
-| `createFromFile` | `static android.graphics.Typeface createFromFile(@Nullable java.io.File)` | 8 | direct | easy | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `createFromFile` | `static android.graphics.Typeface createFromFile(@Nullable String)` | 8 | direct | easy | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `createFromAsset` | `static android.graphics.Typeface createFromAsset(android.content.res.AssetManager, String)` | 7 | near | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `defaultFromStyle` | `static android.graphics.Typeface defaultFromStyle(int)` | 5 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `getStyle` | `int getStyle()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
+| `createFromFile` | `static android.graphics.Typeface createFromFile(@Nullable java.io.File)` | 7 | near | hard | `OH_Drawing_RegisterFont` | `@ohos.graphics.drawing (NDK).OH_Drawing_FontCollection` |
+| `createFromFile` | `static android.graphics.Typeface createFromFile(@Nullable String)` | 7 | near | hard | `OH_Drawing_RegisterFont` | `@ohos.graphics.drawing (NDK).OH_Drawing_FontCollection` |
 
-## Stub APIs (score < 5): 2 methods
+## Gap Descriptions (per method)
+
+- **`createFromFile`**: Register then use
+- **`createFromFile`**: Register then use
+
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isItalic` | 4 | composite | Return safe default (null/false/0/empty) |
-| `isBold` | 3 | composite | Return safe default (null/false/0/empty) |
+| `create` | 3 | composite | Return dummy instance / no-op |
+| `create` | 3 | composite | Return dummy instance / no-op |
+| `createFromAsset` | 3 | composite | Return dummy instance / no-op |
+| `defaultFromStyle` | 2 | composite | throw UnsupportedOperationException |
+| `getStyle` | 2 | composite | Return safe default (null/false/0/empty) |
+| `isBold` | 1 | none | Return safe default (null/false/0/empty) |
+| `isItalic` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 7 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -64,6 +69,6 @@ Before marking `android.graphics.Typeface` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 9 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 7 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

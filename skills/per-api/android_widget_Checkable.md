@@ -9,12 +9,12 @@
 | **Class** | `android.widget.Checkable` |
 | **Package** | `android.widget` |
 | **Total Methods** | 3 |
-| **Avg Score** | 1.7 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 1 (33%) |
-| **No Mapping** | 2 (66%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 3 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,8 +28,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setChecked` | 3 | composite | Log warning + no-op |
 | `isChecked` | 1 | none | Return safe default (null/false/0/empty) |
+| `setChecked` | 1 | none | Log warning + no-op |
 | `toggle` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

@@ -9,12 +9,12 @@
 | **Class** | `android.view.KeyCharacterMap` |
 | **Package** | `android.view` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 14 (93%) |
-| **No Mapping** | 1 (6%) |
+| **Partial/Composite** | 5 (33%) |
+| **No Mapping** | 10 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 15 |
 | **Has Async Gap** | 15 |
@@ -29,20 +29,20 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `get` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDeadChar` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDisplayLabel` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getEvents` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getKeyboardType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMatch` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMatch` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getModifierBehavior` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getNumber` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isPrintingKey` | 3 | composite | Return safe default (null/false/0/empty) |
-| `load` | 3 | composite | throw UnsupportedOperationException |
-| `deviceHasKey` | 3 | composite | Return safe default (null/false/0/empty) |
-| `deviceHasKeys` | 2 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getMatch` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getMatch` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `deviceHasKey` | 1 | none | Return safe default (null/false/0/empty) |
+| `deviceHasKeys` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDeadChar` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDisplayLabel` | 1 | none | Return safe default (null/false/0/empty) |
+| `getModifierBehavior` | 1 | none | Return safe default (null/false/0/empty) |
+| `getNumber` | 1 | none | Return safe default (null/false/0/empty) |
+| `isPrintingKey` | 1 | none | Return safe default (null/false/0/empty) |
+| `load` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

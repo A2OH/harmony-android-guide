@@ -9,11 +9,11 @@
 | **Class** | `android.util.Range<T` |
 | **Package** | `android.util` |
 | **Total Methods** | 12 |
-| **Avg Score** | 4.9 |
+| **Avg Score** | 2.3 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 6 (50%) |
-| **Partial/Composite** | 0 (0%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 6 (50%) |
 | **No Mapping** | 6 (50%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,23 +22,18 @@
 | **Expected AI Iterations** | 1 |
 | **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 6 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `contains` | `boolean contains(T)` | 10 | direct | trivial | `contains` | `contains(rule: bigint): boolean` |
-| `contains` | `boolean contains(android.util.Range<T>)` | 10 | direct | trivial | `contains` | `contains(rule: bigint): boolean` |
-| `create` | `static <T extends java.lang.Comparable<? super T>> android.util.Range<T> create(T, T)` | 10 | direct | trivial | `create` | `create(config: PiPConfiguration): Promise<PiPController>` |
-| `Range` | `Range(T, T)` | 8 | direct | easy | `range` | `range: number` |
-| `getUpper` | `T getUpper()` | 7 | near | easy | `getURI` | `getURI(name: string, callback: AsyncCallback<object>): void` |
-| `getLower` | `T getLower()` | 7 | near | easy | `getColors` | `getColors(wallpaperType: WallpaperType, callback: AsyncCallback<Array<RgbaColor>>): void` |
-
-## Stub APIs (score < 5): 6 methods
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `Range` | 5 | partial | throw UnsupportedOperationException |
+| `contains` | 4 | partial | Store callback, never fire |
+| `contains` | 4 | partial | Store callback, never fire |
+| `create` | 4 | composite | Return dummy instance / no-op |
+| `getUpper` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getLower` | 3 | composite | Return safe default (null/false/0/empty) |
 | `clamp` | 1 | none | throw UnsupportedOperationException |
 | `extend` | 1 | none | throw UnsupportedOperationException |
 | `extend` | 1 | none | throw UnsupportedOperationException |
@@ -68,6 +63,6 @@ Before marking `android.util.Range<T` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 12 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

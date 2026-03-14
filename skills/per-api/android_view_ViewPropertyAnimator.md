@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewPropertyAnimator` |
 | **Package** | `android.view` |
 | **Total Methods** | 37 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 30 (81%) |
-| **No Mapping** | 7 (18%) |
+| **Partial/Composite** | 10 (27%) |
+| **No Mapping** | 27 (72%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 37 |
 | **Has Async Gap** | 37 |
@@ -29,42 +29,42 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `alpha` | 3 | composite | throw UnsupportedOperationException |
-| `alphaBy` | 3 | composite | throw UnsupportedOperationException |
 | `cancel` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDuration` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInterpolator` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getStartDelay` | 3 | composite | Return dummy instance / no-op |
 | `rotation` | 3 | composite | Store callback, never fire |
-| `rotationBy` | 3 | composite | Store callback, never fire |
-| `rotationXBy` | 3 | composite | Store callback, never fire |
-| `rotationYBy` | 3 | composite | Store callback, never fire |
-| `scaleXBy` | 3 | composite | throw UnsupportedOperationException |
-| `scaleYBy` | 3 | composite | throw UnsupportedOperationException |
-| `setDuration` | 3 | composite | Log warning + no-op |
-| `setInterpolator` | 3 | composite | Log warning + no-op |
-| `setListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setStartDelay` | 3 | composite | Return dummy instance / no-op |
-| `setUpdateListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `start` | 3 | composite | Return dummy instance / no-op |
-| `translationXBy` | 3 | composite | Store callback, never fire |
-| `translationYBy` | 3 | composite | Store callback, never fire |
-| `translationZBy` | 3 | composite | Store callback, never fire |
-| `withEndAction` | 3 | composite | Store callback, never fire |
-| `withStartAction` | 3 | composite | Return dummy instance / no-op |
 | `x` | 3 | composite | throw UnsupportedOperationException |
 | `y` | 3 | composite | throw UnsupportedOperationException |
 | `z` | 3 | composite | throw UnsupportedOperationException |
-| `withLayer` | 3 | composite | throw UnsupportedOperationException |
-| `xBy` | 2 | composite | throw UnsupportedOperationException |
-| `yBy` | 2 | composite | throw UnsupportedOperationException |
-| `zBy` | 2 | composite | throw UnsupportedOperationException |
+| `withEndAction` | 3 | composite | Store callback, never fire |
+| `withStartAction` | 2 | composite | Return dummy instance / no-op |
+| `alphaBy` | 1 | none | throw UnsupportedOperationException |
+| `getInterpolator` | 1 | none | Return safe default (null/false/0/empty) |
+| `getStartDelay` | 1 | none | Return dummy instance / no-op |
+| `rotationBy` | 1 | none | Store callback, never fire |
 | `rotationX` | 1 | none | Store callback, never fire |
+| `rotationXBy` | 1 | none | Store callback, never fire |
 | `rotationY` | 1 | none | Store callback, never fire |
+| `rotationYBy` | 1 | none | Store callback, never fire |
 | `scaleX` | 1 | none | throw UnsupportedOperationException |
+| `scaleXBy` | 1 | none | throw UnsupportedOperationException |
 | `scaleY` | 1 | none | throw UnsupportedOperationException |
+| `scaleYBy` | 1 | none | throw UnsupportedOperationException |
+| `setDuration` | 1 | none | Log warning + no-op |
+| `setInterpolator` | 1 | none | Log warning + no-op |
+| `setListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setStartDelay` | 1 | none | Return dummy instance / no-op |
+| `setUpdateListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `translationX` | 1 | none | Store callback, never fire |
+| `translationXBy` | 1 | none | Store callback, never fire |
 | `translationY` | 1 | none | Store callback, never fire |
+| `translationYBy` | 1 | none | Store callback, never fire |
 | `translationZ` | 1 | none | Store callback, never fire |
+| `translationZBy` | 1 | none | Store callback, never fire |
+| `withLayer` | 1 | none | throw UnsupportedOperationException |
+| `xBy` | 1 | none | throw UnsupportedOperationException |
+| `yBy` | 1 | none | throw UnsupportedOperationException |
+| `zBy` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 

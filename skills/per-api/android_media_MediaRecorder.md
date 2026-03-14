@@ -9,92 +9,119 @@
 | **Class** | `android.media.MediaRecorder` |
 | **Package** | `android.media` |
 | **Total Methods** | 52 |
-| **Avg Score** | 5.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 20 (38%) |
-| **Partial/Composite** | 31 (59%) |
-| **No Mapping** | 1 (1%) |
+| **Avg Score** | 4.9 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 23 (44%) |
+| **Partial/Composite** | 19 (36%) |
+| **No Mapping** | 10 (19%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 15 |
 | **Related Skill Doc** | `A2OH-MEDIA.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 42 methods
+## Implementable APIs (score >= 5): 23 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `release` | `void release()` | 10 | direct | trivial | `release` | `release(callback: AsyncCallback<void>): void` |
-| `reset` | `void reset()` | 8 | direct | easy | `reset` | `reset(wallpaperType: WallpaperType, callback: AsyncCallback<void>): void` |
-| `resume` | `void resume() throws java.lang.IllegalStateException` | 8 | direct | easy | `resume` | `resume(): void` |
-| `setAudioEncoder` | `void setAudioEncoder(int) throws java.lang.IllegalStateException` | 8 | near | easy | `createAudioRecorder` | `createAudioRecorder(): AudioRecorder` |
-| `setVideoEncoder` | `void setVideoEncoder(int) throws java.lang.IllegalStateException` | 8 | near | easy | `createVideoRecorder` | `createVideoRecorder(callback: AsyncCallback<VideoRecorder>): void` |
-| `setOrientationHint` | `void setOrientationHint(int)` | 8 | near | easy | `orientation` | `orientation: number` |
-| `setAudioSamplingRate` | `void setAudioSamplingRate(int)` | 8 | near | easy | `samplingRate` | `samplingRate: AudioSamplingRate` |
-| `setMaxDuration` | `void setMaxDuration(int) throws java.lang.IllegalArgumentException` | 7 | near | easy | `duration` | `readonly duration: number` |
-| `pause` | `void pause() throws java.lang.IllegalStateException` | 7 | near | easy | `pause` | `pause(): void` |
-| `start` | `void start() throws java.lang.IllegalStateException` | 7 | near | easy | `start` | `start(sinkDeviceDescriptor: string, srcInputDeviceId: number, callback: AsyncCallback<void>): void` |
-| `stop` | `void stop() throws java.lang.IllegalStateException` | 7 | near | easy | `stop` | `stop(callback: AsyncCallback<void>): void` |
-| `MediaRecorder` | `MediaRecorder()` | 7 | near | moderate | `createAVRecorder` | `createAVRecorder(callback: AsyncCallback<AVRecorder>): void` |
-| `getActiveMicrophones` | `java.util.List<android.media.MicrophoneInfo> getActiveMicrophones() throws java.io.IOException` | 7 | near | moderate | `getActivePeers` | `getActivePeers(callback: AsyncCallback<Array<PeerInfo>>): void` |
-| `setAudioChannels` | `void setAudioChannels(int)` | 7 | near | moderate | `channels` | `channels: AudioChannel` |
-| `setVideoSource` | `void setVideoSource(int) throws java.lang.IllegalStateException` | 6 | near | moderate | `OH_AVPlayer_SetVideoSurface` | `OH_AVErrCode OH_AVPlayer_SetVideoSurface(OH_AVPlayer *player, OHNativeWindow *window)` |
-| `getAudioSourceMax` | `static final int getAudioSourceMax()` | 6 | near | moderate | `getAudioManager` | `getAudioManager(): AudioManager` |
-| `registerAudioRecordingCallback` | `void registerAudioRecordingCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.AudioManager.AudioRecordingCallback)` | 6 | near | moderate | `createAudioRecorder` | `createAudioRecorder(): AudioRecorder` |
-| `setVideoEncodingBitRate` | `void setVideoEncodingBitRate(int)` | 6 | near | moderate | `OH_VideoEncoder_GetSurface` | `OH_AVErrCode OH_VideoEncoder_GetSurface(OH_AVCodec *codec, OHNativeWindow **window)` |
-| `setAudioSource` | `void setAudioSource(int) throws java.lang.IllegalStateException` | 6 | near | moderate | `castAudio` | `castAudio(session: SessionToken | 'all', audioDevices: Array<audio.AudioDeviceDescriptor>, callback: AsyncCallback<void>): void` |
-| `setCaptureRate` | `void setCaptureRate(double)` | 6 | near | moderate | `OH_AVScreenCapture_Release` | `OH_AVSCREEN_CAPTURE_ErrCode OH_AVScreenCapture_Release(struct OH_AVScreenCapture *capture)` |
-| `setMaxFileSize` | `void setMaxFileSize(long) throws java.lang.IllegalArgumentException` | 6 | partial | moderate | `getFileAssets` | `getFileAssets(callback: AsyncCallback<FetchFileResult>): void` |
-| `setOutputFormat` | `void setOutputFormat(int) throws java.lang.IllegalStateException` | 6 | partial | moderate | `sampleFormat` | `sampleFormat: AudioSampleFormat` |
-| `setAudioEncodingBitRate` | `void setAudioEncodingBitRate(int)` | 6 | partial | moderate | `OH_AudioEncoder_Start` | `OH_AVErrCode OH_AudioEncoder_Start(OH_AVCodec *codec)` |
-| `setVideoFrameRate` | `void setVideoFrameRate(int) throws java.lang.IllegalStateException` | 6 | partial | moderate | `createVideoPlayer` | `createVideoPlayer(callback: AsyncCallback<VideoPlayer>): void` |
-| `unregisterAudioRecordingCallback` | `void unregisterAudioRecordingCallback(@NonNull android.media.AudioManager.AudioRecordingCallback)` | 6 | partial | moderate | `createAudioRecorder` | `createAudioRecorder(): AudioRecorder` |
-| `getMetrics` | `android.os.PersistableBundle getMetrics()` | 6 | partial | moderate | `getAllPeers` | `getAllPeers(callback: AsyncCallback<Array<PeerInfo>>): void` |
-| `getSurface` | `android.view.Surface getSurface()` | 6 | partial | moderate | `OH_VideoEncoder_GetSurface` | `OH_AVErrCode OH_VideoEncoder_GetSurface(OH_AVCodec *codec, OHNativeWindow **window)` |
-| `isPrivacySensitive` | `boolean isPrivacySensitive()` | 6 | partial | moderate | `privacyType` | `privacyType?: AudioPrivacyType` |
-| `setVideoSize` | `void setVideoSize(int, int) throws java.lang.IllegalStateException` | 6 | partial | moderate | `createVideoPlayer` | `createVideoPlayer(callback: AsyncCallback<VideoPlayer>): void` |
-| `setVideoEncodingProfileLevel` | `void setVideoEncodingProfileLevel(int, int)` | 5 | partial | moderate | `OH_VideoEncoder_Prepare` | `OH_AVErrCode OH_VideoEncoder_Prepare(OH_AVCodec *codec)` |
-| `setLocation` | `void setLocation(float, float)` | 5 | partial | moderate | `OH_AVMuxer_SetRotation` | `OH_AVErrCode OH_AVMuxer_SetRotation(OH_AVMuxer *muxer, int32_t rotation)` |
-| `prepare` | `void prepare() throws java.io.IOException, java.lang.IllegalStateException` | 5 | partial | moderate | `OH_AVPlayer_Prepare` | `OH_AVErrCode OH_AVPlayer_Prepare(OH_AVPlayer *player)` |
-| `setInputSurface` | `void setInputSurface(@NonNull android.view.Surface)` | 5 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
-| `setNextOutputFile` | `void setNextOutputFile(java.io.FileDescriptor) throws java.io.IOException` | 5 | partial | moderate | `getNextObject` | `getNextObject(callback: AsyncCallback<FileAsset>): void` |
-| `setNextOutputFile` | `void setNextOutputFile(java.io.File) throws java.io.IOException` | 5 | partial | moderate | `getNextObject` | `getNextObject(callback: AsyncCallback<FileAsset>): void` |
-| `setPrivacySensitive` | `void setPrivacySensitive(boolean)` | 5 | partial | moderate | `privacyType` | `privacyType?: AudioPrivacyType` |
-| `setPreviewDisplay` | `void setPreviewDisplay(android.view.Surface)` | 5 | partial | moderate | `startImagePreview` | `startImagePreview(images: Array<string>, index: number, callback: AsyncCallback<void>): void` |
-| `setOutputFile` | `void setOutputFile(java.io.FileDescriptor) throws java.lang.IllegalStateException` | 5 | partial | moderate | `OH_MetadataOutput_Release` | `Camera_ErrorCode OH_MetadataOutput_Release(Camera_MetadataOutput* metadataOutput)` |
-| `setOutputFile` | `void setOutputFile(java.io.File)` | 5 | partial | moderate | `OH_MetadataOutput_Release` | `Camera_ErrorCode OH_MetadataOutput_Release(Camera_MetadataOutput* metadataOutput)` |
-| `setOutputFile` | `void setOutputFile(String) throws java.lang.IllegalStateException` | 5 | partial | moderate | `OH_MetadataOutput_Release` | `Camera_ErrorCode OH_MetadataOutput_Release(Camera_MetadataOutput* metadataOutput)` |
-| `getRoutedDevice` | `android.media.AudioDeviceInfo getRoutedDevice()` | 5 | partial | moderate | `getCount` | `getCount(): number` |
-| `setProfile` | `void setProfile(android.media.CamcorderProfile)` | 5 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
+| `getMaxAmplitude` | `int getMaxAmplitude() throws java.lang.IllegalStateException` | 9 | direct | impossible | `getAudioCapturerMaxAmplitude` | `@ohos.multimedia.media.AVRecorder` |
+| `pause` | `void pause() throws java.lang.IllegalStateException` | 9 | direct | moderate | `pause` | `@ohos.multimedia.media.AVRecorder` |
+| `prepare` | `void prepare() throws java.io.IOException, java.lang.IllegalStateException` | 9 | direct | hard | `prepare` | `@ohos.multimedia.media.AVRecorder` |
+| `release` | `void release()` | 9 | direct | hard | `release` | `@ohos.multimedia.media.AVRecorder` |
+| `reset` | `void reset()` | 9 | direct | hard | `reset` | `@ohos.multimedia.media.AVRecorder` |
+| `resume` | `void resume() throws java.lang.IllegalStateException` | 9 | direct | moderate | `resume` | `@ohos.multimedia.media.AVRecorder` |
+| `start` | `void start() throws java.lang.IllegalStateException` | 9 | direct | hard | `start` | `@ohos.multimedia.media.AVRecorder` |
+| `stop` | `void stop() throws java.lang.IllegalStateException` | 9 | direct | hard | `stop` | `@ohos.multimedia.media.AVRecorder` |
+| `setAudioChannels` | `void setAudioChannels(int)` | 7 | near | hard | `audioChannels` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setAudioEncoder` | `void setAudioEncoder(int) throws java.lang.IllegalStateException` | 7 | near | hard | `audioCodec` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setAudioEncodingBitRate` | `void setAudioEncodingBitRate(int)` | 7 | near | rewrite | `audioBitrate` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setAudioSamplingRate` | `void setAudioSamplingRate(int)` | 7 | near | hard | `audioSampleRate` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setAudioSource` | `void setAudioSource(int) throws java.lang.IllegalStateException` | 7 | near | hard | `audioSourceType` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setLocation` | `void setLocation(float, float)` | 7 | near | rewrite | `location` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setOrientationHint` | `void setOrientationHint(int)` | 7 | near | hard | `rotation` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setOutputFile` | `void setOutputFile(java.io.FileDescriptor) throws java.lang.IllegalStateException` | 7 | near | rewrite | `url` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setOutputFile` | `void setOutputFile(java.io.File)` | 7 | near | rewrite | `url` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setOutputFile` | `void setOutputFile(String) throws java.lang.IllegalStateException` | 7 | near | rewrite | `url` | `@ohos.multimedia.media.AVRecorderConfig` |
+| `setOutputFormat` | `void setOutputFormat(int) throws java.lang.IllegalStateException` | 7 | near | hard | `fileFormat` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setVideoEncoder` | `void setVideoEncoder(int) throws java.lang.IllegalStateException` | 7 | near | hard | `videoCodec` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setVideoEncodingBitRate` | `void setVideoEncodingBitRate(int)` | 7 | near | rewrite | `videoBitrate` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setVideoFrameRate` | `void setVideoFrameRate(int) throws java.lang.IllegalStateException` | 7 | near | hard | `videoFrameRate` | `@ohos.multimedia.media.AVRecorderProfile` |
+| `setVideoSource` | `void setVideoSource(int) throws java.lang.IllegalStateException` | 7 | near | rewrite | `videoSourceType` | `@ohos.multimedia.media.AVRecorderConfig` |
 
-## Stub APIs (score < 5): 10 methods
+## Gap Descriptions (per method)
+
+- **`getMaxAmplitude`**: Direct equivalent
+- **`pause`**: Direct equivalent
+- **`prepare`**: Direct equivalent
+- **`release`**: Direct equivalent
+- **`reset`**: Direct equivalent
+- **`resume`**: Direct equivalent
+- **`start`**: Direct equivalent
+- **`stop`**: Direct equivalent
+- **`setAudioChannels`**: Config property
+- **`setAudioEncoder`**: CodecMimeType
+- **`setAudioEncodingBitRate`**: Config property
+- **`setAudioSamplingRate`**: Config property
+- **`setAudioSource`**: Config property vs method
+- **`setLocation`**: Config Location object
+- **`setOrientationHint`**: Config property
+- **`setOutputFile`**: fd:// or file:// URI
+- **`setOutputFile`**: fd:// or file:// URI
+- **`setOutputFile`**: fd:// or file:// URI
+- **`setOutputFormat`**: ContainerFormatType enum
+- **`setVideoEncoder`**: CodecMimeType
+- **`setVideoEncodingBitRate`**: Config property
+- **`setVideoFrameRate`**: Config property
+- **`setVideoSource`**: Config property vs method
+
+## Stub APIs (score < 5): 29 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setOnErrorListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getPreferredDevice` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getMaxAmplitude` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setOnInfoListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setPreferredDevice` | 4 | partial | Log warning + no-op |
-| `setPreferredMicrophoneDirection` | 4 | partial | Log warning + no-op |
-| `setPreferredMicrophoneFieldDimension` | 4 | partial | Log warning + no-op |
-| `removeOnRoutingChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `addOnRoutingChangedListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setMaxDuration` | 5 | partial | Log warning + no-op |
+| `isPrivacySensitive` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setPrivacySensitive` | 4 | partial | Log warning + no-op |
+| `getRoutedDevice` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getAudioSourceMax` | 4 | partial | Return safe default (null/false/0/empty) |
+| `registerAudioRecordingCallback` | 4 | partial | Return safe default (null/false/0/empty) |
+| `unregisterAudioRecordingCallback` | 4 | partial | Return safe default (null/false/0/empty) |
+| `setPreviewDisplay` | 4 | composite | Return safe default (null/false/0/empty) |
+| `setNextOutputFile` | 3 | composite | Log warning + no-op |
+| `setNextOutputFile` | 3 | composite | Log warning + no-op |
+| `setMaxFileSize` | 3 | composite | Log warning + no-op |
+| `setVideoSize` | 3 | composite | Log warning + no-op |
+| `setInputSurface` | 3 | composite | Log warning + no-op |
+| `getActiveMicrophones` | 3 | composite | Return safe default (null/false/0/empty) |
+| `MediaRecorder` | 3 | composite | throw UnsupportedOperationException |
+| `getMetrics` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setCaptureRate` | 3 | composite | Log warning + no-op |
+| `getSurface` | 2 | composite | Return safe default (null/false/0/empty) |
+| `setVideoEncodingProfileLevel` | 2 | composite | Log warning + no-op |
+| `addOnRoutingChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `finalize` | 1 | none | throw UnsupportedOperationException |
+| `getPreferredDevice` | 1 | none | Return safe default (null/false/0/empty) |
+| `removeOnRoutingChangedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnErrorListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnInfoListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setPreferredDevice` | 1 | none | Log warning + no-op |
+| `setPreferredMicrophoneDirection` | 1 | none | Log warning + no-op |
+| `setPreferredMicrophoneFieldDimension` | 1 | none | Log warning + no-op |
+| `setProfile` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 42 methods that have score >= 5
-2. Stub 10 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -108,6 +135,6 @@ Before marking `android.media.MediaRecorder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 52 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 42 test methods for implemented APIs
+3. **Test Coverage**: At least 23 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

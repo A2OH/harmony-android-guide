@@ -9,11 +9,11 @@
 | **Class** | `android.os.WorkSource` |
 | **Package** | `android.os` |
 | **Total Methods** | 9 |
-| **Avg Score** | 6.6 |
+| **Avg Score** | 3.6 |
 | **Scenario** | S3: Partial Coverage |
 | **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 6 (66%) |
-| **Partial/Composite** | 1 (11%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 7 (77%) |
 | **No Mapping** | 2 (22%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
@@ -22,24 +22,24 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 7 methods
+## Implementable APIs (score >= 5): 2 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `add` | `boolean add(android.os.WorkSource)` | 10 | direct | trivial | `add` | `add: (bundleName: string, userId: number) => void` |
-| `clear` | `void clear()` | 10 | direct | trivial | `clear` | `clear(): void` |
-| `remove` | `boolean remove(android.os.WorkSource)` | 10 | direct | trivial | `remove` | `remove(logType: string, logName: string): void` |
-| `set` | `void set(android.os.WorkSource)` | 10 | direct | trivial | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `WorkSource` | `WorkSource()` | 6 | near | moderate | `sourceMode` | `readonly sourceMode: ScreenSourceMode` |
-| `WorkSource` | `WorkSource(android.os.WorkSource)` | 6 | near | moderate | `sourceMode` | `readonly sourceMode: ScreenSourceMode` |
-| `writeToParcel` | `void writeToParcel(android.os.Parcel, int)` | 6 | partial | moderate | `writeNdefTag` | `writeNdefTag(data: string): Promise<void>` |
+| `clear` | `void clear()` | 6 | partial | moderate | `clear` | `clear(): void` |
+| `add` | `boolean add(android.os.WorkSource)` | 5 | partial | moderate | `add` | `add: (bundleName: string, userId: number) => void` |
 
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `WorkSource` | 5 | partial | throw UnsupportedOperationException |
+| `WorkSource` | 5 | partial | throw UnsupportedOperationException |
+| `set` | 4 | partial | Log warning + no-op |
+| `remove` | 3 | composite | Log warning + no-op |
+| `writeToParcel` | 3 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `diff` | 1 | none | throw UnsupportedOperationException |
 
@@ -47,8 +47,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 **Scenario: S3 — Partial Coverage**
 
-1. Implement 7 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
+1. Implement 2 methods that have score >= 5
+2. Stub 7 methods using the Stub Strategy column above
 3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
 4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
 5. Test both working methods AND verify stubs behave predictably
@@ -64,6 +64,6 @@ Before marking `android.os.WorkSource` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 9 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 7 test methods for implemented APIs
+3. **Test Coverage**: At least 2 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

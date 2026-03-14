@@ -9,12 +9,12 @@
 | **Class** | `android.net.TrafficStats` |
 | **Package** | `android.net` |
 | **Total Methods** | 30 |
-| **Avg Score** | 5.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 16 (53%) |
-| **Partial/Composite** | 10 (33%) |
-| **No Mapping** | 4 (13%) |
+| **Avg Score** | 3.6 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 6 (20%) |
+| **Partial/Composite** | 15 (50%) |
+| **No Mapping** | 9 (30%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,57 +22,66 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 23 methods
+## Implementable APIs (score >= 5): 6 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getUidRxBytes` | `static long getUidRxBytes(int)` | 10 | direct | trivial | `getUidRxBytes` | `getUidRxBytes(uid: number, callback: AsyncCallback<number>): void` |
-| `getUidTxBytes` | `static long getUidTxBytes(int)` | 10 | direct | trivial | `getUidTxBytes` | `getUidTxBytes(uid: number, callback: AsyncCallback<number>): void` |
-| `getTotalRxBytes` | `static long getTotalRxBytes()` | 9 | direct | easy | `getAllRxBytes` | `getAllRxBytes(callback: AsyncCallback<number>): void` |
-| `getTotalTxBytes` | `static long getTotalTxBytes()` | 9 | direct | easy | `getAllTxBytes` | `getAllTxBytes(callback: AsyncCallback<number>): void` |
-| `getMobileRxBytes` | `static long getMobileRxBytes()` | 8 | near | easy | `getIfaceRxBytes` | `getIfaceRxBytes(nic: string, callback: AsyncCallback<number>): void` |
-| `getMobileTxBytes` | `static long getMobileTxBytes()` | 8 | near | easy | `getIfaceTxBytes` | `getIfaceTxBytes(nic: string, callback: AsyncCallback<number>): void` |
-| `getThreadStatsUid` | `static int getThreadStatsUid()` | 8 | near | easy | `getTrafficStatsByUid` | `getTrafficStatsByUid(uidInfo: UidInfo, callback: AsyncCallback<NetStatsInfo>): void` |
-| `TrafficStats` | `TrafficStats()` | 8 | near | easy | `getTrafficStatsByUid` | `getTrafficStatsByUid(uidInfo: UidInfo, callback: AsyncCallback<NetStatsInfo>): void` |
-| `getUidRxPackets` | `static long getUidRxPackets(int)` | 8 | near | easy | `getUidRxBytes` | `getUidRxBytes(uid: number, callback: AsyncCallback<number>): void` |
-| `getUidTxPackets` | `static long getUidTxPackets(int)` | 8 | near | easy | `getUidTxBytes` | `getUidTxBytes(uid: number, callback: AsyncCallback<number>): void` |
-| `setThreadStatsUid` | `static void setThreadStatsUid(int)` | 7 | near | easy | `getTrafficStatsByUid` | `getTrafficStatsByUid(uidInfo: UidInfo, callback: AsyncCallback<NetStatsInfo>): void` |
-| `getRxPackets` | `static long getRxPackets(@NonNull String)` | 6 | near | moderate | `getAllNets` | `getAllNets(callback: AsyncCallback<Array<NetHandle>>): void` |
-| `getTxPackets` | `static long getTxPackets(@NonNull String)` | 6 | near | moderate | `getAllNets` | `getAllNets(callback: AsyncCallback<Array<NetHandle>>): void` |
-| `getTotalTxPackets` | `static long getTotalTxPackets()` | 6 | near | moderate | `getStatsTotalBytes` | `getStatsTotalBytes(callback: AsyncCallback<number>): void` |
-| `getThreadStatsTag` | `static int getThreadStatsTag()` | 6 | near | moderate | `getTrafficStatsByIface` | `getTrafficStatsByIface(ifaceInfo: IfaceInfo, callback: AsyncCallback<NetStatsInfo>): void` |
-| `getTotalRxPackets` | `static long getTotalRxPackets()` | 6 | near | moderate | `getNetQuotaPolicies` | `getNetQuotaPolicies(callback: AsyncCallback<Array<NetQuotaPolicy>>): void` |
-| `tagSocket` | `static void tagSocket(java.net.Socket) throws java.net.SocketException` | 6 | partial | moderate | `createWebSocket` | `createWebSocket(): WebSocket` |
-| `setThreadStatsTag` | `static void setThreadStatsTag(int)` | 6 | partial | moderate | `getTrafficStatsByIface` | `getTrafficStatsByIface(ifaceInfo: IfaceInfo, callback: AsyncCallback<NetStatsInfo>): void` |
-| `getMobileRxPackets` | `static long getMobileRxPackets()` | 6 | partial | moderate | `getSharableRegexes` | `getSharableRegexes(type: SharingIfaceType, callback: AsyncCallback<Array<string>>): void` |
-| `getMobileTxPackets` | `static long getMobileTxPackets()` | 5 | partial | moderate | `getIfaceRxBytes` | `getIfaceRxBytes(nic: string, callback: AsyncCallback<number>): void` |
-| `untagSocket` | `static void untagSocket(java.net.Socket) throws java.net.SocketException` | 5 | partial | moderate | `createWebSocket` | `createWebSocket(): WebSocket` |
-| `getAndSetThreadStatsTag` | `static int getAndSetThreadStatsTag(int)` | 5 | partial | moderate | `getPowerSaveTrustlist` | `getPowerSaveTrustlist(callback: AsyncCallback<Array<number>>): void` |
-| `tagDatagramSocket` | `static void tagDatagramSocket(java.net.DatagramSocket) throws java.net.SocketException` | 5 | partial | moderate | `createWebSocket` | `createWebSocket(): WebSocket` |
+| `getMobileRxBytes` | `static long getMobileRxBytes()` | 9 | direct | rewrite | `getCellularRxBytes` | `@ohos.net.statistics.` |
+| `getMobileTxBytes` | `static long getMobileTxBytes()` | 9 | direct | rewrite | `getCellularTxBytes` | `@ohos.net.statistics.` |
+| `getTotalRxBytes` | `static long getTotalRxBytes()` | 9 | direct | hard | `getAllRxBytes` | `@ohos.net.statistics.` |
+| `getTotalTxBytes` | `static long getTotalTxBytes()` | 9 | direct | hard | `getAllTxBytes` | `@ohos.net.statistics.` |
+| `getUidRxBytes` | `static long getUidRxBytes(int)` | 9 | direct | hard | `getUidRxBytes` | `@ohos.net.statistics.` |
+| `getUidTxBytes` | `static long getUidTxBytes(int)` | 9 | direct | hard | `getUidTxBytes` | `@ohos.net.statistics.` |
 
-## Stub APIs (score < 5): 7 methods
+## Gap Descriptions (per method)
+
+- **`getMobileRxBytes`**: Direct equivalent
+- **`getMobileTxBytes`**: Direct equivalent
+- **`getTotalRxBytes`**: Direct equivalent
+- **`getTotalTxBytes`**: Direct equivalent
+- **`getUidRxBytes`**: Direct equivalent
+- **`getUidTxBytes`**: Direct equivalent
+
+## Stub APIs (score < 5): 24 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `clearThreadStatsTag` | 5 | partial | Return safe default (null/false/0/empty) |
-| `clearThreadStatsUid` | 5 | partial | Return safe default (null/false/0/empty) |
-| `untagDatagramSocket` | 5 | partial | throw UnsupportedOperationException |
+| `tagSocket` | 4 | partial | throw UnsupportedOperationException |
+| `untagSocket` | 4 | partial | throw UnsupportedOperationException |
+| `setThreadStatsUid` | 4 | composite | Return safe default (null/false/0/empty) |
+| `setThreadStatsTag` | 3 | composite | Return safe default (null/false/0/empty) |
+| `TrafficStats` | 3 | composite | throw UnsupportedOperationException |
+| `getThreadStatsUid` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getUidRxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getUidTxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getRxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTotalTxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getThreadStatsTag` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTotalRxPackets` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMobileRxPackets` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getMobileTxPackets` | 2 | composite | Return safe default (null/false/0/empty) |
+| `clearThreadStatsTag` | 1 | none | Return safe default (null/false/0/empty) |
+| `clearThreadStatsUid` | 1 | none | Return safe default (null/false/0/empty) |
+| `getAndSetThreadStatsTag` | 1 | none | Return safe default (null/false/0/empty) |
 | `incrementOperationCount` | 1 | none | Store callback, never fire |
 | `incrementOperationCount` | 1 | none | Store callback, never fire |
+| `tagDatagramSocket` | 1 | none | throw UnsupportedOperationException |
 | `tagFileDescriptor` | 1 | none | throw UnsupportedOperationException |
+| `untagDatagramSocket` | 1 | none | throw UnsupportedOperationException |
 | `untagFileDescriptor` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 23 methods that have score >= 5
-2. Stub 7 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -86,6 +95,6 @@ Before marking `android.net.TrafficStats` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 30 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 23 test methods for implemented APIs
+3. **Test Coverage**: At least 6 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

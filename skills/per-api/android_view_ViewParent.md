@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewParent` |
 | **Package** | `android.view` |
 | **Total Methods** | 43 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 22 (51%) |
-| **No Mapping** | 21 (48%) |
+| **Partial/Composite** | 2 (4%) |
+| **No Mapping** | 41 (95%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 43 |
 | **Has Async Gap** | 43 |
@@ -28,28 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `createContextMenu` | 3 | composite | Return dummy instance / no-op |
-| `getChildVisibleRect` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getLayoutDirection` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getParent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getParentForAccessibility` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTextAlignment` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTextDirection` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onDescendantInvalidated` | 3 | composite | Store callback, never fire |
-| `onNestedFling` | 3 | composite | Store callback, never fire |
-| `onNestedPreFling` | 3 | composite | Store callback, never fire |
-| `onNestedPrePerformAccessibilityAction` | 3 | composite | Store callback, never fire |
-| `onNestedPreScroll` | 3 | composite | Store callback, never fire |
-| `onNestedScroll` | 3 | composite | Store callback, never fire |
-| `onNestedScrollAccepted` | 3 | composite | Store callback, never fire |
-| `onStartNestedScroll` | 3 | composite | Return dummy instance / no-op |
-| `onStopNestedScroll` | 3 | composite | No-op |
-| `requestChildRectangleOnScreen` | 3 | composite | Store callback, never fire |
-| `requestDisallowInterceptTouchEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `requestSendAccessibilityEvent` | 3 | composite | throw UnsupportedOperationException |
-| `startActionModeForChild` | 3 | composite | Return dummy instance / no-op |
-| `startActionModeForChild` | 3 | composite | Return dummy instance / no-op |
-| `bringChildToFront` | 2 | composite | Store callback, never fire |
+| `createContextMenu` | 3 | composite | Return dummy instance / no-op |
+| `bringChildToFront` | 1 | none | Store callback, never fire |
 | `canResolveLayoutDirection` | 1 | none | Return safe default (null/false/0/empty) |
 | `canResolveTextAlignment` | 1 | none | Return safe default (null/false/0/empty) |
 | `canResolveTextDirection` | 1 | none | Return safe default (null/false/0/empty) |
@@ -58,19 +39,38 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `clearChildFocus` | 1 | none | throw UnsupportedOperationException |
 | `focusSearch` | 1 | none | throw UnsupportedOperationException |
 | `focusableViewAvailable` | 1 | none | throw UnsupportedOperationException |
+| `getChildVisibleRect` | 1 | none | Return safe default (null/false/0/empty) |
+| `getLayoutDirection` | 1 | none | Return safe default (null/false/0/empty) |
+| `getParentForAccessibility` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTextAlignment` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTextDirection` | 1 | none | Return safe default (null/false/0/empty) |
 | `isLayoutDirectionResolved` | 1 | none | Return safe default (null/false/0/empty) |
 | `isLayoutRequested` | 1 | none | Return safe default (null/false/0/empty) |
 | `isTextAlignmentResolved` | 1 | none | Return safe default (null/false/0/empty) |
 | `isTextDirectionResolved` | 1 | none | Return safe default (null/false/0/empty) |
 | `keyboardNavigationClusterSearch` | 1 | none | Store callback, never fire |
 | `notifySubtreeAccessibilityStateChanged` | 1 | none | throw UnsupportedOperationException |
+| `onDescendantInvalidated` | 1 | none | Store callback, never fire |
+| `onNestedFling` | 1 | none | Store callback, never fire |
+| `onNestedPreFling` | 1 | none | Store callback, never fire |
+| `onNestedPrePerformAccessibilityAction` | 1 | none | Store callback, never fire |
+| `onNestedPreScroll` | 1 | none | Store callback, never fire |
+| `onNestedScroll` | 1 | none | Store callback, never fire |
+| `onNestedScrollAccepted` | 1 | none | Store callback, never fire |
+| `onStartNestedScroll` | 1 | none | Return dummy instance / no-op |
+| `onStopNestedScroll` | 1 | none | No-op |
 | `recomputeViewAttributes` | 1 | none | Log warning + no-op |
 | `requestChildFocus` | 1 | none | throw UnsupportedOperationException |
+| `requestChildRectangleOnScreen` | 1 | none | Store callback, never fire |
+| `requestDisallowInterceptTouchEvent` | 1 | none | Return safe default (null/false/0/empty) |
 | `requestFitSystemWindows` | 1 | none | throw UnsupportedOperationException |
 | `requestLayout` | 1 | none | throw UnsupportedOperationException |
+| `requestSendAccessibilityEvent` | 1 | none | throw UnsupportedOperationException |
 | `requestTransparentRegion` | 1 | none | Store callback, never fire |
 | `showContextMenuForChild` | 1 | none | Store callback, never fire |
 | `showContextMenuForChild` | 1 | none | Store callback, never fire |
+| `startActionModeForChild` | 1 | none | Return dummy instance / no-op |
+| `startActionModeForChild` | 1 | none | Return dummy instance / no-op |
 
 ## AI Agent Instructions
 

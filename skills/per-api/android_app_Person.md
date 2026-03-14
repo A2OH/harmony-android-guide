@@ -9,18 +9,18 @@
 | **Class** | `android.app.Person` |
 | **Package** | `android.app` |
 | **Total Methods** | 5 |
-| **Avg Score** | 3.0 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
+| **Avg Score** | 1.0 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (80%) |
-| **No Mapping** | 1 (20%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 5 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
 ## Stub APIs (score < 5): 5 methods
 
@@ -28,21 +28,22 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isImportant` | 4 | partial | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 3 | composite | Log warning + no-op |
-| `isBot` | 3 | composite | Return safe default (null/false/0/empty) |
-| `toBuilder` | 3 | composite | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `isBot` | 1 | none | Return safe default (null/false/0/empty) |
+| `isImportant` | 1 | none | Return safe default (null/false/0/empty) |
+| `toBuilder` | 1 | none | throw UnsupportedOperationException |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 

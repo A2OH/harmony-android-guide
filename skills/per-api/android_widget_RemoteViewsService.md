@@ -9,12 +9,12 @@
 | **Class** | `android.widget.RemoteViewsService` |
 | **Package** | `android.widget` |
 | **Total Methods** | 3 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (66%) |
-| **No Mapping** | 1 (33%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 3 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 2 |
 | **Has Async Gap** | 2 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onBind` | 3 | composite | Store callback, never fire |
-| `onGetViewFactory` | 3 | composite | Return safe default (null/false/0/empty) |
 | `RemoteViewsService` | 1 | none | throw UnsupportedOperationException |
+| `onBind` | 1 | none | Store callback, never fire |
+| `onGetViewFactory` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

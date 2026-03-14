@@ -9,12 +9,12 @@
 | **Class** | `android.widget.HeterogeneousExpandableList` |
 | **Package** | `android.widget` |
 | **Total Methods** | 4 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 4 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,10 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getChildType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupTypeCount` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getChildType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getChildTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupType` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupTypeCount` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

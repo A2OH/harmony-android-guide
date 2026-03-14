@@ -9,15 +9,15 @@
 | **Class** | `android.widget.CalendarView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 16 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (75%) |
-| **No Mapping** | 4 (25%) |
+| **Partial/Composite** | 3 (18%) |
+| **No Mapping** | 13 (81%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 12 |
-| **Has Async Gap** | 12 |
+| **Has Async Gap** | 16 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,22 +28,22 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `setDate` | 3 | composite | Log warning + no-op |
+| `setDate` | 3 | composite | Log warning + no-op |
 | `getDate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFirstDayOfWeek` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMaxDate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMinDate` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setDate` | 3 | composite | Log warning + no-op |
-| `setDate` | 3 | composite | Log warning + no-op |
-| `setDateTextAppearance` | 3 | composite | Log warning + no-op |
-| `setFirstDayOfWeek` | 3 | composite | Log warning + no-op |
-| `setMaxDate` | 3 | composite | Log warning + no-op |
-| `setMinDate` | 3 | composite | Log warning + no-op |
-| `setOnDateChangeListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setWeekDayTextAppearance` | 3 | composite | Log warning + no-op |
 | `CalendarView` | 1 | none | throw UnsupportedOperationException |
 | `CalendarView` | 1 | none | throw UnsupportedOperationException |
 | `CalendarView` | 1 | none | throw UnsupportedOperationException |
 | `CalendarView` | 1 | none | throw UnsupportedOperationException |
+| `getFirstDayOfWeek` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMaxDate` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMinDate` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDateTextAppearance` | 1 | none | Log warning + no-op |
+| `setFirstDayOfWeek` | 1 | none | Log warning + no-op |
+| `setMaxDate` | 1 | none | Log warning + no-op |
+| `setMinDate` | 1 | none | Log warning + no-op |
+| `setOnDateChangeListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setWeekDayTextAppearance` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

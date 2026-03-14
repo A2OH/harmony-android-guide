@@ -9,52 +9,48 @@
 | **Class** | `android.bluetooth.BluetoothGattServerCallback` |
 | **Package** | `android.bluetooth` |
 | **Total Methods** | 12 |
-| **Avg Score** | 3.9 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 1 (8%) |
-| **Partial/Composite** | 11 (91%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 1.6 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 2 (16%) |
+| **No Mapping** | 10 (83%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-NETWORKING.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `onConnectionStateChange` | `void onConnectionStateChange(android.bluetooth.BluetoothDevice, int, int)` | 7 | near | moderate | `getBtConnectionState` | `getBtConnectionState(): ProfileConnectionState` |
-| `BluetoothGattServerCallback` | `BluetoothGattServerCallback()` | 6 | partial | moderate | `createGattServer` | `createGattServer(): GattServer` |
-
-## Stub APIs (score < 5): 10 methods
+## Stub APIs (score < 5): 12 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onExecuteWrite` | 5 | partial | Log warning + no-op |
-| `onDescriptorWriteRequest` | 4 | partial | Log warning + no-op |
-| `onPhyRead` | 4 | composite | Return safe default (null/false/0/empty) |
-| `onCharacteristicWriteRequest` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onMtuChanged` | 3 | composite | Store callback, never fire |
-| `onNotificationSent` | 3 | composite | Store callback, never fire |
-| `onPhyUpdate` | 3 | composite | Log warning + no-op |
-| `onServiceAdded` | 3 | composite | Log warning + no-op |
-| `onCharacteristicReadRequest` | 2 | composite | Return safe default (null/false/0/empty) |
-| `onDescriptorReadRequest` | 2 | composite | Return safe default (null/false/0/empty) |
+| `BluetoothGattServerCallback` | 4 | partial | throw UnsupportedOperationException |
+| `onConnectionStateChange` | 4 | partial | Return dummy instance / no-op |
+| `onCharacteristicReadRequest` | 1 | none | Return safe default (null/false/0/empty) |
+| `onCharacteristicWriteRequest` | 1 | none | Return safe default (null/false/0/empty) |
+| `onDescriptorReadRequest` | 1 | none | Return safe default (null/false/0/empty) |
+| `onDescriptorWriteRequest` | 1 | none | Log warning + no-op |
+| `onExecuteWrite` | 1 | none | Log warning + no-op |
+| `onMtuChanged` | 1 | none | Store callback, never fire |
+| `onNotificationSent` | 1 | none | Store callback, never fire |
+| `onPhyRead` | 1 | none | Return safe default (null/false/0/empty) |
+| `onPhyUpdate` | 1 | none | Log warning + no-op |
+| `onServiceAdded` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -67,6 +63,6 @@ Before marking `android.bluetooth.BluetoothGattServerCallback` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 12 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

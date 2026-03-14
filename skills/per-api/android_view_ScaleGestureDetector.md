@@ -9,12 +9,12 @@
 | **Class** | `android.view.ScaleGestureDetector` |
 | **Package** | `android.view` |
 | **Total Methods** | 19 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 14 (73%) |
-| **No Mapping** | 5 (26%) |
+| **Partial/Composite** | 7 (36%) |
+| **No Mapping** | 12 (63%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 17 |
 | **Has Async Gap** | 17 |
@@ -28,25 +28,25 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getCurrentSpan` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentSpanX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentSpanY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getEventTime` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFocusX` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFocusY` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getPreviousSpan` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getPreviousSpanX` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getPreviousSpanY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getScaleFactor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTimeDelta` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onTouchEvent` | 3 | composite | Store callback, never fire |
-| `setQuickScaleEnabled` | 3 | composite | Log warning + no-op |
-| `setStylusScaleEnabled` | 3 | composite | Log warning + no-op |
+| `getCurrentSpanY` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getCurrentSpan` | 2 | composite | Return safe default (null/false/0/empty) |
+| `onTouchEvent` | 2 | composite | Store callback, never fire |
+| `getCurrentSpanX` | 2 | composite | Return safe default (null/false/0/empty) |
 | `ScaleGestureDetector` | 1 | none | throw UnsupportedOperationException |
 | `ScaleGestureDetector` | 1 | none | throw UnsupportedOperationException |
+| `getEventTime` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFocusX` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFocusY` | 1 | none | Return safe default (null/false/0/empty) |
+| `getScaleFactor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTimeDelta` | 1 | none | Return safe default (null/false/0/empty) |
 | `isInProgress` | 1 | none | Return safe default (null/false/0/empty) |
 | `isQuickScaleEnabled` | 1 | none | Return safe default (null/false/0/empty) |
 | `isStylusScaleEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setQuickScaleEnabled` | 1 | none | Log warning + no-op |
+| `setStylusScaleEnabled` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AutoCompleteTextView` |
 | **Package** | `android.widget` |
 | **Total Methods** | 50 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 35 (70%) |
-| **No Mapping** | 15 (30%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 50 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 45 |
 | **Has Async Gap** | 45 |
@@ -28,55 +28,55 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `convertSelectionToString` | 3 | composite | Store callback, never fire |
-| `getAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCompletionHint` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownAnchor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownBackground` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownHeight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownHorizontalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownVerticalOffset` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getDropDownWidth` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getInputMethodMode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getListSelection` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOnItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOnItemSelectedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getThreshold` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getValidator` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onFilterComplete` | 3 | composite | Store callback, never fire |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setCompletionHint` | 3 | composite | Log warning + no-op |
-| `setDropDownAnchor` | 3 | composite | Log warning + no-op |
-| `setDropDownBackgroundResource` | 3 | composite | Log warning + no-op |
-| `setDropDownHorizontalOffset` | 3 | composite | Log warning + no-op |
-| `setDropDownVerticalOffset` | 3 | composite | Log warning + no-op |
-| `setInputMethodMode` | 3 | composite | Log warning + no-op |
-| `setListSelection` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnDismissListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemSelectedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setText` | 3 | composite | Log warning + no-op |
-| `setThreshold` | 3 | composite | Log warning + no-op |
-| `setValidator` | 3 | composite | Log warning + no-op |
-| `setDropDownWidth` | 3 | composite | Log warning + no-op |
-| `setDropDownHeight` | 3 | composite | Log warning + no-op |
-| `setDropDownBackgroundDrawable` | 2 | composite | Log warning + no-op |
-| `enoughToFilter` | 2 | composite | throw UnsupportedOperationException |
 | `AutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `AutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `AutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `AutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `AutoCompleteTextView` | 1 | none | throw UnsupportedOperationException |
 | `clearListSelection` | 1 | none | Return safe default (null/false/0/empty) |
+| `convertSelectionToString` | 1 | none | Store callback, never fire |
 | `dismissDropDown` | 1 | none | Return safe default (null/false/0/empty) |
+| `enoughToFilter` | 1 | none | throw UnsupportedOperationException |
+| `getAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCompletionHint` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownAnchor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownBackground` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownHeight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownHorizontalOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownVerticalOffset` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDropDownWidth` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getInputMethodMode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getListSelection` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOnItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOnItemSelectedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `getThreshold` | 1 | none | Return safe default (null/false/0/empty) |
+| `getValidator` | 1 | none | Return safe default (null/false/0/empty) |
 | `isPerformingCompletion` | 1 | none | Return safe default (null/false/0/empty) |
 | `isPopupShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `onFilterComplete` | 1 | none | Store callback, never fire |
 | `performCompletion` | 1 | none | Store callback, never fire |
 | `performFiltering` | 1 | none | throw UnsupportedOperationException |
 | `performValidation` | 1 | none | Store callback, never fire |
 | `refreshAutoCompleteResults` | 1 | none | throw UnsupportedOperationException |
 | `replaceText` | 1 | none | throw UnsupportedOperationException |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setCompletionHint` | 1 | none | Log warning + no-op |
+| `setDropDownAnchor` | 1 | none | Log warning + no-op |
+| `setDropDownBackgroundDrawable` | 1 | none | Log warning + no-op |
+| `setDropDownBackgroundResource` | 1 | none | Log warning + no-op |
+| `setDropDownHeight` | 1 | none | Log warning + no-op |
+| `setDropDownHorizontalOffset` | 1 | none | Log warning + no-op |
+| `setDropDownVerticalOffset` | 1 | none | Log warning + no-op |
+| `setDropDownWidth` | 1 | none | Log warning + no-op |
+| `setInputMethodMode` | 1 | none | Log warning + no-op |
+| `setListSelection` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnDismissListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemSelectedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setText` | 1 | none | Log warning + no-op |
+| `setThreshold` | 1 | none | Log warning + no-op |
+| `setValidator` | 1 | none | Log warning + no-op |
 | `showDropDown` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

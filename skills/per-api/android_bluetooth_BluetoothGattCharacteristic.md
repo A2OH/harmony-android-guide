@@ -9,12 +9,12 @@
 | **Class** | `android.bluetooth.BluetoothGattCharacteristic` |
 | **Package** | `android.bluetooth` |
 | **Total Methods** | 21 |
-| **Avg Score** | 5.4 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 13 (61%) |
-| **Partial/Composite** | 6 (28%) |
-| **No Mapping** | 2 (9%) |
+| **Avg Score** | 2.8 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 15 (71%) |
+| **No Mapping** | 6 (28%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,48 +22,43 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 18 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getUuid` | `java.util.UUID getUuid()` | 7 | near | easy | `uuid` | `uuid: string` |
-| `getInstanceId` | `int getInstanceId()` | 7 | near | moderate | `getState` | `getState(): BluetoothState` |
-| `getFloatValue` | `Float getFloatValue(int, int)` | 6 | near | moderate | `getLocalName` | `getLocalName(): string` |
-| `getStringValue` | `String getStringValue(int)` | 6 | near | moderate | `getState` | `getState(): BluetoothState` |
-| `getIntValue` | `Integer getIntValue(int, int)` | 6 | near | moderate | `getState` | `getState(): BluetoothState` |
-| `getValue` | `byte[] getValue()` | 6 | near | moderate | `getState` | `getState(): BluetoothState` |
-| `getProperties` | `int getProperties()` | 6 | near | moderate | `getPairedDevices` | `getPairedDevices(): Array<string>` |
-| `getService` | `android.bluetooth.BluetoothGattService getService()` | 6 | near | moderate | `getPairedDevices` | `getPairedDevices(): Array<string>` |
-| `setValue` | `boolean setValue(byte[])` | 6 | near | moderate | `setLocalName` | `setLocalName(name: string): void` |
-| `setValue` | `boolean setValue(int, int, int)` | 6 | near | moderate | `setLocalName` | `setLocalName(name: string): void` |
-| `setValue` | `boolean setValue(int, int, int, int)` | 6 | near | moderate | `setLocalName` | `setLocalName(name: string): void` |
-| `setValue` | `boolean setValue(String)` | 6 | near | moderate | `setLocalName` | `setLocalName(name: string): void` |
-| `setWriteType` | `void setWriteType(int)` | 6 | near | moderate | `sppWrite` | `sppWrite(clientSocket: number, data: ArrayBuffer): boolean` |
-| `getWriteType` | `int getWriteType()` | 5 | partial | moderate | `getProfile` | `getProfile(profileId: ProfileId): A2dpSourceProfile | HandsFreeAudioGatewayProfile` |
-| `BluetoothGattCharacteristic` | `BluetoothGattCharacteristic(java.util.UUID, int, int)` | 5 | partial | moderate | `isBluetoothDiscovering` | `isBluetoothDiscovering(): boolean` |
-| `getDescriptor` | `android.bluetooth.BluetoothGattDescriptor getDescriptor(java.util.UUID)` | 5 | partial | moderate | `getState` | `getState(): BluetoothState` |
-| `getDescriptors` | `java.util.List<android.bluetooth.BluetoothGattDescriptor> getDescriptors()` | 5 | partial | moderate | `getState` | `getState(): BluetoothState` |
-| `getPermissions` | `int getPermissions()` | 5 | partial | moderate | `getState` | `getState(): BluetoothState` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 21 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `writeToParcel` | 5 | partial | Log warning + no-op |
+| `getUuid` | 5 | partial | Return safe default (null/false/0/empty) |
+| `BluetoothGattCharacteristic` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getInstanceId` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getFloatValue` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getStringValue` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getIntValue` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getProperties` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getService` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getValue` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setValue` | 3 | composite | Log warning + no-op |
+| `setValue` | 3 | composite | Log warning + no-op |
+| `setValue` | 3 | composite | Log warning + no-op |
+| `setValue` | 3 | composite | Log warning + no-op |
+| `setWriteType` | 3 | composite | Log warning + no-op |
+| `getWriteType` | 2 | composite | Return safe default (null/false/0/empty) |
 | `addDescriptor` | 1 | none | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getDescriptor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getDescriptors` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPermissions` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 18 methods that have score >= 5
-2. Stub 3 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -76,6 +71,6 @@ Before marking `android.bluetooth.BluetoothGattCharacteristic` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 21 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 18 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

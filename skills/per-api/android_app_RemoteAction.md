@@ -9,12 +9,12 @@
 | **Class** | `android.app.RemoteAction` |
 | **Package** | `android.app` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
-| **Direct/Near** | 1 (11%) |
-| **Partial/Composite** | 3 (33%) |
-| **No Mapping** | 5 (55%) |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 1 (11%) |
+| **No Mapping** | 8 (88%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -26,7 +26,7 @@
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `isEnabled` | `boolean isEnabled()` | 8 | direct | easy | `isEnabled` | `readonly isEnabled?: boolean` |
+| `isEnabled` | `boolean isEnabled()` | 5 | partial | moderate | `isEnabled` | `readonly isEnabled?: boolean` |
 
 ## Stub APIs (score < 5): 8 methods
 
@@ -34,14 +34,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setEnabled` | 4 | partial | Log warning + no-op |
-| `setShouldShowIcon` | 4 | composite | Log warning + no-op |
-| `writeToParcel` | 3 | composite | Log warning + no-op |
 | `RemoteAction` | 1 | none | Store callback, never fire |
 | `clone` | 1 | none | Store callback, never fire |
 | `describeContents` | 1 | none | Store callback, never fire |
 | `dump` | 1 | none | throw UnsupportedOperationException |
+| `setEnabled` | 1 | none | Log warning + no-op |
+| `setShouldShowIcon` | 1 | none | Log warning + no-op |
 | `shouldShowIcon` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

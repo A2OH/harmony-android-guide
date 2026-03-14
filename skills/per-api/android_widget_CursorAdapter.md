@@ -9,12 +9,12 @@
 | **Class** | `android.widget.CursorAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 19 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 12 (63%) |
-| **No Mapping** | 7 (36%) |
+| **Partial/Composite** | 5 (26%) |
+| **No Mapping** | 14 (73%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 17 |
 | **Has Async Gap** | 17 |
@@ -28,24 +28,24 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `convertToString` | 3 | composite | Store callback, never fire |
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCursor` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getDropDownViewTheme` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilterQueryProvider` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onContentChanged` | 3 | composite | Store callback, never fire |
-| `setFilterQueryProvider` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setDropDownViewTheme` | 2 | composite | Log warning + no-op |
+| `getItem` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `CursorAdapter` | 1 | none | throw UnsupportedOperationException |
 | `CursorAdapter` | 1 | none | throw UnsupportedOperationException |
 | `bindView` | 1 | none | throw UnsupportedOperationException |
 | `changeCursor` | 1 | none | throw UnsupportedOperationException |
+| `convertToString` | 1 | none | Store callback, never fire |
+| `getCursor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFilterQueryProvider` | 1 | none | Return safe default (null/false/0/empty) |
 | `newDropDownView` | 1 | none | throw UnsupportedOperationException |
 | `newView` | 1 | none | throw UnsupportedOperationException |
+| `onContentChanged` | 1 | none | Store callback, never fire |
+| `setDropDownViewTheme` | 1 | none | Log warning + no-op |
+| `setFilterQueryProvider` | 1 | none | Return safe default (null/false/0/empty) |
 | `swapCursor` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

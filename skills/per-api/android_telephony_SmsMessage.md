@@ -9,12 +9,12 @@
 | **Class** | `android.telephony.SmsMessage` |
 | **Package** | `android.telephony` |
 | **Total Methods** | 29 |
-| **Avg Score** | 5.6 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 16 (55%) |
-| **Partial/Composite** | 11 (37%) |
-| **No Mapping** | 2 (6%) |
+| **Avg Score** | 2.3 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 22 (75%) |
+| **No Mapping** | 7 (24%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,56 +22,51 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 24 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `getProtocolIdentifier` | `int getProtocolIdentifier()` | 7 | near | easy | `getVoiceMailIdentifier` | `getVoiceMailIdentifier(slotId: number, callback: AsyncCallback<string>): void` |
-| `getStatus` | `int getStatus()` | 7 | near | easy | `getSimState` | `getSimState(slotId: number, callback: AsyncCallback<SimState>): void` |
-| `isMWISetMessage` | `boolean isMWISetMessage()` | 7 | near | moderate | `sendMessage` | `sendMessage(options: SendMessageOptions): void` |
-| `getStatusOnIcc` | `int getStatusOnIcc()` | 7 | near | moderate | `getSimStateSync` | `getSimStateSync(slotId: number): SimState` |
-| `getMessageClass` | `android.telephony.SmsMessage.MessageClass getMessageClass()` | 7 | near | moderate | `getAllSimMessages` | `getAllSimMessages(slotId: number, callback: AsyncCallback<Array<SimShortMessage>>): void` |
-| `getMessageBody` | `String getMessageBody()` | 7 | near | moderate | `createMessage` | `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void` |
-| `isMWIClearMessage` | `boolean isMWIClearMessage()` | 7 | near | moderate | `createMessage` | `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void` |
-| `isStatusReportMessage` | `boolean isStatusReportMessage()` | 6 | near | moderate | `sendShortMessage` | `sendShortMessage(options: SendMessageOptions, callback: AsyncCallback<void>): void` |
-| `getEmailBody` | `String getEmailBody()` | 6 | near | moderate | `getMainCallId` | `getMainCallId(callId: number, callback: AsyncCallback<number>): void` |
-| `getSubmitPdu` | `static android.telephony.SmsMessage.SubmitPdu getSubmitPdu(String, String, String, boolean)` | 6 | near | moderate | `getSimGid1` | `getSimGid1(slotId: number, callback: AsyncCallback<string>): void` |
-| `getSubmitPdu` | `static android.telephony.SmsMessage.SubmitPdu getSubmitPdu(String, String, short, byte[], boolean)` | 6 | near | moderate | `getSimGid1` | `getSimGid1(slotId: number, callback: AsyncCallback<string>): void` |
-| `isCphsMwiMessage` | `boolean isCphsMwiMessage()` | 6 | near | moderate | `addSimMessage` | `addSimMessage(options: SimMessageOptions, callback: AsyncCallback<void>): void` |
-| `getPdu` | `byte[] getPdu()` | 6 | near | moderate | `getMEID` | `getMEID(slotId: number, callback: AsyncCallback<string>): void` |
-| `getDisplayMessageBody` | `String getDisplayMessageBody()` | 6 | near | moderate | `splitMessage` | `splitMessage(content: string, callback: AsyncCallback<Array<string>>): void` |
-| `getEmailFrom` | `String getEmailFrom()` | 6 | near | moderate | `getVoiceMailNumber` | `getVoiceMailNumber(slotId: number, callback: AsyncCallback<string>): void` |
-| `getIndexOnIcc` | `int getIndexOnIcc()` | 6 | near | moderate | `getIMEI` | `getIMEI(slotId: number, callback: AsyncCallback<string>): void` |
-| `getUserData` | `byte[] getUserData()` | 6 | partial | moderate | `getCellularDataState` | `getCellularDataState(callback: AsyncCallback<DataConnectState>): void` |
-| `getTimestampMillis` | `long getTimestampMillis()` | 6 | partial | moderate | `getIMEI` | `getIMEI(slotId: number, callback: AsyncCallback<string>): void` |
-| `isEmail` | `boolean isEmail()` | 6 | partial | moderate | `isSimActive` | `isSimActive(slotId: number, callback: AsyncCallback<boolean>): void` |
-| `createFromPdu` | `static android.telephony.SmsMessage createFromPdu(byte[], String)` | 5 | partial | moderate | `createMessage` | `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void` |
-| `getServiceCenterAddress` | `String getServiceCenterAddress()` | 5 | partial | moderate | `getVoiceMailIdentifier` | `getVoiceMailIdentifier(slotId: number, callback: AsyncCallback<string>): void` |
-| `isMwiDontStore` | `boolean isMwiDontStore()` | 5 | partial | moderate | `isNrSupported` | `isNrSupported(): boolean` |
-| `getPseudoSubject` | `String getPseudoSubject()` | 5 | partial | moderate | `getSubCallIdList` | `getSubCallIdList(callId: number, callback: AsyncCallback<Array<string>>): void` |
-| `isReplace` | `boolean isReplace()` | 5 | partial | moderate | `isNRSupported` | `isNRSupported(): boolean` |
-
-## Stub APIs (score < 5): 5 methods
+## Stub APIs (score < 5): 29 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getTPLayerLengthForPDU` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getDisplayOriginatingAddress` | 5 | partial | Return safe default (null/false/0/empty) |
-| `isReplyPathPresent` | 4 | partial | Return safe default (null/false/0/empty) |
+| `isMwiDontStore` | 5 | partial | Return safe default (null/false/0/empty) |
+| `getProtocolIdentifier` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getStatus` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isMWISetMessage` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getStatusOnIcc` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMessageClass` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMessageBody` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isMWIClearMessage` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isStatusReportMessage` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getEmailBody` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSubmitPdu` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSubmitPdu` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isCphsMwiMessage` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getPdu` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDisplayMessageBody` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getEmailFrom` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getIndexOnIcc` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getUserData` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTimestampMillis` | 2 | composite | Return safe default (null/false/0/empty) |
+| `isEmail` | 2 | composite | Return safe default (null/false/0/empty) |
+| `createFromPdu` | 2 | composite | Return dummy instance / no-op |
+| `getServiceCenterAddress` | 2 | composite | Return safe default (null/false/0/empty) |
 | `calculateLength` | 1 | none | throw UnsupportedOperationException |
 | `calculateLength` | 1 | none | throw UnsupportedOperationException |
+| `getDisplayOriginatingAddress` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPseudoSubject` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTPLayerLengthForPDU` | 1 | none | Return safe default (null/false/0/empty) |
+| `isReplace` | 1 | none | Return safe default (null/false/0/empty) |
+| `isReplyPathPresent` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 24 methods that have score >= 5
-2. Stub 5 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -85,6 +80,6 @@ Before marking `android.telephony.SmsMessage` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 29 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 24 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

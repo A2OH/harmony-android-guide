@@ -9,7 +9,7 @@
 | **Class** | `android.provider.SearchRecentSuggestions` |
 | **Package** | `android.provider` |
 | **Total Methods** | 4 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `saveRecentQuery` | 4 | partial | Return safe default (null/false/0/empty) |
+| `clearHistory` | 3 | composite | Return safe default (null/false/0/empty) |
 | `SearchRecentSuggestions` | 1 | none | Store callback, never fire |
-| `clearHistory` | 1 | none | Return safe default (null/false/0/empty) |
+| `saveRecentQuery` | 1 | none | Return safe default (null/false/0/empty) |
 | `truncateHistory` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions

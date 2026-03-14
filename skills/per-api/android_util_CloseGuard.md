@@ -9,37 +9,39 @@
 | **Class** | `android.util.CloseGuard` |
 | **Package** | `android.util` |
 | **Total Methods** | 4 |
-| **Avg Score** | 8.1 |
-| **Scenario** | S2: Signature Adaptation |
-| **Strategy** | Type conversion at boundary |
-| **Direct/Near** | 3 (75%) |
-| **Partial/Composite** | 1 (25%) |
+| **Avg Score** | 3.2 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 4 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `SHIM-INDEX.md` |
-| **Expected AI Iterations** | 1-2 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 4 methods
+## Stub APIs (score < 5): 4 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `close` | `void close()` | 10 | direct | trivial | `close` | `close(fd: number): Promise<void>` |
-| `open` | `void open(@NonNull String)` | 10 | direct | trivial | `open` | `open(path: string, flags?: number, mode?: number): Promise<number>` |
-| `CloseGuard` | `CloseGuard()` | 7 | near | moderate | `close` | `close(fd: number): Promise<void>` |
-| `warnIfOpen` | `void warnIfOpen()` | 6 | partial | moderate | `open` | `open(path: string, flags?: number, mode?: number): Promise<number>` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `close` | 4 | partial | No-op |
+| `open` | 3 | composite | Return dummy instance / no-op |
+| `CloseGuard` | 3 | composite | No-op |
+| `warnIfOpen` | 2 | composite | Return dummy instance / no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S2 — Signature Adaptation**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim with type conversion at boundaries
-2. Map parameter types: check the Gap Descriptions above for each method
-3. For enum/constant conversions, create a mapping table in the shim
-4. Test type edge cases: null, empty string, MAX/MIN values, negative numbers
-5. Verify return types match AOSP exactly
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -52,6 +54,6 @@ Before marking `android.util.CloseGuard` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

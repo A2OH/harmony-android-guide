@@ -9,12 +9,12 @@
 | **Class** | `android.view.SurfaceControlViewHost.SurfacePackage` |
 | **Package** | `android.view.SurfaceControlViewHost` |
 | **Total Methods** | 3 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.7 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 2 (66%) |
-| **No Mapping** | 1 (33%) |
+| **Partial/Composite** | 1 (33%) |
+| **No Mapping** | 2 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -29,8 +29,8 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `release` | 3 | composite | No-op |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

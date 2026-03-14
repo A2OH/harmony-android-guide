@@ -9,12 +9,12 @@
 | **Class** | `android.view.KeyEvent.DispatcherState` |
 | **Package** | `android.view.KeyEvent` |
 | **Total Methods** | 7 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (42%) |
-| **No Mapping** | 4 (57%) |
+| **Partial/Composite** | 2 (28%) |
+| **No Mapping** | 5 (71%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,10 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `handleUpEvent` | 3 | composite | throw UnsupportedOperationException |
 | `reset` | 3 | composite | Log warning + no-op |
 | `reset` | 3 | composite | Log warning + no-op |
 | `DispatcherState` | 1 | none | Return safe default (null/false/0/empty) |
+| `handleUpEvent` | 1 | none | throw UnsupportedOperationException |
 | `isTracking` | 1 | none | Return safe default (null/false/0/empty) |
 | `performedLongPress` | 1 | none | Store callback, never fire |
 | `startTracking` | 1 | none | Return dummy instance / no-op |

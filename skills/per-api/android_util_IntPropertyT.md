@@ -9,37 +9,38 @@
 | **Class** | `android.util.IntProperty<T>` |
 | **Package** | `android.util` |
 | **Total Methods** | 3 |
-| **Avg Score** | 9.0 |
-| **Scenario** | S1: Direct Mapping (Thin Wrapper) |
-| **Strategy** | Simple delegation to OHBridge |
-| **Direct/Near** | 3 (100%) |
-| **Partial/Composite** | 0 (0%) |
+| **Avg Score** | 3.8 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 3 (100%) |
 | **No Mapping** | 0 (0%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `SHIM-INDEX.md` |
-| **Expected AI Iterations** | 1 |
-| **Test Level** | Level 1 (Mock only) |
+| **Expected AI Iterations** | 2-3 |
+| **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 3 methods
+## Stub APIs (score < 5): 3 methods
 
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `set` | `final void set(T, Integer)` | 10 | direct | trivial | `set` | `set(key: string, value: string, callback: AsyncCallback<void>): void` |
-| `setValue` | `abstract void setValue(T, int)` | 10 | direct | trivial | `setValue` | `setValue(value: number): void` |
-| `IntProperty` | `IntProperty(String)` | 7 | near | moderate | `setUserProperty` | `setUserProperty(name: string, value: string): void` |
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `set` | 4 | partial | Log warning + no-op |
+| `setValue` | 4 | partial | Log warning + no-op |
+| `IntProperty` | 3 | composite | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
-**Scenario: S1 — Direct Mapping (Thin Wrapper)**
+**Scenario: S4 — Multi-API Composition**
 
-1. Create Java shim at `shim/java/android/util/IntProperty<T>.java`
-2. For each method, delegate to `OHBridge.xxx()` — one bridge call per Android call
-3. Add `static native` declarations to `OHBridge.java`
-4. Add mock implementations to `test-apps/mock/.../OHBridge.java`
-5. Add test section to `HeadlessTest.java` — call each method with valid + edge inputs
-6. Test null args, boundary values, return types
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -52,6 +53,6 @@ Before marking `android.util.IntProperty<T>` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 3 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 3 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

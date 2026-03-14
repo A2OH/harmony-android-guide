@@ -9,12 +9,12 @@
 | **Class** | `android.telephony.SubscriptionPlan.Builder` |
 | **Package** | `android.telephony.SubscriptionPlan` |
 | **Total Methods** | 7 |
-| **Avg Score** | 4.9 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 1 (14%) |
+| **Avg Score** | 2.1 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
 | **Partial/Composite** | 5 (71%) |
-| **No Mapping** | 1 (14%) |
+| **No Mapping** | 2 (28%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,34 +22,29 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 6 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `setSummary` | `android.telephony.SubscriptionPlan.Builder setSummary(@Nullable CharSequence)` | 7 | near | moderate | `setSmscAddr` | `setSmscAddr(slotId: number, smscAddr: string, callback: AsyncCallback<void>): void` |
-| `createRecurring` | `static android.telephony.SubscriptionPlan.Builder createRecurring(java.time.ZonedDateTime, java.time.Period)` | 6 | partial | moderate | `createMessage` | `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void` |
-| `setDataUsage` | `android.telephony.SubscriptionPlan.Builder setDataUsage(long, long)` | 6 | partial | moderate | `getCellularDataState` | `getCellularDataState(callback: AsyncCallback<DataConnectState>): void` |
-| `setDataLimit` | `android.telephony.SubscriptionPlan.Builder setDataLimit(long, int)` | 5 | partial | moderate | `setCallWaiting` | `setCallWaiting(slotId: number, activate: boolean, callback: AsyncCallback<void>): void` |
-| `createNonrecurring` | `static android.telephony.SubscriptionPlan.Builder createNonrecurring(java.time.ZonedDateTime, java.time.ZonedDateTime)` | 5 | partial | moderate | `createMessage` | `createMessage(pdu: Array<number>, specification: string, callback: AsyncCallback<ShortMessage>): void` |
-| `setTitle` | `android.telephony.SubscriptionPlan.Builder setTitle(@Nullable CharSequence)` | 5 | partial | moderate | `setCBConfig` | `setCBConfig(options: CBConfigOptions, callback: AsyncCallback<void>): void` |
-
-## Stub APIs (score < 5): 1 methods
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `setSummary` | 3 | composite | Log warning + no-op |
+| `createRecurring` | 2 | composite | Return dummy instance / no-op |
+| `setDataUsage` | 2 | composite | Log warning + no-op |
+| `setDataLimit` | 2 | composite | Log warning + no-op |
+| `createNonrecurring` | 2 | composite | Return dummy instance / no-op |
 | `build` | 1 | none | throw UnsupportedOperationException |
+| `setTitle` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 6 methods that have score >= 5
-2. Stub 1 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -62,6 +57,6 @@ Before marking `android.telephony.SubscriptionPlan.Builder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 7 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

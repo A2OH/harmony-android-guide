@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowInsetsAnimationControlListener` |
 | **Package** | `android.view` |
 | **Total Methods** | 3 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 3 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -28,9 +28,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onCancelled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onFinished` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onReady` | 3 | composite | Return safe default (null/false/0/empty) |
+| `onCancelled` | 1 | none | Return safe default (null/false/0/empty) |
+| `onFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `onReady` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

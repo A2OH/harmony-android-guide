@@ -9,12 +9,12 @@
 | **Class** | `android.graphics.ColorSpace.Rgb` |
 | **Package** | `android.graphics.ColorSpace` |
 | **Total Methods** | 9 |
-| **Avg Score** | 1.9 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S8: No Mapping (Stub) |
 | **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (33%) |
-| **No Mapping** | 6 (66%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 9 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getMaxValue` | 5 | partial | Return safe default (null/false/0/empty) |
-| `getMinValue` | 4 | partial | Return safe default (null/false/0/empty) |
-| `isWideGamut` | 2 | composite | Return safe default (null/false/0/empty) |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
 | `Rgb` | 1 | none | throw UnsupportedOperationException |
+| `getMaxValue` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMinValue` | 1 | none | Return safe default (null/false/0/empty) |
+| `isWideGamut` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

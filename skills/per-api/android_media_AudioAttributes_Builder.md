@@ -9,47 +9,43 @@
 | **Class** | `android.media.AudioAttributes.Builder` |
 | **Package** | `android.media.AudioAttributes` |
 | **Total Methods** | 7 |
-| **Avg Score** | 4.4 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 1 (14%) |
-| **Partial/Composite** | 5 (71%) |
-| **No Mapping** | 1 (14%) |
+| **Avg Score** | 1.7 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 2 (28%) |
+| **No Mapping** | 5 (71%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-MEDIA.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 3 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `setContentType` | `android.media.AudioAttributes.Builder setContentType(int)` | 7 | near | moderate | `eventType` | `eventType: InterruptType` |
-| `setUsage` | `android.media.AudioAttributes.Builder setUsage(int)` | 5 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
-| `setFlags` | `android.media.AudioAttributes.Builder setFlags(int)` | 5 | partial | moderate | `setDiscoverable` | `setDiscoverable(enable: boolean, callback: AsyncCallback<void>): void` |
-
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 7 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setLegacyStreamType` | 5 | partial | Log warning + no-op |
-| `Builder` | 4 | partial | throw UnsupportedOperationException |
-| `Builder` | 4 | partial | throw UnsupportedOperationException |
+| `setContentType` | 5 | partial | Log warning + no-op |
+| `setUsage` | 2 | composite | Log warning + no-op |
+| `Builder` | 1 | none | throw UnsupportedOperationException |
+| `Builder` | 1 | none | throw UnsupportedOperationException |
 | `build` | 1 | none | throw UnsupportedOperationException |
+| `setFlags` | 1 | none | Log warning + no-op |
+| `setLegacyStreamType` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 3 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -62,6 +58,6 @@ Before marking `android.media.AudioAttributes.Builder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 7 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 3 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

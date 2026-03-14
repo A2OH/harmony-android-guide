@@ -9,60 +9,75 @@
 | **Class** | `android.app.Service` |
 | **Package** | `android.app` |
 | **Total Methods** | 20 |
-| **Avg Score** | 5.5 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 12 (60%) |
-| **Partial/Composite** | 6 (30%) |
-| **No Mapping** | 2 (10%) |
+| **Avg Score** | 5.0 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 7 (35%) |
+| **Partial/Composite** | 8 (40%) |
+| **No Mapping** | 5 (25%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 4 |
 | **Related Skill Doc** | `A2OH-LIFECYCLE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 16 methods
+## Implementable APIs (score >= 5): 11 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getApplication` | `final android.app.Application getApplication()` | 7 | near | easy | `getForegroundApplications` | `getForegroundApplications(callback: AsyncCallback<Array<AppStateData>>): void` |
-| `onCreate` | `void onCreate()` | 7 | near | easy | `onPrepare` | `onPrepare(): void` |
-| `onDestroy` | `void onDestroy()` | 7 | near | easy | `onDestroy` | `onDestroy?: () => void` |
-| `stopForeground` | `final void stopForeground(boolean)` | 7 | near | moderate | `moveMissionsToForeground` | `moveMissionsToForeground(missionIds: Array<number>, callback: AsyncCallback<void>): void` |
-| `stopForeground` | `final void stopForeground(int)` | 7 | near | moderate | `moveMissionsToForeground` | `moveMissionsToForeground(missionIds: Array<number>, callback: AsyncCallback<void>): void` |
-| `getForegroundServiceType` | `final int getForegroundServiceType()` | 7 | near | moderate | `getForegroundApplications` | `getForegroundApplications(callback: AsyncCallback<Array<AppStateData>>): void` |
-| `onConfigurationChanged` | `void onConfigurationChanged(android.content.res.Configuration)` | 6 | near | moderate | `updateConfiguration` | `updateConfiguration(config: Configuration, callback: AsyncCallback<void>): void` |
-| `onRebind` | `void onRebind(android.content.Intent)` | 6 | near | moderate | `onRun` | `onRun(): void` |
-| `onUnbind` | `boolean onUnbind(android.content.Intent)` | 6 | near | moderate | `onRun` | `onRun(): void` |
-| `startForeground` | `final void startForeground(int, android.app.Notification)` | 6 | near | moderate | `moveMissionsToForeground` | `moveMissionsToForeground(missionIds: Array<number>, callback: AsyncCallback<void>): void` |
-| `startForeground` | `final void startForeground(int, @NonNull android.app.Notification, int)` | 6 | near | moderate | `moveMissionsToForeground` | `moveMissionsToForeground(missionIds: Array<number>, callback: AsyncCallback<void>): void` |
-| `stopSelfResult` | `final boolean stopSelfResult(int)` | 6 | near | moderate | `sendDialogResult` | `sendDialogResult(dialogSessionId: string, targetWant: Want, isAllowed: boolean): Promise<void>` |
-| `onStartCommand` | `int onStartCommand(android.content.Intent, int, int)` | 5 | partial | moderate | `startBackgroundRunning` | `startBackgroundRunning(id: number, request: NotificationRequest, callback: AsyncCallback<void>): void` |
-| `onTrimMemory` | `void onTrimMemory(int)` | 5 | partial | moderate | `getAppMemorySize` | `getAppMemorySize(): Promise<number>` |
-| `stopSelf` | `final void stopSelf()` | 5 | partial | moderate | `terminateSelf` | `terminateSelf(callback: AsyncCallback<void>): void` |
-| `stopSelf` | `final void stopSelf(int)` | 5 | partial | moderate | `terminateSelf` | `terminateSelf(callback: AsyncCallback<void>): void` |
+| `onCreate` | `void onCreate()` | 9 | direct | easy | `onCreate` | `@ohos.app.ability.ServiceExtensionAbility` |
+| `onDestroy` | `void onDestroy()` | 9 | direct | easy | `onDestroy` | `@ohos.app.ability.ServiceExtensionAbility` |
+| `onRebind` | `void onRebind(android.content.Intent)` | 9 | direct | moderate | `onReconnect` | `@ohos.app.ability.ServiceExtensionAbility` |
+| `onStartCommand` | `int onStartCommand(android.content.Intent, int, int)` | 9 | direct | hard | `onRequest` | `@ohos.app.ability.ServiceExtensionAbility` |
+| `onUnbind` | `boolean onUnbind(android.content.Intent)` | 9 | direct | moderate | `onDisconnect` | `@ohos.app.ability.ServiceExtensionAbility` |
+| `stopSelf` | `final void stopSelf()` | 9 | direct | impossible | `terminateSelf` | `@ohos.app.ability.ServiceExtensionContext` |
+| `stopSelf` | `final void stopSelf(int)` | 9 | direct | impossible | `terminateSelf` | `@ohos.app.ability.ServiceExtensionContext` |
+| `startForeground` | `final void startForeground(int, android.app.Notification)` | 5 | partial | hard | `startBackgroundRunning` | `@ohos.backgroundTaskManager.` |
+| `startForeground` | `final void startForeground(int, @NonNull android.app.Notification, int)` | 5 | partial | hard | `startBackgroundRunning` | `@ohos.backgroundTaskManager.` |
+| `stopForeground` | `final void stopForeground(boolean)` | 5 | partial | hard | `stopBackgroundRunning` | `@ohos.backgroundTaskManager.` |
+| `stopForeground` | `final void stopForeground(int)` | 5 | partial | hard | `stopBackgroundRunning` | `@ohos.backgroundTaskManager.` |
 
-## Stub APIs (score < 5): 4 methods
+## Gap Descriptions (per method)
+
+- **`onCreate`**: Lifecycle
+- **`onDestroy`**: Lifecycle
+- **`onRebind`**: Direct equivalent for reconnection
+- **`onStartCommand`**: Lifecycle
+- **`onUnbind`**: Lifecycle
+- **`stopSelf`**: Direct self-termination
+- **`stopSelf`**: Direct self-termination
+- **`startForeground`**: Continuous task for foreground service
+- **`startForeground`**: Continuous task for foreground service
+- **`stopForeground`**: Stop continuous background task
+- **`stopForeground`**: Stop continuous background task
+
+## Stub APIs (score < 5): 9 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onTaskRemoved` | 5 | partial | Log warning + no-op |
-| `onLowMemory` | 4 | partial | Store callback, never fire |
+| `onConfigurationChanged` | 3 | composite | Store callback, never fire |
+| `getApplication` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getForegroundServiceType` | 3 | composite | Return safe default (null/false/0/empty) |
+| `stopSelfResult` | 3 | composite | No-op |
 | `Service` | 1 | none | throw UnsupportedOperationException |
 | `dump` | 1 | none | throw UnsupportedOperationException |
+| `onLowMemory` | 1 | none | Store callback, never fire |
+| `onTaskRemoved` | 1 | none | Log warning + no-op |
+| `onTrimMemory` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 16 methods that have score >= 5
-2. Stub 4 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -77,6 +92,6 @@ Before marking `android.app.Service` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 20 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 16 test methods for implemented APIs
+3. **Test Coverage**: At least 11 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

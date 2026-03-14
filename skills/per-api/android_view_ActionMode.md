@@ -9,12 +9,12 @@
 | **Class** | `android.view.ActionMode` |
 | **Package** | `android.view` |
 | **Total Methods** | 23 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 19 (82%) |
-| **No Mapping** | 4 (17%) |
+| **Partial/Composite** | 6 (26%) |
+| **No Mapping** | 17 (73%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 22 |
 | **Has Async Gap** | 22 |
@@ -28,29 +28,29 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `ActionMode` | 5 | partial | Store callback, never fire |
 | `finish` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getCustomView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMenuInflater` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSubtitle` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getTag` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitleOptionalHint` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getType` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setCustomView` | 3 | composite | Log warning + no-op |
-| `setSubtitle` | 3 | composite | Log warning + no-op |
-| `setSubtitle` | 3 | composite | Log warning + no-op |
-| `setTag` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setType` | 3 | composite | Log warning + no-op |
-| `setTitleOptionalHint` | 3 | composite | Log warning + no-op |
-| `onWindowFocusChanged` | 2 | composite | Store callback, never fire |
+| `getTitle` | 2 | composite | Return safe default (null/false/0/empty) |
+| `ActionMode` | 1 | none | Store callback, never fire |
+| `getMenuInflater` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSubtitle` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTitleOptionalHint` | 1 | none | Return safe default (null/false/0/empty) |
 | `hide` | 1 | none | throw UnsupportedOperationException |
 | `invalidate` | 1 | none | throw UnsupportedOperationException |
 | `invalidateContentRect` | 1 | none | Store callback, never fire |
 | `isTitleOptional` | 1 | none | Return safe default (null/false/0/empty) |
+| `onWindowFocusChanged` | 1 | none | Store callback, never fire |
+| `setCustomView` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setTag` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitleOptionalHint` | 1 | none | Log warning + no-op |
+| `setType` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

@@ -9,12 +9,12 @@
 | **Class** | `android.view.View.AccessibilityDelegate` |
 | **Package** | `android.view.View` |
 | **Total Methods** | 11 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 10 (90%) |
-| **No Mapping** | 1 (9%) |
+| **Partial/Composite** | 1 (9%) |
+| **No Mapping** | 10 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addExtraDataToAccessibilityNodeInfo` | 3 | composite | Log warning + no-op |
-| `dispatchPopulateAccessibilityEvent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getAccessibilityNodeProvider` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onInitializeAccessibilityEvent` | 3 | composite | Return dummy instance / no-op |
-| `onPopulateAccessibilityEvent` | 3 | composite | Store callback, never fire |
-| `onRequestSendAccessibilityEvent` | 3 | composite | Store callback, never fire |
-| `performAccessibilityAction` | 3 | composite | Store callback, never fire |
 | `sendAccessibilityEvent` | 3 | composite | throw UnsupportedOperationException |
-| `sendAccessibilityEventUnchecked` | 3 | composite | throw UnsupportedOperationException |
-| `onInitializeAccessibilityNodeInfo` | 2 | composite | Return dummy instance / no-op |
 | `AccessibilityDelegate` | 1 | none | throw UnsupportedOperationException |
+| `addExtraDataToAccessibilityNodeInfo` | 1 | none | Log warning + no-op |
+| `dispatchPopulateAccessibilityEvent` | 1 | none | Return safe default (null/false/0/empty) |
+| `getAccessibilityNodeProvider` | 1 | none | Return safe default (null/false/0/empty) |
+| `onInitializeAccessibilityEvent` | 1 | none | Return dummy instance / no-op |
+| `onInitializeAccessibilityNodeInfo` | 1 | none | Return dummy instance / no-op |
+| `onPopulateAccessibilityEvent` | 1 | none | Store callback, never fire |
+| `onRequestSendAccessibilityEvent` | 1 | none | Store callback, never fire |
+| `performAccessibilityAction` | 1 | none | Store callback, never fire |
+| `sendAccessibilityEventUnchecked` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 

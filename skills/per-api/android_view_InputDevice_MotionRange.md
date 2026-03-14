@@ -9,12 +9,12 @@
 | **Class** | `android.view.InputDevice.MotionRange` |
 | **Package** | `android.view.InputDevice` |
 | **Total Methods** | 9 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 2.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 6 (66%) |
+| **No Mapping** | 3 (33%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAxis` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFlat` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFuzz` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getMax` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getMin` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getRange` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getResolution` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSource` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isFromSource` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getAxis` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getFlat` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getFuzz` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getResolution` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSource` | 1 | none | Return safe default (null/false/0/empty) |
+| `isFromSource` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

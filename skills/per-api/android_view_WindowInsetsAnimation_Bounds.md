@@ -9,12 +9,12 @@
 | **Class** | `android.view.WindowInsetsAnimation.Bounds` |
 | **Package** | `android.view.WindowInsetsAnimation` |
 | **Total Methods** | 5 |
-| **Avg Score** | 3.0 |
+| **Avg Score** | 2.5 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (80%) |
-| **No Mapping** | 1 (20%) |
+| **Partial/Composite** | 3 (60%) |
+| **No Mapping** | 2 (40%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -22,25 +22,17 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Implementable APIs (score >= 5): 1 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `Callback` | `WindowInsetsAnimation.Callback(int)` | 5 | partial | moderate | `napi_open_callback_scope` | `NAPI_EXTERN napi_status napi_open_callback_scope(napi_env env,
-                                                 napi_value resource_object,
-                                                 napi_async_context context,
-                                                 napi_callback_scope* result)` |
-
-## Stub APIs (score < 5): 4 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getDispatchMode` | 3 | composite | Return safe default (null/false/0/empty) |
+| `Callback` | 5 | partial | throw UnsupportedOperationException |
 | `onEnd` | 3 | composite | Store callback, never fire |
 | `onPrepare` | 3 | composite | Store callback, never fire |
 | `Bounds` | 1 | none | throw UnsupportedOperationException |
+| `getDispatchMode` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
@@ -64,6 +56,6 @@ Before marking `android.view.WindowInsetsAnimation.Bounds` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 1 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.widget.AdapterView<T` |
 | **Package** | `android.widget` |
 | **Total Methods** | 21 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 16 (76%) |
-| **No Mapping** | 5 (23%) |
+| **Partial/Composite** | 4 (19%) |
+| **No Mapping** | 17 (80%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 17 |
 | **Has Async Gap** | 17 |
@@ -28,27 +28,27 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAdapter` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getEmptyView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFirstVisiblePosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemAtPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemIdAtPosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getLastVisiblePosition` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOnItemLongClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getPositionForView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSelectedItem` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getSelectedView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAdapter` | 3 | composite | Log warning + no-op |
-| `setOnItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemLongClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnItemSelectedListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSelection` | 3 | composite | Log warning + no-op |
-| `setEmptyView` | 3 | composite | Log warning + no-op |
+| `getSelectedItem` | 2 | composite | Return safe default (null/false/0/empty) |
 | `AdapterView` | 1 | none | throw UnsupportedOperationException |
 | `AdapterView` | 1 | none | throw UnsupportedOperationException |
 | `AdapterView` | 1 | none | throw UnsupportedOperationException |
 | `AdapterView` | 1 | none | throw UnsupportedOperationException |
+| `getAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFirstVisiblePosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getItemAtPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getItemIdAtPosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getLastVisiblePosition` | 1 | none | Return safe default (null/false/0/empty) |
+| `getOnItemLongClickListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `performItemClick` | 1 | none | throw UnsupportedOperationException |
+| `setAdapter` | 1 | none | Log warning + no-op |
+| `setEmptyView` | 1 | none | Log warning + no-op |
+| `setOnItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemLongClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnItemSelectedListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setSelection` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

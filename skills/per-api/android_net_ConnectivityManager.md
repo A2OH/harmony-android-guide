@@ -9,49 +9,70 @@
 | **Class** | `android.net.ConnectivityManager` |
 | **Package** | `android.net` |
 | **Total Methods** | 16 |
-| **Avg Score** | 7.0 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 14 (87%) |
-| **Partial/Composite** | 2 (12%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 5.6 |
+| **Scenario** | S7: Async/Threading Gap |
+| **Strategy** | Promise wrapping, Handler/Looper emulation |
+| **Direct/Near** | 10 (62%) |
+| **Partial/Composite** | 4 (25%) |
+| **No Mapping** | 2 (12%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
-| **Has Async Gap** | 0 |
+| **Has Async Gap** | 5 |
 | **Related Skill Doc** | `A2OH-NETWORKING.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 3-5 |
+| **Test Level** | Level 1 (Mock with concurrency tests) |
 
-## Implementable APIs (score >= 5): 16 methods
+## Implementable APIs (score >= 5): 10 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getConnectionOwnerUid` | `int getConnectionOwnerUid(int, @NonNull java.net.InetSocketAddress, @NonNull java.net.InetSocketAddress)` | 10 | direct | trivial | `getConnectionProperties` | `getConnectionProperties(netHandle: NetHandle, callback: AsyncCallback<ConnectionProperties>): void` |
-| `reportNetworkConnectivity` | `void reportNetworkConnectivity(@Nullable android.net.Network, boolean)` | 9 | direct | trivial | `reportNetConnected` | `reportNetConnected(netHandle: NetHandle, callback: AsyncCallback<void>): void` |
-| `isDefaultNetworkActive` | `boolean isDefaultNetworkActive()` | 9 | direct | easy | `isDefaultNetMetered` | `isDefaultNetMetered(callback: AsyncCallback<boolean>): void` |
-| `addDefaultNetworkActiveListener` | `void addDefaultNetworkActiveListener(android.net.ConnectivityManager.OnNetworkActiveListener)` | 8 | near | easy | `isDefaultNetMetered` | `isDefaultNetMetered(callback: AsyncCallback<boolean>): void` |
-| `removeDefaultNetworkActiveListener` | `void removeDefaultNetworkActiveListener(@NonNull android.net.ConnectivityManager.OnNetworkActiveListener)` | 7 | near | easy | `isDefaultNetMetered` | `isDefaultNetMetered(callback: AsyncCallback<boolean>): void` |
-| `releaseNetworkRequest` | `void releaseNetworkRequest(@NonNull android.app.PendingIntent)` | 7 | near | easy | `createNetConnection` | `createNetConnection(netSpecifier?: NetSpecifier, timeout?: number): NetConnection` |
-| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback)` | 6 | near | moderate | `getDefaultNet` | `getDefaultNet(callback: AsyncCallback<NetHandle>): void` |
-| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, @NonNull android.os.Handler)` | 6 | near | moderate | `getDefaultNet` | `getDefaultNet(callback: AsyncCallback<NetHandle>): void` |
-| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, int)` | 6 | near | moderate | `getDefaultNet` | `getDefaultNet(callback: AsyncCallback<NetHandle>): void` |
-| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, @NonNull android.os.Handler, int)` | 6 | near | moderate | `getDefaultNet` | `getDefaultNet(callback: AsyncCallback<NetHandle>): void` |
-| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.app.PendingIntent)` | 6 | near | moderate | `getDefaultNet` | `getDefaultNet(callback: AsyncCallback<NetHandle>): void` |
-| `bindProcessToNetwork` | `boolean bindProcessToNetwork(@Nullable android.net.Network)` | 6 | near | moderate | `isDefaultNetMetered` | `isDefaultNetMetered(callback: AsyncCallback<boolean>): void` |
-| `unregisterNetworkCallback` | `void unregisterNetworkCallback(@NonNull android.net.ConnectivityManager.NetworkCallback)` | 6 | near | moderate | `createNetConnection` | `createNetConnection(netSpecifier?: NetSpecifier, timeout?: number): NetConnection` |
-| `unregisterNetworkCallback` | `void unregisterNetworkCallback(@NonNull android.app.PendingIntent)` | 6 | near | moderate | `createNetConnection` | `createNetConnection(netSpecifier?: NetSpecifier, timeout?: number): NetConnection` |
-| `requestBandwidthUpdate` | `boolean requestBandwidthUpdate(@NonNull android.net.Network)` | 6 | partial | moderate | `removeCustomDnsRule` | `removeCustomDnsRule(host: string, callback: AsyncCallback<void>): void` |
-| `getRestrictBackgroundStatus` | `int getRestrictBackgroundStatus()` | 6 | partial | moderate | `getAddressesByName` | `getAddressesByName(host: string, callback: AsyncCallback<Array<NetAddress>>): void` |
+| `reportNetworkConnectivity` | `void reportNetworkConnectivity(@Nullable android.net.Network, boolean)` | 9 | direct | hard | `reportNetConnected` | `@ohos.net.connection.` |
+| `unregisterNetworkCallback` | `void unregisterNetworkCallback(@NonNull android.net.ConnectivityManager.NetworkCallback)` | 9 | direct | easy | `unregister` | `NET_CAPABILITY_MMS = 0` |
+| `unregisterNetworkCallback` | `void unregisterNetworkCallback(@NonNull android.app.PendingIntent)` | 9 | direct | easy | `unregister` | `NET_CAPABILITY_MMS = 0` |
+| `bindProcessToNetwork` | `boolean bindProcessToNetwork(@Nullable android.net.Network)` | 7 | near | impossible | `setAppNet` | `@ohos.net.connection.` |
+| `isDefaultNetworkActive` | `boolean isDefaultNetworkActive()` | 7 | near | rewrite | `hasDefaultNet` | `@ohos.net.connection.` |
+| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback)` | 7 | near | impossible | `register` | `@ohos.net.connection.NetConnection` |
+| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, @NonNull android.os.Handler)` | 7 | near | impossible | `register` | `@ohos.net.connection.NetConnection` |
+| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, int)` | 7 | near | impossible | `register` | `@ohos.net.connection.NetConnection` |
+| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.net.ConnectivityManager.NetworkCallback, @NonNull android.os.Handler, int)` | 7 | near | impossible | `register` | `@ohos.net.connection.NetConnection` |
+| `requestNetwork` | `void requestNetwork(@NonNull android.net.NetworkRequest, @NonNull android.app.PendingIntent)` | 7 | near | impossible | `register` | `@ohos.net.connection.NetConnection` |
+
+## Gap Descriptions (per method)
+
+- **`reportNetworkConnectivity`**: Direct equivalent
+- **`unregisterNetworkCallback`**: Network callback
+- **`unregisterNetworkCallback`**: Network callback
+- **`bindProcessToNetwork`**: Binds app traffic to specific network
+- **`isDefaultNetworkActive`**: Checks default network
+- **`requestNetwork`**: NetSpecifier filters; callback-based
+- **`requestNetwork`**: NetSpecifier filters; callback-based
+- **`requestNetwork`**: NetSpecifier filters; callback-based
+- **`requestNetwork`**: NetSpecifier filters; callback-based
+- **`requestNetwork`**: NetSpecifier filters; callback-based
+
+## Stub APIs (score < 5): 6 methods
+
+These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
+
+| Method | Score | Type | Stub Strategy |
+|---|---|---|---|
+| `addDefaultNetworkActiveListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `removeDefaultNetworkActiveListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getConnectionOwnerUid` | 3 | composite | Return dummy instance / no-op |
+| `getRestrictBackgroundStatus` | 2 | composite | Return safe default (null/false/0/empty) |
+| `releaseNetworkRequest` | 1 | none | No-op |
+| `requestBandwidthUpdate` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S7 — Async/Threading Gap**
 
-1. Implement 16 methods that have score >= 5
-2. Stub 0 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Implement using Java concurrency primitives (ExecutorService, BlockingQueue)
+2. For Handler: single-thread executor + message queue
+3. For AsyncTask: thread pool + callbacks
+4. For sync-over-async: CompletableFuture wrapping OH Promise (in bridge)
+5. Test with concurrent calls to verify thread safety
+6. Add timeout to all blocking operations to prevent deadlock
 
 ## Dependencies
 
@@ -65,6 +86,6 @@ Before marking `android.net.ConnectivityManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 16 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 16 test methods for implemented APIs
+3. **Test Coverage**: At least 10 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

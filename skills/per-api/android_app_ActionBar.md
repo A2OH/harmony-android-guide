@@ -9,12 +9,12 @@
 | **Class** | `android.app.ActionBar` |
 | **Package** | `android.app` |
 | **Total Methods** | 44 |
-| **Avg Score** | 4.8 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 5 (11%) |
-| **Partial/Composite** | 37 (84%) |
-| **No Mapping** | 2 (4%) |
+| **Avg Score** | 1.7 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 15 (34%) |
+| **No Mapping** | 29 (65%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,71 +22,66 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 15 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `show` | `abstract void show()` | 8 | direct | easy | `show` | `show(uri: string, type: string): Promise<void>` |
-| `getThemedContext` | `android.content.Context getThemedContext()` | 8 | near | easy | `getContext` | `getContext(): Context` |
-| `getElevation` | `float getElevation()` | 6 | near | moderate | `getOperationType` | `getOperationType(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `getTitle` | `abstract CharSequence getTitle()` | 6 | near | moderate | `getId` | `getId(uri: string): number` |
-| `setBackgroundDrawable` | `abstract void setBackgroundDrawable(@Nullable android.graphics.drawable.Drawable)` | 6 | near | moderate | `startBackgroundRunning` | `startBackgroundRunning(id: number, request: NotificationRequest, callback: AsyncCallback<void>): void` |
-| `getSubtitle` | `abstract CharSequence getSubtitle()` | 6 | partial | moderate | `getUid` | `getUid(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `setSplitBackgroundDrawable` | `void setSplitBackgroundDrawable(android.graphics.drawable.Drawable)` | 6 | partial | moderate | `startBackgroundRunning` | `startBackgroundRunning(id: number, request: NotificationRequest, callback: AsyncCallback<void>): void` |
-| `getDisplayOptions` | `abstract int getDisplayOptions()` | 6 | partial | moderate | `getForegroundApplications` | `getForegroundApplications(callback: AsyncCallback<Array<AppStateData>>): void` |
-| `getHeight` | `abstract int getHeight()` | 6 | partial | moderate | `getId` | `getId(uri: string): number` |
-| `setStackedBackgroundDrawable` | `void setStackedBackgroundDrawable(android.graphics.drawable.Drawable)` | 6 | partial | moderate | `startBackgroundRunning` | `startBackgroundRunning(id: number, request: NotificationRequest, callback: AsyncCallback<void>): void` |
-| `getHideOffset` | `int getHideOffset()` | 6 | partial | moderate | `getId` | `getId(uri: string): number` |
-| `setElevation` | `void setElevation(float)` | 5 | partial | moderate | `setRestartWant` | `setRestartWant(want: Want): void` |
-| `getCustomView` | `abstract android.view.View getCustomView()` | 5 | partial | moderate | `getUid` | `getUid(agent: WantAgent, callback: AsyncCallback<number>): void` |
-| `setDisplayOptions` | `abstract void setDisplayOptions(int)` | 5 | partial | moderate | `setApplicationAutoStartup` | `setApplicationAutoStartup(info: AutoStartupInfo, callback: AsyncCallback<void>): void` |
-| `setDisplayOptions` | `abstract void setDisplayOptions(int, int)` | 5 | partial | moderate | `setApplicationAutoStartup` | `setApplicationAutoStartup(info: AutoStartupInfo, callback: AsyncCallback<void>): void` |
-
-## Stub APIs (score < 5): 29 methods
+## Stub APIs (score < 5): 44 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `removeOnMenuVisibilityListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setHomeAsUpIndicator` | 5 | partial | Log warning + no-op |
-| `setHomeAsUpIndicator` | 5 | partial | Log warning + no-op |
-| `setSubtitle` | 5 | partial | Log warning + no-op |
-| `setSubtitle` | 5 | partial | Log warning + no-op |
-| `setLogo` | 5 | partial | Log warning + no-op |
-| `setLogo` | 5 | partial | Log warning + no-op |
-| `isShowing` | 5 | partial | Return safe default (null/false/0/empty) |
-| `setHomeActionContentDescription` | 5 | partial | Log warning + no-op |
-| `setHomeActionContentDescription` | 5 | partial | Log warning + no-op |
-| `setTitle` | 5 | partial | Log warning + no-op |
-| `setTitle` | 5 | partial | Log warning + no-op |
-| `setCustomView` | 4 | partial | Log warning + no-op |
-| `setCustomView` | 4 | partial | Log warning + no-op |
-| `setCustomView` | 4 | partial | Log warning + no-op |
-| `setHideOffset` | 4 | partial | Log warning + no-op |
-| `setDisplayHomeAsUpEnabled` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setIcon` | 4 | partial | Log warning + no-op |
-| `setIcon` | 4 | partial | Log warning + no-op |
-| `setDisplayShowCustomEnabled` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setHomeButtonEnabled` | 4 | partial | Log warning + no-op |
-| `addOnMenuVisibilityListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `setDisplayShowTitleEnabled` | 4 | composite | Return safe default (null/false/0/empty) |
-| `isHideOnContentScrollEnabled` | 4 | composite | Return safe default (null/false/0/empty) |
-| `setHideOnContentScrollEnabled` | 4 | composite | Log warning + no-op |
-| `setDisplayUseLogoEnabled` | 4 | composite | Return safe default (null/false/0/empty) |
-| `setDisplayShowHomeEnabled` | 4 | composite | Return safe default (null/false/0/empty) |
+| `getThemedContext` | 4 | partial | Return safe default (null/false/0/empty) |
+| `show` | 3 | composite | throw UnsupportedOperationException |
+| `setBackgroundDrawable` | 3 | composite | Log warning + no-op |
+| `setSplitBackgroundDrawable` | 3 | composite | Log warning + no-op |
+| `getHeight` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setStackedBackgroundDrawable` | 3 | composite | Log warning + no-op |
+| `getHideOffset` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setElevation` | 3 | composite | Log warning + no-op |
+| `setDisplayOptions` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setDisplayOptions` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getElevation` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getSubtitle` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getDisplayOptions` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getCustomView` | 2 | composite | Return safe default (null/false/0/empty) |
 | `ActionBar` | 1 | none | Store callback, never fire |
+| `addOnMenuVisibilityListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `hide` | 1 | none | throw UnsupportedOperationException |
+| `isHideOnContentScrollEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `isShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `removeOnMenuVisibilityListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setCustomView` | 1 | none | Log warning + no-op |
+| `setCustomView` | 1 | none | Log warning + no-op |
+| `setCustomView` | 1 | none | Log warning + no-op |
+| `setDisplayHomeAsUpEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDisplayShowCustomEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDisplayShowHomeEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDisplayShowTitleEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setDisplayUseLogoEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setHideOffset` | 1 | none | Log warning + no-op |
+| `setHideOnContentScrollEnabled` | 1 | none | Log warning + no-op |
+| `setHomeActionContentDescription` | 1 | none | Log warning + no-op |
+| `setHomeActionContentDescription` | 1 | none | Log warning + no-op |
+| `setHomeAsUpIndicator` | 1 | none | Log warning + no-op |
+| `setHomeAsUpIndicator` | 1 | none | Log warning + no-op |
+| `setHomeButtonEnabled` | 1 | none | Log warning + no-op |
+| `setIcon` | 1 | none | Log warning + no-op |
+| `setIcon` | 1 | none | Log warning + no-op |
+| `setLogo` | 1 | none | Log warning + no-op |
+| `setLogo` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 15 methods that have score >= 5
-2. Stub 29 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -100,6 +95,6 @@ Before marking `android.app.ActionBar` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 44 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 15 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

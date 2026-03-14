@@ -9,12 +9,12 @@
 | **Class** | `android.view.VelocityTracker` |
 | **Package** | `android.view` |
 | **Total Methods** | 10 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (60%) |
-| **No Mapping** | 4 (40%) |
+| **Partial/Composite** | 1 (10%) |
+| **No Mapping** | 9 (90%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -28,14 +28,14 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `addMovement` | 3 | composite | Log warning + no-op |
 | `clear` | 3 | composite | throw UnsupportedOperationException |
-| `getXVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getXVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getYVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getYVelocity` | 3 | composite | Return safe default (null/false/0/empty) |
+| `addMovement` | 1 | none | Log warning + no-op |
 | `computeCurrentVelocity` | 1 | none | Log warning + no-op |
 | `computeCurrentVelocity` | 1 | none | Log warning + no-op |
+| `getXVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getXVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getYVelocity` | 1 | none | Return safe default (null/false/0/empty) |
+| `getYVelocity` | 1 | none | Return safe default (null/false/0/empty) |
 | `obtain` | 1 | none | throw UnsupportedOperationException |
 | `recycle` | 1 | none | throw UnsupportedOperationException |
 

@@ -9,12 +9,12 @@
 | **Class** | `android.view.KeyboardShortcutInfo` |
 | **Package** | `android.view` |
 | **Total Methods** | 7 |
-| **Avg Score** | 2.0 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (57%) |
-| **No Mapping** | 3 (42%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 7 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 5 |
 | **Has Async Gap** | 5 |
@@ -28,13 +28,13 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getBaseCharacter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getKeycode` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getModifiers` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
 | `KeyboardShortcutInfo` | 1 | none | throw UnsupportedOperationException |
 | `KeyboardShortcutInfo` | 1 | none | throw UnsupportedOperationException |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getBaseCharacter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getKeycode` | 1 | none | Return safe default (null/false/0/empty) |
+| `getModifiers` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

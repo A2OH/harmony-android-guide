@@ -9,45 +9,46 @@
 | **Class** | `android.telephony.TelephonyScanManager` |
 | **Package** | `android.telephony` |
 | **Total Methods** | 5 |
-| **Avg Score** | 4.3 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
+| **Avg Score** | 2.2 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (80%) |
-| **No Mapping** | 1 (20%) |
+| **Partial/Composite** | 2 (40%) |
+| **No Mapping** | 3 (60%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-DEVICE-API.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 4 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `NetworkScanCallback` | `TelephonyScanManager.NetworkScanCallback()` | 5 | partial | moderate | `getNetworkState` | `getNetworkState(slotId: number, callback: AsyncCallback<NetworkState>): void` |
-| `onComplete` | `void onComplete()` | 5 | partial | moderate | `on` | `on(type: 'networkStateChange', callback: Callback<NetworkState>): void` |
-| `onError` | `void onError(int)` | 5 | partial | moderate | `on` | `on(type: 'networkStateChange', callback: Callback<NetworkState>): void` |
-| `onResults` | `void onResults(java.util.List<android.telephony.CellInfo>)` | 5 | partial | moderate | `on` | `on(type: 'networkStateChange', callback: Callback<NetworkState>): void` |
+| `onComplete` | `void onComplete()` | 5 | partial | moderate | `onComplete` | `onComplete: (reason: number, total: number) => void` |
 
-## Stub APIs (score < 5): 1 methods
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
+| `NetworkScanCallback` | 3 | composite | Return safe default (null/false/0/empty) |
 | `TelephonyScanManager` | 1 | none | Return safe default (null/false/0/empty) |
+| `onError` | 1 | none | Store callback, never fire |
+| `onResults` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Implement 4 methods that have score >= 5
-2. Stub 1 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -61,6 +62,6 @@ Before marking `android.telephony.TelephonyScanManager` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 4 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

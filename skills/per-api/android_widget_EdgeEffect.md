@@ -9,12 +9,12 @@
 | **Class** | `android.widget.EdgeEffect` |
 | **Package** | `android.widget` |
 | **Total Methods** | 12 |
-| **Avg Score** | 2.5 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 9 (75%) |
-| **No Mapping** | 3 (25%) |
+| **Partial/Composite** | 1 (8%) |
+| **No Mapping** | 11 (91%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -29,17 +29,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `finish` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMaxHeight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onAbsorb` | 3 | composite | Store callback, never fire |
-| `onPull` | 3 | composite | Store callback, never fire |
-| `onPull` | 3 | composite | Store callback, never fire |
-| `onRelease` | 3 | composite | No-op |
-| `setSize` | 3 | composite | Log warning + no-op |
-| `setBlendMode` | 3 | composite | Log warning + no-op |
-| `setColor` | 3 | composite | Log warning + no-op |
 | `EdgeEffect` | 1 | none | throw UnsupportedOperationException |
 | `draw` | 1 | none | throw UnsupportedOperationException |
+| `getMaxHeight` | 1 | none | Return safe default (null/false/0/empty) |
 | `isFinished` | 1 | none | Return safe default (null/false/0/empty) |
+| `onAbsorb` | 1 | none | Store callback, never fire |
+| `onPull` | 1 | none | Store callback, never fire |
+| `onPull` | 1 | none | Store callback, never fire |
+| `onRelease` | 1 | none | No-op |
+| `setBlendMode` | 1 | none | Log warning + no-op |
+| `setColor` | 1 | none | Log warning + no-op |
+| `setSize` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

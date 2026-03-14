@@ -9,12 +9,12 @@
 | **Class** | `android.widget.SimpleExpandableListAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 15 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (53%) |
-| **No Mapping** | 7 (46%) |
+| **Partial/Composite** | 5 (33%) |
+| **No Mapping** | 10 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 12 |
 | **Has Async Gap** | 12 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getChildView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildrenCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroup` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getGroupView` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getChild` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getGroup` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getChildId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `SimpleExpandableListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
 | `SimpleExpandableListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
 | `SimpleExpandableListAdapter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getChildrenCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupId` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isChildSelectable` | 1 | none | Return safe default (null/false/0/empty) |
 | `newChildView` | 1 | none | throw UnsupportedOperationException |

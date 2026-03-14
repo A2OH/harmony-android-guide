@@ -9,58 +9,65 @@
 | **Class** | `android.graphics.ImageDecoder` |
 | **Package** | `android.graphics` |
 | **Total Methods** | 18 |
-| **Avg Score** | 4.3 |
-| **Scenario** | S4: Multi-API Composition |
-| **Strategy** | Multiple OH calls per Android call |
-| **Direct/Near** | 1 (5%) |
-| **Partial/Composite** | 17 (94%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 2.7 |
+| **Scenario** | S8: No Mapping (Stub) |
+| **Strategy** | Stub with UnsupportedOperationException or no-op |
+| **Direct/Near** | 3 (16%) |
+| **Partial/Composite** | 3 (16%) |
+| **No Mapping** | 12 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
-| **Expected AI Iterations** | 2-3 |
-| **Test Level** | Level 1 + Level 2 (Headless) |
+| **Expected AI Iterations** | 1 |
+| **Test Level** | Level 1 (Mock only) |
 
-## Implementable APIs (score >= 5): 6 methods
+## Implementable APIs (score >= 5): 3 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `close` | `void close()` | 8 | direct | easy | `close` | `close(file: number | File): Promise<void>` |
-| `setOnPartialImageListener` | `void setOnPartialImageListener(@Nullable android.graphics.ImageDecoder.OnPartialImageListener)` | 6 | partial | moderate | `OH_NativeImage_Destroy` | `void OH_NativeImage_Destroy(OH_NativeImage** image)` |
-| `setTargetColorSpace` | `void setTargetColorSpace(android.graphics.ColorSpace)` | 5 | partial | moderate | `OH_NativeBuffer_SetColorSpace` | `int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace)` |
-| `setTargetSampleSize` | `void setTargetSampleSize(@IntRange(from=1) int)` | 5 | partial | moderate | `OH_Drawing_SetTextStyleFontSize` | `void OH_Drawing_SetTextStyleFontSize(OH_Drawing_TextStyle*, double)` |
-| `setTargetSize` | `void setTargetSize(@IntRange(from=1) @Px int, @IntRange(from=1) @Px int)` | 5 | partial | moderate | `OH_Drawing_FontSetTextSize` | `void OH_Drawing_FontSetTextSize(OH_Drawing_Font*, float textSize)` |
-| `getAllocator` | `int getAllocator()` | 5 | partial | moderate | `get` | `get(id: string, callback: AsyncCallback<image.PixelMap>): void` |
+| `close` | `void close()` | 9 | direct | hard | `release` | `@ohos.multimedia.image.ImageSource` |
+| `setMutableRequired` | `void setMutableRequired(boolean)` | 9 | direct | impossible | `editable` | `@ohos.multimedia.image.DecodingOptions` |
+| `setTargetSize` | `void setTargetSize(@IntRange(from=1) @Px int, @IntRange(from=1) @Px int)` | 9 | direct | hard | `desiredSize` | `@ohos.multimedia.image.DecodingOptions` |
 
-## Stub APIs (score < 5): 12 methods
+## Gap Descriptions (per method)
+
+- **`close`**: Naming diff
+- **`setMutableRequired`**: Naming diff
+- **`setTargetSize`**: Direct
+
+## Stub APIs (score < 5): 15 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setAllocator` | 4 | partial | Log warning + no-op |
-| `setMemorySizePolicy` | 4 | composite | Log warning + no-op |
-| `setCrop` | 4 | composite | Log warning + no-op |
-| `setPostProcessor` | 4 | composite | Log warning + no-op |
-| `setMutableRequired` | 4 | composite | Log warning + no-op |
-| `getMemorySizePolicy` | 4 | composite | Return safe default (null/false/0/empty) |
-| `isMimeTypeSupported` | 4 | composite | Return safe default (null/false/0/empty) |
-| `setUnpremultipliedRequired` | 3 | composite | Log warning + no-op |
-| `setDecodeAsAlphaMaskEnabled` | 3 | composite | Log warning + no-op |
-| `isDecodeAsAlphaMaskEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isMutableRequired` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isUnpremultipliedRequired` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setOnPartialImageListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setTargetSampleSize` | 3 | composite | Return safe default (null/false/0/empty) |
+| `setTargetColorSpace` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getAllocator` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMemorySizePolicy` | 1 | none | Return safe default (null/false/0/empty) |
+| `isDecodeAsAlphaMaskEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `isMimeTypeSupported` | 1 | none | Return safe default (null/false/0/empty) |
+| `isMutableRequired` | 1 | none | Return safe default (null/false/0/empty) |
+| `isUnpremultipliedRequired` | 1 | none | Return safe default (null/false/0/empty) |
+| `setAllocator` | 1 | none | Log warning + no-op |
+| `setCrop` | 1 | none | Log warning + no-op |
+| `setDecodeAsAlphaMaskEnabled` | 1 | none | Log warning + no-op |
+| `setMemorySizePolicy` | 1 | none | Log warning + no-op |
+| `setPostProcessor` | 1 | none | Log warning + no-op |
+| `setUnpremultipliedRequired` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
-**Scenario: S4 — Multi-API Composition**
+**Scenario: S8 — No Mapping (Stub)**
 
-1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
-2. Create helper methods in OHBridge for multi-call compositions
-3. Map action strings, enum values, and parameter structures
-4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
-5. Check the Migration Guides above for specific conversion patterns
+1. Create minimal stub class matching AOSP package/class name
+2. All lifecycle methods (create/destroy): no-op, return dummy
+3. All computation methods: throw UnsupportedOperationException with message
+4. All query methods: return safe defaults
+5. Log a warning on first use: "X is not supported on OHOS"
+6. Only test: no crash on construction, expected exceptions
 
 ## Dependencies
 
@@ -73,6 +80,6 @@ Before marking `android.graphics.ImageDecoder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 18 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 6 test methods for implemented APIs
+3. **Test Coverage**: At least 3 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,15 +9,15 @@
 | **Class** | `android.widget.Toolbar` |
 | **Package** | `android.widget` |
 | **Total Methods** | 67 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 55 (82%) |
-| **No Mapping** | 12 (17%) |
+| **Partial/Composite** | 4 (5%) |
+| **No Mapping** | 63 (94%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 63 |
-| **Has Async Gap** | 63 |
+| **Has Async Gap** | 67 |
 | **Related Skill Doc** | `A2OH-UI-REWRITE.md` |
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
@@ -28,61 +28,10 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `collapseActionView` | 3 | composite | Store callback, never fire |
-| `getContentInsetEnd` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getContentInsetEndWithActions` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getContentInsetLeft` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getContentInsetRight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getContentInsetStart` | 3 | composite | Return dummy instance / no-op |
-| `getContentInsetStartWithNavigation` | 3 | composite | Return dummy instance / no-op |
-| `getCurrentContentInsetEnd` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentContentInsetLeft` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentContentInsetRight` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCurrentContentInsetStart` | 3 | composite | Return dummy instance / no-op |
 | `getLogo` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getLogoDescription` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getMenu` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getPopupTheme` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSubtitle` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitleMarginBottom` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitleMarginEnd` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitleMarginStart` | 3 | composite | Return dummy instance / no-op |
-| `getTitleMarginTop` | 3 | composite | Return safe default (null/false/0/empty) |
-| `hasExpandedActionView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setContentInsetEndWithActions` | 3 | composite | Log warning + no-op |
-| `setContentInsetStartWithNavigation` | 3 | composite | Return dummy instance / no-op |
-| `setContentInsetsAbsolute` | 3 | composite | Log warning + no-op |
-| `setContentInsetsRelative` | 3 | composite | Log warning + no-op |
-| `setNavigationIcon` | 3 | composite | Log warning + no-op |
-| `setNavigationIcon` | 3 | composite | Log warning + no-op |
-| `setNavigationOnClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnMenuItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setSubtitle` | 3 | composite | Log warning + no-op |
-| `setSubtitle` | 3 | composite | Log warning + no-op |
-| `setSubtitleTextAppearance` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setTitleMarginBottom` | 3 | composite | Log warning + no-op |
-| `setTitleMarginEnd` | 3 | composite | Log warning + no-op |
-| `setTitleMarginStart` | 3 | composite | Return dummy instance / no-op |
-| `setTitleMarginTop` | 3 | composite | Log warning + no-op |
-| `setTitleTextAppearance` | 3 | composite | Log warning + no-op |
-| `setTitleTextColor` | 3 | composite | Log warning + no-op |
-| `setPopupTheme` | 3 | composite | Log warning + no-op |
-| `setSubtitleTextColor` | 3 | composite | Log warning + no-op |
-| `setTitleMargin` | 3 | composite | Log warning + no-op |
-| `setCollapseContentDescription` | 3 | composite | Log warning + no-op |
-| `setCollapseContentDescription` | 3 | composite | Log warning + no-op |
-| `setCollapseIcon` | 3 | composite | Log warning + no-op |
-| `setCollapseIcon` | 3 | composite | Log warning + no-op |
-| `setNavigationContentDescription` | 3 | composite | Log warning + no-op |
-| `setNavigationContentDescription` | 3 | composite | Log warning + no-op |
-| `setLogo` | 2 | composite | Log warning + no-op |
-| `setLogo` | 2 | composite | Log warning + no-op |
-| `setLogoDescription` | 2 | composite | Log warning + no-op |
-| `setLogoDescription` | 2 | composite | Log warning + no-op |
-| `setOverflowIcon` | 2 | composite | Log warning + no-op |
+| `getTitle` | 2 | composite | Return safe default (null/false/0/empty) |
+| `collapseActionView` | 2 | composite | Store callback, never fire |
 | `Toolbar` | 1 | none | throw UnsupportedOperationException |
 | `Toolbar` | 1 | none | throw UnsupportedOperationException |
 | `Toolbar` | 1 | none | throw UnsupportedOperationException |
@@ -91,9 +40,60 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `generateDefaultLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
+| `getContentInsetEnd` | 1 | none | Return safe default (null/false/0/empty) |
+| `getContentInsetEndWithActions` | 1 | none | Return safe default (null/false/0/empty) |
+| `getContentInsetLeft` | 1 | none | Return safe default (null/false/0/empty) |
+| `getContentInsetRight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getContentInsetStart` | 1 | none | Return dummy instance / no-op |
+| `getContentInsetStartWithNavigation` | 1 | none | Return dummy instance / no-op |
+| `getCurrentContentInsetEnd` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrentContentInsetLeft` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrentContentInsetRight` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCurrentContentInsetStart` | 1 | none | Return dummy instance / no-op |
+| `getLogoDescription` | 1 | none | Return safe default (null/false/0/empty) |
+| `getPopupTheme` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSubtitle` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTitleMarginBottom` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTitleMarginEnd` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTitleMarginStart` | 1 | none | Return dummy instance / no-op |
+| `getTitleMarginTop` | 1 | none | Return safe default (null/false/0/empty) |
+| `hasExpandedActionView` | 1 | none | Return safe default (null/false/0/empty) |
 | `hideOverflowMenu` | 1 | none | throw UnsupportedOperationException |
 | `inflateMenu` | 1 | none | throw UnsupportedOperationException |
 | `isOverflowMenuShowing` | 1 | none | Return safe default (null/false/0/empty) |
+| `setCollapseContentDescription` | 1 | none | Log warning + no-op |
+| `setCollapseContentDescription` | 1 | none | Log warning + no-op |
+| `setCollapseIcon` | 1 | none | Log warning + no-op |
+| `setCollapseIcon` | 1 | none | Log warning + no-op |
+| `setContentInsetEndWithActions` | 1 | none | Log warning + no-op |
+| `setContentInsetStartWithNavigation` | 1 | none | Return dummy instance / no-op |
+| `setContentInsetsAbsolute` | 1 | none | Log warning + no-op |
+| `setContentInsetsRelative` | 1 | none | Log warning + no-op |
+| `setLogo` | 1 | none | Log warning + no-op |
+| `setLogo` | 1 | none | Log warning + no-op |
+| `setLogoDescription` | 1 | none | Log warning + no-op |
+| `setLogoDescription` | 1 | none | Log warning + no-op |
+| `setNavigationContentDescription` | 1 | none | Log warning + no-op |
+| `setNavigationContentDescription` | 1 | none | Log warning + no-op |
+| `setNavigationIcon` | 1 | none | Log warning + no-op |
+| `setNavigationIcon` | 1 | none | Log warning + no-op |
+| `setNavigationOnClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnMenuItemClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOverflowIcon` | 1 | none | Log warning + no-op |
+| `setPopupTheme` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setSubtitle` | 1 | none | Log warning + no-op |
+| `setSubtitleTextAppearance` | 1 | none | Log warning + no-op |
+| `setSubtitleTextColor` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitleMargin` | 1 | none | Log warning + no-op |
+| `setTitleMarginBottom` | 1 | none | Log warning + no-op |
+| `setTitleMarginEnd` | 1 | none | Log warning + no-op |
+| `setTitleMarginStart` | 1 | none | Return dummy instance / no-op |
+| `setTitleMarginTop` | 1 | none | Log warning + no-op |
+| `setTitleTextAppearance` | 1 | none | Log warning + no-op |
+| `setTitleTextColor` | 1 | none | Log warning + no-op |
 | `showOverflowMenu` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

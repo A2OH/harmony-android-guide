@@ -9,12 +9,12 @@
 | **Class** | `android.widget.CursorTreeAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 27 |
-| **Avg Score** | 2.3 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 18 (66%) |
-| **No Mapping** | 9 (33%) |
+| **Partial/Composite** | 5 (18%) |
+| **No Mapping** | 22 (81%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 25 |
 | **Has Async Gap** | 25 |
@@ -28,33 +28,33 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `convertToString` | 3 | composite | Store callback, never fire |
-| `getChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getChildView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildrenCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildrenCursor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCursor` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilter` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getFilterQueryProvider` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroup` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getGroupView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `notifyDataSetChanged` | 3 | composite | Log warning + no-op |
-| `runQueryOnBackgroundThread` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setChildrenCursor` | 3 | composite | Log warning + no-op |
-| `setFilterQueryProvider` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setGroupCursor` | 2 | composite | Log warning + no-op |
+| `getChild` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getGroup` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getChildId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `CursorTreeAdapter` | 1 | none | throw UnsupportedOperationException |
 | `CursorTreeAdapter` | 1 | none | throw UnsupportedOperationException |
 | `bindChildView` | 1 | none | throw UnsupportedOperationException |
 | `bindGroupView` | 1 | none | throw UnsupportedOperationException |
 | `changeCursor` | 1 | none | throw UnsupportedOperationException |
+| `convertToString` | 1 | none | Store callback, never fire |
+| `getChildrenCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getChildrenCursor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCursor` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFilter` | 1 | none | Return safe default (null/false/0/empty) |
+| `getFilterQueryProvider` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupId` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isChildSelectable` | 1 | none | Return safe default (null/false/0/empty) |
 | `newChildView` | 1 | none | throw UnsupportedOperationException |
 | `newGroupView` | 1 | none | throw UnsupportedOperationException |
+| `notifyDataSetChanged` | 1 | none | Log warning + no-op |
+| `runQueryOnBackgroundThread` | 1 | none | Return safe default (null/false/0/empty) |
+| `setChildrenCursor` | 1 | none | Log warning + no-op |
+| `setFilterQueryProvider` | 1 | none | Return safe default (null/false/0/empty) |
+| `setGroupCursor` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

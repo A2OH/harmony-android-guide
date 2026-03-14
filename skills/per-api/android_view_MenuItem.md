@@ -9,12 +9,12 @@
 | **Class** | `android.view.MenuItem` |
 | **Package** | `android.view` |
 | **Total Methods** | 51 |
-| **Avg Score** | 2.9 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
-| **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 48 (94%) |
-| **No Mapping** | 3 (5%) |
+| **Direct/Near** | 1 (1%) |
+| **Partial/Composite** | 15 (29%) |
+| **No Mapping** | 35 (68%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 51 |
 | **Has Async Gap** | 51 |
@@ -22,63 +22,72 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Stub APIs (score < 5): 51 methods
+## Implementable APIs (score >= 5): 1 methods
+
+| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
+|---|---|---|---|---|---|---|
+| `setOnMenuItemClickListener` | `android.view.MenuItem setOnMenuItemClickListener(android.view.MenuItem.OnMenuItemClickListener)` | 7 | near | impossible | `action` | `@internal/component/ets/common.MenuElement` |
+
+## Gap Descriptions (per method)
+
+- **`setOnMenuItemClickListener`**: Action callback
+
+## Stub APIs (score < 5): 50 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `collapseActionView` | 3 | composite | Store callback, never fire |
-| `expandActionView` | 3 | composite | Store callback, never fire |
 | `getActionProvider` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getActionView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getAlphabeticModifiers` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getAlphabeticShortcut` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getContentDescription` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getIcon` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getIntent` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getMenuInfo` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getNumericModifiers` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getNumericShortcut` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getOrder` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getSubMenu` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitle` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTitleCondensed` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getTooltipText` | 3 | composite | Return safe default (null/false/0/empty) |
-| `isActionViewExpanded` | 3 | composite | Return safe default (null/false/0/empty) |
 | `isEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
 | `isVisible` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setActionProvider` | 3 | composite | Log warning + no-op |
-| `setActionView` | 3 | composite | Log warning + no-op |
-| `setActionView` | 3 | composite | Log warning + no-op |
-| `setCheckable` | 3 | composite | Log warning + no-op |
-| `setChecked` | 3 | composite | Log warning + no-op |
-| `setEnabled` | 3 | composite | Log warning + no-op |
-| `setIcon` | 3 | composite | Log warning + no-op |
-| `setIcon` | 3 | composite | Log warning + no-op |
-| `setIconTintList` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setIntent` | 3 | composite | Log warning + no-op |
-| `setNumericShortcut` | 3 | composite | Log warning + no-op |
-| `setNumericShortcut` | 3 | composite | Log warning + no-op |
-| `setOnActionExpandListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnMenuItemClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setShortcut` | 3 | composite | Log warning + no-op |
-| `setShortcut` | 3 | composite | Log warning + no-op |
+| `getIcon` | 3 | composite | Return safe default (null/false/0/empty) |
 | `setShowAsAction` | 3 | composite | Log warning + no-op |
-| `setShowAsActionFlags` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setTitle` | 3 | composite | Log warning + no-op |
-| `setTitleCondensed` | 3 | composite | Log warning + no-op |
-| `setVisible` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setAlphabeticShortcut` | 3 | composite | Log warning + no-op |
-| `setAlphabeticShortcut` | 3 | composite | Log warning + no-op |
-| `setTooltipText` | 3 | composite | Log warning + no-op |
-| `setContentDescription` | 2 | composite | Log warning + no-op |
+| `expandActionView` | 2 | composite | Store callback, never fire |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
+| `setActionView` | 2 | composite | Log warning + no-op |
+| `setActionView` | 2 | composite | Log warning + no-op |
+| `getOrder` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getTitle` | 2 | composite | Return safe default (null/false/0/empty) |
+| `collapseActionView` | 2 | composite | Store callback, never fire |
+| `getIntent` | 2 | composite | Return safe default (null/false/0/empty) |
+| `setIntent` | 2 | composite | Log warning + no-op |
+| `getAlphabeticModifiers` | 1 | none | Return safe default (null/false/0/empty) |
+| `getAlphabeticShortcut` | 1 | none | Return safe default (null/false/0/empty) |
+| `getContentDescription` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getMenuInfo` | 1 | none | Return safe default (null/false/0/empty) |
+| `getNumericModifiers` | 1 | none | Return safe default (null/false/0/empty) |
+| `getNumericShortcut` | 1 | none | Return safe default (null/false/0/empty) |
+| `getSubMenu` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTitleCondensed` | 1 | none | Return safe default (null/false/0/empty) |
+| `getTooltipText` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasSubMenu` | 1 | none | Return safe default (null/false/0/empty) |
+| `isActionViewExpanded` | 1 | none | Return safe default (null/false/0/empty) |
 | `isCheckable` | 1 | none | Return safe default (null/false/0/empty) |
 | `isChecked` | 1 | none | Return safe default (null/false/0/empty) |
+| `setActionProvider` | 1 | none | Log warning + no-op |
+| `setAlphabeticShortcut` | 1 | none | Log warning + no-op |
+| `setAlphabeticShortcut` | 1 | none | Log warning + no-op |
+| `setCheckable` | 1 | none | Log warning + no-op |
+| `setChecked` | 1 | none | Log warning + no-op |
+| `setContentDescription` | 1 | none | Log warning + no-op |
+| `setEnabled` | 1 | none | Log warning + no-op |
+| `setIcon` | 1 | none | Log warning + no-op |
+| `setIcon` | 1 | none | Log warning + no-op |
+| `setIconTintList` | 1 | none | Return safe default (null/false/0/empty) |
+| `setNumericShortcut` | 1 | none | Log warning + no-op |
+| `setNumericShortcut` | 1 | none | Log warning + no-op |
+| `setOnActionExpandListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setShortcut` | 1 | none | Log warning + no-op |
+| `setShortcut` | 1 | none | Log warning + no-op |
+| `setShowAsActionFlags` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitle` | 1 | none | Log warning + no-op |
+| `setTitleCondensed` | 1 | none | Log warning + no-op |
+| `setTooltipText` | 1 | none | Log warning + no-op |
+| `setVisible` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
@@ -104,6 +113,6 @@ Before marking `android.view.MenuItem` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 51 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 0 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

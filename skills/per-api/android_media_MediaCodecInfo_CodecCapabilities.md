@@ -9,12 +9,12 @@
 | **Class** | `android.media.MediaCodecInfo.CodecCapabilities` |
 | **Package** | `android.media.MediaCodecInfo` |
 | **Total Methods** | 11 |
-| **Avg Score** | 6.0 |
-| **Scenario** | S3: Partial Coverage |
-| **Strategy** | Implement feasible methods, stub the rest |
-| **Direct/Near** | 5 (45%) |
-| **Partial/Composite** | 6 (54%) |
-| **No Mapping** | 0 (0%) |
+| **Avg Score** | 3.0 |
+| **Scenario** | S4: Multi-API Composition |
+| **Strategy** | Multiple OH calls per Android call |
+| **Direct/Near** | 0 (0%) |
+| **Partial/Composite** | 9 (81%) |
+| **No Mapping** | 2 (18%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 0 |
 | **Has Async Gap** | 0 |
@@ -22,40 +22,38 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 9 methods
+## Implementable APIs (score >= 5): 1 methods
 
 | Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
 |---|---|---|---|---|---|---|
-| `getMimeType` | `String getMimeType()` | 8 | direct | easy | `mimeType` | `mimeType: string` |
-| `getMaxSupportedInstances` | `int getMaxSupportedInstances()` | 8 | near | easy | `OH_AVCapability_GetMaxSupportedInstances` | `int32_t OH_AVCapability_GetMaxSupportedInstances(OH_AVCapability *capability)` |
-| `isFeatureSupported` | `boolean isFeatureSupported(String)` | 7 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `getAudioCapabilities` | `android.media.MediaCodecInfo.AudioCapabilities getAudioCapabilities()` | 7 | near | moderate | `getAudioManager` | `getAudioManager(): AudioManager` |
-| `isFormatSupported` | `boolean isFormatSupported(android.media.MediaFormat)` | 7 | near | moderate | `isMediaKeySystemSupported` | `isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean` |
-| `createFromProfileLevel` | `static android.media.MediaCodecInfo.CodecCapabilities createFromProfileLevel(String, int, int)` | 6 | partial | moderate | `OH_ImageSource_CreateFromRawFile` | `int32_t OH_ImageSource_CreateFromRawFile(napi_env env, RawFileDescriptor rawFile,
-    struct OhosImageSourceOps* ops, napi_value *res)` |
-| `getDefaultFormat` | `android.media.MediaFormat getDefaultFormat()` | 5 | partial | moderate | `getAudioManager` | `getAudioManager(): AudioManager` |
-| `getEncoderCapabilities` | `android.media.MediaCodecInfo.EncoderCapabilities getEncoderCapabilities()` | 5 | partial | moderate | `OH_AVCapability_GetEncoderComplexityRange` | `OH_AVErrCode OH_AVCapability_GetEncoderComplexityRange(OH_AVCapability *capability, OH_AVRange *complexityRange)` |
-| `getVideoCapabilities` | `android.media.MediaCodecInfo.VideoCapabilities getVideoCapabilities()` | 5 | partial | moderate | `OH_CaptureSession_GetVideoStabilizationMode` | `Camera_ErrorCode OH_CaptureSession_GetVideoStabilizationMode(Camera_CaptureSession* session,
-    Camera_VideoStabilizationMode* mode)` |
+| `getMimeType` | `String getMimeType()` | 6 | partial | moderate | `mimeType` | `mimeType: string` |
 
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 10 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `isFeatureRequired` | 4 | partial | Return safe default (null/false/0/empty) |
-| `CodecCapabilities` | 4 | partial | throw UnsupportedOperationException |
+| `getAudioCapabilities` | 4 | partial | Return safe default (null/false/0/empty) |
+| `getDefaultFormat` | 4 | composite | Return safe default (null/false/0/empty) |
+| `isFormatSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `isFeatureSupported` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getMaxSupportedInstances` | 3 | composite | Return safe default (null/false/0/empty) |
+| `createFromProfileLevel` | 2 | composite | Return dummy instance / no-op |
+| `getEncoderCapabilities` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getVideoCapabilities` | 2 | composite | Return safe default (null/false/0/empty) |
+| `CodecCapabilities` | 1 | none | throw UnsupportedOperationException |
+| `isFeatureRequired` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 
-**Scenario: S3 — Partial Coverage**
+**Scenario: S4 — Multi-API Composition**
 
-1. Implement 9 methods that have score >= 5
-2. Stub 2 methods using the Stub Strategy column above
-3. Every stub must either: throw UnsupportedOperationException, return safe default, or log+no-op
-4. Document each stub with a comment: `// A2OH: not supported, OH has no equivalent`
-5. Test both working methods AND verify stubs behave predictably
+1. Study the OH equivalents in the table — note where one Android call maps to multiple OH calls
+2. Create helper methods in OHBridge for multi-call compositions
+3. Map action strings, enum values, and parameter structures
+4. Test the composition logic end-to-end: Android input → shim → OH bridge mock → verify output
+5. Check the Migration Guides above for specific conversion patterns
 
 ## Dependencies
 
@@ -68,6 +66,6 @@ Before marking `android.media.MediaCodecInfo.CodecCapabilities` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 11 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 9 test methods for implemented APIs
+3. **Test Coverage**: At least 1 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.view.ViewDebug` |
 | **Package** | `android.view` |
 | **Total Methods** | 16 |
-| **Avg Score** | 1.4 |
+| **Avg Score** | 1.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (18%) |
-| **No Mapping** | 13 (81%) |
+| **Partial/Composite** | 1 (6%) |
+| **No Mapping** | 15 (93%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 15 |
 | **Has Async Gap** | 15 |
@@ -28,8 +28,6 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `formatToHexString` | 3 | composite | throw UnsupportedOperationException |
-| `resolveId` | 3 | composite | throw UnsupportedOperationException |
 | `name` | 3 | composite | throw UnsupportedOperationException |
 | `ViewDebug` | 1 | none | throw UnsupportedOperationException |
 | `dumpCapturedView` | 1 | none | throw UnsupportedOperationException |
@@ -37,10 +35,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `category` | 1 | none | throw UnsupportedOperationException |
 | `deepExport` | 1 | none | throw UnsupportedOperationException |
 | `flagMapping` | 1 | none | throw UnsupportedOperationException |
+| `formatToHexString` | 1 | none | throw UnsupportedOperationException |
 | `hasAdjacentMapping` | 1 | none | Return safe default (null/false/0/empty) |
 | `indexMapping` | 1 | none | throw UnsupportedOperationException |
 | `mapping` | 1 | none | throw UnsupportedOperationException |
 | `prefix` | 1 | none | throw UnsupportedOperationException |
+| `resolveId` | 1 | none | throw UnsupportedOperationException |
 | `equals` | 1 | none | throw UnsupportedOperationException |
 | `mask` | 1 | none | throw UnsupportedOperationException |
 | `outputIf` | 1 | none | Log warning + no-op |

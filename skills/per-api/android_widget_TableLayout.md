@@ -9,12 +9,12 @@
 | **Class** | `android.widget.TableLayout` |
 | **Package** | `android.widget` |
 | **Total Methods** | 13 |
-| **Avg Score** | 1.8 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (38%) |
-| **No Mapping** | 8 (61%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 13 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 11 |
 | **Has Async Gap** | 11 |
@@ -28,11 +28,6 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `setColumnCollapsed` | 3 | composite | Log warning + no-op |
-| `setColumnShrinkable` | 3 | composite | Log warning + no-op |
-| `setColumnStretchable` | 3 | composite | Log warning + no-op |
-| `setShrinkAllColumns` | 3 | composite | Log warning + no-op |
-| `setStretchAllColumns` | 3 | composite | Log warning + no-op |
 | `TableLayout` | 1 | none | throw UnsupportedOperationException |
 | `TableLayout` | 1 | none | throw UnsupportedOperationException |
 | `generateLayoutParams` | 1 | none | throw UnsupportedOperationException |
@@ -41,6 +36,11 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | `isColumnStretchable` | 1 | none | Return safe default (null/false/0/empty) |
 | `isShrinkAllColumns` | 1 | none | Return safe default (null/false/0/empty) |
 | `isStretchAllColumns` | 1 | none | Return safe default (null/false/0/empty) |
+| `setColumnCollapsed` | 1 | none | Log warning + no-op |
+| `setColumnShrinkable` | 1 | none | Log warning + no-op |
+| `setColumnStretchable` | 1 | none | Log warning + no-op |
+| `setShrinkAllColumns` | 1 | none | Log warning + no-op |
+| `setStretchAllColumns` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

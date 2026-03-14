@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ExpandableListAdapter` |
 | **Package** | `android.widget` |
 | **Total Methods** | 18 |
-| **Avg Score** | 2.6 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 14 (77%) |
-| **No Mapping** | 4 (22%) |
+| **Partial/Composite** | 7 (38%) |
+| **No Mapping** | 11 (61%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 18 |
 | **Has Async Gap** | 18 |
@@ -28,24 +28,24 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getChild` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getChildView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getChildrenCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCombinedChildId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getCombinedGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroup` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getGroupId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getGroupView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onGroupCollapsed` | 3 | composite | Store callback, never fire |
-| `onGroupExpanded` | 3 | composite | Store callback, never fire |
 | `registerDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
 | `unregisterDataSetObserver` | 3 | composite | Return safe default (null/false/0/empty) |
+| `getChild` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getGroup` | 2 | composite | Return safe default (null/false/0/empty) |
+| `getChildId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `areAllItemsEnabled` | 1 | none | throw UnsupportedOperationException |
+| `getChildrenCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCombinedChildId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getCombinedGroupId` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupCount` | 1 | none | Return safe default (null/false/0/empty) |
+| `getGroupId` | 1 | none | Return safe default (null/false/0/empty) |
 | `hasStableIds` | 1 | none | Return safe default (null/false/0/empty) |
 | `isChildSelectable` | 1 | none | Return safe default (null/false/0/empty) |
 | `isEmpty` | 1 | none | Return safe default (null/false/0/empty) |
+| `onGroupCollapsed` | 1 | none | Store callback, never fire |
+| `onGroupExpanded` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

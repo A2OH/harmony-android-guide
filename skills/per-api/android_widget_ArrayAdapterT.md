@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ArrayAdapter<T>` |
 | **Package** | `android.widget` |
 | **Total Methods** | 19 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 11 (57%) |
-| **No Mapping** | 8 (42%) |
+| **Partial/Composite** | 6 (31%) |
+| **No Mapping** | 13 (68%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 13 |
 | **Has Async Gap** | 13 |
@@ -29,23 +29,23 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `add` | 3 | composite | Log warning + no-op |
-| `addAll` | 3 | composite | Log warning + no-op |
-| `addAll` | 3 | composite | Log warning + no-op |
 | `clear` | 3 | composite | throw UnsupportedOperationException |
 | `getCount` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getItemId` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getPosition` | 3 | composite | Return safe default (null/false/0/empty) |
 | `remove` | 3 | composite | Log warning + no-op |
-| `setDropDownViewResource` | 3 | composite | Log warning + no-op |
-| `setNotifyOnChange` | 3 | composite | Log warning + no-op |
-| `setDropDownViewTheme` | 2 | composite | Log warning + no-op |
+| `getItemId` | 2 | composite | Return safe default (null/false/0/empty) |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
 | `ArrayAdapter` | 1 | none | throw UnsupportedOperationException |
+| `addAll` | 1 | none | Log warning + no-op |
+| `addAll` | 1 | none | Log warning + no-op |
 | `insert` | 1 | none | throw UnsupportedOperationException |
+| `setDropDownViewResource` | 1 | none | Log warning + no-op |
+| `setDropDownViewTheme` | 1 | none | Log warning + no-op |
+| `setNotifyOnChange` | 1 | none | Log warning + no-op |
 | `sort` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions

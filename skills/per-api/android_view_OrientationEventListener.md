@@ -9,12 +9,12 @@
 | **Class** | `android.view.OrientationEventListener` |
 | **Package** | `android.view` |
 | **Total Methods** | 6 |
-| **Avg Score** | 2.8 |
+| **Avg Score** | 1.3 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (66%) |
-| **No Mapping** | 2 (33%) |
+| **Partial/Composite** | 1 (16%) |
+| **No Mapping** | 5 (83%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 4 |
 | **Has Async Gap** | 4 |
@@ -28,12 +28,12 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `OrientationEventListener` | 4 | partial | Return safe default (null/false/0/empty) |
-| `OrientationEventListener` | 4 | partial | Return safe default (null/false/0/empty) |
 | `enable` | 3 | composite | throw UnsupportedOperationException |
-| `onOrientationChanged` | 3 | composite | Store callback, never fire |
+| `OrientationEventListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `OrientationEventListener` | 1 | none | Return safe default (null/false/0/empty) |
 | `canDetectOrientation` | 1 | none | Return safe default (null/false/0/empty) |
 | `disable` | 1 | none | Return safe default (null/false/0/empty) |
+| `onOrientationChanged` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

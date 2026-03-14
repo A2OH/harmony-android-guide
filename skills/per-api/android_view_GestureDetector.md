@@ -9,12 +9,12 @@
 | **Class** | `android.view.GestureDetector` |
 | **Package** | `android.view` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.1 |
+| **Avg Score** | 1.2 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (55%) |
-| **No Mapping** | 4 (44%) |
+| **Partial/Composite** | 1 (11%) |
+| **No Mapping** | 8 (88%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 6 |
 | **Has Async Gap** | 6 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `onGenericMotionEvent` | 3 | composite | Store callback, never fire |
-| `onTouchEvent` | 3 | composite | Store callback, never fire |
-| `setContextClickListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setIsLongpressEnabled` | 3 | composite | Return safe default (null/false/0/empty) |
-| `setOnDoubleTapListener` | 3 | composite | Return safe default (null/false/0/empty) |
+| `onTouchEvent` | 2 | composite | Store callback, never fire |
 | `GestureDetector` | 1 | none | throw UnsupportedOperationException |
 | `GestureDetector` | 1 | none | throw UnsupportedOperationException |
 | `GestureDetector` | 1 | none | throw UnsupportedOperationException |
 | `isLongpressEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `onGenericMotionEvent` | 1 | none | Store callback, never fire |
+| `setContextClickListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `setIsLongpressEnabled` | 1 | none | Return safe default (null/false/0/empty) |
+| `setOnDoubleTapListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

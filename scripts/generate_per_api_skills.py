@@ -459,15 +459,27 @@ def main():
                 skipped_shimmed += 1
                 continue
 
-        # Get all APIs for this class
+        # Get all APIs for this class, preferring curated known_mappings over auto api_mappings
         apis = db.execute("""
             SELECT a.name, a.signature, a.kind,
-                   m.score, m.mapping_type, m.effort_level,
-                   m.gap_description, m.migration_guide,
+                   COALESCE(k.score_override, m.score) AS score,
+                   CASE WHEN k.id IS NOT NULL THEN
+                       CASE WHEN k.score_override >= 8 THEN 'direct'
+                            WHEN k.score_override >= 6 THEN 'near'
+                            WHEN k.score_override >= 4 THEN 'partial'
+                            WHEN k.score_override >= 2 THEN 'composite'
+                            ELSE 'none' END
+                   ELSE m.mapping_type END AS mapping_type,
+                   m.effort_level,
+                   COALESCE(k.notes, m.gap_description) AS gap_description,
+                   m.migration_guide,
                    m.code_example_android, m.code_example_oh,
-                   m.needs_native, m.needs_ui_rewrite, m.paradigm_shift,
-                   oa.name AS oh_name, oa.signature AS oh_sig,
-                   om.name AS oh_module
+                   COALESCE(m.needs_native, 0) AS needs_native,
+                   COALESCE(m.needs_ui_rewrite, 0) AS needs_ui_rewrite,
+                   COALESCE(k.paradigm_shift, m.paradigm_shift, 0) AS paradigm_shift,
+                   COALESCE(k.oh_method, oa.name) AS oh_name,
+                   COALESCE(k.oh_module || '.' || k.oh_type, oa.signature) AS oh_sig,
+                   COALESCE(k.oh_module, om.name) AS oh_module
             FROM api_mappings m
             JOIN android_apis a ON m.android_api_id = a.id
             JOIN android_types t ON a.type_id = t.id
@@ -475,9 +487,12 @@ def main():
             LEFT JOIN oh_apis oa ON m.oh_api_id = oa.id
             LEFT JOIN oh_types ot ON oa.type_id = ot.id
             LEFT JOIN oh_modules om ON ot.module_id = om.id
+            LEFT JOIN known_mappings k ON k.android_type = t.name
+                AND k.android_method = a.name
+                AND k.android_package = p.name
             WHERE p.name || '.' || t.full_name = ?
               AND a.kind IN ('method','constructor')
-            ORDER BY m.score DESC
+            ORDER BY COALESCE(k.score_override, m.score) DESC
         """, (fqn,)).fetchall()
 
         if len(apis) < 3:

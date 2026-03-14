@@ -9,12 +9,12 @@
 | **Class** | `android.view.GestureDetector.SimpleOnGestureListener` |
 | **Package** | `android.view.GestureDetector` |
 | **Total Methods** | 11 |
-| **Avg Score** | 3.1 |
+| **Avg Score** | 1.0 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 11 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 0 (0%) |
+| **No Mapping** | 11 (100%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 10 |
 | **Has Async Gap** | 10 |
@@ -28,17 +28,17 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `SimpleOnGestureListener` | 5 | partial | Return safe default (null/false/0/empty) |
-| `onContextClick` | 3 | composite | Store callback, never fire |
-| `onDoubleTap` | 3 | composite | Store callback, never fire |
-| `onDoubleTapEvent` | 3 | composite | Store callback, never fire |
-| `onDown` | 3 | composite | Store callback, never fire |
-| `onFling` | 3 | composite | Store callback, never fire |
-| `onLongPress` | 3 | composite | Store callback, never fire |
-| `onScroll` | 3 | composite | Store callback, never fire |
-| `onShowPress` | 3 | composite | Store callback, never fire |
-| `onSingleTapConfirmed` | 3 | composite | Store callback, never fire |
-| `onSingleTapUp` | 3 | composite | Store callback, never fire |
+| `SimpleOnGestureListener` | 1 | none | Return safe default (null/false/0/empty) |
+| `onContextClick` | 1 | none | Store callback, never fire |
+| `onDoubleTap` | 1 | none | Store callback, never fire |
+| `onDoubleTapEvent` | 1 | none | Store callback, never fire |
+| `onDown` | 1 | none | Store callback, never fire |
+| `onFling` | 1 | none | Store callback, never fire |
+| `onLongPress` | 1 | none | Store callback, never fire |
+| `onScroll` | 1 | none | Store callback, never fire |
+| `onShowPress` | 1 | none | Store callback, never fire |
+| `onSingleTapConfirmed` | 1 | none | Store callback, never fire |
+| `onSingleTapUp` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 

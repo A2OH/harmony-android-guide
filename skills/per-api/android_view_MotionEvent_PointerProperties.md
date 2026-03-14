@@ -9,12 +9,12 @@
 | **Class** | `android.view.MotionEvent.PointerProperties` |
 | **Package** | `android.view.MotionEvent` |
 | **Total Methods** | 4 |
-| **Avg Score** | 4.2 |
+| **Avg Score** | 2.4 |
 | **Scenario** | S4: Multi-API Composition |
 | **Strategy** | Multiple OH calls per Android call |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 4 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 3 (75%) |
+| **No Mapping** | 1 (25%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 2 |
 | **Has Async Gap** | 2 |
@@ -22,27 +22,16 @@
 | **Expected AI Iterations** | 2-3 |
 | **Test Level** | Level 1 + Level 2 (Headless) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `PointerProperties` | `MotionEvent.PointerProperties()` | 5 | partial | moderate | `napi_create_object_with_properties` | `NAPI_EXTERN napi_status napi_create_object_with_properties(napi_env env,
-                                                           napi_value* result,
-                                                           size_t property_count,
-                                                           const napi_property_descriptor* properties)` |
-| `PointerProperties` | `MotionEvent.PointerProperties(android.view.MotionEvent.PointerProperties)` | 5 | partial | moderate | `napi_create_object_with_properties` | `NAPI_EXTERN napi_status napi_create_object_with_properties(napi_env env,
-                                                           napi_value* result,
-                                                           size_t property_count,
-                                                           const napi_property_descriptor* properties)` |
-
-## Stub APIs (score < 5): 2 methods
+## Stub APIs (score < 5): 4 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `clear` | 3 | composite | throw UnsupportedOperationException |
-| `copyFrom` | 3 | composite | throw UnsupportedOperationException |
+| `PointerProperties` | 3 | composite | throw UnsupportedOperationException |
+| `PointerProperties` | 3 | composite | throw UnsupportedOperationException |
+| `copyFrom` | 1 | none | throw UnsupportedOperationException |
 
 ## AI Agent Instructions
 
@@ -65,6 +54,6 @@ Before marking `android.view.MotionEvent.PointerProperties` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 4 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

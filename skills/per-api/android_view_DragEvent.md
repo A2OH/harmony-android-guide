@@ -9,12 +9,12 @@
 | **Class** | `android.view.DragEvent` |
 | **Package** | `android.view` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.7 |
+| **Avg Score** | 1.6 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 8 (88%) |
-| **No Mapping** | 1 (11%) |
+| **Partial/Composite** | 3 (33%) |
+| **No Mapping** | 6 (66%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 9 |
 | **Has Async Gap** | 9 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `getAction` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getClipData` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getClipDescription` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getLocalState` | 3 | composite | Return safe default (null/false/0/empty) |
-| `getResult` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getX` | 3 | composite | Return safe default (null/false/0/empty) |
 | `getY` | 3 | composite | Return safe default (null/false/0/empty) |
-| `writeToParcel` | 2 | composite | Log warning + no-op |
+| `getAction` | 2 | composite | Return safe default (null/false/0/empty) |
 | `describeContents` | 1 | none | Store callback, never fire |
+| `getClipData` | 1 | none | Return safe default (null/false/0/empty) |
+| `getClipDescription` | 1 | none | Return safe default (null/false/0/empty) |
+| `getLocalState` | 1 | none | Return safe default (null/false/0/empty) |
+| `getResult` | 1 | none | Return safe default (null/false/0/empty) |
+| `writeToParcel` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 

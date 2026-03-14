@@ -9,12 +9,12 @@
 | **Class** | `android.view.View.DragShadowBuilder` |
 | **Package** | `android.view.View` |
 | **Total Methods** | 5 |
-| **Avg Score** | 4.1 |
+| **Avg Score** | 2.1 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 5 (100%) |
-| **No Mapping** | 0 (0%) |
+| **Partial/Composite** | 3 (60%) |
+| **No Mapping** | 2 (40%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -22,22 +22,17 @@
 | **Expected AI Iterations** | 3-5 |
 | **Test Level** | Level 1 (Mock) + Level 2 (Headless ArkUI) |
 
-## Implementable APIs (score >= 5): 2 methods
-
-| Method | Signature | Score | Type | Effort | OH Equivalent | OH Signature |
-|---|---|---|---|---|---|---|
-| `DragShadowBuilder` | `View.DragShadowBuilder(android.view.View)` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-| `DragShadowBuilder` | `View.DragShadowBuilder()` | 6 | partial | moderate | `createFromBuilder` | `createFromBuilder(builder: CustomBuilder, callback: AsyncCallback<image.PixelMap>): void` |
-
-## Stub APIs (score < 5): 3 methods
+## Stub APIs (score < 5): 5 methods
 
 These methods have no feasible OH mapping. Stub them according to the stub strategy in the AI Agent Playbook.
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
 | `getView` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onDrawShadow` | 3 | composite | Store callback, never fire |
-| `onProvideShadowMetrics` | 2 | composite | Store callback, never fire |
+| `DragShadowBuilder` | 3 | composite | throw UnsupportedOperationException |
+| `DragShadowBuilder` | 3 | composite | throw UnsupportedOperationException |
+| `onDrawShadow` | 1 | none | Store callback, never fire |
+| `onProvideShadowMetrics` | 1 | none | Store callback, never fire |
 
 ## AI Agent Instructions
 
@@ -61,6 +56,6 @@ Before marking `android.view.View.DragShadowBuilder` as done:
 
 1. **Compilation**: `javac` succeeds with zero errors
 2. **API Surface**: All 5 public methods present (implemented or stubbed)
-3. **Test Coverage**: At least 2 test methods for implemented APIs
+3. **Test Coverage**: At least 0 test methods for implemented APIs
 4. **No Regression**: `test_pass >= baseline`, `test_fail <= baseline + 2`
 5. **Mock Consistency**: Every OHBridge method has both declaration and mock

@@ -9,12 +9,12 @@
 | **Class** | `android.view.ActionProvider` |
 | **Package** | `android.view` |
 | **Total Methods** | 9 |
-| **Avg Score** | 2.4 |
+| **Avg Score** | 1.4 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 6 (66%) |
-| **No Mapping** | 3 (33%) |
+| **Partial/Composite** | 2 (22%) |
+| **No Mapping** | 7 (77%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 8 |
 | **Has Async Gap** | 8 |
@@ -28,15 +28,15 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 
 | Method | Score | Type | Stub Strategy |
 |---|---|---|---|
-| `ActionProvider` | 4 | partial | Store callback, never fire |
 | `isVisible` | 3 | composite | Return safe default (null/false/0/empty) |
 | `onCreateActionView` | 3 | composite | Return dummy instance / no-op |
-| `onPerformDefaultAction` | 3 | composite | Store callback, never fire |
-| `setVisibilityListener` | 3 | composite | Return safe default (null/false/0/empty) |
-| `onPrepareSubMenu` | 2 | composite | Store callback, never fire |
+| `ActionProvider` | 1 | none | Store callback, never fire |
 | `hasSubMenu` | 1 | none | Return safe default (null/false/0/empty) |
+| `onPerformDefaultAction` | 1 | none | Store callback, never fire |
+| `onPrepareSubMenu` | 1 | none | Store callback, never fire |
 | `overridesItemVisibility` | 1 | none | Return safe default (null/false/0/empty) |
 | `refreshVisibility` | 1 | none | Return safe default (null/false/0/empty) |
+| `setVisibilityListener` | 1 | none | Return safe default (null/false/0/empty) |
 
 ## AI Agent Instructions
 

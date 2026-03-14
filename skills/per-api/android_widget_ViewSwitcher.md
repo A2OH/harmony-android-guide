@@ -9,12 +9,12 @@
 | **Class** | `android.widget.ViewSwitcher` |
 | **Package** | `android.widget` |
 | **Total Methods** | 5 |
-| **Avg Score** | 2.2 |
+| **Avg Score** | 1.8 |
 | **Scenario** | S6: UI Paradigm Shift |
 | **Strategy** | ViewTree + ArkUI declarative rendering |
 | **Direct/Near** | 0 (0%) |
-| **Partial/Composite** | 3 (60%) |
-| **No Mapping** | 2 (40%) |
+| **Partial/Composite** | 2 (40%) |
+| **No Mapping** | 3 (60%) |
 | **Needs Native Bridge** | 0 |
 | **Needs UI Rewrite** | 3 |
 | **Has Async Gap** | 3 |
@@ -30,9 +30,9 @@ These methods have no feasible OH mapping. Stub them according to the stub strat
 |---|---|---|---|
 | `getNextView` | 3 | composite | Return safe default (null/false/0/empty) |
 | `reset` | 3 | composite | Log warning + no-op |
-| `setFactory` | 3 | composite | Log warning + no-op |
 | `ViewSwitcher` | 1 | none | throw UnsupportedOperationException |
 | `ViewSwitcher` | 1 | none | throw UnsupportedOperationException |
+| `setFactory` | 1 | none | Log warning + no-op |
 
 ## AI Agent Instructions
 
