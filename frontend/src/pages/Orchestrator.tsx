@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 interface Issue {
   number: number;
@@ -49,65 +49,38 @@ const TIER_LABELS: Record<string, { label: string; color: string }> = {
   D: { label: 'Tier D — UI Components (ArkUI)', color: 'text-red-400' },
 };
 
-// ─── Package → Skill mapping (from api_compat.db android_packages.skill) ────
+// ─── Skill lookup helper ────────────────────────────────────────────────────
 
-const PACKAGE_SKILL_MAP: Record<string, string> = {
-  'android.app': 'A2OH-LIFECYCLE', 'android.app.admin': 'A2OH-LIFECYCLE',
-  'android.app.assist': 'A2OH-LIFECYCLE', 'android.app.backup': 'A2OH-LIFECYCLE',
-  'android.app.blob': 'A2OH-LIFECYCLE', 'android.app.job': 'A2OH-LIFECYCLE',
-  'android.app.role': 'A2OH-LIFECYCLE', 'android.app.slice': 'A2OH-LIFECYCLE',
-  'android.app.usage': 'A2OH-LIFECYCLE', 'android.content': 'A2OH-LIFECYCLE',
-  'android.content.pm': 'A2OH-LIFECYCLE', 'android.content.res': 'A2OH-LIFECYCLE',
-  'android.content.res.loader': 'A2OH-LIFECYCLE', 'android.accounts': 'A2OH-LIFECYCLE',
-  'android.os': 'A2OH-LIFECYCLE', 'android.os.storage': 'A2OH-LIFECYCLE',
-  'android.os.health': 'A2OH-LIFECYCLE', 'android.os.strictmode': 'A2OH-LIFECYCLE',
-  'android.view': 'A2OH-UI-REWRITE', 'android.view.accessibility': 'A2OH-UI-REWRITE',
-  'android.view.animation': 'A2OH-UI-REWRITE', 'android.view.autofill': 'A2OH-UI-REWRITE',
-  'android.view.inputmethod': 'A2OH-UI-REWRITE', 'android.widget': 'A2OH-UI-REWRITE',
-  'android.widget.inline': 'A2OH-UI-REWRITE', 'android.transition': 'A2OH-UI-REWRITE',
-  'android.animation': 'A2OH-UI-REWRITE', 'android.gesture': 'A2OH-UI-REWRITE',
-  'android.appwidget': 'A2OH-UI-REWRITE', 'android.preference': 'A2OH-UI-REWRITE',
-  'android.inputmethodservice': 'A2OH-UI-REWRITE',
-  'android.database': 'A2OH-DATA-LAYER', 'android.database.sqlite': 'A2OH-DATA-LAYER',
-  'android.provider': 'A2OH-DATA-LAYER',
-  'android.hardware': 'A2OH-DEVICE-API', 'android.hardware.biometrics': 'A2OH-DEVICE-API',
-  'android.hardware.camera2': 'A2OH-DEVICE-API', 'android.hardware.camera2.params': 'A2OH-DEVICE-API',
-  'android.hardware.display': 'A2OH-DEVICE-API', 'android.hardware.fingerprint': 'A2OH-DEVICE-API',
-  'android.hardware.input': 'A2OH-DEVICE-API', 'android.hardware.usb': 'A2OH-DEVICE-API',
-  'android.bluetooth': 'A2OH-DEVICE-API', 'android.bluetooth.le': 'A2OH-DEVICE-API',
-  'android.location': 'A2OH-DEVICE-API', 'android.telephony': 'A2OH-DEVICE-API',
-  'android.telephony.gsm': 'A2OH-DEVICE-API', 'android.telecom': 'A2OH-DEVICE-API',
-  'android.nfc': 'A2OH-DEVICE-API', 'android.nfc.tech': 'A2OH-DEVICE-API',
-  'android.media': 'A2OH-MEDIA', 'android.media.audiofx': 'A2OH-MEDIA',
-  'android.media.session': 'A2OH-MEDIA', 'android.media.browse': 'A2OH-MEDIA',
-  'android.drm': 'A2OH-MEDIA', 'android.speech': 'A2OH-MEDIA', 'android.speech.tts': 'A2OH-MEDIA',
-  'android.net': 'A2OH-NETWORKING', 'android.net.http': 'A2OH-NETWORKING',
-  'android.net.wifi': 'A2OH-NETWORKING', 'android.net.wifi.p2p': 'A2OH-NETWORKING',
-  'android.net.ssl': 'A2OH-NETWORKING',
-  'android.util': 'A2OH-JAVA-TO-ARKTS', 'android.text': 'A2OH-JAVA-TO-ARKTS',
-  'android.text.format': 'A2OH-JAVA-TO-ARKTS', 'android.text.style': 'A2OH-JAVA-TO-ARKTS',
-  'android.text.util': 'A2OH-JAVA-TO-ARKTS', 'android.annotation': 'A2OH-JAVA-TO-ARKTS',
-  'android.graphics': 'A2OH-JAVA-TO-ARKTS', 'android.graphics.drawable': 'A2OH-JAVA-TO-ARKTS',
-  'android.graphics.drawable.shapes': 'A2OH-JAVA-TO-ARKTS',
-  'android.graphics.fonts': 'A2OH-JAVA-TO-ARKTS', 'android.graphics.pdf': 'A2OH-JAVA-TO-ARKTS',
-  'android.icu.text': 'A2OH-JAVA-TO-ARKTS', 'android.icu.util': 'A2OH-JAVA-TO-ARKTS',
-  'android.security': 'A2OH-CONFIG', 'android.webkit': 'A2OH-CONFIG',
-  'android.print': 'A2OH-CONFIG', 'android.accessibilityservice': 'A2OH-CONFIG',
-};
+function lookupSkill(pkg: string, tierData: TierData | null): string {
+  if (!tierData) return 'A2OH-JAVA-TO-ARKTS';
+  for (const tier of Object.values(tierData.tiers)) {
+    for (const c of tier) {
+      if (c.package === pkg && c.skill) return c.skill;
+    }
+  }
+  return 'A2OH-JAVA-TO-ARKTS';
+}
 
 // ─── API helpers ─────────────────────────────────────────────────────────────
 
-async function fetchAllShimIssues(): Promise<Issue[]> {
+async function fetchAllShimIssues(token?: string): Promise<Issue[]> {
   let page = 1;
+  const maxPages = 20;
   let all: Issue[] = [];
-  while (true) {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+  };
+  if (token) {
+    headers.Authorization = `token ${token}`;
+  }
+  while (page <= maxPages) {
     const params = new URLSearchParams({
       per_page: '100',
       state: 'all',
       labels: 'shim',
       page: String(page),
     });
-    const res = await fetch(`${API_BASE}/issues?${params}`);
+    const res = await fetch(`${API_BASE}/issues?${params}`, { headers });
     if (!res.ok) break;
     const batch: Issue[] = await res.json();
     if (batch.length === 0) break;
@@ -171,6 +144,20 @@ function extractClassName(title: string): string {
   return title.replace('[SHIM] Implement ', '');
 }
 
+// Convert fqcn to shim file path, handling inner classes
+// e.g. "android.bluetooth.BluetoothClass.Device" → "shim/java/android/bluetooth/BluetoothClass.java"
+// Inner classes (uppercase after class-level dot) live in the outer class file
+function fqcnToPath(fqcn: string): string {
+  const parts = fqcn.split('.');
+  // Find where the class name starts: first part that begins with uppercase
+  let classIdx = parts.findIndex(p => p[0] && p[0] === p[0].toUpperCase() && p[0] !== p[0].toLowerCase());
+  if (classIdx < 0) classIdx = parts.length - 1;
+  // Package is everything before, outer class is the first uppercase part
+  const pkg = parts.slice(0, classIdx).join('/');
+  const outerClass = parts[classIdx];
+  return `shim/java/${pkg}/${outerClass}.java`;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   'todo': 'bg-gray-700 text-gray-300',
   'in-progress': 'bg-yellow-900/50 text-yellow-300 border border-yellow-700/50',
@@ -213,6 +200,7 @@ export default function Orchestrator() {
   // Tier data from JSON
   const [tierData, setTierData] = useState<TierData | null>(null);
   const [tierDataLoading, setTierDataLoading] = useState(false);
+  const tierDataLoaded = useRef(false);
 
   // Batch creation
   const [showCreatePanel, setShowCreatePanel] = useState(false);
@@ -241,14 +229,14 @@ export default function Orchestrator() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchAllShimIssues();
+      const data = await fetchAllShimIssues(token || undefined);
       setIssues(data);
       setLastRefresh(new Date());
     } catch (e) {
-      setError('Failed to fetch issues. GitHub API rate limit?');
+      setError('Failed to fetch issues. GitHub API rate limit? Set a token for 5,000 req/hr.');
     }
     setLoading(false);
-  }, []);
+  }, [token]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -258,17 +246,19 @@ export default function Orchestrator() {
     return () => clearInterval(interval);
   }, [autoRefresh, refresh]);
 
-  const stats: Stats = {
-    todo: issues.filter(i => getStatus(i) === 'todo').length,
-    inProgress: issues.filter(i => getStatus(i) === 'in-progress').length,
-    done: issues.filter(i => getStatus(i) === 'done').length,
-    failed: issues.filter(i => getStatus(i) === 'failed').length,
-    total: issues.length,
-    tierA: issues.filter(i => hasLabel(i, 'tier-a')).length,
-    tierB: issues.filter(i => hasLabel(i, 'tier-b')).length,
-    tierC: issues.filter(i => hasLabel(i, 'tier-c')).length,
-    tierD: issues.filter(i => hasLabel(i, 'tier-d')).length,
-  };
+  const stats: Stats = issues.reduce((s, i) => {
+    const status = getStatus(i);
+    if (status === 'todo') s.todo++;
+    else if (status === 'in-progress') s.inProgress++;
+    else if (status === 'done') s.done++;
+    else if (status === 'failed') s.failed++;
+    if (hasLabel(i, 'tier-a')) s.tierA++;
+    else if (hasLabel(i, 'tier-b')) s.tierB++;
+    else if (hasLabel(i, 'tier-c')) s.tierC++;
+    else if (hasLabel(i, 'tier-d')) s.tierD++;
+    s.total++;
+    return s;
+  }, { todo: 0, inProgress: 0, done: 0, failed: 0, total: 0, tierA: 0, tierB: 0, tierC: 0, tierD: 0 });
 
   const filtered = issues.filter(i => {
     if (filter !== 'all' && getStatus(i) !== filter) return false;
@@ -334,6 +324,13 @@ export default function Orchestrator() {
     if (!t) return;
     setActionLoading(issue.number);
     try {
+      // Remove other status labels
+      for (const label of ['todo', 'in-progress', 'failed']) {
+        if (hasLabel(issue, label)) {
+          try { await ghApiCall(`/issues/${issue.number}/labels/${label}`, 'DELETE', t); } catch { /* ok */ }
+        }
+      }
+      await ghApiCall(`/issues/${issue.number}/labels`, 'POST', t, { labels: ['done'] });
       await ghApiCall(`/issues/${issue.number}`, 'PATCH', t, { state: 'closed' });
       setActionMsg(`Closed #${issue.number}`);
       refresh();
@@ -348,6 +345,12 @@ export default function Orchestrator() {
     if (!t) return;
     setActionLoading(issue.number);
     try {
+      // Remove other status labels
+      for (const label of ['done', 'in-progress', 'failed']) {
+        if (hasLabel(issue, label)) {
+          try { await ghApiCall(`/issues/${issue.number}/labels/${label}`, 'DELETE', t); } catch { /* ok */ }
+        }
+      }
       await ghApiCall(`/issues/${issue.number}`, 'PATCH', t, { state: 'open' });
       await ghApiCall(`/issues/${issue.number}/labels`, 'POST', t, { labels: ['todo'] });
       setActionMsg(`Reopened #${issue.number}`);
@@ -362,16 +365,19 @@ export default function Orchestrator() {
 
   const existingClassNames = new Set(issues.map(i => extractClassName(i.title)));
 
-  // Load tier data on demand when batch panel opens
+  // Load tier data (on mount for skill lookup, and when batch panel opens)
   const loadTierData = useCallback(async () => {
-    if (tierData) return;
+    if (tierDataLoaded.current) return;
+    tierDataLoaded.current = true;
     setTierDataLoading(true);
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}tier-classes.json`);
       if (res.ok) setTierData(await res.json());
     } catch { /* ignore */ }
     setTierDataLoading(false);
-  }, [tierData]);
+  }, []);
+
+  useEffect(() => { loadTierData(); }, [loadTierData]);
 
   const toggleClass = (fqn: string) => {
     setSelectedClasses(prev => {
@@ -408,8 +414,8 @@ export default function Orchestrator() {
       if (!selectedClasses.has(c.fqcn)) continue;
 
       const title = `[SHIM] Implement ${c.fqcn}`;
-      const relpath = `shim/java/${c.fqcn.replace(/\./g, '/')}.java`;
-      const skill = c.skill || PACKAGE_SKILL_MAP[c.package] || 'A2OH-JAVA-TO-ARKTS';
+      const relpath = fqcnToPath(c.fqcn);
+      const skill = c.skill || lookupSkill(c.package, tierData);
       const body = `## Android Class
 \`${c.fqcn}\`
 
@@ -464,8 +470,8 @@ ${skill || 'N/A'}
     const parts = fqn.split('.');
     const cls = parts[parts.length - 1];
     const pkg = parts.slice(0, -1).join('.');
-    const relpath = `shim/java/${pkg.replace(/\./g, '/')}/${cls}.java`;
-    const skill = PACKAGE_SKILL_MAP[pkg] || 'A2OH-JAVA-TO-ARKTS';
+    const relpath = fqcnToPath(fqn);
+    const skill = lookupSkill(pkg, tierData);
     const tierLabel = singleTier.toUpperCase();
     const tierDesc = { a: 'Pure Java', b: 'I/O with Java Fallback', c: 'System Services (needs OHBridge)', d: 'UI Components (needs ArkUI)' }[singleTier] || '';
 
@@ -672,10 +678,10 @@ cd test-apps && ./run-local-tests.sh headless
           {singleClassName && (
             <div className="text-xs text-gray-500">
               Skill: <code className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300">
-                {PACKAGE_SKILL_MAP[singleClassName.split('.').slice(0, -1).join('.')] || 'A2OH-JAVA-TO-ARKTS'}
+                {lookupSkill(singleClassName.split('.').slice(0, -1).join('.'), tierData)}
               </code>
               {' | '}File: <code className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300">
-                shim/java/{singleClassName.replace(/\./g, '/').replace(/\/([^/]+)$/, '/$1')}.java
+                {fqcnToPath(singleClassName)}
               </code>
               {existingClassNames.has(singleClassName) && (
                 <span className="ml-2 text-yellow-400">Issue already exists</span>
