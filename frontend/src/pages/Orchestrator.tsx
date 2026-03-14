@@ -27,133 +27,26 @@ interface Stats {
 const REPO = 'A2OH/harmony-android-guide';
 const API_BASE = 'https://api.github.com/repos/' + REPO;
 
-// ─── Tier class definitions ─────────────────────────────────────────────────
-interface TierClass {
-  pkg: string;
-  cls: string;
-  desc: string;
+// ─── Tier class definitions (loaded from tier-classes.json) ─────────────────
+interface TierClassEntry {
+  fqcn: string;
+  short: string;
+  package: string;
+  apis: number;
+  skill: string;
 }
 
-const TIER_CLASSES: Record<string, { label: string; color: string; classes: TierClass[] }> = {
-  a: {
-    label: 'Tier A — Pure Java',
-    color: 'text-blue-400',
-    classes: [
-      { pkg: 'android.os', cls: 'Bundle', desc: 'HashMap-backed key-value store' },
-      { pkg: 'android.os', cls: 'BaseBundle', desc: 'Base class for Bundle' },
-      { pkg: 'android.os', cls: 'PersistableBundle', desc: 'Bundle that survives process death' },
-      { pkg: 'android.os', cls: 'Message', desc: 'Handler message with what/arg1/arg2/obj' },
-      { pkg: 'android.os', cls: 'Parcel', desc: 'Serialization container (pure Java subset)' },
-      { pkg: 'android.os', cls: 'PatternMatcher', desc: 'String pattern matching (LITERAL, PREFIX, GLOB)' },
-      { pkg: 'android.os', cls: 'ResultReceiver', desc: 'Callback wrapper' },
-      { pkg: 'android.content', cls: 'Intent', desc: 'Action/data/extras/component/categories' },
-      { pkg: 'android.content', cls: 'IntentFilter', desc: 'Action/category/data matching' },
-      { pkg: 'android.content', cls: 'ContentValues', desc: 'Map<String,Object> for DB inserts' },
-      { pkg: 'android.content', cls: 'ComponentName', desc: 'Package + class name pair' },
-      { pkg: 'android.content', cls: 'ContentUris', desc: 'Uri helper: withAppendedId, parseId' },
-      { pkg: 'android.content', cls: 'UriMatcher', desc: 'Tree-based URI routing' },
-      { pkg: 'android.net', cls: 'Uri', desc: 'Immutable URI with parse/build/query' },
-      { pkg: 'android.net', cls: 'UrlQuerySanitizer', desc: 'Query parameter sanitization' },
-      { pkg: 'android.util', cls: 'SparseArray', desc: 'int->Object map (no boxing)' },
-      { pkg: 'android.util', cls: 'SparseBooleanArray', desc: 'int->boolean map' },
-      { pkg: 'android.util', cls: 'SparseIntArray', desc: 'int->int map' },
-      { pkg: 'android.util', cls: 'SparseLongArray', desc: 'int->long map' },
-      { pkg: 'android.util', cls: 'ArrayMap', desc: 'Memory-efficient Map<K,V>' },
-      { pkg: 'android.util', cls: 'ArraySet', desc: 'Memory-efficient Set<E>' },
-      { pkg: 'android.util', cls: 'Base64', desc: 'Base64 encode/decode' },
-      { pkg: 'android.util', cls: 'Pair', desc: 'Immutable pair (first, second)' },
-      { pkg: 'android.util', cls: 'Size', desc: 'Immutable width x height (int)' },
-      { pkg: 'android.util', cls: 'SizeF', desc: 'Immutable width x height (float)' },
-      { pkg: 'android.util', cls: 'TypedValue', desc: 'Resource value with type/data/density' },
-      { pkg: 'android.util', cls: 'Log', desc: 'Logging (println to stdout)' },
-      { pkg: 'android.util', cls: 'Patterns', desc: 'Common regex patterns (EMAIL, URL, IP)' },
-      { pkg: 'android.util', cls: 'JsonReader', desc: 'Streaming JSON parser' },
-      { pkg: 'android.util', cls: 'JsonWriter', desc: 'Streaming JSON writer' },
-      { pkg: 'android.util', cls: 'Xml', desc: 'XML pull parser factory' },
-      { pkg: 'android.util', cls: 'LruCache', desc: 'Least-recently-used cache' },
-      { pkg: 'android.text', cls: 'TextUtils', desc: 'isEmpty, join, split, htmlEncode, etc.' },
-      { pkg: 'android.text', cls: 'SpannableString', desc: 'String with span markup' },
-      { pkg: 'android.text', cls: 'SpannableStringBuilder', desc: 'Mutable spannable string' },
-      { pkg: 'android.text', cls: 'Html', desc: 'HTML to/from Spanned' },
-      { pkg: 'android.graphics', cls: 'Color', desc: 'ARGB color int utilities' },
-      { pkg: 'android.graphics', cls: 'Point', desc: 'Immutable int x,y' },
-      { pkg: 'android.graphics', cls: 'PointF', desc: 'Immutable float x,y' },
-      { pkg: 'android.graphics', cls: 'Rect', desc: 'int rectangle' },
-      { pkg: 'android.graphics', cls: 'RectF', desc: 'float rectangle' },
-      { pkg: 'android.graphics', cls: 'Matrix', desc: '3x3 transformation matrix' },
-      { pkg: 'android.database', cls: 'MatrixCursor', desc: 'In-memory Cursor from arrays' },
-      { pkg: 'android.database', cls: 'MergeCursor', desc: 'Concatenates multiple Cursors' },
-      { pkg: 'android.database', cls: 'DatabaseUtils', desc: 'SQL utility methods' },
-    ],
-  },
-  b: {
-    label: 'Tier B — I/O with Java Fallback',
-    color: 'text-yellow-400',
-    classes: [
-      { pkg: 'android.content', cls: 'SharedPreferences', desc: 'Key-value prefs (HashMap + file)' },
-      { pkg: 'android.database.sqlite', cls: 'SQLiteDatabase', desc: 'SQL database (needs JDBC or stub)' },
-      { pkg: 'android.database.sqlite', cls: 'SQLiteOpenHelper', desc: 'DB lifecycle manager' },
-      { pkg: 'android.os', cls: 'Environment', desc: 'External storage dirs (File-based)' },
-      { pkg: 'android.os', cls: 'StatFs', desc: 'Filesystem stats' },
-      { pkg: 'android.os', cls: 'Handler', desc: 'Message queue + runnable dispatch' },
-      { pkg: 'android.os', cls: 'Looper', desc: 'Thread message loop' },
-      { pkg: 'android.os', cls: 'HandlerThread', desc: 'Thread with Looper' },
-      { pkg: 'android.os', cls: 'AsyncTask', desc: 'Background thread + UI callback' },
-      { pkg: 'android.os', cls: 'CountDownTimer', desc: 'Periodic tick timer' },
-      { pkg: 'android.os', cls: 'SystemClock', desc: 'uptimeMillis, elapsedRealtime' },
-      { pkg: 'android.content', cls: 'ContentProvider', desc: 'CRUD interface' },
-      { pkg: 'android.content', cls: 'ContentResolver', desc: 'Client to ContentProvider' },
-      { pkg: 'android.util', cls: 'AtomicFile', desc: 'Atomic file write with backup' },
-      { pkg: 'android.app', cls: 'Application', desc: 'App singleton' },
-    ],
-  },
-  c: {
-    label: 'Tier C — System Services (needs OHBridge)',
-    color: 'text-orange-400',
-    classes: [
-      { pkg: 'android.app', cls: 'NotificationManager', desc: 'Notification posting and management' },
-      { pkg: 'android.app', cls: 'AlarmManager', desc: 'Scheduled alarm delivery' },
-      { pkg: 'android.app', cls: 'DownloadManager', desc: 'HTTP download management' },
-      { pkg: 'android.app', cls: 'KeyguardManager', desc: 'Keyguard and lock screen' },
-      { pkg: 'android.app', cls: 'ActivityManager', desc: 'Activity and process info' },
-      { pkg: 'android.app', cls: 'PendingIntent', desc: 'Deferred intent delivery' },
-      { pkg: 'android.location', cls: 'LocationManager', desc: 'GPS / network location' },
-      { pkg: 'android.media', cls: 'MediaPlayer', desc: 'Audio/video playback' },
-      { pkg: 'android.media', cls: 'AudioManager', desc: 'Volume and audio routing' },
-      { pkg: 'android.media', cls: 'MediaRecorder', desc: 'Audio/video recording' },
-      { pkg: 'android.net', cls: 'ConnectivityManager', desc: 'Network connectivity' },
-      { pkg: 'android.net.wifi', cls: 'WifiManager', desc: 'WiFi management' },
-      { pkg: 'android.telephony', cls: 'TelephonyManager', desc: 'Phone state and info' },
-      { pkg: 'android.hardware', cls: 'SensorManager', desc: 'Device sensors' },
-      { pkg: 'android.hardware', cls: 'Camera', desc: 'Camera access (deprecated)' },
-      { pkg: 'android.hardware.camera2', cls: 'CameraManager', desc: 'Camera2 API' },
-      { pkg: 'android.bluetooth', cls: 'BluetoothAdapter', desc: 'Bluetooth management' },
-      { pkg: 'android.bluetooth', cls: 'BluetoothManager', desc: 'BLE management' },
-      { pkg: 'android.content.pm', cls: 'PackageManager', desc: 'App package info' },
-      { pkg: 'android.accounts', cls: 'AccountManager', desc: 'User accounts' },
-    ],
-  },
-  d: {
-    label: 'Tier D — UI Components (needs ArkUI)',
-    color: 'text-red-400',
-    classes: [
-      { pkg: 'android.app', cls: 'Activity', desc: 'Screen lifecycle container' },
-      { pkg: 'android.app', cls: 'Fragment', desc: 'Modular UI section' },
-      { pkg: 'android.app', cls: 'Dialog', desc: 'Popup dialog window' },
-      { pkg: 'android.app', cls: 'AlertDialog', desc: 'Standard alert dialog' },
-      { pkg: 'android.app', cls: 'Service', desc: 'Background service' },
-      { pkg: 'android.view', cls: 'View', desc: 'Base UI element' },
-      { pkg: 'android.view', cls: 'ViewGroup', desc: 'Container for views' },
-      { pkg: 'android.widget', cls: 'TextView', desc: 'Text display' },
-      { pkg: 'android.widget', cls: 'EditText', desc: 'Text input' },
-      { pkg: 'android.widget', cls: 'Button', desc: 'Click button' },
-      { pkg: 'android.widget', cls: 'ImageView', desc: 'Image display' },
-      { pkg: 'android.widget', cls: 'ListView', desc: 'Scrollable list' },
-      { pkg: 'android.widget', cls: 'RecyclerView', desc: 'Efficient scrollable list' },
-      { pkg: 'android.widget', cls: 'Toast', desc: 'Transient popup message' },
-      { pkg: 'android.webkit', cls: 'WebView', desc: 'Embedded browser' },
-    ],
-  },
+interface TierData {
+  generated: string;
+  tiers: Record<string, TierClassEntry[]>;
+  counts: { A_classes: number; B_classes: number; C_classes: number; D_classes: number; total_apis: number };
+}
+
+const TIER_LABELS: Record<string, { label: string; color: string }> = {
+  A: { label: 'Tier A — Pure Java', color: 'text-blue-400' },
+  B: { label: 'Tier B — I/O with Java Fallback', color: 'text-yellow-400' },
+  C: { label: 'Tier C — System Services (OHBridge)', color: 'text-orange-400' },
+  D: { label: 'Tier D — UI Components (ArkUI)', color: 'text-red-400' },
 };
 
 // ─── Package → Skill mapping (from api_compat.db android_packages.skill) ────
@@ -317,12 +210,17 @@ export default function Orchestrator() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [actionMsg, setActionMsg] = useState<string | null>(null);
 
+  // Tier data from JSON
+  const [tierData, setTierData] = useState<TierData | null>(null);
+  const [tierDataLoading, setTierDataLoading] = useState(false);
+
   // Batch creation
   const [showCreatePanel, setShowCreatePanel] = useState(false);
-  const [createTier, setCreateTier] = useState<string>('b');
+  const [createTier, setCreateTier] = useState<string>('A');
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
   const [createLog, setCreateLog] = useState<string[]>([]);
+  const [tierSearch, setTierSearch] = useState('');
 
   // Detail panel (reserved for future use)
 
@@ -464,6 +362,17 @@ export default function Orchestrator() {
 
   const existingClassNames = new Set(issues.map(i => extractClassName(i.title)));
 
+  // Load tier data on demand when batch panel opens
+  const loadTierData = useCallback(async () => {
+    if (tierData) return;
+    setTierDataLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}tier-classes.json`);
+      if (res.ok) setTierData(await res.json());
+    } catch { /* ignore */ }
+    setTierDataLoading(false);
+  }, [tierData]);
+
   const toggleClass = (fqn: string) => {
     setSelectedClasses(prev => {
       const next = new Set(prev);
@@ -473,12 +382,14 @@ export default function Orchestrator() {
   };
 
   const selectAllInTier = () => {
-    const tier = TIER_CLASSES[createTier];
-    if (!tier) return;
+    const classes = tierData?.tiers[createTier];
+    if (!classes) return;
     const all = new Set(selectedClasses);
-    tier.classes.forEach(c => {
-      const fqn = `${c.pkg}.${c.cls}`;
-      if (!existingClassNames.has(fqn)) all.add(fqn);
+    const filtered = tierSearch
+      ? classes.filter(c => c.fqcn.toLowerCase().includes(tierSearch.toLowerCase()))
+      : classes;
+    filtered.forEach(c => {
+      if (!existingClassNames.has(c.fqcn)) all.add(c.fqcn);
     });
     setSelectedClasses(all);
   };
@@ -487,47 +398,52 @@ export default function Orchestrator() {
 
   const createSelectedIssues = async () => {
     const t = requireToken();
-    if (!t || selectedClasses.size === 0) return;
+    if (!t || selectedClasses.size === 0 || !tierData) return;
     setCreating(true);
     setCreateLog([]);
-    const tier = TIER_CLASSES[createTier];
+    const classes = tierData.tiers[createTier] || [];
+    const tierInfo = TIER_LABELS[createTier];
 
-    for (const c of tier.classes) {
-      const fqn = `${c.pkg}.${c.cls}`;
-      if (!selectedClasses.has(fqn)) continue;
+    for (const c of classes) {
+      if (!selectedClasses.has(c.fqcn)) continue;
 
-      const title = `[SHIM] Implement ${fqn}`;
-      const relpath = `shim/java/${c.pkg.replace(/\./g, '/')}/${c.cls}.java`;
-      const skill = PACKAGE_SKILL_MAP[c.pkg] || 'A2OH-JAVA-TO-ARKTS';
-      const body = `## Class: \`${fqn}\`
+      const title = `[SHIM] Implement ${c.fqcn}`;
+      const relpath = `shim/java/${c.fqcn.replace(/\./g, '/')}.java`;
+      const skill = c.skill || PACKAGE_SKILL_MAP[c.package] || 'A2OH-JAVA-TO-ARKTS';
+      const body = `## Android Class
+\`${c.fqcn}\`
 
-**Tier:** ${createTier.toUpperCase()} ${tier.label.split(' — ')[1] || ''}
-**Description:** ${c.desc}
-**File:** \`${relpath}\`
-**Skill:** \`skills/${skill}.md\`
+## Tier
+${createTier} (${tierInfo?.label.split(' — ')[1] || ''})
 
-## Task
+## APIs to implement
+${c.apis} method(s)/field(s) classified as Tier ${createTier}
 
-Replace stub implementations (\`return null\`, \`return 0\`, \`return false\`) with **real Java logic**.
-Read \`skills/${skill}.md\` for Android-to-OpenHarmony conversion rules.
+## Package
+\`${c.package}\`
 
-## Verification
+## Skill file
+${skill || 'N/A'}
 
-\`\`\`bash
-cd test-apps && ./run-local-tests.sh headless
-# Baseline: 497/502 pass. Must not regress.
-\`\`\`
-`;
+## Instructions
+1. Read the existing shim at \`${relpath}\`
+2. Implement all Tier ${createTier} methods with real Java logic
+3. Write a self-validating test in the test harness
+4. Verify 497/502 baseline holds`;
 
       try {
         await ghApiCall('/issues', 'POST', t, {
           title,
           body,
-          labels: [`tier-${createTier}`, 'todo', 'non-ui', 'shim'],
+          labels: [`tier-${createTier.toLowerCase()}`, 'todo', 'non-ui', 'shim'],
         });
-        setCreateLog(prev => [...prev, `Created: ${fqn}`]);
+        setCreateLog(prev => [...prev, `Created: ${c.fqcn}`]);
       } catch (e: any) {
-        setCreateLog(prev => [...prev, `FAILED ${fqn}: ${e.message}`]);
+        setCreateLog(prev => [...prev, `FAILED ${c.fqcn}: ${e.message}`]);
+        // If rate limited, wait and continue
+        if (e.message.includes('403')) {
+          await new Promise(r => setTimeout(r, 5000));
+        }
       }
     }
 
@@ -677,14 +593,14 @@ cd test-apps && ./run-local-tests.sh headless
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-        <StatCard label="Total" value={stats.total} />
+        <StatCard label="Issues" value={stats.total} />
         <StatCard label="Completed" value={stats.done} color="text-green-400" />
         <StatCard label="Active" value={stats.inProgress} color="text-yellow-400" />
         <StatCard label="Failed" value={stats.failed} color="text-red-400" />
-        <StatCard label="Tier A" value={stats.tierA} color="text-blue-400" />
-        <StatCard label="Tier B" value={stats.tierB} color="text-yellow-400" />
-        <StatCard label="Tier C" value={stats.tierC} color="text-orange-400" />
-        <StatCard label="Tier D" value={stats.tierD} color="text-red-400" />
+        <StatCard label="Tier A" value={stats.tierA} color="text-blue-400" sub={tierData ? `/ ${tierData.counts.A_classes}` : undefined} />
+        <StatCard label="Tier B" value={stats.tierB} color="text-yellow-400" sub={tierData ? `/ ${tierData.counts.B_classes}` : undefined} />
+        <StatCard label="Tier C" value={stats.tierC} color="text-orange-400" sub={tierData ? `/ ${tierData.counts.C_classes}` : undefined} />
+        <StatCard label="Tier D" value={stats.tierD} color="text-red-400" sub={tierData ? `/ ${tierData.counts.D_classes}` : undefined} />
       </div>
 
       {/* Action bar: filters + create button */}
@@ -714,7 +630,7 @@ cd test-apps && ./run-local-tests.sh headless
             {showSingleCreate ? 'Close' : '+ Create Issue'}
           </button>
           <button
-            onClick={() => { setShowCreatePanel(!showCreatePanel); setShowSingleCreate(false); }}
+            onClick={() => { const next = !showCreatePanel; setShowCreatePanel(next); setShowSingleCreate(false); if (next) loadTierData(); }}
             className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm hover:bg-green-600 font-medium"
           >
             {showCreatePanel ? 'Close' : '+ Batch Add'}
@@ -783,20 +699,94 @@ cd test-apps && ./run-local-tests.sh headless
 
       {/* Batch create panel */}
       {showCreatePanel && (
-        <BatchCreatePanel
-          createTier={createTier}
-          setCreateTier={setCreateTier}
-          selectedClasses={selectedClasses}
-          existingClassNames={existingClassNames}
-          toggleClass={toggleClass}
-          selectAllInTier={selectAllInTier}
-          deselectAll={deselectAll}
-          createSelectedIssues={createSelectedIssues}
-          creating={creating}
-          createLog={createLog}
-          hasToken={!!token}
-          onNeedToken={() => setShowTokenInput(true)}
-        />
+        <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Add Issues by Tier</h2>
+            <div className="flex gap-2">
+              {['A', 'B', 'C', 'D'].map(t => (
+                <button key={t} onClick={() => { setCreateTier(t); deselectAll(); setTierSearch(''); }}
+                  className={`px-3 py-1.5 rounded-lg text-sm ${createTier === t ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {tierDataLoading ? (
+            <div className="text-center text-gray-500 py-8">Loading tier data...</div>
+          ) : !tierData ? (
+            <div className="text-center text-gray-500 py-8">Failed to load tier-classes.json</div>
+          ) : (() => {
+            const classes = tierData.tiers[createTier] || [];
+            const info = TIER_LABELS[createTier];
+            const filtered = tierSearch
+              ? classes.filter(c => c.fqcn.toLowerCase().includes(tierSearch.toLowerCase()) || c.package.toLowerCase().includes(tierSearch.toLowerCase()))
+              : classes;
+            const newCount = classes.filter(c => !existingClassNames.has(c.fqcn)).length;
+            return (
+              <>
+                <div className="flex items-center justify-between text-sm flex-wrap gap-2">
+                  <span className={info?.color || 'text-gray-400'}>
+                    {info?.label} — {classes.length} classes ({newCount} new)
+                  </span>
+                  <div className="flex gap-2 items-center">
+                    <input type="text" value={tierSearch} onChange={e => setTierSearch(e.target.value)}
+                      placeholder="Filter classes..."
+                      className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 w-48" />
+                    <button onClick={selectAllInTier} className="text-xs text-blue-400 hover:text-blue-300">Select all new{tierSearch ? ' (filtered)' : ''}</button>
+                    <button onClick={deselectAll} className="text-xs text-gray-500 hover:text-gray-300">Deselect all</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-96 overflow-y-auto">
+                  {filtered.slice(0, 300).map(c => {
+                    const exists = existingClassNames.has(c.fqcn);
+                    const selected = selectedClasses.has(c.fqcn);
+                    return (
+                      <label key={c.fqcn}
+                        className={`flex items-start gap-2 p-2 rounded-lg text-sm cursor-pointer ${exists ? 'opacity-40 cursor-not-allowed' : selected ? 'bg-blue-900/30 border border-blue-700/50' : 'bg-gray-800/50 hover:bg-gray-800'}`}>
+                        <input type="checkbox" checked={selected} disabled={exists}
+                          onChange={() => !exists && toggleClass(c.fqcn)} className="mt-0.5 rounded" />
+                        <div className="min-w-0">
+                          <div className={`font-mono text-xs truncate ${exists ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{c.fqcn}</div>
+                          <div className="text-xs text-gray-500">{c.apis} APIs {c.skill && `· ${c.skill}`} {exists && '(exists)'}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                  {filtered.length > 300 && (
+                    <div className="col-span-full text-center text-xs text-gray-500 py-2">
+                      Showing 300 of {filtered.length} — use filter to narrow down
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-800">
+                  <span className="text-sm text-gray-400">{selectedClasses.size} selected</span>
+                  {!token ? (
+                    <button onClick={() => setShowTokenInput(true)}
+                      className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm hover:bg-blue-600">
+                      Set Token to Create
+                    </button>
+                  ) : (
+                    <button onClick={createSelectedIssues} disabled={selectedClasses.size === 0 || creating}
+                      className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm hover:bg-green-600 disabled:opacity-50 font-medium">
+                      {creating ? 'Creating...' : `Create ${selectedClasses.size} Issues`}
+                    </button>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+
+          {createLog.length > 0 && (
+            <div className="bg-gray-800 rounded-lg p-3 max-h-40 overflow-y-auto">
+              {createLog.map((log, i) => (
+                <div key={i} className={`text-xs font-mono ${log.startsWith('FAILED') ? 'text-red-400' : 'text-green-400'}`}>{log}</div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Issue table */}
@@ -906,11 +896,14 @@ gh issue close <NUMBER> --comment "Done" --repo ${REPO}`}</div>
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
-function StatCard({ label, value, color = 'text-white' }: { label: string; value: number; color?: string }) {
+function StatCard({ label, value, color = 'text-white', sub }: { label: string; value: number; color?: string; sub?: string }) {
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
       <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-      <div className={`text-xl font-bold mt-1 ${color}`}>{value}</div>
+      <div className={`text-xl font-bold mt-1 ${color}`}>
+        {value}
+        {sub && <span className="text-xs font-normal text-gray-500 ml-1">{sub}</span>}
+      </div>
     </div>
   );
 }
@@ -937,89 +930,3 @@ function TokenInput({ onSave, onCancel }: { onSave: (t: string) => void; onCance
   );
 }
 
-function BatchCreatePanel({
-  createTier, setCreateTier, selectedClasses, existingClassNames, toggleClass,
-  selectAllInTier, deselectAll, createSelectedIssues, creating, createLog,
-  hasToken, onNeedToken,
-}: {
-  createTier: string;
-  setCreateTier: (t: string) => void;
-  selectedClasses: Set<string>;
-  existingClassNames: Set<string>;
-  toggleClass: (fqn: string) => void;
-  selectAllInTier: () => void;
-  deselectAll: () => void;
-  createSelectedIssues: () => void;
-  creating: boolean;
-  createLog: string[];
-  hasToken: boolean;
-  onNeedToken: () => void;
-}) {
-  const tier = TIER_CLASSES[createTier];
-
-  return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Add Issues by Tier</h2>
-        <div className="flex gap-2">
-          {Object.entries(TIER_CLASSES).map(([key]) => (
-            <button key={key} onClick={() => { setCreateTier(key); deselectAll(); }}
-              className={`px-3 py-1.5 rounded-lg text-sm ${createTier === key ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
-              {key.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between text-sm">
-        <span className={tier.color}>{tier.label} ({tier.classes.length} classes)</span>
-        <div className="flex gap-2">
-          <button onClick={selectAllInTier} className="text-xs text-blue-400 hover:text-blue-300">Select all new</button>
-          <button onClick={deselectAll} className="text-xs text-gray-500 hover:text-gray-300">Deselect all</button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-y-auto">
-        {tier.classes.map(c => {
-          const fqn = `${c.pkg}.${c.cls}`;
-          const exists = existingClassNames.has(fqn);
-          const selected = selectedClasses.has(fqn);
-          return (
-            <label key={fqn}
-              className={`flex items-start gap-2 p-2 rounded-lg text-sm cursor-pointer ${exists ? 'opacity-40 cursor-not-allowed' : selected ? 'bg-blue-900/30 border border-blue-700/50' : 'bg-gray-800/50 hover:bg-gray-800'}`}>
-              <input type="checkbox" checked={selected} disabled={exists}
-                onChange={() => !exists && toggleClass(fqn)} className="mt-0.5 rounded" />
-              <div>
-                <div className={`font-mono text-xs ${exists ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{fqn}</div>
-                <div className="text-xs text-gray-500">{c.desc} {exists && '(exists)'}</div>
-              </div>
-            </label>
-          );
-        })}
-      </div>
-
-      <div className="flex items-center justify-between pt-2 border-t border-gray-800">
-        <span className="text-sm text-gray-400">{selectedClasses.size} selected</span>
-        {!hasToken ? (
-          <button onClick={onNeedToken}
-            className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm hover:bg-blue-600">
-            Set Token to Create
-          </button>
-        ) : (
-          <button onClick={createSelectedIssues} disabled={selectedClasses.size === 0 || creating}
-            className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm hover:bg-green-600 disabled:opacity-50 font-medium">
-            {creating ? 'Creating...' : `Create ${selectedClasses.size} Issues`}
-          </button>
-        )}
-      </div>
-
-      {createLog.length > 0 && (
-        <div className="bg-gray-800 rounded-lg p-3 max-h-40 overflow-y-auto">
-          {createLog.map((log, i) => (
-            <div key={i} className={`text-xs font-mono ${log.startsWith('FAILED') ? 'text-red-400' : 'text-green-400'}`}>{log}</div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}

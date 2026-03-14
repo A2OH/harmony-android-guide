@@ -1,8 +1,4 @@
 package android.content;
-import android.util.Log;
-import android.util.Log;
-
-import com.ohos.shim.bridge.OHBridge;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,63 +6,102 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Shim: android.content.SharedPreferences → @ohos.data.preferences
- * Tier 1 — near-direct mapping.
+ * Shim: android.content.SharedPreferences -> @ohos.data.preferences
+ * Tier 1 -- near-direct mapping.
  *
  * OH Preferences is async; this shim wraps it synchronously to match
  * the Android API contract. The Editor.apply() batches writes and
  * calls OHBridge.preferencesFlush() on commit.
+ *
+ * All OHBridge calls are done via reflection to avoid compile-time
+ * dependency on the native bridge class.
  */
 public class SharedPreferences {
+    private static final String TAG = "SharedPreferences";
+
     private final long handle;
     private final String name;
 
     SharedPreferences(String name) {
         this.name = name;
-        this.handle = OHBridge.preferencesOpen(name);
+        Object result = callBridge("preferencesOpen",
+                new Class<?>[]{ String.class }, name);
+        this.handle = (result instanceof Number) ? ((Number) result).longValue() : 0L;
     }
 
+    // ── Reflection helper ───────────────────────────────────────────
+
+    private static Object callBridge(String method, Class<?>[] types, Object... args) {
+        try {
+            Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
+            return c.getMethod(method, types).invoke(null, args);
+        } catch (Throwable t) { return null; }
+    }
+
+    // ── Getters ─────────────────────────────────────────────────────
+
     public String getString(String key, String defValue) {
-        return OHBridge.preferencesGetString(handle, key, defValue);
+        Object result = callBridge("preferencesGetString",
+                new Class<?>[]{ long.class, String.class, String.class },
+                handle, key, defValue);
+        return (result instanceof String) ? (String) result : defValue;
     }
 
     public int getInt(String key, int defValue) {
-        return OHBridge.preferencesGetInt(handle, key, defValue);
+        Object result = callBridge("preferencesGetInt",
+                new Class<?>[]{ long.class, String.class, int.class },
+                handle, key, defValue);
+        return (result instanceof Number) ? ((Number) result).intValue() : defValue;
     }
 
     public long getLong(String key, long defValue) {
-        return OHBridge.preferencesGetLong(handle, key, defValue);
+        Object result = callBridge("preferencesGetLong",
+                new Class<?>[]{ long.class, String.class, long.class },
+                handle, key, defValue);
+        return (result instanceof Number) ? ((Number) result).longValue() : defValue;
     }
 
     public float getFloat(String key, float defValue) {
-        return OHBridge.preferencesGetFloat(handle, key, defValue);
+        Object result = callBridge("preferencesGetFloat",
+                new Class<?>[]{ long.class, String.class, float.class },
+                handle, key, defValue);
+        return (result instanceof Number) ? ((Number) result).floatValue() : defValue;
     }
 
     public boolean getBoolean(String key, boolean defValue) {
-        return OHBridge.preferencesGetBoolean(handle, key, defValue);
+        Object result = callBridge("preferencesGetBoolean",
+                new Class<?>[]{ long.class, String.class, boolean.class },
+                handle, key, defValue);
+        return (result instanceof Boolean) ? (Boolean) result : defValue;
     }
 
     public Set<String> getStringSet(String key, Set<String> defValues) {
         // OH Preferences doesn't have native string set support.
-        // Store as comma-separated string internally.
-        String raw = OHBridge.preferencesGetString(handle, key, null);
-        if (raw == null) return defValues;
-        Set<String> result = new HashSet<>();
+        // Store as unit-separator-joined string internally.
+        Object result = callBridge("preferencesGetString",
+                new Class<?>[]{ long.class, String.class, String.class },
+                handle, key, null);
+        if (!(result instanceof String)) return defValues;
+        String raw = (String) result;
+        Set<String> out = new HashSet<String>();
         for (String s : raw.split("\u001F")) { // unit separator
-            if (!s.isEmpty()) result.add(s);
+            if (!s.isEmpty()) out.add(s);
         }
-        return result;
+        return out;
     }
 
     public Map<String, ?> getAll() {
-        // Limited implementation — OH Preferences doesn't expose getAll easily.
+        // Limited implementation -- OH Preferences doesn't expose getAll easily.
         // Return empty map as fallback.
-        return new HashMap<>();
+        return new HashMap<String, Object>();
     }
 
     public boolean contains(String key) {
         // Check by reading with a sentinel default
-        return OHBridge.preferencesGetString(handle, key, null) != null;
+        Object result = callBridge("preferencesGetString",
+                new Class<?>[]{ long.class, String.class, String.class },
+                handle, key, null);
+        return result != null;
     }
 
     public Editor edit() {
@@ -85,8 +120,8 @@ public class SharedPreferences {
 
     public static class Editor {
         private final long handle;
-        private final Map<String, Object> pending = new HashMap<>();
-        private final Set<String> removals = new HashSet<>();
+        private final Map<String, Object> pending = new HashMap<String, Object>();
+        private final Set<String> removals = new HashSet<String>();
         private boolean clearRequested = false;
 
         Editor(long handle) {
@@ -100,25 +135,25 @@ public class SharedPreferences {
         }
 
         public Editor putInt(String key, int value) {
-            pending.put(key, value);
+            pending.put(key, Integer.valueOf(value));
             removals.remove(key);
             return this;
         }
 
         public Editor putLong(String key, long value) {
-            pending.put(key, value);
+            pending.put(key, Long.valueOf(value));
             removals.remove(key);
             return this;
         }
 
         public Editor putFloat(String key, float value) {
-            pending.put(key, value);
+            pending.put(key, Float.valueOf(value));
             removals.remove(key);
             return this;
         }
 
         public Editor putBoolean(String key, boolean value) {
-            pending.put(key, value);
+            pending.put(key, Boolean.valueOf(value));
             removals.remove(key);
             return this;
         }
@@ -172,36 +207,49 @@ public class SharedPreferences {
             try {
                 applyInternal();
             } catch (Exception e) {
-                android.util.Log.e("SharedPreferences", "apply() failed", e);
+                android.util.Log.e(TAG, "apply() failed", e);
             }
         }
 
         private void applyInternal() {
             if (clearRequested) {
-                OHBridge.preferencesClear(handle);
+                callBridge("preferencesClear",
+                        new Class<?>[]{ long.class }, handle);
             }
 
             for (String key : removals) {
-                OHBridge.preferencesRemove(handle, key);
+                callBridge("preferencesRemove",
+                        new Class<?>[]{ long.class, String.class }, handle, key);
             }
 
             for (Map.Entry<String, Object> entry : pending.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
                 if (value instanceof String) {
-                    OHBridge.preferencesPutString(handle, key, (String) value);
+                    callBridge("preferencesPutString",
+                            new Class<?>[]{ long.class, String.class, String.class },
+                            handle, key, (String) value);
                 } else if (value instanceof Integer) {
-                    OHBridge.preferencesPutInt(handle, key, (Integer) value);
+                    callBridge("preferencesPutInt",
+                            new Class<?>[]{ long.class, String.class, int.class },
+                            handle, key, (Integer) value);
                 } else if (value instanceof Long) {
-                    OHBridge.preferencesPutLong(handle, key, (Long) value);
+                    callBridge("preferencesPutLong",
+                            new Class<?>[]{ long.class, String.class, long.class },
+                            handle, key, (Long) value);
                 } else if (value instanceof Float) {
-                    OHBridge.preferencesPutFloat(handle, key, (Float) value);
+                    callBridge("preferencesPutFloat",
+                            new Class<?>[]{ long.class, String.class, float.class },
+                            handle, key, (Float) value);
                 } else if (value instanceof Boolean) {
-                    OHBridge.preferencesPutBoolean(handle, key, (Boolean) value);
+                    callBridge("preferencesPutBoolean",
+                            new Class<?>[]{ long.class, String.class, boolean.class },
+                            handle, key, (Boolean) value);
                 }
             }
 
-            OHBridge.preferencesFlush(handle);
+            callBridge("preferencesFlush",
+                    new Class<?>[]{ long.class }, handle);
             pending.clear();
             removals.clear();
             clearRequested = false;

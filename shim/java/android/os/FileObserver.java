@@ -1,10 +1,13 @@
 package android.os;
 
+import java.io.File;
+
 /**
  * Android-compatible FileObserver shim. Monitors file system events.
- * This is a stub/no-op implementation for OpenHarmony migration.
+ * This is a stub/no-op implementation for OpenHarmony migration —
+ * inotify is not wired up; startWatching/stopWatching are no-ops.
  */
-public class FileObserver {
+public abstract class FileObserver {
 
     public static final int ACCESS        = 0x00000001;
     public static final int MODIFY        = 0x00000002;
@@ -25,23 +28,50 @@ public class FileObserver {
 
     private final String mPath;
     private final int mMask;
+    private boolean mWatching;
 
+    /** Create a FileObserver monitoring the given path for ALL_EVENTS. */
     public FileObserver(String path) {
         this(path, ALL_EVENTS);
     }
 
+    /** Create a FileObserver monitoring the given path for the specified event mask. */
     public FileObserver(String path, int mask) {
         mPath = path;
         mMask = mask;
+        mWatching = false;
     }
 
+    /** Create a FileObserver monitoring the given file for ALL_EVENTS (API 29+). */
+    public FileObserver(File file) {
+        this(file.getPath(), ALL_EVENTS);
+    }
+
+    /** Create a FileObserver monitoring the given file for the specified event mask (API 29+). */
+    public FileObserver(File file, int mask) {
+        this(file.getPath(), mask);
+    }
+
+    /**
+     * Start watching for events. Stub — sets the watching flag but does not
+     * register any inotify watches.
+     */
     public void startWatching() {
-        // no-op: inotify not wired up in shim
+        mWatching = true;
     }
 
+    /**
+     * Stop watching for events. Stub — clears the watching flag.
+     */
     public void stopWatching() {
-        // no-op
+        mWatching = false;
     }
 
-    public void onEvent(int event, String path) {}
+    /**
+     * Called when a monitored event occurs.
+     *
+     * @param event the type of event that occurred
+     * @param path  the path relative to the monitored directory, or {@code null}
+     */
+    public abstract void onEvent(int event, String path);
 }
