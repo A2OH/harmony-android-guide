@@ -210,13 +210,19 @@ export default function Orchestrator() {
   const [createLog, setCreateLog] = useState<string[]>([]);
   const [tierSearch, setTierSearch] = useState('');
 
-  // Auto-fill: auto-create issues when todo queue runs low
-  const [autoFill, setAutoFill] = useState(false);
-  const [autoFillTier, setAutoFillTier] = useState('A');
-  const [autoFillThreshold, setAutoFillThreshold] = useState(10);
-  const [autoFillBatch, setAutoFillBatch] = useState(20);
+  // Auto-fill: auto-create issues when todo queue runs low (persisted)
+  const [autoFill, setAutoFill] = useState(() => localStorage.getItem('af_on') === '1');
+  const [autoFillTier, setAutoFillTier] = useState(() => localStorage.getItem('af_tier') || 'A');
+  const [autoFillThreshold, setAutoFillThreshold] = useState(() => Number(localStorage.getItem('af_thresh')) || 10);
+  const [autoFillBatch, setAutoFillBatch] = useState(() => Number(localStorage.getItem('af_batch')) || 20);
   const [autoFillLog, setAutoFillLog] = useState<string[]>([]);
   const autoFillRunning = useRef(false);
+
+  // Persist auto-fill settings
+  useEffect(() => { localStorage.setItem('af_on', autoFill ? '1' : '0'); }, [autoFill]);
+  useEffect(() => { localStorage.setItem('af_tier', autoFillTier); }, [autoFillTier]);
+  useEffect(() => { localStorage.setItem('af_thresh', String(autoFillThreshold)); }, [autoFillThreshold]);
+  useEffect(() => { localStorage.setItem('af_batch', String(autoFillBatch)); }, [autoFillBatch]);
 
   // Single issue creation
   const [showSingleCreate, setShowSingleCreate] = useState(false);
