@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 interface Issue {
   number: number;
@@ -51,14 +51,25 @@ const TIER_LABELS: Record<string, { label: string; color: string }> = {
 
 // ─── Skill lookup helper ────────────────────────────────────────────────────
 
-function lookupSkill(pkg: string, tierData: TierData | null): string {
-  if (!tierData) return 'A2OH-JAVA-TO-ARKTS';
+function buildSkillMap(tierData: TierData): Record<string, string> {
+  const map: Record<string, string> = {};
   for (const tier of Object.values(tierData.tiers)) {
     for (const c of tier) {
-      if (c.package === pkg && c.skill) return c.skill;
+      if (c.skill && !map[c.package]) {
+        map[c.package] = c.skill;
+      }
     }
   }
-  return 'A2OH-JAVA-TO-ARKTS';
+  return map;
+}
+
+let _skillMapCache: { data: TierData; map: Record<string, string> } | null = null;
+function lookupSkill(pkg: string, tierData: TierData | null): string {
+  if (!tierData) return 'A2OH-JAVA-TO-ARKTS';
+  if (!_skillMapCache || _skillMapCache.data !== tierData) {
+    _skillMapCache = { data: tierData, map: buildSkillMap(tierData) };
+  }
+  return _skillMapCache.map[pkg] || 'A2OH-JAVA-TO-ARKTS';
 }
 
 // ─── API helpers ─────────────────────────────────────────────────────────────
@@ -217,6 +228,8 @@ export default function Orchestrator() {
   const [autoFillBatch, setAutoFillBatch] = useState(() => Number(localStorage.getItem('af_batch')) || 20);
   const [autoFillLog, setAutoFillLog] = useState<string[]>([]);
   const autoFillRunning = useRef(false);
+  const autoFillLastRun = useRef(0);
+  const initialFetchDone = useRef(false);
 
   // Persist auto-fill settings
   useEffect(() => { localStorage.setItem('af_on', autoFill ? '1' : '0'); }, [autoFill]);
@@ -244,6 +257,7 @@ export default function Orchestrator() {
       const data = await fetchAllShimIssues(token || undefined);
       setIssues(data);
       setLastRefresh(new Date());
+      initialFetchDone.current = true;
     } catch (e) {
       setError('Failed to fetch issues. GitHub API rate limit? Set a token for 5,000 req/hr.');
     }
@@ -272,22 +286,29 @@ export default function Orchestrator() {
     return s;
   }, { todo: 0, inProgress: 0, done: 0, failed: 0, total: 0, tierA: 0, tierB: 0, tierC: 0, tierD: 0 });
 
+  const existingClassNames = useMemo(() => new Set(issues.map(i => extractClassName(i.title))), [issues]);
+
   // Auto-fill: when todo drops below threshold, inject more issues from tier-classes.json
+  // Guards: wait for initial fetch, enforce 60s cooldown, prevent re-entry
   useEffect(() => {
     if (!autoFill || !token || !tierData || autoFillRunning.current) return;
+    if (!initialFetchDone.current) return;
     if (stats.todo >= autoFillThreshold) return;
+    const now = Date.now();
+    if (now - autoFillLastRun.current < 60_000) return;
 
-    const existingNames = new Set(issues.map(i => extractClassName(i.title)));
     const candidates = (tierData.tiers[autoFillTier] || [])
-      .filter(c => !existingNames.has(c.fqcn));
+      .filter(c => !existingClassNames.has(c.fqcn));
 
     if (candidates.length === 0) {
-      setAutoFillLog(prev => [...prev.slice(-19), `[${new Date().toLocaleTimeString()}] No more ${autoFillTier} classes to create`]);
+      setAutoFillLog(prev => [...prev.slice(-19), `[${new Date().toLocaleTimeString()}] No more Tier ${autoFillTier} classes to create`]);
+      autoFillLastRun.current = now;
       return;
     }
 
     const batch = candidates.slice(0, autoFillBatch);
     autoFillRunning.current = true;
+    autoFillLastRun.current = now;
     setAutoFillLog(prev => [...prev.slice(-19), `[${new Date().toLocaleTimeString()}] Todo=${stats.todo} < ${autoFillThreshold}, creating ${batch.length} Tier ${autoFillTier} issues...`]);
 
     (async () => {
@@ -315,7 +336,7 @@ export default function Orchestrator() {
       autoFillRunning.current = false;
       refresh();
     })();
-  }, [autoFill, token, tierData, stats.todo, autoFillThreshold, autoFillBatch, autoFillTier, issues, refresh]);
+  }, [autoFill, token, tierData, stats.todo, autoFillThreshold, autoFillBatch, autoFillTier, existingClassNames, refresh]);
 
   const filtered = issues.filter(i => {
     if (filter !== 'all' && getStatus(i) !== filter) return false;
@@ -358,8 +379,9 @@ export default function Orchestrator() {
         }
       }
 
-      // Add new status label (except 'done' which uses close)
+      // Add new status label
       if (newStatus === 'done') {
+        await ghApiCall(`/issues/${issue.number}/labels`, 'POST', t, { labels: ['done'] });
         await ghApiCall(`/issues/${issue.number}`, 'PATCH', t, { state: 'closed' });
       } else {
         if (issue.state === 'closed') {
@@ -419,8 +441,6 @@ export default function Orchestrator() {
   };
 
   // ─── Batch issue creation ───────────────────────────────────────────────
-
-  const existingClassNames = new Set(issues.map(i => extractClassName(i.title)));
 
   // Load tier data (on mount for skill lookup, and when batch panel opens)
   const loadTierData = useCallback(async () => {
