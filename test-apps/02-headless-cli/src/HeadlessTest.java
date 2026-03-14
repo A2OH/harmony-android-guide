@@ -2793,5 +2793,28 @@ public class HeadlessTest {
         server.shutdown();
         check("stack empty after shutdown", am.getStackSize() == 0);
         check("no resumed after shutdown", am.getResumedActivity() == null);
+
+        // Test 6: getSystemService routing
+        android.content.Context ctx = new android.content.Context();
+        Object notifSvc = ctx.getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        check("getSystemService(notification) non-null", notifSvc != null);
+        check("getSystemService(notification) is NotificationManager",
+            notifSvc instanceof android.app.NotificationManager);
+
+        Object audioSvc = ctx.getSystemService(android.content.Context.AUDIO_SERVICE);
+        check("getSystemService(audio) non-null", audioSvc != null);
+        check("getSystemService(audio) is AudioManager",
+            audioSvc instanceof android.media.AudioManager);
+
+        Object locationSvc = ctx.getSystemService(android.content.Context.LOCATION_SERVICE);
+        check("getSystemService(location) non-null", locationSvc != null);
+
+        Object nullSvc = ctx.getSystemService("nonexistent");
+        check("getSystemService(nonexistent) is null", nullSvc == null);
+
+        check("getMainLooper() non-null", ctx.getMainLooper() != null);
+        check("getContentResolver() non-null", ctx.getContentResolver() != null);
+        check("getClassLoader() non-null", ctx.getClassLoader() != null);
+        check("getMainExecutor() non-null", ctx.getMainExecutor() != null);
     }
 }

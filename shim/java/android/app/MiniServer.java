@@ -27,6 +27,7 @@ public class MiniServer {
         mApplication = new Application();
         mApplication.setPackageName(packageName);
         mActivityManager = new MiniActivityManager(this);
+        SystemServiceRegistry.init();
     }
 
     /** Initialize the MiniServer singleton. Call once at engine startup. */
