@@ -200,12 +200,11 @@ public final class Os {
     // -------------------------------------------------------------------------
 
     public static int getpid() {
-        return (int) ProcessHandle.current().pid();
+        return 1; // stub
     }
 
     public static int getppid() {
-        return ProcessHandle.current().parent()
-                .map(ph -> (int) ph.pid()).orElse(0);
+        return 0; // stub
     }
 
     public static int getuid() {
@@ -225,10 +224,7 @@ public final class Os {
     }
 
     public static void kill(int pid, int signal) throws ErrnoException {
-        if (signal == OsConstants.SIGKILL || signal == OsConstants.SIGTERM) {
-            ProcessHandle.of(pid).ifPresent(ProcessHandle::destroy);
-        }
-        // other signals are no-ops on the host JVM
+        // stub — no process control in shim
     }
 
     public static String strerror(int errno) {
