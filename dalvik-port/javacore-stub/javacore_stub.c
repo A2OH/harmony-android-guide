@@ -82,6 +82,10 @@ JNIEXPORT jobjectArray JNICALL Java_libcore_icu_ICU_getAvailableLocalesNative(JN
 JNIEXPORT void JNICALL Java_libcore_icu_ICU_setDefaultLocale(JNIEnv* env, jclass cls, jstring locale) {
 }
 
+JNIEXPORT jstring JNICALL Java_libcore_icu_ICU_getDefaultLocale(JNIEnv* env, jclass cls) {
+    return (*env)->NewStringUTF(env, "en_US");
+}
+
 JNIEXPORT jboolean JNICALL Java_libcore_icu_ICU_initLocaleDataNative(JNIEnv* env, jclass cls, jstring locale, jobject ld) {
     jclass c = (*env)->GetObjectClass(env, ld);
     if (!c) return JNI_FALSE;
@@ -215,4 +219,15 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     }
 
     return JNI_VERSION_1_6;
+}
+
+/* Additional ICU methods needed by Dalvik boot */
+JNIEXPORT jstring JNICALL Java_libcore_icu_ICU_getIcuVersion(JNIEnv* env, jclass cls) {
+    return (*env)->NewStringUTF(env, "58.2");
+}
+JNIEXPORT jstring JNICALL Java_libcore_icu_ICU_getUnicodeVersion(JNIEnv* env, jclass cls) {
+    return (*env)->NewStringUTF(env, "9.0");
+}
+JNIEXPORT jstring JNICALL Java_libcore_icu_ICU_getCldrVersion(JNIEnv* env, jclass cls) {
+    return (*env)->NewStringUTF(env, "30");
 }
