@@ -125,9 +125,12 @@ public class Window {
     public void setClipToOutline(boolean p0) {}
     public void setColorMode(int p0) {}
     public void setContainer(Window p0) {}
-    public void setContentView(int p0) {
-        // Resource ID layout inflation — not yet supported
-        // TODO: LayoutInflater.inflate(p0) when resource system is implemented
+    public void setContentView(int layoutResID) {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View inflated = inflater.inflate(layoutResID, null);
+        if (inflated != null) {
+            setContentView(inflated);
+        }
     }
     public void setContentView(View p0) {
         setContentView(p0, null);

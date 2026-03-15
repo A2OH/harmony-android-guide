@@ -3,9 +3,11 @@ package android.app;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.MiniPackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import java.io.IOException;
 
 /**
  * MiniServer — replaces Android's SystemServer for single-app engine execution.
@@ -24,8 +26,9 @@ public class MiniServer {
     private final MiniActivityManager mActivityManager;
     private final MiniServiceManager mServiceManager;
     private final MiniPackageManager mPackageManager;
-    private final Application mApplication;
+    private Application mApplication;
     private String mPackageName;
+    private ApkInfo mApkInfo;
 
     private MiniServer(String packageName) {
         mPackageName = packageName;
@@ -60,6 +63,7 @@ public class MiniServer {
     public MiniPackageManager getPackageManager() { return mPackageManager; }
     public Application getApplication() { return mApplication; }
     public String getPackageName() { return mPackageName; }
+    public ApkInfo getApkInfo() { return mApkInfo; }
 
     /**
      * Start an Activity by class name (convenience for testing).
@@ -89,6 +93,79 @@ public class MiniServer {
             }
         }
         mActivityManager.startActivity(null, intent, -1);
+    }
+
+    /**
+     * Load an APK: extract DEX files, parse manifest, register activities/services.
+     * After this, startActivity() with the launcher intent will work.
+     */
+    public ApkInfo loadApk(String apkPath) throws IOException {
+        ApkInfo info = ApkLoader.load(apkPath);
+        mApkInfo = info;
+
+        // Update package info
+        mPackageName = info.packageName;
+
+        // If manifest declares a custom Application class, instantiate it
+        if (info.applicationClassName != null) {
+            try {
+                Class<?> appCls = Class.forName(info.applicationClassName);
+                mApplication = (Application) appCls.newInstance();
+            } catch (Exception e) {
+                // fallback to default Application
+            }
+        }
+        mApplication.setPackageName(info.packageName);
+
+        // Wire resources from parsed resources.arsc
+        if (info.resourceTable instanceof android.content.res.ResourceTable) {
+            mApplication.getResources().loadResourceTable(
+                    (android.content.res.ResourceTable) info.resourceTable);
+        }
+
+        // Wire assets from extracted assets/ directory
+        if (info.assetDir != null) {
+            mApplication.getAssets().setAssetDir(info.assetDir);
+        }
+
+        // Set native lib path for System.loadLibrary()
+        if (info.nativeLibDir != null) {
+            System.setProperty("app.native.lib.dir", info.nativeLibDir);
+        }
+
+        // Register all activities from manifest
+        for (String activityName : info.activities) {
+            mPackageManager.addActivity(activityName);
+        }
+
+        // Register launcher activity with MAIN/LAUNCHER filter
+        if (info.launcherActivity != null) {
+            IntentFilter launcherFilter = new IntentFilter(Intent.ACTION_MAIN);
+            launcherFilter.addCategory(Intent.CATEGORY_LAUNCHER);
+            mPackageManager.addActivity(info.launcherActivity, launcherFilter);
+        }
+
+        // Register services
+        for (String serviceName : info.services) {
+            mPackageManager.addService(serviceName);
+        }
+
+        // Call Application.onCreate after all wiring
+        mApplication.onCreate();
+
+        return info;
+    }
+
+    /**
+     * Load APK and launch the main activity.
+     */
+    public void loadAndLaunch(String apkPath) throws IOException {
+        ApkInfo info = loadApk(apkPath);
+        if (info.launcherActivity != null) {
+            startActivity(info.launcherActivity);
+        } else if (!info.activities.isEmpty()) {
+            startActivity(info.activities.get(0));
+        }
     }
 
     /** Shut down: destroy all services and activities, call Application.onTerminate(). */

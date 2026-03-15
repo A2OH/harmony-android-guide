@@ -108,6 +108,7 @@ public class HeadlessTest {
         testViewRenderingPipeline();
         testDrawablesAndFontMetrics();
         testInputPipeline();
+        testLayoutInflation();
         testBundleShim();
         testSparseArrayShim();
         testTextUtilsShim();
@@ -6062,6 +6063,284 @@ public class HeadlessTest {
         check("toString non-null", eq1.toString() != null);
         check("toString contains RectF", eq1.toString().contains("RectF"));
     }
+    static void testLayoutInflation() {
+        section("Layout inflation (binary XML → View tree)");
+
+        // ── Test 1: LayoutInflater with no resources falls back to FrameLayout ──
+        android.content.Context ctx = new android.content.Context();
+        android.view.LayoutInflater inflater = android.view.LayoutInflater.from(ctx);
+        android.view.View fallback = inflater.inflate(0x7f030000, null);
+        check("fallback inflate returns non-null", fallback != null);
+        check("fallback inflate returns FrameLayout",
+                fallback instanceof android.widget.FrameLayout);
+        check("fallback inflate sets resource ID", fallback.getId() == 0x7f030000);
+
+        // ── Test 2: BinaryLayoutParser with a hand-built AXML ──
+        // Build a minimal AXML representing:
+        //   <LinearLayout orientation="vertical">
+        //     <TextView text="Hello World" />
+        //     <Button text="Click Me" />
+        //   </LinearLayout>
+
+        byte[] axml = buildTestLayoutAxml();
+        android.view.BinaryLayoutParser parser = new android.view.BinaryLayoutParser(ctx);
+        android.view.View root = parser.parse(axml);
+
+        check("parsed layout root non-null", root != null);
+        check("parsed layout root is LinearLayout",
+                root instanceof android.widget.LinearLayout);
+
+        if (root instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) root;
+            check("LinearLayout has 2 children", group.getChildCount() == 2);
+
+            if (group.getChildCount() >= 1) {
+                android.view.View child0 = group.getChildAt(0);
+                check("child 0 is TextView", child0 instanceof android.widget.TextView);
+                if (child0 instanceof android.widget.TextView) {
+                    check("TextView text is 'Hello World'",
+                            "Hello World".equals(((android.widget.TextView) child0).getText().toString()));
+                }
+            }
+
+            if (group.getChildCount() >= 2) {
+                android.view.View child1 = group.getChildAt(1);
+                check("child 1 is Button", child1 instanceof android.widget.Button);
+                if (child1 instanceof android.widget.Button) {
+                    check("Button text is 'Click Me'",
+                            "Click Me".equals(((android.widget.Button) child1).getText().toString()));
+                }
+            }
+        }
+
+        // ── Test 3: Inflated view tree can render ──
+        if (root != null) {
+            android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(200, 200,
+                    android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bmp);
+            root.layout(0, 0, 200, 200);
+            root.draw(canvas);
+            java.util.List<com.ohos.shim.bridge.OHBridge.DrawRecord> log =
+                    com.ohos.shim.bridge.OHBridge.getDrawLog(canvas.getNativeHandle());
+            check("inflated view tree produces draw ops", log.size() > 0);
+            check("inflated view tree draws text",
+                    log.stream().anyMatch(r -> "drawText".equals(r.op)));
+            canvas.release();
+            bmp.recycle();
+        }
+
+        // ── Test 4: Window.setContentView(int) wires through ──
+        android.app.MiniServer.init("com.test.inflate");
+        android.app.Activity activity = new android.app.Activity();
+        // setContentView(int) should not crash even without a real APK
+        activity.setContentView(0x7f030001);
+        android.view.View decor = activity.getWindow().getDecorView();
+        check("Window.setContentView(int) sets content",
+                decor instanceof android.view.ViewGroup
+                && ((android.view.ViewGroup) decor).getChildCount() > 0);
+    }
+
+    /**
+     * Build a minimal AXML binary representing:
+     *   <LinearLayout>
+     *     <TextView android:text="Hello World" />
+     *     <Button android:text="Click Me" />
+     *   </LinearLayout>
+     */
+    private static byte[] buildTestLayoutAxml() {
+        // String pool: 0="LinearLayout", 1="TextView", 2="Button", 3="text",
+        //              4="Hello World", 5="Click Me", 6="orientation",
+        //              7="http://schemas.android.com/apk/res/android"
+        String[] strings = {
+            "LinearLayout", "TextView", "Button", "text",
+            "Hello World", "Click Me", "orientation",
+            "http://schemas.android.com/apk/res/android"
+        };
+
+        // Resource ID pool: index 3 → 0x01010014 (android:text), index 6 → 0x010100c4 (orientation)
+        int[] resIds = new int[8];
+        resIds[3] = 0x01010014; // text
+        resIds[6] = 0x010100c4; // orientation
+
+        // Build the AXML
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream(1024);
+        java.nio.ByteBuffer buf;
+
+        // We'll build chunks and assemble at the end
+        byte[] stringPoolChunk = buildStringPoolChunk(strings);
+        byte[] resIdChunk = buildResIdChunk(resIds);
+
+        // XML elements
+        java.io.ByteArrayOutputStream elems = new java.io.ByteArrayOutputStream();
+
+        // StartNamespace: prefix=-1, uri=7 ("http://schemas.android.com/apk/res/android")
+        writeStartNamespace(elems, -1, 7);
+
+        // StartElement: LinearLayout with orientation=1 (vertical)
+        writeStartElement(elems, 7, 0, new int[][] {
+            // {ns, name, rawValue, type, data}
+            {7, 6, -1, 0x10, 1},  // android:orientation = 1 (VERTICAL)
+        });
+
+        // StartElement: TextView with text="Hello World"
+        writeStartElement(elems, 7, 1, new int[][] {
+            {7, 3, 4, 0x03, 4},  // android:text = "Hello World" (string ref to pool index 4)
+        });
+        // EndElement: TextView
+        writeEndElement(elems, 7, 1);
+
+        // StartElement: Button with text="Click Me"
+        writeStartElement(elems, 7, 2, new int[][] {
+            {7, 3, 5, 0x03, 5},  // android:text = "Click Me" (string ref to pool index 5)
+        });
+        // EndElement: Button
+        writeEndElement(elems, 7, 2);
+
+        // EndElement: LinearLayout
+        writeEndElement(elems, 7, 0);
+
+        // EndNamespace
+        writeEndNamespace(elems, -1, 7);
+
+        byte[] elemData = elems.toByteArray();
+
+        // Assemble final AXML
+        int totalSize = 8 + stringPoolChunk.length + resIdChunk.length + elemData.length;
+        buf = java.nio.ByteBuffer.allocate(totalSize).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00080003); // AXML magic
+        buf.putInt(totalSize);
+        buf.put(stringPoolChunk);
+        buf.put(resIdChunk);
+        buf.put(elemData);
+
+        return buf.array();
+    }
+
+    private static byte[] buildStringPoolChunk(String[] strings) {
+        // Encode strings as UTF-8
+        byte[][] encoded = new byte[strings.length][];
+        int totalBytes = 0;
+        for (int i = 0; i < strings.length; i++) {
+            try { encoded[i] = strings[i].getBytes("UTF-8"); }
+            catch (Exception e) { encoded[i] = new byte[0]; }
+            totalBytes += 2 + encoded[i].length + 1; // charLen(1) + byteLen(1) + data + null
+        }
+
+        int headerSize = 28; // 8 (chunk header) + 20 (pool header)
+        int offsetsSize = strings.length * 4;
+        int stringsStart = headerSize + offsetsSize - 8; // relative to after chunk header
+        int chunkSize = headerSize + offsetsSize + totalBytes;
+        // Align to 4 bytes
+        chunkSize = (chunkSize + 3) & ~3;
+
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(chunkSize)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x001C0001); // chunk type
+        buf.putInt(chunkSize);  // chunk size
+        buf.putInt(strings.length); // stringCount
+        buf.putInt(0);              // styleCount
+        buf.putInt(1 << 8);         // flags: UTF-8
+        buf.putInt(stringsStart);    // stringsStart (relative to chunk start + 8)
+        buf.putInt(0);              // stylesStart
+
+        // String offsets
+        int offset = 0;
+        for (int i = 0; i < strings.length; i++) {
+            buf.putInt(offset);
+            offset += 2 + encoded[i].length + 1;
+        }
+
+        // String data
+        for (int i = 0; i < strings.length; i++) {
+            buf.put((byte) strings[i].length()); // charLen
+            buf.put((byte) encoded[i].length);    // byteLen
+            buf.put(encoded[i]);
+            buf.put((byte) 0); // null terminator
+        }
+
+        return java.util.Arrays.copyOf(buf.array(), chunkSize);
+    }
+
+    private static byte[] buildResIdChunk(int[] ids) {
+        int chunkSize = 8 + ids.length * 4;
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(chunkSize)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00080180); // chunk type
+        buf.putInt(chunkSize);
+        for (int id : ids) buf.putInt(id);
+        return buf.array();
+    }
+
+    private static void writeStartNamespace(java.io.ByteArrayOutputStream out, int prefix, int uri) {
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(24)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00100100); // START_NAMESPACE
+        buf.putInt(24);         // chunk size
+        buf.putInt(0);          // line
+        buf.putInt(-1);         // comment
+        buf.putInt(prefix);
+        buf.putInt(uri);
+        out.write(buf.array(), 0, 24);
+    }
+
+    private static void writeEndNamespace(java.io.ByteArrayOutputStream out, int prefix, int uri) {
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(24)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00100101); // END_NAMESPACE
+        buf.putInt(24);
+        buf.putInt(0);
+        buf.putInt(-1);
+        buf.putInt(prefix);
+        buf.putInt(uri);
+        out.write(buf.array(), 0, 24);
+    }
+
+    private static void writeStartElement(java.io.ByteArrayOutputStream out,
+                                           int ns, int name, int[][] attrs) {
+        // Header: 8 + line(4) + comment(4) + ns(4) + name(4) + attrStart(2) + attrSize(2)
+        //         + attrCount(2) + idIdx(2) + classIdx(2) + styleIdx(2) = 36
+        // Each attr: ns(4) + name(4) + rawValue(4) + typedSize(2) + res0(1) + type(1) + data(4) = 20
+        int chunkSize = 36 + attrs.length * 20;
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(chunkSize)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00100102); // START_ELEMENT
+        buf.putInt(chunkSize);
+        buf.putInt(0);           // line
+        buf.putInt(-1);          // comment
+        buf.putInt(ns);          // namespace
+        buf.putInt(name);        // element name
+        buf.putShort((short) 20); // attrStart (offset to first attr from here, in bytes)
+        buf.putShort((short) 20); // attrSize (bytes per attr)
+        buf.putShort((short) attrs.length);
+        buf.putShort((short) 0);  // idIndex
+        buf.putShort((short) 0);  // classIndex
+        buf.putShort((short) 0);  // styleIndex
+
+        for (int[] attr : attrs) {
+            buf.putInt(attr[0]);   // ns
+            buf.putInt(attr[1]);   // name
+            buf.putInt(attr[2]);   // rawValue (string pool index or -1)
+            buf.putShort((short) 8); // typedValue size
+            buf.put((byte) 0);      // res0
+            buf.put((byte) attr[3]); // type
+            buf.putInt(attr[4]);     // data
+        }
+
+        out.write(buf.array(), 0, chunkSize);
+    }
+
+    private static void writeEndElement(java.io.ByteArrayOutputStream out, int ns, int name) {
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(24)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(0x00100103); // END_ELEMENT
+        buf.putInt(24);
+        buf.putInt(0);  // line
+        buf.putInt(-1); // comment
+        buf.putInt(ns);
+        buf.putInt(name);
+        out.write(buf.array(), 0, 24);
+    }
+
     // ── Bundle Shim (extended) ──
 
     static void testBundleShim() {

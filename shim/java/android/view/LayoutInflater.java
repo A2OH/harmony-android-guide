@@ -35,7 +35,9 @@ public class LayoutInflater {
         if (context == null) return new LayoutInflater(context);
         Object svc = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (svc instanceof LayoutInflater) {
-            return (LayoutInflater) svc;
+            LayoutInflater base = (LayoutInflater) svc;
+            // Return a clone bound to the caller's context (matches AOSP behavior)
+            return base.cloneInContext(context);
         }
         return new LayoutInflater(context);
     }
@@ -56,10 +58,34 @@ public class LayoutInflater {
 
     /**
      * Inflate a layout resource with attachToRoot control.
+     * Attempts to load and parse the binary layout XML from the APK's extracted res/ directory.
+     * Falls back to a stub FrameLayout if the layout can't be found or parsed.
      */
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        // Create a stub FrameLayout as the inflated view
-        View view = new FrameLayout(mContext);
+        View view = null;
+
+        // Try to inflate from the real binary layout XML
+        if (mContext != null) {
+            android.content.res.Resources res = mContext.getResources();
+            if (res != null) {
+                android.content.res.ResourceTable table = res.getResourceTable();
+                if (table != null) {
+                    String layoutFile = table.getLayoutFileName(resource);
+                    if (layoutFile != null) {
+                        byte[] xmlData = loadLayoutXml(layoutFile);
+                        if (xmlData != null && xmlData.length > 0) {
+                            BinaryLayoutParser parser = new BinaryLayoutParser(mContext);
+                            view = parser.parse(xmlData);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback: stub FrameLayout
+        if (view == null) {
+            view = new FrameLayout(mContext);
+        }
         view.setId(resource);
 
         if (root != null && attachToRoot) {
@@ -67,6 +93,51 @@ public class LayoutInflater {
             return root;
         }
         return view;
+    }
+
+    /**
+     * Load binary layout XML bytes from the extracted APK res/ directory.
+     */
+    private byte[] loadLayoutXml(String layoutPath) {
+        // Try to find the file in the APK's extracted directory
+        try {
+            android.app.MiniServer server = android.app.MiniServer.get();
+            if (server != null) {
+                String resDir = null;
+                android.app.ApkInfo info = server.getApkInfo();
+                if (info != null) resDir = info.resDir;
+                if (resDir == null) resDir = info != null ? info.extractDir : null;
+
+                if (resDir != null) {
+                    java.io.File xmlFile = new java.io.File(resDir, layoutPath);
+                    if (!xmlFile.exists()) {
+                        // Try without res/ prefix
+                        xmlFile = new java.io.File(resDir, layoutPath.replaceFirst("^res/", ""));
+                    }
+                    if (xmlFile.exists()) {
+                        return readFile(xmlFile);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
+    }
+
+    private static byte[] readFile(java.io.File file) {
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(file)) {
+            byte[] data = new byte[(int) file.length()];
+            int offset = 0;
+            while (offset < data.length) {
+                int n = fis.read(data, offset, data.length - offset);
+                if (n < 0) break;
+                offset += n;
+            }
+            return data;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public View createView(String name, String prefix, AttributeSet attrs) {
