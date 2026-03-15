@@ -101,6 +101,11 @@ pub unsafe extern "system" fn Java_com_ohos_shim_bridge_OHBridge_surfaceResize(
         ctx.canvas = canvas;
         ctx.width = w;
         ctx.height = h;
+
+        // Reconfigure NativeWindow buffer if attached
+        if !ctx.native_window.is_null() {
+            configure_native_window(ctx.native_window, w, h);
+        }
     }
 }
 
@@ -183,8 +188,38 @@ pub unsafe extern "system" fn Java_com_ohos_shim_bridge_OHBridge_surfaceFlush(
     0
 }
 
+// NativeWindow operation codes (from native_window.h)
+const SET_BUFFER_GEOMETRY: std::os::raw::c_int = 4;
+const SET_FORMAT: std::os::raw::c_int = 3;
+
+// Pixel format: RGBA_8888
+const PIXEL_FMT_RGBA_8888: std::os::raw::c_int = 12;
+
+/// Configure the NativeWindow buffer geometry to match the surface bitmap.
+/// Must be called before the first RequestBuffer or the buffer dimensions won't match.
+unsafe fn configure_native_window(
+    window: *mut oh_ffi::OHNativeWindow,
+    width: u32,
+    height: u32,
+) {
+    // Set buffer dimensions
+    oh_ffi::OH_NativeWindow_NativeWindowHandleOpt(
+        window,
+        SET_BUFFER_GEOMETRY,
+        width as std::os::raw::c_int,
+        height as std::os::raw::c_int,
+    );
+    // Set pixel format to RGBA_8888 to match OH_Drawing_Bitmap's ARGB_8888
+    oh_ffi::OH_NativeWindow_NativeWindowHandleOpt(
+        window,
+        SET_FORMAT,
+        PIXEL_FMT_RGBA_8888,
+    );
+}
+
 /// Called from C++ when the XComponent surface is created.
-/// Associates a NativeWindow with an existing SurfaceContext.
+/// Associates a NativeWindow with an existing SurfaceContext and configures
+/// the buffer geometry to match the bitmap dimensions.
 #[no_mangle]
 pub unsafe extern "C" fn shim_surface_set_native_window(
     surface_id: jlong,
@@ -193,5 +228,9 @@ pub unsafe extern "C" fn shim_surface_set_native_window(
     let mut map = SURFACES.lock().unwrap();
     if let Some(ctx) = map.get_mut(&surface_id) {
         ctx.native_window = window;
+        // Configure buffer geometry when a real window is attached
+        if !window.is_null() {
+            configure_native_window(window, ctx.width, ctx.height);
+        }
     }
 }

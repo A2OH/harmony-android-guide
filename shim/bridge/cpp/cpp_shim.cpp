@@ -672,3 +672,53 @@ extern "C" int shim_xcomponent_register_callbacks(void* xcomp) {
 
     return OH_NativeXComponent_RegisterCallback(nxc, &cb);
 }
+
+// ── NAPI Module Registration (XComponent libraryname hook) ────────────────
+
+#include <ace/xcomponent/native_interface_xcomponent.h>
+#include <napi/native_api.h>
+
+// Called by OHOS when the XComponent loads libraryname='oh_bridge'.
+// Retrieves the OH_NativeXComponent from the NAPI env and registers
+// surface lifecycle callbacks.
+static napi_value napi_xcomponent_init(napi_env env, napi_value exports) {
+    napi_value xcomponent_obj = nullptr;
+    OH_NativeXComponent* nxc = nullptr;
+
+    // Get the XComponent instance from exports
+    napi_status status = napi_get_named_property(env, exports, OH_NATIVE_XCOMPONENT_OBJ, &xcomponent_obj);
+    if (status != napi_ok || xcomponent_obj == nullptr) {
+        return exports;
+    }
+
+    // Unwrap to get OH_NativeXComponent pointer
+    status = napi_unwrap(env, xcomponent_obj, reinterpret_cast<void**>(&nxc));
+    if (status != napi_ok || nxc == nullptr) {
+        return exports;
+    }
+
+    // Register surface lifecycle callbacks
+    shim_xcomponent_register_callbacks(nxc);
+
+    // Initialize ArkUI native node system
+    shim_arkui_init();
+
+    return exports;
+}
+
+// NAPI module descriptor — OHOS calls this on System.loadLibrary("oh_bridge")
+static napi_module g_napi_module = {
+    .nm_version = 1,
+    .nm_flags = 0,
+    .nm_filename = nullptr,
+    .nm_register_func = napi_xcomponent_init,
+    .nm_modname = "oh_bridge",
+    .nm_priv = nullptr,
+    .reserved = {0},
+};
+
+// Module auto-registration
+__attribute__((constructor))
+static void register_napi_module(void) {
+    napi_module_register(&g_napi_module);
+}
