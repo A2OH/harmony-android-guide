@@ -81,6 +81,30 @@ public final class ContentValues {
         return v instanceof byte[] ? (byte[]) v : null;
     }
 
+    public void putAll(ContentValues other) {
+        values.putAll(other.values);
+    }
+
+    public Byte getAsByte(String key) {
+        Object v = values.get(key);
+        if (v instanceof Byte) return (Byte) v;
+        if (v instanceof Number) return ((Number) v).byteValue();
+        if (v instanceof String) {
+            try { return Byte.parseByte((String) v); } catch (NumberFormatException e) { return null; }
+        }
+        return null;
+    }
+
+    public Short getAsShort(String key) {
+        Object v = values.get(key);
+        if (v instanceof Short) return (Short) v;
+        if (v instanceof Number) return ((Number) v).shortValue();
+        if (v instanceof String) {
+            try { return Short.parseShort((String) v); } catch (NumberFormatException e) { return null; }
+        }
+        return null;
+    }
+
     public Object get(String key) { return values.get(key); }
     public boolean containsKey(String key) { return values.containsKey(key); }
     public void remove(String key) { values.remove(key); }
@@ -88,6 +112,30 @@ public final class ContentValues {
     public int size() { return values.size(); }
     public Set<String> keySet() { return values.keySet(); }
     public Set<Map.Entry<String, Object>> valueSet() { return values.entrySet(); }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ContentValues)) return false;
+        return values.equals(((ContentValues) object).values);
+    }
+
+    @Override
+    public int hashCode() {
+        return values.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ContentValues[{");
+        boolean first = true;
+        for (Map.Entry<String, Object> e : values.entrySet()) {
+            if (!first) sb.append(", ");
+            sb.append(e.getKey()).append("=").append(e.getValue());
+            first = false;
+        }
+        sb.append("}]");
+        return sb.toString();
+    }
 
     /**
      * Serialize to JSON for passing through the JNI bridge to OH RdbStore.insert().

@@ -9,6 +9,8 @@ public final class ComponentName implements Parcelable, Comparable<ComponentName
     private final String mClass;
 
     public ComponentName(String pkg, String cls) {
+        if (pkg == null) throw new IllegalArgumentException("package name is null");
+        if (cls == null) throw new IllegalArgumentException("class name is null");
         mPackage = pkg;
         mClass = cls;
     }
@@ -87,8 +89,28 @@ public final class ComponentName implements Parcelable, Comparable<ComponentName
         return "ComponentName{" + flattenToShortString() + "}";
     }
 
-    /* Parcelable stubs */
+    /* Parcelable — write pkg then cls */
     public int describeContents() { return 0; }
-    public void writeToParcel(Parcel dest, int flags) {}
-    public static ComponentName readFromParcel(Parcel in) { return null; }
+
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mPackage);
+        dest.writeString(mClass);
+    }
+
+    public static ComponentName readFromParcel(Parcel in) {
+        String pkg = in.readString();
+        if (pkg == null) return null;
+        String cls = in.readString();
+        return new ComponentName(pkg, cls);
+    }
+
+    public static final Parcelable.Creator<ComponentName> CREATOR =
+            new Parcelable.Creator<ComponentName>() {
+                public ComponentName createFromParcel(Parcel in) {
+                    return readFromParcel(in);
+                }
+                public ComponentName[] newArray(int size) {
+                    return new ComponentName[size];
+                }
+            };
 }

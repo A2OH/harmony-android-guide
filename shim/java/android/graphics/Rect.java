@@ -61,6 +61,10 @@ public class Rect {
         this.bottom = src.bottom;
     }
 
+    public void setEmpty() {
+        left = top = right = bottom = 0;
+    }
+
     // ── Hit-test ─────────────────────────────────────────────────────────────
 
     public boolean contains(int x, int y) {
@@ -70,7 +74,15 @@ public class Rect {
     }
 
     public boolean contains(int l, int t, int r, int b) {
-        return left <= l && top <= t && right >= r && bottom >= b;
+        return this.left < this.right && this.top < this.bottom
+            && this.left <= l && this.top <= t
+            && this.right >= r && this.bottom >= b;
+    }
+
+    public boolean contains(Rect r) {
+        return this.left < this.right && this.top < this.bottom
+            && this.left <= r.left && this.top <= r.top
+            && this.right >= r.right && this.bottom >= r.bottom;
     }
 
     // ── Geometry ─────────────────────────────────────────────────────────────
@@ -94,18 +106,57 @@ public class Rect {
         return false;
     }
 
-    public void union(int x, int y) {
-        if (x < left)   left   = x;
-        if (x > right)  right  = x;
-        if (y < top)    top    = y;
-        if (y > bottom) bottom = y;
+    public boolean setIntersect(Rect a, Rect b) {
+        int newLeft   = Math.max(a.left,   b.left);
+        int newTop    = Math.max(a.top,    b.top);
+        int newRight  = Math.min(a.right,  b.right);
+        int newBottom = Math.min(a.bottom, b.bottom);
+        if (newLeft < newRight && newTop < newBottom) {
+            left   = newLeft;
+            top    = newTop;
+            right  = newRight;
+            bottom = newBottom;
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean intersects(Rect a, Rect b) {
+        return a.left < b.right && b.left < a.right
+            && a.top < b.bottom && b.top < a.bottom;
+    }
+
+    public boolean intersects(int l, int t, int r, int b) {
+        return this.left < r && l < this.right
+            && this.top < b && t < this.bottom;
+    }
+
+    public void union(int l, int t, int r, int b) {
+        if ((l < r) && (t < b)) {
+            if (isEmpty()) {
+                left = l; top = t; right = r; bottom = b;
+            } else {
+                if (l < left)   left   = l;
+                if (t < top)    top    = t;
+                if (r > right)  right  = r;
+                if (b > bottom) bottom = b;
+            }
+        }
     }
 
     public void union(Rect r) {
-        if (r.left   < left)   left   = r.left;
-        if (r.top    < top)    top    = r.top;
-        if (r.right  > right)  right  = r.right;
-        if (r.bottom > bottom) bottom = r.bottom;
+        union(r.left, r.top, r.right, r.bottom);
+    }
+
+    public void union(int x, int y) {
+        if (isEmpty()) {
+            left = x; top = y; right = x; bottom = y;
+        } else {
+            if (x < left)   left   = x;
+            if (x > right)  right  = x;
+            if (y < top)    top    = y;
+            if (y > bottom) bottom = y;
+        }
     }
 
     public void offset(int dx, int dy) {
@@ -113,6 +164,13 @@ public class Rect {
         top    += dy;
         right  += dx;
         bottom += dy;
+    }
+
+    public void offsetTo(int newLeft, int newTop) {
+        right  += newLeft - left;
+        bottom += newTop  - top;
+        left    = newLeft;
+        top     = newTop;
     }
 
     public void inset(int dx, int dy) {
@@ -167,5 +225,14 @@ public class Rect {
     @Override
     public String toString() {
         return "Rect(" + left + ", " + top + " - " + right + ", " + bottom + ")";
+    }
+
+    public String toShortString() {
+        return "[" + left + "," + top + "][" + right + "," + bottom + "]";
+    }
+
+    public void sort() {
+        if (left > right) { int t = left; left = right; right = t; }
+        if (top > bottom) { int t = top; top = bottom; bottom = t; }
     }
 }

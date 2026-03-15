@@ -73,6 +73,118 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     public void putSizeF(String p0, SizeF p1) { map.put(p0, p1); }
     public void putSparseParcelableArray(String p0, Object p1) { map.put(p0, p1); }
     public void putStringArrayList(String p0, java.util.ArrayList<Object> p1) { map.put(p0, p1); }
+    // ── Getters for typed values ──
+
+    public Bundle getBundle(String key) {
+        Object v = map.get(key);
+        return v instanceof Bundle ? (Bundle) v : null;
+    }
+
+    public IBinder getBinder(String key) {
+        Object v = map.get(key);
+        return v instanceof IBinder ? (IBinder) v : null;
+    }
+
+    public byte[] getByteArray(String key) {
+        Object v = map.get(key);
+        return v instanceof byte[] ? (byte[]) v : null;
+    }
+
+    public char[] getCharArray(String key) {
+        Object v = map.get(key);
+        return v instanceof char[] ? (char[]) v : null;
+    }
+
+    public boolean[] getBooleanArray(String key) {
+        Object v = map.get(key);
+        return v instanceof boolean[] ? (boolean[]) v : null;
+    }
+
+    public double[] getDoubleArray(String key) {
+        Object v = map.get(key);
+        return v instanceof double[] ? (double[]) v : null;
+    }
+
+    public long[] getLongArray(String key) {
+        Object v = map.get(key);
+        return v instanceof long[] ? (long[]) v : null;
+    }
+
+    public float[] getFloatArray(String key) {
+        Object v = map.get(key);
+        return v instanceof float[] ? (float[]) v : null;
+    }
+
+    public short[] getShortArray(String key) {
+        Object v = map.get(key);
+        return v instanceof short[] ? (short[]) v : null;
+    }
+
+    public CharSequence getCharSequence(String key) {
+        return getCharSequence(key, null);
+    }
+
+    public CharSequence[] getCharSequenceArray(String key) {
+        Object v = map.get(key);
+        return v instanceof CharSequence[] ? (CharSequence[]) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Parcelable> T getParcelable(String key) {
+        Object v = map.get(key);
+        return v instanceof Parcelable ? (T) v : null;
+    }
+
+    public Parcelable[] getParcelableArray(String key) {
+        Object v = map.get(key);
+        return v instanceof Parcelable[] ? (Parcelable[]) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Parcelable> ArrayList<T> getParcelableArrayList(String key) {
+        Object v = map.get(key);
+        return v instanceof ArrayList ? (ArrayList<T>) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Parcelable> SparseArray<T> getSparseParcelableArray(String key) {
+        Object v = map.get(key);
+        return v instanceof SparseArray ? (SparseArray<T>) v : null;
+    }
+
+    public Serializable getSerializable(String key) {
+        Object v = map.get(key);
+        return v instanceof Serializable ? (Serializable) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<Integer> getIntegerArrayList(String key) {
+        Object v = map.get(key);
+        return v instanceof ArrayList ? (ArrayList<Integer>) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<String> getStringArrayList(String key) {
+        Object v = map.get(key);
+        return v instanceof ArrayList ? (ArrayList<String>) v : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<CharSequence> getCharSequenceArrayList(String key) {
+        Object v = map.get(key);
+        return v instanceof ArrayList ? (ArrayList<CharSequence>) v : null;
+    }
+
+    public Size getSize(String key) {
+        Object v = map.get(key);
+        return v instanceof Size ? (Size) v : null;
+    }
+
+    public SizeF getSizeF(String key) {
+        Object v = map.get(key);
+        return v instanceof SizeF ? (SizeF) v : null;
+    }
+
     public void readFromParcel(Parcel p0) {}
     public void setClassLoader(ClassLoader p0) {}
     public void writeToParcel(Parcel p0, int p1) {}

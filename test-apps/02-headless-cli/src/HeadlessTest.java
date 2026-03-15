@@ -108,6 +108,16 @@ public class HeadlessTest {
         testViewRenderingPipeline();
         testDrawablesAndFontMetrics();
         testInputPipeline();
+        testBundleShim();
+        testSparseArrayShim();
+        testTextUtilsShim();
+        testColorShim();
+        testLruCacheShim();
+        testContentValuesShim();
+        testComponentNameShim();
+        testPairShim();
+        testRectShim();
+        testRectFShim();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -578,6 +588,117 @@ public class HeadlessTest {
 
         String json = cv.toJson();
         check("toJson non-null", json != null && json.contains("Alice"));
+    }
+
+    static void testContentValuesShim() {
+        section("android.content.ContentValues (shim extended)");
+
+        // -- put/get all types --
+        android.content.ContentValues cv = new android.content.ContentValues();
+        cv.put("str", "hello");
+        cv.put("i", Integer.valueOf(42));
+        cv.put("l", Long.valueOf(100L));
+        cv.put("f", Float.valueOf(3.14f));
+        cv.put("d", Double.valueOf(2.718));
+        cv.put("bool", Boolean.TRUE);
+        cv.put("b", Byte.valueOf((byte) 7));
+        cv.put("s", Short.valueOf((short) 256));
+        cv.put("blob", new byte[]{1, 2, 3});
+        cv.putNull("nul");
+
+        check("getAsString", "hello".equals(cv.getAsString("str")));
+        check("getAsInteger", cv.getAsInteger("i") == 42);
+        check("getAsLong", cv.getAsLong("l") == 100L);
+        check("getAsFloat", Math.abs(cv.getAsFloat("f") - 3.14f) < 0.001f);
+        check("getAsDouble", Math.abs(cv.getAsDouble("d") - 2.718) < 0.001);
+        check("getAsBoolean", cv.getAsBoolean("bool") == true);
+        check("getAsByte", cv.getAsByte("b") == (byte) 7);
+        check("getAsShort", cv.getAsShort("s") == (short) 256);
+        byte[] blob = cv.getAsByteArray("blob");
+        check("getAsByteArray", blob != null && blob.length == 3 && blob[0] == 1);
+        check("get raw Object", cv.get("str") instanceof String);
+        check("putNull + containsKey", cv.containsKey("nul") && cv.get("nul") == null);
+        check("size after 10 puts", cv.size() == 10);
+
+        // -- cross-type coercion --
+        check("getAsString(int)", "42".equals(cv.getAsString("i")));
+        check("getAsLong(int)", cv.getAsLong("i") == 42L);
+        check("getAsDouble(float)", Math.abs(cv.getAsDouble("f") - 3.14f) < 0.01);
+        check("getAsBoolean(int!=0)", cv.getAsBoolean("i") == true);
+        check("getAsByte from number", cv.getAsByte("i") == (byte) 42);
+        check("getAsShort from number", cv.getAsShort("i") == (short) 42);
+
+        // -- string-to-number coercion --
+        android.content.ContentValues cv2 = new android.content.ContentValues();
+        cv2.put("snum", "99");
+        check("getAsInteger(string)", cv2.getAsInteger("snum") == 99);
+        check("getAsLong(string)", cv2.getAsLong("snum") == 99L);
+        check("getAsFloat(string)", Math.abs(cv2.getAsFloat("snum") - 99.0f) < 0.01f);
+        check("getAsDouble(string)", Math.abs(cv2.getAsDouble("snum") - 99.0) < 0.01);
+        check("getAsByte(string)", cv2.getAsByte("snum") == (byte) 99);
+        check("getAsShort(string)", cv2.getAsShort("snum") == (short) 99);
+
+        // -- missing key returns null --
+        check("getAsString missing", cv.getAsString("no_such_key") == null);
+        check("getAsInteger missing", cv.getAsInteger("no_such_key") == null);
+        check("getAsByteArray missing", cv.getAsByteArray("no_such_key") == null);
+        check("getAsByte missing", cv.getAsByte("no_such_key") == null);
+        check("getAsShort missing", cv.getAsShort("no_such_key") == null);
+
+        // -- remove / clear --
+        cv.remove("str");
+        check("remove", !cv.containsKey("str"));
+        check("size after remove", cv.size() == 9);
+        cv.clear();
+        check("clear", cv.size() == 0);
+
+        // -- keySet / valueSet --
+        android.content.ContentValues cv3 = new android.content.ContentValues();
+        cv3.put("a", "1");
+        cv3.put("b", "2");
+        check("keySet size", cv3.keySet().size() == 2);
+        check("valueSet size", cv3.valueSet().size() == 2);
+
+        // -- putAll --
+        android.content.ContentValues cv4 = new android.content.ContentValues();
+        cv4.put("c", "3");
+        cv3.putAll(cv4);
+        check("putAll merges", cv3.size() == 3 && "3".equals(cv3.getAsString("c")));
+
+        // -- copy constructor --
+        android.content.ContentValues cv5 = new android.content.ContentValues(cv3);
+        check("copy ctor size", cv5.size() == 3);
+        check("copy ctor value", "1".equals(cv5.getAsString("a")));
+
+        // -- sized constructor --
+        android.content.ContentValues cv6 = new android.content.ContentValues(16);
+        check("sized ctor empty", cv6.size() == 0);
+
+        // -- equals / hashCode --
+        android.content.ContentValues eqA = new android.content.ContentValues();
+        eqA.put("x", "y");
+        android.content.ContentValues eqB = new android.content.ContentValues();
+        eqB.put("x", "y");
+        check("equals same content", eqA.equals(eqB));
+        check("hashCode same content", eqA.hashCode() == eqB.hashCode());
+        eqB.put("x", "z");
+        check("not equals diff content", !eqA.equals(eqB));
+
+        // -- toString --
+        android.content.ContentValues cv7 = new android.content.ContentValues();
+        cv7.put("k", "v");
+        String s = cv7.toString();
+        check("toString contains key", s != null && s.contains("k=v"));
+
+        // -- toJson --
+        android.content.ContentValues cv8 = new android.content.ContentValues();
+        cv8.put("name", "Bob");
+        cv8.put("age", 25);
+        cv8.putNull("opt");
+        String j = cv8.toJson();
+        check("toJson has name", j.contains("\"name\":\"Bob\""));
+        check("toJson has age", j.contains("\"age\":25"));
+        check("toJson has null", j.contains("\"opt\":null"));
     }
 
     // ── SizeF (pure Java) ──
@@ -5386,6 +5507,162 @@ public class HeadlessTest {
         check("OHBridge.dispatchKeyEvent does not throw", true);
     }
 
+    static void testSparseArrayShim() {
+        section("SparseArray");
+
+        // ── put / get round-trip ──
+        android.util.SparseArray<String> sa = new android.util.SparseArray<>();
+        sa.put(10, "ten");
+        sa.put(20, "twenty");
+        sa.put(5, "five");
+        check("put/get round-trip key=10", "ten".equals(sa.get(10)));
+        check("put/get round-trip key=20", "twenty".equals(sa.get(20)));
+        check("put/get round-trip key=5", "five".equals(sa.get(5)));
+
+        // ── get with default value ──
+        check("get missing key returns null", sa.get(999) == null);
+        check("get missing key returns default", "def".equals(sa.get(999, "def")));
+
+        // ── size ──
+        check("size after 3 puts", sa.size() == 3);
+
+        // ── keyAt / valueAt (keys sorted: 5, 10, 20) ──
+        check("keyAt(0) == 5", sa.keyAt(0) == 5);
+        check("keyAt(1) == 10", sa.keyAt(1) == 10);
+        check("keyAt(2) == 20", sa.keyAt(2) == 20);
+        check("valueAt(0) == five", "five".equals(sa.valueAt(0)));
+        check("valueAt(2) == twenty", "twenty".equals(sa.valueAt(2)));
+
+        // ── indexOfKey / indexOfValue ──
+        check("indexOfKey(10) == 1", sa.indexOfKey(10) == 1);
+        check("indexOfKey(999) < 0", sa.indexOfKey(999) < 0);
+        check("indexOfValue(twenty) == 2", sa.indexOfValue("twenty") == 2);
+        check("indexOfValue(missing) < 0", sa.indexOfValue("missing") < 0);
+
+        // ── setValueAt ──
+        sa.setValueAt(1, "TEN");
+        check("setValueAt replaces value", "TEN".equals(sa.get(10)));
+
+        // ── delete / remove ──
+        sa.delete(5);
+        check("delete removes key=5", sa.get(5) == null);
+        check("size after delete", sa.size() == 2);
+
+        sa.remove(20);
+        check("remove removes key=20", sa.get(20) == null);
+        check("size after remove", sa.size() == 1);
+
+        // ── removeAt ──
+        sa.put(30, "thirty");
+        sa.put(40, "forty");
+        int idx = sa.indexOfKey(30);
+        sa.removeAt(idx);
+        check("removeAt removes correct entry", sa.get(30) == null);
+
+        // ── append ──
+        sa.clear();
+        check("clear makes size 0", sa.size() == 0);
+        sa.append(1, "one");
+        sa.append(2, "two");
+        sa.append(3, "three");
+        check("append preserves order", sa.size() == 3);
+        check("append key=1", "one".equals(sa.get(1)));
+        check("append key=3", "three".equals(sa.get(3)));
+
+        // ── contains ──
+        check("contains existing key", sa.contains(2));
+        check("contains missing key", !sa.contains(999));
+
+        // ── clone ──
+        android.util.SparseArray<String> copy = sa.clone();
+        check("clone size matches", copy.size() == sa.size());
+        check("clone values match", "two".equals(copy.get(2)));
+        copy.put(2, "TWO");
+        check("clone is independent", "two".equals(sa.get(2)));
+
+        // ── put overwrite ──
+        sa.put(1, "ONE");
+        check("put overwrites existing", "ONE".equals(sa.get(1)));
+        check("size unchanged after overwrite", sa.size() == 3);
+    }
+
+
+    static void testColorShim() {
+        section("Color");
+
+        // Constants
+        check("BLACK constant", android.graphics.Color.BLACK == 0xFF000000);
+        check("WHITE constant", android.graphics.Color.WHITE == 0xFFFFFFFF);
+        check("RED constant",   android.graphics.Color.RED   == 0xFFFF0000);
+        check("GREEN constant", android.graphics.Color.GREEN == 0xFF00FF00);
+        check("BLUE constant",  android.graphics.Color.BLUE  == 0xFF0000FF);
+        check("TRANSPARENT constant", android.graphics.Color.TRANSPARENT == 0x00000000);
+
+        // Component extraction
+        int color = 0x80FF8040;
+        check("alpha extraction", android.graphics.Color.alpha(color) == 0x80);
+        check("red extraction",   android.graphics.Color.red(color)   == 0xFF);
+        check("green extraction", android.graphics.Color.green(color) == 0x80);
+        check("blue extraction",  android.graphics.Color.blue(color)  == 0x40);
+
+        // argb / rgb packing
+        check("argb packing", android.graphics.Color.argb(0x80, 0xFF, 0x80, 0x40) == 0x80FF8040);
+        check("rgb packing",  android.graphics.Color.rgb(0xFF, 0x80, 0x40) == (int) 0xFFFF8040L);
+
+        // parseColor hex
+        check("parseColor #RRGGBB", android.graphics.Color.parseColor("#FF8040") == (int) 0xFFFF8040L);
+        check("parseColor #AARRGGBB", android.graphics.Color.parseColor("#80FF8040") == 0x80FF8040);
+
+        // parseColor named
+        check("parseColor black", android.graphics.Color.parseColor("black") == android.graphics.Color.BLACK);
+        check("parseColor red",   android.graphics.Color.parseColor("red")   == android.graphics.Color.RED);
+        check("parseColor white", android.graphics.Color.parseColor("White") == android.graphics.Color.WHITE);
+
+        // parseColor invalid
+        boolean threw = false;
+        try { android.graphics.Color.parseColor("notacolor"); } catch (IllegalArgumentException e) { threw = true; }
+        check("parseColor throws on invalid", threw);
+
+        // valueOf / toArgb / instance accessors
+        android.graphics.Color c = android.graphics.Color.valueOf(0xFFFF0000);
+        check("valueOf/toArgb round-trip", c.toArgb() == (int) 0xFFFF0000L);
+        check("instance red()",   Math.abs(c.red()   - 1.0f) < 0.01f);
+        check("instance green()", Math.abs(c.green() - 0.0f) < 0.01f);
+        check("instance blue()",  Math.abs(c.blue()  - 0.0f) < 0.01f);
+        check("instance alpha()", Math.abs(c.alpha() - 1.0f) < 0.01f);
+
+        // luminance
+        float lumWhite = android.graphics.Color.luminance(android.graphics.Color.WHITE);
+        float lumBlack = android.graphics.Color.luminance(android.graphics.Color.BLACK);
+        check("luminance white ~1.0", Math.abs(lumWhite - 1.0f) < 0.01f);
+        check("luminance black ~0.0", Math.abs(lumBlack - 0.0f) < 0.01f);
+        check("instance luminance", c.luminance() > 0.0f);
+
+        // RGBToHSV / colorToHSV
+        float[] hsv = new float[3];
+        android.graphics.Color.RGBToHSV(255, 0, 0, hsv);
+        check("RGBToHSV red hue ~0", Math.abs(hsv[0]) < 1.0f || Math.abs(hsv[0] - 360f) < 1.0f);
+        check("RGBToHSV red sat ~1", Math.abs(hsv[1] - 1.0f) < 0.01f);
+        check("RGBToHSV red val ~1", Math.abs(hsv[2] - 1.0f) < 0.01f);
+
+        android.graphics.Color.colorToHSV(android.graphics.Color.GREEN, hsv);
+        check("colorToHSV green hue ~120", Math.abs(hsv[0] - 120f) < 1.0f);
+
+        // HSVToColor round-trip
+        float[] hsvBlue = {240f, 1.0f, 1.0f};
+        int blueFromHsv = android.graphics.Color.HSVToColor(hsvBlue);
+        check("HSVToColor blue", android.graphics.Color.blue(blueFromHsv) == 255);
+        check("HSVToColor blue red=0", android.graphics.Color.red(blueFromHsv) == 0);
+
+        // isSrgb
+        check("isSrgb true", c.isSrgb());
+
+        // equals / hashCode
+        android.graphics.Color c2 = android.graphics.Color.valueOf(0xFFFF0000);
+        check("Color equals", c.equals(c2));
+        check("Color hashCode", c.hashCode() == c2.hashCode());
+    }
+
     static void deleteDir(java.io.File dir) {
         if (dir.isDirectory()) {
             java.io.File[] children = dir.listFiles();
@@ -5394,5 +5671,678 @@ public class HeadlessTest {
             }
         }
         dir.delete();
+    }
+
+    // ── Pair ──────────────────────────────────────────────────────────
+    static void testPairShim() {
+        section("Pair");
+
+        // Basic construction and field access
+        android.util.Pair<String, Integer> p = new android.util.Pair<>("hello", 42);
+        check("first field", "hello".equals(p.first));
+        check("second field", Integer.valueOf(42).equals(p.second));
+
+        // Factory method
+        android.util.Pair<String, Integer> p2 = android.util.Pair.create("hello", 42);
+        check("create() first", "hello".equals(p2.first));
+        check("create() second", Integer.valueOf(42).equals(p2.second));
+
+        // equals — same values
+        check("equals same values", p.equals(p2));
+        check("equals symmetric", p2.equals(p));
+
+        // equals — different values
+        android.util.Pair<String, Integer> p3 = android.util.Pair.create("world", 42);
+        check("not equals different first", !p.equals(p3));
+        android.util.Pair<String, Integer> p4 = android.util.Pair.create("hello", 99);
+        check("not equals different second", !p.equals(p4));
+
+        // equals — null handling
+        android.util.Pair<String, String> pNull = new android.util.Pair<>(null, null);
+        android.util.Pair<String, String> pNull2 = new android.util.Pair<>(null, null);
+        check("null-null equals", pNull.equals(pNull2));
+        check("null vs non-null not equals", !pNull.equals(new android.util.Pair<>("a", "b")));
+
+        // hashCode consistency
+        check("hashCode consistent with equals", p.hashCode() == p2.hashCode());
+
+        // toString
+        check("toString format", "Pair{hello 42}".equals(p.toString()));
+
+        // Not equal to non-Pair
+        check("not equals to non-Pair", !p.equals("not a pair"));
+        check("not equals to null", !p.equals(null));
+    }
+
+    static void testComponentNameShim() {
+        section("ComponentName");
+
+        // Basic constructor and getters
+        android.content.ComponentName cn =
+                new android.content.ComponentName("com.example.app", "com.example.app.MainActivity");
+        check("getPackageName", "com.example.app".equals(cn.getPackageName()));
+        check("getClassName", "com.example.app.MainActivity".equals(cn.getClassName()));
+
+        // getShortClassName — class starts with package, so returns .suffix
+        check("getShortClassName", ".MainActivity".equals(cn.getShortClassName()));
+
+        // getShortClassName — class does NOT start with package
+        android.content.ComponentName cn2 =
+                new android.content.ComponentName("com.example.app", "org.other.Foo");
+        check("getShortClassName no-prefix", "org.other.Foo".equals(cn2.getShortClassName()));
+
+        // flattenToString
+        check("flattenToString", "com.example.app/com.example.app.MainActivity".equals(cn.flattenToString()));
+
+        // flattenToShortString
+        check("flattenToShortString", "com.example.app/.MainActivity".equals(cn.flattenToShortString()));
+
+        // toShortString
+        check("toShortString", "{com.example.app/.MainActivity}".equals(cn.toShortString()));
+
+        // toString
+        check("toString", cn.toString().contains("com.example.app/.MainActivity"));
+
+        // unflattenFromString — full class name
+        android.content.ComponentName unflat =
+                android.content.ComponentName.unflattenFromString("com.example.app/com.example.app.MainActivity");
+        check("unflattenFromString full", cn.equals(unflat));
+
+        // unflattenFromString — short class name (starts with .)
+        android.content.ComponentName unflatShort =
+                android.content.ComponentName.unflattenFromString("com.example.app/.MainActivity");
+        check("unflattenFromString short", cn.equals(unflatShort));
+
+        // unflattenFromString — null and invalid
+        check("unflattenFromString null", android.content.ComponentName.unflattenFromString(null) == null);
+        check("unflattenFromString no-slash", android.content.ComponentName.unflattenFromString("noslash") == null);
+
+        // equals and hashCode
+        android.content.ComponentName cnDup =
+                new android.content.ComponentName("com.example.app", "com.example.app.MainActivity");
+        check("equals same", cn.equals(cnDup));
+        check("hashCode same", cn.hashCode() == cnDup.hashCode());
+        check("equals different", !cn.equals(cn2));
+        check("equals null", !cn.equals(null));
+
+        // compareTo
+        check("compareTo equal", cn.compareTo(cnDup) == 0);
+        check("compareTo class order", cn.compareTo(cn2) != 0);
+        android.content.ComponentName cnA = new android.content.ComponentName("aaa", "bbb");
+        android.content.ComponentName cnZ = new android.content.ComponentName("zzz", "aaa");
+        check("compareTo pkg order", cnA.compareTo(cnZ) < 0);
+
+        // Constructor null checks
+        boolean threwPkg = false;
+        try { new android.content.ComponentName((String) null, "cls"); }
+        catch (IllegalArgumentException e) { threwPkg = true; }
+        check("constructor null pkg throws", threwPkg);
+
+        boolean threwCls = false;
+        try { new android.content.ComponentName("pkg", (String) null); }
+        catch (IllegalArgumentException e) { threwCls = true; }
+        check("constructor null cls throws", threwCls);
+    }
+
+    // ── LruCache tests ─────────────────────────────────────────────────────
+
+    static void testLruCacheShim() {
+        section("android.util.LruCache");
+
+        // Basic put/get
+        android.util.LruCache cache = new android.util.LruCache(3);
+        cache.put("a", "alpha");
+        cache.put("b", "beta");
+        cache.put("c", "gamma");
+        check("get returns put value", "alpha".equals(cache.get("a")));
+        check("size == 3", cache.size() == 3);
+        check("maxSize == 3", cache.maxSize() == 3);
+
+        // LRU eviction: adding 4th should evict least-recently-used
+        // Access order: a was just accessed by get above, so order is b, c, a
+        // Adding "d" should evict "b"
+        cache.put("d", "delta");
+        check("size still 3 after eviction", cache.size() == 3);
+        check("evicted b is null", cache.get("b") == null);
+        check("d exists", "delta".equals(cache.get("d")));
+
+        // Stats
+        check("putCount == 4", cache.putCount() == 4);
+        check("evictionCount == 1", cache.evictionCount() == 1);
+        check("hitCount > 0", cache.hitCount() > 0);
+        check("missCount > 0", cache.missCount() > 0);
+
+        // Remove
+        Object removed = cache.remove("a");
+        check("remove returns old value", "alpha".equals(removed));
+        check("size after remove == 2", cache.size() == 2);
+        check("get removed returns null", cache.get("a") == null);
+
+        // evictAll
+        cache.evictAll();
+        check("size after evictAll == 0", cache.size() == 0);
+
+        // snapshot
+        android.util.LruCache cache2 = new android.util.LruCache(5);
+        cache2.put("x", "ex");
+        cache2.put("y", "why");
+        java.util.Map snap = (java.util.Map) cache2.snapshot();
+        check("snapshot size == 2", snap.size() == 2);
+        check("snapshot contains x", "ex".equals(snap.get("x")));
+
+        // toString
+        String str = cache2.toString();
+        check("toString contains LruCache", str.contains("LruCache"));
+        check("toString contains maxSize", str.contains("maxSize=5"));
+
+        // Null key throws
+        boolean threw = false;
+        try { cache2.get(null); } catch (NullPointerException e) { threw = true; }
+        check("get(null) throws NPE", threw);
+
+        threw = false;
+        try { cache2.put(null, "v"); } catch (NullPointerException e) { threw = true; }
+        check("put(null,v) throws NPE", threw);
+
+        threw = false;
+        try { cache2.put("k", null); } catch (NullPointerException e) { threw = true; }
+        check("put(k,null) throws NPE", threw);
+
+        // resize
+        android.util.LruCache cache3 = new android.util.LruCache(5);
+        cache3.put("1", "one");
+        cache3.put("2", "two");
+        cache3.put("3", "three");
+        cache3.put("4", "four");
+        cache3.put("5", "five");
+        cache3.resize(Integer.valueOf(2));
+        check("resize evicts to new maxSize", cache3.size() == 2);
+        check("maxSize updated after resize", cache3.maxSize() == 2);
+    }
+
+    // ── TextUtils ──────────────────────────────────────────────────────
+    static void testTextUtilsShim() {
+        section("TextUtils");
+
+        // isEmpty
+        check("isEmpty(null)", android.text.TextUtils.isEmpty(null));
+        check("isEmpty(\"\")", android.text.TextUtils.isEmpty(""));
+        check("!isEmpty(\"x\")", !android.text.TextUtils.isEmpty("x"));
+
+        // equals
+        check("equals(null,null)", android.text.TextUtils.equals(null, null));
+        check("!equals(null,\"a\")", !android.text.TextUtils.equals(null, "a"));
+        check("!equals(\"a\",null)", !android.text.TextUtils.equals("a", null));
+        check("equals(\"abc\",\"abc\")", android.text.TextUtils.equals("abc", "abc"));
+        check("!equals(\"abc\",\"def\")", !android.text.TextUtils.equals("abc", "def"));
+
+        // join(delimiter, Object[])
+        check("join array", "a,b,c".equals(
+            android.text.TextUtils.join(",", new String[]{"a", "b", "c"})));
+        check("join single", "x".equals(
+            android.text.TextUtils.join(",", new String[]{"x"})));
+
+        // join(delimiter, Iterable)
+        java.util.List<String> list = new java.util.ArrayList<>();
+        list.add("1"); list.add("2"); list.add("3");
+        check("join iterable", "1-2-3".equals(
+            android.text.TextUtils.join("-", list)));
+
+        // split
+        String[] parts = android.text.TextUtils.split("a,b,c", ",");
+        check("split length", parts.length == 3);
+        check("split[0]", "a".equals(parts[0]));
+        check("split[2]", "c".equals(parts[2]));
+        check("split empty", android.text.TextUtils.split("", ",").length == 0);
+
+        // isDigitsOnly
+        check("isDigitsOnly(\"123\")", android.text.TextUtils.isDigitsOnly("123"));
+        check("!isDigitsOnly(\"12a\")", !android.text.TextUtils.isDigitsOnly("12a"));
+        check("!isDigitsOnly(\"\")", !android.text.TextUtils.isDigitsOnly(""));
+
+        // htmlEncode
+        check("htmlEncode", "&amp;&lt;&gt;&quot;&#39;".equals(
+            android.text.TextUtils.htmlEncode("&<>\"'")));
+        check("htmlEncode plain", "hello".equals(
+            android.text.TextUtils.htmlEncode("hello")));
+
+        // getTrimmedLength
+        check("getTrimmedLength", android.text.TextUtils.getTrimmedLength("  hi  ") == 2);
+        check("getTrimmedLength all spaces", android.text.TextUtils.getTrimmedLength("   ") == 0);
+
+        // indexOf
+        check("indexOf char", android.text.TextUtils.indexOf("hello", 'l') == 2);
+        check("indexOf char missing", android.text.TextUtils.indexOf("hello", 'z') == -1);
+
+        // lastIndexOf
+        check("lastIndexOf char", android.text.TextUtils.lastIndexOf("hello", 'l') == 3);
+
+        // substring
+        check("substring", "ell".equals(android.text.TextUtils.substring("hello", 1, 4)));
+
+        // replace
+        CharSequence replaced = android.text.TextUtils.replace("hello world",
+            new String[]{"hello", "world"},
+            new CharSequence[]{"hi", "earth"});
+        check("replace", "hi earth".equals(replaced.toString()));
+
+        // regionMatches
+        check("regionMatches", android.text.TextUtils.regionMatches("abcdef", 2, "xxcde", 2, 3));
+        check("!regionMatches", !android.text.TextUtils.regionMatches("abcdef", 2, "xxyzz", 2, 3));
+
+        // concat
+        CharSequence cat = android.text.TextUtils.concat("a", "b", "c");
+        check("concat", "abc".equals(cat.toString()));
+
+        // isGraphic
+        check("isGraphic(\"A\")", android.text.TextUtils.isGraphic("A"));
+        check("!isGraphic(\" \")", !android.text.TextUtils.isGraphic(" "));
+
+        // getChars
+        char[] dest = new char[3];
+        android.text.TextUtils.getChars("hello", 1, 4, dest, 0);
+        check("getChars", "ell".equals(new String(dest)));
+    }
+
+    // ── RectF Shim tests ─────────────────────────────────────────────────
+
+    static void testRectFShim() {
+        section("android.graphics.RectF");
+
+        // Default constructor: all zeros, isEmpty
+        android.graphics.RectF empty = new android.graphics.RectF();
+        check("default ctor isEmpty", empty.isEmpty());
+        check("default ctor left==0", empty.left == 0f);
+
+        // 4-arg constructor
+        android.graphics.RectF r = new android.graphics.RectF(10f, 20f, 110f, 70f);
+        check("4-arg left", r.left == 10f);
+        check("4-arg top", r.top == 20f);
+        check("4-arg right", r.right == 110f);
+        check("4-arg bottom", r.bottom == 70f);
+
+        // width / height
+        check("width == 100", r.width() == 100f);
+        check("height == 50", r.height() == 50f);
+
+        // centerX / centerY
+        check("centerX == 60", r.centerX() == 60f);
+        check("centerY == 45", r.centerY() == 45f);
+
+        // exactCenterX / exactCenterY
+        check("exactCenterX == 60", r.exactCenterX() == 60f);
+        check("exactCenterY == 45", r.exactCenterY() == 45f);
+
+        // isEmpty on non-empty
+        check("non-empty !isEmpty", !r.isEmpty());
+
+        // Copy constructor from RectF
+        android.graphics.RectF r2 = new android.graphics.RectF(r);
+        check("copy equals original", r2.equals(r));
+        check("copy not same ref", r2 != r);
+
+        // Constructor from Rect
+        android.graphics.Rect intRect = new android.graphics.Rect(1, 2, 3, 4);
+        android.graphics.RectF fromRect = new android.graphics.RectF(intRect);
+        check("from Rect left", fromRect.left == 1f);
+        check("from Rect bottom", fromRect.bottom == 4f);
+
+        // set(float,float,float,float)
+        android.graphics.RectF s = new android.graphics.RectF();
+        s.set(5f, 6f, 7f, 8f);
+        check("set 4-arg left", s.left == 5f);
+        check("set 4-arg bottom", s.bottom == 8f);
+
+        // set(Rect)
+        s.set(intRect);
+        check("set(Rect) right", s.right == 3f);
+
+        // contains(x, y)
+        android.graphics.RectF box = new android.graphics.RectF(0f, 0f, 10f, 10f);
+        check("contains(5,5) true", box.contains(5f, 5f));
+        check("contains(0,0) true", box.contains(0f, 0f));
+        check("contains(10,10) false", !box.contains(10f, 10f));
+        check("contains(-1,5) false", !box.contains(-1f, 5f));
+
+        // contains(l, t, r, b)
+        check("contains rect inside", box.contains(2f, 2f, 8f, 8f));
+        check("contains rect overlap false", !box.contains(2f, 2f, 12f, 8f));
+
+        // intersect (mutating)
+        android.graphics.RectF i1 = new android.graphics.RectF(0f, 0f, 10f, 10f);
+        boolean hit = i1.intersect(5f, 5f, 15f, 15f);
+        check("intersect returns true", hit);
+        check("intersect left == 5", i1.left == 5f);
+        check("intersect top == 5", i1.top == 5f);
+        check("intersect right == 10", i1.right == 10f);
+        check("intersect bottom == 10", i1.bottom == 10f);
+
+        // intersect no overlap
+        android.graphics.RectF i2 = new android.graphics.RectF(0f, 0f, 5f, 5f);
+        check("intersect no overlap false", !i2.intersect(10f, 10f, 20f, 20f));
+
+        // union(float, float, float, float)
+        android.graphics.RectF u = new android.graphics.RectF(0f, 0f, 10f, 10f);
+        u.union(5f, 5f, 20f, 20f);
+        check("union right == 20", u.right == 20f);
+        check("union bottom == 20", u.bottom == 20f);
+        check("union left unchanged", u.left == 0f);
+
+        // union(x, y) single point
+        android.graphics.RectF u2 = new android.graphics.RectF(5f, 5f, 10f, 10f);
+        u2.union(0f, 0f);
+        check("union point left == 0", u2.left == 0f);
+        check("union point top == 0", u2.top == 0f);
+
+        // offset
+        android.graphics.RectF o = new android.graphics.RectF(10f, 20f, 30f, 40f);
+        o.offset(5f, -5f);
+        check("offset left == 15", o.left == 15f);
+        check("offset top == 15", o.top == 15f);
+        check("offset right == 35", o.right == 35f);
+        check("offset bottom == 35", o.bottom == 35f);
+
+        // inset
+        android.graphics.RectF ins = new android.graphics.RectF(0f, 0f, 100f, 100f);
+        ins.inset(10f, 20f);
+        check("inset left == 10", ins.left == 10f);
+        check("inset top == 20", ins.top == 20f);
+        check("inset right == 90", ins.right == 90f);
+        check("inset bottom == 80", ins.bottom == 80f);
+
+        // equals and hashCode
+        android.graphics.RectF eq1 = new android.graphics.RectF(1f, 2f, 3f, 4f);
+        android.graphics.RectF eq2 = new android.graphics.RectF(1f, 2f, 3f, 4f);
+        check("equals same values", eq1.equals(eq2));
+        check("hashCode same values", eq1.hashCode() == eq2.hashCode());
+        android.graphics.RectF neq = new android.graphics.RectF(1f, 2f, 3f, 5f);
+        check("not equals different", !eq1.equals(neq));
+
+        // toString
+        check("toString non-null", eq1.toString() != null);
+        check("toString contains RectF", eq1.toString().contains("RectF"));
+    }
+    // ── Bundle Shim (extended) ──
+
+    static void testBundleShim() {
+        section("android.os.Bundle (shim extended)");
+
+        // String put/get round-trip
+        android.os.Bundle b = new android.os.Bundle();
+        b.putString("s", "hello");
+        check("putString/getString round-trip", "hello".equals(b.getString("s")));
+
+        // int put/get round-trip
+        b.putInt("i", 42);
+        check("putInt/getInt round-trip", b.getInt("i") == 42);
+
+        // long put/get round-trip
+        b.putLong("l", 123456789L);
+        check("putLong/getLong round-trip", b.getLong("l") == 123456789L);
+
+        // float put/get round-trip
+        b.putFloat("f", 2.5f);
+        check("putFloat/getFloat round-trip", Math.abs(b.getFloat("f") - 2.5f) < 0.001f);
+
+        // double put/get round-trip
+        b.putDouble("d", 3.14159);
+        check("putDouble/getDouble round-trip", Math.abs(b.getDouble("d") - 3.14159) < 0.0001);
+
+        // boolean put/get round-trip
+        b.putBoolean("bt", true);
+        b.putBoolean("bf", false);
+        check("putBoolean/getBoolean true", b.getBoolean("bt") == true);
+        check("putBoolean/getBoolean false", b.getBoolean("bf") == false);
+
+        // putStringArrayList/getStringArrayList
+        java.util.ArrayList<Object> strList = new java.util.ArrayList<>();
+        strList.add("a");
+        strList.add("b");
+        strList.add("c");
+        b.putStringArrayList("sl", strList);
+        java.util.ArrayList<String> gotList = b.getStringArrayList("sl");
+        check("putStringArrayList/getStringArrayList size", gotList != null && gotList.size() == 3);
+        check("putStringArrayList/getStringArrayList values",
+              gotList != null && "a".equals(gotList.get(0)) && "c".equals(gotList.get(2)));
+
+        // putBundle/getBundle (nested)
+        android.os.Bundle inner = new android.os.Bundle();
+        inner.putString("nested_key", "nested_val");
+        b.putBundle("inner", inner);
+        android.os.Bundle gotInner = b.getBundle("inner");
+        check("putBundle/getBundle not null", gotInner != null);
+        check("putBundle/getBundle nested value", gotInner != null && "nested_val".equals(gotInner.getString("nested_key")));
+
+        // containsKey
+        check("containsKey existing", b.containsKey("s"));
+        check("containsKey missing", !b.containsKey("nonexistent"));
+
+        // remove
+        b.putString("toRemove", "bye");
+        check("before remove containsKey", b.containsKey("toRemove"));
+        b.remove("toRemove");
+        check("after remove containsKey", !b.containsKey("toRemove"));
+        check("after remove getString null", b.getString("toRemove") == null);
+
+        // size (keys: s, i, l, f, d, bt, bf, sl, inner = 9)
+        check("size", b.size() == 9);
+
+        // isEmpty
+        check("isEmpty false", !b.isEmpty());
+        android.os.Bundle empty = new android.os.Bundle();
+        check("isEmpty true", empty.isEmpty());
+
+        // keySet
+        java.util.Set<String> keys = b.keySet();
+        check("keySet contains s", keys.contains("s"));
+        check("keySet contains inner", keys.contains("inner"));
+        check("keySet size matches", keys.size() == b.size());
+
+        // Copy constructor
+        android.os.Bundle copy = new android.os.Bundle(b);
+        check("copy getString", "hello".equals(copy.getString("s")));
+        check("copy getInt", copy.getInt("i") == 42);
+        check("copy getLong", copy.getLong("l") == 123456789L);
+        check("copy getBoolean", copy.getBoolean("bt") == true);
+        check("copy size matches original", copy.size() == b.size());
+        // Verify independence: mutating copy doesn't affect original
+        copy.putString("s", "modified");
+        check("copy independent from original", "hello".equals(b.getString("s")));
+
+        // Default values for missing keys
+        check("getInt default", b.getInt("missing") == 0);
+        check("getInt custom default", b.getInt("missing", -1) == -1);
+        check("getLong default", b.getLong("missing") == 0L);
+        check("getFloat default", b.getFloat("missing") == 0f);
+        check("getDouble default", b.getDouble("missing") == 0.0);
+        check("getBoolean default", b.getBoolean("missing") == false);
+        check("getString default null", b.getString("missing") == null);
+        check("getBundle missing null", b.getBundle("missing") == null);
+
+        // byte put/get round-trip
+        b.putByte("by", (byte) 0x7F);
+        check("putByte/getByte round-trip", b.getByte("by") == (byte) 0x7F);
+
+        // char put/get round-trip
+        b.putChar("ch", 'Z');
+        check("putChar/getChar round-trip", b.getChar("ch") == 'Z');
+
+        // short put/get round-trip
+        b.putShort("sh", (short) 1234);
+        check("putShort/getShort round-trip", b.getShort("sh") == (short) 1234);
+
+        // clone
+        Object cloned = b.clone();
+        check("clone returns Bundle", cloned instanceof android.os.Bundle);
+        check("clone getString", "hello".equals(((android.os.Bundle) cloned).getString("s")));
+
+        // putAll
+        android.os.Bundle extra = new android.os.Bundle();
+        extra.putString("extra1", "e1");
+        extra.putInt("extra2", 99);
+        android.os.Bundle target = new android.os.Bundle();
+        target.putAll(extra);
+        check("putAll getString", "e1".equals(target.getString("extra1")));
+        check("putAll getInt", target.getInt("extra2") == 99);
+
+        // clear
+        android.os.Bundle clearMe = new android.os.Bundle();
+        clearMe.putString("x", "y");
+        clearMe.clear();
+        check("clear isEmpty", clearMe.isEmpty());
+        check("clear size 0", clearMe.size() == 0);
+    }
+
+    // ── Rect Shim ──────────────────────────────────────────────────────
+
+    static void testRectShim() {
+        section("Rect Shim");
+
+        // Default constructor
+        android.graphics.Rect empty = new android.graphics.Rect();
+        check("default ctor is empty", empty.isEmpty());
+        check("default ctor zeros", empty.left == 0 && empty.top == 0 && empty.right == 0 && empty.bottom == 0);
+
+        // 4-arg constructor
+        android.graphics.Rect r = new android.graphics.Rect(10, 20, 110, 220);
+        check("4-arg ctor left", r.left == 10);
+        check("4-arg ctor top", r.top == 20);
+        check("4-arg ctor right", r.right == 110);
+        check("4-arg ctor bottom", r.bottom == 220);
+        check("not empty", !r.isEmpty());
+
+        // Copy constructor
+        android.graphics.Rect copy = new android.graphics.Rect(r);
+        check("copy ctor equals", r.equals(copy));
+        check("copy ctor not same ref", r != copy);
+
+        // Dimensions
+        check("width", r.width() == 100);
+        check("height", r.height() == 200);
+        check("centerX", r.centerX() == 60);
+        check("centerY", r.centerY() == 120);
+        check("exactCenterX", r.exactCenterX() == 60.0f);
+        check("exactCenterY", r.exactCenterY() == 120.0f);
+
+        // set(int,int,int,int)
+        android.graphics.Rect s = new android.graphics.Rect();
+        s.set(5, 10, 15, 20);
+        check("set(4 args)", s.left == 5 && s.top == 10 && s.right == 15 && s.bottom == 20);
+
+        // set(Rect)
+        android.graphics.Rect s2 = new android.graphics.Rect();
+        s2.set(s);
+        check("set(Rect)", s2.equals(s));
+
+        // setEmpty
+        s2.setEmpty();
+        check("setEmpty", s2.isEmpty() && s2.left == 0 && s2.right == 0);
+
+        // contains(int, int)
+        android.graphics.Rect c = new android.graphics.Rect(0, 0, 100, 100);
+        check("contains point inside", c.contains(50, 50));
+        check("contains point at origin", c.contains(0, 0));
+        check("contains point at right edge excluded", !c.contains(100, 50));
+        check("contains point at bottom edge excluded", !c.contains(50, 100));
+        check("contains point outside", !c.contains(150, 150));
+
+        // contains(int,int,int,int)
+        check("contains rect inside", c.contains(10, 10, 90, 90));
+        check("contains rect same", c.contains(0, 0, 100, 100));
+        check("contains rect outside", !c.contains(0, 0, 101, 100));
+
+        // contains(Rect)
+        android.graphics.Rect inner = new android.graphics.Rect(10, 10, 50, 50);
+        check("contains(Rect) inside", c.contains(inner));
+        check("contains(Rect) not inside", !inner.contains(c));
+
+        // intersect
+        android.graphics.Rect a = new android.graphics.Rect(0, 0, 100, 100);
+        android.graphics.Rect b = new android.graphics.Rect(50, 50, 150, 150);
+        boolean hit = a.intersect(b);
+        check("intersect returns true", hit);
+        check("intersect result", a.left == 50 && a.top == 50 && a.right == 100 && a.bottom == 100);
+
+        // intersect no overlap
+        android.graphics.Rect a2 = new android.graphics.Rect(0, 0, 10, 10);
+        boolean miss = a2.intersect(20, 20, 30, 30);
+        check("intersect no overlap returns false", !miss);
+        check("intersect no overlap unchanged", a2.left == 0 && a2.right == 10);
+
+        // setIntersect
+        android.graphics.Rect si = new android.graphics.Rect();
+        boolean siHit = si.setIntersect(
+            new android.graphics.Rect(0, 0, 100, 100),
+            new android.graphics.Rect(50, 50, 200, 200));
+        check("setIntersect true", siHit);
+        check("setIntersect result", si.equals(new android.graphics.Rect(50, 50, 100, 100)));
+
+        // static intersects
+        check("static intersects true", android.graphics.Rect.intersects(
+            new android.graphics.Rect(0, 0, 100, 100),
+            new android.graphics.Rect(50, 50, 150, 150)));
+        check("static intersects false", !android.graphics.Rect.intersects(
+            new android.graphics.Rect(0, 0, 10, 10),
+            new android.graphics.Rect(20, 20, 30, 30)));
+
+        // union(int,int,int,int)
+        android.graphics.Rect u = new android.graphics.Rect(10, 10, 50, 50);
+        u.union(40, 40, 100, 100);
+        check("union(4 args)", u.equals(new android.graphics.Rect(10, 10, 100, 100)));
+
+        // union(Rect)
+        android.graphics.Rect u2 = new android.graphics.Rect(10, 10, 50, 50);
+        u2.union(new android.graphics.Rect(0, 0, 60, 60));
+        check("union(Rect)", u2.equals(new android.graphics.Rect(0, 0, 60, 60)));
+
+        // union(int, int) - point
+        android.graphics.Rect u3 = new android.graphics.Rect(10, 10, 50, 50);
+        u3.union(0, 0);
+        check("union(point)", u3.left == 0 && u3.top == 0);
+
+        // union on empty rect
+        android.graphics.Rect ue = new android.graphics.Rect();
+        ue.union(5, 5, 15, 15);
+        check("union on empty", ue.equals(new android.graphics.Rect(5, 5, 15, 15)));
+
+        // offset
+        android.graphics.Rect o = new android.graphics.Rect(10, 20, 30, 40);
+        o.offset(5, 10);
+        check("offset", o.equals(new android.graphics.Rect(15, 30, 35, 50)));
+
+        // offsetTo
+        o.offsetTo(0, 0);
+        check("offsetTo", o.equals(new android.graphics.Rect(0, 0, 20, 20)));
+
+        // inset
+        android.graphics.Rect ins = new android.graphics.Rect(0, 0, 100, 100);
+        ins.inset(10, 20);
+        check("inset", ins.equals(new android.graphics.Rect(10, 20, 90, 80)));
+
+        // equals & hashCode
+        android.graphics.Rect eq1r = new android.graphics.Rect(1, 2, 3, 4);
+        android.graphics.Rect eq2r = new android.graphics.Rect(1, 2, 3, 4);
+        check("equals", eq1r.equals(eq2r));
+        check("hashCode", eq1r.hashCode() == eq2r.hashCode());
+        check("not equals", !eq1r.equals(new android.graphics.Rect(9, 9, 9, 9)));
+
+        // toString
+        check("toString", "Rect(1, 2 - 3, 4)".equals(eq1r.toString()));
+
+        // toShortString
+        check("toShortString", "[1,2][3,4]".equals(eq1r.toShortString()));
+
+        // flattenToString / unflattenFromString
+        android.graphics.Rect fl = new android.graphics.Rect(10, 20, 30, 40);
+        String flat = fl.flattenToString();
+        android.graphics.Rect unfl = android.graphics.Rect.unflattenFromString(flat);
+        check("flatten roundtrip", fl.equals(unfl));
+        check("unflatten null", android.graphics.Rect.unflattenFromString(null) == null);
+        check("unflatten bad", android.graphics.Rect.unflattenFromString("bad") == null);
+
+        // sort
+        android.graphics.Rect unsorted = new android.graphics.Rect(100, 200, 10, 20);
+        unsorted.sort();
+        check("sort", unsorted.equals(new android.graphics.Rect(10, 20, 100, 200)));
     }
 }
