@@ -390,7 +390,7 @@ index af31b97..f656923 100644
  /*
   * If "very verbose" logging is enabled, make it equivalent to ALOGV.
 diff --git a/vm/Debugger.cpp b/vm/Debugger.cpp
-index 5c44f93..7492c59 100644
+index 5c44f93..42cff3c 100644
 --- a/vm/Debugger.cpp
 +++ b/vm/Debugger.cpp
 @@ -162,9 +162,10 @@ enum RegistryType {
@@ -511,17 +511,158 @@ index 5c44f93..7492c59 100644
  }
  
  
-@@ -2373,7 +2377,7 @@ void dvmDbgSetLocalValue(ObjectId threadId, FrameId frameId, int slot, u1 tag,
+@@ -2193,7 +2197,7 @@ void dvmDbgSuspendSelf()
+ /*
+  * Get the "this" object for the specified frame.
+  */
+-static Object* getThisObject(const u4* framePtr)
++static Object* getThisObject(const void* framePtr)
+ {
+     const StackSaveArea* saveArea = SAVEAREA_FROM_FP(framePtr);
+     const Method* method = saveArea->method;
+@@ -2209,7 +2213,7 @@ static Object* getThisObject(const u4* framePtr)
+     LOGVV("  Pulling this object for frame at %p", framePtr);
+     LOGVV("    Method='%s' native=%d static=%d this=%p",
+         method->name, dvmIsNativeMethod(method),
+-        dvmIsStaticMethod(method), (Object*) framePtr[argOffset]);
++        dvmIsStaticMethod(method), (Object*) ((dreg_t*)framePtr)[argOffset]);
+ 
+     /*
+      * No "this" pointer for statics.  No args on the interp stack for
+@@ -2218,7 +2222,7 @@ static Object* getThisObject(const u4* framePtr)
+     if (dvmIsNativeMethod(method) || dvmIsStaticMethod(method))
+         thisObj = NULL;
+     else
+-        thisObj = (Object*) framePtr[argOffset];
++        thisObj = (Object*)(uintptr_t) ((u4*)framePtr)[argOffset];
+ 
+     if (thisObj != NULL && !dvmIsHeapAddress(thisObj)) {
+         ALOGW("Debugger: invalid 'this' pointer %p in %s.%s; returning NULL",
+@@ -2235,7 +2239,7 @@ static Object* getThisObject(const u4* framePtr)
+  */
+ bool dvmDbgGetThisObject(ObjectId threadId, FrameId frameId, ObjectId* pThisId)
+ {
+-    const u4* framePtr = frameIdToFrame(frameId);
++    const void* framePtr = frameIdToFrame(frameId);
+     Object* thisObj;
+ 
+     UNUSED_PARAMETER(threadId);
+@@ -2256,7 +2260,7 @@ bool dvmDbgGetThisObject(ObjectId threadId, FrameId frameId, ObjectId* pThisId)
+ void dvmDbgGetLocalValue(ObjectId threadId, FrameId frameId, int slot,
+     u1 tag, u1* buf, int expectedLen)
+ {
+-    const u4* framePtr = frameIdToFrame(frameId);
++    const void* framePtr = frameIdToFrame(frameId);
+     Object* objVal;
+     u4 intVal;
+     u8 longVal;
+@@ -2268,31 +2272,31 @@ void dvmDbgGetLocalValue(ObjectId threadId, FrameId frameId, int slot,
+     switch (tag) {
+     case JT_BOOLEAN:
+         assert(expectedLen == 1);
+-        intVal = framePtr[slot];
++        intVal = ((dreg_t*)framePtr)[slot];
+         set1(buf+1, intVal != 0);
+         break;
+     case JT_BYTE:
+         assert(expectedLen == 1);
+-        intVal = framePtr[slot];
++        intVal = ((dreg_t*)framePtr)[slot];
+         set1(buf+1, intVal);
+         break;
+     case JT_SHORT:
+     case JT_CHAR:
+         assert(expectedLen == 2);
+-        intVal = framePtr[slot];
++        intVal = ((dreg_t*)framePtr)[slot];
+         set2BE(buf+1, intVal);
+         break;
+     case JT_INT:
+     case JT_FLOAT:
+         assert(expectedLen == 4);
+-        intVal = framePtr[slot];
++        intVal = ((dreg_t*)framePtr)[slot];
+         set4BE(buf+1, intVal);
+         break;
+     case JT_ARRAY:
+         assert(expectedLen == sizeof(ObjectId));
+         {
+             /* convert to "ObjectId" */
+-            objVal = (Object*)framePtr[slot];
++            objVal = (Object*)((dreg_t*)framePtr)[slot];
+             if (objVal != NULL && !dvmIsHeapAddress(objVal)) {
+                 ALOGW("JDWP: slot %d expected to hold array, %p invalid",
+                     slot, objVal);
+@@ -2307,7 +2311,7 @@ void dvmDbgGetLocalValue(ObjectId threadId, FrameId frameId, int slot,
+         assert(expectedLen == sizeof(ObjectId));
+         {
+             /* convert to "ObjectId" */
+-            objVal = (Object*)framePtr[slot];
++            objVal = (Object*)((dreg_t*)framePtr)[slot];
+ 
+             if (objVal != NULL && !dvmIsHeapAddress(objVal)) {
+                 ALOGW("JDWP: slot %d expected to hold object, %p invalid",
+@@ -2322,7 +2326,7 @@ void dvmDbgGetLocalValue(ObjectId threadId, FrameId frameId, int slot,
+     case JT_DOUBLE:
+     case JT_LONG:
+         assert(expectedLen == 8);
+-        memcpy(&longVal, &framePtr[slot], 8);
++        memcpy(&longVal, &((dreg_t*)framePtr)[slot], 8);
+         set8BE(buf+1, longVal);
+         break;
+     default:
+@@ -2341,7 +2345,7 @@ void dvmDbgGetLocalValue(ObjectId threadId, FrameId frameId, int slot,
+ void dvmDbgSetLocalValue(ObjectId threadId, FrameId frameId, int slot, u1 tag,
+     u8 value, int width)
+ {
+-    u4* framePtr = frameIdToFrame(frameId);
++    void* framePtr = frameIdToFrame(frameId);
+ 
+     UNUSED_PARAMETER(threadId);
+ 
+@@ -2350,21 +2354,21 @@ void dvmDbgSetLocalValue(ObjectId threadId, FrameId frameId, int slot, u1 tag,
+     switch (tag) {
+     case JT_BOOLEAN:
+         assert(width == 1);
+-        framePtr[slot] = (u4)value;
++        ((dreg_t*)framePtr)[slot] = (u4)value;
+         break;
+     case JT_BYTE:
+         assert(width == 1);
+-        framePtr[slot] = (u4)value;
++        ((dreg_t*)framePtr)[slot] = (u4)value;
+         break;
+     case JT_SHORT:
+     case JT_CHAR:
+         assert(width == 2);
+-        framePtr[slot] = (u4)value;
++        ((dreg_t*)framePtr)[slot] = (u4)value;
+         break;
+     case JT_INT:
+     case JT_FLOAT:
+         assert(width == 4);
+-        framePtr[slot] = (u4)value;
++        ((dreg_t*)framePtr)[slot] = (u4)value;
+         break;
+     case JT_STRING:
+         /* The debugger calls VirtualMachine.CreateString to create a new
+@@ -2373,12 +2377,12 @@ void dvmDbgSetLocalValue(ObjectId threadId, FrameId frameId, int slot, u1 tag,
      case JT_ARRAY:
      case JT_OBJECT:
          assert(width == sizeof(ObjectId));
 -        framePtr[slot] = (u4) objectIdToObject(value);
-+        *(Object**)&framePtr[slot] = objectIdToObject(value);
++        *(Object**)&((dreg_t*)framePtr)[slot] = objectIdToObject(value);
          break;
      case JT_DOUBLE:
      case JT_LONG:
+         assert(width == 8);
+-        memcpy(&framePtr[slot], &value, 8);
++        memcpy(&((dreg_t*)framePtr)[slot], &value, 8);
+         break;
+     case JT_VOID:
+     case JT_CLASS_OBJECT:
 diff --git a/vm/Exception.cpp b/vm/Exception.cpp
-index ca76140..9084b47 100644
+index ca76140..8aa5b80 100644
 --- a/vm/Exception.cpp
 +++ b/vm/Exception.cpp
 @@ -715,7 +715,7 @@ static int findCatchInMethod(Thread* self, const Method* method, int relPc,
@@ -533,6 +674,15 @@ index ca76140..9084b47 100644
      int catchAddr = -1;
  
      assert(!dvmCheckException(self));
+@@ -745,7 +745,7 @@ int dvmFindCatchBlock(Thread* self, int relPc, Object* exception,
+          * if this was a native method.
+          */
+         assert(saveArea->prevFrame != NULL);
+-        if (dvmIsBreakFrame((u4*)saveArea->prevFrame)) {
++        if (dvmIsBreakFrame((void*)saveArea->prevFrame)) {
+             if (!scanOnly)
+                 break;      // bail with catchAddr == -1
+ 
 @@ -758,17 +758,17 @@ int dvmFindCatchBlock(Thread* self, int relPc, Object* exception,
               *
               * Start by finding an interpreted code frame.
@@ -1159,7 +1309,7 @@ index fe14f8b..622148c 100644
  
  #endif  // DALVIK_INLINENATIVE_H_
 diff --git a/vm/Jni.cpp b/vm/Jni.cpp
-index 0e77fab..a7f748e 100644
+index 0e77fab..2045a39 100644
 --- a/vm/Jni.cpp
 +++ b/vm/Jni.cpp
 @@ -136,8 +136,8 @@ The GC will scan all references in the table.
@@ -1181,7 +1331,15 @@ index 0e77fab..a7f748e 100644
      if (obj == NULL) {
          return NULL;
      }
-@@ -447,13 +448,13 @@ static jobject addGlobalReference(Object* obj) {
+@@ -399,6 +400,7 @@ static inline jobject addLocalReference(Thread* self, Object* obj) {
+         // Hand out direct pointers to support broken old apps.
+         return reinterpret_cast<jobject>(obj);
+     }
++    ALOGW("addLocalReference: obj=%p -> jobj=%p", obj, jobj);
+     return jobj;
+ }
+ 
+@@ -447,13 +449,13 @@ static jobject addGlobalReference(Object* obj) {
      }
  
      //ALOGI("adding obj=%p", obj);
@@ -1197,7 +1355,7 @@ index 0e77fab..a7f748e 100644
      }
      if (false && ((Object*)obj)->clazz == gDvm.classJavaLangString) {
          StringObject* strObj = (StringObject*) obj;
-@@ -461,7 +462,7 @@ static jobject addGlobalReference(Object* obj) {
+@@ -461,7 +463,7 @@ static jobject addGlobalReference(Object* obj) {
          if (strcmp(str, "sync-response") == 0) {
              ALOGI("-------");
              ALOGI("Adding global ref on string '%s'", str);
@@ -1206,7 +1364,7 @@ index 0e77fab..a7f748e 100644
              //dvmAbort();
          }
          free(str);
-@@ -473,7 +474,7 @@ static jobject addGlobalReference(Object* obj) {
+@@ -473,7 +475,7 @@ static jobject addGlobalReference(Object* obj) {
          {
              ALOGI("Adding global ref on byte array %p (len=%d)",
                  arrayObj, arrayObj->length);
@@ -1215,7 +1373,23 @@ index 0e77fab..a7f748e 100644
          }
      }
  
-@@ -880,12 +881,12 @@ static void appendValue(char type, const JValue value, char* buf, size_t n, bool
+@@ -500,6 +502,7 @@ static jobject addGlobalReference(Object* obj) {
+         dvmGetCurrentJNIMethod()->clazz->descriptor,
+         dvmGetCurrentJNIMethod()->name);
+ 
++    ALOGW("addLocalReference: obj=%p -> jobj=%p", obj, jobj);
+     return jobj;
+ }
+ 
+@@ -516,6 +519,7 @@ static jobject addWeakGlobalReference(Object* obj) {
+         ALOGE("Failed adding to JNI weak global ref table (%zd entries)", table->capacity());
+         ReportJniError();
+     }
++    ALOGW("addLocalReference: obj=%p -> jobj=%p", obj, jobj);
+     return jobj;
+ }
+ 
+@@ -880,12 +884,12 @@ static void appendValue(char type, const JValue value, char* buf, size_t n, bool
      }
  }
  
@@ -1231,18 +1405,23 @@ index 0e77fab..a7f748e 100644
      }
  
      char argsString[128]= { 0 };
-@@ -1091,8 +1092,8 @@ static inline void convertReferenceResult(JNIEnv* env, JValue* pResult,
+@@ -1091,8 +1095,13 @@ static inline void convertReferenceResult(JNIEnv* env, JValue* pResult,
  /*
   * General form, handles all cases.
   */
 -void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thread* self) {
 -    u4* modArgs = (u4*) args;
 +void dvmCallJNIMethod(const dreg_t* args, JValue* pResult, const Method* method, Thread* self) {
-+    dreg_t* modArgs = (dreg_t*) args;
++    /* On 64-bit, JNI jobject is 8 bytes but dreg_t may be 4 bytes.
++     * Use a pointer-width copy of the args for JNI calls. */
++    int nArgs = method->registersSize;
++    uintptr_t wideArgs[nArgs > 0 ? nArgs : 1];
++    for (int i = 0; i < nArgs; i++) wideArgs[i] = args[i];
++    uintptr_t* modArgs = wideArgs;
      jclass staticMethodClass = NULL;
  
      u4 accessFlags = method->accessFlags;
-@@ -1112,9 +1113,9 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
+@@ -1112,9 +1121,9 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
          /* add the class object we pass in */
          staticMethodClass = (jclass) addLocalReference(self, (Object*) method->clazz);
      } else {
@@ -1250,20 +1429,29 @@ index 0e77fab..a7f748e 100644
 +        lockObj = (Object*)(uintptr_t) args[0];
          /* add "this" */
 -        modArgs[idx++] = (u4) addLocalReference(self, (Object*) modArgs[0]);
-+        modArgs[idx++] = (dreg_t)(uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[0]);
++        modArgs[idx++] = (uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[0]);
      }
  
      if (!method->noRef) {
-@@ -1124,7 +1125,7 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
+@@ -1124,7 +1133,7 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
              case 'L':
                  //ALOGI("  local %d: 0x%08x", idx, modArgs[idx]);
                  if (modArgs[idx] != 0) {
 -                    modArgs[idx] = (u4) addLocalReference(self, (Object*) modArgs[idx]);
-+                    modArgs[idx] = (dreg_t)(uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[idx]);
++                    modArgs[idx] = (uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[idx]);
                  }
                  break;
              case 'D':
-@@ -1237,11 +1238,8 @@ static jclass FindClass(JNIEnv* env, const char* name) {
+@@ -1153,7 +1162,7 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
+ 
+     JNIEnv* env = self->jniEnv;
+     COMPUTE_STACK_SUM(self);
+-    dvmPlatformInvoke(env,
++    dvmPlatformInvoke(env, /* args widened to uintptr_t for JNI */
+             (ClassObject*) staticMethodClass,
+             method->jniArgInfo, method->insSize, modArgs, method->shorty,
+             (void*) method->insns, pResult);
+@@ -1237,11 +1246,8 @@ static jclass FindClass(JNIEnv* env, const char* name) {
      } else if (thisMethod == gDvm.methDalvikSystemNativeStart_main ||
                 thisMethod == gDvm.methDalvikSystemNativeStart_run) {
          /* start point of invocation interface */
@@ -1277,7 +1465,7 @@ index 0e77fab..a7f748e 100644
      } else {
          loader = thisMethod->clazz->classLoader;
      }
-@@ -1562,7 +1560,7 @@ static jobject NewObjectV(JNIEnv* env, jclass jclazz, jmethodID methodID, va_lis
+@@ -1562,7 +1568,7 @@ static jobject NewObjectV(JNIEnv* env, jclass jclazz, jmethodID methodID, va_lis
      return result;
  }
  
@@ -1286,7 +1474,7 @@ index 0e77fab..a7f748e 100644
      ScopedJniThreadState ts(env);
      ClassObject* clazz = (ClassObject*) dvmDecodeIndirectRef(ts.self(), jclazz);
  
-@@ -1761,14 +1759,14 @@ static jfieldID GetStaticFieldID(JNIEnv* env, jclass jclazz, const char* name, c
+@@ -1761,14 +1767,14 @@ static jfieldID GetStaticFieldID(JNIEnv* env, jclass jclazz, const char* name, c
          if (dvmIsVolatileField(sfield)) {                                   \
              if (_isref) {   /* only when _ctype==jobject */                 \
                  Object* obj = dvmGetStaticFieldObjectVolatile(sfield);      \
@@ -1303,7 +1491,7 @@ index 0e77fab..a7f748e 100644
              } else {                                                        \
                  value = (_ctype) dvmGetStaticField##_jname(sfield);         \
              }                                                               \
-@@ -1797,14 +1795,14 @@ GET_STATIC_TYPE_FIELD(jdouble, Double, false);
+@@ -1797,14 +1803,14 @@ GET_STATIC_TYPE_FIELD(jdouble, Double, false);
          StaticField* sfield = (StaticField*) fieldID;                       \
          if (dvmIsVolatileField(sfield)) {                                   \
              if (_isref) {   /* only when _ctype==jobject */                 \
@@ -1320,7 +1508,7 @@ index 0e77fab..a7f748e 100644
                  dvmSetStaticFieldObject(sfield, valObj);                    \
              } else {                                                        \
                  dvmSetStaticField##_jname(sfield, (_ctype2)value);          \
-@@ -1838,7 +1836,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
+@@ -1838,7 +1844,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
              if (_isref) {   /* only when _ctype==jobject */                 \
                  Object* valObj =                                            \
                      dvmGetFieldObjectVolatile(obj, field->byteOffset);      \
@@ -1329,7 +1517,7 @@ index 0e77fab..a7f748e 100644
              } else {                                                        \
                  value = (_ctype)                                            \
                      dvmGetField##_jname##Volatile(obj, field->byteOffset);  \
-@@ -1846,7 +1844,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
+@@ -1846,7 +1852,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
          } else {                                                            \
              if (_isref) {                                                   \
                  Object* valObj = dvmGetFieldObject(obj, field->byteOffset); \
@@ -1338,7 +1526,7 @@ index 0e77fab..a7f748e 100644
              } else {                                                        \
                  value = (_ctype) dvmGetField##_jname(obj, field->byteOffset);\
              }                                                               \
-@@ -1875,7 +1873,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
+@@ -1875,7 +1881,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
          InstField* field = (InstField*) fieldID;                            \
          if (dvmIsVolatileField(field)) {                                    \
              if (_isref) {   /* only when _ctype==jobject */                 \
@@ -1347,7 +1535,7 @@ index 0e77fab..a7f748e 100644
                  dvmSetFieldObjectVolatile(obj, field->byteOffset, valObj);  \
              } else {                                                        \
                  dvmSetField##_jname##Volatile(obj,                          \
-@@ -1883,7 +1881,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
+@@ -1883,7 +1889,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
              }                                                               \
          } else {                                                            \
              if (_isref) {                                                   \
@@ -1356,7 +1544,7 @@ index 0e77fab..a7f748e 100644
                  dvmSetFieldObject(obj, field->byteOffset, valObj);          \
              } else {                                                        \
                  dvmSetField##_jname(obj,                                    \
-@@ -1944,7 +1942,7 @@ SET_TYPE_FIELD(jdouble, double, Double, false);
+@@ -1944,7 +1950,7 @@ SET_TYPE_FIELD(jdouble, double, Double, false);
          return _retok;                                                      \
      }                                                                       \
      static _ctype Call##_jname##MethodA(JNIEnv* env, jobject jobj,          \
@@ -1365,7 +1553,7 @@ index 0e77fab..a7f748e 100644
      {                                                                       \
          ScopedJniThreadState ts(env);                                       \
          Object* obj = dvmDecodeIndirectRef(ts.self(), jobj);                      \
-@@ -2016,7 +2014,7 @@ CALL_VIRTUAL(void, Void, , , false);
+@@ -2016,7 +2022,7 @@ CALL_VIRTUAL(void, Void, , , false);
          return _retok;                                                      \
      }                                                                       \
      static _ctype CallNonvirtual##_jname##MethodA(JNIEnv* env, jobject jobj,\
@@ -1374,7 +1562,7 @@ index 0e77fab..a7f748e 100644
      {                                                                       \
          ScopedJniThreadState ts(env);                                       \
          Object* obj = dvmDecodeIndirectRef(ts.self(), jobj); \
-@@ -2074,7 +2072,7 @@ CALL_NONVIRTUAL(void, Void, , , false);
+@@ -2074,7 +2080,7 @@ CALL_NONVIRTUAL(void, Void, , , false);
          return _retok;                                                      \
      }                                                                       \
      static _ctype CallStatic##_jname##MethodA(JNIEnv* env, jclass jclazz,   \
@@ -1822,7 +2010,7 @@ index f42004c..442c0fb 100644
          /*
           * The wrong thread has been suspended.  Try again.
 diff --git a/vm/Thread.cpp b/vm/Thread.cpp
-index 1ebfca7..c2f6b2a 100644
+index 1ebfca7..41934f1 100644
 --- a/vm/Thread.cpp
 +++ b/vm/Thread.cpp
 @@ -702,12 +702,20 @@ bool dvmPrepMainThread()
@@ -1921,7 +2109,7 @@ index 1ebfca7..c2f6b2a 100644
 +    {
 +        // Try to get system class loader, but don't abort on failure
 +        Thread* self2 = dvmThreadSelf();
-+        systemLoader = dvmGetSystemClassLoader(); if (dvmCheckException(dvmThreadSelf())) { ALOGW("System class loader init failed - continuing without"); dvmClearException(dvmThreadSelf()); systemLoader = NULL; }
++        ALOGW("Skipping system class loader"); systemLoader = NULL;
 +        if (dvmCheckException(self2)) {
 +            ALOGW("System class loader failed - clearing exception");
 +            dvmClearException(self2);
@@ -1971,6 +2159,26 @@ index 1ebfca7..c2f6b2a 100644
      /* include self in non-daemon threads (mainly for AttachCurrentThread) */
      gDvm.nonDaemonThreadCount++;
  
+@@ -1159,8 +1223,8 @@ static bool createFakeEntryFrame(Thread* thread)
+      * Null out the "String[] args" argument.
+      */
+     assert(gDvm.methDalvikSystemNativeStart_main->registersSize == 1);
+-    u4* framePtr = (u4*) thread->interpSave.curFrame;
+-    framePtr[0] = 0;
++    void* framePtr = (u4*) thread->interpSave.curFrame;
++    ((dreg_t*)framePtr)[0] = 0;
+ 
+     return true;
+ }
+@@ -2016,7 +2080,7 @@ void dvmDetachCurrentThread()
+ 
+         if (curDepth == 1) {
+             /* not expecting a lingering break frame; just look at curFrame */
+-            assert(!dvmIsBreakFrame((u4*)self->interpSave.curFrame));
++            assert(!dvmIsBreakFrame((void*)self->interpSave.curFrame));
+             StackSaveArea* ssa = SAVEAREA_FROM_FP(self->interpSave.curFrame);
+             if (dvmIsNativeMethod(ssa->method))
+                 topIsNative = true;
 @@ -3008,9 +3072,40 @@ static Object* getStaticThreadGroup(const char* fieldName)
      }
      groupObj = dvmGetStaticFieldObject(groupField);
@@ -2015,6 +2223,15 @@ index 1ebfca7..c2f6b2a 100644
      }
  
      return groupObj;
+@@ -3297,7 +3392,7 @@ static bool shouldShowNativeStack(Thread* thread) {
+     // state THREAD_SUSPENDED if they're calling back into the VM, or THREAD_MONITOR
+     // if they're blocked on a monitor, or one of the thread-startup states if
+     // it's early enough in their life cycle (http://b/7432159).
+-    u4* fp = thread->interpSave.curFrame;
++    void* fp = thread->interpSave.curFrame;
+     if (fp == NULL) {
+         // The thread has no managed frames, so native frames are all there is.
+         return true;
 diff --git a/vm/Thread.h b/vm/Thread.h
 index 19bd49c..820fa4e 100644
 --- a/vm/Thread.h
@@ -2295,7 +2512,7 @@ index 197fb7a..7ad5e7a 100644
  
  /*
 diff --git a/vm/arch/generic/Call.cpp b/vm/arch/generic/Call.cpp
-index 3d7cbef..b48cea5 100644
+index 3d7cbef..9625646 100644
 --- a/vm/arch/generic/Call.cpp
 +++ b/vm/arch/generic/Call.cpp
 @@ -52,7 +52,7 @@ static ffi_type* getFfiType(char sigType)
@@ -2303,7 +2520,7 @@ index 3d7cbef..b48cea5 100644
  
  extern "C" void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo,
 -    int argc, const u4* argv, const char* signature, void* func, JValue* pResult);
-+    int argc, const dreg_t* argv, const char* signature, void* func, JValue* pResult);
++    int argc, const uintptr_t* argv, const char* signature, void* func, JValue* pResult);
  #endif
  
  /*
@@ -2312,7 +2529,7 @@ index 3d7cbef..b48cea5 100644
   */
  void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo, int argc,
 -    const u4* argv, const char* shorty, void* func, JValue* pReturn)
-+    const dreg_t* argv, const char* shorty, void* func, JValue* pReturn)
++    const uintptr_t* argv, const char* shorty, void* func, JValue* pReturn)
  {
      const int kMaxArgs = argc+2;    /* +1 for env, maybe +1 for clazz */
      ffi_cif cif;
@@ -2482,9 +2699,18 @@ index 3534f07..3ba11ef 100644
                  err = hprofAddUtf8StringToRecord(rec, str);
              }
 diff --git a/vm/interp/Interp.cpp b/vm/interp/Interp.cpp
-index 42e2eca..5351fcf 100644
+index 42e2eca..a2f3d1f 100644
 --- a/vm/interp/Interp.cpp
 +++ b/vm/interp/Interp.cpp
+@@ -537,7 +537,7 @@ bool dvmAddSingleStep(Thread* thread, int size, int depth)
+      * on by PushLocalFrame, we want to use the topmost native method.
+      */
+     const StackSaveArea* saveArea;
+-    u4* fp;
++    void* fp;
+     u4* prevFp = NULL;
+ 
+     for (fp = thread->interpSave.curFrame; fp != NULL;
 @@ -654,7 +654,7 @@ void dvmReportInvoke(Thread* self, const Method* methodToCall)
   * be called prior to the invoke.  fp is the Dalvik FP of the calling
   * method.
@@ -2494,16 +2720,7 @@ index 42e2eca..5351fcf 100644
  {
  #if defined(WITH_JIT)
      /*
-@@ -666,7 +666,7 @@ void dvmReportPreNativeInvoke(const Method* methodToCall, Thread* self, u4* fp)
-     }
- #endif
-     if (self->interpBreak.ctl.subMode & kSubModeDebuggerActive) {
--        Object* thisPtr = dvmGetThisPtr(self->interpSave.method, fp);
-+        Object* thisPtr = dvmGetThisPtr(self->interpSave.method, (const u4*)fp);
-         assert(thisPtr == NULL || dvmIsHeapAddress(thisPtr));
-         dvmDbgPostLocationEvent(methodToCall, -1, thisPtr, DBG_METHOD_ENTRY);
-     }
-@@ -677,10 +677,10 @@ void dvmReportPreNativeInvoke(const Method* methodToCall, Thread* self, u4* fp)
+@@ -677,7 +677,7 @@ void dvmReportPreNativeInvoke(const Method* methodToCall, Thread* self, u4* fp)
   * special subMode requirements.  fp is the Dalvik FP of the calling
   * method.
   */
@@ -2511,11 +2728,57 @@ index 42e2eca..5351fcf 100644
 +void dvmReportPostNativeInvoke(const Method* methodToCall, Thread* self, void* fp)
  {
      if (self->interpBreak.ctl.subMode & kSubModeDebuggerActive) {
--        Object* thisPtr = dvmGetThisPtr(self->interpSave.method, fp);
-+        Object* thisPtr = dvmGetThisPtr(self->interpSave.method, (const u4*)fp);
-         assert(thisPtr == NULL || dvmIsHeapAddress(thisPtr));
-         dvmDbgPostLocationEvent(methodToCall, -1, thisPtr, DBG_METHOD_EXIT);
+         Object* thisPtr = dvmGetThisPtr(self->interpSave.method, fp);
+@@ -728,7 +728,7 @@ void dvmReportReturn(Thread* self)
+  * breakpoints.  We may be able to speed things up a bit if we don't query
+  * the event list unless we know there's at least one lurking within.
+  */
+-static void updateDebugger(const Method* method, const u2* pc, const u4* fp,
++static void updateDebugger(const Method* method, const u2* pc, const void* fp,
+                            Thread* self)
+ {
+     int eventFlags = 0;
+@@ -892,11 +892,11 @@ static void updateDebugger(const Method* method, const u2* pc, const u4* fp,
+  * Because we need it when setting up debugger event filters, we want to
+  * be able to do this quickly.
+  */
+-Object* dvmGetThisPtr(const Method* method, const u4* fp)
++Object* dvmGetThisPtr(const Method* method, const void* fp)
+ {
+     if (dvmIsStaticMethod(method))
+         return NULL;
+-    return (Object*)fp[method->registersSize - method->insSize];
++    return (Object*)((dreg_t*)fp)[method->registersSize - method->insSize];
+ }
+ 
+ 
+@@ -946,7 +946,7 @@ void dvmInterpCheckTrackedRefs(Thread* self, const Method* method,
+ /*
+  * Dump the v-registers.  Sent to the ILOG log tag.
+  */
+-void dvmDumpRegs(const Method* method, const u4* framePtr, bool inOnly)
++void dvmDumpRegs(const Method* method, const void* framePtr, bool inOnly)
+ {
+     int i, localCount;
+ 
+@@ -956,7 +956,7 @@ void dvmDumpRegs(const Method* method, const u4* framePtr, bool inOnly)
+     for (i = method->registersSize-1; i >= 0; i--) {
+         if (i >= localCount) {
+             ALOG(LOG_VERBOSE, LOG_TAG"i", "  v%-2d in%-2d : 0x%08x",
+-                i, i-localCount, framePtr[i]);
++                i, i-localCount, ((dreg_t*)framePtr)[i]);
+         } else {
+             if (inOnly) {
+                 ALOG(LOG_VERBOSE, LOG_TAG"i", "  [...]");
+@@ -977,7 +977,7 @@ void dvmDumpRegs(const Method* method, const u4* framePtr, bool inOnly)
+             }
+ #endif
+             ALOG(LOG_VERBOSE, LOG_TAG"i", "  v%-2d      : 0x%08x %s",
+-                i, framePtr[i], name);
++                i, ((dreg_t*)framePtr)[i], name);
+         }
      }
+ }
 @@ -1689,7 +1689,7 @@ void dvmInitializeInterpBreak(Thread* thread)
   * count profiling, JIT trace building, etc.  Dalvik PC has been exported
   * prior to call, but Thread copy of dPC & fp are not current.
@@ -2578,6 +2841,19 @@ index e54ec61..a23e348 100644
  extern "C" void dvmReportInvoke(Thread* self, const Method* methodToCall);
  extern "C" void dvmReportReturn(Thread* self);
  
+diff --git a/vm/interp/InterpDefs.h b/vm/interp/InterpDefs.h
+index a053f6d..79909f2 100644
+--- a/vm/interp/InterpDefs.h
++++ b/vm/interp/InterpDefs.h
+@@ -48,7 +48,7 @@ extern void dvmMterpStd(Thread* self);
+ /*
+  * Get the "this" pointer from the current frame.
+  */
+-Object* dvmGetThisPtr(const Method* method, const u4* fp);
++Object* dvmGetThisPtr(const Method* method, const void* fp);
+ 
+ /*
+  * Verify that our tracked local references are valid.
 diff --git a/vm/interp/InterpState.h b/vm/interp/InterpState.h
 index 8d2c224..54ad4ac 100644
 --- a/vm/interp/InterpState.h
@@ -2592,7 +2868,7 @@ index 8d2c224..54ad4ac 100644
      DvmDex*         methodClassDex;
      JValue          retval;
 diff --git a/vm/interp/Stack.cpp b/vm/interp/Stack.cpp
-index 1433f13..87302b6 100644
+index 1433f13..fee4a34 100644
 --- a/vm/interp/Stack.cpp
 +++ b/vm/interp/Stack.cpp
 @@ -20,11 +20,15 @@
@@ -2650,6 +2926,24 @@ index 1433f13..87302b6 100644
      saveBlock = (StackSaveArea*) stackPtr;
  
  #if !defined(NDEBUG) && !defined(PAD_SAVE_AREA)
+@@ -276,7 +280,7 @@ bool dvmPopLocalFrame(Thread* self)
+ {
+     StackSaveArea* saveBlock = SAVEAREA_FROM_FP(self->interpSave.curFrame);
+ 
+-    assert(!dvmIsBreakFrame((u4*)self->interpSave.curFrame));
++    assert(!dvmIsBreakFrame((void*)self->interpSave.curFrame));
+     if (saveBlock->method != SAVEAREA_FROM_FP(saveBlock->prevFrame)->method) {
+         /*
+          * The previous frame doesn't have the same method pointer -- we've
+@@ -314,7 +318,7 @@ static bool dvmPopFrame(Thread* self)
+         return false;
+ 
+     saveBlock = SAVEAREA_FROM_FP(self->interpSave.curFrame);
+-    assert(!dvmIsBreakFrame((u4*)self->interpSave.curFrame));
++    assert(!dvmIsBreakFrame((void*)self->interpSave.curFrame));
+ 
+     /*
+      * Remove everything up to the break frame.  If this was a call into
 @@ -445,14 +449,14 @@ void dvmCallMethodV(Thread* self, const Method* method, Object* obj,
      const char* desc = &(method->shorty[1]); // [0] is the return type.
      int verifyCount = 0;
@@ -2833,8 +3127,19 @@ index 1433f13..87302b6 100644
          (method->registersSize + method->outsSize) * 4 + sizeof(StackSaveArea),
          saveArea, (u1*) saveArea - self->interpStackEnd);
      ALOGI("  expanding stack end (%p to %p)", self->interpStackEnd,
+@@ -1130,8 +1134,8 @@ static bool extractMonitorEnterObject(Thread* thread, Object** pLockObj,
+     }
+ 
+     /* get and check the object in that register */
+-    u4* fp = (u4*) framePtr;
+-    Object* obj = (Object*) fp[reg];
++    void* fp = (u4*) framePtr;
++    Object* obj = (Object*) ((dreg_t*)fp)[reg];
+     if (obj != NULL && !dvmIsHeapAddress(obj)) {
+         ALOGD("ExtrMon: invalid object %p at %p[%d]", obj, fp, reg);
+         return false;
 diff --git a/vm/interp/Stack.h b/vm/interp/Stack.h
-index 06e7ec5..9187184 100644
+index 06e7ec5..6fb9ff6 100644
 --- a/vm/interp/Stack.h
 +++ b/vm/interp/Stack.h
 @@ -128,7 +128,7 @@ struct StackSaveArea {
@@ -2855,6 +3160,15 @@ index 06e7ec5..9187184 100644
  
  /* reserve this many bytes for handling StackOverflowError */
  #define STACK_OVERFLOW_RESERVE  768
+@@ -166,7 +166,7 @@ struct StackSaveArea {
+ /*
+  * Determine if the frame pointer points to a "break frame".
+  */
+-INLINE bool dvmIsBreakFrame(const u4* fp)
++INLINE bool dvmIsBreakFrame(const void* fp)
+ {
+     return SAVEAREA_FROM_FP(fp)->method == NULL;
+ }
 diff --git a/vm/jdwp/JdwpSocket.cpp b/vm/jdwp/JdwpSocket.cpp
 index eaea607..1ae6e15 100644
 --- a/vm/jdwp/JdwpSocket.cpp
@@ -2880,9 +3194,18 @@ index eaea607..1ae6e15 100644
  #include <netinet/tcp.h>
  #include <arpa/inet.h>
 diff --git a/vm/mterp/out/InterpC-portable.cpp b/vm/mterp/out/InterpC-portable.cpp
-index 0328aa8..217d7d1 100644
+index 0328aa8..ca1caa6 100644
 --- a/vm/mterp/out/InterpC-portable.cpp
 +++ b/vm/mterp/out/InterpC-portable.cpp
+@@ -142,7 +142,7 @@
+             ALOG(_level, LOG_TAG"i", "%-2d|####%s",                          \
+                 self->threadId, debugStrBuf);                               \
+     } while(false)
+-void dvmDumpRegs(const Method* method, const u4* framePtr, bool inOnly);
++void dvmDumpRegs(const Method* method, const void* framePtr, bool inOnly);
+ # define DUMP_REGS(_meth, _frame, _inOnly) dvmDumpRegs(_meth, _frame, _inOnly)
+ static const char kSpacing[] = "            ";
+ #else
 @@ -152,7 +152,7 @@ static const char kSpacing[] = "            ";
  #endif
  
