@@ -1,0 +1,172 @@
+diff --git a/vm/Jni.cpp b/vm/Jni.cpp
+index 0e77fab..ee021dd 100644
+--- a/vm/Jni.cpp
++++ b/vm/Jni.cpp
+@@ -880,12 +880,12 @@ static void appendValue(char type, const JValue value, char* buf, size_t n, bool
+     }
+ }
+ 
+-static void logNativeMethodEntry(const Method* method, const u4* args)
++static void logNativeMethodEntry(const Method* method, const dreg_t* args)
+ {
+     char thisString[32] = { 0 };
+-    const u4* sp = args;
++    const dreg_t* sp = args;
+     if (!dvmIsStaticMethod(method)) {
+-        sprintf(thisString, "this=0x%08x ", *sp++);
++        sprintf(thisString, "this=0x%lx ", (unsigned long)*sp++);
+     }
+ 
+     char argsString[128]= { 0 };
+@@ -1091,8 +1091,8 @@ static inline void convertReferenceResult(JNIEnv* env, JValue* pResult,
+ /*
+  * General form, handles all cases.
+  */
+-void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thread* self) {
+-    u4* modArgs = (u4*) args;
++void dvmCallJNIMethod(const dreg_t* args, JValue* pResult, const Method* method, Thread* self) {
++    dreg_t* modArgs = (dreg_t*) args;
+     jclass staticMethodClass = NULL;
+ 
+     u4 accessFlags = method->accessFlags;
+@@ -1112,9 +1112,9 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
+         /* add the class object we pass in */
+         staticMethodClass = (jclass) addLocalReference(self, (Object*) method->clazz);
+     } else {
+-        lockObj = (Object*) args[0];
++        lockObj = (Object*)(uintptr_t) args[0];
+         /* add "this" */
+-        modArgs[idx++] = (u4) addLocalReference(self, (Object*) modArgs[0]);
++        modArgs[idx++] = (dreg_t)(uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[0]);
+     }
+ 
+     if (!method->noRef) {
+@@ -1124,7 +1124,7 @@ void dvmCallJNIMethod(const u4* args, JValue* pResult, const Method* method, Thr
+             case 'L':
+                 //ALOGI("  local %d: 0x%08x", idx, modArgs[idx]);
+                 if (modArgs[idx] != 0) {
+-                    modArgs[idx] = (u4) addLocalReference(self, (Object*) modArgs[idx]);
++                    modArgs[idx] = (dreg_t)(uintptr_t) addLocalReference(self, (Object*)(uintptr_t) modArgs[idx]);
+                 }
+                 break;
+             case 'D':
+@@ -1237,11 +1237,8 @@ static jclass FindClass(JNIEnv* env, const char* name) {
+     } else if (thisMethod == gDvm.methDalvikSystemNativeStart_main ||
+                thisMethod == gDvm.methDalvikSystemNativeStart_run) {
+         /* start point of invocation interface */
+-        if (!gDvm.initializing) {
+-            loader = trackedLoader = dvmGetSystemClassLoader();
+-        } else {
+-            loader = NULL;
+-        }
++        // Always use boot classloader for standalone operation
++        loader = NULL;
+     } else {
+         loader = thisMethod->clazz->classLoader;
+     }
+@@ -1562,7 +1559,7 @@ static jobject NewObjectV(JNIEnv* env, jclass jclazz, jmethodID methodID, va_lis
+     return result;
+ }
+ 
+-static jobject NewObjectA(JNIEnv* env, jclass jclazz, jmethodID methodID, jvalue* args) {
++static jobject NewObjectA(JNIEnv* env, jclass jclazz, jmethodID methodID, const jvalue* args) {
+     ScopedJniThreadState ts(env);
+     ClassObject* clazz = (ClassObject*) dvmDecodeIndirectRef(ts.self(), jclazz);
+ 
+@@ -1761,14 +1758,14 @@ static jfieldID GetStaticFieldID(JNIEnv* env, jclass jclazz, const char* name, c
+         if (dvmIsVolatileField(sfield)) {                                   \
+             if (_isref) {   /* only when _ctype==jobject */                 \
+                 Object* obj = dvmGetStaticFieldObjectVolatile(sfield);      \
+-                value = (_ctype)(u4)addLocalReference(ts.self(), obj);            \
++                value = (_ctype)(uintptr_t)addLocalReference(ts.self(), obj);            \
+             } else {                                                        \
+                 value = (_ctype) dvmGetStaticField##_jname##Volatile(sfield);\
+             }                                                               \
+         } else {                                                            \
+             if (_isref) {                                                   \
+                 Object* obj = dvmGetStaticFieldObject(sfield);              \
+-                value = (_ctype)(u4)addLocalReference(ts.self(), obj);            \
++                value = (_ctype)(uintptr_t)addLocalReference(ts.self(), obj);            \
+             } else {                                                        \
+                 value = (_ctype) dvmGetStaticField##_jname(sfield);         \
+             }                                                               \
+@@ -1797,14 +1794,14 @@ GET_STATIC_TYPE_FIELD(jdouble, Double, false);
+         StaticField* sfield = (StaticField*) fieldID;                       \
+         if (dvmIsVolatileField(sfield)) {                                   \
+             if (_isref) {   /* only when _ctype==jobject */                 \
+-                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(u4)value); \
++                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(uintptr_t)value); \
+                 dvmSetStaticFieldObjectVolatile(sfield, valObj);            \
+             } else {                                                        \
+                 dvmSetStaticField##_jname##Volatile(sfield, (_ctype2)value);\
+             }                                                               \
+         } else {                                                            \
+             if (_isref) {                                                   \
+-                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(u4)value); \
++                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(uintptr_t)value); \
+                 dvmSetStaticFieldObject(sfield, valObj);                    \
+             } else {                                                        \
+                 dvmSetStaticField##_jname(sfield, (_ctype2)value);          \
+@@ -1838,7 +1835,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
+             if (_isref) {   /* only when _ctype==jobject */                 \
+                 Object* valObj =                                            \
+                     dvmGetFieldObjectVolatile(obj, field->byteOffset);      \
+-                value = (_ctype)(u4)addLocalReference(ts.self(), valObj);         \
++                value = (_ctype)(uintptr_t)addLocalReference(ts.self(), valObj);         \
+             } else {                                                        \
+                 value = (_ctype)                                            \
+                     dvmGetField##_jname##Volatile(obj, field->byteOffset);  \
+@@ -1846,7 +1843,7 @@ SET_STATIC_TYPE_FIELD(jdouble, double, Double, false);
+         } else {                                                            \
+             if (_isref) {                                                   \
+                 Object* valObj = dvmGetFieldObject(obj, field->byteOffset); \
+-                value = (_ctype)(u4)addLocalReference(ts.self(), valObj);         \
++                value = (_ctype)(uintptr_t)addLocalReference(ts.self(), valObj);         \
+             } else {                                                        \
+                 value = (_ctype) dvmGetField##_jname(obj, field->byteOffset);\
+             }                                                               \
+@@ -1875,7 +1872,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
+         InstField* field = (InstField*) fieldID;                            \
+         if (dvmIsVolatileField(field)) {                                    \
+             if (_isref) {   /* only when _ctype==jobject */                 \
+-                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(u4)value); \
++                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(uintptr_t)value); \
+                 dvmSetFieldObjectVolatile(obj, field->byteOffset, valObj);  \
+             } else {                                                        \
+                 dvmSetField##_jname##Volatile(obj,                          \
+@@ -1883,7 +1880,7 @@ GET_TYPE_FIELD(jdouble, Double, false);
+             }                                                               \
+         } else {                                                            \
+             if (_isref) {                                                   \
+-                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(u4)value); \
++                Object* valObj = dvmDecodeIndirectRef(ts.self(), (jobject)(uintptr_t)value); \
+                 dvmSetFieldObject(obj, field->byteOffset, valObj);          \
+             } else {                                                        \
+                 dvmSetField##_jname(obj,                                    \
+@@ -1944,7 +1941,7 @@ SET_TYPE_FIELD(jdouble, double, Double, false);
+         return _retok;                                                      \
+     }                                                                       \
+     static _ctype Call##_jname##MethodA(JNIEnv* env, jobject jobj,          \
+-        jmethodID methodID, jvalue* args)                                   \
++        jmethodID methodID, const jvalue* args)                             \
+     {                                                                       \
+         ScopedJniThreadState ts(env);                                       \
+         Object* obj = dvmDecodeIndirectRef(ts.self(), jobj);                      \
+@@ -2016,7 +2013,7 @@ CALL_VIRTUAL(void, Void, , , false);
+         return _retok;                                                      \
+     }                                                                       \
+     static _ctype CallNonvirtual##_jname##MethodA(JNIEnv* env, jobject jobj,\
+-        jclass jclazz, jmethodID methodID, jvalue* args)                    \
++        jclass jclazz, jmethodID methodID, const jvalue* args)              \
+     {                                                                       \
+         ScopedJniThreadState ts(env);                                       \
+         Object* obj = dvmDecodeIndirectRef(ts.self(), jobj); \
+@@ -2074,7 +2071,7 @@ CALL_NONVIRTUAL(void, Void, , , false);
+         return _retok;                                                      \
+     }                                                                       \
+     static _ctype CallStatic##_jname##MethodA(JNIEnv* env, jclass jclazz,   \
+-        jmethodID methodID, jvalue* args)                                   \
++        jmethodID methodID, const jvalue* args)                             \
+     {                                                                       \
+         UNUSED_PARAMETER(jclazz);                                           \
+         ScopedJniThreadState ts(env);                                       \

@@ -1,0 +1,16 @@
+diff --git a/vm/analysis/Optimize.cpp b/vm/analysis/Optimize.cpp
+index b61b82c..7337fe9 100644
+--- a/vm/analysis/Optimize.cpp
++++ b/vm/analysis/Optimize.cpp
+@@ -83,8 +83,9 @@ bool dvmCreateInlineSubsTable()
+             ALOGE("Unable to find method for inlining: %s.%s:%s",
+                 ops[i].classDescriptor, ops[i].methodName,
+                 ops[i].methodSignature);
+-            free(table);
+-            return false;
++            // Skip missing inline method instead of aborting
++            continue; // free(table);
++            // return false;
+         }
+ 
+         table[tableIndex].method = method;

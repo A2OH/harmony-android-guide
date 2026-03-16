@@ -1,0 +1,44 @@
+diff --git a/vm/arch/generic/Call.cpp b/vm/arch/generic/Call.cpp
+index 3d7cbef..d1e3808 100644
+--- a/vm/arch/generic/Call.cpp
++++ b/vm/arch/generic/Call.cpp
+@@ -52,7 +52,7 @@ static ffi_type* getFfiType(char sigType)
+ #define dvmPlatformInvoke dvmPlatformInvokeFFI
+ 
+ extern "C" void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo,
+-    int argc, const u4* argv, const char* signature, void* func, JValue* pResult);
++    int argc, const dreg_t* argv, const char* signature, void* func, JValue* pResult);
+ #endif
+ 
+ /*
+@@ -73,7 +73,7 @@ extern "C" void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo,
+  * every call.
+  */
+ void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo, int argc,
+-    const u4* argv, const char* shorty, void* func, JValue* pReturn)
++    const dreg_t* argv, const char* shorty, void* func, JValue* pReturn)
+ {
+     const int kMaxArgs = argc+2;    /* +1 for env, maybe +1 for clazz */
+     ffi_cif cif;
+@@ -111,10 +111,18 @@ void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo, int argc,
+     /*
+      * Prep the CIF (Call InterFace object).
+      */
+-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, dstArg, retType, types) != FFI_OK) {
+-        ALOGE("ffi_prep_cif failed");
+-        dvmAbort();
++    {
++        ffi_status status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, dstArg, retType, types);
++        if (status != FFI_OK) {
++            ALOGE("ffi_prep_cif failed: status=%d dstArg=%d shorty='%s' retType=%p",
++                  (int)status, dstArg, shorty, retType);
++            for (int k = 0; k < dstArg; k++)
++                ALOGE("  types[%d]=%p size=%zu", k, types[k], types[k] ? types[k]->size : 0);
++            dvmAbort();
++        }
+     }
+ 
++    ALOGW("ffi_call: func=%p dstArg=%d retType=%p", func, dstArg, retType);
+     ffi_call(&cif, FFI_FN(func), pReturn, values);
++    ALOGW("ffi_call returned");
+ }

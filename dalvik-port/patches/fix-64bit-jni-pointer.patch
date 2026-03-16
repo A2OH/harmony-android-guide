@@ -1,0 +1,65 @@
+diff --git a/vm/Native.cpp b/vm/Native.cpp
+index a12c4e0..f2d24de 100644
+--- a/vm/Native.cpp
++++ b/vm/Native.cpp
+@@ -67,7 +67,7 @@ void dvmNativeShutdown()
+  * structure, but the declaration needs to match the DalvikBridgeFunc
+  * type definition.)
+  */
+-void dvmResolveNativeMethod(const u4* args, JValue* pResult,
++void dvmResolveNativeMethod(const dreg_t* args, JValue* pResult,
+     const Method* method, Thread* self)
+ {
+     ClassObject* clazz = method->clazz;
+@@ -111,8 +111,11 @@ void dvmResolveNativeMethod(const u4* args, JValue* pResult,
+     void* func = lookupSharedLibMethod(method);
+     if (func != NULL) {
+         /* found it, point it at the JNI bridge and then call it */
++        ALOGW("Found native %s.%s at %p, setting up JNI bridge", clazz->descriptor, method->name, func);
+         dvmUseJNIBridge((Method*) method, func);
++        ALOGW("Calling native method via bridge (nativeFunc=%p)", method->nativeFunc);
+         (*method->nativeFunc)(args, pResult, method, self);
++        ALOGW("Native method returned");
+         return;
+     }
+ 
+@@ -687,7 +690,7 @@ static char* createMangledSignature(const DexProto* proto)
+  *
+  * TODO: we may want to skip libraries for which JNI_OnLoad failed.
+  */
+-static int findMethodInLib(void* vlib, void* vmethod)
++static intptr_t findMethodInLib(void* vlib, void* vmethod)
+ {
+     const SharedLib* pLib = (const SharedLib*) vlib;
+     const Method* meth = (const Method*) vmethod;
+@@ -745,7 +748,7 @@ bail:
+     free(mangleCM);
+     free(mangleSig);
+     free(mangleCMSig);
+-    return (int) func;
++    return (intptr_t) func;
+ }
+ 
+ /*
+@@ -759,6 +762,19 @@ static void* lookupSharedLibMethod(const Method* method)
+         ALOGE("Unexpected init state: nativeLibs not ready");
+         dvmAbort();
+     }
+-    return (void*) dvmHashForeach(gDvm.nativeLibs, findMethodInLib,
+-        (void*) method);
++    /* Iterate the hash table manually to preserve 64-bit function pointers */
++    HashTable* pHashTable = gDvm.nativeLibs;
++    dvmHashTableLock(pHashTable);
++    for (int i = 0; i < pHashTable->tableSize; i++) {
++        HashEntry* pEntry = &pHashTable->pEntries[i];
++        if (pEntry->data != NULL && pEntry->data != HASH_TOMBSTONE) {
++            intptr_t result = findMethodInLib(pEntry->data, (void*) method);
++            if (result != 0) {
++                dvmHashTableUnlock(pHashTable);
++                return (void*) result;
++            }
++        }
++    }
++    dvmHashTableUnlock(pHashTable);
++    return NULL;
+ }

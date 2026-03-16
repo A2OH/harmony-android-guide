@@ -1,0 +1,171 @@
+diff --git a/vm/Thread.cpp b/vm/Thread.cpp
+index 1ebfca7..0433ea2 100644
+--- a/vm/Thread.cpp
++++ b/vm/Thread.cpp
+@@ -702,12 +702,20 @@ bool dvmPrepMainThread()
+         ALOGE("'Class' class failed to initialize");
+         return false;
+     }
+-    if (!dvmInitClass(gDvm.classJavaLangThreadGroup) ||
+-        !dvmInitClass(gDvm.classJavaLangThread) ||
+-        !dvmInitClass(gDvm.classJavaLangVMThread))
+-    {
+-        ALOGE("thread classes failed to initialize");
+-        return false;
++    if (!dvmInitClass(gDvm.classJavaLangThreadGroup)) {
++        ALOGW("ThreadGroup init failed - clearing and forcing INITIALIZED");
++        dvmClearException(dvmThreadSelf());
++        gDvm.classJavaLangThreadGroup->status = CLASS_INITIALIZED;
++    }
++    if (!dvmInitClass(gDvm.classJavaLangThread)) {
++        ALOGW("Thread init failed - clearing and forcing INITIALIZED");
++        dvmClearException(dvmThreadSelf());
++        gDvm.classJavaLangThread->status = CLASS_INITIALIZED;
++    }
++    if (!dvmInitClass(gDvm.classJavaLangVMThread)) {
++        ALOGW("VMThread init failed - clearing and forcing INITIALIZED");
++        dvmClearException(dvmThreadSelf());
++        gDvm.classJavaLangVMThread->status = CLASS_INITIALIZED;
+     }
+ 
+     groupObj = dvmGetMainThreadGroup();
+@@ -732,13 +740,20 @@ bool dvmPrepMainThread()
+ 
+     init = dvmFindDirectMethodByDescriptor(gDvm.classJavaLangThread, "<init>",
+             "(Ljava/lang/ThreadGroup;Ljava/lang/String;IZ)V");
+-    assert(init != NULL);
+-    dvmCallMethod(thread, init, threadObj, &unused, groupObj, threadNameStr,
+-        THREAD_NORM_PRIORITY, false);
+-    if (dvmCheckException(thread)) {
+-        ALOGE("exception thrown while constructing main thread object");
+-        return false;
++    // Set Thread fields directly instead of calling <init>
++    {
++        InstField* f;
++        f = dvmFindInstanceFieldHier(gDvm.classJavaLangThread, "group", "Ljava/lang/ThreadGroup;");
++        if (f) dvmSetFieldObject(threadObj, f->byteOffset, groupObj);
++        f = dvmFindInstanceFieldHier(gDvm.classJavaLangThread, "name", "Ljava/lang/String;");
++        if (f) dvmSetFieldObject(threadObj, f->byteOffset, (Object*)threadNameStr);
++        f = dvmFindInstanceFieldHier(gDvm.classJavaLangThread, "priority", "I");
++        if (f) dvmSetFieldInt(threadObj, f->byteOffset, THREAD_NORM_PRIORITY);
++        f = dvmFindInstanceFieldHier(gDvm.classJavaLangThread, "daemon", "Z");
++        if (f) dvmSetFieldBoolean(threadObj, f->byteOffset, false);
++        ALOGW("Main Thread fields set directly");
+     }
++    if (dvmCheckException(thread)) dvmClearException(thread);
+ 
+     /*
+      * Allocate and construct a VMThread.
+@@ -752,15 +767,18 @@ bool dvmPrepMainThread()
+ 
+     init = dvmFindDirectMethodByDescriptor(gDvm.classJavaLangVMThread, "<init>",
+             "(Ljava/lang/Thread;)V");
+-    dvmCallMethod(thread, init, vmThreadObj, &unused, threadObj);
+-    if (dvmCheckException(thread)) {
+-        ALOGE("exception thrown while constructing main vmthread object");
+-        return false;
++    // Skip VMThread.<init> — set fields directly
++    {
++        InstField* vf = dvmFindInstanceFieldHier(gDvm.classJavaLangVMThread, "thread", "Ljava/lang/Thread;");
++        if (vf) dvmSetFieldObject(vmThreadObj, vf->byteOffset, threadObj);
++        ALOGW("VMThread fields set directly");
+     }
++    if (dvmCheckException(thread)) dvmClearException(thread);
+ 
+     /* set the VMThread.vmData field to our Thread struct */
+-    assert(gDvm.offJavaLangVMThread_vmData != 0);
+-    dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)thread);
++    if (gDvm.offJavaLangVMThread_vmData != 0) {
++        dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)thread);
++    }
+ 
+     /*
+      * Stuff the VMThread back into the Thread.  From this point on, other
+@@ -780,7 +798,8 @@ bool dvmPrepMainThread()
+      * Thread.currentThread(), so we want the Thread to be fully configured
+      * before we do this.
+      */
+-    Object* systemLoader = dvmGetSystemClassLoader();
++    ALOGW("Skipping system class loader (not needed for standalone)");
++    Object* systemLoader = NULL; // dvmGetSystemClassLoader();
+     if (systemLoader == NULL) {
+         ALOGW("WARNING: system class loader is NULL (setting main ctxt)");
+         /* keep going? */
+@@ -790,6 +809,55 @@ bool dvmPrepMainThread()
+         dvmReleaseTrackedAlloc(systemLoader, NULL);
+     }
+ 
++    /* Initialize System.out/err with native print streams */
++    {
++        // Create a minimal FileOutputStream for fd 1 (stdout)
++        // Then wrap in PrintStream and set as System.out
++        ClassObject* fosCls = dvmFindSystemClassNoInit("Ljava/io/FileOutputStream;");
++        ClassObject* psCls = dvmFindSystemClassNoInit("Ljava/io/PrintStream;");
++        ClassObject* fdCls = dvmFindSystemClassNoInit("Ljava/io/FileDescriptor;");
++        
++        if (fosCls && psCls && fdCls) {
++            // Create FileDescriptor for stdout (fd=1)
++            Object* fdOut = dvmAllocObject(fdCls, ALLOC_DEFAULT);
++            if (fdOut) {
++                InstField* descField = dvmFindInstanceFieldHier(fdCls, "descriptor", "I");
++                if (descField) dvmSetFieldInt(fdOut, descField->byteOffset, 1);
++                
++                // Create FileOutputStream wrapping the fd
++                Object* fos = dvmAllocObject(fosCls, ALLOC_DEFAULT);
++                if (fos) {
++                    InstField* fosField = dvmFindInstanceFieldHier(fosCls, "fd", "Ljava/io/FileDescriptor;");
++                    if (fosField) dvmSetFieldObject(fos, fosField->byteOffset, fdOut);
++                    
++                    // Create PrintStream wrapping the FileOutputStream
++                    Object* ps = dvmAllocObject(psCls, ALLOC_DEFAULT);
++                    if (ps) {
++                        InstField* psOut = dvmFindInstanceFieldHier(psCls, "out", "Ljava/io/OutputStream;");
++                        if (psOut) dvmSetFieldObject(ps, psOut->byteOffset, fos);
++                        
++                        // Set System.out
++                        StaticField* sysOut = dvmFindStaticField(gDvm.classJavaLangSystem, "out", "Ljava/io/PrintStream;");
++                        if (sysOut) {
++                            dvmSetStaticFieldObject(sysOut, ps);
++                            ALOGW("Initialized System.out");
++                        }
++                        // Set System.err (same stream for now)
++                        StaticField* sysErr = dvmFindStaticField(gDvm.classJavaLangSystem, "err", "Ljava/io/PrintStream;");
++                        if (sysErr) {
++                            dvmSetStaticFieldObject(sysErr, ps);
++                            ALOGW("Initialized System.err");
++                        }
++                        dvmReleaseTrackedAlloc(ps, NULL);
++                    }
++                    dvmReleaseTrackedAlloc(fos, NULL);
++                }
++                dvmReleaseTrackedAlloc(fdOut, NULL);
++            }
++        }
++        if (dvmCheckException(dvmThreadSelf())) dvmClearException(dvmThreadSelf());
++    }
++
+     /* include self in non-daemon threads (mainly for AttachCurrentThread) */
+     gDvm.nonDaemonThreadCount++;
+ 
+@@ -3008,9 +3076,18 @@ static Object* getStaticThreadGroup(const char* fieldName)
+     }
+     groupObj = dvmGetStaticFieldObject(groupField);
+     if (groupObj == NULL) {
+-        ALOGE("java.lang.ThreadGroup.%s not initialized", fieldName);
+-        dvmThrowInternalError(NULL);
+-        return NULL;
++        ALOGW("ThreadGroup.%s null - creating stub", fieldName);
++        groupObj = dvmAllocObject(gDvm.classJavaLangThreadGroup, ALLOC_DEFAULT);
++        if (groupObj == NULL) { dvmThrowInternalError(NULL); return NULL; }
++        dvmSetStaticFieldObject(groupField, groupObj);
++        // Init essential fields
++        InstField* nf = dvmFindInstanceField(gDvm.classJavaLangThreadGroup, "name", "Ljava/lang/String;");
++        if (nf) { StringObject* s = dvmCreateStringFromCstr(fieldName);
++                   dvmSetFieldObject(groupObj, nf->byteOffset, (Object*)s);
++                   dvmReleaseTrackedAlloc((Object*)s, NULL); }
++        InstField* mp = dvmFindInstanceField(gDvm.classJavaLangThreadGroup, "maxPriority", "I");
++        if (mp) dvmSetFieldInt(groupObj, mp->byteOffset, 10);
++        dvmReleaseTrackedAlloc(groupObj, NULL);
+     }
+ 
+     return groupObj;

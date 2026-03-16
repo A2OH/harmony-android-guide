@@ -1,0 +1,70 @@
+diff --git a/vm/Init.cpp b/vm/Init.cpp
+index f1762c9..c7bce00 100644
+--- a/vm/Init.cpp
++++ b/vm/Init.cpp
+@@ -1286,8 +1286,12 @@ static void setCommandLineDefaults()
+ 
+     gDvm.constInit = false;
+     gDvm.commonInit = false;
++#else
++#ifdef DVM_NO_ASM_INTERP
++    gDvm.executionMode = kExecutionModeInterpPortable;
+ #else
+     gDvm.executionMode = kExecutionModeInterpFast;
++#endif
+ #endif
+ 
+     /*
+@@ -1491,7 +1495,7 @@ std::string dvmStartup(int argc, const char* const argv[],
+      * version for performance.
+      */
+     if (!dvmCreateInlineSubsTable()) {
+-        return "dvmCreateInlineSubsTable failed";
++        ALOGW("dvmCreateInlineSubsTable failed (non-fatal, continuing)");
+     }
+ 
+     /*
+@@ -1527,6 +1531,17 @@ std::string dvmStartup(int argc, const char* const argv[],
+         return "couldn't register system natives";
+     }
+ 
++    /*
++     * Register libcore bridge natives (OsConstants etc.) so that boot
++     * class initialization can find them without libjavacore.so.
++     */
++    {
++        extern bool dvmRegisterLibcoreBridge(JNIEnv* env);
++        if (!dvmRegisterLibcoreBridge(pEnv)) {
++            return "dvmRegisterLibcoreBridge failed";
++        }
++    }
++
+     /*
+      * Do some "late" initialization for the memory allocator.  This may
+      * allocate storage and initialize classes.
+@@ -1560,7 +1575,13 @@ std::string dvmStartup(int argc, const char* const argv[],
+         return "dvmDebuggerStartup failed";
+     }
+ 
+-    if (!dvmGcStartupClasses()) {
++    
++    // Clear any pending exceptions from boot init failures
++    if (dvmCheckException(dvmThreadSelf())) {
++        ALOGW("Clearing pending exception before GC daemon startup");
++        dvmClearException(dvmThreadSelf());
++    }
++    if (false && !dvmGcStartupClasses()) { // DISABLED - daemon threads crash
+         return "dvmGcStartupClasses failed";
+     }
+ 
+@@ -1599,8 +1620,8 @@ static void loadJniLibrary(const char* name) {
+     std::string mappedName(StringPrintf(OS_SHARED_LIB_FORMAT_STR, name));
+     char* reason = NULL;
+     if (!dvmLoadNativeCode(mappedName.c_str(), NULL, &reason)) {
+-        ALOGE("dvmLoadNativeCode failed for \"%s\": %s", name, reason);
+-        dvmAbort();
++        ALOGW("dvmLoadNativeCode failed for \"%s\": %s (non-fatal)", name, reason);
++        free(reason);
+     }
+ }
+ 
