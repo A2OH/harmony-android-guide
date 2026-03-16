@@ -2010,7 +2010,7 @@ index f42004c..442c0fb 100644
          /*
           * The wrong thread has been suspended.  Try again.
 diff --git a/vm/Thread.cpp b/vm/Thread.cpp
-index 1ebfca7..41934f1 100644
+index 1ebfca7..a5d2153 100644
 --- a/vm/Thread.cpp
 +++ b/vm/Thread.cpp
 @@ -702,12 +702,20 @@ bool dvmPrepMainThread()
@@ -2109,7 +2109,7 @@ index 1ebfca7..41934f1 100644
 +    {
 +        // Try to get system class loader, but don't abort on failure
 +        Thread* self2 = dvmThreadSelf();
-+        ALOGW("Skipping system class loader"); systemLoader = NULL;
++        systemLoader = dvmGetSystemClassLoader(); if (dvmCheckException(dvmThreadSelf())) { ALOGW("System class loader init failed - using NULL"); dvmClearException(dvmThreadSelf()); systemLoader = NULL; }
 +        if (dvmCheckException(self2)) {
 +            ALOGW("System class loader failed - clearing exception");
 +            dvmClearException(self2);
@@ -2379,6 +2379,42 @@ index 2781a7c..2c0e540 100644
      if (obj->clazz == gDvm.classJavaLangClass) {
          scanClassObject(obj, ctx);
      } else if (IS_CLASS_FLAG_SET(obj->clazz, CLASS_ISARRAY)) {
+diff --git a/vm/alloc/Visit.cpp b/vm/alloc/Visit.cpp
+index 410b66e..cf5d64d 100644
+--- a/vm/alloc/Visit.cpp
++++ b/vm/alloc/Visit.cpp
+@@ -107,8 +107,8 @@ static void visitThreadStack(RootVisitor *visitor, Thread *thread, void *arg)
+                  * scan.
+                  */
+                 for (size_t i = 0; i < method->registersSize; ++i) {
+-                    if (dvmIsValidObject((Object *)fp[i])) {
+-                        (*visitor)(&fp[i], threadId, ROOT_JAVA_FRAME, arg);
++                    if (dvmIsValidObject((Object *)(uintptr_t)((dreg_t*)fp)[i])) {
++                        (*visitor)(&((dreg_t*)fp)[i], threadId, ROOT_JAVA_FRAME, arg);
+                     }
+                 }
+             } else {
+@@ -132,17 +132,17 @@ static void visitThreadStack(RootVisitor *visitor, Thread *thread, void *arg)
+                          * Register is marked as live, it's a valid root.
+                          */
+ #if WITH_EXTRA_GC_CHECKS
+-                        if (fp[i] != 0 && !dvmIsValidObject((Object *)fp[i])) {
++                        if (((dreg_t*)fp)[i] != 0 && !dvmIsValidObject((Object *)(uintptr_t)((dreg_t*)fp)[i])) {
+                             /* this is very bad */
+                             ALOGE("PGC: invalid ref in reg %d: %#x",
+-                                 method->registersSize - 1 - i, fp[i]);
++                                 method->registersSize - 1 - i, (u4)((dreg_t*)fp)[i]);
+                             ALOGE("PGC: %s.%s addr %#x",
+                                  method->clazz->descriptor, method->name,
+                                  saveArea->xtra.currentPc - method->insns);
+                             continue;
+                         }
+ #endif
+-                        (*visitor)(&fp[i], threadId, ROOT_JAVA_FRAME, arg);
++                        (*visitor)(&((dreg_t*)fp)[i], threadId, ROOT_JAVA_FRAME, arg);
+                     }
+                 }
+                 dvmReleaseRegisterMapLine(pMap, regVector);
 diff --git a/vm/analysis/CodeVerify.cpp b/vm/analysis/CodeVerify.cpp
 index 56a9fbd..34f19f6 100644
 --- a/vm/analysis/CodeVerify.cpp
@@ -2512,7 +2548,7 @@ index 197fb7a..7ad5e7a 100644
  
  /*
 diff --git a/vm/arch/generic/Call.cpp b/vm/arch/generic/Call.cpp
-index 3d7cbef..9625646 100644
+index 3d7cbef..6bd11c7 100644
 --- a/vm/arch/generic/Call.cpp
 +++ b/vm/arch/generic/Call.cpp
 @@ -52,7 +52,7 @@ static ffi_type* getFfiType(char sigType)
@@ -2533,6 +2569,25 @@ index 3d7cbef..9625646 100644
  {
      const int kMaxArgs = argc+2;    /* +1 for env, maybe +1 for clazz */
      ffi_cif cif;
+@@ -116,5 +116,17 @@ void dvmPlatformInvoke(void* pEnv, ClassObject* clazz, int argInfo, int argc,
+         dvmAbort();
+     }
+ 
+-    ffi_call(&cif, FFI_FN(func), pReturn, values);
++    ALOGW("ffi_call: func=%p dstArg=%d", func, dstArg);
++    for (int zz=0; zz<dstArg && zz<6; zz++) ALOGW("  arg[%d] valptr=%p val=0x%lx", zz, values[zz], values[zz] ? *(unsigned long*)values[zz] : 0);
++    /* Try direct call for simple void(JNIEnv*, jclass) methods */
++    if (dstArg == 2 && retType == &ffi_type_void) {
++        typedef void (*SimpleStaticFn)(void*, void*);
++        SimpleStaticFn directFn = (SimpleStaticFn) func;
++        void* env_val = *(void**)values[0];
++        void* cls_val = *(void**)values[1];
++        ALOGW("Direct call: func=%p env=%p cls=%p", func, env_val, cls_val);
++        directFn(env_val, cls_val);
++    } else {
++        ffi_call(&cif, FFI_FN(func), pReturn, values);
++    }
+ }
 diff --git a/vm/compiler/Compiler.cpp b/vm/compiler/Compiler.cpp
 index f5b96b1..508fe18 100644
 --- a/vm/compiler/Compiler.cpp
@@ -3194,7 +3249,7 @@ index eaea607..1ae6e15 100644
  #include <netinet/tcp.h>
  #include <arpa/inet.h>
 diff --git a/vm/mterp/out/InterpC-portable.cpp b/vm/mterp/out/InterpC-portable.cpp
-index 0328aa8..ca1caa6 100644
+index 0328aa8..1f36895 100644
 --- a/vm/mterp/out/InterpC-portable.cpp
 +++ b/vm/mterp/out/InterpC-portable.cpp
 @@ -142,7 +142,7 @@
@@ -3286,6 +3341,60 @@ index 0328aa8..ca1caa6 100644
      u2 inst;                    // current instruction
      /* instruction decoding */
      u4 ref;                     // 16 or 32-bit quantity fetched directly
+@@ -1317,7 +1317,7 @@ HANDLE_OPCODE(OP_MOVE_EXCEPTION /*vAA*/)
+     vdst = INST_AA(inst);
+     ILOGV("|move-exception v%d", vdst);
+     assert(self->exception != NULL);
+-    SET_REGISTER(vdst, (u4)self->exception);
++    SET_REGISTER(vdst, (dreg_t)(uintptr_t)self->exception);
+     dvmClearException(self);
+     FINISH(1);
+ OP_END
+@@ -1467,7 +1467,7 @@ HANDLE_OPCODE(OP_CONST_STRING /*vAA, string@BBBB*/)
+             if (strObj == NULL)
+                 GOTO_exceptionThrown();
+         }
+-        SET_REGISTER(vdst, (u4) strObj);
++        ALOGW("CONST_STRING v%d = %p ("%s")", vdst, strObj, dvmGetStringData(strObj)); SET_REGISTER(vdst, (dreg_t)(uintptr_t) strObj);
+     }
+     FINISH(2);
+ OP_END
+@@ -1489,7 +1489,7 @@ HANDLE_OPCODE(OP_CONST_STRING_JUMBO /*vAA, string@BBBBBBBB*/)
+             if (strObj == NULL)
+                 GOTO_exceptionThrown();
+         }
+-        SET_REGISTER(vdst, (u4) strObj);
++        ALOGW("CONST_STRING v%d = %p ("%s")", vdst, strObj, dvmGetStringData(strObj)); SET_REGISTER(vdst, (dreg_t)(uintptr_t) strObj);
+     }
+     FINISH(3);
+ OP_END
+@@ -1509,7 +1509,7 @@ HANDLE_OPCODE(OP_CONST_CLASS /*vAA, class@BBBB*/)
+             if (clazz == NULL)
+                 GOTO_exceptionThrown();
+         }
+-        SET_REGISTER(vdst, (u4) clazz);
++        SET_REGISTER(vdst, (dreg_t)(uintptr_t) clazz);
+     }
+     FINISH(2);
+ OP_END
+@@ -1691,7 +1691,7 @@ HANDLE_OPCODE(OP_NEW_INSTANCE /*vAA, class@BBBB*/)
+         newObj = dvmAllocObject(clazz, ALLOC_DONT_TRACK);
+         if (newObj == NULL)
+             GOTO_exceptionThrown();
+-        SET_REGISTER(vdst, (u4) newObj);
++        SET_REGISTER(vdst, (dreg_t)(uintptr_t) newObj);
+     }
+     FINISH(2);
+ OP_END
+@@ -1728,7 +1728,7 @@ HANDLE_OPCODE(OP_NEW_ARRAY /*vA, vB, class@CCCC*/)
+         newArray = dvmAllocArrayByClass(arrayClass, length, ALLOC_DONT_TRACK);
+         if (newArray == NULL)
+             GOTO_exceptionThrown();
+-        SET_REGISTER(vdst, (u4) newArray);
++        SET_REGISTER(vdst, (dreg_t)(uintptr_t) newArray);
+     }
+     FINISH(2);
+ OP_END
 @@ -3584,7 +3584,7 @@ GOTO_TARGET(returnFromMethod)
  #endif
  
