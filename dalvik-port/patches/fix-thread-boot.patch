@@ -1,5 +1,5 @@
 diff --git a/vm/Thread.cpp b/vm/Thread.cpp
-index 1ebfca7..ad01905 100644
+index 1ebfca7..ef09039 100644
 --- a/vm/Thread.cpp
 +++ b/vm/Thread.cpp
 @@ -702,12 +702,20 @@ bool dvmPrepMainThread()
@@ -88,17 +88,27 @@ index 1ebfca7..ad01905 100644
  
      /*
       * Stuff the VMThread back into the Thread.  From this point on, other
-@@ -780,7 +800,8 @@ bool dvmPrepMainThread()
+@@ -780,7 +800,18 @@ bool dvmPrepMainThread()
       * Thread.currentThread(), so we want the Thread to be fully configured
       * before we do this.
       */
 -    Object* systemLoader = dvmGetSystemClassLoader();
-+    ALOGW("Skipping system class loader (not needed for standalone)");
-+    Object* systemLoader = NULL; // dvmGetSystemClassLoader();
++    // System class loader enabled
++    Object* systemLoader = NULL;
++    {
++        // Try to get system class loader, but don't abort on failure
++        Thread* self2 = dvmThreadSelf();
++        ALOGW("Skipping system class loader"); systemLoader = NULL; // dvmGetSystemClassLoader();
++        if (dvmCheckException(self2)) {
++            ALOGW("System class loader failed - clearing exception");
++            dvmClearException(self2);
++            systemLoader = NULL;
++        }
++    }
      if (systemLoader == NULL) {
          ALOGW("WARNING: system class loader is NULL (setting main ctxt)");
          /* keep going? */
-@@ -790,6 +811,76 @@ bool dvmPrepMainThread()
+@@ -790,6 +821,39 @@ bool dvmPrepMainThread()
          dvmReleaseTrackedAlloc(systemLoader, NULL);
      }
  
@@ -129,43 +139,6 @@ index 1ebfca7..ad01905 100644
 +        } else {
 +            ALOGW("DirectPrintStream not found in boot classpath");
 +        }
-+        // Initialize System.props with a Properties object
-+        ClassObject* propsCls = dvmFindSystemClassNoInit("Ljava/util/Properties;");
-+        if (propsCls) {
-+            if (!dvmIsClassInitialized(propsCls)) dvmInitClass(propsCls);
-+            if (dvmCheckException(dvmThreadSelf())) dvmClearException(dvmThreadSelf());
-+            Object* props = dvmAllocObject(propsCls, ALLOC_DEFAULT);
-+            if (props) {
-+                // Call Properties.<init>()
-+                Method* propsInit = dvmFindDirectMethodByDescriptor(propsCls, "<init>", "()V");
-+                if (propsInit) {
-+                    JValue unused;
-+                    dvmCallMethod(dvmThreadSelf(), propsInit, props, &unused);
-+                    if (dvmCheckException(dvmThreadSelf())) dvmClearException(dvmThreadSelf());
-+                }
-+                // Call initSystemProperties to populate it
-+                Method* initProps = dvmFindDirectMethodByDescriptor(gDvm.classJavaLangSystem, 
-+                    "initSystemProperties", "(Ljava/util/Properties;)Ljava/util/Properties;");
-+                if (initProps) {
-+                    JValue result;
-+                    dvmCallMethod(dvmThreadSelf(), initProps, NULL, &result, props);
-+                    if (dvmCheckException(dvmThreadSelf())) dvmClearException(dvmThreadSelf());
-+                    if (result.l) props = (Object*) result.l;
-+                }
-+                // Set System.systemProperties field
-+                StaticField* propsField = dvmFindStaticField(gDvm.classJavaLangSystem, 
-+                    "systemProperties", "Ljava/util/Properties;");
-+                if (!propsField) propsField = dvmFindStaticField(gDvm.classJavaLangSystem,
-+                    "props", "Ljava/util/Properties;");
-+                if (propsField) {
-+                    dvmSetStaticFieldObject(propsField, props);
-+                    ALOGW("Initialized System.props");
-+                }
-+                dvmReleaseTrackedAlloc(props, NULL);
-+            }
-+        }
-+        if (dvmCheckException(dvmThreadSelf())) dvmClearException(dvmThreadSelf());
-+
 +        // Force System to INITIALIZED
 +        gDvm.classJavaLangSystem->status = CLASS_INITIALIZED;
 +        ALOGW("Forced System to INITIALIZED");
@@ -175,7 +148,7 @@ index 1ebfca7..ad01905 100644
      /* include self in non-daemon threads (mainly for AttachCurrentThread) */
      gDvm.nonDaemonThreadCount++;
  
-@@ -3008,9 +3099,40 @@ static Object* getStaticThreadGroup(const char* fieldName)
+@@ -3008,9 +3072,40 @@ static Object* getStaticThreadGroup(const char* fieldName)
      }
      groupObj = dvmGetStaticFieldObject(groupField);
      if (groupObj == NULL) {
