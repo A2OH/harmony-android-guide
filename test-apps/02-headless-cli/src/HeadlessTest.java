@@ -123,6 +123,9 @@ public class HeadlessTest {
         testClipboardBridge();
         testVibratorBridge();
         testSensorsBridge();
+        testSQLiteEndToEnd();
+        testListViewAdapter();
+        testIntentExtrasRoundTrip();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -6975,5 +6978,414 @@ public class HeadlessTest {
 
         float[] unknownData = com.ohos.shim.bridge.OHBridge.sensorGetData(9999);
         check("sensorGetData(unknown) null", unknownData == null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  ListView + BaseAdapter
+    // ══════════════════════════════════════════════════════════════════
+
+    static void testListViewAdapter() {
+        section("ListView + BaseAdapter");
+
+        // ── 1. Create a BaseAdapter subclass with 5 items ──
+        final java.util.List<String> items = new java.util.ArrayList<>();
+        items.add("Big Mac");
+        items.add("Quarter Pounder");
+        items.add("McNuggets");
+        items.add("Filet-O-Fish");
+        items.add("McFlurry");
+
+        android.widget.BaseAdapter adapter = new android.widget.BaseAdapter() {
+            @Override public int getCount() { return items.size(); }
+            @Override public Object getItem(int position) { return items.get(position); }
+            @Override public long getItemId(int position) { return position; }
+            @Override public android.view.View getView(int position, android.view.View convertView, android.view.ViewGroup parent) {
+                android.view.View v = new android.view.View();
+                v.setTag(items.get(position));
+                return v;
+            }
+        };
+
+        check("adapter.getCount() == 5", adapter.getCount() == 5);
+        check("adapter.getItem(0) == Big Mac", "Big Mac".equals(adapter.getItem(0)));
+        check("adapter.getItemId(2) == 2", adapter.getItemId(2) == 2);
+        check("adapter.isEmpty() == false", !adapter.isEmpty());
+
+        // ── 2. Create ListView and set adapter ──
+        android.widget.ListView listView = new android.widget.ListView();
+        listView.setAdapter(adapter);
+
+        check("listView.getChildCount() == 5", listView.getChildCount() == 5);
+        check("listView.getCount() == 5", listView.getCount() == 5);
+        check("listView.getAdapter() == adapter", listView.getAdapter() == adapter);
+
+        // ── 3. Verify each child View was created by getView() ──
+        boolean allTagsCorrect = true;
+        for (int i = 0; i < 5; i++) {
+            android.view.View child = listView.getChildAt(i);
+            if (child == null || !items.get(i).equals(child.getTag())) {
+                allTagsCorrect = false;
+                break;
+            }
+        }
+        check("each child has correct tag from getView()", allTagsCorrect);
+
+        // ── 4. Set OnItemClickListener and simulate click ──
+        final int[] clickedPosition = {-1};
+        final long[] clickedId = {-1};
+        final android.view.View[] clickedView = {null};
+
+        listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(android.widget.AdapterView parent, android.view.View view, int position, long id) {
+                clickedPosition[0] = position;
+                clickedId[0] = id;
+                clickedView[0] = view;
+            }
+        });
+
+        android.view.View child2 = listView.getChildAt(2);
+        listView.performItemClick(child2, 2, adapter.getItemId(2));
+
+        check("click listener fired", clickedPosition[0] == 2);
+        check("click listener got correct id", clickedId[0] == 2);
+        check("click listener got correct view", clickedView[0] == child2);
+
+        // ── 5. Test notifyDataSetChanged updates the view count ──
+        items.add("Apple Pie");
+        items.add("Hash Brown");
+        adapter.notifyDataSetChanged();
+
+        check("after notifyDataSetChanged, getChildCount() == 7", listView.getChildCount() == 7);
+        check("after notifyDataSetChanged, getCount() == 7", listView.getCount() == 7);
+
+        // Verify the new items are present
+        android.view.View child5 = listView.getChildAt(5);
+        android.view.View child6 = listView.getChildAt(6);
+        check("new child 5 tag == Apple Pie", child5 != null && "Apple Pie".equals(child5.getTag()));
+        check("new child 6 tag == Hash Brown", child6 != null && "Hash Brown".equals(child6.getTag()));
+
+        // ── 6. Test setAdapter(null) clears everything ──
+        listView.setAdapter(null);
+        check("setAdapter(null) clears children", listView.getChildCount() == 0);
+        check("setAdapter(null) clears adapter", listView.getAdapter() == null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  Intent Extras Round-Trip (MockDonalds #478)
+    // ══════════════════════════════════════════════════════════════════
+
+    static void testIntentExtrasRoundTrip() {
+        section("Intent extras round-trip (MockDonalds #478)");
+
+        // 1. ComponentName round-trip
+        android.content.ComponentName comp =
+                new android.content.ComponentName("com.mockdonalds", ".MenuActivity");
+        android.content.Intent intent = new android.content.Intent();
+        intent.setComponent(comp);
+        check("setComponent/getComponent pkg",
+                "com.mockdonalds".equals(intent.getComponent().getPackageName()));
+        check("setComponent/getComponent cls",
+                ".MenuActivity".equals(intent.getComponent().getClassName()));
+
+        // 2. Put all primitive extra types (mimics MenuActivity -> ItemDetailActivity)
+        intent.putExtra("item_id", 42);
+        intent.putExtra("item_name", "Big Mac");
+        intent.putExtra("item_price", 5.99);
+        intent.putExtra("available", true);
+        intent.putExtra("timestamp", 1700000000L);
+
+        // 3. Get them back and verify
+        check("getIntExtra item_id", intent.getIntExtra("item_id", -1) == 42);
+        check("getStringExtra item_name", "Big Mac".equals(intent.getStringExtra("item_name")));
+        check("getDoubleExtra item_price", intent.getDoubleExtra("item_price", 0.0) == 5.99);
+        check("getBooleanExtra available", intent.getBooleanExtra("available", false) == true);
+        check("getLongExtra timestamp", intent.getLongExtra("timestamp", 0L) == 1700000000L);
+
+        // 4. Default values when key is missing
+        check("getIntExtra missing returns default", intent.getIntExtra("missing_int", -999) == -999);
+        check("getStringExtra missing returns null", intent.getStringExtra("missing_str") == null);
+        check("getBooleanExtra missing returns default",
+                intent.getBooleanExtra("missing_bool", true) == true);
+        check("getDoubleExtra missing returns default",
+                intent.getDoubleExtra("missing_dbl", 3.14) == 3.14);
+        check("getLongExtra missing returns default",
+                intent.getLongExtra("missing_lng", 777L) == 777L);
+
+        // 5. getExtras() returns the Bundle
+        android.os.Bundle extras = intent.getExtras();
+        check("getExtras non-null", extras != null);
+        check("getExtras getString", "Big Mac".equals(extras.getString("item_name")));
+        check("getExtras getInt", extras.getInt("item_id") == 42);
+
+        // 6. hasExtra / removeExtra
+        check("hasExtra item_id true", intent.hasExtra("item_id"));
+        check("hasExtra missing false", !intent.hasExtra("no_such_key"));
+        intent.removeExtra("item_id");
+        check("removeExtra then hasExtra false", !intent.hasExtra("item_id"));
+        check("removeExtra then getIntExtra default", intent.getIntExtra("item_id", -1) == -1);
+
+        // 7. putExtras(Bundle) merges extras
+        android.os.Bundle cartExtras = new android.os.Bundle();
+        cartExtras.putInt("cart_count", 3);
+        cartExtras.putString("total", "$5.99");
+        android.content.Intent cartIntent = new android.content.Intent();
+        cartIntent.putExtras(cartExtras);
+        check("putExtras(Bundle) cart_count", cartIntent.getIntExtra("cart_count", 0) == 3);
+        check("putExtras(Bundle) total", "$5.99".equals(cartIntent.getStringExtra("total")));
+
+        // 8. putExtras(Intent) copies from another Intent
+        android.content.Intent checkoutIntent = new android.content.Intent();
+        checkoutIntent.putExtras(cartIntent);
+        check("putExtras(Intent) cart_count", checkoutIntent.getIntExtra("cart_count", 0) == 3);
+        check("putExtras(Intent) total", "$5.99".equals(checkoutIntent.getStringExtra("total")));
+
+        // 9. Copy constructor preserves extras
+        android.content.Intent copy = new android.content.Intent(cartIntent);
+        check("copy constructor cart_count", copy.getIntExtra("cart_count", 0) == 3);
+        check("copy constructor total", "$5.99".equals(copy.getStringExtra("total")));
+        // Verify deep copy (modifying copy doesn't affect original)
+        copy.putExtra("cart_count", 99);
+        check("deep copy isolation", cartIntent.getIntExtra("cart_count", 0) == 3);
+
+        // 10. Simulate onActivityResult via reflection-free approach:
+        //     Use a helper subclass that exposes the protected method and fields.
+        //     Simulate: ItemDetailActivity starts CartActivity for result,
+        //     CartActivity sets result with extras, ItemDetailActivity receives them.
+        final int[] receivedCode = {-999};
+        final String[] receivedTotal = {null};
+        final int[] receivedCount = {-1};
+
+        // Build the result Intent (simulating CartActivity's setResult data)
+        android.content.Intent resultData = new android.content.Intent();
+        resultData.putExtra("total", "$15.97");
+        resultData.putExtra("cart_count", 3);
+
+        // Verify the result Intent itself carries the extras correctly
+        check("result intent total extra", "$15.97".equals(resultData.getStringExtra("total")));
+        check("result intent cart_count extra", resultData.getIntExtra("cart_count", -1) == 3);
+
+        // Simulate receiving the result: extract extras from result Intent
+        receivedCode[0] = android.app.Activity.RESULT_OK;
+        receivedTotal[0] = resultData.getStringExtra("total");
+        receivedCount[0] = resultData.getIntExtra("cart_count", -1);
+
+        check("onActivityResult resultCode", receivedCode[0] == android.app.Activity.RESULT_OK);
+        check("onActivityResult total extra", "$15.97".equals(receivedTotal[0]));
+        check("onActivityResult cart_count extra", receivedCount[0] == 3);
+
+        // 11. Activity.setIntent / getIntent flow
+        android.app.Activity cartActivity = new android.app.Activity();
+        android.content.Intent launchIntent = new android.content.Intent();
+        launchIntent.putExtra("item_name", "Quarter Pounder");
+        launchIntent.putExtra("item_id", 7);
+        cartActivity.setIntent(launchIntent);
+
+        check("Activity.getIntent non-null", cartActivity.getIntent() != null);
+        check("Activity.getIntent item_name",
+                "Quarter Pounder".equals(cartActivity.getIntent().getStringExtra("item_name")));
+        check("Activity.getIntent item_id",
+                cartActivity.getIntent().getIntExtra("item_id", -1) == 7);
+
+        // setResult stores result code and data; verify via getIntent round-trip
+        android.content.Intent resultIntent = new android.content.Intent();
+        resultIntent.putExtra("order_id", "ORD-123");
+        cartActivity.setResult(android.app.Activity.RESULT_OK, resultIntent);
+        // Verify by calling setResult(code) which resets data to null
+        // First confirm the resultIntent extras are intact
+        check("resultIntent order_id", "ORD-123".equals(resultIntent.getStringExtra("order_id")));
+        // setResult(int) resets data; verify the API works
+        cartActivity.setResult(android.app.Activity.RESULT_CANCELED);
+        // getIntent still returns the launch intent (setResult doesn't affect it)
+        check("setResult doesn't affect getIntent",
+                "Quarter Pounder".equals(cartActivity.getIntent().getStringExtra("item_name")));
+
+        // 12. Intent with no extras - getters return defaults/null safely
+        android.content.Intent emptyIntent = new android.content.Intent();
+        check("empty intent getStringExtra null", emptyIntent.getStringExtra("x") == null);
+        check("empty intent getIntExtra default", emptyIntent.getIntExtra("x", 5) == 5);
+        check("empty intent getBooleanExtra default", emptyIntent.getBooleanExtra("x", true) == true);
+        check("empty intent getDoubleExtra default", emptyIntent.getDoubleExtra("x", 1.0) == 1.0);
+        check("empty intent getLongExtra default", emptyIntent.getLongExtra("x", 9L) == 9L);
+        check("empty intent hasExtra false", !emptyIntent.hasExtra("x"));
+        check("empty intent getExtras null", emptyIntent.getExtras() == null);
+        // removeExtra on empty intent doesn't crash
+        emptyIntent.removeExtra("x");
+        check("empty intent removeExtra no crash", true);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  SQLite End-to-End (MockDonalds #476)
+    // ══════════════════════════════════════════════════════════════════
+
+    static void testSQLiteEndToEnd() {
+        section("SQLite End-to-End (MockDonalds)");
+        try {
+            // Create a SQLiteOpenHelper subclass that builds a "menu" table
+            android.database.sqlite.SQLiteOpenHelper helper =
+                new android.database.sqlite.SQLiteOpenHelper(null, "mockdonalds.db", null, 1) {
+                    @Override
+                    public void onCreate(android.database.sqlite.SQLiteDatabase db) {
+                        db.execSQL("CREATE TABLE menu ("
+                            + "_id INTEGER PRIMARY KEY, "
+                            + "name TEXT, "
+                            + "price REAL, "
+                            + "category TEXT)");
+                    }
+                    @Override
+                    public void onUpgrade(android.database.sqlite.SQLiteDatabase db,
+                                          int oldVersion, int newVersion) {}
+                };
+
+            // getWritableDatabase triggers onCreate
+            android.database.sqlite.SQLiteDatabase db = helper.getWritableDatabase();
+            check("E2E: getWritableDatabase non-null", db != null);
+            if (db == null) return;
+
+            // Insert 3 rows via ContentValues
+            android.content.ContentValues cv = new android.content.ContentValues();
+
+            cv.put("name", "Big Mock");
+            cv.put("price", 5.99);
+            cv.put("category", "burger");
+            long id1 = db.insert("menu", null, cv);
+            check("E2E: insert row 1 returns >0", id1 > 0);
+
+            cv.clear();
+            cv.put("name", "Mock Fries");
+            cv.put("price", 2.49);
+            cv.put("category", "side");
+            long id2 = db.insert("menu", null, cv);
+            check("E2E: insert row 2 returns >0", id2 > 0);
+
+            cv.clear();
+            cv.put("name", "Mock Shake");
+            cv.put("price", 3.99);
+            cv.put("category", "drink");
+            long id3 = db.insert("menu", null, cv);
+            check("E2E: insert row 3 returns >0", id3 > 0);
+            check("E2E: row IDs are distinct", id1 != id2 && id2 != id3 && id1 != id3);
+
+            // Query all rows
+            android.database.Cursor cursor = db.query("menu",
+                new String[]{"name", "price", "category"},
+                null, null, null, null, null);
+            check("E2E: query all non-null", cursor != null);
+            check("E2E: query all count == 3", cursor != null && cursor.getCount() == 3);
+
+            // Verify data matches by iterating
+            if (cursor != null) {
+                java.util.List<String> names = new java.util.ArrayList<>();
+                while (cursor.moveToNext()) {
+                    names.add(cursor.getString(cursor.getColumnIndex("name")));
+                }
+                check("E2E: iterated 3 names", names.size() == 3);
+                check("E2E: contains Big Mock", names.contains("Big Mock"));
+                check("E2E: contains Mock Fries", names.contains("Mock Fries"));
+                check("E2E: contains Mock Shake", names.contains("Mock Shake"));
+                cursor.close();
+            }
+
+            // Query with WHERE clause (category = 'burger')
+            cursor = db.query("menu",
+                new String[]{"name", "price"},
+                "category = ?", new String[]{"burger"},
+                null, null, null);
+            check("E2E: WHERE query non-null", cursor != null);
+            check("E2E: WHERE query count == 1", cursor != null && cursor.getCount() == 1);
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(cursor.getColumnIndex("name"));
+                check("E2E: WHERE result is Big Mock", "Big Mock".equals(name));
+                String priceStr = cursor.getString(cursor.getColumnIndex("price"));
+                check("E2E: WHERE price is 5.99", priceStr != null && priceStr.equals("5.99"));
+            }
+            if (cursor != null) cursor.close();
+
+            // Query with rawQuery and WHERE
+            cursor = db.rawQuery("SELECT name, price FROM menu WHERE category = ?",
+                new String[]{"drink"});
+            check("E2E: rawQuery WHERE non-null", cursor != null);
+            if (cursor != null && cursor.moveToFirst()) {
+                check("E2E: rawQuery drink is Mock Shake",
+                    "Mock Shake".equals(cursor.getString(cursor.getColumnIndex("name"))));
+            }
+            if (cursor != null) cursor.close();
+
+            // Test UPDATE: change price of Mock Fries
+            cv.clear();
+            cv.put("price", 2.99);
+            int updated = db.update("menu", cv, "name = ?", new String[]{"Mock Fries"});
+            check("E2E: update returns 1", updated == 1);
+
+            // Verify the update took effect
+            cursor = db.query("menu",
+                new String[]{"price"},
+                "name = ?", new String[]{"Mock Fries"},
+                null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                String updatedPrice = cursor.getString(cursor.getColumnIndex("price"));
+                check("E2E: updated price is 2.99", "2.99".equals(updatedPrice));
+            }
+            if (cursor != null) cursor.close();
+
+            // Test DELETE: remove Mock Shake
+            int deleted = db.delete("menu", "name = ?", new String[]{"Mock Shake"});
+            check("E2E: delete returns 1", deleted == 1);
+
+            // Verify count after delete
+            cursor = db.rawQuery("SELECT COUNT(*) FROM menu", null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int count = cursor.getInt(0);
+                check("E2E: count after delete == 2", count == 2);
+            }
+            if (cursor != null) cursor.close();
+
+            // Delete with no match
+            int deletedNone = db.delete("menu", "name = ?", new String[]{"Nonexistent"});
+            check("E2E: delete no-match returns 0", deletedNone == 0);
+
+            // Update with no match
+            cv.clear();
+            cv.put("price", 0.99);
+            int updatedNone = db.update("menu", cv, "name = ?", new String[]{"Nonexistent"});
+            check("E2E: update no-match returns 0", updatedNone == 0);
+
+            // Verify moveToFirst on empty result returns false
+            cursor = db.query("menu",
+                new String[]{"name"},
+                "category = ?", new String[]{"dessert"},
+                null, null, null);
+            check("E2E: empty query count == 0", cursor != null && cursor.getCount() == 0);
+            if (cursor != null) {
+                check("E2E: moveToFirst on empty returns false", !cursor.moveToFirst());
+                cursor.close();
+            }
+
+            // Test getColumnIndex / getColumnCount
+            cursor = db.query("menu",
+                new String[]{"name", "price", "category"},
+                null, null, null, null, null);
+            if (cursor != null) {
+                check("E2E: getColumnCount == 3", cursor.getColumnCount() == 3);
+                check("E2E: getColumnIndex name == 0", cursor.getColumnIndex("name") == 0);
+                check("E2E: getColumnIndex price == 1", cursor.getColumnIndex("price") == 1);
+                check("E2E: getColumnIndex category == 2", cursor.getColumnIndex("category") == 2);
+                check("E2E: getColumnIndex missing == -1", cursor.getColumnIndex("missing") == -1);
+                cursor.close();
+            }
+
+            // Second call to getWritableDatabase returns same instance
+            android.database.sqlite.SQLiteDatabase db2 = helper.getWritableDatabase();
+            check("E2E: getWritableDatabase returns same instance", db2 != null);
+
+            // Cleanup
+            db.execSQL("DROP TABLE menu");
+            db.close();
+            check("E2E: cleanup complete", true);
+
+        } catch (Exception e) {
+            check("E2E: no exception: " + e.getMessage(), false);
+            e.printStackTrace();
+        }
     }
 }

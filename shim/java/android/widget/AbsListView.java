@@ -10,7 +10,7 @@ import android.view.ViewGroup;
  * Concrete subclasses are ListView and GridView.
  * Scroll-state constants and OnScrollListener are preserved for source compatibility.
  */
-public class AbsListView extends ViewGroup {
+public class AbsListView extends AdapterView {
 
     // Choice mode constants
     public static final int CHOICE_MODE_NONE          = 0;
