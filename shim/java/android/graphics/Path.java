@@ -1,12 +1,13 @@
 package android.graphics;
 
+import com.ohos.shim.bridge.OHBridge;
+
 /**
  * Shim: android.graphics.Path
  * OH mapping: drawing.OH_Drawing_Path
  *
- * Pure Java stub — tracks path state (empty/non-empty) without storing
- * actual segments.  Direction and FillType are preserved for round-trip
- * compatibility but have no rendering effect in this shim.
+ * Wraps a native OH_Drawing_Path handle. Path operations are forwarded
+ * to OHBridge while also tracking empty/non-empty state locally.
  */
 public class Path {
 
@@ -30,17 +31,25 @@ public class Path {
 
     private FillType fillType = FillType.WINDING;
     private boolean  empty    = true;
+    private long nativeHandle;
 
     // ── Constructors ─────────────────────────────────────────────────────────
 
-    public Path() {}
+    public Path() {
+        nativeHandle = OHBridge.pathCreate();
+    }
 
     public Path(Path src) {
+        nativeHandle = OHBridge.pathCreate();
         if (src != null) {
             this.fillType = src.fillType;
             this.empty    = src.empty;
         }
     }
+
+    // ── Native handle ────────────────────────────────────────────────────────
+
+    public long getNativeHandle() { return nativeHandle; }
 
     // ── FillType ─────────────────────────────────────────────────────────────
 
@@ -54,19 +63,53 @@ public class Path {
     public void reset() {
         fillType = FillType.WINDING;
         empty    = true;
+        if (nativeHandle != 0) OHBridge.pathReset(nativeHandle);
     }
 
     // ── Path operations ──────────────────────────────────────────────────────
 
-    public void moveTo(float x, float y)                                       { empty = false; }
-    public void lineTo(float x, float y)                                       { empty = false; }
-    public void quadTo(float x1, float y1, float x2, float y2)                { empty = false; }
-    public void cubicTo(float x1, float y1, float x2, float y2,
-                        float x3, float y3)                                    { empty = false; }
-    public void close()                                                        { /* no-op */ }
+    public void moveTo(float x, float y) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathMoveTo(nativeHandle, x, y);
+    }
 
-    public void addRect(RectF rect, Direction dir)                             { empty = false; }
-    public void addCircle(float x, float y, float radius, Direction dir)      { empty = false; }
+    public void lineTo(float x, float y) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathLineTo(nativeHandle, x, y);
+    }
+
+    public void quadTo(float x1, float y1, float x2, float y2) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathQuadTo(nativeHandle, x1, y1, x2, y2);
+    }
+
+    public void cubicTo(float x1, float y1, float x2, float y2,
+                        float x3, float y3) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathCubicTo(nativeHandle, x1, y1, x2, y2, x3, y3);
+    }
+
+    public void close() {
+        if (nativeHandle != 0) OHBridge.pathClose(nativeHandle);
+    }
+
+    public void addRect(RectF rect, Direction dir) {
+        if (rect != null) {
+            empty = false;
+            if (nativeHandle != 0) OHBridge.pathAddRect(nativeHandle, rect.left, rect.top, rect.right, rect.bottom, dir == Direction.CCW ? 1 : 0);
+        }
+    }
+
+    public void addCircle(float x, float y, float radius, Direction dir) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathAddCircle(nativeHandle, x, y, radius, dir == Direction.CCW ? 1 : 0);
+    }
+
+    // ── Cleanup ──────────────────────────────────────────────────────────────
+
+    public void release() {
+        if (nativeHandle != 0) { OHBridge.pathDestroy(nativeHandle); nativeHandle = 0; }
+    }
 
     // ── Object overrides ─────────────────────────────────────────────────────
 

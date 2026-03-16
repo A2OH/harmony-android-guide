@@ -1,16 +1,11 @@
 package android.graphics;
-import android.util.Config;
-import android.webkit.WebViewClient;
-import android.util.Config;
-import android.webkit.WebViewClient;
+import com.ohos.shim.bridge.OHBridge;
 
 /**
  * Shim: android.graphics.Bitmap
- * OH mapping: image.PixelMap
+ * OH mapping: image.PixelMap / drawing.OH_Drawing_Bitmap
  *
- * This is a minimal stub sufficient to satisfy API signatures that pass
- * Bitmap as a parameter (e.g., WebViewClient.onPageStarted favicon).
- * Actual pixel-level operations require the OH bridge.
+ * Wraps a native OH_Drawing_Bitmap handle for pixel-level operations.
  */
 public class Bitmap {
 
@@ -27,6 +22,7 @@ public class Bitmap {
     private final int height;
     private final Config config;
     private boolean recycled = false;
+    private long nativeHandle;
 
     private Bitmap(int width, int height, Config config) {
         this.width  = width;
@@ -40,13 +36,31 @@ public class Bitmap {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Bitmap dimensions must be positive");
         }
-        return new Bitmap(width, height, config);
+        Bitmap bmp = new Bitmap(width, height, config);
+        bmp.nativeHandle = OHBridge.bitmapCreate(width, height, configToFormat(config));
+        return bmp;
     }
 
     public static Bitmap createBitmap(Bitmap src) {
         if (src == null) throw new NullPointerException("src must not be null");
-        return new Bitmap(src.width, src.height, src.config);
+        Bitmap bmp = new Bitmap(src.width, src.height, src.config);
+        bmp.nativeHandle = OHBridge.bitmapCreate(src.width, src.height, configToFormat(src.config));
+        return bmp;
     }
+
+    private static int configToFormat(Config config) {
+        if (config == null) return 0;
+        switch (config) {
+            case ALPHA_8:   return 1;
+            case RGB_565:   return 2;
+            case ARGB_4444: return 3;
+            default:        return 0; // ARGB_8888
+        }
+    }
+
+    // ── Native handle ──
+
+    public long getNativeHandle() { return nativeHandle; }
 
     // ── Properties ──
 
@@ -55,8 +69,10 @@ public class Bitmap {
     public Config getConfig() { return config; }
     public boolean isRecycled() { return recycled; }
 
-    /** Release pixel memory. Subsequent operations will throw. */
-    public void recycle() { recycled = true; }
+    public void recycle() {
+        if (nativeHandle != 0) { OHBridge.bitmapDestroy(nativeHandle); nativeHandle = 0; }
+        recycled = true;
+    }
 
     public int getByteCount() {
         int bytesPerPixel;
@@ -65,9 +81,20 @@ public class Bitmap {
             case RGB_565:
             case ARGB_4444: bytesPerPixel = 2; break;
             case RGBA_F16:  bytesPerPixel = 8; break;
-            default:        bytesPerPixel = 4; break; // ARGB_8888 / HARDWARE
+            default:        bytesPerPixel = 4; break;
         }
         return width * height * bytesPerPixel;
+    }
+
+    // ── Pixel access ──
+
+    public void setPixel(int x, int y, int color) {
+        if (nativeHandle != 0) OHBridge.bitmapSetPixel(nativeHandle, x, y, color);
+    }
+
+    public int getPixel(int x, int y) {
+        if (nativeHandle != 0) return OHBridge.bitmapGetPixel(nativeHandle, x, y);
+        return 0;
     }
 
     @Override
