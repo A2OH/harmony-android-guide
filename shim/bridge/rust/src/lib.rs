@@ -20,6 +20,10 @@ mod view;
 mod oh_drawing;
 mod surface;
 mod input;
+mod permissions;
+mod clipboard;
+mod vibrator;
+mod sensor;
 
 use jni::JNIEnv;
 use jni::objects::JClass;
