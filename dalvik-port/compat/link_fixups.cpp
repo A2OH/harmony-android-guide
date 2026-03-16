@@ -60,3 +60,7 @@ extern "C" void dvmMterpStdBail(Thread* self) {
     fprintf(stderr, "FATAL: dvmMterpStdBail called in portable-only build\n");
     abort();
 }
+void dvmLateEnableCheckedJni() {}
+struct DebugOutputTarget;
+void dvmDumpJniStats(DebugOutputTarget*) {}
+bool dvmIsBadJniVersion(int) { return false; }
