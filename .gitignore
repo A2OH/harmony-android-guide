@@ -12,3 +12,13 @@ dalvik-port/build-zlib-ohos/
 dalvik-port/ohos-sysroot/
 dalvik-port/*.jar
 database/*.db
+# Build artifacts
+dalvik-port/*.class
+dalvik-port/*.dex
+dalvik-port/ohos-sysroot-arm32/
+test-apps/build-local/
+test-apps/javac.*.args
+claude
+.claire/
+.clone/
+skills/test/
