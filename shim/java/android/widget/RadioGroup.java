@@ -24,6 +24,14 @@ public class RadioGroup extends LinearLayout {
         setOrientation(VERTICAL);
     }
 
+    public RadioGroup(android.content.Context context) {
+        this();
+    }
+
+    public RadioGroup(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
     // ── Check management ──
 
     /**

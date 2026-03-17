@@ -22,9 +22,18 @@ public class CheckBox extends Button {
 
     public CheckBox() {
         super();
-        // Override button node type — need to create CHECKBOX node
-        // This is a limitation of the single-constructor chain.
-        // In practice, the shim factory would create the right type.
+    }
+
+    public CheckBox(android.content.Context context) {
+        this();
+    }
+
+    public CheckBox(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
+    public CheckBox(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this();
     }
 
     public boolean isChecked() { return checked; }

@@ -29,6 +29,22 @@ public class Spinner extends AdapterView {
         this(MODE_DROPDOWN);
     }
 
+    public Spinner(android.content.Context context) {
+        this(MODE_DROPDOWN);
+    }
+
+    public Spinner(android.content.Context context, int mode) {
+        this(mode);
+    }
+
+    public Spinner(android.content.Context context, android.util.AttributeSet attrs) {
+        this(MODE_DROPDOWN);
+    }
+
+    public Spinner(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this(MODE_DROPDOWN);
+    }
+
     public Spinner(int mode) {
         super(); // STACK node via ViewGroup default
         this.mode = mode;

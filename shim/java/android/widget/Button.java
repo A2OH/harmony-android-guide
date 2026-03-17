@@ -20,6 +20,18 @@ public class Button extends TextView {
         super(NODE_TYPE_BUTTON);
     }
 
+    public Button(android.content.Context context) {
+        this();
+    }
+
+    public Button(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
+    public Button(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this();
+    }
+
     @Override
     protected void onDraw(android.graphics.Canvas canvas) {
         // Draw button background (rounded rect)

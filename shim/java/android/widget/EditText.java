@@ -12,6 +12,18 @@ public class EditText extends TextView {
 
     public EditText() {}
 
+    public EditText(android.content.Context context) {
+        this();
+    }
+
+    public EditText(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
+    public EditText(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this();
+    }
+
     @Override
     public CharSequence getText() { return super.getText(); }
 

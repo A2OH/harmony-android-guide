@@ -26,6 +26,18 @@ public class LinearLayout extends ViewGroup {
         super(NODE_TYPE_COLUMN);
     }
 
+    public LinearLayout(android.content.Context context) {
+        this();
+    }
+
+    public LinearLayout(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
+    public LinearLayout(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this();
+    }
+
     /** Create with specific orientation.
      *  Note: changing orientation after creation requires node recreation.
      *  For now, set orientation before adding children. */

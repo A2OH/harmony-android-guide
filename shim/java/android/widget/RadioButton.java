@@ -31,6 +31,18 @@ public class RadioButton extends View {
         super(0); // Bridge maps to Radio component
     }
 
+    public RadioButton(android.content.Context context) {
+        this();
+    }
+
+    public RadioButton(android.content.Context context, android.util.AttributeSet attrs) {
+        this();
+    }
+
+    public RadioButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        this();
+    }
+
     // ── Checked state ──
 
     public boolean isChecked() { return checked; }
