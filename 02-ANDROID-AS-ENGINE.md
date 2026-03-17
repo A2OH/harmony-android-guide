@@ -157,40 +157,25 @@ This is why 57,000 API shims are unnecessary. The Android framework is a self-co
 
 An Android app interacts with the host OS at exactly the same points as any other app:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Android Framework (Pure Java)                 │
-│                                                                  │
-│  57,000 APIs: View, Widget, Activity, Service, Content,         │
-│  Intent, Fragment, Animation, Drawable, Text, Database,         │
-│  SharedPreferences, Handler, Looper, AsyncTask, ...             │
-│                                                                  │
-│  ALL of this is pure Java running in Dalvik VM.                 │
-│  None of it needs OHOS-specific code.                           │
-│                                                                  │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-          Only these cross the boundary:
-                      │
-     ┌────────────────▼────────────────────────────────┐
-     │           ~15 HAL Bridges (liboh_bridge.so)      │
-     │                                                  │
-     │  1. Pixels:    Canvas.draw*()  → OH_Drawing     │
-     │  2. Surface:   NativeWindow    → XComponent     │
-     │  3. Touch:     MotionEvent     ← XComponent     │
-     │  4. Audio:     AudioTrack      → OH AudioRenderer│
-     │  5. Camera:    Camera2         → OH Camera       │
-     │  6. Network:   Socket          → OH Net          │
-     │  7. Location:  LocationManager → OH GeoLocation  │
-     │  8. Bluetooth: BT HAL         → OH Bluetooth     │
-     │  9. Sensors:   SensorManager   → OH Sensor       │
-     │  10. Storage:  File I/O        → OH FileSystem   │
-     │  11. Telephony:RIL             → OH Telephony    │
-     │  12. Notify:   NotificationMgr → OH Notification │
-     │  13. Perms:    PackageManager  → OH AccessCtrl   │
-     │  14. Clipboard:ClipboardSvc    → OH Pasteboard   │
-     │  15. Vibrate:  VibratorService → OH Vibrator     │
-     └─────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph FW["Android Framework (Pure Java in Dalvik)"]
+        FW1["57,000 APIs: View, Widget, Activity, Service,<br/>Intent, Fragment, Animation, Drawable, Text,<br/>Database, SharedPreferences, Handler, Looper...<br/><br/>ALL pure Java. None needs OHOS-specific code."]
+    end
+
+    FW1 --> BRIDGE
+
+    subgraph BRIDGE["~15 HAL Bridges (liboh_bridge.so)"]
+        B1["1. Pixels: Canvas.draw* → OH_Drawing"]
+        B2["2. Surface: NativeWindow → XComponent"]
+        B3["3. Touch: MotionEvent ← XComponent"]
+        B4["4. Audio: AudioTrack → OH AudioRenderer"]
+        B5["5. Camera: Camera2 → OH Camera"]
+        B6["6-10. Network, Location, BT, Sensors, Storage"]
+        B7["11-15. Telephony, Notify, Perms, Clipboard, Vibrate"]
+    end
+
+    BRIDGE --> OH["OpenHarmony OS"]
 ```
 
 ### 2.4 Proof: Our Implementation Confirms It
@@ -225,52 +210,38 @@ A natural question: if 50,000+ APIs are pure Java, they still need to exist as `
 
 **Three layers of class provision:**
 
-```
-Layer 1: java.* / javax.*  (~4,000 classes)
-  Provider: Dalvik VM ships these as core.jar (1.2MB)
-  Status:   WORKING — HashMap, String, ArrayList, Thread, etc.
+```mermaid
+graph TD
+    subgraph "Layer 1: java.* / javax.* (~4,000 classes)"
+        L1["core.jar (1.2MB)<br/>HashMap, String, ArrayList, Thread...<br/>Status: WORKING"]
+    end
+    subgraph "Layer 2: android.* framework (~2,000 classes)"
+        L2A["Option A: Shim layer (current)<br/>1,968 stubs, ~200 implemented<br/>~2MB DEX, ~70% fidelity"]
+        L2B["Option B: Real AOSP framework.jar (production)<br/>Actual AOSP source<br/>~40MB DEX, ~99% fidelity"]
+    end
+    subgraph "Layer 3: App code"
+        L3["APK's classes.dex<br/>Status: WORKING — DexClassLoader"]
+    end
 
-Layer 2: android.* framework  (~2,000 classes needed by typical app)
-  Two options:
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ Option A: Shim layer (current)                                   │
-  │   1,968 stub classes, ~200 fully implemented                     │
-  │   Size: ~2MB DEX                                                 │
-  │   Fidelity: ~70% for simple apps                                 │
-  │   Pros: Small, fast to iterate, no AOSP dependencies             │
-  │   Cons: Missing methods, simplified behavior                     │
-  ├──────────────────────────────────────────────────────────────────┤
-  │ Option B: Real AOSP framework.jar (production target)            │
-  │   Actual Android framework Java source from AOSP                 │
-  │   Size: ~40MB DEX                                                │
-  │   Fidelity: ~99% (identical to real Android)                     │
-  │   Pros: Perfect compatibility, battle-tested code                │
-  │   Cons: Larger, needs SystemServer stubs                         │
-  └──────────────────────────────────────────────────────────────────┘
-
-Layer 3: App's own code  (varies per APK)
-  Provider: The APK's classes.dex
-  Status:   WORKING — loaded by DexClassLoader
+    L1 --> VM["Dalvik VM"]
+    L2A -.-> VM
+    L2B -.-> VM
+    L3 --> VM
 ```
 
 **The production engine uses a hybrid approach:**
 
-```
-Boot classpath:
-├── core.jar              ← Dalvik's java.* classes (1.2MB, have this)
-├── framework-pure.jar    ← AOSP classes that are pure Java (~30MB)
-│     View, ViewGroup, LinearLayout, TextView, Canvas,
-│     Activity, Intent, Bundle, SharedPreferences,
-│     Handler, Looper, AsyncTask, Fragment...
-│     (~80% of framework.jar — compiles unchanged)
-│
-├── framework-bridge.jar  ← MiniServer + bridge layer (~2MB, have this)
-│     MiniActivityManager replaces ActivityManagerService
-│     MiniWindowManager replaces WindowManagerService
-│     MiniPackageManager replaces PackageManagerService
-│     OHBridge replaces native Binder IPC calls
-│
-└── app's classes.dex     ← The APK's own code
+```mermaid
+graph TD
+    subgraph "Boot Classpath"
+        L1["core.jar<br/>Dalvik java.* classes (1.2MB)"]
+        L2["framework-pure.jar<br/>AOSP pure Java (~30MB)<br/>View, ViewGroup, LinearLayout, TextView, Canvas,<br/>Activity, Intent, Bundle, SharedPreferences,<br/>Handler, Looper, AsyncTask, Fragment...<br/>(~80% of framework.jar — compiles unchanged)"]
+        L3["framework-bridge.jar<br/>MiniServer + bridge layer (~2MB)<br/>MiniActivityManager, MiniWindowManager,<br/>MiniPackageManager, OHBridge"]
+    end
+    APP["App's classes.dex"] --> VM["Dalvik VM"]
+    L1 --> VM
+    L2 --> VM
+    L3 --> VM
 ```
 
 The key insight: **AOSP `framework.jar` is already pure Java.** The source code lives at `frameworks/base/core/java/android/`. We don't rewrite 50,000 APIs — we compile the real AOSP source and only replace the ~15 points where it calls into native system services (Binder → SystemServer). MiniServer provides those same services as lightweight in-process Java objects.
@@ -279,33 +250,33 @@ The key insight: **AOSP `framework.jar` is already pure Java.** The source code 
 
 On real Android, all apps share one copy of `framework.jar` via the Zygote fork model:
 
-```
-Real Android:
-  Zygote process loads framework.jar (~40MB) ONCE
-    ├── App 1 forked from Zygote — shares framework pages (copy-on-write)
-    ├── App 2 forked from Zygote — shares framework pages
-    ├── App 3 forked from Zygote — shares framework pages
-    └── Memory cost: ~40MB total (shared across ALL apps)
+```mermaid
+graph LR
+    subgraph "Real Android (Zygote fork model)"
+        Z["Zygote loads framework.jar (~40MB) ONCE"]
+        Z --> A1Z["App 1 — shared pages (COW)"]
+        Z --> A2Z["App 2 — shared pages (COW)"]
+        Z --> A3Z["App 3 — shared pages (COW)"]
+        Z --> MZ["Total: ~40MB (shared)"]
+    end
 
-Engine on OHOS:
-  Dalvik VM loads boot classpath per engine instance
-    ├── App 1: core.jar + framework = ~42MB
-    ├── App 2 (if simultaneous): +~20MB (only app DEX, framework pages reusable via mmap)
-    └── Memory cost: ~42MB base + ~20MB per additional app
+    subgraph "Engine on OHOS"
+        E["Dalvik VM loads boot classpath"]
+        E --> A1E["App 1: core.jar + framework = ~42MB"]
+        E --> A2E["App 2: +~20MB (framework pages reusable via mmap)"]
+        E --> ME["Total: ~42MB base + ~20MB per app"]
+    end
 ```
 
 **This is not a problem because the engine runs ONE app at a time** — the same model as Flutter. You don't run two Flutter apps simultaneously sharing the Dart VM.
 
-```
-Engine lifecycle:
-  User launches App A:
-    Load Dalvik + framework + App A → ~60MB total
-    App A runs, user interacts
-
-  User switches to App B:
-    Option 1: Unload A, load B → ~60MB (reuse VM, only swap app DEX)
-    Option 2: Suspend A, load B → ~60MB + ~20MB = ~80MB
-              (framework.jar pages shared via OS mmap, only app DEX duplicated)
+```mermaid
+graph TD
+    START["User launches App A"] --> LOAD["Load Dalvik + framework + App A<br/>~60MB total"]
+    LOAD --> RUN["App A runs, user interacts"]
+    RUN --> SWITCH["User switches to App B"]
+    SWITCH --> OPT1["Option 1: Unload A, load B<br/>~60MB (reuse VM, swap app DEX)"]
+    SWITCH --> OPT2["Option 2: Suspend A, load B<br/>~60MB + ~20MB = ~80MB<br/>(framework pages shared via mmap)"]
 ```
 
 **Comparison: memory cost for N simultaneous apps**
@@ -327,54 +298,50 @@ On a $50 phone with 2GB RAM, the container leaves ~1GB for the rest of the syste
 
 ### 3.1 Layer Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Android APK (.apk)                            │
-│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────┐       │
-│  │ DEX code│ │ Resources│ │ NDK .so  │ │AndroidManifest│       │
-│  └────┬────┘ └─────┬────┘ └─────┬────┘ └───────┬───────┘       │
-└───────┼────────────┼────────────┼───────────────┼───────────────┘
-        │            │            │               │
-   ┌────▼────────────▼────────────▼───────────────▼───────────────┐
-   │         ANDROID ENGINE (like Flutter Engine)                  │
-   │                                                               │
-   │  ┌──────────────────────────────────────────────────────────┐ │
-   │  │  Android Framework (pure Java, runs in Dalvik)           │ │
-   │  │  57,000 APIs — View, Widget, Activity, Service,          │ │
-   │  │  Content, Intent, Fragment, Animation, Drawable,         │ │
-   │  │  Text, Database, SharedPreferences, Handler...           │ │
-   │  │                                                          │ │
-   │  │  ALL pure Java. None crosses the OHOS boundary.          │ │
-   │  └──────────────────┬───────────────────────────────────────┘ │
-   │                     │                                         │
-   │  ┌──────────────────▼───────────────────────────────────────┐ │
-   │  │  Dalvik VM (KitKat portable interpreter, 64-bit ported)  │ │
-   │  │  DEX execution, GC, JNI, class loading                   │ │
-   │  └──────────────────┬───────────────────────────────────────┘ │
-   │                     │                                         │
-   │  ┌──────────────────▼───────────────────────────────────────┐ │
-   │  │  MiniServer (replaces Android SystemServer)              │ │
-   │  │  MiniActivityManager │ MiniWindowManager                 │ │
-   │  │  MiniPackageManager  │ MiniContentResolver               │ │
-   │  │  MiniServiceManager  │ ActivityThread                    │ │
-   │  │  (1 app, 1 process, direct Java calls — no Binder IPC)  │ │
-   │  └──────────────────┬───────────────────────────────────────┘ │
-   │                     │                                         │
-   │  ┌──────────────────▼───────────────────────────────────────┐ │
-   │  │  liboh_bridge.so (~15 HAL bridges, Rust/C++)             │ │
-   │  │  Canvas→OH_Drawing │ Surface→XComponent │ Input→Touch    │ │
-   │  │  Audio→OH_Audio │ Camera→OH_Camera │ Net→OH_Net          │ │
-   │  │  Location→OH_Geo │ Sensor→OH_Sensor │ BT→OH_BT          │ │
-   │  └──────────────────┬───────────────────────────────────────┘ │
-   └─────────────────────┼─────────────────────────────────────────┘
-                         │
-   ┌─────────────────────▼─────────────────────────────────────────┐
-   │                 OpenHarmony OS                                 │
-   │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐       │
-   │  │XComponent│ │OH_Drawing│ │ OpenGL ES│ │ OH System  │       │
-   │  │ Surface  │ │ Canvas   │ │   GPU    │ │ Services   │       │
-   │  └──────────┘ └──────────┘ └──────────┘ └────────────┘       │
-   └───────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph APK["Android APK (.apk)"]
+        DEX["DEX code"]
+        RES["Resources"]
+        NDK["NDK .so"]
+        MAN["AndroidManifest"]
+    end
+
+    APK --> ENGINE
+
+    subgraph ENGINE["ANDROID ENGINE (like Flutter Engine)"]
+        subgraph FW["Android Framework (pure Java, runs in Dalvik)"]
+            FW1["57,000 APIs — View, Widget, Activity, Service,<br/>Content, Intent, Fragment, Animation, Drawable,<br/>Text, Database, SharedPreferences, Handler...<br/>ALL pure Java. None crosses the OHOS boundary."]
+        end
+        subgraph DVM["Dalvik VM (KitKat portable interpreter, 64-bit)"]
+            DVM1["DEX execution, GC, JNI, class loading"]
+        end
+        subgraph MS["MiniServer (replaces SystemServer)"]
+            MS1["MiniActivityManager"]
+            MS2["MiniWindowManager"]
+            MS3["MiniPackageManager"]
+            MS4["MiniContentResolver"]
+            MS5["MiniServiceManager"]
+            MS6["ActivityThread"]
+        end
+        subgraph BR["liboh_bridge.so (~15 HAL bridges)"]
+            BR1["Canvas→OH_Drawing"]
+            BR2["Surface→XComponent"]
+            BR3["Input→Touch"]
+            BR4["Audio, Camera, Net, Location, Sensor, BT"]
+        end
+
+        FW1 --> DVM1 --> MS1 --> BR1
+    end
+
+    BR --> OHOS
+
+    subgraph OHOS["OpenHarmony OS"]
+        XC["XComponent Surface"]
+        OHD["OH_Drawing Canvas"]
+        GPU["OpenGL ES / GPU"]
+        SYS["OH System Services"]
+    end
 ```
 
 ### 3.2 Engine Size
@@ -399,16 +366,14 @@ Full AOSP requires a SystemServer process with 80+ services communicating via Bi
 
 **In the engine model, we run ONE app at a time.** This collapses the entire SystemServer into a lightweight in-process Java object:
 
-```
-Full AOSP SystemServer:                Engine MiniServer:
-─────────────────────                  ──────────────────
-80+ services                           6 lightweight managers
-Separate process                       Same process as app
-Binder IPC to communicate             Direct method calls
-Manages 100+ apps                      Manages 1 app
-Manages all windows                    Manages 1 app's windows
-~2 GB RAM                             ~5 MB RAM
-```
+| | Full AOSP SystemServer | Engine MiniServer |
+|---|---|---|
+| Services | 80+ services | 6 lightweight managers |
+| Process model | Separate process | Same process as app |
+| Communication | Binder IPC | Direct method calls |
+| App management | Manages 100+ apps | Manages 1 app |
+| Window management | Manages all windows | Manages 1 app's windows |
+| RAM | ~2 GB | ~5 MB |
 
 **Validated components (all working):**
 - **MiniActivityManager** — Activity back stack, full lifecycle (create→start→resume→pause→stop→destroy), startActivityForResult, onBackPressed
@@ -424,13 +389,20 @@ Manages all windows                    Manages 1 app's windows
 
 ### 4.1 Both Android and OH Use Skia
 
-```
-Android rendering:                     OH rendering:
-App → View.draw(Canvas)               App → ArkUI Component.build()
-  → Canvas.drawRect/Text/Path           → RenderNode
-  → Skia SkCanvas                        → Skia SkCanvas (same!)
-  → OpenGL ES / Vulkan                   → OpenGL ES / Vulkan (same!)
-  → GPU → Display                        → GPU → Display
+```mermaid
+graph LR
+    subgraph "Android Rendering"
+        AR1["App → View.draw(Canvas)"] --> AR2["Canvas.drawRect/Text/Path"]
+        AR2 --> AR3["Skia SkCanvas"]
+        AR3 --> AR4["OpenGL ES / Vulkan"]
+        AR4 --> AR5["GPU → Display"]
+    end
+    subgraph "OH Rendering"
+        OR1["App → ArkUI Component.build()"] --> OR2["RenderNode"]
+        OR2 --> OR3["Skia SkCanvas (same!)"]
+        OR3 --> OR4["OpenGL ES / Vulkan (same!)"]
+        OR4 --> OR5["GPU → Display"]
+    end
 ```
 
 The rendering engines are **the same software**. The only difference is what sits above Skia (Android Views vs ArkUI Components). In the engine model, we keep Android Views above Skia — no conversion needed.
@@ -461,27 +433,27 @@ OH provides `OH_Drawing_Canvas` which maps nearly 1:1 to Android's `Canvas`:
 
 The Android View pipeline runs entirely in Java. Only the final draw calls cross into native:
 
-```
-1. View.measure(widthSpec, heightSpec)     ← Pure Java, runs in Dalvik
-   └── calculates mMeasuredWidth/Height
+```mermaid
+sequenceDiagram
+    participant App
+    participant View as View.measure/layout
+    participant Draw as View.draw (Java)
+    participant Canvas
+    participant JNI as JNI Bridge
+    participant OH as OH_Drawing/Skia
+    participant GPU as GPU / Display
 
-2. View.layout(left, top, right, bottom)   ← Pure Java, runs in Dalvik
-   └── sets mLeft/mTop/mRight/mBottom
-
-3. View.draw(canvas)                       ← Pure Java, calls Canvas methods
-   ├── drawBackground(canvas)
-   ├── onDraw(canvas)                      ← App's custom drawing code
-   ├── dispatchDraw(canvas)                ← ViewGroup draws children
-   │   └── for each child:
-   │       canvas.save()
-   │       canvas.translate(child.mLeft, child.mTop)
-   │       child.draw(canvas)              ← Recursive
-   │       canvas.restore()
-   └── drawForeground(canvas)
-
-4. Canvas.drawRect/Text/Path(...)          ← JNI bridge to OH_Drawing
-   └── OH_Drawing_CanvasDrawRect(...)      ← Native OH API
-       └── Skia → GPU → Display
+    App->>View: invalidate()
+    View->>View: measure(widthSpec, heightSpec)
+    View->>View: layout(l, t, r, b)
+    View->>Draw: draw(canvas)
+    Draw->>Draw: drawBackground()
+    Draw->>Draw: onDraw()
+    Draw->>Draw: dispatchDraw() [children]
+    Draw->>Canvas: drawRect / drawText / drawPath
+    Canvas->>JNI: JNI call (~50ns)
+    JNI->>OH: OH_Drawing_CanvasDraw*()
+    OH->>GPU: Skia rasterize / flush
 ```
 
 Steps 1-3 are **pure Java** — they run unchanged in Dalvik. Only step 4 bridges to OH. This means:
@@ -496,28 +468,28 @@ Steps 1-3 are **pure Java** — they run unchanged in Dalvik. Only step 4 bridge
 
 ### 5.1 The Container Call Path (Anbox/VMOS Style)
 
-```
-Container approach — what happens when app calls textView.setText("Hello"):
+```mermaid
+sequenceDiagram
+    participant App as App (Container ART)
+    participant Skia as Skia (Container)
+    participant SF as SurfaceFlinger (Container)
+    participant KER as Kernel Boundary
+    participant HOST as OH Compositor
+    participant DISP as Display
 
-App process (inside Android container):
-  1. TextView.setText()                    ← Java in container's ART
-  2. View.invalidate()                     ← Java
-  3. ViewRootImpl.scheduleTraversal()      ← Java
-  4. Choreographer.doFrame()               ← Java, waits for vsync
-  5. ViewRootImpl.performTraversals()      ← Java
-  6. View.draw(Canvas)                     ← Java
-  7. Canvas.drawText()                     ← JNI → Skia in container
-  8. Skia renders to container framebuffer ← C++ in container
-  9. SurfaceFlinger composites             ← C++ in container
- 10. VirtIO/shared memory → host           ← KERNEL BOUNDARY (expensive!)
- 11. Host compositor receives buffer       ← OH side
- 12. OH composites to display              ← OH rendering pipeline
+    App->>App: setText / invalidate / scheduleTraversal
+    App->>App: Choreographer.doFrame / performTraversals
+    App->>Skia: Canvas.drawText() — JNI
+    Skia->>SF: Render to container framebuffer
+    SF->>KER: VirtIO / shared memory (~2ms)
+    Note over KER: EXPENSIVE: crosses VM boundary
+    KER->>HOST: Buffer copy
+    HOST->>DISP: Composite to display
 
-Touch event (reverse path):
- 13. OH receives touch                     ← OH input
- 14. VirtIO → container kernel             ← KERNEL BOUNDARY (expensive!)
- 15. InputDispatcher in container           ← C++ in container
- 16. View.dispatchTouchEvent()              ← Java in container
+    Note over DISP,App: Touch event (reverse)
+    DISP->>KER: OH receives touch
+    KER->>App: VirtIO → InputDispatcher → dispatchTouchEvent
+    Note over KER: EXPENSIVE: crosses VM boundary again
 ```
 
 **Performance penalties:**
@@ -529,23 +501,25 @@ Touch event (reverse path):
 
 ### 5.2 The Engine Call Path
 
-```
-Engine approach — what happens when app calls textView.setText("Hello"):
+```mermaid
+sequenceDiagram
+    participant App as App (Dalvik)
+    participant Canvas
+    participant JNI as JNI (~50ns)
+    participant OH as OH_Drawing
+    participant DISP as Display
 
-Single process (inside OH):
-  1. TextView.setText()                    ← Java in Dalvik
-  2. View.invalidate()                     ← Java
-  3. Handler.post(renderFrame)             ← Java
-  4. View.draw(Canvas)                     ← Java
-  5. Canvas.drawText()                     ← JNI → OH_Drawing (direct!)
-  6. OH_Drawing → Skia                     ← C++ (same process)
-  7. Skia → XComponent buffer              ← C++ (same process)
-  8. OH composites to display              ← OH rendering pipeline
+    App->>App: setText / invalidate / Handler.post
+    App->>Canvas: View.draw(Canvas)
+    Canvas->>JNI: Canvas.drawText() — JNI call
+    JNI->>OH: OH_Drawing_CanvasDrawText
+    OH->>DISP: Skia → XComponent → display
+    Note over JNI: CHEAP: same process, ~50ns
 
-Touch event (reverse path):
-  9. OH receives touch                     ← OH input
- 10. XComponent.onTouchEvent()              ← JNI callback (same process)
- 11. View.dispatchTouchEvent()              ← Java in Dalvik
+    Note over DISP,App: Touch event (reverse)
+    DISP->>JNI: OH receives touch
+    JNI->>App: XComponent.onTouchEvent → dispatchTouchEvent
+    Note over JNI: Same process, no kernel crossing
 ```
 
 **Performance characteristics:**
@@ -730,7 +704,158 @@ hello.apk (6.5KB, built with aapt + dx)
 
 ---
 
-## 9. Execution Roadmap
+## 9. The Framework Layer Problem: Why We Can't Just Ship AOSP framework.jar
+
+### 9.1 Three Layers of an Android App
+
+```mermaid
+graph TD
+    subgraph "Layer 1: java.* (Dalvik provides)"
+        CORE["core.jar — 4,000 classes<br/>java.util.HashMap, String, File...<br/>✅ Already working (ships with VM)"]
+    end
+    subgraph "Layer 2: android.* (WHO provides?)"
+        FW["Android Framework — 50,000+ APIs<br/>Activity, View, Fragment, Canvas...<br/>⚠️ The hard problem"]
+    end
+    subgraph "Layer 3: App code"
+        APP["classes.dex from APK<br/>App-specific logic<br/>✅ Runs on Dalvik"]
+    end
+    APP --> FW --> CORE
+```
+
+### 9.2 Two Options for Layer 2
+
+```mermaid
+graph LR
+    subgraph "Option A: Our Shim Layer (current)"
+        A1["1,968 stub classes"] --> A2["~200 implemented<br/>Bundle, Intent, View..."]
+        A2 --> A3["~2MB DEX<br/>~70% for simple apps"]
+    end
+    subgraph "Option B: Real AOSP framework.jar"
+        B1["Port actual AOSP<br/>Java source"] --> B2["~4,000 classes<br/>full framework"]
+        B2 --> B3["~40MB DEX<br/>~99% fidelity"]
+    end
+```
+
+| | Option A: Shim Layer | Option B: AOSP Framework |
+|---|---|---|
+| **Size** | ~2MB DEX | ~40MB DEX |
+| **Fidelity** | ~70% for simple apps | ~99% |
+| **Development** | Weeks (incremental) | Months (massive extraction) |
+| **Maintenance** | We own the code | Must track AOSP updates |
+| **Complexity** | Simple, in-process | Deep native service deps |
+
+### 9.3 Why Option B Is Hard
+
+```mermaid
+graph TD
+    FW["framework.jar<br/>~4,000 Java classes"] --> PURE["Pure Java ~60%<br/>Bundle, Intent, Uri,<br/>Handler, Looper..."]
+    FW --> NATIVE["Calls native services ~40%"]
+
+    NATIVE --> BINDER["Binder IPC<br/>Every system service call"]
+    NATIVE --> SURFACE["SurfaceFlinger<br/>Every View.draw()"]
+    NATIVE --> AMS["ActivityManagerService<br/>Every startActivity()"]
+    NATIVE --> WMS["WindowManagerService<br/>Every window operation"]
+    NATIVE --> PMS["PackageManagerService<br/>Every getPackageInfo()"]
+
+    BINDER --> BLOCKER["❌ Binder is a Linux kernel driver<br/>OHOS kernel doesn't have it"]
+    SURFACE --> BLOCKER2["❌ SurfaceFlinger is a C++ daemon<br/>Doesn't exist on OHOS"]
+    AMS --> BLOCKER3["❌ Runs as separate process<br/>Communicates via Binder"]
+```
+
+**The core problem:** Android's framework.jar looks like pure Java, but almost every class eventually calls through Binder IPC to a system service:
+
+```java
+// This pattern appears ~500 times across the framework
+IBinder binder = ServiceManager.getService("activity");
+IActivityManager am = IActivityManager.Stub.asInterface(binder);
+am.startActivity(caller, intent, ...);
+```
+
+This requires:
+1. **Binder kernel driver** (`/dev/binder`) — OHOS doesn't have it
+2. **ServiceManager process** — registers all system services
+3. **Each system service** running as a separate process
+4. **AIDL-generated proxy/stub classes** for IPC
+
+The rendering path illustrates the depth of the problem:
+
+```mermaid
+graph TD
+    A["View.invalidate()"] --> B["ViewRootImpl.scheduleTraversals()"]
+    B --> C["Choreographer.postCallback()"]
+    C --> D["❌ Needs vsync from SurfaceFlinger"]
+    C --> E["performTraversals()"]
+    E --> F["View.measure → layout → draw"]
+    F --> G["Canvas.drawText/drawRect"]
+    G --> H["Surface.lockCanvas()"]
+    H --> I["❌ Needs SurfaceFlinger<br/>buffer allocation"]
+```
+
+Every rendering path hits a native service dependency within 3-4 call frames.
+
+### 9.4 Why Each Service Is Hard to Replace
+
+| Service | Lines of Java | What it does | Why it's hard |
+|---------|:---:|---|---|
+| **Binder** | kernel | IPC between app and services | Kernel driver; every `getSystemService()` depends on it |
+| **SurfaceFlinger** | 50K+ C++ | Composites windows to display | View.draw() → Canvas → Surface → SurfaceFlinger |
+| **ActivityManagerService** | 50K+ | Activity lifecycle, processes | OOM killing, task stacks, permissions |
+| **WindowManagerService** | 40K+ | Window placement, input | Z-order, size, focus, touch dispatch |
+| **PackageManagerService** | 30K+ | APK install, permissions | Intent resolution, permission grants |
+| **SystemServer** | 10K+ | Boots all ~100 services | Ordered initialization, watchdog |
+
+### 9.5 Our Hybrid Approach (What We Actually Do)
+
+```mermaid
+graph TD
+    subgraph "Boot Classpath"
+        CORE["core.jar<br/>Dalvik's java.* classes<br/>✅ Have this"]
+        BRIDGE["framework-bridge.jar<br/>MiniServer + OHBridge<br/>✅ Have this (~2MB)"]
+        SHIM["Shim classes<br/>1,968 android.* stubs<br/>✅ Have this"]
+    end
+
+    subgraph "Future: framework-pure.jar"
+        AOSP["Real AOSP pure-Java classes<br/>View, Handler, Looper,<br/>TypedArray, AttributeSet...<br/>🔲 Extract on demand (~30MB)"]
+    end
+
+    subgraph "Replace, Not Port"
+        MINI["MiniActivityManager<br/>replaces ActivityManagerService"]
+        MINIW["MiniWindowManager<br/>replaces WindowManagerService"]
+        MINIP["MiniPackageManager<br/>replaces PackageManagerService"]
+        OH["OHBridge<br/>replaces Binder + native calls"]
+    end
+
+    APP["App's classes.dex"] --> SHIM
+    SHIM --> BRIDGE
+    BRIDGE --> MINI & MINIW & MINIP & OH
+    BRIDGE --> CORE
+```
+
+**Key insight:** We don't port the Android system services. We **replace** them with lightweight in-process equivalents:
+
+| Android Service | Our Replacement | Approach |
+|----------------|-----------------|----------|
+| Binder IPC | Direct method calls | In-process, no IPC needed |
+| ActivityManagerService | MiniActivityManager | 200 lines, manages Activity stack |
+| WindowManagerService | MiniWindowManager | Stub, single-window |
+| PackageManagerService | MiniPackageManager | Parses manifest, resolves intents |
+| SurfaceFlinger | OHBridge → ArkUI | Route to OHOS rendering |
+| ServiceManager | MiniServer.get() | Static singleton registry |
+
+### 9.6 When to Extract Real AOSP Classes (Demand-Driven)
+
+Instead of extracting all of AOSP framework.jar upfront:
+
+1. **Try running a real APK** with our shims
+2. **When it crashes** on a missing/wrong method → extract that specific AOSP class
+3. **If the AOSP class has Binder deps** → stub the service call, keep the Java logic
+4. **If it's pure Java** → drop it in as-is
+
+This is faster than a bulk extraction and ensures we only carry code that apps actually need.
+
+---
+
+## 10. Execution Roadmap
 
 ### Phase 1: Foundation — COMPLETE
 - Dalvik VM stable on x86_64 + ARM32 OHOS
@@ -769,7 +894,7 @@ hello.apk (6.5KB, built with aapt + dx)
 
 ---
 
-## 10. Risks and Mitigations
+## 11. Risks and Mitigations
 
 | Risk | Impact | Probability | Mitigation | Status |
 |------|--------|:-----------:|------------|:------:|
@@ -783,7 +908,7 @@ hello.apk (6.5KB, built with aapt + dx)
 
 ---
 
-## 11. Success Metrics
+## 12. Success Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
