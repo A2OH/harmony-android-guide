@@ -657,9 +657,102 @@ Typical frame (scrolling a list of 20 items):
 
 ---
 
-## 8. 验证结果（2026-03-16）
+## 8. 真实APK分析：Amazon Shopping（45MB，8个DEX文件）
 
-### 8.1 端到端里程碑已达成
+### 8.1 AndroidX洞察：应用自带框架
+
+现代Android应用自带约97%的代码。分析Amazon Shopping APK（30,207个唯一类型引用）：
+
+```mermaid
+pie title "Amazon Shopping APK: 代码来源分布"
+    "应用 + 第三方库" : 93.7
+    "AndroidX (自带)" : 3.9
+    "android.* (需要我们的框架)" : 1.5
+    "java.* (Dalvik core.jar)" : 0.8
+```
+
+| 类别 | 类型数 | 占比 | 来源 |
+|------|------:|----:|------|
+| 应用代码 + 第三方库（OkHttp, Glide, Dagger） | 28,310 | 93.7% | APK自带 |
+| AndroidX（Fragment, RecyclerView, ViewModel, Room） | 1,174 | 3.9% | APK自带 |
+| **核心android.*** | **443** | **1.5%** | **我们的框架** |
+| java.*（核心Java） | 256 | 0.8% | Dalvik core.jar |
+
+**97.6%的应用代码是自包含的。** RecyclerView、Fragment、ViewModel、LiveData、Room、Navigation、WorkManager、OkHttp、Glide——全部从APK自身的DEX文件解析。我们的引擎免费获得它们。
+
+### 8.2 我们需要提供的443个类
+
+在Amazon需要的443个核心`android.*`类型中，434个有适配文件（98%文件覆盖率）。最常被调用的类及其状态：
+
+| 类 | 桩占比 | 调用次数 | 状态 |
+|----|------:|-------:|------|
+| Bundle | 8% | 351 | **可用** |
+| Intent | 19% | 1,266 | **可用** |
+| SharedPreferences | 4% | 633 | **可用** |
+| Uri | 19% | 355 | **可用** |
+| Log | 0% | 643 | **可用** |
+| Handler | 17% | 86 | **可用** |
+| SQLiteDatabase | 16% | 111 | **可用** |
+| Activity | 78% | 53 | **部分可用** — 生命周期可用，次要方法为桩 |
+| Context | 72% | 721 | **部分可用** — getResources/getSystemService可用 |
+| View | 76% | 1,400 | **部分可用** — 布局/绘制管线可用 |
+| PackageManager | 96% | 155 | **大部分为桩** |
+
+### 8.3 各功能模块差距分析
+
+| 模块 | 状态 | 差距 |
+|------|------|------|
+| Activity/Fragment生命周期 | 可用 | AndroidX Fragment自带 |
+| View measure/layout/draw | 可用 | 支持自定义onMeasure/onDraw |
+| RecyclerView | **免费** | 100%自带在APK中（AndroidX） |
+| 网络（OkHttp） | **免费** | 自带；需要java.net.Socket（在core.jar中） |
+| 图片加载（Glide） | **免费** | 自带；需要BitmapFactory（已实现） |
+| 数据库（Room → SQLite） | 可用 | Room自带，生成标准SQLite调用 |
+| 导航 | **免费** | 完全自带（AndroidX） |
+| 权限 | 可用 | MVP阶段自动授权 |
+| Service/BroadcastReceiver | 可用 | 已通过106项SuperApp测试验证 |
+| **资源系统** | **差距** | resources.arsc解析已完成，但缺少TypedArray/样式属性 |
+| **PackageManager** | **差距** | 96%为桩，需要基本包信息 |
+
+### 8.4 结论
+
+对于简单APK：**今天就可以运行。** 数据层、生命周期、布局均已可用。
+
+对于Amazon Shopping：需要443个框架类，434个已有适配文件，约55个最关键的类需要更深入的实现。工作量是聚焦的——是443个类，不是30,000个，因为AndroidX处理了其余部分。
+
+### 8.5 分析方法
+
+该分析使用Android SDK工具在实际Amazon Shopping APK上自动化执行：
+
+```mermaid
+graph TD
+    A["Amazon Shopping APK (45MB)"] --> B["unzip → 8个DEX文件"]
+    B --> C["dexdump: 提取所有类型引用"]
+    C --> D["30,207个唯一类型"]
+    D --> E{"按包名前缀分类"}
+    E -->|"com.amazon.*, okhttp3.*, kotlin.*"| F["28,310 应用/库类型 (93.7%)"]
+    E -->|"androidx.*, android.support.*"| G["1,174 AndroidX类型 (3.9%)"]
+    E -->|"android.*"| H["443 框架类型 (1.5%)"]
+    E -->|"java.*, javax.*"| I["256 标准库类型 (0.8%)"]
+    H --> J["与shim/java/android/交叉对比"]
+    J --> K["434个有适配文件 (98%)"]
+    J --> L["9个缺失（IPC桩）"]
+    K --> M["统计每个类的桩方法占比"]
+    M --> N["差距报告：可用/部分可用/桩"]
+
+    style F fill:#e8f5e9
+    style G fill:#e8f5e9
+    style H fill:#fff3e0
+    style I fill:#e8f5e9
+```
+
+该方法可以在几分钟内对任何APK生成差距报告。分析过程可重复且自动化。
+
+---
+
+## 9. 验证结果（2026-03-16）
+
+### 9.1 端到端里程碑已达成
 
 真实Android APK在OpenHarmony ARM32上通过QEMU运行：
 
