@@ -1,18 +1,16 @@
 package android.graphics.drawable;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
-import android.content.res.ColorStateList;
-import android.graphics.Canvas;
-
-import android.content.res.ColorStateList;
-import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 /**
  * Shim: android.graphics.drawable.RippleDrawable
  * OH mapping: touch feedback ripple effect via ArkUI gesture response
  *
- * Pure Java stub — stores ripple color, content, and mask layers;
- * actual ripple animation is handled by the OH rendering pipeline.
+ * Draws the content layer, then overlays a semi-transparent ripple color
+ * when the drawable is in a pressed state. The mask layer clips the ripple
+ * area. Full animation is not implemented — just the static pressed state.
  */
 public class RippleDrawable extends LayerDrawable {
 
@@ -21,6 +19,7 @@ public class RippleDrawable extends LayerDrawable {
     private ColorStateList color;
     private Drawable       content;
     private Drawable       mask;
+    private int[]          currentState = new int[0];
 
     // ── Constructors ─────────────────────────────────────────────────────────
 
@@ -46,17 +45,60 @@ public class RippleDrawable extends LayerDrawable {
         this.color = color;
     }
 
-    // ── Draw (no-op stub — ripple is a platform effect) ──────────────────────
+    // ── State management ─────────────────────────────────────────────────────
+
+    public boolean setState(int[] stateSet) {
+        this.currentState = stateSet != null ? stateSet : new int[0];
+        return true;
+    }
+
+    public int[] getState() {
+        return currentState;
+    }
+
+    private boolean isPressed() {
+        for (int s : currentState) {
+            if (s == 16842919) return true; // android.R.attr.state_pressed
+        }
+        return false;
+    }
+
+    // ── Draw — content + ripple overlay when pressed ─────────────────────────
 
     @Override
     public void draw(Canvas canvas) {
-        if (content != null) content.draw(canvas);
+        if (canvas == null) return;
+        Rect b = getBounds();
+
+        // Draw the content layer
+        if (content != null) {
+            content.setBounds(b);
+            content.draw(canvas);
+        }
+
+        // Draw ripple overlay when pressed (static pressed state)
+        if (isPressed()) {
+            int rippleColor = color.getDefaultColor();
+            // Make semi-transparent if fully opaque
+            int rippleAlpha = (rippleColor >>> 24);
+            if (rippleAlpha > 128) {
+                rippleAlpha = 128;
+                rippleColor = (rippleColor & 0x00FFFFFF) | (rippleAlpha << 24);
+            }
+
+            Paint ripplePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            ripplePaint.setColor(rippleColor);
+            ripplePaint.setStyle(Paint.Style.FILL);
+
+            if (b.width() > 0 && b.height() > 0) {
+                canvas.drawRect(b.left, b.top, b.right, b.bottom, ripplePaint);
+            }
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static Drawable[] buildLayers(Drawable content, Drawable mask) {
-        // Count non-null layers
         int count = 0;
         if (content != null) count++;
         if (mask    != null) count++;

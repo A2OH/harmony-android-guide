@@ -1,8 +1,6 @@
 package android.graphics.drawable;
 import android.graphics.Canvas;
-import android.graphics.Canvas;
-
-import android.graphics.Canvas;
+import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,14 +8,16 @@ import java.util.List;
  * Shim: android.graphics.drawable.StateListDrawable
  * OH mapping: state-driven drawable selection (pressed, focused, etc.)
  *
- * Pure Java stub — stores state/drawable pairs; draw() delegates to the
- * currently selected drawable (if any).
+ * Maps View state sets (pressed, focused, enabled, checked, etc.) to
+ * different Drawables. The first matching entry wins when the state is
+ * evaluated — matching AOSP's StateListDrawable behavior. Empty state spec
+ * acts as a wildcard (default/fallback drawable).
  */
 public class StateListDrawable extends Drawable {
 
     // ── State entry ──────────────────────────────────────────────────────────
 
-    private static final class StateEntry {
+    public static final class StateEntry {
         final int[]    stateSet;
         final Drawable drawable;
 
@@ -29,9 +29,10 @@ public class StateListDrawable extends Drawable {
 
     // ── State ────────────────────────────────────────────────────────────────
 
-    private final List<StateEntry> entries     = new ArrayList<>();
+    private final List<StateEntry> entries     = new ArrayList<StateEntry>();
     private       int[]            currentState = new int[0];
     private       int              alpha        = 0xFF;
+    private       Drawable         lastSelected = null;
 
     // ── Constructors ─────────────────────────────────────────────────────────
 
@@ -51,6 +52,29 @@ public class StateListDrawable extends Drawable {
         entries.add(new StateEntry(stateSet, drawable));
     }
 
+    /**
+     * Returns the number of state entries.
+     */
+    public int getStateCount() {
+        return entries.size();
+    }
+
+    /**
+     * Returns the state set at the given index.
+     */
+    public int[] getStateSet(int index) {
+        if (index < 0 || index >= entries.size()) return null;
+        return entries.get(index).stateSet;
+    }
+
+    /**
+     * Returns the drawable at the given index.
+     */
+    public Drawable getStateDrawable(int index) {
+        if (index < 0 || index >= entries.size()) return null;
+        return entries.get(index).drawable;
+    }
+
     // ── Current state ────────────────────────────────────────────────────────
 
     /**
@@ -59,7 +83,10 @@ public class StateListDrawable extends Drawable {
      */
     public boolean setState(int[] stateSet) {
         this.currentState = stateSet != null ? stateSet : new int[0];
-        return true;
+        Drawable newSelected = findMatchingDrawable();
+        boolean changed = (newSelected != lastSelected);
+        lastSelected = newSelected;
+        return changed;
     }
 
     public int[] getState() {
@@ -70,10 +97,17 @@ public class StateListDrawable extends Drawable {
      * Returns the drawable that matches the current state, or null.
      */
     public Drawable getCurrent() {
-        for (StateEntry e : entries) {
-            if (stateMatches(e.stateSet, currentState)) return e.drawable;
+        if (lastSelected == null) {
+            lastSelected = findMatchingDrawable();
         }
-        return null;
+        return lastSelected;
+    }
+
+    /**
+     * Always returns true — a StateListDrawable is inherently stateful.
+     */
+    public boolean isStateful() {
+        return true;
     }
 
     // ── Alpha ────────────────────────────────────────────────────────────────
@@ -84,17 +118,42 @@ public class StateListDrawable extends Drawable {
     @Override
     public void setAlpha(int alpha) { this.alpha = alpha & 0xFF; }
 
-    // ── Draw ─────────────────────────────────────────────────────────────────
+    // ── Intrinsic size — delegates to current drawable ───────────────────────
+
+    @Override
+    public int getIntrinsicWidth() {
+        Drawable current = getCurrent();
+        return current != null ? current.getIntrinsicWidth() : -1;
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        Drawable current = getCurrent();
+        return current != null ? current.getIntrinsicHeight() : -1;
+    }
+
+    // ── Draw — delegates to current drawable, applying bounds ────────────────
 
     @Override
     public void draw(Canvas canvas) {
         Drawable current = getCurrent();
-        if (current != null) current.draw(canvas);
+        if (current != null) {
+            current.setBounds(getBounds());
+            current.draw(canvas);
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static boolean stateMatches(int[] stateSpec, int[] stateSet) {
+    private Drawable findMatchingDrawable() {
+        for (int i = 0; i < entries.size(); i++) {
+            StateEntry e = entries.get(i);
+            if (stateMatches(e.stateSet, currentState)) return e.drawable;
+        }
+        return null;
+    }
+
+    static boolean stateMatches(int[] stateSpec, int[] stateSet) {
         if (stateSpec == null || stateSpec.length == 0) return true;
         if (stateSet == null) return false;
         for (int spec : stateSpec) {
