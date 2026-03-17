@@ -216,35 +216,104 @@ graph TD
         L1["core.jar (1.2MB)<br/>HashMap, String, ArrayList, Thread...<br/>Status: WORKING"]
     end
     subgraph "Layer 2: android.* framework (~2,000 classes)"
-        L2A["Option A: Shim layer (current)<br/>1,968 stubs, ~200 implemented<br/>~2MB DEX, ~70% fidelity"]
-        L2B["Option B: Real AOSP framework.jar (production)<br/>Actual AOSP source<br/>~40MB DEX, ~99% fidelity"]
+        L2A["Option A: Shim layer only<br/>1,968 stubs, ~200 implemented<br/>~2MB DEX, ~70% fidelity<br/>❌ Incomplete — breaks on edge cases"]
+        L2B["Option B: Full AOSP framework.jar<br/>Port entire AOSP source<br/>~40MB DEX, ~99% fidelity<br/>❌ Too large — pulls in everything"]
+        L2C["Option C: Selective AOSP extraction (our approach)<br/>Extract pure-Java modules from AOSP<br/>Shim layer fills remaining gaps<br/>~5-10MB DEX, ~95% fidelity<br/>✅ Best of both worlds"]
     end
     subgraph "Layer 3: App code"
         L3["APK's classes.dex<br/>Status: WORKING — DexClassLoader"]
     end
 
     L1 --> VM["Dalvik VM"]
-    L2A -.-> VM
-    L2B -.-> VM
+    L2C --> VM
     L3 --> VM
 ```
 
-**The production engine uses a hybrid approach:**
+**Why Option C (selective extraction), not Option B (full port):**
+
+Porting the entire AOSP `framework.jar` (40MB, 300,000+ lines) would pull in massive dependency chains — Binder IPC, SystemServer, WindowManagerService, SurfaceFlinger integration, Telecom framework, DRM stack — most of which we don't need. It would take years and result in a bloated engine.
+
+Instead, we **selectively extract the pure-Java modules** that apps actually use, and let our shim layer handle the rest:
+
+```mermaid
+graph LR
+    subgraph "AOSP framework.jar (~40MB)"
+        PURE["Pure Java modules (~60%)<br/>Layout engine, text, graphics,<br/>animation, data structures"]
+        SYSTEM["System service code (~30%)<br/>Binder IPC, SystemServer,<br/>WindowManager, InputManager"]
+        NATIVE["Native JNI bridges (~10%)<br/>Skia, OpenGL, media codecs"]
+    end
+
+    PURE -->|"Extract as-is"| ENGINE["Our Engine"]
+    SYSTEM -->|"Replace with MiniServer"| ENGINE
+    NATIVE -->|"Replace with OHBridge"| ENGINE
+
+    style PURE fill:#e8f5e9
+    style SYSTEM fill:#fff3e0
+    style NATIVE fill:#fce4ec
+```
+
+**What we extract from AOSP (pure Java, compiles unchanged):**
+
+| Module | AOSP Files | Lines | Dependencies | Status |
+|--------|-----------|------:|--------------|--------|
+| **Layout engine** | View.onMeasure/onLayout, ViewGroup.measureChild, LinearLayout, FrameLayout, RelativeLayout | ~8,000 | MeasureSpec, LayoutParams, Gravity | Extracting now |
+| **Text engine** | TextView.onMeasure/onDraw, TextUtils, Layout, StaticLayout, BoringLayout | ~15,000 | Paint.measureText, FontMetrics | Next |
+| **Animation** | ValueAnimator, ObjectAnimator, AnimatorSet, TimeInterpolator | ~5,000 | Handler.postDelayed (have it) | Todo |
+| **Drawable** | ColorDrawable, GradientDrawable, StateListDrawable, LayerDrawable | ~4,000 | Canvas.draw* (have it) | Partial |
+| **Data structures** | Bundle, Intent, ContentValues, SparseArray, ArrayMap | ~3,000 | None (pure data) | **Done** (our shims) |
+| **Lifecycle** | Activity, Service, BroadcastReceiver, ContentProvider | ~2,000 | MiniServer (have it) | **Done** (our shims) |
+| **Threading** | Handler, Looper, MessageQueue, AsyncTask, HandlerThread | ~2,000 | None (pure Java threading) | **Done** (our shims) |
+
+**What we DON'T extract (replaced by our lightweight equivalents):**
+
+| AOSP Module | Lines | Why Skip | Our Replacement |
+|-------------|------:|----------|-----------------|
+| ActivityManagerService | ~30,000 | Multi-process, Binder IPC | MiniActivityManager (~500 lines) |
+| WindowManagerService | ~20,000 | Multi-window compositor | MiniWindowManager (~200 lines) |
+| PackageManagerService | ~25,000 | Full APK verification, signing | MiniPackageManager (~400 lines) |
+| SurfaceFlinger (Java side) | ~5,000 | Hardware compositor | Direct XComponent surface |
+| InputDispatcher (Java side) | ~3,000 | Multi-window input routing | Direct touch dispatch |
+| Binder/Parcel framework | ~10,000 | IPC transport | Direct method calls |
+| SystemServer | ~5,000 | 80+ service orchestrator | MiniServer (~200 lines) |
+
+**The result: ~5-10MB of extracted AOSP code + ~2MB shim layer** gives us ~95% fidelity at ~15% of the full framework size. Apps get battle-tested AOSP layout math, text rendering, and animation — not our simplified reimplementation — while MiniServer provides lightweight single-app equivalents for the heavy system services.
+
+**The production boot classpath:**
 
 ```mermaid
 graph TD
-    subgraph "Boot Classpath"
-        L1["core.jar<br/>Dalvik java.* classes (1.2MB)"]
-        L2["framework-pure.jar<br/>AOSP pure Java (~30MB)<br/>View, ViewGroup, LinearLayout, TextView, Canvas,<br/>Activity, Intent, Bundle, SharedPreferences,<br/>Handler, Looper, AsyncTask, Fragment...<br/>(~80% of framework.jar — compiles unchanged)"]
-        L3["framework-bridge.jar<br/>MiniServer + bridge layer (~2MB)<br/>MiniActivityManager, MiniWindowManager,<br/>MiniPackageManager, OHBridge"]
+    subgraph "Boot Classpath (~8MB total)"
+        L1["core.jar (1.2MB)<br/>Dalvik java.* classes"]
+        L2["framework-aosp.jar (~5MB)<br/>Extracted AOSP modules:<br/>Layout engine, Text, Animation,<br/>Drawable, Graphics math"]
+        L3["framework-shim.jar (~2MB)<br/>Our implementations:<br/>MiniServer, OHBridge, data structures,<br/>lifecycle managers, resource system"]
     end
-    APP["App's classes.dex"] --> VM["Dalvik VM"]
+    APP["App's classes.dex<br/>(+ AndroidX, OkHttp, Glide = 97% self-contained)"] --> VM["Dalvik VM"]
     L1 --> VM
     L2 --> VM
     L3 --> VM
 ```
 
-The key insight: **AOSP `framework.jar` is already pure Java.** The source code lives at `frameworks/base/core/java/android/`. We don't rewrite 50,000 APIs — we compile the real AOSP source and only replace the ~15 points where it calls into native system services (Binder → SystemServer). MiniServer provides those same services as lightweight in-process Java objects.
+**Extraction methodology:**
+
+```mermaid
+graph TD
+    A["AOSP source file<br/>(e.g., LinearLayout.java, 2099 lines)"] --> B{"Analyze dependencies"}
+    B -->|"Pure Java math<br/>(measure, layout, gravity)"| C["Extract as-is ✅"]
+    B -->|"System service call<br/>(WindowManager, Binder)"| D["Stub out → return null ✅"]
+    B -->|"Native JNI call<br/>(Skia, OpenGL)"| E["Redirect to OHBridge ✅"]
+    B -->|"Hidden/internal API<br/>(@UnsupportedAppUsage)"| F["Strip annotation ✅"]
+    C --> G["Merge into framework-aosp.jar"]
+    D --> G
+    E --> G
+    F --> G
+    G --> H["Compile + test against shim layer"]
+    H --> I{"All 2,139 tests pass?"}
+    I -->|Yes| J["Ship it ✅"]
+    I -->|No| K["Fix dependency → retry"]
+    K --> B
+```
+
+This selective extraction approach means we get the **exact same layout algorithm** that runs on 3 billion Android devices, without porting the 100,000+ lines of system service code we don't need.
 
 ### 2.6 Framework Memory: Shared vs Per-App
 

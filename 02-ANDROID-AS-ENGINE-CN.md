@@ -208,7 +208,7 @@ graph TD
 
 一个自然的问题：如果50,000+个API都是纯Java，它们仍然需要以`.class`文件的形式存在，供Dalvik加载。在真实Android中，`framework.jar`（约40MB）提供所有`android.*`类。在我们的引擎方案中，谁来提供它们？
 
-**三层类提供机制：**
+**三种方案对比：**
 
 ```mermaid
 graph TD
@@ -216,35 +216,103 @@ graph TD
         L1["core.jar (1.2MB)<br/>HashMap, String, ArrayList, Thread...<br/>Status: WORKING"]
     end
     subgraph "Layer 2: android.* framework (~2,000 classes)"
-        L2A["Option A: Shim layer (current)<br/>1,968 stubs, ~200 implemented<br/>~2MB DEX, ~70% fidelity"]
-        L2B["Option B: Real AOSP framework.jar (production)<br/>Actual AOSP source<br/>~40MB DEX, ~99% fidelity"]
+        L2A["方案A：仅适配层<br/>1,968个桩，约200个实现<br/>~2MB DEX，约70%兼容性<br/>❌ 不完整——边缘情况会崩溃"]
+        L2B["方案B：完整AOSP framework.jar<br/>移植整个AOSP源码<br/>~40MB DEX，约99%兼容性<br/>❌ 太大——引入所有依赖"]
+        L2C["方案C：选择性AOSP提取（我们的方案）<br/>从AOSP提取纯Java模块<br/>适配层填补剩余空白<br/>~5-10MB DEX，约95%兼容性<br/>✅ 两全其美"]
     end
     subgraph "Layer 3: App code"
         L3["APK's classes.dex<br/>Status: WORKING — DexClassLoader"]
     end
 
     L1 --> VM["Dalvik VM"]
-    L2A -.-> VM
-    L2B -.-> VM
+    L2C --> VM
     L3 --> VM
 ```
 
-**生产环境引擎采用混合方案：**
+**为什么选方案C（选择性提取），而不是方案B（完整移植）：**
+
+移植整个AOSP `framework.jar`（40MB，300,000+行代码）会拉入庞大的依赖链——Binder IPC、SystemServer、WindowManagerService、SurfaceFlinger集成、Telecom框架、DRM栈——其中大部分我们不需要。这会耗费数年时间，导致引擎臃肿。
+
+相反，我们**选择性提取应用实际使用的纯Java模块**，让适配层处理其余部分：
+
+```mermaid
+graph LR
+    subgraph "AOSP framework.jar (~40MB)"
+        PURE["纯Java模块 (~60%)<br/>布局引擎、文本、图形、<br/>动画、数据结构"]
+        SYSTEM["系统服务代码 (~30%)<br/>Binder IPC、SystemServer、<br/>WindowManager、InputManager"]
+        NATIVE["原生JNI桥接 (~10%)<br/>Skia、OpenGL、媒体编解码器"]
+    end
+
+    PURE -->|"直接提取"| ENGINE["我们的引擎"]
+    SYSTEM -->|"用MiniServer替代"| ENGINE
+    NATIVE -->|"用OHBridge替代"| ENGINE
+
+    style PURE fill:#e8f5e9
+    style SYSTEM fill:#fff3e0
+    style NATIVE fill:#fce4ec
+```
+
+**从AOSP提取的模块（纯Java，无需修改即可编译）：**
+
+| 模块 | AOSP文件 | 代码行数 | 依赖 | 状态 |
+|------|---------|------:|------|------|
+| **布局引擎** | View.onMeasure/onLayout, ViewGroup.measureChild, LinearLayout, FrameLayout, RelativeLayout | ~8,000 | MeasureSpec, LayoutParams, Gravity | 正在提取 |
+| **文本引擎** | TextView.onMeasure/onDraw, TextUtils, Layout, StaticLayout | ~15,000 | Paint.measureText, FontMetrics | 下一步 |
+| **动画** | ValueAnimator, ObjectAnimator, AnimatorSet, TimeInterpolator | ~5,000 | Handler.postDelayed（已有） | 待做 |
+| **Drawable** | ColorDrawable, GradientDrawable, StateListDrawable, LayerDrawable | ~4,000 | Canvas.draw*（已有） | 部分完成 |
+| **数据结构** | Bundle, Intent, ContentValues, SparseArray, ArrayMap | ~3,000 | 无（纯数据） | **已完成**（我们的适配层） |
+| **生命周期** | Activity, Service, BroadcastReceiver, ContentProvider | ~2,000 | MiniServer（已有） | **已完成** |
+| **线程** | Handler, Looper, MessageQueue, AsyncTask, HandlerThread | ~2,000 | 无（纯Java线程） | **已完成** |
+
+**不需要提取的部分（用我们的轻量级替代）：**
+
+| AOSP模块 | 代码行数 | 跳过原因 | 我们的替代方案 |
+|----------|------:|---------|------------|
+| ActivityManagerService | ~30,000 | 多进程、Binder IPC | MiniActivityManager（约500行） |
+| WindowManagerService | ~20,000 | 多窗口合成器 | MiniWindowManager（约200行） |
+| PackageManagerService | ~25,000 | 完整APK验证、签名 | MiniPackageManager（约400行） |
+| SurfaceFlinger（Java侧） | ~5,000 | 硬件合成器 | 直接XComponent surface |
+| Binder/Parcel框架 | ~10,000 | IPC传输层 | 直接方法调用 |
+| SystemServer | ~5,000 | 80+服务编排 | MiniServer（约200行） |
+
+**最终结果：约5-10MB提取的AOSP代码 + 约2MB适配层**，以完整框架15%的体积提供约95%的兼容性。应用获得经过实战验证的AOSP布局计算、文本渲染和动画——而非我们的简化重新实现——同时MiniServer为重量级系统服务提供轻量级单应用替代。
+
+**生产环境启动类路径：**
 
 ```mermaid
 graph TD
-    subgraph "Boot Classpath"
-        L1["core.jar<br/>Dalvik java.* classes (1.2MB)"]
-        L2["framework-pure.jar<br/>AOSP pure Java (~30MB)<br/>View, ViewGroup, LinearLayout, TextView, Canvas,<br/>Activity, Intent, Bundle, SharedPreferences,<br/>Handler, Looper, AsyncTask, Fragment...<br/>(~80% of framework.jar — compiles unchanged)"]
-        L3["framework-bridge.jar<br/>MiniServer + bridge layer (~2MB)<br/>MiniActivityManager, MiniWindowManager,<br/>MiniPackageManager, OHBridge"]
+    subgraph "Boot Classpath (~8MB total)"
+        L1["core.jar (1.2MB)<br/>Dalvik java.*类"]
+        L2["framework-aosp.jar (~5MB)<br/>提取的AOSP模块：<br/>布局引擎、文本、动画、<br/>Drawable、图形计算"]
+        L3["framework-shim.jar (~2MB)<br/>我们的实现：<br/>MiniServer、OHBridge、数据结构、<br/>生命周期管理器、资源系统"]
     end
-    APP["App's classes.dex"] --> VM["Dalvik VM"]
+    APP["App's classes.dex<br/>(+ AndroidX, OkHttp, Glide = 97%自包含)"] --> VM["Dalvik VM"]
     L1 --> VM
     L2 --> VM
     L3 --> VM
 ```
 
-核心洞察：**AOSP的`framework.jar`本身就是纯Java。** 源码位于`frameworks/base/core/java/android/`。我们不需要重写50,000个API——直接编译真实的AOSP源码，只替换其中约15个调用原生系统服务的位置（Binder → SystemServer）。MiniServer以轻量级进程内Java对象的形式提供这些相同的服务。
+**提取方法论：**
+
+```mermaid
+graph TD
+    A["AOSP源文件<br/>(如 LinearLayout.java, 2099行)"] --> B{"分析依赖"}
+    B -->|"纯Java计算<br/>(measure, layout, gravity)"| C["直接提取 ✅"]
+    B -->|"系统服务调用<br/>(WindowManager, Binder)"| D["桩化 → return null ✅"]
+    B -->|"原生JNI调用<br/>(Skia, OpenGL)"| E["重定向到OHBridge ✅"]
+    B -->|"隐藏/内部API<br/>(@UnsupportedAppUsage)"| F["去除注解 ✅"]
+    C --> G["合并到framework-aosp.jar"]
+    D --> G
+    E --> G
+    F --> G
+    G --> H["编译 + 针对适配层测试"]
+    H --> I{"全部2,139项测试通过？"}
+    I -->|"是"| J["发布 ✅"]
+    I -->|"否"| K["修复依赖 → 重试"]
+    K --> B
+```
+
+这种选择性提取方案意味着我们获得与30亿Android设备上运行的**完全相同的布局算法**，而无需移植我们不需要的10万+行系统服务代码。
 
 ### 2.6 框架内存：共享 vs 每应用独立
 
