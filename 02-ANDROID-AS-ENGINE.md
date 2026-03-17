@@ -21,21 +21,11 @@ This approach was validated by analyzing 13 real APKs (TikTok, Instagram, YouTub
 
 Every cross-platform app framework follows the same pattern on OpenHarmony:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Any Cross-Platform App                        │
-│  ┌───────────┐   ┌───────────────┐   ┌───────────────────────┐  │
-│  │ App Code  │ → │ Framework     │ → │ Rendering Engine      │  │
-│  │ (bytecode)│   │ (widget tree, │   │ (draws pixels to a    │  │
-│  │           │   │  layout, state│   │  surface buffer)      │  │
-│  │           │   │  management)  │   │                       │  │
-│  └───────────┘   └───────────────┘   └───────────┬───────────┘  │
-└──────────────────────────────────────────────────┼──────────────┘
-                                                   │
-                                        ┌──────────▼──────────┐
-                                        │ OH: XComponent      │
-                                        │ surface + input      │
-                                        └─────────────────────┘
+```mermaid
+graph TD
+    A["App Code (bytecode)"] --> B["Framework (widget tree, layout, state management)"]
+    B --> C["Rendering Engine (draws pixels to surface buffer)"]
+    C --> D["OH: XComponent surface + input"]
 ```
 
 This is true for **every** framework OH runs today:
@@ -68,40 +58,42 @@ This means Android's entire rendering pipeline — measure → layout → draw �
 
 ### 1.3 The Flutter Analogy in Detail
 
+```mermaid
+graph LR
+    subgraph Flutter
+        F1["Dart bytecode"] --> F2["Flutter Framework<br/>(widget tree + layout)"]
+        F2 --> F3["Skia SkCanvas"]
+        F3 --> F4["OH XComponent"]
+    end
+    subgraph Android Engine
+        A1["DEX bytecode"] --> A2["Android Framework<br/>(View tree + layout)"]
+        A2 --> A3["OH_Drawing Canvas"]
+        A3 --> A4["OH XComponent"]
+    end
 ```
-Flutter on OH:                          Android-as-Engine on OH:
-─────────────                           ─────────────────────────
-Dart source → Dart bytecode             Java source → DEX bytecode
-Dart VM executes bytecode               Dalvik VM executes bytecode
-Flutter Framework builds widget tree    Android Framework builds View tree
-Flutter layout engine measures/positions Android layout engine measures/positions
-Flutter calls SkCanvas.drawRect()       Android calls Canvas.drawRect()
-  → Skia rasterizes to pixel buffer       → OH_Drawing rasterizes to pixel buffer
-OH displays the buffer                  OH displays the buffer
 
-Platform channels for:                  Platform bridges for:
-  - Camera                                - Camera
-  - Location                              - Location
-  - Sensors                               - Sensors
-  - Notifications                         - Notifications
-  - File system                           - File system
-  (identical boundary!)                   (identical boundary!)
-```
+Both frameworks need the same platform bridges: Camera, Location, Sensors, Notifications, File system — the integration boundary is identical.
 
 Flutter has ~20 platform channel categories. Android needs ~15 platform bridges. **The integration surface is the same order of magnitude** because both frameworks need the same things from the host OS — a surface to draw on, input events, and access to hardware/system services.
 
 ### 1.4 Concrete Example: What Happens When a Button Is Pressed
 
-```
-Flutter:                                    Android Engine:
-1. SkCanvas receives touch at (x,y)        1. XComponent receives touch at (x,y)
-2. Dart: GestureDetector.onTap()           2. Java: View.dispatchTouchEvent()
-3. Dart: setState() → rebuild widget tree  3. Java: onClick() → update state
-4. Dart: RenderBox.layout()                4. Java: View.measure() + layout()
-5. Dart: RenderBox.paint(canvas)           5. Java: View.draw(canvas)
-6. Skia: SkCanvas.drawRRect(...)           6. OH_Drawing: CanvasDrawRoundRect(...)
-7. Skia → GPU → pixels                    7. OH_Drawing → Skia → GPU → pixels
-8. OH displays frame                       8. OH displays frame
+```mermaid
+sequenceDiagram
+    participant User
+    participant XComponent
+    participant View as View Tree (Java)
+    participant Canvas
+    participant OH as OH_Drawing/Skia
+    participant Display
+
+    User->>XComponent: Touch at (x,y)
+    XComponent->>View: dispatchTouchEvent()
+    View->>View: onClick() / setState()
+    View->>View: measure() + layout()
+    View->>Canvas: draw(canvas)
+    Canvas->>OH: drawRoundRect / drawText
+    OH->>Display: Skia / GPU / pixels
 ```
 
 Steps 1-5 are **pure guest code** running in the guest VM. Step 6 is the only native call. Steps 7-8 are handled by OH. The frameworks are structurally identical — they just speak different languages (Dart vs Java) and have different widget vocabularies.
@@ -116,10 +108,10 @@ The Android SDK exposes ~57,000 public APIs. A naive approach would map each one
 
 ```
 WRONG approach (API shimming):
-  android.widget.TextView.setText(String)  →  Text({ content: string })
-  android.widget.Button.setOnClickListener →  Button({ onClick: () => {} })
-  android.view.View.setVisibility(int)     →  .visibility(Visibility.Hidden)
-  ... × 57,000 methods = years of work, endless edge cases
+  android.widget.TextView.setText(String)  ->  Text({ content: string })
+  android.widget.Button.setOnClickListener ->  Button({ onClick: () => {} })
+  android.view.View.setVisibility(int)     ->  .visibility(Visibility.Hidden)
+  ... x 57,000 methods = years of work, endless edge cases
 ```
 
 This fails because:
@@ -131,19 +123,30 @@ This fails because:
 
 Trace the call path of a typical Android API:
 
-```
-App calls: textView.setText("Hello World")
+```mermaid
+graph TD
+    A["App: textView.setText('Hello')"] --> B["1. TextView.setText() — Pure Java"]
+    B --> C["2. View.invalidate() — Pure Java"]
+    C --> D["3. ViewGroup.requestLayout() — Pure Java"]
+    D --> E["4. scheduleTraversal() — Pure Java"]
+    E --> F["5. Handler.dispatchMessage() — Pure Java"]
+    F --> G["6. performTraversals() — Pure Java"]
+    G --> H["7. TextView.onMeasure() — Pure Java"]
+    H --> I["8. TextView.onDraw(canvas) — Pure Java"]
+    I --> J["9. Canvas.drawText() — JNI BRIDGE"]
+    J --> K["OH_Drawing_CanvasDrawText() — Skia — pixels"]
 
-What actually happens:
-  1. TextView.setText()              ← Pure Java: stores CharSequence in mText
-  2. TextView.requestLayout()        ← Pure Java: marks view for re-layout
-  3. ViewGroup.requestLayout()       ← Pure Java: propagates up the tree
-  4. ViewRootImpl.scheduleTraversal() ← Pure Java: posts Runnable to Handler
-  5. Handler.dispatchMessage()       ← Pure Java: message queue processing
-  6. ViewRootImpl.performTraversals() ← Pure Java: measure → layout → draw
-  7. TextView.onMeasure()            ← Pure Java: calculates text bounds
-  8. TextView.onDraw(canvas)         ← Pure Java: calls canvas.drawText()
-  9. Canvas.drawText("Hello", x, y)  ← JNI BRIDGE → OH_Drawing_CanvasDrawText()
+    style A fill:#e1f5fe
+    style B fill:#e8f5e9
+    style C fill:#e8f5e9
+    style D fill:#e8f5e9
+    style E fill:#e8f5e9
+    style F fill:#e8f5e9
+    style G fill:#e8f5e9
+    style H fill:#e8f5e9
+    style I fill:#e8f5e9
+    style J fill:#fff3e0
+    style K fill:#fce4ec
 ```
 
 **Steps 1-8 are pure Java.** They run identically in Dalvik whether the host OS is Android, Linux, or OpenHarmony. Only step 9 crosses the native boundary — and it's a generic "draw text at coordinates" call, not a setText-specific bridge.
