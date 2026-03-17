@@ -154,4 +154,64 @@ JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_nodeRegisterEvent(
     g_api->registerNodeEvent((ArkUI_NodeHandle)(uintptr_t)h, eventType, targetId);
 }
 
+/* ── Missing OHBridge stubs (no-op until real implementation) ── */
+
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_nodeUnregisterEvent(
+    JNIEnv*, jclass, jlong h, jint eventType) {
+    if (!g_api || !g_api->unregisterNodeEvent || !h) return;
+    g_api->unregisterNodeEvent((ArkUI_NodeHandle)(uintptr_t)h, eventType);
+}
+
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_nodeMarkDirty(
+    JNIEnv*, jclass, jlong, jint) { /* no-op */ }
+
+/* Canvas stubs — headless mode records draw ops but doesn't render */
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasCreate(JNIEnv*, jclass, jlong) { return 0; }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDestroy(JNIEnv*, jclass, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDrawRect(JNIEnv*, jclass, jlong, jfloat, jfloat, jfloat, jfloat, jlong, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDrawCircle(JNIEnv*, jclass, jlong, jfloat, jfloat, jfloat, jlong, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDrawLine(JNIEnv*, jclass, jlong, jfloat, jfloat, jfloat, jfloat, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDrawText(JNIEnv*, jclass, jlong, jstring, jfloat, jfloat, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDrawImage(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat, jfloat, jfloat) {}
+
+/* Surface stubs */
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_surfaceCreate(JNIEnv*, jclass, jint, jint) { return 0; }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_surfaceDestroy(JNIEnv*, jclass, jlong) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_surfaceResize(JNIEnv*, jclass, jlong, jint, jint) {}
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_surfaceGetCanvas(JNIEnv*, jclass, jlong) { return 0; }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_surfaceFlush(JNIEnv*, jclass, jlong) {}
+
+/* Pen/Brush stubs */
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_penCreate(JNIEnv*, jclass) { return 1; /* non-zero dummy */ }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_penSetColor(JNIEnv*, jclass, jlong, jint) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_penSetStrokeWidth(JNIEnv*, jclass, jlong, jfloat) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_penDestroy(JNIEnv*, jclass, jlong) {}
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_brushCreate(JNIEnv*, jclass) { return 1; }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_brushSetColor(JNIEnv*, jclass, jlong, jint) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_brushDestroy(JNIEnv*, jclass, jlong) {}
+
+/* Font stub */
+JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_fontCreate(JNIEnv*, jclass) { return 1; }
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_fontSetSize(JNIEnv*, jclass, jlong, jfloat) {}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_fontDestroy(JNIEnv*, jclass, jlong) {}
+
+/* Log stubs */
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_logDebug(JNIEnv* env, jclass, jstring tag, jstring msg) {
+    if (!tag || !msg) return;
+    const char* t = env->GetStringUTFChars(tag, NULL);
+    const char* m = env->GetStringUTFChars(msg, NULL);
+    fprintf(stderr, "[D/%s] %s\n", t ? t : "", m ? m : "");
+    if (m) env->ReleaseStringUTFChars(msg, m);
+    if (t) env->ReleaseStringUTFChars(tag, t);
+}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_logInfo(JNIEnv* env, jclass, jstring tag, jstring msg) {
+    Java_com_ohos_shim_bridge_OHBridge_logDebug(env, NULL, tag, msg);
+}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_logWarn(JNIEnv* env, jclass, jstring tag, jstring msg) {
+    Java_com_ohos_shim_bridge_OHBridge_logDebug(env, NULL, tag, msg);
+}
+JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_logError(JNIEnv* env, jclass, jstring tag, jstring msg) {
+    Java_com_ohos_shim_bridge_OHBridge_logDebug(env, NULL, tag, msg);
+}
+
 } /* extern "C" */
