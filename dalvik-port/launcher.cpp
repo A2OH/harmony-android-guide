@@ -14,8 +14,16 @@
 #endif
 #include <jni.h>
 
-static void crash_handler(int sig) {
-    fprintf(stderr, "\n=== CRASH: signal %d ===\n", sig);
+#include <ucontext.h>
+static void crash_handler_sigaction(int sig, siginfo_t *info, void *ucontext) {
+    ucontext_t *uc = (ucontext_t *)ucontext;
+    void *fault_addr = info->si_addr;
+#ifdef __x86_64__
+    void *rip = (void*)uc->uc_mcontext.gregs[REG_RIP];
+    fprintf(stderr, "\n=== CRASH: signal %d fault_addr=%p rip=%p ===\n", sig, fault_addr, rip);
+#else
+    fprintf(stderr, "\n=== CRASH: signal %d fault_addr=%p ===\n", sig, fault_addr);
+#endif
 #ifndef __MUSL__
     void* bt[64];
     int n = backtrace(bt, 64);
@@ -25,8 +33,12 @@ static void crash_handler(int sig) {
 }
 
 int main(int argc, char* argv[]) {
-    signal(SIGSEGV, crash_handler);
-    signal(SIGABRT, crash_handler);
+    struct sigaction sa;
+    sa.sa_sigaction = crash_handler_sigaction;
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGSEGV, &sa, NULL);
+    sigaction(SIGABRT, &sa, NULL);
     const char* classpath = NULL;
     const char* className = NULL;
     int classArgStart = 0;
