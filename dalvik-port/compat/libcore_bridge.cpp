@@ -320,7 +320,9 @@ static jboolean JNICALL Posix_isatty(JNIEnv*, jobject, jobject) { return JNI_FAL
 static void JNICALL Posix_setenv(JNIEnv* env, jobject, jstring jname, jstring jval, jboolean overwrite) {
     if (jname == NULL) return;
     const char* name = env->GetStringUTFChars(jname, NULL);
+    if (!name) return; /* OOM */
     const char* val = jval ? env->GetStringUTFChars(jval, NULL) : "";
+    if (jval && !val) { env->ReleaseStringUTFChars(jname, name); return; }
     setenv(name, val, overwrite);
     if (jval) env->ReleaseStringUTFChars(jval, val);
     env->ReleaseStringUTFChars(jname, name);
@@ -404,7 +406,10 @@ static void JNICALL Posix_close(JNIEnv* env, jobject, jobject fdObj) {
 static jint JNICALL Posix_read_bytes(JNIEnv* env, jobject, jobject fdObj, jbyteArray buf, jint off, jint len) {
     int fd = getFdFromFileDescriptor(env, fdObj);
     if (fd < 0 || buf == NULL) return -1;
+    jint arrLen = env->GetArrayLength(buf);
+    if (off < 0 || len < 0 || off + len > arrLen) return -1;
     jbyte* bytes = env->GetByteArrayElements(buf, NULL);
+    if (!bytes) return -1;
     ssize_t n = read(fd, bytes + off, len);
     env->ReleaseByteArrayElements(buf, bytes, 0);
     return (jint) n;
