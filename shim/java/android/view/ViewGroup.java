@@ -248,7 +248,39 @@ public class ViewGroup extends View {
         if (p0 instanceof View && p1 instanceof Integer && p2 instanceof Integer)
             measureChild((View) p0, ((Integer) p1).intValue(), ((Integer) p2).intValue());
     }
-    public void measureChildWithMargins(Object p0, Object p1, Object p2, Object p3, Object p4) {}
+    protected void measureChildWithMargins(View child,
+            int parentWidthMeasureSpec, int widthUsed,
+            int parentHeightMeasureSpec, int heightUsed) {
+        Object lpo = child.getLayoutParams();
+        int childWidth = -2;  // WRAP_CONTENT default
+        int childHeight = -2;
+        int lm = 0, tm = 0, rm = 0, bm = 0;
+        if (lpo instanceof MarginLayoutParams) {
+            MarginLayoutParams lp = (MarginLayoutParams) lpo;
+            childWidth = lp.width;
+            childHeight = lp.height;
+            lm = lp.leftMargin;
+            tm = lp.topMargin;
+            rm = lp.rightMargin;
+            bm = lp.bottomMargin;
+        } else if (lpo instanceof LayoutParams) {
+            LayoutParams lp = (LayoutParams) lpo;
+            childWidth = lp.width;
+            childHeight = lp.height;
+        }
+        int childWidthSpec = getChildMeasureSpec(parentWidthMeasureSpec,
+                getPaddingLeft() + getPaddingRight() + lm + rm + widthUsed, childWidth);
+        int childHeightSpec = getChildMeasureSpec(parentHeightMeasureSpec,
+                getPaddingTop() + getPaddingBottom() + tm + bm + heightUsed, childHeight);
+        child.measure(childWidthSpec, childHeightSpec);
+    }
+    public void measureChildWithMargins(Object p0, Object p1, Object p2, Object p3, Object p4) {
+        if (p0 instanceof View && p1 instanceof Integer && p2 instanceof Integer
+                && p3 instanceof Integer && p4 instanceof Integer) {
+            measureChildWithMargins((View) p0, (int)(Integer)p1, (int)(Integer)p2,
+                    (int)(Integer)p3, (int)(Integer)p4);
+        }
+    }
     public void measureChildren(Object p0, Object p1) {
         if (p0 instanceof Integer && p1 instanceof Integer)
             measureChildren(((Integer) p0).intValue(), ((Integer) p1).intValue());

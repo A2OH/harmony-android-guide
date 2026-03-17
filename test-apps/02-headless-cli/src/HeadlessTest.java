@@ -138,6 +138,7 @@ public class HeadlessTest {
         testJsonWriterShim();
         // testResourceTableParser(); // TODO: method not yet defined
         testSimpleFormatter();
+        testLinearLayoutWeightAndGravity();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -8589,5 +8590,223 @@ public class HeadlessTest {
         res.registerStringResource(9999, "Hello %s, you are %d");
         String result = res.getString(9999, "World", 42);
         check("Resources.getString format", "Hello World, you are 42".equals(result));
+    }
+
+    static void testLinearLayoutWeightAndGravity() {
+        section("LinearLayout weight, gravity, margins (AOSP-based)");
+
+        // ── Weight distribution (vertical) ──
+        // Two children with equal weight should split the space
+        android.widget.LinearLayout wLayout = new android.widget.LinearLayout();
+        wLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        android.view.View w1 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams lp1 =
+                new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f); // MATCH_PARENT, 0dp, weight=1
+        w1.setLayoutParams(lp1);
+
+        android.view.View w2 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams lp2 =
+                new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f);
+        w2.setLayoutParams(lp2);
+
+        wLayout.addView(w1);
+        wLayout.addView(w2);
+
+        int exact300 = android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY);
+        wLayout.measure(exact300, exact300);
+        wLayout.layout(0, 0, 300, 300);
+
+        check("weight V: w1 height == 150", w1.getHeight() == 150);
+        check("weight V: w2 height == 150", w2.getHeight() == 150);
+        check("weight V: w2 top == 150", w2.getTop() == 150);
+        check("weight V: w1 width == 300", w1.getWidth() == 300);
+
+        // ── Weight distribution (horizontal) ──
+        android.widget.LinearLayout hWeight = new android.widget.LinearLayout();
+        hWeight.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+
+        android.view.View hw1 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams hlp1 =
+                new android.widget.LinearLayout.LayoutParams(0, -1, 1.0f); // 0dp, MATCH_PARENT, weight=1
+        hw1.setLayoutParams(hlp1);
+
+        android.view.View hw2 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams hlp2 =
+                new android.widget.LinearLayout.LayoutParams(0, -1, 2.0f); // weight=2
+        hw2.setLayoutParams(hlp2);
+
+        hWeight.addView(hw1);
+        hWeight.addView(hw2);
+        hWeight.measure(exact300, exact300);
+        hWeight.layout(0, 0, 300, 300);
+
+        check("weight H: hw1 width == 100", hw1.getWidth() == 100);
+        check("weight H: hw2 width == 200", hw2.getWidth() == 200);
+        check("weight H: hw2 left == 100", hw2.getLeft() == 100);
+        check("weight H: hw1 height == 300", hw1.getHeight() == 300);
+
+        // ── Unequal weights: 1:3 in 400px ──
+        android.widget.LinearLayout wLayout2 = new android.widget.LinearLayout();
+        wLayout2.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        android.view.View u1 = new android.view.View();
+        u1.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
+        android.view.View u2 = new android.view.View();
+        u2.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 3.0f));
+
+        wLayout2.addView(u1);
+        wLayout2.addView(u2);
+
+        int exact400 = android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY);
+        wLayout2.measure(exact400, exact400);
+        wLayout2.layout(0, 0, 400, 400);
+
+        check("weight 1:3 u1 height == 100", u1.getHeight() == 100);
+        check("weight 1:3 u2 height == 300", u2.getHeight() == 300);
+
+        // ── Gravity in vertical LinearLayout ──
+        android.widget.LinearLayout gLayout = new android.widget.LinearLayout();
+        gLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        android.view.View gc = new android.view.View();
+        android.widget.LinearLayout.LayoutParams gcLp =
+                new android.widget.LinearLayout.LayoutParams(100, 100);
+        gcLp.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+        gc.setLayoutParams(gcLp);
+
+        gLayout.addView(gc);
+        gLayout.measure(exact300, exact300);
+        gLayout.layout(0, 0, 300, 300);
+
+        check("gravity center_h: child left == 100", gc.getLeft() == 100);
+        check("gravity center_h: child width == 100", gc.getWidth() == 100);
+
+        // ── Gravity RIGHT in vertical LinearLayout ──
+        android.view.View gr = new android.view.View();
+        android.widget.LinearLayout.LayoutParams grLp =
+                new android.widget.LinearLayout.LayoutParams(100, 100);
+        grLp.gravity = android.view.Gravity.RIGHT;
+        gr.setLayoutParams(grLp);
+
+        android.widget.LinearLayout grLayout = new android.widget.LinearLayout();
+        grLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        grLayout.addView(gr);
+        grLayout.measure(exact300, exact300);
+        grLayout.layout(0, 0, 300, 300);
+
+        check("gravity right: child left == 200", gr.getLeft() == 200);
+
+        // ── Margins in LinearLayout ──
+        android.widget.LinearLayout mLayout = new android.widget.LinearLayout();
+        mLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        android.view.View m1 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams mLp =
+                new android.widget.LinearLayout.LayoutParams(-1, 50);
+        mLp.setMargins(10, 20, 10, 0);
+        m1.setLayoutParams(mLp);
+
+        android.view.View m2 = new android.view.View();
+        android.widget.LinearLayout.LayoutParams mLp2 =
+                new android.widget.LinearLayout.LayoutParams(-1, 50);
+        m2.setLayoutParams(mLp2);
+
+        mLayout.addView(m1);
+        mLayout.addView(m2);
+        mLayout.measure(exact300, exact300);
+        mLayout.layout(0, 0, 300, 300);
+
+        check("margin: m1 top == 20", m1.getTop() == 20);
+        check("margin: m1 left == 10", m1.getLeft() == 10);
+        check("margin: m1 width == 280", m1.getWidth() == 280);
+        check("margin: m2 top == 70", m2.getTop() == 70);
+
+        // ── FrameLayout gravity ──
+        android.widget.FrameLayout fGrav = new android.widget.FrameLayout();
+        android.view.View fc = new android.view.View();
+        android.widget.FrameLayout.LayoutParams fcLp =
+                new android.widget.FrameLayout.LayoutParams(100, 100, android.view.Gravity.CENTER);
+        fc.setLayoutParams(fcLp);
+        fGrav.addView(fc);
+        fGrav.measure(exact300, exact300);
+        fGrav.layout(0, 0, 300, 300);
+
+        check("FrameLayout center: child left == 100", fc.getLeft() == 100);
+        check("FrameLayout center: child top == 100", fc.getTop() == 100);
+
+        // ── FrameLayout gravity BOTTOM|RIGHT ──
+        android.widget.FrameLayout fBR = new android.widget.FrameLayout();
+        android.view.View fbr = new android.view.View();
+        android.widget.FrameLayout.LayoutParams fbrLp =
+                new android.widget.FrameLayout.LayoutParams(50, 50,
+                        android.view.Gravity.BOTTOM | android.view.Gravity.RIGHT);
+        fbr.setLayoutParams(fbrLp);
+        fBR.addView(fbr);
+        fBR.measure(exact300, exact300);
+        fBR.layout(0, 0, 300, 300);
+
+        check("FrameLayout bottom-right: left == 250", fbr.getLeft() == 250);
+        check("FrameLayout bottom-right: top == 250", fbr.getTop() == 250);
+
+        // ── FrameLayout margins ──
+        android.widget.FrameLayout fMarg = new android.widget.FrameLayout();
+        android.view.View fmc = new android.view.View();
+        android.widget.FrameLayout.LayoutParams fmcLp =
+                new android.widget.FrameLayout.LayoutParams(100, 100);
+        fmcLp.setMargins(20, 30, 0, 0);
+        fmc.setLayoutParams(fmcLp);
+        fMarg.addView(fmc);
+        fMarg.measure(exact300, exact300);
+        fMarg.layout(0, 0, 300, 300);
+
+        check("FrameLayout margin: child left == 20", fmc.getLeft() == 20);
+        check("FrameLayout margin: child top == 30", fmc.getTop() == 30);
+
+        // ── Gravity constants ──
+        check("Gravity.TOP == 0x30", android.view.Gravity.TOP == 0x30);
+        check("Gravity.BOTTOM == 0x50", android.view.Gravity.BOTTOM == 0x50);
+        check("Gravity.LEFT == 0x03", android.view.Gravity.LEFT == 0x03);
+        check("Gravity.RIGHT == 0x05", android.view.Gravity.RIGHT == 0x05);
+        check("Gravity.CENTER_HORIZONTAL == 0x01", android.view.Gravity.CENTER_HORIZONTAL == 0x01);
+        check("Gravity.CENTER_VERTICAL == 0x10", android.view.Gravity.CENTER_VERTICAL == 0x10);
+        check("Gravity.CENTER == 0x11", android.view.Gravity.CENTER == 0x11);
+
+        // ── Gravity.getAbsoluteGravity ──
+        int absStart = android.view.Gravity.getAbsoluteGravity(android.view.Gravity.START, 0);
+        check("getAbsoluteGravity START LTR -> LEFT", (absStart & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) == android.view.Gravity.LEFT);
+
+        // ── View.resolveSizeAndState ──
+        int exactSpec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY);
+        int resolved = android.view.View.resolveSizeAndState(100, exactSpec, 0);
+        check("resolveSizeAndState EXACTLY returns spec", (resolved & android.view.View.MEASURED_SIZE_MASK) == 200);
+
+        int atMostSpec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.AT_MOST);
+        int resolved2 = android.view.View.resolveSizeAndState(100, atMostSpec, 0);
+        check("resolveSizeAndState AT_MOST smaller returns size", (resolved2 & android.view.View.MEASURED_SIZE_MASK) == 100);
+
+        int resolved3 = android.view.View.resolveSizeAndState(300, atMostSpec, 0);
+        check("resolveSizeAndState AT_MOST bigger returns spec+TOO_SMALL",
+                (resolved3 & android.view.View.MEASURED_SIZE_MASK) == 200
+                && (resolved3 & android.view.View.MEASURED_STATE_TOO_SMALL) != 0);
+
+        // ── WeightSum ──
+        android.widget.LinearLayout wsLayout = new android.widget.LinearLayout();
+        wsLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        wsLayout.setWeightSum(4.0f);
+
+        android.view.View ws1 = new android.view.View();
+        ws1.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
+        android.view.View ws2 = new android.view.View();
+        ws2.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
+
+        wsLayout.addView(ws1);
+        wsLayout.addView(ws2);
+        wsLayout.measure(exact400, exact400);
+        wsLayout.layout(0, 0, 400, 400);
+
+        // With weightSum=4, two children with weight=1 each get 100px (1/4 of 400)
+        check("weightSum 4: ws1 height == 100", ws1.getHeight() == 100);
+        check("weightSum 4: ws2 height == 100", ws2.getHeight() == 100);
     }
 }

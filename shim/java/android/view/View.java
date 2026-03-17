@@ -143,6 +143,9 @@ public class View {
     public int getBottom() { return mBottom; }
     public int getWidth() { return mRight - mLeft; }
     public int getHeight() { return mBottom - mTop; }
+    public int getLayoutDirection() { return LAYOUT_DIRECTION_LTR; }
+    public boolean isLayoutRtl() { return false; }
+    public int getBaseline() { return -1; }
 
     public static final int WRAP_CONTENT = -2;
     public static final int MATCH_PARENT = -1;
@@ -226,10 +229,10 @@ public class View {
     public static final int LAYOUT_DIRECTION_LOCALE = 0;
     public static final int LAYOUT_DIRECTION_LTR = 0;
     public static final int LAYOUT_DIRECTION_RTL = 0;
-    public static final int MEASURED_HEIGHT_STATE_SHIFT = 0;
-    public static final int MEASURED_SIZE_MASK = 0;
-    public static final int MEASURED_STATE_MASK = 0;
-    public static final int MEASURED_STATE_TOO_SMALL = 0;
+    public static final int MEASURED_HEIGHT_STATE_SHIFT = 16;
+    public static final int MEASURED_SIZE_MASK = 0x00ffffff;
+    public static final int MEASURED_STATE_MASK = 0xff000000;
+    public static final int MEASURED_STATE_TOO_SMALL = 0x01000000;
     public static final int NOT_FOCUSABLE = 0;
     public static final int NO_ID = -1;
     public static final int OVER_SCROLL_ALWAYS = 0;
@@ -330,7 +333,14 @@ public class View {
     public boolean checkInputConnectionProxy(Object p0) { return false; }
     public void clearAnimation() {}
     public void clearFocus() {}
-    public static int combineMeasuredStates(Object p0, Object p1) { return 0; }
+    public static int combineMeasuredStates(int curState, int newState) {
+        return curState | newState;
+    }
+    public static int combineMeasuredStates(Object p0, Object p1) {
+        if (p0 instanceof Integer && p1 instanceof Integer)
+            return combineMeasuredStates((int)(Integer)p0, (int)(Integer)p1);
+        return 0;
+    }
     public int computeHorizontalScrollExtent() { return 0; }
     public int computeHorizontalScrollOffset() { return 0; }
     public int computeHorizontalScrollRange() { return 0; }
@@ -799,8 +809,46 @@ public class View {
     public boolean requestRectangleOnScreen(Object p0, Object p1) { return false; }
     public void requestUnbufferedDispatch(Object p0) {}
     public void resetPivot() {}
-    public static int resolveSize(Object p0, Object p1) { return 0; }
-    public static int resolveSizeAndState(Object p0, Object p1, Object p2) { return 0; }
+    public static int resolveSize(int size, int measureSpec) {
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int specSize = MeasureSpec.getSize(measureSpec);
+        switch (specMode) {
+            case MeasureSpec.EXACTLY: return specSize;
+            case MeasureSpec.AT_MOST: return Math.min(size, specSize);
+            default: return size;
+        }
+    }
+    public static int resolveSize(Object p0, Object p1) {
+        if (p0 instanceof Integer && p1 instanceof Integer)
+            return resolveSize((int)(Integer)p0, (int)(Integer)p1);
+        return 0;
+    }
+    public static int resolveSizeAndState(int size, int measureSpec, int childMeasuredState) {
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int specSize = MeasureSpec.getSize(measureSpec);
+        int result;
+        switch (specMode) {
+            case MeasureSpec.AT_MOST:
+                if (specSize < size) {
+                    result = specSize | MEASURED_STATE_TOO_SMALL;
+                } else {
+                    result = size;
+                }
+                break;
+            case MeasureSpec.EXACTLY:
+                result = specSize;
+                break;
+            default:
+                result = size;
+                break;
+        }
+        return result | (childMeasuredState & MEASURED_STATE_MASK);
+    }
+    public static int resolveSizeAndState(Object p0, Object p1, Object p2) {
+        if (p0 instanceof Integer && p1 instanceof Integer && p2 instanceof Integer)
+            return resolveSizeAndState((int)(Integer)p0, (int)(Integer)p1, (int)(Integer)p2);
+        return 0;
+    }
     public boolean restoreDefaultFocus() { return false; }
     public void restoreHierarchyState(Object p0) {}
     public void saveAttributeDataForStyleable(Object p0, Object p1, Object p2, Object p3, Object p4, Object p5) {}
