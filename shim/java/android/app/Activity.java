@@ -20,6 +20,7 @@ public class Activity extends Context {
     Intent mResultData;
     String mTitle;
     android.view.Window mWindow;
+    private FragmentManager mFragmentManager;
 
     public Activity() {
         mWindow = new android.view.Window(this);
@@ -198,6 +199,16 @@ public class Activity extends Context {
             return true;
         }
         return false;
+    }
+
+    /* ── Fragment support ── */
+
+    public FragmentManager getFragmentManager() {
+        if (mFragmentManager == null) {
+            mFragmentManager = new FragmentManager();
+            mFragmentManager.setHost(this);
+        }
+        return mFragmentManager;
     }
 
     /* ── Remaining stubs ── */

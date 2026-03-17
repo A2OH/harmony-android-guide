@@ -148,6 +148,7 @@ public class HeadlessTest {
         testListViewAosp();
         testCompoundButtonHierarchy();
         testTextViewB35();
+        testFragmentShim();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -10842,5 +10843,295 @@ public class HeadlessTest {
             android.text.Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f);
         check("B35 StaticLayout getLineStart(0)==0", sl.getLineStart(0) == 0);
         check("B35 StaticLayout getLineEnd(0)==11", sl.getLineEnd(0) == 11);
+    }
+
+    // ── B19: Fragment / FragmentManager / FragmentTransaction ──
+
+    static void testFragmentShim() {
+        section("B19 Fragment");
+
+        // 1. Fragment default state
+        android.app.Fragment f1 = new android.app.Fragment();
+        check("B19 new Fragment not added", !f1.isAdded());
+        check("B19 new Fragment not hidden", !f1.isHidden());
+        check("B19 new Fragment not resumed", !f1.isResumed());
+        check("B19 new Fragment not detached", !f1.isDetached());
+        check("B19 new Fragment not visible (no view)", !f1.isVisible());
+        check("B19 new Fragment getActivity null", f1.getActivity() == null);
+        check("B19 new Fragment getView null", f1.getView() == null);
+        check("B19 new Fragment getTag null", f1.getTag() == null);
+        check("B19 new Fragment getId 0", f1.getId() == 0);
+
+        // 2. Fragment arguments
+        android.os.Bundle args = new android.os.Bundle();
+        args.putString("key", "value");
+        args.putInt("num", 42);
+        f1.setArguments(args);
+        check("B19 getArguments not null", f1.getArguments() != null);
+        check("B19 getArguments getString", "value".equals(f1.getArguments().getString("key")));
+        check("B19 getArguments getInt", f1.getArguments().getInt("num") == 42);
+
+        // 3. Activity.getFragmentManager
+        android.app.Activity activity = new android.app.Activity();
+        android.app.FragmentManager fm = activity.getFragmentManager();
+        check("B19 getFragmentManager not null", fm != null);
+        check("B19 getFragmentManager same instance", fm == activity.getFragmentManager());
+
+        // 4. beginTransaction
+        android.app.FragmentTransaction ft = fm.beginTransaction();
+        check("B19 beginTransaction not null", ft != null);
+
+        // 5. Add fragment via transaction
+        android.app.Fragment f2 = new android.app.Fragment();
+        f2.setArguments(args);
+        ft.add(100, f2, "frag_tag");
+        ft.commit();
+        check("B19 add fragment isAdded", f2.isAdded());
+        check("B19 add fragment getActivity", f2.getActivity() == activity);
+        check("B19 add fragment getContext", f2.getContext() == activity);
+        check("B19 add fragment getTag", "frag_tag".equals(f2.getTag()));
+        check("B19 add fragment getId", f2.getId() == 100);
+        check("B19 add fragment isResumed", f2.isResumed());
+
+        // 6. findFragmentById
+        android.app.Fragment found = fm.findFragmentById(100);
+        check("B19 findFragmentById", found == f2);
+
+        // 7. findFragmentByTag
+        found = fm.findFragmentByTag("frag_tag");
+        check("B19 findFragmentByTag", found == f2);
+
+        // 8. findFragmentByTag null returns null
+        check("B19 findFragmentByTag null", fm.findFragmentByTag(null) == null);
+        check("B19 findFragmentByTag unknown", fm.findFragmentByTag("unknown") == null);
+
+        // 9. findFragmentById unknown
+        check("B19 findFragmentById unknown", fm.findFragmentById(999) == null);
+
+        // 10. getFragments
+        java.util.List<android.app.Fragment> frags = fm.getFragments();
+        check("B19 getFragments size", frags.size() == 1);
+        check("B19 getFragments contains f2", frags.get(0) == f2);
+
+        // 11. Remove fragment
+        fm.beginTransaction().remove(f2).commit();
+        check("B19 remove fragment not added", !f2.isAdded());
+        check("B19 remove fragment not resumed", !f2.isResumed());
+        check("B19 remove findById null", fm.findFragmentById(100) == null);
+        check("B19 getFragments empty after remove", fm.getFragments().isEmpty());
+
+        // 12. Replace fragment
+        android.app.Fragment f3 = new android.app.Fragment();
+        android.app.Fragment f4 = new android.app.Fragment();
+        fm.beginTransaction().add(200, f3, "old").commit();
+        check("B19 pre-replace f3 added", f3.isAdded());
+        fm.beginTransaction().replace(200, f4, "new").commit();
+        check("B19 replace removes old", !f3.isAdded());
+        check("B19 replace adds new", f4.isAdded());
+        check("B19 replace new tag", "new".equals(f4.getTag()));
+        check("B19 replace findById new", fm.findFragmentById(200) == f4);
+
+        // 13. Hide/show fragment
+        fm.beginTransaction().hide(f4).commit();
+        check("B19 hide fragment", f4.isHidden());
+        check("B19 hide not visible", !f4.isVisible());
+        fm.beginTransaction().show(f4).commit();
+        check("B19 show fragment", !f4.isHidden());
+
+        // 14. Detach/attach
+        fm.beginTransaction().detach(f4).commit();
+        check("B19 detach fragment", f4.isDetached());
+        fm.beginTransaction().attach(f4).commit();
+        check("B19 attach fragment", !f4.isDetached());
+
+        // 15. Back stack
+        android.app.Fragment f5 = new android.app.Fragment();
+        check("B19 backstack count 0", fm.getBackStackEntryCount() == 0);
+        fm.beginTransaction().add(300, f5, "bs1").addToBackStack("entry1").commit();
+        check("B19 backstack count 1", fm.getBackStackEntryCount() == 1);
+        check("B19 backstack entry name", "entry1".equals(fm.getBackStackEntryAt(0).getName()));
+        check("B19 backstack entry id", fm.getBackStackEntryAt(0).getId() == 0);
+
+        // 16. Pop back stack reverses add
+        check("B19 f5 added before pop", f5.isAdded());
+        fm.popBackStack();
+        check("B19 backstack count 0 after pop", fm.getBackStackEntryCount() == 0);
+        check("B19 f5 removed after pop", !f5.isAdded());
+
+        // 17. BackStackChangedListener
+        final int[] callCount = new int[]{0};
+        android.app.FragmentManager.OnBackStackChangedListener listener =
+            new android.app.FragmentManager.OnBackStackChangedListener() {
+                public void onBackStackChanged() { callCount[0]++; }
+            };
+        fm.addOnBackStackChangedListener(listener);
+        android.app.Fragment f6 = new android.app.Fragment();
+        fm.beginTransaction().add(400, f6, "bs2").addToBackStack("entry2").commit();
+        check("B19 listener called on add", callCount[0] == 1);
+        fm.popBackStack();
+        check("B19 listener called on pop", callCount[0] == 2);
+        fm.removeOnBackStackChangedListener(listener);
+
+        // 18. Multiple fragments in same container
+        android.app.Fragment fa = new android.app.Fragment();
+        android.app.Fragment fb = new android.app.Fragment();
+        fm.beginTransaction().add(500, fa, "a").commit();
+        fm.beginTransaction().add(500, fb, "b").commit();
+        check("B19 multi add both present", fm.getFragments().size() >= 2);
+        // Replace should remove both
+        android.app.Fragment fc = new android.app.Fragment();
+        fm.beginTransaction().replace(500, fc, "c").commit();
+        check("B19 replace removes all at container", !fa.isAdded());
+        check("B19 replace removes all at container b", !fb.isAdded());
+        check("B19 replace adds new fc", fc.isAdded());
+
+        // 19. Fragment.getFragmentManager
+        check("B19 fragment getFragmentManager", fc.getFragmentManager() == fm);
+
+        // 20. Fragment.getChildFragmentManager
+        android.app.FragmentManager childFm = fc.getChildFragmentManager();
+        check("B19 child FM not null", childFm != null);
+        check("B19 child FM different from parent", childFm != fm);
+
+        // 21. commitAllowingStateLoss
+        android.app.Fragment f7 = new android.app.Fragment();
+        fm.beginTransaction().add(600, f7, "stateless").commitAllowingStateLoss();
+        check("B19 commitAllowingStateLoss", f7.isAdded());
+        fm.beginTransaction().remove(f7).commit();
+
+        // 22. commitNow
+        android.app.Fragment f8 = new android.app.Fragment();
+        fm.beginTransaction().add(700, f8, "now").commitNow();
+        check("B19 commitNow", f8.isAdded());
+        fm.beginTransaction().remove(f8).commit();
+
+        // 23. commitNowAllowingStateLoss
+        android.app.Fragment f9 = new android.app.Fragment();
+        fm.beginTransaction().add(800, f9, "nowsl").commitNowAllowingStateLoss();
+        check("B19 commitNowAllowingStateLoss", f9.isAdded());
+
+        // 24. Transaction chaining
+        android.app.Fragment fChain1 = new android.app.Fragment();
+        android.app.Fragment fChain2 = new android.app.Fragment();
+        fm.beginTransaction()
+            .add(900, fChain1, "chain1")
+            .add(901, fChain2, "chain2")
+            .commit();
+        check("B19 chained add 1", fChain1.isAdded());
+        check("B19 chained add 2", fChain2.isAdded());
+
+        // 25. setRetainInstance
+        fChain1.setRetainInstance(true);
+        check("B19 retainInstance", fChain1.getRetainInstance());
+
+        // 26. setUserVisibleHint
+        check("B19 userVisibleHint default true", fChain1.getUserVisibleHint());
+        fChain1.setUserVisibleHint(false);
+        check("B19 userVisibleHint false", !fChain1.getUserVisibleHint());
+
+        // 27. requireActivity
+        check("B19 requireActivity", fChain1.requireActivity() == activity);
+
+        // 28. requireContext
+        check("B19 requireContext", fChain1.requireContext() == activity);
+
+        // 29. requireView throws when null
+        boolean threwISE = false;
+        try {
+            fChain1.requireView();
+        } catch (IllegalStateException e) {
+            threwISE = true;
+        }
+        check("B19 requireView throws when null", threwISE);
+
+        // 30. requireActivity throws when detached
+        android.app.Fragment fDetached = new android.app.Fragment();
+        threwISE = false;
+        try {
+            fDetached.requireActivity();
+        } catch (IllegalStateException e) {
+            threwISE = true;
+        }
+        check("B19 requireActivity throws when detached", threwISE);
+
+        // 31. popBackStackImmediate
+        android.app.Fragment fPop = new android.app.Fragment();
+        fm.beginTransaction().add(1000, fPop, "poptest").addToBackStack("popentry").commit();
+        check("B19 popImmediate pre", fPop.isAdded());
+        boolean popped = fm.popBackStackImmediate();
+        check("B19 popBackStackImmediate returns true", popped);
+        check("B19 popBackStackImmediate removes", !fPop.isAdded());
+
+        // 32. popBackStackImmediate empty returns false
+        boolean poppedEmpty = fm.popBackStackImmediate();
+        check("B19 popBackStackImmediate empty false", !poppedEmpty);
+
+        // 33. executePendingTransactions no-op
+        fm.executePendingTransactions();
+        check("B19 executePendingTransactions no error", true);
+
+        // 34. Transaction isEmpty
+        android.app.FragmentTransaction emptyTx = fm.beginTransaction();
+        check("B19 empty transaction isEmpty", emptyTx.isEmpty());
+        emptyTx.add(new android.app.Fragment(), "x");
+        check("B19 non-empty transaction isEmpty", !emptyTx.isEmpty());
+
+        // 35. Fragment toString
+        android.app.Fragment fStr = new android.app.Fragment();
+        String str = fStr.toString();
+        check("B19 toString contains Fragment", str.contains("Fragment{"));
+
+        // 36. Fragment.isRemoving default
+        check("B19 isRemoving default false", !fStr.isRemoving());
+
+        // 37. setHasOptionsMenu / setMenuVisibility don't throw
+        fStr.setHasOptionsMenu(true);
+        fStr.setMenuVisibility(false);
+        check("B19 menu methods no throw", true);
+
+        // 38. Transaction setTransition/setCustomAnimations return this
+        android.app.FragmentTransaction animTx = fm.beginTransaction();
+        check("B19 setTransition chains", animTx.setTransition(0) == animTx);
+        check("B19 setCustomAnimations chains", animTx.setCustomAnimations(0, 0) == animTx);
+        check("B19 setCustomAnimations4 chains", animTx.setCustomAnimations(0, 0, 0, 0) == animTx);
+        check("B19 setReorderingAllowed chains", animTx.setReorderingAllowed(true) == animTx);
+
+        // 39. Fragment lifecycle tracking via subclass
+        final java.util.List<String> lifecycleEvents = new java.util.ArrayList();
+        android.app.Fragment fLife = new android.app.Fragment() {
+            public void onAttach(android.app.Activity a) { lifecycleEvents.add("onAttach"); }
+            public void onCreate(android.os.Bundle b) { lifecycleEvents.add("onCreate"); }
+            public void onStart() { lifecycleEvents.add("onStart"); }
+            public void onResume() { lifecycleEvents.add("onResume"); }
+            public void onPause() { lifecycleEvents.add("onPause"); }
+            public void onStop() { lifecycleEvents.add("onStop"); }
+            public void onDestroyView() { lifecycleEvents.add("onDestroyView"); }
+            public void onDestroy() { lifecycleEvents.add("onDestroy"); }
+            public void onDetach() { lifecycleEvents.add("onDetach"); }
+        };
+        fm.beginTransaction().add(1100, fLife, "lifecycle").commit();
+        check("B19 lifecycle: onAttach called", lifecycleEvents.contains("onAttach"));
+        check("B19 lifecycle: onCreate called", lifecycleEvents.contains("onCreate"));
+        check("B19 lifecycle: onStart called", lifecycleEvents.contains("onStart"));
+        check("B19 lifecycle: onResume called", lifecycleEvents.contains("onResume"));
+        check("B19 lifecycle order: attach before create",
+            lifecycleEvents.indexOf("onAttach") < lifecycleEvents.indexOf("onCreate"));
+        check("B19 lifecycle order: create before start",
+            lifecycleEvents.indexOf("onCreate") < lifecycleEvents.indexOf("onStart"));
+        check("B19 lifecycle order: start before resume",
+            lifecycleEvents.indexOf("onStart") < lifecycleEvents.indexOf("onResume"));
+
+        // Remove triggers teardown lifecycle
+        fm.beginTransaction().remove(fLife).commit();
+        check("B19 lifecycle: onPause called", lifecycleEvents.contains("onPause"));
+        check("B19 lifecycle: onStop called", lifecycleEvents.contains("onStop"));
+        check("B19 lifecycle: onDestroy called", lifecycleEvents.contains("onDestroy"));
+        check("B19 lifecycle: onDetach called", lifecycleEvents.contains("onDetach"));
+
+        // 40. Fragment.getParentFragmentManager (alias)
+        android.app.Fragment fParent = new android.app.Fragment();
+        fm.beginTransaction().add(1200, fParent, "parent").commit();
+        check("B19 getParentFragmentManager", fParent.getParentFragmentManager() == fm);
+        fm.beginTransaction().remove(fParent).commit();
     }
 }
