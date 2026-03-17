@@ -44,7 +44,7 @@ public class SeekBar extends View {
     public void setMax(int max) {
         this.max = max;
         if (nativeHandle != 0) {
-// FIXME OHBridge: // FIXME OHBridge: // FIXME OHBridge:             OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_MAX, (float) max, 0, 0, 0);
+            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_MAX, (float) max, 0, 0, 0, 1);
         }
     }
 
@@ -53,7 +53,7 @@ public class SeekBar extends View {
     public void setProgress(int progress) {
         this.progress = progress;
         if (nativeHandle != 0) {
-// FIXME OHBridge: // FIXME OHBridge: // FIXME OHBridge:             OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_VALUE, (float) progress, 0, 0, 0);
+            OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SLIDER_VALUE, (float) progress, 0, 0, 0, 1);
         }
     }
 

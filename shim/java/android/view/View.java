@@ -4,8 +4,25 @@ public class View {
     public View(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {}
     public View(android.content.Context context, android.util.AttributeSet attrs) {}
     public View(android.content.Context context) {}
-    public View(int nodeType) {}
+    public View(int nodeType) {
+        if (nodeType > 0) {
+            nativeHandle = com.ohos.shim.bridge.OHBridge.nodeCreate(nodeType);
+        }
+    }
     public View() {}
+
+    // OHBridge attribute constants for ArkUI node properties
+    private static final int ATTR_VISIBILITY = 1;
+    private static final int ATTR_BG_COLOR = 2;
+    private static final int ATTR_OPACITY = 3;
+    private static final int ATTR_PADDING = 4;
+    private static final int ATTR_ENABLED = 5;
+
+    // Event constants
+    private static final int EVENT_CLICK = 1;
+    private int mClickEventId;
+    private static final java.util.concurrent.atomic.AtomicInteger sEventIdGen = new java.util.concurrent.atomic.AtomicInteger(1);
+    private static int generateEventId() { return sEventIdGen.getAndIncrement(); }
 
     // OHBridge native handle for OHOS ArkUI node
     protected long nativeHandle;
@@ -60,20 +77,43 @@ public class View {
     }
 
     // Properly-typed overloads
-    public void setVisibility(int visibility) { mVisibility = visibility; }
+    public void setVisibility(int visibility) {
+        mVisibility = visibility;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrInt(nativeHandle, ATTR_VISIBILITY, visibility);
+        }
+    }
     public int getVisibility() { return mVisibility; }
 
-    public void setEnabled(boolean enabled) { mEnabled = enabled; }
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrInt(nativeHandle, ATTR_ENABLED, enabled ? 1 : 0);
+        }
+    }
     public boolean isEnabled() { return mEnabled; }
 
     public void setPadding(int left, int top, int right, int bottom) {
         mPaddingLeft = left; mPaddingTop = top; mPaddingRight = right; mPaddingBottom = bottom;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_PADDING, (float) left, (float) top, (float) right, (float) bottom, 4);
+        }
     }
 
-    public void setAlpha(float alpha) { mAlpha = alpha; }
+    public void setAlpha(float alpha) {
+        mAlpha = alpha;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_OPACITY, alpha, 0, 0, 0, 1);
+        }
+    }
     public float getAlpha() { return mAlpha; }
 
-    public void setBackgroundColor(int color) { mBackgroundColor = color; }
+    public void setBackgroundColor(int color) {
+        mBackgroundColor = color;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrColor(nativeHandle, ATTR_BG_COLOR, color);
+        }
+    }
     public int getBackgroundColor() { return mBackgroundColor; }
 
     public void setTag(Object tag) { mTag = tag; }
@@ -82,6 +122,10 @@ public class View {
     public void setOnClickListener(OnClickListener listener) {
         mClickListener = listener;
         if (!mClickable) mClickable = true;
+        if (nativeHandle != 0 && mClickEventId == 0) {
+            mClickEventId = generateEventId();
+            com.ohos.shim.bridge.OHBridge.nodeRegisterEvent(nativeHandle, EVENT_CLICK, mClickEventId);
+        }
     }
 
     public void setOnTouchListener(OnTouchListener listener) { mTouchListener = listener; }

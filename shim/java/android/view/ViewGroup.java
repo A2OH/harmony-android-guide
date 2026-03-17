@@ -130,6 +130,9 @@ public class ViewGroup extends View {
             }
             mChildren.add(child);
             child.mParent = this;
+            if (nativeHandle != 0 && child.nativeHandle != 0) {
+                com.ohos.shim.bridge.OHBridge.nodeAddChild(nativeHandle, child.nativeHandle);
+            }
         }
     }
     public void addView(View child, int index) {
@@ -139,6 +142,9 @@ public class ViewGroup extends View {
             }
             mChildren.add(index, child);
             child.mParent = this;
+            if (nativeHandle != 0 && child.nativeHandle != 0) {
+                com.ohos.shim.bridge.OHBridge.nodeInsertChildAt(nativeHandle, child.nativeHandle, index);
+            }
         }
     }
 
@@ -270,16 +276,33 @@ public class ViewGroup extends View {
     public void onViewRemoved(Object p0) {}
     public void recomputeViewAttributes(Object p0) {}
     public void removeAllViews() {
-        for (View child : mChildren) child.mParent = null;
+        for (int i = 0; i < mChildren.size(); i++) {
+            View child = mChildren.get(i);
+            if (nativeHandle != 0 && child.nativeHandle != 0) {
+                com.ohos.shim.bridge.OHBridge.nodeRemoveChild(nativeHandle, child.nativeHandle);
+            }
+            child.mParent = null;
+        }
         mChildren.clear();
     }
     public void removeAllViewsInLayout() {
-        for (View child : mChildren) child.mParent = null;
+        for (int i = 0; i < mChildren.size(); i++) {
+            View child = mChildren.get(i);
+            if (nativeHandle != 0 && child.nativeHandle != 0) {
+                com.ohos.shim.bridge.OHBridge.nodeRemoveChild(nativeHandle, child.nativeHandle);
+            }
+            child.mParent = null;
+        }
         mChildren.clear();
     }
     public void removeDetachedView(Object p0, Object p1) {}
     public void removeView(View child) {
-        if (mChildren.remove(child)) child.mParent = null;
+        if (mChildren.remove(child)) {
+            if (nativeHandle != 0 && child.nativeHandle != 0) {
+                com.ohos.shim.bridge.OHBridge.nodeRemoveChild(nativeHandle, child.nativeHandle);
+            }
+            child.mParent = null;
+        }
     }
     public void removeView(Object p0) { if (p0 instanceof View) removeView((View) p0); }
     public void removeViewAt(Object p0) {
@@ -287,7 +310,12 @@ public class ViewGroup extends View {
             int index = (Integer) p0;
             if (index >= 0 && index < mChildren.size()) {
                 View child = mChildren.remove(index);
-                if (child != null) child.mParent = null;
+                if (child != null) {
+                    if (nativeHandle != 0 && child.nativeHandle != 0) {
+                        com.ohos.shim.bridge.OHBridge.nodeRemoveChild(nativeHandle, child.nativeHandle);
+                    }
+                    child.mParent = null;
+                }
             }
         }
     }

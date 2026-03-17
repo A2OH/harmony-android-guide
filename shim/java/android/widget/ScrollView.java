@@ -12,6 +12,7 @@ import com.ohos.shim.bridge.OHBridge;
 public class ScrollView extends FrameLayout {
     static final int NODE_TYPE_SCROLL = 9;
     static final int ATTR_SCROLL_BAR_DISPLAY = 9000;
+    static final int ATTR_SCROLL_OFFSET = 9001;
 
     // Scroll indicator colors
     private static final int SCROLL_INDICATOR_COLOR = 0x66888888; // semi-transparent gray
@@ -35,6 +36,14 @@ public class ScrollView extends FrameLayout {
     public void smoothScrollTo(int x, int y) {
         // Would need scroll controller — future enhancement
         scrollTo(x, y);
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+        super.scrollTo(x, y);
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_SCROLL_OFFSET, (float) y, 0, 0, 0, 1);
+        }
     }
 
     @Override

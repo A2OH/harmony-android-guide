@@ -20,7 +20,9 @@ public class ImageView extends View {
 
     public void setImageResource(int resId) {
         this.imageResource = resId;
-        // Resource lookup would resolve resId → file path
+        if (nativeHandle != 0) {
+            OHBridge.nodeSetAttrInt(nativeHandle, ATTR_IMAGE_SRC, resId);
+        }
     }
 
     public void setImageBitmap(android.graphics.Bitmap bm) {

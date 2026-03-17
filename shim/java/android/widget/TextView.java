@@ -1,6 +1,11 @@
 package android.widget;
 
 public class TextView extends android.view.View {
+    private static final int NODE_TYPE_TEXT = 6;
+    private static final int ATTR_TEXT_CONTENT = 6000;
+    private static final int ATTR_TEXT_COLOR = 6001;
+    private static final int ATTR_TEXT_SIZE = 6002;
+
     private CharSequence mText = "";
     private CharSequence mHint = "";
     private int mTextColor;
@@ -13,16 +18,31 @@ public class TextView extends android.view.View {
     public TextView() {}
 
     // ── Properly-typed API used by tests ──
-    public void setText(CharSequence text) { mText = text != null ? text : ""; }
+    public void setText(CharSequence text) {
+        mText = text != null ? text : "";
+        if (nativeHandle != 0 && mText != null) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrString(nativeHandle, ATTR_TEXT_CONTENT, mText.toString());
+        }
+    }
     public CharSequence getText() { return mText; }
 
     public void setHint(CharSequence hint) { mHint = hint != null ? hint : ""; }
     public CharSequence getHint() { return mHint; }
 
-    public void setTextColor(int color) { mTextColor = color; }
+    public void setTextColor(int color) {
+        mTextColor = color;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrColor(nativeHandle, ATTR_TEXT_COLOR, color);
+        }
+    }
     public int getCurrentTextColor() { return mTextColor; }
 
-    public void setTextSize(float size) { mTextSize = size; }
+    public void setTextSize(float size) {
+        mTextSize = size;
+        if (nativeHandle != 0) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrFloat(nativeHandle, ATTR_TEXT_SIZE, size, 0, 0, 0, 1);
+        }
+    }
     public float getTextSize() { return mTextSize; }
 
     public void setMaxLines(int maxLines) { mMaxLines = maxLines; }

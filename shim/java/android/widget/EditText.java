@@ -1,6 +1,10 @@
 package android.widget;
 
 public class EditText extends TextView {
+    private static final int NODE_TYPE_TEXT_INPUT = 7;
+    private static final int ATTR_TEXT_INPUT_CONTENT = 7000;
+    private static final int ATTR_TEXT_INPUT_HINT = 7002;
+
     // Cursor and underline colors
     private static final int CURSOR_COLOR = 0xFF1976D2;  // blue cursor
     private static final int UNDERLINE_COLOR = 0xFF757575; // gray underline
@@ -10,7 +14,9 @@ public class EditText extends TextView {
 
     private boolean mCursorVisible = true;
 
-    public EditText() {}
+    public EditText() {
+        super(NODE_TYPE_TEXT_INPUT);
+    }
 
     public EditText(android.content.Context context) {
         this();
@@ -22,6 +28,22 @@ public class EditText extends TextView {
 
     public EditText(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
         this();
+    }
+
+    @Override
+    public void setText(CharSequence text) {
+        super.setText(text);
+        if (nativeHandle != 0 && text != null) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrString(nativeHandle, ATTR_TEXT_INPUT_CONTENT, text.toString());
+        }
+    }
+
+    @Override
+    public void setHint(CharSequence hint) {
+        super.setHint(hint);
+        if (nativeHandle != 0 && hint != null) {
+            com.ohos.shim.bridge.OHBridge.nodeSetAttrString(nativeHandle, ATTR_TEXT_INPUT_HINT, hint.toString());
+        }
     }
 
     @Override
