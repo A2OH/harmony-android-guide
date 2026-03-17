@@ -80,6 +80,7 @@ public class Activity extends Context {
     public Application getApplication() { return mApplication; }
     public ComponentName getComponentName() { return mComponent; }
     public CharSequence getTitle() { return mTitle; }
+    public void setTitle(int resId) { setTitle(getResources() != null ? getResources().getString(resId) : ""); }
     public void setTitle(CharSequence title) { mTitle = title != null ? title.toString() : null; }
 
     public void finish() {

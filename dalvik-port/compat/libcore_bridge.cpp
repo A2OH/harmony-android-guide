@@ -498,6 +498,46 @@ static jint JNICALL Posix_writeBytes(JNIEnv* env, jobject, jobject fdObj,
     return written > 0 ? written : len;
 }
 
+/* Additional Posix methods for DexClassLoader / file ops */
+static void JNICALL Posix_mkdir(JNIEnv* env, jobject, jstring jpath, jint mode) {
+    if (!jpath) return;
+    const char* p = env->GetStringUTFChars(jpath, NULL);
+    if (p) { mkdir(p, mode); env->ReleaseStringUTFChars(jpath, p); }
+}
+static jlong JNICALL Posix_lseek(JNIEnv* env, jobject, jobject fdObj, jlong offset, jint whence) {
+    int fd = getFdFromFileDescriptor(env, fdObj);
+    return (jlong) lseek(fd, (off_t)offset, whence);
+}
+static jint JNICALL Posix_fcntlInt(JNIEnv* env, jobject, jobject fdObj, jint cmd, jint arg) {
+    int fd = getFdFromFileDescriptor(env, fdObj);
+    return fcntl(fd, cmd, arg);
+}
+static jboolean JNICALL Posix_access(JNIEnv* env, jobject, jstring jpath, jint mode) {
+    if (!jpath) return JNI_FALSE;
+    const char* p = env->GetStringUTFChars(jpath, NULL);
+    jboolean r = (access(p, mode) == 0) ? JNI_TRUE : JNI_FALSE;
+    env->ReleaseStringUTFChars(jpath, p);
+    return r;
+}
+static void JNICALL Posix_chmod(JNIEnv* env, jobject, jstring jpath, jint mode) {
+    if (!jpath) return;
+    const char* p = env->GetStringUTFChars(jpath, NULL);
+    if (p) { chmod(p, mode); env->ReleaseStringUTFChars(jpath, p); }
+}
+static void JNICALL Posix_rename(JNIEnv* env, jobject, jstring jold, jstring jnew_) {
+    if (!jold || !jnew_) return;
+    const char* o = env->GetStringUTFChars(jold, NULL);
+    const char* n = env->GetStringUTFChars(jnew_, NULL);
+    if (o && n) rename(o, n);
+    if (n) env->ReleaseStringUTFChars(jnew_, n);
+    if (o) env->ReleaseStringUTFChars(jold, o);
+}
+static void JNICALL Posix_remove(JNIEnv* env, jobject, jstring jpath) {
+    if (!jpath) return;
+    const char* p = env->GetStringUTFChars(jpath, NULL);
+    if (p) { remove(p); env->ReleaseStringUTFChars(jpath, p); }
+}
+
 /* ----------------------------------------------------------------
  * libcore.icu.ICU native stubs
  * ---------------------------------------------------------------- */
@@ -1050,6 +1090,13 @@ static JNINativeMethod gPosixMethods[] = {
     { "readBytes", "(Ljava/io/FileDescriptor;Ljava/lang/Object;II)I", (void*) Posix_read_bytes },
     { "write",     "(Ljava/io/FileDescriptor;[BII)I", (void*) Posix_write_bytes_arr },
     { "writeBytes","(Ljava/io/FileDescriptor;Ljava/lang/Object;II)I", (void*) Posix_writeBytes },
+    { "mkdir",     "(Ljava/lang/String;I)V",       (void*) Posix_mkdir },
+    { "lseek",     "(Ljava/io/FileDescriptor;JI)J", (void*) Posix_lseek },
+    { "fcntlInt",  "(Ljava/io/FileDescriptor;II)I", (void*) Posix_fcntlInt },
+    { "access",    "(Ljava/lang/String;I)Z",       (void*) Posix_access },
+    { "chmod",     "(Ljava/lang/String;I)V",       (void*) Posix_chmod },
+    { "rename",    "(Ljava/lang/String;Ljava/lang/String;)V", (void*) Posix_rename },
+    { "remove",    "(Ljava/lang/String;)V",        (void*) Posix_remove },
 };
 
 static JNINativeMethod gICUMethods[] = {

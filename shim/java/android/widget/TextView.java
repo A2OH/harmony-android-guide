@@ -37,6 +37,11 @@ public class TextView extends android.view.View {
     public TextView() {}
 
     // ── Properly-typed API used by tests ──
+    public void setText(int resId) {
+        android.content.res.Resources res = android.content.res.Resources.getSystem();
+        setText(res != null ? res.getString(resId) : "res_" + resId);
+    }
+
     public void setText(CharSequence text) {
         mText = text != null ? text : "";
         mLayout = null;
@@ -49,6 +54,10 @@ public class TextView extends android.view.View {
     public void setText(CharSequence text, BufferType type) { setText(text); }
     public CharSequence getText() { return mText; }
 
+    public void setHint(int resId) {
+        android.content.res.Resources res = android.content.res.Resources.getSystem();
+        setHint(res != null ? res.getString(resId) : "");
+    }
     public void setHint(CharSequence hint) { mHint = hint != null ? hint : ""; }
     public CharSequence getHint() { return mHint; }
 
