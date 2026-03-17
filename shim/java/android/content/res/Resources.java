@@ -16,6 +16,19 @@ import java.util.HashMap;
  */
 public class Resources {
 
+    private static Resources sSystem;
+
+    /** Returns the shared system Resources instance */
+    public static Resources getSystem() {
+        if (sSystem == null) sSystem = new Resources();
+        return sSystem;
+    }
+
+    /** Register a string resource by ID (called by ApkRunner after parsing resources.arsc) */
+    public void registerString(int id, String value) {
+        mRegistry.put(Integer.valueOf(id), value);
+    }
+
     public static class NotFoundException extends RuntimeException {
         public NotFoundException() { super(); }
         public NotFoundException(String message) { super(message); }
