@@ -142,6 +142,7 @@ public class HeadlessTest {
         testDrawableImprovements();
         testRelativeLayout();
         testTextViewMeasureAndRender();
+        testAospViewEnhancements();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
@@ -9630,5 +9631,314 @@ public class HeadlessTest {
         hSpec = android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED);
         tv.measure(wSpec, hSpec);
         check("B22 getLayout after measure", tv.getLayout() != null);
+    }
+
+    // ── B32: AOSP View.java enhancements ────────────────────────────────────
+
+    static void testAospViewEnhancements() {
+        section("B32: AOSP View — measure cache, PFLAG layout, setFrame, listeners, DragShadowBuilder");
+
+        android.content.Context ctx = new android.content.Context();
+
+        // ── 1. MeasureSpec.makeMeasureSpec round-trip ──
+        int spec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY);
+        check("B32 MeasureSpec round-trip size", android.view.View.MeasureSpec.getSize(spec) == 200);
+        check("B32 MeasureSpec round-trip mode", android.view.View.MeasureSpec.getMode(spec) == android.view.View.MeasureSpec.EXACTLY);
+
+        // ── 2. MeasureSpec.toString ──
+        String msStr = android.view.View.MeasureSpec.toString(spec);
+        check("B32 MeasureSpec.toString contains EXACTLY", msStr.contains("EXACTLY"));
+        check("B32 MeasureSpec.toString contains 200", msStr.contains("200"));
+
+        // ── 3. Measure with cache: measure twice with same spec, second hit ──
+        android.view.View v = new android.view.View(ctx);
+        int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(150, android.view.View.MeasureSpec.EXACTLY);
+        int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY);
+        v.measure(wSpec, hSpec);
+        check("B32 measure sets width", v.getMeasuredWidth() == 150);
+        check("B32 measure sets height", v.getMeasuredHeight() == 100);
+
+        // Second measure with same spec — cached, no onMeasure call needed
+        v.measure(wSpec, hSpec);
+        check("B32 cached measure still correct", v.getMeasuredWidth() == 150 && v.getMeasuredHeight() == 100);
+
+        // ── 4. forceLayout clears cache, requires re-measure ──
+        v.forceLayout();
+        v.measure(wSpec, hSpec);
+        check("B32 forceLayout + re-measure", v.getMeasuredWidth() == 150);
+
+        // ── 5. setFrame via layout() ──
+        android.view.View frameView = new android.view.View(ctx);
+        frameView.layout(10, 20, 110, 220);
+        check("B32 layout sets left", frameView.getLeft() == 10);
+        check("B32 layout sets top", frameView.getTop() == 20);
+        check("B32 layout sets right", frameView.getRight() == 110);
+        check("B32 layout sets bottom", frameView.getBottom() == 220);
+        check("B32 layout width", frameView.getWidth() == 100);
+        check("B32 layout height", frameView.getHeight() == 200);
+        check("B32 isLaidOut after layout", frameView.isLaidOut());
+
+        // ── 6. layout triggers onLayout callback ──
+        final boolean[] onLayoutCalled = {false};
+        android.view.View customView = new android.view.View(ctx) {
+            @Override
+            protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+                onLayoutCalled[0] = true;
+            }
+        };
+        customView.layout(0, 0, 50, 50);
+        check("B32 onLayout called on first layout", onLayoutCalled[0]);
+
+        // ── 7. OnLayoutChangeListener ──
+        final int[] layoutChangeArgs = new int[8];
+        android.view.View.OnLayoutChangeListener lcl = new android.view.View.OnLayoutChangeListener() {
+            public void onLayoutChange(android.view.View v2, int l, int t, int r, int b,
+                    int ol, int ot, int or2, int ob) {
+                layoutChangeArgs[0] = l; layoutChangeArgs[1] = t;
+                layoutChangeArgs[2] = r; layoutChangeArgs[3] = b;
+                layoutChangeArgs[4] = ol; layoutChangeArgs[5] = ot;
+                layoutChangeArgs[6] = or2; layoutChangeArgs[7] = ob;
+            }
+        };
+        android.view.View lclView = new android.view.View(ctx);
+        lclView.addOnLayoutChangeListener(lcl);
+        lclView.layout(0, 0, 100, 100);
+        check("B32 OnLayoutChangeListener new left", layoutChangeArgs[0] == 0);
+        check("B32 OnLayoutChangeListener new right", layoutChangeArgs[2] == 100);
+        // Change layout — old values should be reported
+        lclView.forceLayout();
+        lclView.layout(10, 10, 200, 200);
+        check("B32 OnLayoutChangeListener old left", layoutChangeArgs[4] == 0);
+        check("B32 OnLayoutChangeListener new left after change", layoutChangeArgs[0] == 10);
+        check("B32 OnLayoutChangeListener new right after change", layoutChangeArgs[2] == 200);
+
+        // Remove listener
+        lclView.removeOnLayoutChangeListener(lcl);
+        lclView.forceLayout();
+        lclView.layout(0, 0, 50, 50);
+        // layoutChangeArgs should NOT be updated
+        check("B32 removeOnLayoutChangeListener works", layoutChangeArgs[0] == 10);
+
+        // ── 8. onSizeChanged ──
+        final int[] sizeChanges = {0, 0, 0, 0};
+        android.view.View sizeView = new android.view.View(ctx) {
+            @Override
+            protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+                sizeChanges[0] = w; sizeChanges[1] = h;
+                sizeChanges[2] = oldw; sizeChanges[3] = oldh;
+            }
+        };
+        sizeView.layout(0, 0, 100, 100);
+        check("B32 onSizeChanged newW", sizeChanges[0] == 100);
+        check("B32 onSizeChanged newH", sizeChanges[1] == 100);
+        check("B32 onSizeChanged oldW", sizeChanges[2] == 0);
+        check("B32 onSizeChanged oldH", sizeChanges[3] == 0);
+
+        // ── 9. PFLAG_FORCE_LAYOUT cleared after layout ──
+        android.view.View flagView = new android.view.View(ctx);
+        flagView.forceLayout();
+        check("B32 isLayoutRequested after forceLayout", flagView.isLayoutRequested());
+        flagView.measure(wSpec, hSpec);
+        flagView.layout(0, 0, 150, 100);
+        check("B32 isLayoutRequested cleared after layout", !flagView.isLayoutRequested());
+
+        // ── 10. resolveSizeAndState ──
+        int exactSpec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY);
+        int result = android.view.View.resolveSizeAndState(300, exactSpec, 0);
+        check("B32 resolveSizeAndState EXACTLY ignores desired", (result & android.view.View.MEASURED_SIZE_MASK) == 200);
+
+        int atMostSpec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.AT_MOST);
+        result = android.view.View.resolveSizeAndState(300, atMostSpec, 0);
+        check("B32 resolveSizeAndState AT_MOST clamps", (result & android.view.View.MEASURED_SIZE_MASK) == 200);
+        check("B32 resolveSizeAndState AT_MOST sets TOO_SMALL",
+                (result & android.view.View.MEASURED_STATE_TOO_SMALL) != 0);
+
+        result = android.view.View.resolveSizeAndState(100, atMostSpec, 0);
+        check("B32 resolveSizeAndState AT_MOST fits", (result & android.view.View.MEASURED_SIZE_MASK) == 100);
+        check("B32 resolveSizeAndState AT_MOST no TOO_SMALL",
+                (result & android.view.View.MEASURED_STATE_TOO_SMALL) == 0);
+
+        // ── 11. combineMeasuredStates ──
+        int combined = android.view.View.combineMeasuredStates(
+                android.view.View.MEASURED_STATE_TOO_SMALL, 0);
+        check("B32 combineMeasuredStates preserves TOO_SMALL",
+                (combined & android.view.View.MEASURED_STATE_TOO_SMALL) != 0);
+
+        // ── 12. generateViewId uniqueness ──
+        int id1 = android.view.View.generateViewId();
+        int id2 = android.view.View.generateViewId();
+        check("B32 generateViewId unique", id1 != id2);
+        check("B32 generateViewId positive", id1 > 0 && id2 > 0);
+
+        // ── 13. DragShadowBuilder ──
+        android.view.View shadowView = new android.view.View(ctx);
+        shadowView.layout(0, 0, 80, 60);
+        android.view.View.DragShadowBuilder dsb = new android.view.View.DragShadowBuilder(shadowView);
+        check("B32 DragShadowBuilder getView", dsb.getView() == shadowView);
+        android.graphics.Point outSize = new android.graphics.Point();
+        android.graphics.Point outTouch = new android.graphics.Point();
+        dsb.onProvideShadowMetrics(outSize, outTouch);
+        check("B32 DragShadowBuilder shadow width", outSize.x == 80);
+        check("B32 DragShadowBuilder shadow height", outSize.y == 60);
+        check("B32 DragShadowBuilder touch center x", outTouch.x == 40);
+        check("B32 DragShadowBuilder touch center y", outTouch.y == 30);
+
+        // ── 14. View.setEnabled via flags ──
+        android.view.View enView = new android.view.View(ctx);
+        check("B32 new view isEnabled", enView.isEnabled());
+        enView.setEnabled(false);
+        check("B32 setEnabled(false)", !enView.isEnabled());
+        enView.setEnabled(true);
+        check("B32 setEnabled(true)", enView.isEnabled());
+
+        // ── 15. View.setClickable via flags ──
+        android.view.View clView = new android.view.View(ctx);
+        check("B32 new view not clickable", !clView.isClickable());
+        clView.setClickable(true);
+        check("B32 setClickable(true)", clView.isClickable());
+
+        // ── 16. View.setVisibility via flags ──
+        android.view.View visView = new android.view.View(ctx);
+        check("B32 new view VISIBLE", visView.getVisibility() == android.view.View.VISIBLE);
+        visView.setVisibility(android.view.View.GONE);
+        check("B32 setVisibility GONE", visView.getVisibility() == android.view.View.GONE);
+        visView.setVisibility(android.view.View.INVISIBLE);
+        check("B32 setVisibility INVISIBLE", visView.getVisibility() == android.view.View.INVISIBLE);
+        visView.setVisibility(android.view.View.VISIBLE);
+        check("B32 setVisibility VISIBLE", visView.getVisibility() == android.view.View.VISIBLE);
+
+        // ── 17. View.isShown ──
+        android.widget.FrameLayout parent = new android.widget.FrameLayout(ctx);
+        android.view.View child = new android.view.View(ctx);
+        parent.addView(child);
+        check("B32 isShown with visible parent", child.isShown());
+        parent.setVisibility(android.view.View.GONE);
+        check("B32 isShown with gone parent", !child.isShown());
+
+        // ── 18. View.getLocationInWindow ──
+        android.widget.FrameLayout root = new android.widget.FrameLayout(ctx);
+        root.layout(0, 0, 400, 400);
+        android.widget.FrameLayout mid = new android.widget.FrameLayout(ctx);
+        mid.layout(50, 50, 300, 300);
+        android.view.View leaf = new android.view.View(ctx);
+        leaf.layout(10, 20, 100, 100);
+        root.addView(mid);
+        mid.addView(leaf);
+        int[] loc = new int[2];
+        leaf.getLocationInWindow(loc);
+        check("B32 getLocationInWindow x = 60", loc[0] == 60);
+        check("B32 getLocationInWindow y = 70", loc[1] == 70);
+
+        // ── 19. View.pointInView ──
+        android.view.View pvView = new android.view.View(ctx);
+        pvView.layout(0, 0, 100, 100);
+        check("B32 pointInView inside", pvView.pointInView(50, 50, 0));
+        check("B32 pointInView edge", pvView.pointInView(0, 0, 0));
+        check("B32 pointInView outside", !pvView.pointInView(101, 101, 0));
+        check("B32 pointInView slop", pvView.pointInView(105, 105, 10));
+
+        // ── 20. View.offsetLeftAndRight / offsetTopAndBottom ──
+        android.view.View offView = new android.view.View(ctx);
+        offView.layout(10, 20, 50, 60);
+        offView.offsetLeftAndRight(5);
+        check("B32 offsetLeftAndRight left", offView.getLeft() == 15);
+        check("B32 offsetLeftAndRight right", offView.getRight() == 55);
+        offView.offsetTopAndBottom(-5);
+        check("B32 offsetTopAndBottom top", offView.getTop() == 15);
+        check("B32 offsetTopAndBottom bottom", offView.getBottom() == 55);
+
+        // ── 21. View.getX/getY with translation ──
+        android.view.View xyView = new android.view.View(ctx);
+        xyView.layout(10, 20, 100, 100);
+        xyView.setTranslationX(5.0f);
+        xyView.setTranslationY(3.0f);
+        check("B32 getX = left + translationX", xyView.getX() == 15.0f);
+        check("B32 getY = top + translationY", xyView.getY() == 23.0f);
+
+        // ── 22. View.post runs immediately in headless ──
+        final boolean[] posted = {false};
+        android.view.View postView = new android.view.View(ctx);
+        boolean postResult = postView.post(new Runnable() {
+            public void run() { posted[0] = true; }
+        });
+        check("B32 post returns true", postResult);
+        check("B32 post runs Runnable", posted[0]);
+
+        // ── 23. OnLongClickListener ──
+        android.view.View lcView = new android.view.View(ctx);
+        final boolean[] longClicked = {false};
+        lcView.setOnLongClickListener(new android.view.View.OnLongClickListener() {
+            public boolean onLongClick(android.view.View v2) {
+                longClicked[0] = true;
+                return true;
+            }
+        });
+        check("B32 hasOnLongClickListeners", lcView.hasOnLongClickListeners());
+        boolean lcResult = lcView.performLongClick();
+        check("B32 performLongClick fires listener", longClicked[0]);
+        check("B32 performLongClick returns true", lcResult);
+
+        // ── 24. View.setSelected / setActivated ──
+        android.view.View stateView = new android.view.View(ctx);
+        check("B32 initially not selected", !stateView.isSelected());
+        stateView.setSelected(true);
+        check("B32 setSelected(true)", stateView.isSelected());
+        check("B32 initially not activated", !stateView.isActivated());
+        stateView.setActivated(true);
+        check("B32 setActivated(true)", stateView.isActivated());
+
+        // ── 25. Drawable.Callback wiring ──
+        final boolean[] cbCalled = {false};
+        android.graphics.drawable.Drawable testDrawable = new android.graphics.drawable.Drawable() {
+            @Override
+            public void draw(android.graphics.Canvas canvas) {}
+        };
+        android.view.View drawCbView = new android.view.View(ctx);
+        drawCbView.setBackground(testDrawable);
+        check("B32 background callback is view", testDrawable.getCallback() == drawCbView);
+
+        // ── 26. LongSparseLongArray (used internally by measure cache) ──
+        android.util.LongSparseLongArray lsla = new android.util.LongSparseLongArray(4);
+        lsla.put(100L, 200L);
+        lsla.put(300L, 400L);
+        check("B32 LongSparseLongArray size", lsla.size() == 2);
+        check("B32 LongSparseLongArray get", lsla.get(100L, -1L) == 200L);
+        check("B32 LongSparseLongArray get miss", lsla.get(999L, -1L) == -1L);
+        lsla.put(100L, 999L); // update
+        check("B32 LongSparseLongArray update", lsla.get(100L, -1L) == 999L);
+        check("B32 LongSparseLongArray size after update", lsla.size() == 2);
+        lsla.delete(100L);
+        check("B32 LongSparseLongArray delete", lsla.size() == 1);
+        lsla.clear();
+        check("B32 LongSparseLongArray clear", lsla.size() == 0);
+
+        // ── 27. ViewGroup implements ViewParent ──
+        android.widget.FrameLayout vpFrame = new android.widget.FrameLayout(ctx);
+        check("B32 ViewGroup is ViewParent", vpFrame instanceof android.view.ViewParent);
+
+        // ── 28. AOSP VISIBLE / INVISIBLE / GONE values match ──
+        check("B32 VISIBLE == 0", android.view.View.VISIBLE == 0);
+        check("B32 INVISIBLE == 4", android.view.View.INVISIBLE == 4);
+        check("B32 GONE == 8", android.view.View.GONE == 8);
+
+        // ── 29. AOSP MEASURED_SIZE_MASK / MEASURED_STATE_MASK ──
+        check("B32 MEASURED_SIZE_MASK", android.view.View.MEASURED_SIZE_MASK == 0x00ffffff);
+        check("B32 MEASURED_STATE_MASK", android.view.View.MEASURED_STATE_MASK == 0xff000000);
+        check("B32 MEASURED_STATE_TOO_SMALL", android.view.View.MEASURED_STATE_TOO_SMALL == 0x01000000);
+
+        // ── 30. measure() throws if setMeasuredDimension not called ──
+        boolean threw = false;
+        android.view.View badView = new android.view.View(ctx) {
+            @Override
+            protected void onMeasure(int w, int h) {
+                // Intentionally don't call setMeasuredDimension
+            }
+        };
+        try {
+            badView.measure(wSpec, hSpec);
+        } catch (IllegalStateException e) {
+            threw = true;
+        }
+        check("B32 measure throws if setMeasuredDimension not called", threw);
     }
 }

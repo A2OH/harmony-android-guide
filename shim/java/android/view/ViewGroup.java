@@ -1,6 +1,6 @@
 package android.view;
 
-public class ViewGroup extends View {
+public class ViewGroup extends View implements ViewParent {
     private final java.util.List<View> mChildren = new java.util.ArrayList<>();
 
     public ViewGroup(android.content.Context context, android.util.AttributeSet attrs) {}
@@ -134,8 +134,8 @@ public class ViewGroup extends View {
 
     public void addView(View child) {
         if (child != null) {
-            if (child.mParent != null) {
-                child.mParent.removeView(child);
+            if (child.mParent instanceof ViewGroup) {
+                ((ViewGroup) child.mParent).removeView(child);
             }
             mChildren.add(child);
             child.mParent = this;
@@ -146,8 +146,8 @@ public class ViewGroup extends View {
     }
     public void addView(View child, int index) {
         if (child != null) {
-            if (child.mParent != null) {
-                child.mParent.removeView(child);
+            if (child.mParent instanceof ViewGroup) {
+                ((ViewGroup) child.mParent).removeView(child);
             }
             mChildren.add(index, child);
             child.mParent = this;
@@ -406,4 +406,21 @@ public class ViewGroup extends View {
     public void startViewTransition(Object p0) {}
     public void suppressLayout(Object p0) {}
     public void updateViewLayout(Object p0, Object p1) {}
+
+    // ── ViewParent interface implementation (properly-typed) ──
+
+    @Override
+    public void requestChildFocus(View child, View focused) {}
+
+    @Override
+    public void clearChildFocus(View child) {}
+
+    @Override
+    public ViewParent getParent() { return mParent; }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+
+    @Override
+    public void childDrawableStateChanged(View child) {}
 }

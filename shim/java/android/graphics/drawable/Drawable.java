@@ -22,19 +22,22 @@ import android.graphics.Rect;
  */
 public class Drawable {
 
-    // ── Object interface ───────────────────────────────────────────────────
+    // ── Callback interface (AOSP name) ──────────────────────────────────────
 
-    public interface Object {
+    public interface Callback {
         void invalidateDrawable(Drawable who);
         void scheduleDrawable(Drawable who, Runnable what, long when);
         void unscheduleDrawable(Drawable who, Runnable what);
     }
 
+    // Backward-compat alias (stub generator used "Object")
+    public interface Object extends Callback {}
+
     // ── State ────────────────────────────────────────────────────────────────
 
     private final Rect    bounds  = new Rect();
     private       boolean visible = true;
-    private       Object callback;
+    private       Callback callback;
 
     // ── Abstract API ─────────────────────────────────────────────────────────
 
@@ -93,10 +96,24 @@ public class Drawable {
         return changed;
     }
 
-    // ── Object / invalidation ──────────────────────────────────────────────
+    // ── Minimum size (AOSP) ─────────────────────────────────────────────────
 
-    public void setCallback(Object cb) { this.callback = cb; }
-    public Object getCallback()        { return callback; }
+    /** Returns 0 by default; subclasses with intrinsic size override. */
+    public int getMinimumWidth() {
+        int intrinsicWidth = getIntrinsicWidth();
+        return intrinsicWidth > 0 ? intrinsicWidth : 0;
+    }
+
+    /** Returns 0 by default; subclasses with intrinsic size override. */
+    public int getMinimumHeight() {
+        int intrinsicHeight = getIntrinsicHeight();
+        return intrinsicHeight > 0 ? intrinsicHeight : 0;
+    }
+
+    // ── Callback / invalidation ─────────────────────────────────────────────
+
+    public void setCallback(Callback cb) { this.callback = cb; }
+    public Callback getCallback()        { return callback; }
 
     public void invalidateSelf() {
         if (callback != null) callback.invalidateDrawable(this);

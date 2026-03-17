@@ -22,11 +22,16 @@ public class ViewPropertyAnimator {
     private float mY = 0f;
     private float mZ = 0f;
 
+    private View mView;
     private long mDuration = 300;
     private long mStartDelay = 0;
     private Object mInterpolator = null;
     private Runnable mStartAction = null;
     private Runnable mEndAction = null;
+
+    public ViewPropertyAnimator(View view) {
+        mView = view;
+    }
 
     /** Package-private: created by View.animate() */
     public ViewPropertyAnimator() {}

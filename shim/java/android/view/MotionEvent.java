@@ -24,11 +24,21 @@ public final class MotionEvent {
     public static final int ACTION_POINTER_DOWN = 5;
     public static final int ACTION_POINTER_UP   = 6;
 
+    public static final int ACTION_OUTSIDE       = 4;
+
     /** Mask to extract the base action from a combined action value. */
     public static final int ACTION_MASK          = 0xff;
     /** Bit shift to extract the pointer index from a combined action value. */
     public static final int ACTION_POINTER_INDEX_SHIFT = 8;
     public static final int ACTION_POINTER_INDEX_MASK  = 0xff00;
+
+    // ── Flags ──
+    public static final int FLAG_WINDOW_IS_OBSCURED = 0x1;
+
+    // ── Classification constants ──
+    public static final int CLASSIFICATION_NONE = 0;
+    public static final int CLASSIFICATION_AMBIGUOUS_GESTURE = 1;
+    public static final int CLASSIFICATION_DEEP_PRESS = 2;
 
     // ── Fields ──
 
@@ -184,6 +194,21 @@ public final class MotionEvent {
     public long  getEventTime() { return eventTime; }
 
     public int   getMetaState() { return metaState; }
+
+    /** Returns event flags (e.g. FLAG_WINDOW_IS_OBSCURED). */
+    public int   getFlags() { return 0; }
+
+    /** Returns the input source (e.g. InputDevice.SOURCE_TOUCHSCREEN). */
+    public int   getSource() { return InputDevice.SOURCE_TOUCHSCREEN; }
+
+    /** Returns the motion classification. */
+    public int   getClassification() { return CLASSIFICATION_NONE; }
+
+    /** Whether the event targets accessibility focus. */
+    public boolean isTargetAccessibilityFocus() { return false; }
+
+    /** Set whether this event targets accessibility focus. */
+    public void setTargetAccessibilityFocus(boolean flag) {}
 
     /**
      * Offset the location of this event. Used during dispatch to translate

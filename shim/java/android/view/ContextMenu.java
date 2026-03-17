@@ -26,7 +26,10 @@ public interface ContextMenu extends Menu {
      * Additional information about the item for which the context menu is shown.
      * Provides extra data such as the position of the item in a list.
      */
-    public interface Object {
+    public interface ContextMenuInfo {
         // Marker interface — implementing classes provide specific fields
     }
+
+    /** Backward-compat alias (stub generator used "Object") */
+    public interface Object extends ContextMenuInfo {}
 }

@@ -418,7 +418,7 @@ public class TextView extends android.view.View {
     public boolean onPreDraw() { return false; }
     public boolean onPrivateIMECommand(Object p0, Object p1) { return false; }
     public void onRestoreInstanceState(Object p0) {}
-    public Object onSaveInstanceState() { return null; }
+    public android.os.Parcelable onSaveInstanceState() { return null; }
     public void onTextChanged(Object p0, Object p1, Object p2, Object p3) {}
     public boolean onTextContextMenuItem(Object p0) { return false; }
     public void removeTextChangedListener(Object p0) {}
