@@ -961,6 +961,202 @@ static JNINativeMethod gSystemMethods[] = {
     { "log", "(CLjava/lang/String;Ljava/lang/Throwable;)V", (void*) System_log },
 };
 
+/* ── java.lang.Math / java.lang.StrictMath natives ── */
+#include <math.h>
+
+static jdouble Math_ceil(JNIEnv*, jclass, jdouble v) { return ceil(v); }
+static jdouble Math_floor(JNIEnv*, jclass, jdouble v) { return floor(v); }
+static jdouble Math_sqrt(JNIEnv*, jclass, jdouble v) { return sqrt(v); }
+static jdouble Math_sin(JNIEnv*, jclass, jdouble v) { return sin(v); }
+static jdouble Math_cos(JNIEnv*, jclass, jdouble v) { return cos(v); }
+static jdouble Math_tan(JNIEnv*, jclass, jdouble v) { return tan(v); }
+static jdouble Math_asin(JNIEnv*, jclass, jdouble v) { return asin(v); }
+static jdouble Math_acos(JNIEnv*, jclass, jdouble v) { return acos(v); }
+static jdouble Math_atan(JNIEnv*, jclass, jdouble v) { return atan(v); }
+static jdouble Math_atan2(JNIEnv*, jclass, jdouble y, jdouble x) { return atan2(y, x); }
+static jdouble Math_exp(JNIEnv*, jclass, jdouble v) { return exp(v); }
+static jdouble Math_log(JNIEnv*, jclass, jdouble v) { return log(v); }
+static jdouble Math_log10(JNIEnv*, jclass, jdouble v) { return log10(v); }
+static jdouble Math_pow(JNIEnv*, jclass, jdouble x, jdouble y) { return pow(x, y); }
+static jdouble Math_IEEEremainder(JNIEnv*, jclass, jdouble x, jdouble y) { return remainder(x, y); }
+static jdouble Math_cbrt(JNIEnv*, jclass, jdouble v) { return cbrt(v); }
+static jdouble Math_cosh(JNIEnv*, jclass, jdouble v) { return cosh(v); }
+static jdouble Math_sinh(JNIEnv*, jclass, jdouble v) { return sinh(v); }
+static jdouble Math_tanh(JNIEnv*, jclass, jdouble v) { return tanh(v); }
+static jdouble Math_expm1(JNIEnv*, jclass, jdouble v) { return expm1(v); }
+static jdouble Math_hypot(JNIEnv*, jclass, jdouble x, jdouble y) { return hypot(x, y); }
+static jdouble Math_log1p(JNIEnv*, jclass, jdouble v) { return log1p(v); }
+static jdouble Math_nextAfter(JNIEnv*, jclass, jdouble s, jdouble d) { return nextafter(s, d); }
+static jfloat  Math_nextAfterF(JNIEnv*, jclass, jfloat s, jfloat d) { return nextafterf(s, d); }
+static jdouble Math_rint(JNIEnv*, jclass, jdouble v) { return rint(v); }
+static jdouble Math_scalb(JNIEnv*, jclass, jdouble d, jint s) { return scalbn(d, s); }
+static jfloat  Math_scalbF(JNIEnv*, jclass, jfloat f, jint s) { return scalbnf(f, s); }
+
+static JNINativeMethod gMathMethods[] = {
+    { "ceil",           "(D)D",  (void*) Math_ceil },
+    { "floor",          "(D)D",  (void*) Math_floor },
+    { "sqrt",           "(D)D",  (void*) Math_sqrt },
+    { "sin",            "(D)D",  (void*) Math_sin },
+    { "cos",            "(D)D",  (void*) Math_cos },
+    { "tan",            "(D)D",  (void*) Math_tan },
+    { "asin",           "(D)D",  (void*) Math_asin },
+    { "acos",           "(D)D",  (void*) Math_acos },
+    { "atan",           "(D)D",  (void*) Math_atan },
+    { "atan2",          "(DD)D", (void*) Math_atan2 },
+    { "exp",            "(D)D",  (void*) Math_exp },
+    { "log",            "(D)D",  (void*) Math_log },
+    { "log10",          "(D)D",  (void*) Math_log10 },
+    { "pow",            "(DD)D", (void*) Math_pow },
+    { "IEEEremainder",  "(DD)D", (void*) Math_IEEEremainder },
+    { "cbrt",           "(D)D",  (void*) Math_cbrt },
+    { "cosh",           "(D)D",  (void*) Math_cosh },
+    { "sinh",           "(D)D",  (void*) Math_sinh },
+    { "tanh",           "(D)D",  (void*) Math_tanh },
+    { "expm1",          "(D)D",  (void*) Math_expm1 },
+    { "hypot",          "(DD)D", (void*) Math_hypot },
+    { "log1p",          "(D)D",  (void*) Math_log1p },
+    { "nextAfter",      "(DD)D", (void*) Math_nextAfter },
+    { "nextAfter",      "(FF)F", (void*) Math_nextAfterF },
+    { "rint",           "(D)D",  (void*) Math_rint },
+    { "scalb",          "(DI)D", (void*) Math_scalb },
+    { "scalb",          "(FI)F", (void*) Math_scalbF },
+};
+
+/* ── java.lang.StringToReal / java.lang.RealToString ── */
+static jdouble StringToReal_parseDouble(JNIEnv* env, jclass, jstring str, jint e) {
+    (void)e;
+    const char* s = env->GetStringUTFChars(str, NULL);
+    double v = strtod(s, NULL);
+    env->ReleaseStringUTFChars(str, s);
+    return v;
+}
+static jfloat StringToReal_parseFloat(JNIEnv* env, jclass, jstring str, jint e) {
+    (void)e;
+    const char* s = env->GetStringUTFChars(str, NULL);
+    float v = strtof(s, NULL);
+    env->ReleaseStringUTFChars(str, s);
+    return v;
+}
+static JNINativeMethod gStringToRealMethods[] = {
+    { "parseDblImpl",   "(Ljava/lang/String;I)D", (void*) StringToReal_parseDouble },
+    { "parseFltImpl",   "(Ljava/lang/String;I)F", (void*) StringToReal_parseFloat },
+};
+
+static jstring RealToString_doubleToString(JNIEnv* env, jclass, jdouble v) {
+    char buf[64];
+    /* Use %g for general, or %.17g for full precision */
+    snprintf(buf, sizeof(buf), "%.17g", v);
+    return env->NewStringUTF(buf);
+}
+static jstring RealToString_floatToString(JNIEnv* env, jclass, jfloat v) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%.9g", (double)v);
+    return env->NewStringUTF(buf);
+}
+static JNINativeMethod gRealToStringMethods[] = {
+    { "doubleToStringImpl", "(D)Ljava/lang/String;", (void*) RealToString_doubleToString },
+    { "floatToStringImpl",  "(F)Ljava/lang/String;", (void*) RealToString_floatToString },
+};
+
+/* ── java.lang.Float / java.lang.Double ── */
+static jint Float_floatToRawIntBits(JNIEnv*, jclass, jfloat v) {
+    union { jfloat f; jint i; } u; u.f = v; return u.i;
+}
+static jfloat Float_intBitsToFloat(JNIEnv*, jclass, jint v) {
+    union { jint i; jfloat f; } u; u.i = v; return u.f;
+}
+static jlong Double_doubleToRawLongBits(JNIEnv*, jclass, jdouble v) {
+    union { jdouble d; jlong l; } u; u.d = v; return u.l;
+}
+static jdouble Double_longBitsToDouble(JNIEnv*, jclass, jlong v) {
+    union { jlong l; jdouble d; } u; u.l = v; return u.d;
+}
+static JNINativeMethod gFloatMethods[] = {
+    { "floatToRawIntBits", "(F)I", (void*) Float_floatToRawIntBits },
+    { "intBitsToFloat",    "(I)F", (void*) Float_intBitsToFloat },
+};
+static JNINativeMethod gDoubleMethods[] = {
+    { "doubleToRawLongBits", "(D)J", (void*) Double_doubleToRawLongBits },
+    { "longBitsToDouble",    "(J)D", (void*) Double_longBitsToDouble },
+};
+
+/* ── libcore.icu.LocaleData ── */
+static jboolean LocaleData_initLocaleData(JNIEnv* env, jclass, jstring locale, jobject localeData) {
+    /* Set default locale data fields for en_US */
+    jclass ldClass = env->GetObjectClass(localeData);
+
+    /* Helper: set a String field */
+    #define SET_STR(name, val) do { \
+        jfieldID fid = env->GetFieldID(ldClass, name, "Ljava/lang/String;"); \
+        if (fid) env->SetObjectField(localeData, fid, env->NewStringUTF(val)); \
+    } while(0)
+    #define SET_CHAR(name, val) do { \
+        jfieldID fid = env->GetFieldID(ldClass, name, "C"); \
+        if (fid) env->SetCharField(localeData, fid, val); \
+    } while(0)
+
+    SET_STR("amPm",        "AM;PM");
+    SET_STR("currencySymbol", "$");
+    SET_STR("decimalSeparator", ".");
+    SET_STR("exponentSeparator", "E");
+    SET_STR("groupingSeparator", ",");
+    SET_STR("infinity",    "\u221E");
+    SET_STR("minusSign",   "-");
+    SET_STR("NaN",         "NaN");
+    SET_STR("numberPattern", "#,##0.###");
+    SET_STR("currencyPattern", "\u00A4#,##0.00");
+    SET_STR("percentPattern", "#,##0%");
+    SET_STR("percent",     "%");
+    SET_STR("perMill",     "\u2030");
+    SET_STR("zeroDigit",   "0");
+
+    SET_CHAR('decimalSeparator', '.');
+    SET_CHAR('groupingSeparator', ',');
+    SET_CHAR('zeroDigit', '0');
+    SET_CHAR('percent', '%');
+    SET_CHAR('perMill', '\u2030');
+    SET_CHAR('minusSign', '-');
+
+    #undef SET_STR
+    #undef SET_CHAR
+    env->ExceptionClear(); /* clear any NoSuchFieldError from optional fields */
+    return JNI_TRUE;
+}
+static JNINativeMethod gLocaleDataMethods[] = {
+    { "initLocaleData", "(Ljava/lang/String;Llibcore/icu/LocaleData;)Z", (void*) LocaleData_initLocaleData },
+};
+
+/* ── java.util.regex.Pattern ── */
+#include <regex.h>
+/* Minimal regex: store compiled POSIX regex as a long handle */
+static jlong Pattern_compileImpl(JNIEnv* env, jclass, jstring pattern, jint flags) {
+    const char* pat = env->GetStringUTFChars(pattern, NULL);
+    regex_t* re = (regex_t*) calloc(1, sizeof(regex_t));
+    int cflags = REG_EXTENDED;
+    if (flags & 2) cflags |= REG_ICASE; /* CASE_INSENSITIVE = 2 */
+    int rc = regcomp(re, pat, cflags);
+    env->ReleaseStringUTFChars(pattern, pat);
+    if (rc != 0) {
+        free(re);
+        return 0; /* compilation failed — Java side will handle */
+    }
+    return (jlong)(uintptr_t)re;
+}
+static JNINativeMethod gPatternMethods[] = {
+    { "compileImpl", "(Ljava/lang/String;I)J", (void*) Pattern_compileImpl },
+};
+
+/* ── java.lang.Thread ── */
+static void Thread_sleep(JNIEnv*, jclass, jlong ms) {
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+    nanosleep(&ts, NULL);
+}
+static JNINativeMethod gThreadMethods[] = {
+    { "sleep", "(J)V", (void*) Thread_sleep },
+};
+
 bool dvmRegisterLibcoreBridge(JNIEnv* env) {
     if (!registerClass(env, "libcore/io/OsConstants", gOsConstantsMethods, 1))
         return false;
@@ -982,5 +1178,36 @@ bool dvmRegisterLibcoreBridge(JNIEnv* env) {
     if (!registerClass(env, "java/nio/charset/Charsets",
                        gCharsetsMethods, sizeof(gCharsetsMethods)/sizeof(gCharsetsMethods[0])))
         return false;
+
+    /* Math + StrictMath (same implementations) */
+    registerClass(env, "java/lang/Math",
+                  gMathMethods, sizeof(gMathMethods)/sizeof(gMathMethods[0]));
+    registerClass(env, "java/lang/StrictMath",
+                  gMathMethods, sizeof(gMathMethods)/sizeof(gMathMethods[0]));
+
+    /* Number parsing/formatting */
+    registerClass(env, "java/lang/StringToReal",
+                  gStringToRealMethods, sizeof(gStringToRealMethods)/sizeof(gStringToRealMethods[0]));
+    registerClass(env, "java/lang/RealToString",
+                  gRealToStringMethods, sizeof(gRealToStringMethods)/sizeof(gRealToStringMethods[0]));
+
+    /* Float/Double bit conversion */
+    registerClass(env, "java/lang/Float",
+                  gFloatMethods, sizeof(gFloatMethods)/sizeof(gFloatMethods[0]));
+    registerClass(env, "java/lang/Double",
+                  gDoubleMethods, sizeof(gDoubleMethods)/sizeof(gDoubleMethods[0]));
+
+    /* Locale data for String.format / Formatter */
+    registerClass(env, "libcore/icu/LocaleData",
+                  gLocaleDataMethods, sizeof(gLocaleDataMethods)/sizeof(gLocaleDataMethods[0]));
+
+    /* Regex */
+    registerClass(env, "java/util/regex/Pattern",
+                  gPatternMethods, sizeof(gPatternMethods)/sizeof(gPatternMethods[0]));
+
+    /* Thread.sleep */
+    registerClass(env, "java/lang/Thread",
+                  gThreadMethods, sizeof(gThreadMethods)/sizeof(gThreadMethods[0]));
+
     return true;
 }
