@@ -139,6 +139,7 @@ public class HeadlessTest {
         // testResourceTableParser(); // TODO: method not yet defined
         testSimpleFormatter();
         testLinearLayoutWeightAndGravity();
+        testDrawableImprovements();
 
         System.out.println("\n═══ Results ═══");
         System.out.println("Passed: " + passed);
