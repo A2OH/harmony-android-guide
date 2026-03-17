@@ -1,6 +1,4 @@
 package android.os;
-import java.util.regex.Pattern;
-
 /**
  * Shim: android.os.PatternMatcher — a simple pattern matcher for paths.
  * Supports literal, prefix, and simple glob matching.
@@ -61,7 +59,7 @@ public class PatternMatcher {
 
     private static boolean matchSimpleGlob(String pattern, String str) {
         // Simple implementation: split on '*' and check ordered containment
-        String[] parts = pattern.split("\\*", -1);
+        String[] parts = splitByChar(pattern, '*');
         int pos = 0;
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
@@ -74,6 +72,18 @@ public class PatternMatcher {
         // If pattern doesn't end with *, str must end at pos
         if (!pattern.endsWith("*") && pos != str.length()) return false;
         return true;
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     @Override

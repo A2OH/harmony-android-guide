@@ -188,7 +188,7 @@ public class Rect {
 
     public static Rect unflattenFromString(String str) {
         if (str == null) return null;
-        String[] parts = str.split(" ");
+        String[] parts = splitByChar(str, ' ');
         if (parts.length != 4) return null;
         try {
             return new Rect(
@@ -234,5 +234,17 @@ public class Rect {
     public void sort() {
         if (left > right) { int t = left; left = right; right = t; }
         if (top > bottom) { int t = top; top = bottom; bottom = t; }
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.ArrayList<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 }

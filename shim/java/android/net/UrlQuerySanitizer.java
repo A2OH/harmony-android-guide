@@ -86,7 +86,7 @@ public class UrlQuerySanitizer {
         int qIdx = url.indexOf('?');
         String query = (qIdx >= 0) ? url.substring(qIdx + 1) : url;
         if (query.isEmpty()) return;
-        for (String pair : query.split("&")) {
+        for (String pair : splitByChar(query, '&')) {
             int eq = pair.indexOf('=');
             String key   = decode(eq >= 0 ? pair.substring(0, eq) : pair);
             String value = eq >= 0 ? decode(pair.substring(eq + 1)) : "";
@@ -119,6 +119,18 @@ public class UrlQuerySanitizer {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
+    }
 
     private static String decode(String s) {
         try {

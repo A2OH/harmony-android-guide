@@ -366,7 +366,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
             String path = getPath();
             if (path == null || path.isEmpty()) return Collections.emptyList();
             List<String> segments = new ArrayList<String>();
-            for (String s : path.split("/")) {
+            for (String s : splitByChar(path, '/')) {
                 if (!s.isEmpty()) segments.add(decode(s));
             }
             return Collections.unmodifiableList(segments);
@@ -387,6 +387,18 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     // ══════════════════════════════════════════════════════════════════
     // OpaqueUri — for URIs created via fromParts (scheme:ssp#fragment)
     // ══════════════════════════════════════════════════════════════════
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.ArrayList<String> parts = new java.util.ArrayList<String>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
+    }
 
     private static class OpaqueUri extends Uri {
         private final String uriString;

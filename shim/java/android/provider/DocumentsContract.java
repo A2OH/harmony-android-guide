@@ -4,8 +4,6 @@ import android.os.Build;
 import android.net.Uri;
 import android.os.Build;
 import java.net.URI;
-import java.util.regex.Pattern;
-
 import android.net.Uri;
 
 /**
@@ -107,7 +105,7 @@ public class DocumentsContract {
         String path = documentUri.getPath();
         if (path == null) return null;
         // Pattern: /document/<id> or /tree/<treeId>/document/<id>
-        String[] parts = path.split("/");
+        String[] parts = splitByChar(path, '/');
         for (int i = 0; i < parts.length - 1; i++) {
             if ("document".equals(parts[i])) {
                 return parts[i + 1];
@@ -123,7 +121,7 @@ public class DocumentsContract {
         if (treeUri == null) return null;
         String path = treeUri.getPath();
         if (path == null) return null;
-        String[] parts = path.split("/");
+        String[] parts = splitByChar(path, '/');
         for (int i = 0; i < parts.length - 1; i++) {
             if ("tree".equals(parts[i])) {
                 return parts[i + 1];
@@ -224,6 +222,18 @@ public class DocumentsContract {
     /**
      * Remove a document from a parent. Stub — always returns false.
      */
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
+    }
+
     public static boolean removeDocument(Object contentResolver, Uri documentUri, Uri parentDocumentUri) {
         return false;
     }

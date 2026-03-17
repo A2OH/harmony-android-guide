@@ -227,7 +227,6 @@ public class LruCache {
     public final synchronized String toString() {
         int accesses = hitCount + missCount;
         int hitPercent = accesses != 0 ? (100 * hitCount / accesses) : 0;
-        return String.format("LruCache[maxSize=%d,hits=%d,misses=%d,hitRate=%d%%]",
-                maxSize, hitCount, missCount, hitPercent);
+        return "LruCache[maxSize=" + maxSize + ",hits=" + hitCount + ",misses=" + missCount + ",hitRate=" + hitPercent + "%]";
     }
 }

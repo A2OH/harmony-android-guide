@@ -58,7 +58,7 @@ public class ApkLoader {
                 ZipEntry entry = entries.nextElement();
                 String name = entry.getName();
 
-                if (name.matches("classes\\d*\\.dex")) {
+                if (isDexFileName(name)) {
                     File dexOut = new File(extractDir, name);
                     extractEntry(zip, entry, dexOut);
                     info.dexPaths.add(dexOut.getAbsolutePath());
@@ -182,6 +182,25 @@ public class ApkLoader {
         }
 
         return info;
+    }
+
+    /** Check if a filename matches classes*.dex pattern */
+    private static boolean isDexFileName(String name) {
+        if (name.equals("classes.dex")) return true;
+        if (name.startsWith("classes") && name.endsWith(".dex")) {
+            String mid = name.substring(7, name.length() - 4);
+            return isDigits(mid);
+        }
+        return false;
+    }
+
+    private static boolean isDigits(String s) {
+        if (s == null || s.isEmpty()) return false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') return false;
+        }
+        return true;
     }
 
     /**

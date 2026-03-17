@@ -30,7 +30,7 @@ public final class ULocale {
     private static Locale parseLocaleID(String id) {
         if (id == null || id.isEmpty()) return Locale.getDefault();
         // Support BCP-47 tags and underscore-separated ids
-        String[] parts = id.replace('-', '_').split("_");
+        String[] parts = splitByChar(id.replace('-', '_'), '_');
         String lang    = parts.length > 0 ? parts[0] : "";
         String country = parts.length > 1 ? parts[1] : "";
         String variant = parts.length > 2 ? parts[2] : "";
@@ -92,6 +92,18 @@ public final class ULocale {
     /** Returns the underlying java.util.Locale for interop. */
     public Locale toLocale() {
         return locale;
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     @Override

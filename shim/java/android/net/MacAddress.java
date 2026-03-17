@@ -38,7 +38,7 @@ public final class MacAddress {
         if (addr == null) {
             throw new IllegalArgumentException("MAC address string must not be null");
         }
-        String[] parts = addr.split(":");
+        String[] parts = splitByChar(addr, ':');
         if (parts.length != 6) {
             throw new IllegalArgumentException("Invalid MAC address: " + addr);
         }
@@ -89,9 +89,18 @@ public final class MacAddress {
 
     @Override
     public String toString() {
-        return String.format("%02X:%02X:%02X:%02X:%02X:%02X",
-                mAddr[0] & 0xFF, mAddr[1] & 0xFF, mAddr[2] & 0xFF,
-                mAddr[3] & 0xFF, mAddr[4] & 0xFF, mAddr[5] & 0xFF);
+        StringBuilder sb = new StringBuilder(17);
+        for (int i = 0; i < 6; i++) {
+            if (i > 0) sb.append(':');
+            sb.append(toHex((mAddr[i] & 0xFF), 2));
+        }
+        return sb.toString();
+    }
+
+    private static String toHex(int val, int digits) {
+        String hex = Integer.toHexString(val).toUpperCase();
+        while (hex.length() < digits) hex = "0" + hex;
+        return hex;
     }
 
     @Override
@@ -99,6 +108,18 @@ public final class MacAddress {
         if (this == o) return true;
         if (!(o instanceof MacAddress)) return false;
         return Arrays.equals(mAddr, ((MacAddress) o).mAddr);
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.ArrayList<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     @Override

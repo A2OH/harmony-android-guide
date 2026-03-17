@@ -38,7 +38,36 @@ public class Resources {
     }
 
     public String getString(int id, Object... formatArgs) {
-        return String.format(getString(id), formatArgs);
+        // Simple substitution: replace %s, %d, %f etc. with arg.toString()
+        // Cannot use String.format (JNI native on KitKat Dalvik)
+        String template = getString(id);
+        if (formatArgs == null || formatArgs.length == 0) return template;
+        StringBuilder sb = new StringBuilder();
+        int argIdx = 0;
+        for (int i = 0; i < template.length(); i++) {
+            char c = template.charAt(i);
+            if (c == '%' && i + 1 < template.length() && argIdx < formatArgs.length) {
+                char next = template.charAt(i + 1);
+                if (next == '%') {
+                    sb.append('%');
+                    i++;
+                } else {
+                    // Skip format specifier chars until we hit the conversion char
+                    int j = i + 1;
+                    while (j < template.length() && "0123456789.-+ #,(".indexOf(template.charAt(j)) >= 0) j++;
+                    if (j < template.length()) {
+                        sb.append(formatArgs[argIdx] != null ? formatArgs[argIdx].toString() : "null");
+                        argIdx++;
+                        i = j; // skip the conversion char
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     public CharSequence getText(int id) {

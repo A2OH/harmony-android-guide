@@ -96,11 +96,23 @@ public final class LocaleList {
      */
     public static LocaleList forLanguageTags(String list) {
         if (list == null || list.isEmpty()) return EMPTY_LOCALE_LIST;
-        String[] tags = list.split(",");
+        String[] tags = splitByChar(list, ',');
         Locale[] locales = new Locale[tags.length];
         for (int i = 0; i < tags.length; i++) {
             locales[i] = Locale.forLanguageTag(tags[i].trim());
         }
         return new LocaleList(locales);
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 }

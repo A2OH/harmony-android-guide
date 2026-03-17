@@ -84,7 +84,7 @@ public class UriMatcher {
         if (path == null || path.isEmpty()) {
             tokens = new String[0];
         } else {
-            tokens = path.split("/", -1);
+            tokens = splitByChar(path, '/');
         }
 
         // Navigate / build the trie path: root -> authority -> path segments
@@ -132,7 +132,7 @@ public class UriMatcher {
 
         String[] pathSegments = (path == null || path.isEmpty())
                 ? new String[0]
-                : path.split("/", -1);
+                : splitByChar(path, '/');
 
         // Walk trie: root -> authority -> path segments
         Node node = matchChild(mRoot, authority);
@@ -169,6 +169,18 @@ public class UriMatcher {
         if (digitWild != null) return digitWild;
         if (anyWild   != null) return anyWild;
         return null;
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     /** @return true if the string consists entirely of ASCII digit characters */

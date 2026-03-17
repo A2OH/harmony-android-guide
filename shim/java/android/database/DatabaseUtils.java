@@ -137,7 +137,9 @@ public class DatabaseUtils {
         String key = getCollationKey(name);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < key.length(); i++) {
-            sb.append(String.format("%04x", (int) key.charAt(i)));
+            String hex = Integer.toHexString((int) key.charAt(i));
+            for (int p = hex.length(); p < 4; p++) sb.append('0');
+            sb.append(hex);
         }
         return sb.toString();
     }

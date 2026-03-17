@@ -112,7 +112,7 @@ public class LayoutInflater {
                     java.io.File xmlFile = new java.io.File(resDir, layoutPath);
                     if (!xmlFile.exists()) {
                         // Try without res/ prefix
-                        xmlFile = new java.io.File(resDir, layoutPath.replaceFirst("^res/", ""));
+                        xmlFile = new java.io.File(resDir, layoutPath.startsWith("res/") ? layoutPath.substring(4) : layoutPath);
                     }
                     if (xmlFile.exists()) {
                         return readFile(xmlFile);

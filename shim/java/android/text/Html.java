@@ -78,12 +78,10 @@ public final class Html {
      */
     public static Spanned fromHtml(String source, int flags, ImageGetter imageGetter) {
         if (source == null) return new SpannableString("");
-        // Strip HTML tags
-        String plain = source
-                .replaceAll("(?s)<br\\s*/?>", "\n")
-                .replaceAll("(?s)<p[^>]*>", "")
-                .replaceAll("(?s)</p>", "\n")
-                .replaceAll("(?s)<[^>]+>", "")
+        // Strip HTML tags using manual indexOf loops (no regex JNI)
+        String plain = stripTags(source);
+        // Decode HTML entities
+        plain = plain
                 .replace("&amp;",  "&")
                 .replace("&lt;",   "<")
                 .replace("&gt;",   ">")
@@ -92,7 +90,7 @@ public final class Html {
                 .replace("&nbsp;", "\u00a0");
         if ((flags & FROM_HTML_MODE_LEGACY) == 0) {
             // compact mode: collapse multiple newlines
-            plain = plain.replaceAll("\n{2,}", "\n");
+            plain = collapseNewlines(plain);
         }
         return new SpannableString(plain.trim());
     }
@@ -149,6 +147,56 @@ public final class Html {
                 case '"':  sb.append("&quot;"); break;
                 case '\'': sb.append("&#39;"); break;
                 default:   sb.append(c); break;
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Strip all HTML tags, replacing <br> and </p> with newlines. */
+    private static String stripTags(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        int i = 0;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (c == '<') {
+                // Find closing >
+                int end = s.indexOf('>', i);
+                if (end < 0) {
+                    // No closing bracket, keep rest
+                    sb.append(s, i, s.length());
+                    break;
+                }
+                String tag = s.substring(i, end + 1).toLowerCase();
+                // Replace <br>, <br/>, <br /> with newline
+                if (tag.startsWith("<br")) {
+                    sb.append('\n');
+                }
+                // Replace </p> with newline
+                if (tag.equals("</p>")) {
+                    sb.append('\n');
+                }
+                // Skip all other tags (including <p...>)
+                i = end + 1;
+            } else {
+                sb.append(c);
+                i++;
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Collapse runs of 2+ newlines into a single newline. */
+    private static String collapseNewlines(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        int nlCount = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\n') {
+                nlCount++;
+                if (nlCount <= 1) sb.append(c);
+            } else {
+                nlCount = 0;
+                sb.append(c);
             }
         }
         return sb.toString();

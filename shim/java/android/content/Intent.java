@@ -659,7 +659,7 @@ public class Intent implements Cloneable, Parcelable {
             if (fragmentPart.endsWith("end")) {
                 fragmentPart = fragmentPart.substring(0, fragmentPart.length() - 3);
             }
-            String[] pairs = fragmentPart.split(";");
+            String[] pairs = splitByChar(fragmentPart, ';');
             for (String pair : pairs) {
                 if (pair.isEmpty()) continue;
                 int eq = pair.indexOf('=');
@@ -784,6 +784,18 @@ public class Intent implements Cloneable, Parcelable {
 
     public static String normalizeMimeType(String type) {
         return normalizeType(type);
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<String>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     private static String normalizeType(String type) {

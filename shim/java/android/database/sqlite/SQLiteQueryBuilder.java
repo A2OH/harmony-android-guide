@@ -4,7 +4,6 @@ import android.content.res.Configuration;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Android-compatible SQLiteQueryBuilder shim.
@@ -14,8 +13,17 @@ import java.util.regex.Pattern;
  */
 public class SQLiteQueryBuilder {
 
-    private static final Pattern PATTERN_COLUMN_NAME =
-            Pattern.compile("[_a-zA-Z][_a-zA-Z0-9]*");
+    /** Returns true if s is a valid SQL column name [_a-zA-Z][_a-zA-Z0-9]* */
+    private static boolean isValidColumnName(String s) {
+        if (s == null || s.isEmpty()) return false;
+        char first = s.charAt(0);
+        if (first != '_' && !(first >= 'a' && first <= 'z') && !(first >= 'A' && first <= 'Z')) return false;
+        for (int i = 1; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c != '_' && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9')) return false;
+        }
+        return true;
+    }
 
     private String mTables = "";
     private StringBuilder mWhereClause = null;

@@ -80,7 +80,9 @@ public class CartManager {
     }
 
     public String getCartTotalString() {
-        return String.format("$%.2f", getCartTotal());
+        double total = getCartTotal();
+        int cents = (int)(total * 100 + 0.5);
+        return "$" + (cents / 100) + "." + (cents % 100 < 10 ? "0" : "") + (cents % 100);
     }
 
     /** Clear the cart and increment order count. */
@@ -121,7 +123,8 @@ public class CartManager {
         }
 
         public String getPriceString() {
-            return String.format("$%.2f", price);
+            int cents = (int)(price * 100 + 0.5);
+            return "$" + (cents / 100) + "." + (cents % 100 < 10 ? "0" : "") + (cents % 100);
         }
     }
 

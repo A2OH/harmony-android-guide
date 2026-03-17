@@ -78,12 +78,29 @@ public class TextUtils {
         if (text.length() == 0) {
             return new String[0];
         }
+        // For single-char delimiters, use indexOf-based splitting to avoid regex JNI
+        if (expression.length() == 1) {
+            return splitByChar(text, expression.charAt(0));
+        }
+        // Fallback for multi-char patterns (rare in practice)
         return text.split(expression, -1);
     }
 
     /**
      * Returns true if the string is composed entirely of digits.
      */
+    private static String[] splitByChar(String s, char delim) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
+    }
+
     public static boolean isDigitsOnly(CharSequence str) {
         final int len = str.length();
         if (len == 0) return false;

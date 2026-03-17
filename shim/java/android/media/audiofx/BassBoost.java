@@ -49,14 +49,30 @@ public class BassBoost extends AudioEffect {
             // parse "BassBoost;strength=NNN"
             strength = 0;
             if (settings != null && settings.startsWith("BassBoost;")) {
-                String[] parts = settings.substring("BassBoost;".length()).split(";");
+                String[] parts = splitByChar(settings.substring("BassBoost;".length()), ';');
                 for (String kv : parts) {
-                    String[] pair = kv.split("=");
-                    if (pair.length == 2 && "strength".equals(pair[0].trim())) {
-                        try { strength = Short.parseShort(pair[1].trim()); } catch (NumberFormatException ignored) {}
+                    int eq = kv.indexOf('=');
+                    if (eq >= 0) {
+                        String key = kv.substring(0, eq).trim();
+                        String val = kv.substring(eq + 1).trim();
+                        if ("strength".equals(key)) {
+                            try { strength = Short.parseShort(val); } catch (NumberFormatException ignored) {}
+                        }
                     }
                 }
             }
+        }
+
+        private static String[] splitByChar(String s, char delim) {
+            java.util.List<String> parts = new java.util.ArrayList<>();
+            int start = 0;
+            for (int i = 0; i <= s.length(); i++) {
+                if (i == s.length() || s.charAt(i) == delim) {
+                    parts.add(s.substring(start, i));
+                    start = i + 1;
+                }
+            }
+            return parts.toArray(new String[0]);
         }
 
         @Override

@@ -34,7 +34,8 @@ public class ItemDetailActivity extends Activity {
         root.addView(nameView);
 
         TextView priceView = new TextView();
-        priceView.setText(String.format("$%.2f", itemPrice));
+        int cents = (int)(itemPrice * 100 + 0.5);
+        priceView.setText("$" + (cents / 100) + "." + (cents % 100 < 10 ? "0" : "") + (cents % 100));
         priceView.setTextSize(18);
         priceView.setTextColor(0xFF008800);
         root.addView(priceView);

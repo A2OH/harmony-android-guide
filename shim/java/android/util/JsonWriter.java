@@ -220,7 +220,10 @@ public final class JsonWriter implements Closeable, Flushable {
                 case '\t': out.write("\\t");  break;
                 default:
                     if (c < 0x20) {
-                        out.write(String.format("\\u%04x", (int) c));
+                        out.write("\\u");
+                        String hex = Integer.toHexString(c);
+                        for (int p = hex.length(); p < 4; p++) out.write('0');
+                        out.write(hex);
                     } else {
                         out.write(c);
                     }

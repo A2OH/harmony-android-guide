@@ -228,7 +228,7 @@ public class RectF {
 
     public static RectF unflattenFromString(String str) {
         if (str == null) return null;
-        String[] parts = str.split(" ");
+        String[] parts = splitByChar(str, ' ');
         if (parts.length != 4) return null;
         try {
             return new RectF(
@@ -262,6 +262,18 @@ public class RectF {
         result = 31 * result + Float.floatToIntBits(right);
         result = 31 * result + Float.floatToIntBits(bottom);
         return result;
+    }
+
+    private static String[] splitByChar(String s, char delim) {
+        java.util.ArrayList<String> parts = new java.util.ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= s.length(); i++) {
+            if (i == s.length() || s.charAt(i) == delim) {
+                parts.add(s.substring(start, i));
+                start = i + 1;
+            }
+        }
+        return parts.toArray(new String[0]);
     }
 
     @Override

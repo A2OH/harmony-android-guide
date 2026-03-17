@@ -59,7 +59,9 @@ public class Signature {
     public String toCharsString() {
         StringBuilder sb = new StringBuilder(mBytes.length * 2);
         for (byte b : mBytes) {
-            sb.append(String.format("%02x", b & 0xff));
+            String hex = Integer.toHexString(b & 0xff);
+            if (hex.length() < 2) sb.append('0');
+            sb.append(hex);
         }
         return sb.toString();
     }
