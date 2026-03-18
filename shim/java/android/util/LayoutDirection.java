@@ -26,5 +26,7 @@ public final class LayoutDirection {
      */
     public static final int LOCALE = 3;
 
+    public static final int UNDEFINED = -1;
+
     private LayoutDirection() {}
 }

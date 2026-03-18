@@ -7,6 +7,9 @@ import java.util.Set;
  */
 public class ActionMode {
 
+    public static final int TYPE_PRIMARY = 0;
+    public static final int TYPE_FLOATING = 1;
+
     private Object mTag;
     private boolean mTitleOptionalHint;
 
@@ -38,6 +41,15 @@ public class ActionMode {
     public void invalidate() {
         // no-op stub
     }
+
+    /** Set a custom view for the action mode. */
+    public void setCustomView(View view) {}
+
+    /** Return the custom view, if any. */
+    public View getCustomView() { return null; }
+
+    /** Return the menu inflater for this action mode. */
+    public MenuInflater getMenuInflater() { return null; }
 
     /** Set a tag object associated with this action mode. */
     public void setTag(Object tag) {
@@ -75,4 +87,7 @@ public class ActionMode {
         /** Called when an action mode is about to be destroyed. */
         void onDestroyActionMode(ActionMode mode);
     }
+
+    /** Auto-generated stub. */
+    public static interface Callback {}
 }

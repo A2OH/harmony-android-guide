@@ -106,6 +106,10 @@ public class Canvas {
         if (nativeCanvas != 0) OHBridge.canvasDrawColor(nativeCanvas, color);
     }
 
+    public void drawColor(int color, PorterDuff.Mode mode) {
+        drawColor(color);
+    }
+
     public void drawRect(float left, float top, float right, float bottom, Paint paint) {
         if (nativeCanvas != 0) {
             OHBridge.canvasDrawRect(nativeCanvas, left, top, right, bottom, penFor(paint), brushFor(paint));
@@ -214,11 +218,40 @@ public class Canvas {
 
     public void drawPicture(Picture picture) { /* no-op */ }
 
+    public void drawLines(float[] pts, Paint paint) { /* no-op stub */ }
+    public void drawLines(float[] pts, int offset, int count, Paint paint) { /* no-op stub */ }
+
+    // ── Reorder barriers (for RenderNode-based drawing) ──────────────────────
+    public void insertReorderBarrier() { /* no-op stub */ }
+    public void insertInorderBarrier() { /* no-op stub */ }
+
+    /** Returns true if this canvas is recording for the given RenderNode. */
+    public boolean isRecordingFor(Object displayList) { return false; }
+
+    /** @deprecated Use save() instead. */
+    public static final int CLIP_SAVE_FLAG = 0x02;
+    public static boolean sCompatibilityRestore = false;
+    public static boolean sCompatibilitySetBitmap = false;
+
+    public static void setCompatibilityVersion(int apiLevel) {}
+    public boolean isHardwareAccelerated() { return false; }
+    public boolean quickReject(int left, int top, int right, int bottom) { return false; }
+    public boolean quickReject(float left, float top, float right, float bottom, EdgeType type) { return false; }
+    public int saveUnclippedLayer(int left, int top, int right, int bottom) { return save(); }
+    public void restoreUnclippedLayer(int saveCount, Paint paint) { restoreToCount(saveCount); }
+    public void setBitmap(Bitmap bm) { /* no-op */ }
+
+    public enum EdgeType { BW, AA }
+
     // ── Transform stack ──────────────────────────────────────────────────────
 
     public int save() {
         if (nativeCanvas != 0) OHBridge.canvasSave(nativeCanvas);
         return ++saveDepth;
+    }
+
+    public int save(int saveFlags) {
+        return save();
     }
 
     public int saveLayerAlpha(float left, float top, float right, float bottom, int alpha) {
@@ -297,6 +330,9 @@ public class Canvas {
         return new Matrix();
     }
 
+    public boolean clipRect(Rect rect) { return true; }
+    public boolean clipRect(RectF rect) { return true; }
+    public boolean clipRect(int left, int top, int right, int bottom) { return true; }
     public void clipRect(float left, float top, float right, float bottom) {
         if (nativeCanvas != 0) OHBridge.canvasClipRect(nativeCanvas, left, top, right, bottom);
     }

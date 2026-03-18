@@ -29,6 +29,13 @@ public class AnimationUtils {
     }
 
     /**
+     * Loads a layout animation controller from a resource id.
+     */
+    public static LayoutAnimationController loadLayoutAnimation(Object context, int id) {
+        return new LayoutAnimationController();
+    }
+
+    /**
      * Loads an interpolator from a resource id. Returns a linear interpolator stub.
      *
      * @param context ignored in this shim

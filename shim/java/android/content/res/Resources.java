@@ -38,6 +38,14 @@ public class Resources {
     /** Minimal Theme stub so getColor(int, Theme) / getDrawable(int, Theme) compile. */
     public static class Theme {
         public Theme() {}
+        public boolean resolveAttribute(int resid, android.util.TypedValue outValue, boolean resolveRefs) { return false; }
+        public int[] getAttributeResolutionStack(int defStyleAttr, int defStyleRes, int explicitStyleRes) { return new int[0]; }
+        public TypedArray obtainStyledAttributes(int[] attrs) { return new TypedArray(); }
+        public TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs) { return new TypedArray(); }
+        public TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) { return new TypedArray(); }
+        public TypedArray obtainStyledAttributes(int resid, int[] attrs) { return new TypedArray(); }
+        public void encode(Object encoder) {}
+        public int getExplicitStyle(android.util.AttributeSet set) { return 0; }
     }
 
     private final DisplayMetrics mDisplayMetrics = new DisplayMetrics();
@@ -291,4 +299,12 @@ public class Resources {
     public Configuration getConfiguration() {
         return mConfiguration;
     }
+
+    // Additional methods needed by AOSP View/TextView
+    public static final int ID_NULL = 0;
+    public static int getAttributeSetSourceResId(Object attrs) { return 0; }
+    public CompatibilityInfo getCompatibilityInfo() { return new CompatibilityInfo(); }
+    public String getResourcePackageName(int resId) { return ""; }
+    public android.content.res.XmlResourceParser getXml(int id) { return null; }
+    public static boolean resourceHasPackage(int resId) { return (resId >>> 24) != 0; }
 }

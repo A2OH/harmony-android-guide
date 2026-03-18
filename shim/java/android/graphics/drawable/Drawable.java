@@ -187,6 +187,20 @@ public class Drawable {
     public int getChangingConfigurations() { return 0; }
     public void setChangingConfigurations(int configs) {}
 
+    // Methods needed for View.java compilation
+    public android.graphics.Insets getOpticalInsets() { return android.graphics.Insets.NONE; }
+    public boolean isProjected() { return false; }
+    public void copyBounds(android.graphics.Rect bounds) {
+        if (bounds != null) {
+            bounds.set(this.bounds.left, this.bounds.top, this.bounds.right, this.bounds.bottom);
+        }
+    }
+    public android.graphics.Rect getDirtyBounds() { return getBounds(); }
+    public android.graphics.Region getTransparentRegion() { return null; }
+    public void getHotspotBounds(android.graphics.Rect outRect) {
+        if (outRect != null) outRect.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
+    }
+
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override

@@ -80,4 +80,8 @@ public class InputDevice {
         public float getFlat() { return mFlat; }
         public float getFuzz() { return mFuzz; }
     }
+
+    /** Auto-generated stub. */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)
+    public @interface InputSourceClass {}
 }

@@ -7,6 +7,7 @@ import android.os.Parcelable;
 public final class AccessibilityWindowInfo implements Parcelable {
     public static final int TYPE_ACCESSIBILITY_OVERLAY = 0;
     public static final int TYPE_APPLICATION = 0;
+    public static final int UNDEFINED_WINDOW_ID = -1;
     public static final int TYPE_INPUT_METHOD = 0;
     public static final int TYPE_SPLIT_SCREEN_DIVIDER = 0;
     public static final int TYPE_SYSTEM = 0;

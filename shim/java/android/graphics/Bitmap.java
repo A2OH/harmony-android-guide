@@ -97,6 +97,13 @@ public class Bitmap {
         return 0;
     }
 
+    // Methods needed for View.java compilation
+    public void eraseColor(int color) { /* no-op */ }
+    public void setDensity(int density) { /* no-op */ }
+    public void setHasAlpha(boolean hasAlpha) { /* no-op */ }
+    public boolean hasAlpha() { return true; }
+    public int getDensity() { return 160; }
+
     @Override
     public String toString() {
         return "Bitmap(" + width + "x" + height + ", " + config + ")";

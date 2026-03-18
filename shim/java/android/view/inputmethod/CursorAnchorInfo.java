@@ -5,6 +5,9 @@ package android.view.inputmethod;
  * Positional information about the text insertion po(int and composing text.
  */
 public class CursorAnchorInfo {
+    public static final int FLAG_HAS_VISIBLE_REGION = 0x01;
+    public static final int FLAG_HAS_INVISIBLE_REGION = 0x02;
+    public static final int FLAG_IS_RTL = 0x04;
     private int mSelectionStart;
     private int mSelectionEnd;
     private int mComposingTextStart;
@@ -73,6 +76,12 @@ public class CursorAnchorInfo {
             mInsertionMarkerBottom = lineBottom;
             return this;
         }
+
+        public Builder addCharacterBounds(int index, float left, float top, float right, float bottom, int flags) {
+            return this;
+        }
+
+        public Builder setMatrix(android.graphics.Matrix matrix) { return this; }
 
         public CursorAnchorInfo build() {
             return new CursorAnchorInfo(this);

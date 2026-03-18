@@ -62,4 +62,8 @@ public class Typeface {
     public int getWeight() { return mWeight; }
     public boolean isBold() { return (mStyle & BOLD) != 0; }
     public boolean isItalic() { return (mStyle & ITALIC) != 0; }
+
+    /** Auto-generated stub. */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)
+    public @interface Style {}
 }

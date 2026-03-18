@@ -61,4 +61,7 @@ public class ContentCaptureSession implements AutoCloseable {
     public void close() {
         destroy();
     }
+
+    public Object getId() { return null; }
+    public void internalNotifyViewTreeEvent(boolean started) {}
 }

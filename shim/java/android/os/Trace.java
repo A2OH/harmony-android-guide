@@ -6,6 +6,10 @@ package android.os;
  */
 public final class Trace {
 
+    public static final long TRACE_TAG_VIEW = 1L << 3;
+    public static final long TRACE_TAG_INPUT = 1L << 2;
+    public static final long TRACE_TAG_APP = 1L << 12;
+
     private Trace() {}
 
     /** Writes a trace begin event for the given section name. No-op in shim. */
@@ -30,4 +34,6 @@ public final class Trace {
 
     /** Writes a trace counter event. No-op in shim. */
     public static void setCounter(String counterName, long counterValue) {}
+    public static void traceBegin(long traceTag, String methodName) {}
+    public static void traceEnd(long traceTag) {}
 }

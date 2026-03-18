@@ -22,14 +22,18 @@ public class Animation {
     public static final int RELATIVE_TO_SELF   = 1;
     public static final int RELATIVE_TO_PARENT = 2;
 
+    public static final long START_ON_FIRST_FRAME = -1;
+
     // ── State ──
     private long    mDuration    = 0;
+    private long    mStartTime   = START_ON_FIRST_FRAME;
     private int     mRepeatCount = 0;
     private int     mRepeatMode  = RESTART;
     private boolean mFillAfter   = false;
     private boolean mFillBefore  = true;
     private boolean mStarted     = false;
     private boolean mRunning     = false;
+    private boolean mInitialized = false;
     private AnimationListener mListener;
 
     // ── Duration ──
@@ -89,6 +93,21 @@ public class Animation {
     protected void applyTransformation(float interpolatedTime, Object t) {
         // no-op — subclasses implement
     }
+
+    // Missing methods for View.java compilation
+    public long getStartTime() { return mStartTime; }
+    public void setStartTime(long startTimeMillis) { mStartTime = startTimeMillis; }
+    public boolean isInitialized() { return mInitialized; }
+    public void initialize(int width, int height, int parentWidth, int parentHeight) { mInitialized = true; }
+    public void initializeInvalidateRegion(int left, int top, int right, int bottom) {}
+    public void getInvalidateRegion(int left, int top, int right, int bottom, android.graphics.RectF region, android.view.animation.Transformation t) {}
+    public boolean getTransformation(long currentTime, android.view.animation.Transformation outTransformation) { return false; }
+    public boolean getTransformation(long currentTime, android.view.animation.Transformation outTransformation, float scale) { return false; }
+    public boolean hasAlpha() { return false; }
+    public boolean willChangeBounds() { return false; }
+    public boolean willChangeTransformationMatrix() { return false; }
+    public void setListenerHandler(android.os.Handler handler) {}
+    public void detach() {}
 
     // ── AnimationListener interface ──
 

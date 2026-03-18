@@ -1,7 +1,6 @@
 package android.animation;
 import android.transition.Transition;
-import android.view.ViewGroup;
-import android.transition.Transition;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.HashMap;
@@ -113,5 +112,44 @@ public class LayoutTransition {
      */
     public boolean isTransitionTypeEnabled(int transitionType) {
         return mEnabledTransitionTypes.contains(transitionType);
+    }
+
+    /** Show a child that was previously hidden. */
+    public void showChild(ViewGroup parent, View child, int oldVisibility) {}
+
+    /** Hide a child view. */
+    public void hideChild(ViewGroup parent, View child, int newVisibility) {}
+
+    /** Called when a child is added to the parent. */
+    public void addChild(ViewGroup parent, View child) {}
+
+    /** Called when a child is removed from the parent. */
+    public void removeChild(ViewGroup parent, View child) {}
+
+    /** Cancel a running transition of the specified type. */
+    public void cancel(int transitionType) {}
+
+    /** Cancel all running transitions. */
+    public void cancel() {}
+
+    /** Returns whether a layout change transition is currently running. */
+    public boolean isChangingLayout() { return false; }
+
+    /** Returns whether any transition is currently running. */
+    public boolean isRunning() { return false; }
+
+    /** Notify that a layout change has occurred. */
+    public void layoutChange(ViewGroup parent) {}
+
+    /** Add a listener for transition events. */
+    public void addTransitionListener(TransitionListener listener) {}
+
+    /** Remove a transition listener. */
+    public void removeTransitionListener(TransitionListener listener) {}
+
+    /** Listener for layout transition events. */
+    public interface TransitionListener {
+        void startTransition(LayoutTransition transition, ViewGroup container, View view, int transitionType);
+        void endTransition(LayoutTransition transition, ViewGroup container, View view, int transitionType);
     }
 }

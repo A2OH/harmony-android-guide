@@ -1,8 +1,13 @@
 package android.view.accessibility;
+import android.content.Context;
 import android.os.Handler;
 import java.util.List;
 
 public final class AccessibilityManager {
+    private static final AccessibilityManager sInstance = new AccessibilityManager();
+
+    public static AccessibilityManager getInstance(Context context) { return sInstance; }
+
     public static final int FLAG_CONTENT_CONTROLS = 0;
     public static final int FLAG_CONTENT_ICONS = 0;
     public static final int FLAG_CONTENT_TEXT = 0;

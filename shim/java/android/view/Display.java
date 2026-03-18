@@ -17,6 +17,16 @@ import java.util.Set;
  * / OHBridge.getDisplayHeight() when those are wired up.
  */
 public class Display {
+    public static final int STATE_UNKNOWN = 0;
+    public static final int STATE_OFF = 1;
+    public static final int STATE_ON = 2;
+    public static final int STATE_DOZE = 3;
+    public static final int STATE_DOZE_SUSPEND = 4;
+
+    public int getState() { return STATE_ON; }
+    public void getRectSize(android.graphics.Rect outSize) {
+        if (outSize != null) outSize.set(0, 0, 1080, 1920);
+    }
 
     /** Default display ID (matches Android's Display.DEFAULT_DISPLAY). */
     public static final int DEFAULT_DISPLAY = 0;

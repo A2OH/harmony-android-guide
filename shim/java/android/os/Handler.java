@@ -129,4 +129,12 @@ public class Handler {
         Looper looper = mLooper != null ? mLooper : Looper.getMainLooper();
         return looper.getQueue().enqueueMessage(msg, when);
     }
+
+    public Message obtainMessage(int what, Object obj) {
+        Message msg = Message.obtain();
+        msg.what = what;
+        msg.obj = obj;
+        msg.target = this;
+        return msg;
+    }
 }

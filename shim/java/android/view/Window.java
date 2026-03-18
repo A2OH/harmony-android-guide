@@ -204,4 +204,10 @@ public class Window {
     public void takeKeyEvents(boolean p0) {}
     public void takeSurface(Object p0) {}
     public void togglePanel(int p0, KeyEvent p1) {}
+
+    /** Auto-generated stub. */
+    public static interface OnContentApplyWindowInsetsListener {}
+
+    /** Auto-generated stub. */
+    public static interface OnFrameMetricsAvailableListener {}
 }

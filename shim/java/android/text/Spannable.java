@@ -26,4 +26,7 @@ public interface Spannable extends Spanned {
      * @param what the span object to remove
      */
     void removeSpan(Object what);
+
+    /** Auto-generated stub. */
+    public static interface Factory {}
 }

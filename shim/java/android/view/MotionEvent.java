@@ -1,5 +1,5 @@
 package android.view;
-import android.os.SystemClock;
+import android.graphics.Matrix;
 import android.os.SystemClock;
 
 /**
@@ -25,6 +25,16 @@ public final class MotionEvent {
     public static final int ACTION_POINTER_UP   = 6;
 
     public static final int ACTION_OUTSIDE       = 4;
+    public static final int ACTION_HOVER_MOVE    = 7;
+    public static final int ACTION_HOVER_ENTER   = 9;
+    public static final int ACTION_HOVER_EXIT    = 10;
+
+    public static final int ACTION_BUTTON_PRESS   = 11;
+    public static final int ACTION_BUTTON_RELEASE = 12;
+
+    public static final int BUTTON_PRIMARY       = 1;
+    public static final int BUTTON_SECONDARY     = 2;
+    public static final int BUTTON_STYLUS_PRIMARY = 32;
 
     /** Mask to extract the base action from a combined action value. */
     public static final int ACTION_MASK          = 0xff;
@@ -279,9 +289,29 @@ public final class MotionEvent {
     // Additional action constants
     public static final int ACTION_SCROLL = 8;
 
+    public int getActionButton() { return 0; }
+    public int getButtonState() { return 0; }
+    public boolean isTouchEvent() {
+        int a = getActionMasked();
+        return a == ACTION_DOWN || a == ACTION_UP || a == ACTION_MOVE
+            || a == ACTION_CANCEL || a == ACTION_POINTER_DOWN || a == ACTION_POINTER_UP;
+    }
     public float getAxisValue(int axis) { return 0f; }
     public float getAxisValue(int axis, int pointerIndex) { return 0f; }
     public boolean isFromSource(int source) { return false; }
+    public int getHistorySize() { return 0; }
+    public int getPointerIdBits() { return 0; }
+    public MotionEvent split(int idBits) { return obtain(this); }
+    public boolean isHoverExitPending() { return false; }
+    public void setHoverExitPending(boolean hoverExitPending) {}
+    public float getXCursorPosition() { return x; }
+    public float getYCursorPosition() { return y; }
+    public boolean isButtonPressed(int button) { return false; }
+    public void transform(Matrix matrix) {}
+    public void setSource(int source) {}
+    public static MotionEvent obtainNoHistory(MotionEvent event) { return obtain(event); }
+    public static String actionToString(int action) { return "ACTION_" + action; }
+    public int getSequenceNumber() { return 0; }
 
     @Override
     public String toString() {

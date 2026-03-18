@@ -36,4 +36,10 @@ public class ViewOverlay {
     public void clear() {
         // no-op
     }
+
+    /** Returns the overlay view used for drawing. */
+    public View getOverlayView() { return null; }
+
+    /** Returns true if the overlay has no content. */
+    public boolean isEmpty() { return true; }
 }

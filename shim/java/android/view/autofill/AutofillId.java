@@ -11,6 +11,13 @@ public final class AutofillId {
         mViewId = viewId;
     }
 
+    public AutofillId(AutofillId hostId, long virtualChildId, int sessionId) {
+        mViewId = hostId != null ? hostId.mViewId : 0;
+    }
+
+    public int getViewId() { return mViewId; }
+    public boolean isNonVirtual() { return true; }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

@@ -52,4 +52,11 @@ public class AutofillManager {
     public void unregisterCallback(AutofillCallback callback) {
         // stub
     }
+
+    // Methods needed for View.java compilation
+    public void notifyViewEntered(android.view.View view) {}
+    public void notifyViewExited(android.view.View view) {}
+    public void notifyViewClicked(android.view.View view) {}
+    public void notifyViewVisibilityChanged(android.view.View view, boolean isVisible) {}
+    public void notifyViewEnteredForAugmentedAutofill(android.view.View view) {}
 }

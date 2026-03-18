@@ -35,7 +35,15 @@ public class BoringLayout extends Layout {
     }
 
     public static Metrics isBoring(CharSequence text, TextPaint paint) {
-        return isBoring(text, paint, null);
+        return isBoring(text, paint, (Metrics) null);
+    }
+
+    public static Metrics isBoring(CharSequence text, TextPaint paint, TextDirectionHeuristic textDir) {
+        return isBoring(text, paint, textDir, null);
+    }
+
+    public static Metrics isBoring(CharSequence text, TextPaint paint, TextDirectionHeuristic textDir, Metrics metrics) {
+        return isBoring(text, paint, metrics);
     }
 
     public static Metrics isBoring(CharSequence text, TextPaint paint, Metrics metrics) {
@@ -68,11 +76,27 @@ public class BoringLayout extends Layout {
                 metrics, includePad);
     }
 
+    public static BoringLayout make(CharSequence source, TextPaint paint, int outerWidth,
+                                    Alignment align, float spacingMult, float spacingAdd,
+                                    Metrics metrics, boolean includePad, Object ellipsize,
+                                    int ellipsizedWidth) {
+        return new BoringLayout(source, paint, outerWidth, align, spacingMult, spacingAdd,
+                metrics, includePad, ellipsize, ellipsizedWidth);
+    }
+
     public BoringLayout replaceOrMake(CharSequence source, TextPaint paint, int outerWidth,
                                       Alignment align, float spacingMult, float spacingAdd,
                                       Metrics metrics, boolean includePad) {
         return make(source, paint, outerWidth, align, spacingMult, spacingAdd,
                 metrics, includePad);
+    }
+
+    public BoringLayout replaceOrMake(CharSequence source, TextPaint paint, int outerWidth,
+                                      Alignment align, float spacingMult, float spacingAdd,
+                                      Metrics metrics, boolean includePad, Object ellipsize,
+                                      int ellipsizedWidth) {
+        return make(source, paint, outerWidth, align, spacingMult, spacingAdd,
+                metrics, includePad, ellipsize, ellipsizedWidth);
     }
 
     // --- Layout abstract method implementations ---

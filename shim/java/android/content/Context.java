@@ -167,6 +167,10 @@ public class Context {
     public Object getSystemService(String p0) {
         return android.app.SystemServiceRegistry.getService(p0);
     }
+    @SuppressWarnings("unchecked")
+    public <T> T getSystemService(Class<T> serviceClass) {
+        return (T) getSystemService(serviceClass.getSimpleName());
+    }
     public void grantUriPermission(String p0, Uri p1, int p2) {}
     public boolean isDeviceProtectedStorage() { return false; }
     public boolean isRestricted() { return false; }
@@ -230,4 +234,13 @@ public class Context {
 
     public android.graphics.drawable.Drawable getDrawable(int id) { return null; }
     public android.content.res.Resources.Theme getTheme() { return null; }
+    public boolean isAutofillCompatibilityEnabled() { return false; }
+    public Object getAutofillOptions() { return null; }
+    public Object getContentCaptureOptions() { return null; }
+    public int getNextAutofillId() { return 0; }
+    public void startActivityForResult(String who, android.content.Intent intent, int requestCode, android.os.Bundle options) {}
+    public boolean canStartActivityForResult() { return false; }
+    public Context createPackageContextAsUser(String packageName, int flags, android.os.UserHandle user) { return this; }
+    public void startActivityAsUser(android.content.Intent intent, android.os.UserHandle user) {}
+    public boolean canLoadUnsafeResources() { return false; }
 }

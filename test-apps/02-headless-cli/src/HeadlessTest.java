@@ -4466,8 +4466,8 @@ public class HeadlessTest {
         check("non-clickable view does not consume touch", !notConsumed);
 
         // ViewGroup dispatch to child
-        android.view.ViewGroup parent = new android.view.ViewGroup();
-        android.view.View child = new android.view.View();
+        android.view.ViewGroup parent = new android.widget.FrameLayout(new android.content.Context());
+        android.view.View child = new android.view.View(new android.content.Context());
         child.setClickable(true);
         child.layout(0, 0, 100, 100);
         final boolean[] childTouched = {false};
@@ -4479,8 +4479,8 @@ public class HeadlessTest {
         check("ViewGroup touch consumed by child", parentConsumed);
 
         // ViewGroup: touch outside child not dispatched to child
-        android.view.ViewGroup parent2 = new android.view.ViewGroup();
-        android.view.View child2 = new android.view.View();
+        android.view.ViewGroup parent2 = new android.widget.FrameLayout(new android.content.Context());
+        android.view.View child2 = new android.view.View(new android.content.Context());
         child2.setClickable(true);
         child2.layout(0, 0, 50, 50);
         final boolean[] child2Touched = {false};
@@ -4491,7 +4491,7 @@ public class HeadlessTest {
         check("ViewGroup: touch outside child not dispatched", !child2Touched[0]);
 
         // ViewGroup: reverse Z-order (last child gets event first)
-        android.view.ViewGroup parent3 = new android.view.ViewGroup();
+        android.view.ViewGroup parent3 = new android.widget.FrameLayout(new android.content.Context());
         android.view.View childBottom = new android.view.View();
         childBottom.setClickable(true);
         childBottom.layout(0, 0, 100, 100);
@@ -5080,7 +5080,7 @@ public class HeadlessTest {
 
         // ── ViewGroup dispatches to children ──
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.ViewGroup group = new android.view.ViewGroup() {};
+        android.view.ViewGroup group = new android.widget.FrameLayout(new android.content.Context());
         group.addView(customView);
         customView.layout(10, 20, 60, 70);
         group.draw(canvas);
@@ -5244,12 +5244,12 @@ public class HeadlessTest {
         check("FrameLayout: child2 left == 0", fChild2.getLeft() == 0);
         check("FrameLayout: child2 overlaps child1", fChild2.getTop() == 0);
 
-        // ── Item 3: ViewGroup.measureChildren ──
+        // ── Item 3: ViewGroup.measureChildren (protected in AOSP, test via measure) ──
         android.widget.LinearLayout measGroup = new android.widget.LinearLayout(new android.content.Context());
-        android.view.View mChild = new android.view.View();
+        android.view.View mChild = new android.view.View(new android.content.Context());
         measGroup.addView(mChild);
         int parentSpec = android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY);
-        measGroup.measureChildren(parentSpec, parentSpec);
+        measGroup.measure(parentSpec, parentSpec);
         check("measureChildren propagates to child", mChild.getMeasuredWidth() > 0 || mChild.getMeasuredHeight() > 0);
 
         // getChildMeasureSpec
@@ -5417,7 +5417,7 @@ public class HeadlessTest {
 
         // Translation applied in ViewGroup drawChild
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.ViewGroup transGroup = new android.view.ViewGroup() {};
+        android.view.ViewGroup transGroup = new android.widget.FrameLayout(new android.content.Context());
         android.view.View transChild = new android.view.View() {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
@@ -10152,11 +10152,27 @@ public class HeadlessTest {
         clipGroup.setClipChildren(false);
         check("B33 setClipChildren false", !clipGroup.getClipChildren());
 
-        // ── 13. childrenDrawingOrderEnabled ──
-        android.widget.FrameLayout orderGroup = new android.widget.FrameLayout(ctx);
-        check("B33 drawOrderEnabled default false", !orderGroup.isChildrenDrawingOrderEnabled());
-        orderGroup.setChildrenDrawingOrderEnabled(true);
-        check("B33 drawOrderEnabled set true", orderGroup.isChildrenDrawingOrderEnabled());
+        // ── 13. childrenDrawingOrderEnabled (protected in AOSP, test via subclass) ──
+        class TestableFrameLayout extends android.widget.FrameLayout {
+            TestableFrameLayout(android.content.Context c) { super(c); }
+            public boolean testIsDrawOrderEnabled() { return isChildrenDrawingOrderEnabled(); }
+            public void testSetDrawOrderEnabled(boolean b) { setChildrenDrawingOrderEnabled(b); }
+            public boolean testAddViewInLayout(android.view.View v, int idx, android.view.ViewGroup.LayoutParams p) {
+                return addViewInLayout(v, idx, p);
+            }
+            public void testAttachViewToParent(android.view.View v, int idx, android.view.ViewGroup.LayoutParams p) {
+                attachViewToParent(v, idx, p);
+            }
+            public void testDetachViewFromParent(android.view.View v) {
+                detachViewFromParent(v);
+            }
+            public void testDetachAllViewsFromParent() { detachAllViewsFromParent(); }
+            public void testMeasureChildren(int wSpec, int hSpec) { measureChildren(wSpec, hSpec); }
+        }
+        TestableFrameLayout orderGroup = new TestableFrameLayout(ctx);
+        check("B33 drawOrderEnabled default false", !orderGroup.testIsDrawOrderEnabled());
+        orderGroup.testSetDrawOrderEnabled(true);
+        check("B33 drawOrderEnabled set true", orderGroup.testIsDrawOrderEnabled());
 
         // ── 14. OnHierarchyChangeListener ──
         final java.util.ArrayList<String> hierLog = new java.util.ArrayList<String>();
@@ -10178,31 +10194,31 @@ public class HeadlessTest {
         check("B33 hierarchy listener: remove fired", hierLog.size() == 2 && "removed".equals(hierLog.get(1)));
 
         // ── 15. addViewInLayout ──
-        android.widget.FrameLayout layoutParent = new android.widget.FrameLayout(ctx);
+        TestableFrameLayout layoutParent = new TestableFrameLayout(ctx);
         android.view.View layoutChild = new android.view.View(ctx);
-        boolean added = layoutParent.addViewInLayout(layoutChild, 0,
+        boolean added = layoutParent.testAddViewInLayout(layoutChild, 0,
                 new android.view.ViewGroup.LayoutParams(-2, -2));
         check("B33 addViewInLayout returns true", added);
         check("B33 addViewInLayout adds child", layoutParent.getChildCount() == 1);
         check("B33 addViewInLayout child parent set", layoutChild.getParent() == layoutParent);
 
         // ── 16. attachViewToParent / detachViewFromParent ──
-        android.widget.FrameLayout attachParent = new android.widget.FrameLayout(ctx);
+        TestableFrameLayout attachParent = new TestableFrameLayout(ctx);
         android.view.View attachChild = new android.view.View(ctx);
-        attachParent.attachViewToParent(attachChild, 0,
+        attachParent.testAttachViewToParent(attachChild, 0,
                 new android.view.ViewGroup.LayoutParams(-2, -2));
         check("B33 attachViewToParent", attachParent.getChildCount() == 1);
-        attachParent.detachViewFromParent(attachChild);
+        attachParent.testDetachViewFromParent(attachChild);
         check("B33 detachViewFromParent", attachParent.getChildCount() == 0);
         check("B33 detach clears parent", attachChild.getParent() == null);
 
         // ── 17. detachAllViewsFromParent ──
-        android.widget.FrameLayout detachAllParent = new android.widget.FrameLayout(ctx);
+        TestableFrameLayout detachAllParent = new TestableFrameLayout(ctx);
         detachAllParent.addView(new android.view.View(ctx));
         detachAllParent.addView(new android.view.View(ctx));
         detachAllParent.addView(new android.view.View(ctx));
         check("B33 3 children before detachAll", detachAllParent.getChildCount() == 3);
-        detachAllParent.detachAllViewsFromParent();
+        detachAllParent.testDetachAllViewsFromParent();
         check("B33 detachAllViewsFromParent", detachAllParent.getChildCount() == 0);
 
         // ── 18. bringChildToFront ──

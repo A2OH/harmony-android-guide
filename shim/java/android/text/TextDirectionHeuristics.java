@@ -9,15 +9,10 @@ public final class TextDirectionHeuristics {
 
     private TextDirectionHeuristics() {}
 
-    /** Interface matching android.text.TextDirectionHeuristic. */
-    public interface TextDirectionHeuristic {
-        /** Returns true if the text run in the given range is RTL. */
-        boolean isRtl(char[] array, int start, int count);
-    }
-
     private static final class ConstantHeuristic implements TextDirectionHeuristic {
         private final boolean mIsRtl;
         ConstantHeuristic(boolean isRtl) { mIsRtl = isRtl; }
+        @Override public boolean isRtl(CharSequence cs, int start, int count) { return mIsRtl; }
         @Override public boolean isRtl(char[] array, int start, int count) { return mIsRtl; }
     }
 
@@ -25,18 +20,24 @@ public final class TextDirectionHeuristics {
         private final boolean mDefaultRtl;
         FirstStrongHeuristic(boolean defaultRtl) { mDefaultRtl = defaultRtl; }
         @Override
+        public boolean isRtl(CharSequence cs, int start, int count) {
+            if (cs == null) return mDefaultRtl;
+            for (int i = start, end = start + count; i < end && i < cs.length(); i++) {
+                char c = cs.charAt(i);
+                if ((c >= '\u0590' && c <= '\u08FF') || (c >= '\uFB1D' && c <= '\uFDFF')
+                        || (c >= '\uFE70' && c <= '\uFEFF')) return true;
+                if (c < '\u0300') return false;
+            }
+            return mDefaultRtl;
+        }
+        @Override
         public boolean isRtl(char[] array, int start, int count) {
             if (array == null) return mDefaultRtl;
             for (int i = start, end = start + count; i < end; i++) {
                 char c = array[i];
-                // Basic RTL range check (Arabic/Hebrew)
                 if ((c >= '\u0590' && c <= '\u08FF') || (c >= '\uFB1D' && c <= '\uFDFF')
-                        || (c >= '\uFE70' && c <= '\uFEFF')) {
-                    return true;
-                }
-                if (c < '\u0300') {
-                    return false;
-                }
+                        || (c >= '\uFE70' && c <= '\uFEFF')) return true;
+                if (c < '\u0300') return false;
             }
             return mDefaultRtl;
         }
@@ -44,14 +45,22 @@ public final class TextDirectionHeuristics {
 
     private static final class AnyRtlHeuristic implements TextDirectionHeuristic {
         @Override
+        public boolean isRtl(CharSequence cs, int start, int count) {
+            if (cs == null) return false;
+            for (int i = start, end = start + count; i < end && i < cs.length(); i++) {
+                char c = cs.charAt(i);
+                if ((c >= '\u0590' && c <= '\u08FF') || (c >= '\uFB1D' && c <= '\uFDFF')
+                        || (c >= '\uFE70' && c <= '\uFEFF')) return true;
+            }
+            return false;
+        }
+        @Override
         public boolean isRtl(char[] array, int start, int count) {
             if (array == null) return false;
             for (int i = start, end = start + count; i < end; i++) {
                 char c = array[i];
                 if ((c >= '\u0590' && c <= '\u08FF') || (c >= '\uFB1D' && c <= '\uFDFF')
-                        || (c >= '\uFE70' && c <= '\uFEFF')) {
-                    return true;
-                }
+                        || (c >= '\uFE70' && c <= '\uFEFF')) return true;
             }
             return false;
         }
@@ -73,10 +82,5 @@ public final class TextDirectionHeuristics {
     public static final TextDirectionHeuristic ANYRTL_LTR = new AnyRtlHeuristic();
 
     /** Uses the system locale direction. */
-    public static final TextDirectionHeuristic LOCALE = new TextDirectionHeuristic() {
-        @Override
-        public boolean isRtl(char[] array, int start, int count) {
-            return false; // stub: assume LTR locale
-        }
-    };
+    public static final TextDirectionHeuristic LOCALE = new ConstantHeuristic(false);
 }

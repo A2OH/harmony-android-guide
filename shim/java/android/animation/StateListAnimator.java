@@ -30,6 +30,8 @@ public class StateListAnimator implements Cloneable {
 
     public StateListAnimator() {}
 
+    public void setTarget(android.view.View view) {}
+
     /**
      * Associates an Animator with a set of view state attributes.
      *

@@ -2,6 +2,7 @@ package android.view;
 
 public class WindowId {
     public WindowId() {}
+    public WindowId(IWindowId iWindowId) {}
 
     public int describeContents() { return 0; }
     public boolean isFocused() { return false; }

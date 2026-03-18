@@ -448,4 +448,22 @@ public class KeyEvent {
     public String toString() {
         return "KeyEvent{action=" + action + " keyCode=" + keyCode + "}";
     }
+
+    /** Auto-generated stub. */
+    public static interface Callback {}
+
+    /** Auto-generated stub. */
+    public static class DispatcherState {
+        public DispatcherState() {}
+        public void reset(View target) {}
+        public void reset() {}
+        public void startTracking(KeyEvent event, Object target) {}
+        public boolean isTracking(KeyEvent event) { return false; }
+        public void performedLongPress(KeyEvent event) {}
+        public void handleUpEvent(KeyEvent event) {}
+    }
+
+    public static boolean isConfirmKey(int keyCode) {
+        return keyCode == KEYCODE_ENTER || keyCode == KEYCODE_DPAD_CENTER;
+    }
 }

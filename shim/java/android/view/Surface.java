@@ -25,6 +25,8 @@ public class Surface {
     }
 
     public void release() { /* stub: no-op */ }
+    public void destroy() { /* stub: no-op */ }
+    public void copyFrom(SurfaceControl sc) { /* stub: no-op */ }
 
     @Override
     public String toString() { return "Surface{" + mName + "}"; }

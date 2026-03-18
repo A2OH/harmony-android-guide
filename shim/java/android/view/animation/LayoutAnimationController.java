@@ -1,28 +1,33 @@
 package android.view.animation;
 
+import android.view.View;
+
 public class LayoutAnimationController {
     public LayoutAnimationController() {}
+    public LayoutAnimationController(Animation animation) {}
+    public LayoutAnimationController(Animation animation, float delay) {}
 
     public static final int ORDER_NORMAL = 0;
-    public static final int ORDER_RANDOM = 0;
-    public static final int ORDER_REVERSE = 0;
-    public int mAnimation = 0;
-    public int mInterpolator = 0;
-    public int mRandomizer = 0;
-    public Object getAnimation() { return null; }
-    public Object getAnimationForView(Object p0) { return null; }
+    public static final int ORDER_RANDOM = 2;
+    public static final int ORDER_REVERSE = 1;
+
+    public Animation getAnimation() { return null; }
+    public Animation getAnimationForView(View view) { return null; }
     public float getDelay() { return 0f; }
-    public long getDelayForView(Object p0) { return 0L; }
-    public Object getInterpolator() { return null; }
+    public long getDelayForView(View view) { return 0L; }
+    public Interpolator getInterpolator() { return null; }
     public int getOrder() { return 0; }
-    public int getTransformedIndex(Object p0) { return 0; }
     public boolean isDone() { return false; }
-    public void setAnimation(Object p0, Object p1) {}
-    public void setAnimation(Object p0) {}
-    public void setDelay(Object p0) {}
-    public void setInterpolator(Object p0, Object p1) {}
-    public void setInterpolator(Object p0) {}
-    public void setOrder(Object p0) {}
+    public void setAnimation(Animation animation) {}
+    public void setDelay(float delay) {}
+    public void setInterpolator(Interpolator interpolator) {}
+    public void setOrder(int order) {}
     public void start() {}
     public boolean willOverlap() { return false; }
+
+    public static class AnimationParameters {
+        public int count;
+        public int index;
+        public AnimationParameters() {}
+    }
 }

@@ -104,4 +104,13 @@ public class ViewConfiguration {
     public static int getEdgeSlop() { return 12; }
     public static boolean isFadingMarqueeEnabled() { return true; }
     public int getScaledFadingEdgeLength() { return 12; }
+    public int getScaledMaximumDrawingCacheSize() { return 480 * 800 * 4; }
+    public int getScaledHoverSlop() { return TOUCH_SLOP; }
+    public int getScaledMinScrollbarTouchTarget() { return 48; }
+    public float getScaledAmbiguousGestureMultiplier() { return 2.0f; }
+    public static int getHoverTooltipShowTimeout() { return 500; }
+    public static int getHoverTooltipHideTimeout() { return 15000; }
+    public static int getHoverTooltipHideShortTimeout() { return 3000; }
+    public static int getLongPressTooltipHideTimeout() { return 1500; }
+    public static long getSendRecurringAccessibilityEventsInterval() { return 100; }
 }

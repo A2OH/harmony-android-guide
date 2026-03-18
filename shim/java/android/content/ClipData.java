@@ -131,4 +131,5 @@ public class ClipData implements Parcelable {
 
     public int describeContents() { return 0; }
     public void writeToParcel(Parcel p0, int p1) {}
+    public void prepareToLeaveProcess(boolean leavingPackage) {}
 }

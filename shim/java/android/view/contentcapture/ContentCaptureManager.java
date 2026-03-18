@@ -29,4 +29,6 @@ public final class ContentCaptureManager {
     public void removeData(Object request) {
         // stub — content capture not supported on OpenHarmony
     }
+
+    public ContentCaptureSession getMainContentCaptureSession() { return null; }
 }

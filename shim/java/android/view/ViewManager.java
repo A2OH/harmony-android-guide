@@ -5,10 +5,7 @@ package android.view;
  * Interface for adding, updating, and removing views.
  */
 public interface ViewManager {
-
-    void addView(View view, Object layoutParams);
-
-    void updateViewLayout(View view, Object layoutParams);
-
+    void addView(View view, ViewGroup.LayoutParams params);
+    void updateViewLayout(View view, ViewGroup.LayoutParams params);
     void removeView(View view);
 }

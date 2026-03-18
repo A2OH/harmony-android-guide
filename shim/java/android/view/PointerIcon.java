@@ -29,6 +29,7 @@ public final class PointerIcon implements Parcelable {
     public static final int TYPE_WAIT = 0;
     public static final int TYPE_ZOOM_IN = 0;
     public static final int TYPE_ZOOM_OUT = 0;
+    public static final int TYPE_NOT_SPECIFIED = -1;
 
     public PointerIcon() {}
 

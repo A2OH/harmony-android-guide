@@ -1,4 +1,7 @@
 package android.view;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.view.autofill.AutofillId;
 import java.util.Set;
 
 /**
@@ -6,71 +9,51 @@ import java.util.Set;
  * Abstract class used to build an autofill-compatible structure describing
  * the content of a view hierarchy. All methods are stubs.
  */
-public class ViewStructure {
+public abstract class ViewStructure {
 
-    /** Set the class name of the node. */
     public void setClassName(String className) {}
-
-    /** Set the text content of the node. */
     public void setText(CharSequence text) {}
-
-    /** Set line ranges for the text content. */
+    public void setText(CharSequence text, int selectionStart, int selectionEnd) {}
     public void setTextLines(int[] charOffsets, int[] baselines) {}
-
-    /** Set the hint (placeholder) text. */
     public void setHint(CharSequence hint) {}
-
-    /** Set the content description. */
     public void setContentDescription(CharSequence contentDescription) {}
-
-    /** Set the visibility of the node (View.VISIBLE, INVISIBLE, GONE). */
     public void setVisibility(int visibility) {}
-
-    /**
-     * Set the display dimensions of the node.
-     *
-     * @param left    left edge relative to parent
-     * @param top     top edge relative to parent
-     * @param scrollX current horizontal scroll offset
-     * @param scrollY current vertical scroll offset
-     * @param width   width in pixels
-     * @param height  height in pixels
-     */
-    public void setDimens(int left, int top, int scrollX, int scrollY,
-                                   int width, int height) {}
-
-    /** Set the view ID and related resource info for autofill. */
+    public void setDimens(int left, int top, int scrollX, int scrollY, int width, int height) {}
     public void setId(int id, String packageName, String typeName, String entryName) {}
-
-    /**
-     * Set the autofill type of this view.
-     * See View.AUTOFILL_TYPE_* constants.
-     */
     public void setAutofillType(int autofillType) {}
-
-    /** Set the current autofill value. */
     public void setAutofillValue(Object autofillValue) {}
-
-    /** Set the autofill hints for this view. */
     public void setAutofillHints(String[] hints) {}
-
-    /**
-     * Declare that this view has the given number of children.
-     * Must be called before newChild() or asyncNewChild().
-     *
-     * @param num total number of children to be added
-     */
+    public void setAutofillId(AutofillId id) {}
+    public int getChildCount() { return 0; }
+    public void setChildCount(int num) {}
     public void addChildCount(int num) {}
-
-    /**
-     * Create and return a child ViewStructure at the given index.
-     * The caller should populate the returned object.
-     */
     public ViewStructure newChild(int index) { return null; }
-
-    /**
-     * Create and return a child ViewStructure at the given index
-     * for asynchronous population.
-     */
     public ViewStructure asyncNewChild(int index) { return null; }
+
+    // Methods needed for View.java compilation
+    public Rect getTempRect() { return new Rect(); }
+    public void setAccessibilityFocused(boolean focused) {}
+    public void setActivated(boolean activated) {}
+    public void setAssistBlocked(boolean blocked) {}
+    public void setCheckable(boolean checkable) {}
+    public void setChecked(boolean checked) {}
+    public void setClickable(boolean clickable) {}
+    public void setContextClickable(boolean contextClickable) {}
+    public void setDataIsSensitive(boolean sensitive) {}
+    public void setElevation(float elevation) {}
+    public void setEnabled(boolean enabled) {}
+    public void setFocusable(boolean focusable) {}
+    public void setFocused(boolean focused) {}
+    public void setImportantForAutofill(int mode) {}
+    public void setInputType(int inputType) {}
+    public void setLongClickable(boolean longClickable) {}
+    public void setMaxTextLength(int max) {}
+    public void setOpaque(boolean opaque) {}
+    public void setSelected(boolean selected) {}
+    public void setTransformation(Matrix matrix) {}
+    public void setTextStyle(float textSize, int textColor, int bgColor, int style) {}
+    public void setHintIdEntry(String entry) {}
+    public void setTextIdEntry(String entry) {}
+    public void setMaxTextEms(int maxEms) {}
+    public void setMinTextEms(int minEms) {}
 }

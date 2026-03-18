@@ -1,7 +1,15 @@
 package android.graphics;
 
 public class Interpolator {
+    public enum Result {
+        NORMAL,
+        FREEZE_START,
+        FREEZE_END
+    }
+
     public Interpolator() {}
+    public Interpolator(int valueCount) {}
+    public Interpolator(int valueCount, int frameCount) {}
 
     public int getKeyFrameCount() { return 0; }
     public int getValueCount() { return 0; }

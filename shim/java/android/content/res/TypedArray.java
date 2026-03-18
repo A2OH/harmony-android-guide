@@ -106,4 +106,8 @@ public class TypedArray {
     public android.util.TypedValue peekValue(int index) {
         return null;
     }
+
+    public Resources getResources() { return new Resources(); }
+    public int getSourceResourceId(int index, int defValue) { return defValue; }
+    public boolean getValue(int index, android.util.TypedValue outValue) { return false; }
 }

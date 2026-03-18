@@ -1,8 +1,15 @@
 package android.util;
 
-public class FloatProperty {
-    public FloatProperty() {}
+/** AOSP compilation stub. */
+public abstract class FloatProperty<T> extends Property<T, Float> {
+    public FloatProperty(String name) {
+        super(Float.class, name);
+    }
 
-    public void set(Object p0, Object p1) {}
-    public void setValue(Object p0, Object p1) {}
+    public abstract void setValue(T object, float value);
+
+    @Override
+    public final void set(T object, Float value) {
+        setValue(object, value != null ? value : 0f);
+    }
 }

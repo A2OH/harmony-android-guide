@@ -95,8 +95,43 @@ public final class R {
         public static final int View_outlineAmbientShadowColor = 83;
         public static final int View_forceDarkAllowed = 84;
         public static final int View_importantForContentCapture = 85;
+        public static final int View_accessibilityLiveRegion = 86;
+        public static final int View_accessibilityTraversalAfter = 87;
+        public static final int View_accessibilityTraversalBefore = 88;
+        public static final int View_backgroundTint = 89;
+        public static final int View_backgroundTintMode = 90;
+        public static final int View_contextClickable = 91;
+        public static final int View_filterTouchesWhenObscured = 92;
+        public static final int View_foreground = 93;
+        public static final int View_foregroundGravity = 94;
+        public static final int View_foregroundInsidePadding = 95;
+        public static final int View_foregroundTint = 96;
+        public static final int View_foregroundTintMode = 97;
+        public static final int View_importantForAccessibility = 98;
+        public static final int View_labelFor = 99;
+        public static final int View_layoutDirection = 100;
+        public static final int View_nestedScrollingEnabled = 101;
+        public static final int View_nextClusterForward = 102;
+        public static final int View_outlineProvider = 103;
+        public static final int View_pointerIcon = 104;
+        public static final int View_scrollCaptureHint = 105;
+        public static final int View_verticalScrollbarPosition = 106;
 
         // ViewGroup
+        public static final int[] ViewGroup = {};
+        public static final int ViewGroup_clipChildren = 200;
+        public static final int ViewGroup_clipToPadding = 201;
+        public static final int ViewGroup_animationCache = 202;
+        public static final int ViewGroup_persistentDrawingCache = 203;
+        public static final int ViewGroup_addStatesFromChildren = 204;
+        public static final int ViewGroup_alwaysDrawnWithCache = 205;
+        public static final int ViewGroup_layoutAnimation = 206;
+        public static final int ViewGroup_descendantFocusability = 207;
+        public static final int ViewGroup_splitMotionEvents = 208;
+        public static final int ViewGroup_animateLayoutChanges = 209;
+        public static final int ViewGroup_layoutMode = 210;
+        public static final int ViewGroup_transitionGroup = 211;
+        public static final int ViewGroup_touchscreenBlocksFocus = 212;
         public static final int[] ViewGroup_Layout = {};
         public static final int ViewGroup_Layout_layout_width = 86;
         public static final int ViewGroup_Layout_layout_height = 87;
@@ -298,8 +333,26 @@ public final class R {
         public static final int[] ScrollView = {};
         public static final int ScrollView_fillViewport = 255;
 
+        // TextViewAppearance
+        public static final int[] TextViewAppearance = {};
+        public static final int TextViewAppearance_textAppearance = 500;
+
+        // Additional TextView attrs
+        public static final int TextView_allowUndo = 501;
+        public static final int TextView_autoSizeMaxTextSize = 502;
+        public static final int TextView_autoSizeMinTextSize = 503;
+        public static final int TextView_autoSizePresetSizes = 504;
+        public static final int TextView_autoSizeStepGranularity = 505;
+        public static final int TextView_autoSizeTextType = 506;
+        public static final int TextView_textEditSuggestionContainerLayout = 507;
+        public static final int TextView_textEditSuggestionHighlightStyle = 508;
+        public static final int TextView_textEditSuggestionItemLayout = 509;
+        public static final int TextView_textFontWeight = 510;
+        public static final int TextView_textLocale = 511;
+
         // TextAppearance
         public static final int[] TextAppearance = {};
+        public static final int TextAppearance_textLocale = 512;
         public static final int TextAppearance_textColor = 256;
         public static final int TextAppearance_textColorHighlight = 257;
         public static final int TextAppearance_textColorHint = 258;
@@ -328,6 +381,7 @@ public final class R {
         public static final int state_above_anchor = 275;
         public static final int state_expanded = 276;
         public static final int state_multiline = 277;
+        public static final int state_pressed = 278;
         public static final int textEditSuggestionItemLayout = 278;
         public static final int textEditSuggestionContainerLayout = 279;
         public static final int textEditSuggestionHighlightStyle = 280;
@@ -343,6 +397,9 @@ public final class R {
         public static final int switchStyle = 290;
         public static final int seekBarStyle = 291;
         public static final int progressBarStyle = 292;
+        public static final int autofilledHighlight = 293;
+        public static final int listPreferredItemHeight = 294;
+        public static final int selectableItemBackground = 295;
         // RelativeLayout attrs
         public static final int layout_above = 400;
         public static final int layout_alignBaseline = 401;
@@ -386,6 +443,12 @@ public final class R {
         public static final int accessibilityActionScrollUp = 294;
         public static final int accessibilityActionScrollLeft = 295;
         public static final int accessibilityActionScrollRight = 296;
+        public static final int accessibilityActionContextClick = 297;
+        public static final int accessibilityActionShowOnScreen = 298;
+        public static final int accessibilityActionShowTooltip = 299;
+        public static final int accessibilityActionHideTooltip = 300;
+        public static final int accessibilityActionImeEnter = 301;
+        public static final int autofill = 302;
     }
 
     public static final class layout {
@@ -405,17 +468,26 @@ public final class R {
         public static final int paste = 300;
         public static final int undo = 301;
         public static final int redo = 302;
+        public static final int pasteAsPlainText = 303;
+        public static final int replaceText = 304;
+        public static final int share = 305;
+        public static final int shareText = 306;
+        public static final int textAssist = 307;
+        public static final int failed_to_copy_to_clipboard = 308;
+        public static final int keyboardview_keycode_enter = 309;
     }
 
     public static final class drawable {
         public static final int scrollbar_handle_vertical = 303;
         public static final int scrollbar_handle_horizontal = 304;
+        public static final int scroll_indicator_material = 305;
     }
 
     public static final class color {
     }
 
     public static final class bool {
+        public static final int config_useDefaultFocusHighlight = 500;
     }
 
     public static final class integer {

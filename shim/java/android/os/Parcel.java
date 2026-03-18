@@ -117,4 +117,7 @@ public class Parcel {
         if (mData == null) mData = mOut.toByteArray();
         return mData;
     }
+
+    public boolean readBoolean() { return readInt() != 0; }
+    public void writeBoolean(boolean val) { writeInt(val ? 1 : 0); }
 }

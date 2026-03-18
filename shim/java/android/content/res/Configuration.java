@@ -36,4 +36,6 @@ public class Configuration {
     public static final int SCREENLAYOUT_SIZE_XLARGE = 4;
     public int screenLayout = 0;
     public int fontScale = 1;
+
+    public boolean isScreenRound() { return false; }
 }

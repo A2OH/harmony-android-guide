@@ -71,4 +71,7 @@ public interface Editable extends Spannable, Appendable {
         CharSequence filter(CharSequence source, int start, int end,
                             Spanned dest, int dstart, int dend);
     }
+
+    /** Auto-generated stub. */
+    public static interface Factory {}
 }

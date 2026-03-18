@@ -5,6 +5,7 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 
 public final class DisplayCutout {
+    public static final DisplayCutout NO_CUTOUT = new DisplayCutout(Insets.NONE, null, null, null, null);
     public DisplayCutout(Insets p0, Rect p1, Rect p2, Rect p3, Rect p4) {}
     public DisplayCutout(Insets p0, Rect p1, Rect p2, Rect p3, Rect p4, Insets p5) {}
 
@@ -12,4 +13,9 @@ public final class DisplayCutout {
     public int getSafeInsetLeft() { return 0; }
     public int getSafeInsetRight() { return 0; }
     public int getSafeInsetTop() { return 0; }
+
+    /** Auto-generated stub. */
+    public static class ParcelableWrapper {
+        public ParcelableWrapper() {}
+    }
 }

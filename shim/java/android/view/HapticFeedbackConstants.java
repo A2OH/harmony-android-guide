@@ -17,5 +17,8 @@ public class HapticFeedbackConstants {
     public static final int CONFIRM = 16;
     public static final int REJECT = 17;
 
+    public static final int FLAG_IGNORE_VIEW_SETTING = 0x0001;
+    public static final int FLAG_IGNORE_GLOBAL_SETTING = 0x0002;
+
     private HapticFeedbackConstants() {}
 }

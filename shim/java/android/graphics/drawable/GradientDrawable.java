@@ -3,6 +3,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+
+// Field needed by View.java
+// public static boolean sWrapNegativeAngleMeasurements = true;
 import android.graphics.RectF;
 
 /**
@@ -13,6 +16,7 @@ import android.graphics.RectF;
  * optional stroke, and corner radii. Extracted from AOSP draw() logic.
  */
 public class GradientDrawable extends Drawable {
+    public static boolean sWrapNegativeAngleMeasurements = true;
 
     // ── Shape constants ───────────────────────────────────────────────────────
 

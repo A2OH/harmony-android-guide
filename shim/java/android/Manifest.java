@@ -42,6 +42,7 @@ public final class Manifest {
         public static final String READ_MEDIA_VIDEO = "android.permission.READ_MEDIA_VIDEO";
         public static final String READ_MEDIA_AUDIO = "android.permission.READ_MEDIA_AUDIO";
 
+        public static final String INTERACT_ACROSS_USERS_FULL = "android.permission.INTERACT_ACROSS_USERS_FULL";
         private permission() {}
     }
 

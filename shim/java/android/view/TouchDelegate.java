@@ -41,4 +41,7 @@ public class TouchDelegate {
         // no-op stub — always returns false
         return false;
     }
+
+    public boolean onTouchExplorationHoverEvent(MotionEvent event) { return false; }
+    public android.view.accessibility.AccessibilityNodeInfo.TouchDelegateInfo getTouchDelegateInfo() { return null; }
 }

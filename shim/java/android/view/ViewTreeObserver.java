@@ -76,4 +76,14 @@ public class ViewTreeObserver {
     public interface OnScrollChangedListener {
         void onScrollChanged();
     }
+
+    /** Auto-generated stub. */
+    public static class InternalInsetsInfo {
+        public InternalInsetsInfo() {}
+    }
+
+    // Methods needed for View.java
+    ViewTreeObserver(boolean unused) {} // package-private constructor
+    public void dispatchOnGlobalFocusChange(View oldFocus, View newFocus) {}
+    public void merge(ViewTreeObserver other) {}
 }

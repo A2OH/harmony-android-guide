@@ -6,6 +6,11 @@ package android.view;
  */
 public class Choreographer {
 
+    public static final int CALLBACK_ANIMATION = 1;
+    public static final int CALLBACK_INPUT = 0;
+    public static final int CALLBACK_TRAVERSAL = 2;
+    public static final int CALLBACK_COMMIT = 3;
+
     private static final Choreographer sInstance = new Choreographer();
 
     /** Private constructor — use getInstance(). */
@@ -35,6 +40,12 @@ public class Choreographer {
     public void removeFrameCallback(FrameCallback callback) {
         // no-op stub
     }
+
+    public static long subtractFrameDelay(long delayMillis) {
+        return Math.max(0, delayMillis - 16);
+    }
+
+    public long getFrameTime() { return System.nanoTime() / 1000000L; }
 
     /**
      * Object invoked on each display frame.

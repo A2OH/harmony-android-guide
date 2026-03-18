@@ -12,6 +12,12 @@ public class Paint {
 
     public static final int ANTI_ALIAS_FLAG    = 1;
     public static final int FILTER_BITMAP_FLAG = 2;
+    public static final int FAKE_BOLD_TEXT_FLAG = 0x20;
+    public static final int STRIKE_THRU_TEXT_FLAG = 0x10;
+    public static final int UNDERLINE_TEXT_FLAG = 0x08;
+    public static final int DEV_KERN_TEXT_FLAG = 0x100;
+    public static final int SUBPIXEL_TEXT_FLAG = 0x80;
+    public static final int LINEAR_TEXT_FLAG = 0x40;
 
     // ── Style ────────────────────────────────────────────────────────────────
 
@@ -314,6 +320,33 @@ public class Paint {
     // ── Shadow layer ──────────────────────────────────────────────────────
 
     public void setShadowLayer(float radius, float dx, float dy, int shadowColor) { /* no-op */ }
+
+    // ── Shader/Xfermode/Dither ───────────────────────────────────────────
+    public Shader setShader(Shader shader) { return shader; }
+    public Shader getShader() { return null; }
+    public Object setXfermode(Object xfermode) { return xfermode; }
+    public void setDither(boolean dither) { /* no-op */ }
+    public void setTextSkewX(float skewX) { /* no-op */ }
+
+    // ── Text measurement (advanced) ──
+    public int getFontMetricsInt(FontMetricsInt fmi) {
+        FontMetricsInt src = getFontMetricsInt();
+        if (fmi != null) {
+            fmi.top = src.top;
+            fmi.ascent = src.ascent;
+            fmi.descent = src.descent;
+            fmi.bottom = src.bottom;
+            fmi.leading = src.leading;
+        }
+        return src.descent - src.ascent;
+    }
+    public int getTextWidths(char[] text, int index, int count, float[] widths) { return 0; }
+    public int getTextWidths(CharSequence text, int start, int end, float[] widths) { return 0; }
+    public float getTextRunAdvances(char[] chars, int index, int count, int contextIndex, int contextCount, boolean isRtl, float[] advances, int advancesIndex) { return 0; }
+    public int getTextRunCursor(char[] text, int contextStart, int contextLength, boolean isRtl, int offset, int cursorOpt) { return offset; }
+
+    // ── PorterDuffXfermode ──
+    public PorterDuffXfermode setXfermode(PorterDuffXfermode xfermode) { return xfermode; }
 
     // ── Object overrides ─────────────────────────────────────────────────────
 

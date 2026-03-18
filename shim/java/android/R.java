@@ -9,6 +9,7 @@ public final class R {
     private R() {}
 
     public static final class attr {
+        public static final int autofilledHighlight = 0;
         private attr() {}
     }
 

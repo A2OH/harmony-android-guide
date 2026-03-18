@@ -88,4 +88,9 @@ public class TextLinks {
             return new TextLinks(this);
         }
     }
+
+    /** Auto-generated stub. */
+    public static class TextLinkSpan {
+        public TextLinkSpan() {}
+    }
 }

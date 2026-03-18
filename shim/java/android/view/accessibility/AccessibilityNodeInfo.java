@@ -4,18 +4,18 @@ public class AccessibilityNodeInfo {
     public AccessibilityNodeInfo() {}
 
     public static final int ACTION_ACCESSIBILITY_FOCUS = 0;
-    public static final int ACTION_ARGUMENT_COLUMN_INT = 0;
-    public static final int ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN = 0;
-    public static final int ACTION_ARGUMENT_HTML_ELEMENT_STRING = 0;
-    public static final int ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT = 0;
-    public static final int ACTION_ARGUMENT_MOVE_WINDOW_X = 0;
-    public static final int ACTION_ARGUMENT_MOVE_WINDOW_Y = 0;
-    public static final int ACTION_ARGUMENT_PRESS_AND_HOLD_DURATION_MILLIS_INT = 0;
-    public static final int ACTION_ARGUMENT_PROGRESS_VALUE = 0;
-    public static final int ACTION_ARGUMENT_ROW_INT = 0;
-    public static final int ACTION_ARGUMENT_SELECTION_END_INT = 0;
-    public static final int ACTION_ARGUMENT_SELECTION_START_INT = 0;
-    public static final int ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE = 0;
+    public static final String ACTION_ARGUMENT_COLUMN_INT = "ACTION_ARGUMENT_COLUMN_INT";
+    public static final String ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN = "ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN";
+    public static final String ACTION_ARGUMENT_HTML_ELEMENT_STRING = "ACTION_ARGUMENT_HTML_ELEMENT_STRING";
+    public static final String ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT = "ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT";
+    public static final String ACTION_ARGUMENT_MOVE_WINDOW_X = "ACTION_ARGUMENT_MOVE_WINDOW_X";
+    public static final String ACTION_ARGUMENT_MOVE_WINDOW_Y = "ACTION_ARGUMENT_MOVE_WINDOW_Y";
+    public static final String ACTION_ARGUMENT_PRESS_AND_HOLD_DURATION_MILLIS_INT = "ACTION_ARGUMENT_PRESS_AND_HOLD_DURATION_MILLIS_INT";
+    public static final String ACTION_ARGUMENT_PROGRESS_VALUE = "ACTION_ARGUMENT_PROGRESS_VALUE";
+    public static final String ACTION_ARGUMENT_ROW_INT = "ACTION_ARGUMENT_ROW_INT";
+    public static final String ACTION_ARGUMENT_SELECTION_END_INT = "ACTION_ARGUMENT_SELECTION_END_INT";
+    public static final String ACTION_ARGUMENT_SELECTION_START_INT = "ACTION_ARGUMENT_SELECTION_START_INT";
+    public static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE = "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
     public static final int ACTION_CLEAR_ACCESSIBILITY_FOCUS = 0;
     public static final int ACTION_CLEAR_FOCUS = 0;
     public static final int ACTION_CLEAR_SELECTION = 0;
@@ -37,12 +37,14 @@ public class AccessibilityNodeInfo {
     public static final int ACTION_SELECT = 0;
     public static final int ACTION_SET_SELECTION = 0;
     public static final int ACTION_SET_TEXT = 0;
-    public static final int EXTRA_DATA_RENDERING_INFO_KEY = 0;
-    public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = 0;
-    public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = 0;
-    public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY = 0;
+    public static final String EXTRA_DATA_RENDERING_INFO_KEY = "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
+    public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
+    public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX";
+    public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_KEY";
     public static final int FOCUS_ACCESSIBILITY = 0;
     public static final int FOCUS_INPUT = 0;
+    public static final int FLAG_INCLUDE_NOT_IMPORTANT_VIEWS = 0x00000002;
+    public static final int FLAG_REPORT_VIEW_IDS = 0x00000008;
     public static final int MOVEMENT_GRANULARITY_CHARACTER = 0;
     public static final int MOVEMENT_GRANULARITY_LINE = 0;
     public static final int MOVEMENT_GRANULARITY_PAGE = 0;
@@ -61,6 +63,10 @@ public class AccessibilityNodeInfo {
         public static final AccessibilityAction ACTION_SCROLL_RIGHT = new AccessibilityAction(0x01000003, null);
         public static final AccessibilityAction ACTION_CLICK = new AccessibilityAction(16, null);
         public static final AccessibilityAction ACTION_LONG_CLICK = new AccessibilityAction(32, null);
+        public static final AccessibilityAction ACTION_CONTEXT_CLICK = new AccessibilityAction(0x0102003c, null);
+        public static final AccessibilityAction ACTION_SHOW_ON_SCREEN = new AccessibilityAction(0x01020036, null);
+        public static final AccessibilityAction ACTION_SHOW_TOOLTIP = new AccessibilityAction(0x01020044, null);
+        public static final AccessibilityAction ACTION_HIDE_TOOLTIP = new AccessibilityAction(0x01020045, null);
 
         private final int mActionId;
         private final CharSequence mLabel;
@@ -75,6 +81,8 @@ public class AccessibilityNodeInfo {
     }
     public void addChild(Object p0) {}
     public void addChild(Object p0, Object p1) {}
+    public void addChildUnchecked(android.view.View child) {}
+    public void setExtraRenderingInfo(ExtraRenderingInfo info) {}
     public boolean canOpenPopup() { return false; }
     public int describeContents() { return 0; }
     public Object findAccessibilityNodeInfosByText(Object p0) { return null; }
@@ -202,4 +210,40 @@ public class AccessibilityNodeInfo {
     public void setViewIdResourceName(Object p0) {}
     public void setVisibleToUser(Object p0) {}
     public void writeToParcel(Object p0, Object p1) {}
+
+    // Static utility methods needed by View.java
+    public static int getVirtualDescendantId(long accessibilityNodeId) {
+        return (int) accessibilityNodeId;
+    }
+
+    public static long makeNodeId(int viewId, int virtualDescendantId) {
+        return (((long) viewId) << 32) | virtualDescendantId;
+    }
+
+    // Instance methods needed by View.java
+    public void getBoundsInParent(android.graphics.Rect outBounds) {
+        if (outBounds != null) outBounds.setEmpty();
+    }
+    public void setBoundsInParent(android.graphics.Rect bounds) {}
+    public long getChildId(int index) { return 0; }
+    public java.util.List<Long> getChildNodeIds() { return new java.util.ArrayList<Long>(); }
+    public long getSourceNodeId() { return 0; }
+
+    /** Stub class for touch delegate info. */
+    public static class TouchDelegateInfo {
+        public TouchDelegateInfo(java.util.Map<android.graphics.Region, android.view.View> targetMap) {}
+        public int getRegionCount() { return 0; }
+        public android.graphics.Region getRegionAt(int index) { return null; }
+    }
+
+    public static class ExtraRenderingInfo {
+        private ExtraRenderingInfo() {}
+        public static ExtraRenderingInfo obtain() { return new ExtraRenderingInfo(); }
+        public float getTextSizeInPx() { return 0f; }
+        public int getTextSizeUnit() { return 0; }
+        public void setTextSizeInPx(float textSize) {}
+        public void setTextSizeUnit(int unit) {}
+        public void setLayoutSize(int width, int height) {}
+        public android.util.Size getLayoutSize() { return null; }
+    }
 }

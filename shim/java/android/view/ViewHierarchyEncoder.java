@@ -12,6 +12,8 @@ public class ViewHierarchyEncoder {
     public void addProperty(String name, double value) {}
     public void addProperty(String name, byte value) {}
     public void addProperty(String name, char value) {}
+    public void addPropertyKey(String key) {}
     public void beginObject(Object o) {}
     public void endObject() {}
+    public void addUserProperty(String name, String value) {}
 }
