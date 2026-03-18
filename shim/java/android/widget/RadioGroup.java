@@ -19,8 +19,7 @@ public class RadioGroup extends LinearLayout {
     private int checkedId = -1; // -1 = no selection
     private OnCheckedChangeListener onCheckedChangeListener;
 
-    public RadioGroup() {
-        super();
+    public RadioGroup() { super(new android.content.Context());
         setOrientation(VERTICAL);
     }
 

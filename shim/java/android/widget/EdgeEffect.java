@@ -29,6 +29,10 @@ public class EdgeEffect {
         mFinished = false;
     }
 
+    public void onPull(float deltaDistance, float displacement) {
+        onPull(deltaDistance);
+    }
+
     /** Call this when a pull gesture has ended (finger lifted). */
     public void onRelease() {
         mFinished = true;

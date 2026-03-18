@@ -67,6 +67,10 @@ public class Icon {
         return null;
     }
 
+    public Drawable loadDrawable(android.content.Context context) {
+        return null;
+    }
+
     public int getType() { return mType; }
     public int getResId() { return mResId; }
     public String getResPackage() { return mResPackage; }

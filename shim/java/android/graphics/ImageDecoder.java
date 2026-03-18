@@ -105,6 +105,16 @@ public final class ImageDecoder {
         return new Source() {};
     }
 
+    public static Source createSource(android.content.ContentResolver cr, android.net.Uri uri) {
+        return new Source() {};
+    }
+
+    public static Source createSource(android.content.ContentResolver cr, android.net.Uri uri, android.content.res.Resources res) {
+        return new Source() {};
+    }
+
+    // ALLOCATOR constants already defined above
+
     // ------------------------------------------------------------------ //
     // Static decode methods
     // ------------------------------------------------------------------ //

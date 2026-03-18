@@ -22,19 +22,19 @@ public class NestedScrollView extends FrameLayout {
     private OnScrollChangeListener mOnScrollChangeListener;
 
     public NestedScrollView() {
-        super();
+        super(new android.content.Context());
     }
 
-    public NestedScrollView(Object context) {
-        super();
+    public NestedScrollView(android.content.Context context) {
+        super(context);
     }
 
-    public NestedScrollView(Object context, Object attrs) {
-        super();
+    public NestedScrollView(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    public NestedScrollView(Object context, Object attrs, int defStyleAttr) {
-        super();
+    public NestedScrollView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Scroll operations ──

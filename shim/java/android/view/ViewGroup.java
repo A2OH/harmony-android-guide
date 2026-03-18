@@ -16,8 +16,10 @@ package android.view;
 public class ViewGroup extends View implements ViewParent {
     private final java.util.List<View> mChildren = new java.util.ArrayList<>();
 
-    public ViewGroup(android.content.Context context, android.util.AttributeSet attrs) {}
-    public ViewGroup(android.content.Context context) {}
+    public ViewGroup(android.content.Context context, android.util.AttributeSet attrs) { super(context, attrs); }
+    public ViewGroup(android.content.Context context) { super(context); }
+    public ViewGroup(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); }
+    public ViewGroup(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr, int defStyleRes) { super(context, attrs, defStyleAttr, defStyleRes); }
     public ViewGroup(int nodeType) { super(nodeType); }
     public ViewGroup() {}
 
@@ -43,10 +45,34 @@ public class ViewGroup extends View implements ViewParent {
         public int width;
         public int height;
         public LayoutParams() {}
+        public LayoutParams(android.content.Context c, android.util.AttributeSet attrs) {
+            // Stub: in real AOSP this reads layout_width/layout_height from attrs
+            this.width = WRAP_CONTENT;
+            this.height = WRAP_CONTENT;
+        }
         public LayoutParams(int width, int height) { this.width = width; this.height = height; }
         public LayoutParams(LayoutParams source) {
             this.width = source.width;
             this.height = source.height;
+        }
+
+        public void resolveLayoutDirection(int layoutDirection) {}
+        public int getLayoutDirection() { return View.LAYOUT_DIRECTION_LTR; }
+
+        public String debug(String output) {
+            return output + "ViewGroup.LayoutParams={width=" + sizeToString(width)
+                    + ", height=" + sizeToString(height) + "}";
+        }
+
+        protected static String sizeToString(int size) {
+            if (size == WRAP_CONTENT) return "wrap-content";
+            if (size == MATCH_PARENT) return "match-parent";
+            return String.valueOf(size);
+        }
+
+        protected void encodeProperties(@android.annotation.NonNull ViewHierarchyEncoder encoder) {
+            encoder.addProperty("width", width);
+            encoder.addProperty("height", height);
         }
     }
 
@@ -60,6 +86,9 @@ public class ViewGroup extends View implements ViewParent {
         private boolean mNeedsResolution;
 
         public MarginLayoutParams() {}
+        public MarginLayoutParams(android.content.Context c, android.util.AttributeSet attrs) {
+            super(c, attrs);
+        }
         public MarginLayoutParams(int width, int height) { super(width, height); }
         public MarginLayoutParams(MarginLayoutParams source) {
             super(source.width, source.height);
@@ -113,6 +142,15 @@ public class ViewGroup extends View implements ViewParent {
                 }
             }
             mNeedsResolution = false;
+        }
+
+        @Override
+        protected void encodeProperties(@android.annotation.NonNull ViewHierarchyEncoder encoder) {
+            super.encodeProperties(encoder);
+            encoder.addProperty("leftMargin", leftMargin);
+            encoder.addProperty("topMargin", topMargin);
+            encoder.addProperty("rightMargin", rightMargin);
+            encoder.addProperty("bottomMargin", bottomMargin);
         }
     }
 
@@ -481,6 +519,12 @@ public class ViewGroup extends View implements ViewParent {
     public static final int FOCUS_AFTER_DESCENDANTS = 0x40000;
     public static final int FOCUS_BEFORE_DESCENDANTS = 0x20000;
     public static final int FOCUS_BLOCK_DESCENDANTS = 0x60000;
+    private int mGroupFlags = FOCUS_BEFORE_DESCENDANTS;
+
+    public int getDescendantFocusability() { return mGroupFlags & 0x60000; }
+    public void setDescendantFocusability(int focusability) {
+        mGroupFlags = (mGroupFlags & ~0x60000) | (focusability & 0x60000);
+    }
     public static final int LAYOUT_MODE_CLIP_BOUNDS = 0;
     public static final int LAYOUT_MODE_OPTICAL_BOUNDS = 1;
     public boolean addStatesFromChildren() { return false; }
@@ -497,7 +541,7 @@ public class ViewGroup extends View implements ViewParent {
         if (child == null) return;
         LayoutParams params = child.getLayoutParams() instanceof LayoutParams
                 ? (LayoutParams) child.getLayoutParams()
-                : generateDefaultLayoutParamsInternal();
+                : generateDefaultLayoutParams();
         addView(child, index, params);
     }
 
@@ -516,7 +560,7 @@ public class ViewGroup extends View implements ViewParent {
     }
 
     public void addView(View child, int width, int height) {
-        LayoutParams lp = generateDefaultLayoutParamsInternal();
+        LayoutParams lp = generateDefaultLayoutParams();
         lp.width = width;
         lp.height = height;
         addView(child, -1, lp);
@@ -735,11 +779,11 @@ public class ViewGroup extends View implements ViewParent {
         return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
     }
 
-    public boolean checkLayoutParams(LayoutParams p) {
+    protected boolean checkLayoutParams(LayoutParams p) {
         return p != null;
     }
 
-    public LayoutParams generateLayoutParams(LayoutParams p) {
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
         return new LayoutParams(p);
     }
 
@@ -932,8 +976,11 @@ public class ViewGroup extends View implements ViewParent {
     public Object focusSearch(Object p0, Object p1) { return null; }
     public void focusableViewAvailable(Object p0) {}
     public boolean gatherTransparentRegion(Object p0) { return false; }
-    public Object generateDefaultLayoutParams() { return generateDefaultLayoutParamsInternal(); }
-    public Object generateLayoutParams(Object p0) {
+    protected LayoutParams generateDefaultLayoutParams() { return generateDefaultLayoutParamsInternal(); }
+    public LayoutParams generateLayoutParams(android.util.AttributeSet attrs) {
+        return new LayoutParams(getContext(), attrs);
+    }
+    public Object generateLayoutParamsCompat(Object p0) {
         if (p0 instanceof LayoutParams) return generateLayoutParams((LayoutParams) p0);
         return null;
     }
@@ -987,15 +1034,21 @@ public class ViewGroup extends View implements ViewParent {
         return false;
     }
     public void onLayout(Object p0, Object p1, Object p2, Object p3, Object p4) {}
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) { return false; }
     public boolean onNestedFling(Object p0, Object p1, Object p2, Object p3) { return false; }
     public boolean onNestedPreFling(Object p0, Object p1, Object p2) { return false; }
     public boolean onNestedPrePerformAccessibilityAction(Object p0, Object p1, Object p2) { return false; }
     public void onNestedPreScroll(Object p0, Object p1, Object p2, Object p3) {}
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {}
     public void onNestedScroll(Object p0, Object p1, Object p2, Object p3, Object p4) {}
+    public void onNestedScrollAccepted(View child, View target, int axes) {}
     public void onNestedScrollAccepted(Object p0, Object p1, Object p2) {}
+    protected boolean onRequestFocusInDescendants(int direction, android.graphics.Rect previouslyFocusedRect) { return false; }
     public boolean onRequestFocusInDescendants(Object p0, Object p1) { return false; }
     public boolean onRequestSendAccessibilityEvent(Object p0, Object p1) { return false; }
+    public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) { return false; }
     public boolean onStartNestedScroll(Object p0, Object p1, Object p2) { return false; }
+    public void onStopNestedScroll(View target) {}
     public void onStopNestedScroll(Object p0) {}
     public void onViewAdded(View child) {}
     public void onViewAdded(Object p0) { if (p0 instanceof View) onViewAdded((View) p0); }
@@ -1033,6 +1086,7 @@ public class ViewGroup extends View implements ViewParent {
         if (p0 instanceof View && p1 instanceof View)
             requestChildFocus((View) p0, (View) p1);
     }
+    public boolean requestChildRectangleOnScreen(View child, android.graphics.Rect rectangle, boolean immediate) { return false; }
     public boolean requestChildRectangleOnScreen(Object p0, Object p1, Object p2) { return false; }
     public void requestDisallowInterceptTouchEvent(Object p0) {
         if (p0 instanceof Boolean) requestDisallowInterceptTouchEvent(((Boolean) p0).booleanValue());
@@ -1104,4 +1158,11 @@ public class ViewGroup extends View implements ViewParent {
 
     @Override
     public void childDrawableStateChanged(View child) {}
+
+    @Override
+    protected void encodeProperties(@android.annotation.NonNull ViewHierarchyEncoder encoder) {
+        super.encodeProperties(encoder);
+        encoder.addProperty("childCount", getChildCount());
+    }
+
 }

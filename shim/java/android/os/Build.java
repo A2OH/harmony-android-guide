@@ -20,11 +20,28 @@ public class Build {
     }
 
     public static class VERSION_CODES {
-        public static final int O = 26;       // for version checks in app code
+        public static final int BASE = 1;
+        public static final int ECLAIR = 7;
+        public static final int FROYO = 8;
+        public static final int GINGERBREAD = 9;
+        public static final int HONEYCOMB = 11;
+        public static final int ICE_CREAM_SANDWICH = 14;
+        public static final int JELLY_BEAN = 16;
+        public static final int JELLY_BEAN_MR1 = 17;
+        public static final int JELLY_BEAN_MR2 = 18;
+        public static final int KITKAT = 19;
+        public static final int LOLLIPOP = 21;
+        public static final int LOLLIPOP_MR1 = 22;
+        public static final int M = 23;
+        public static final int N = 24;
+        public static final int N_MR1 = 25;
+        public static final int O = 26;
+        public static final int O_MR1 = 27;
         public static final int P = 28;
         public static final int Q = 29;
         public static final int R = 30;
         public static final int S = 31;
         public static final int TIRAMISU = 33;
+        public static final int CUR_DEVELOPMENT = 10000;
     }
 }

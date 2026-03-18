@@ -92,13 +92,13 @@ public class UITestApp {
         TextView tv = new TextView();
         check("TextView created, handle=" + tv.getNativeHandle(), tv.getNativeHandle() != 0 || headless);
 
-        Button btn = new Button();
+        Button btn = new Button(new android.content.Context());
         check("Button created", btn.getNativeHandle() != 0 || headless);
 
-        EditText et = new EditText();
+        EditText et = new EditText(new android.content.Context());
         check("EditText created", et.getNativeHandle() != 0 || headless);
 
-        ImageView iv = new ImageView();
+        ImageView iv = new ImageView(new android.content.Context());
         check("ImageView created", iv.getNativeHandle() != 0 || headless);
 
         ProgressBar pb = new ProgressBar();
@@ -151,7 +151,7 @@ public class UITestApp {
     static void testButton() {
         section("Button");
 
-        Button btn = new Button();
+        Button btn = new Button(new android.content.Context());
         btn.setText("Click Me");
         check("Button.setText", "Click Me".equals(btn.getText().toString()));
 
@@ -169,7 +169,7 @@ public class UITestApp {
     static void testEditText() {
         section("EditText");
 
-        EditText et = new EditText();
+        EditText et = new EditText(new android.content.Context());
         et.setText("Initial text");
         check("setText", "Initial text".equals(et.getText().toString()));
 
@@ -205,7 +205,7 @@ public class UITestApp {
     static void testImageView() {
         section("ImageView");
 
-        ImageView iv = new ImageView();
+        ImageView iv = new ImageView(new android.content.Context());
         iv.setImageResource(0x7f060001);
         check("setImageResource doesn't throw", true);
 
@@ -220,7 +220,7 @@ public class UITestApp {
     static void testLinearLayout() {
         section("LinearLayout (COLUMN/ROW)");
 
-        LinearLayout col = new LinearLayout();
+        LinearLayout col = new LinearLayout(new android.content.Context());
         col.setOrientation(LinearLayout.VERTICAL);
         check("vertical orientation", col.getOrientation() == LinearLayout.VERTICAL);
 
@@ -249,10 +249,10 @@ public class UITestApp {
     static void testFrameLayout() {
         section("FrameLayout (STACK)");
 
-        FrameLayout frame = new FrameLayout();
+        FrameLayout frame = new FrameLayout(new android.content.Context());
         TextView bg = new TextView();
         bg.setText("Background");
-        Button overlay = new Button();
+        Button overlay = new Button(new android.content.Context());
         overlay.setText("Overlay");
 
         frame.addView(bg);
@@ -267,8 +267,8 @@ public class UITestApp {
     static void testScrollViewWithContent() {
         section("ScrollView + content");
 
-        ScrollView scroll = new ScrollView();
-        LinearLayout content = new LinearLayout();
+        ScrollView scroll = new ScrollView(new android.content.Context());
+        LinearLayout content = new LinearLayout(new android.content.Context());
         content.setOrientation(LinearLayout.VERTICAL);
 
         for (int i = 0; i < 20; i++) {
@@ -379,7 +379,7 @@ public class UITestApp {
         //   │   └── Button (ok)
         //   └── EditText (input)
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         TextView title = new TextView();
@@ -388,20 +388,20 @@ public class UITestApp {
         title.setTextColor(0xFF333333);
         root.addView(title);
 
-        LinearLayout buttons = new LinearLayout();
+        LinearLayout buttons = new LinearLayout(new android.content.Context());
         buttons.setOrientation(LinearLayout.HORIZONTAL);
 
-        Button cancel = new Button();
+        Button cancel = new Button(new android.content.Context());
         cancel.setText("Cancel");
         buttons.addView(cancel);
 
-        Button ok = new Button();
+        Button ok = new Button(new android.content.Context());
         ok.setText("OK");
         buttons.addView(ok);
 
         root.addView(buttons);
 
-        EditText input = new EditText();
+        EditText input = new EditText(new android.content.Context());
         input.setHint("Type here...");
         root.addView(input);
 
@@ -418,7 +418,7 @@ public class UITestApp {
         section("Event handling");
 
         // Click event
-        Button btn = new Button();
+        Button btn = new Button(new android.content.Context());
         btn.setText("Clickable");
         final boolean[] clicked = {false};
         btn.setOnClickListener(v -> clicked[0] = true);
@@ -428,7 +428,7 @@ public class UITestApp {
         check("OnClickListener fires on native click event", clicked[0]);
 
         // Multiple listeners on different views
-        Button btn2 = new Button();
+        Button btn2 = new Button(new android.content.Context());
         final boolean[] clicked2 = {false};
         btn2.setOnClickListener(v -> clicked2[0] = true);
 

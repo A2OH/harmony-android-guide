@@ -1,12 +1,14 @@
 package android.view.inspector;
 
 /**
- * A2OH shim: android.view.inspector.InspectionCompanion
- *
- * Companion interface for view inspection, allowing property
- * mapping and reading for a given view type.
+ * Stub: android.view.inspector.InspectionCompanion
  */
-public interface InspectionCompanion<Object> {
+public interface InspectionCompanion<T> {
     void mapProperties(PropertyMapper propertyMapper);
-    void readProperties(Object node, Object propertyReader);
+    void readProperties(T node, PropertyReader propertyReader);
+
+    class UninitializedPropertyMapException extends RuntimeException {
+        public UninitializedPropertyMapException() { super(); }
+        public UninitializedPropertyMapException(String msg) { super(msg); }
+    }
 }

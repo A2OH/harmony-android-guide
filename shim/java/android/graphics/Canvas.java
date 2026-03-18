@@ -262,6 +262,16 @@ public class Canvas {
         if (nativeCanvas != 0) OHBridge.canvasRotate(nativeCanvas, degrees, 0, 0);
     }
 
+    public void rotate(float degrees, float px, float py) {
+        if (nativeCanvas != 0) OHBridge.canvasRotate(nativeCanvas, degrees, px, py);
+    }
+
+    public void restoreToCount(int saveCount) {
+        while (saveDepth > saveCount) {
+            restore();
+        }
+    }
+
     public void concat(Matrix matrix) {
         if (nativeCanvas != 0 && matrix != null) {
             float[] vals = new float[9];

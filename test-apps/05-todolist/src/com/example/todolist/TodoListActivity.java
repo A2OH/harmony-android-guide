@@ -28,7 +28,7 @@ public class TodoListActivity extends Activity {
         todoItems = dbHelper.getTodos();
 
         // Build UI programmatically
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
@@ -65,7 +65,7 @@ public class TodoListActivity extends Activity {
         root.addView(listView);
 
         // Add TODO button
-        Button addBtn = new Button();
+        Button addBtn = new Button(new android.content.Context());
         addBtn.setText("Add TODO");
         addBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -77,7 +77,7 @@ public class TodoListActivity extends Activity {
         root.addView(addBtn);
 
         // Stats button
-        Button statsBtn = new Button();
+        Button statsBtn = new Button(new android.content.Context());
         statsBtn.setText("View Stats");
         statsBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -117,7 +117,7 @@ public class TodoListActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             TodoItem item = todoItems.get(position);
-            LinearLayout row = new LinearLayout();
+            LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
             // Completed checkbox

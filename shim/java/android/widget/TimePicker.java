@@ -8,8 +8,8 @@ public class TimePicker extends FrameLayout {
     private int     mMinute = 0;
     private boolean m24Hour = false;
 
-    public TimePicker() {}
-    public TimePicker(Object context) { super(context); }
+    public TimePicker() { super(new android.content.Context()); }
+    public TimePicker(android.content.Context context) { super(context); }
 
     public int  getHour()   { return mHour; }
     public void setHour(int hour) { mHour = hour; }

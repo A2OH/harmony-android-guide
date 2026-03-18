@@ -9,8 +9,8 @@ import android.widget.RemoteViews;
 import java.util.concurrent.Executor;
 
 public class AppWidgetHostView extends FrameLayout {
-    public AppWidgetHostView(Context p0) {}
-    public AppWidgetHostView(Context p0, int p1, int p2) {}
+    public AppWidgetHostView(Context p0) { super(p0); }
+    public AppWidgetHostView(Context p0, int p1, int p2) { super(p0); }
 
     public int getAppWidgetId() { return 0; }
     public AppWidgetProviderInfo getAppWidgetInfo() { return null; }

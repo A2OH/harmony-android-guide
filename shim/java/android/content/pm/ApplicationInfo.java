@@ -12,4 +12,6 @@ public class ApplicationInfo {
     public int    flags;
     public int    uid;
     public int    targetSdkVersion;
+
+    public boolean hasRtlSupport() { return false; }
 }

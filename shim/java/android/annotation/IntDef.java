@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface IntDef {
     int[] value() default {};
     boolean flag() default false;
+    String[] prefix() default {};
+    boolean open() default false;
 }

@@ -132,6 +132,61 @@ public class Drawable {
 
     public ConstantState getConstantState() { return null; }
 
+    // ── Padding ─────────────────────────────────────────────────────────────
+
+    public boolean getPadding(Rect padding) {
+        padding.set(0, 0, 0, 0);
+        return false;
+    }
+
+    // ── State ────────────────────────────────────────────────────────────────
+
+    public boolean isStateful() { return false; }
+    public boolean setState(int[] stateSet) { return false; }
+    public int[] getState() { return new int[0]; }
+    public Drawable getCurrent() { return this; }
+
+    // ── Tint ─────────────────────────────────────────────────────────────────
+
+    public void setTintList(android.content.res.ColorStateList tint) {}
+
+    // ── Hotspot ──────────────────────────────────────────────────────────────
+
+    public void setHotspot(float x, float y) {}
+    public void setHotspotBounds(int left, int top, int right, int bottom) {}
+
+    // ── Mutate ──────────────────────────────────────────────────────────────
+
+    public Drawable mutate() { return this; }
+
+    // ── Jump to current state ───────────────────────────────────────────────
+
+    public void jumpToCurrentState() {}
+
+    // ── AutoMirrored ────────────────────────────────────────────────────────
+
+    public boolean isAutoMirrored() { return false; }
+    public void setAutoMirrored(boolean mirrored) {}
+
+    // ── Layout direction ────────────────────────────────────────────────────
+
+    public void setLayoutDirection(int layoutDirection) {}
+    public int getLayoutDirection() { return 0; }
+
+    // ── BlendMode ───────────────────────────────────────────────────────────
+
+    public static android.graphics.BlendMode parseBlendMode(int val, android.graphics.BlendMode defaultMode) {
+        return defaultMode;
+    }
+
+    public void setTintBlendMode(android.graphics.BlendMode blendMode) {}
+
+    public static Drawable createFromPath(String pathName) { return null; }
+    public boolean hasFocusStateSpecified() { return false; }
+    public void setXfermode(android.graphics.Xfermode mode) {}
+    public int getChangingConfigurations() { return 0; }
+    public void setChangingConfigurations(int configs) {}
+
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override

@@ -49,19 +49,19 @@ public class TabLayout extends LinearLayout {
     private OnTabSelectedListener mOnTabSelectedListener;
 
     public TabLayout() {
-        super();
+        super(new android.content.Context());
     }
 
-    public TabLayout(Object context) {
-        super();
+    public TabLayout(android.content.Context context) {
+        super(context);
     }
 
-    public TabLayout(Object context, Object attrs) {
-        super();
+    public TabLayout(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    public TabLayout(Object context, Object attrs, int defStyleAttr) {
-        super();
+    public TabLayout(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Tab management ──

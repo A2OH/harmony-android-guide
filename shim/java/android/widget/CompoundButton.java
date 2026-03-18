@@ -15,7 +15,19 @@ public class CompoundButton extends Button {
     private OnCheckedChangeListener onCheckedChangeListener;
 
     public CompoundButton() {
-        super();
+        super(new android.content.Context());
+    }
+    public CompoundButton(android.content.Context context) {
+        super(context);
+    }
+    public CompoundButton(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public CompoundButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+    public CompoundButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
     }
 
     // ── Checked state ──

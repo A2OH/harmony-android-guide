@@ -10,8 +10,8 @@ public class DatePicker extends FrameLayout {
     private long mMinDate = Long.MIN_VALUE;
     private long mMaxDate = Long.MAX_VALUE;
 
-    public DatePicker() {}
-    public DatePicker(Object context) { super(context); }
+    public DatePicker() { super(new android.content.Context()); }
+    public DatePicker(android.content.Context context) { super(context); }
 
     public void init(int year, int monthOfYear, int dayOfMonth,
                      OnDateChangedListener onDateChangedListener) {

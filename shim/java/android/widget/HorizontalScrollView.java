@@ -11,8 +11,7 @@ import android.view.View;
  */
 public class HorizontalScrollView extends FrameLayout {
 
-    public HorizontalScrollView() {
-        super();
+    public HorizontalScrollView() { super(new android.content.Context());
     }
 
     public void scrollTo(int x, int y) {

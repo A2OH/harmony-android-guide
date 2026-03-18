@@ -25,7 +25,7 @@ public class ItemDetailActivity extends Activity {
         itemPrice = intent.getDoubleExtra("item_price", 0.0);
         itemDescription = intent.getStringExtra("item_description");
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         TextView nameView = new TextView();
@@ -45,7 +45,7 @@ public class ItemDetailActivity extends Activity {
         descView.setTextSize(14);
         root.addView(descView);
 
-        Button addBtn = new Button();
+        Button addBtn = new Button(new android.content.Context());
         addBtn.setText("Add to Cart");
         addBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -63,7 +63,7 @@ public class ItemDetailActivity extends Activity {
         });
         root.addView(addBtn);
 
-        Button backBtn = new Button();
+        Button backBtn = new Button(new android.content.Context());
         backBtn.setText("Back");
         backBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) { finish(); }

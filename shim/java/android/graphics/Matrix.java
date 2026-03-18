@@ -22,6 +22,8 @@ public class Matrix {
     //                  MPERSP_0, MPERSP_1, MPERSP_2]
     private final float[] values = new float[9];
 
+    public static final Matrix IDENTITY_MATRIX = new Matrix();
+
     public Matrix() {
         reset();
     }
@@ -372,5 +374,61 @@ public class Matrix {
         return "[" + values[0] + ", " + values[1] + ", " + values[2] + "][" +
                values[3] + ", " + values[4] + ", " + values[5] + "][" +
                values[6] + ", " + values[7] + ", " + values[8] + "]";
+    }
+
+    public enum ScaleToFit {
+        FILL(0),
+        START(1),
+        CENTER(2),
+        END(3);
+
+        final int nativeInt;
+        ScaleToFit(int nativeInt) { this.nativeInt = nativeInt; }
+    }
+
+    public boolean setRectToRect(RectF src, RectF dst, ScaleToFit stf) {
+        if (src == null || dst == null) return false;
+        // Simplified: compute a uniform scale + translate
+        float srcW = src.width(), srcH = src.height();
+        float dstW = dst.width(), dstH = dst.height();
+        if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) {
+            reset();
+            return false;
+        }
+        float sx = dstW / srcW;
+        float sy = dstH / srcH;
+        float scale;
+        float tx = 0, ty = 0;
+        switch (stf) {
+            case FILL:
+                reset();
+                values[MSCALE_X] = sx;
+                values[MSCALE_Y] = sy;
+                values[MTRANS_X] = dst.left - src.left * sx;
+                values[MTRANS_Y] = dst.top - src.top * sy;
+                return true;
+            case START:
+                scale = Math.min(sx, sy);
+                tx = dst.left - src.left * scale;
+                ty = dst.top - src.top * scale;
+                break;
+            case END:
+                scale = Math.min(sx, sy);
+                tx = dst.right - src.right * scale;
+                ty = dst.bottom - src.bottom * scale;
+                break;
+            case CENTER:
+            default:
+                scale = Math.min(sx, sy);
+                tx = dst.left + (dstW - srcW * scale) * 0.5f - src.left * scale;
+                ty = dst.top + (dstH - srcH * scale) * 0.5f - src.top * scale;
+                break;
+        }
+        reset();
+        values[MSCALE_X] = scale;
+        values[MSCALE_Y] = scale;
+        values[MTRANS_X] = tx;
+        values[MTRANS_Y] = ty;
+        return true;
     }
 }

@@ -39,4 +39,10 @@ public final class R {
     public static final class anim {
         private anim() {}
     }
+
+    public static final class styleable {
+        private styleable() {}
+        public static final int ImageView_tintMode = 0;
+        public static final int ImageView_tint = 0;
+    }
 }

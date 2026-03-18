@@ -1,32 +1,24 @@
 package android.widget;
-import android.view.View;
-import android.view.View;
 
-/**
- * Shim: android.widget.ImageButton → ImageView with click behavior.
- *
- * ImageButton is identical to ImageView in terms of structure; button
- * interaction (click events) is inherited from View. No additional
- * ArkUI node type is needed — ARKUI_NODE_IMAGE handles both.
- */
 public class ImageButton extends ImageView {
 
     public ImageButton() {
-        super();
+        super(new android.content.Context());
     }
 
-    /** Constructor accepting a context-like object (ignored in shim). */
-    public ImageButton(Object context) {
-        super();
+    public ImageButton(android.content.Context context) {
+        super(context);
     }
 
-    /** Constructor accepting context and attribute set (both ignored). */
-    public ImageButton(Object context, Object attrs) {
-        super();
+    public ImageButton(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    /** Constructor accepting context, attribute set and default style (all ignored). */
-    public ImageButton(Object context, Object attrs, int defStyleAttr) {
-        super();
+    public ImageButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
+    public ImageButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
     }
 }

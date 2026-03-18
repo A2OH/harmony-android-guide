@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Data App</string>
+    <string name="btn_save">Save Data</string>
+    <string name="btn_load">Load Data</string>
+    <string name="btn_query">Query SQLite</string>
+</resources>

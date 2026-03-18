@@ -14,8 +14,7 @@ public class TableLayout extends LinearLayout {
 
     private boolean stretchAllColumns;
 
-    public TableLayout() {
-        super();
+    public TableLayout() { super(new android.content.Context());
         setOrientation(VERTICAL);
     }
 

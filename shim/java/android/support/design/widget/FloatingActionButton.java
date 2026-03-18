@@ -37,18 +37,18 @@ public class FloatingActionButton extends ImageButton {
     private float mCompatElevation = 0f;
 
     public FloatingActionButton() {
-        super();
+        super(new android.content.Context());
     }
 
-    public FloatingActionButton(Object context) {
+    public FloatingActionButton(android.content.Context context) {
         super(context);
     }
 
-    public FloatingActionButton(Object context, Object attrs) {
+    public FloatingActionButton(android.content.Context context, android.util.AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public FloatingActionButton(Object context, Object attrs, int defStyleAttr) {
+    public FloatingActionButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 

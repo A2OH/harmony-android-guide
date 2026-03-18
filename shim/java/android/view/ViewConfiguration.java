@@ -92,4 +92,16 @@ public class ViewConfiguration {
     public static int getMaximumDrawingCacheSize() {
         return 480 * 800 * 4; // ARGB_8888, typical screen
     }
+
+    public float getScaledVerticalScrollFactor() { return 64.0f; }
+    public float getScaledHorizontalScrollFactor() { return 64.0f; }
+    public int getScaledWindowTouchSlop() { return TOUCH_SLOP * 2; }
+    public static int getScrollBarSize() { return 10; }
+    public int getScaledScrollBarSize() { return 10; }
+    public static int getScrollDefaultDelay() { return 300; }
+    public static int getScrollBarFadeDuration() { return 250; }
+    public static int getPressedStateDuration() { return 64; }
+    public static int getEdgeSlop() { return 12; }
+    public static boolean isFadingMarqueeEnabled() { return true; }
+    public int getScaledFadingEdgeLength() { return 12; }
 }

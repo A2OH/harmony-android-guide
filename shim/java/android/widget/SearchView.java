@@ -28,10 +28,9 @@ public class SearchView extends LinearLayout {
     // Internal text input node for capturing the search query
     private final EditText mSearchInput;
 
-    public SearchView() {
-        super();
+    public SearchView() { super(new android.content.Context());
         setOrientation(HORIZONTAL);
-        mSearchInput = new EditText();
+        mSearchInput = new EditText(new android.content.Context());
         mSearchInput.setVisibility(mIconified ? GONE : VISIBLE);
         addView(mSearchInput);
     }

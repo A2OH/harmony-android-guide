@@ -35,7 +35,7 @@ public class NoteEditActivity extends Activity {
         editor.putInt("last_opened_note_id", noteId);
         editor.apply();
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
@@ -52,7 +52,7 @@ public class NoteEditActivity extends Activity {
         root.addView(titleLabel);
 
         // Title edit
-        titleEdit = new EditText();
+        titleEdit = new EditText(new android.content.Context());
         titleEdit.setText(currentNote != null ? currentNote.title : "");
         titleEdit.setTextSize(18);
         root.addView(titleEdit);
@@ -64,13 +64,13 @@ public class NoteEditActivity extends Activity {
         root.addView(bodyLabel);
 
         // Body edit (multiline)
-        bodyEdit = new EditText();
+        bodyEdit = new EditText(new android.content.Context());
         bodyEdit.setText(currentNote != null ? currentNote.body : "");
         bodyEdit.setTextSize(14);
         root.addView(bodyEdit);
 
         // Save button
-        Button saveBtn = new Button();
+        Button saveBtn = new Button(new android.content.Context());
         saveBtn.setText("Save");
         saveBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -87,7 +87,7 @@ public class NoteEditActivity extends Activity {
         root.addView(saveBtn);
 
         // Delete button
-        Button deleteBtn = new Button();
+        Button deleteBtn = new Button(new android.content.Context());
         deleteBtn.setText("Delete");
         deleteBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -102,7 +102,7 @@ public class NoteEditActivity extends Activity {
         root.addView(deleteBtn);
 
         // Back button
-        Button backBtn = new Button();
+        Button backBtn = new Button(new android.content.Context());
         backBtn.setText("Back");
         backBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override

@@ -25,7 +25,7 @@ public class CalculatorActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Display
@@ -45,11 +45,11 @@ public class CalculatorActivity extends Activity {
         };
 
         for (int r = 0; r < rows.length; r++) {
-            LinearLayout row = new LinearLayout();
+            LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.HORIZONTAL);
             for (int c = 0; c < rows[r].length; c++) {
                 final String label = rows[r][c];
-                Button btn = new Button();
+                Button btn = new Button(new android.content.Context());
                 btn.setText(label);
                 btn.setOnClickListener(new View.OnClickListener() {
                     @Override

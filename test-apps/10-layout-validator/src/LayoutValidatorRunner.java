@@ -137,7 +137,7 @@ public class LayoutValidatorRunner {
     static void testLinearLayoutVertical() {
         section("LinearLayout vertical measurement");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.VERTICAL);
         TextView tv1 = new TextView();
         tv1.setText("Line 1");
@@ -166,7 +166,7 @@ public class LayoutValidatorRunner {
     static void testLinearLayoutHorizontal() {
         section("LinearLayout horizontal measurement");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.HORIZONTAL);
         TextView tv1 = new TextView();
         tv1.setText("Col A");
@@ -192,7 +192,7 @@ public class LayoutValidatorRunner {
     static void testFrameLayoutStacking() {
         section("FrameLayout stacking");
 
-        FrameLayout fl = new FrameLayout();
+        FrameLayout fl = new FrameLayout(new android.content.Context());
         TextView child1 = new TextView();
         child1.setText("A");
         TextView child2 = new TextView();
@@ -218,7 +218,7 @@ public class LayoutValidatorRunner {
     static void testPaddingAffectsChildren() {
         section("Padding affects children");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setPadding(10, 20, 10, 20);
         TextView child = new TextView();
@@ -240,7 +240,7 @@ public class LayoutValidatorRunner {
     static void testCanvasDrawCoordinates() {
         section("Canvas draw coordinates match layout");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.VERTICAL);
         TextView tv1 = new TextView();
         tv1.setText("Line 1");
@@ -290,7 +290,7 @@ public class LayoutValidatorRunner {
     static void testBackgroundColorRender() {
         section("Background color rendering");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.VERTICAL);
         TextView tv1 = new TextView();
         tv1.setText("Red BG");
@@ -324,9 +324,9 @@ public class LayoutValidatorRunner {
     static void testButtonRoundRect() {
         section("Button rounded rect rendering");
 
-        LinearLayout ll = new LinearLayout();
+        LinearLayout ll = new LinearLayout(new android.content.Context());
         ll.setOrientation(LinearLayout.VERTICAL);
-        Button btn = new Button();
+        Button btn = new Button(new android.content.Context());
         btn.setText("OK");
         ll.addView(btn);
 
@@ -365,8 +365,8 @@ public class LayoutValidatorRunner {
     static void testScrollViewClipping() {
         section("ScrollView scroll offset");
 
-        ScrollView sv = new ScrollView();
-        LinearLayout content = new LinearLayout();
+        ScrollView sv = new ScrollView(new android.content.Context());
+        LinearLayout content = new LinearLayout(new android.content.Context());
         content.setOrientation(LinearLayout.VERTICAL);
         // Add many children that exceed ScrollView height
         for (int i = 0; i < 20; i++) {
@@ -403,11 +403,11 @@ public class LayoutValidatorRunner {
     static void testTouchDispatchHitTesting() {
         section("Touch dispatch hit-testing");
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
-        Button btn1 = new Button();
+        Button btn1 = new Button(new android.content.Context());
         btn1.setText("Top");
-        Button btn2 = new Button();
+        Button btn2 = new Button(new android.content.Context());
         btn2.setText("Bottom");
         root.addView(btn1);
         root.addView(btn2);
@@ -459,9 +459,9 @@ public class LayoutValidatorRunner {
     static void testViewTreeDump() {
         section("View tree dump");
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
-        Button btn = new Button();
+        Button btn = new Button(new android.content.Context());
         btn.setText("Press Me");
         TextView label = new TextView();
         label.setText("Hello");

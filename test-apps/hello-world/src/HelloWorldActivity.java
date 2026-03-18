@@ -24,7 +24,7 @@ public class HelloWorldActivity extends Activity {
         System.out.println("[HelloWorld] onCreate");
 
         // Build view tree programmatically (no layout XML needed)
-        LinearLayout layout = new LinearLayout();
+        LinearLayout layout = new LinearLayout(new android.content.Context());
         layout.setOrientation(LinearLayout.VERTICAL);
 
         TextView title = new TextView();
@@ -39,7 +39,7 @@ public class HelloWorldActivity extends Activity {
         subtitle.setTextColor(0xFF666666);
         layout.addView(subtitle);
 
-        Button button = new Button();
+        Button button = new Button(new android.content.Context());
         button.setText("Click Me");
         button.setOnClickListener(new View.OnClickListener() {
             @Override

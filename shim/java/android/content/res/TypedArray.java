@@ -58,4 +58,52 @@ public class TypedArray {
     public boolean hasValue(int index) {
         return false;
     }
+
+    public int getDimensionPixelOffset(int index, int defValue) {
+        return defValue;
+    }
+
+    public int getLayoutDimension(int index, int defValue) {
+        return defValue;
+    }
+
+    public int getLayoutDimension(int index, String name) {
+        return 0;
+    }
+
+    public int getChangingConfigurations() {
+        return 0;
+    }
+
+    public int getIndexCount() {
+        return 0;
+    }
+
+    public int getIndex(int at) {
+        return 0;
+    }
+
+    public int getType(int index) {
+        return 0;
+    }
+
+    public boolean hasValueOrEmpty(int index) {
+        return false;
+    }
+
+    public CharSequence[] getTextArray(int index) {
+        return null;
+    }
+
+    public android.content.res.ColorStateList getColorStateList(int index) {
+        return null;
+    }
+
+    public float getFraction(int index, int base, int pbase, float defValue) {
+        return defValue;
+    }
+
+    public android.util.TypedValue peekValue(int index) {
+        return null;
+    }
 }

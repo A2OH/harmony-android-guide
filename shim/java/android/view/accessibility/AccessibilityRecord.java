@@ -101,4 +101,14 @@ public class AccessibilityRecord {
     public boolean isScrollable() {
         return mScrollable;
     }
+
+    private int mScrollX, mScrollY, mMaxScrollX, mMaxScrollY;
+    public void setScrollX(int scrollX) { mScrollX = scrollX; }
+    public void setScrollY(int scrollY) { mScrollY = scrollY; }
+    public int getScrollX() { return mScrollX; }
+    public int getScrollY() { return mScrollY; }
+    public void setMaxScrollX(int maxScrollX) { mMaxScrollX = maxScrollX; }
+    public void setMaxScrollY(int maxScrollY) { mMaxScrollY = maxScrollY; }
+    public int getMaxScrollX() { return mMaxScrollX; }
+    public int getMaxScrollY() { return mMaxScrollY; }
 }

@@ -44,7 +44,7 @@ public class ImageSwitcher extends ViewSwitcher {
      * @param uri the URI of the image (may be a {@code android.net.Uri} or any
      *            object whose {@link Object#toString()} yields a valid URI string)
      */
-    public void setImageURI(Object uri) {
+    public void setImageURI(android.net.Uri uri) {
         View nextView = getNextView();
         if (nextView instanceof ImageView) {
             ((ImageView) nextView).setImageURI(uri);

@@ -128,7 +128,7 @@ public class Context {
     public void enforceUriPermission(Uri p0, String p1, String p2, int p3, int p4, int p5, String p6) {}
     public String[] fileList() { return null; }
     public Context getApplicationContext() { return null; }
-    public ApplicationInfo getApplicationInfo() { return null; }
+    public ApplicationInfo getApplicationInfo() { return new ApplicationInfo(); }
     private AssetManager mAssets;
     public AssetManager getAssets() {
         if (mAssets == null) mAssets = new AssetManager();
@@ -214,4 +214,20 @@ public class Context {
     }
     public void unregisterReceiver(BroadcastReceiver p0) {}
     public void updateServiceGroup(ServiceConnection p0, int p1, int p2) {}
+
+    public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs) {
+        return new android.content.res.TypedArray();
+    }
+    public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
+        return new android.content.res.TypedArray();
+    }
+    public android.content.res.TypedArray obtainStyledAttributes(int resId, int[] attrs) {
+        return new android.content.res.TypedArray();
+    }
+    public android.content.res.TypedArray obtainStyledAttributes(int[] attrs) {
+        return new android.content.res.TypedArray();
+    }
+
+    public android.graphics.drawable.Drawable getDrawable(int id) { return null; }
+    public android.content.res.Resources.Theme getTheme() { return null; }
 }

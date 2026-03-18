@@ -47,7 +47,10 @@ public class TextView extends android.view.View {
 
     public enum BufferType { NORMAL, SPANNABLE, EDITABLE }
 
-    public TextView(android.content.Context context) {}
+    public TextView(android.content.Context context) { super(context); }
+    public TextView(android.content.Context context, android.util.AttributeSet attrs) { super(context, attrs); }
+    public TextView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); }
+    public TextView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr, int defStyleRes) { super(context, attrs, defStyleAttr, defStyleRes); }
     public TextView(int nodeType) { super(nodeType); }
     public TextView() {}
 
@@ -68,6 +71,10 @@ public class TextView extends android.view.View {
         int oldLen = oldText != null ? oldText.length() : 0;
         int newLen = newText.length();
         mBufferType = type != null ? type : BufferType.NORMAL;
+        // Wrap in Editable if requested
+        if (mBufferType == BufferType.EDITABLE && !(newText instanceof android.text.Editable)) {
+            newText = new android.text.SpannableStringBuilder(newText);
+        }
         // Fire beforeTextChanged
         notifyBeforeTextChanged(oldText, 0, oldLen, newLen);
         mText = newText;
@@ -649,8 +656,8 @@ public class TextView extends android.view.View {
     public Object getCompoundDrawableTintMode() { return null; }
     public Object getCustomInsertionActionModeCallback() { return null; }
     public Object getCustomSelectionActionModeCallback() { return null; }
-    public boolean getDefaultEditable() { return false; }
-    public Object getDefaultMovementMethod() { return null; }
+    protected boolean getDefaultEditable() { return false; }
+    protected android.text.method.MovementMethod getDefaultMovementMethod() { return null; }
     public Object getError() { return null; }
     public int getFirstBaselineToTopHeight() { return 0; }
     public boolean getFreezesText() { return false; }
@@ -864,4 +871,6 @@ public class TextView extends android.view.View {
     }
     public void setWidth(Object p0) {}
     public int getMinEms() { return 0; }
+
+    protected boolean supportsAutoSizeText() { return true; }
 }

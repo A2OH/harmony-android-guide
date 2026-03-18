@@ -32,7 +32,7 @@ public class TodoDetailActivity extends Activity {
         todoCompleted = intent.getBooleanExtra("todo_completed", false);
         todoPriority = intent.getIntExtra("todo_priority", 1);
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
@@ -48,7 +48,7 @@ public class TodoDetailActivity extends Activity {
         titleLabel.setTextSize(14);
         root.addView(titleLabel);
 
-        titleEdit = new EditText();
+        titleEdit = new EditText(new android.content.Context());
         titleEdit.setText(todoTitle != null ? todoTitle : "");
         titleEdit.setTextSize(18);
         root.addView(titleEdit);
@@ -59,7 +59,7 @@ public class TodoDetailActivity extends Activity {
         descLabel.setTextSize(14);
         root.addView(descLabel);
 
-        descEdit = new EditText();
+        descEdit = new EditText(new android.content.Context());
         descEdit.setText(todoDescription != null ? todoDescription : "");
         descEdit.setTextSize(14);
         root.addView(descEdit);
@@ -78,7 +78,7 @@ public class TodoDetailActivity extends Activity {
         root.addView(priorityView);
 
         // Save button
-        Button saveBtn = new Button();
+        Button saveBtn = new Button(new android.content.Context());
         saveBtn.setText("Save");
         saveBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -98,7 +98,7 @@ public class TodoDetailActivity extends Activity {
         root.addView(saveBtn);
 
         // Delete button
-        Button deleteBtn = new Button();
+        Button deleteBtn = new Button(new android.content.Context());
         deleteBtn.setText("Delete");
         deleteBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -111,7 +111,7 @@ public class TodoDetailActivity extends Activity {
         root.addView(deleteBtn);
 
         // Back button
-        Button backBtn = new Button();
+        Button backBtn = new Button(new android.content.Context());
         backBtn.setText("Back");
         backBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) { finish(); }

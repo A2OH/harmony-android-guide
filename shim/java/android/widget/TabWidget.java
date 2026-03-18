@@ -18,8 +18,7 @@ public class TabWidget extends LinearLayout {
 
     private int mCurrentTab = 0;
 
-    public TabWidget() {
-        super();
+    public TabWidget() { super(new android.content.Context());
         // Tab strip is always horizontal
         setOrientation(HORIZONTAL);
     }

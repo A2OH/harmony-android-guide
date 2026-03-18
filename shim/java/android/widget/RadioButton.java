@@ -23,8 +23,7 @@ public class RadioButton extends CompoundButton {
     private static final float CIRCLE_STROKE_WIDTH = 2f;
     private static final float CIRCLE_TEXT_GAP = 8f;
 
-    public RadioButton() {
-        super();
+    public RadioButton() { super(new android.content.Context());
     }
 
     public RadioButton(android.content.Context context) {

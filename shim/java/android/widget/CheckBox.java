@@ -18,8 +18,7 @@ public class CheckBox extends CompoundButton {
     private int checkEventId;
     private static final AtomicInteger sNextEventId = new AtomicInteger(20000);
 
-    public CheckBox() {
-        super();
+    public CheckBox() { super(new android.content.Context());
     }
 
     public CheckBox(android.content.Context context) {

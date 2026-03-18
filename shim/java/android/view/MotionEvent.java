@@ -271,6 +271,18 @@ public final class MotionEvent {
     /** No-op: preserved for Android API compatibility. */
     public void recycle() {}
 
+    // Axis constants
+    public static final int AXIS_VSCROLL = 9;
+    public static final int AXIS_HSCROLL = 10;
+    public static final int AXIS_SCROLL = 26;
+
+    // Additional action constants
+    public static final int ACTION_SCROLL = 8;
+
+    public float getAxisValue(int axis) { return 0f; }
+    public float getAxisValue(int axis, int pointerIndex) { return 0f; }
+    public boolean isFromSource(int source) { return false; }
+
     @Override
     public String toString() {
         return "MotionEvent{action=" + action + " x=" + x + " y=" + y

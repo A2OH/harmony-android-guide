@@ -28,7 +28,7 @@ public class MenuActivity extends Activity {
         menuItems = dbHelper.getAllItems();
 
         // Build UI programmatically
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
@@ -62,7 +62,7 @@ public class MenuActivity extends Activity {
         root.addView(listView);
 
         // Cart button
-        Button cartBtn = new Button();
+        Button cartBtn = new Button(new android.content.Context());
         cartBtn.setText("View Cart");
         cartBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
@@ -101,7 +101,7 @@ public class MenuActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             MenuItem item = menuItems.get(position);
-            LinearLayout row = new LinearLayout();
+            LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
             TextView nameView = new TextView();

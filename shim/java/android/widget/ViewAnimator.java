@@ -9,8 +9,7 @@ public class ViewAnimator extends FrameLayout {
 
     private int displayedChild;
 
-    public ViewAnimator() {
-        super();
+    public ViewAnimator() { super(new android.content.Context());
     }
 
     public void setDisplayedChild(int whichChild) {

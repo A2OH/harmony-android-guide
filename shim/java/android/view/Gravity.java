@@ -30,6 +30,9 @@ public class Gravity {
     /** Mask for START/END relative bits. */
     public static final int RELATIVE_HORIZONTAL_GRAVITY_MASK = START | END;
 
+    /** Raw bit controlling whether START/END are used. */
+    public static final int RELATIVE_LAYOUT_DIRECTION = 0x00800000;
+
     public static final int DISPLAY_CLIP_VERTICAL = 0x10000000;
     public static final int DISPLAY_CLIP_HORIZONTAL = 0x01000000;
     public static final int CLIP_VERTICAL = AXIS_CLIP << AXIS_Y_SHIFT;
@@ -70,6 +73,13 @@ public class Gravity {
     public static void apply(int gravity, int w, int h,
             android.graphics.Rect container, android.graphics.Rect outRect) {
         apply(gravity, w, h, container, 0, 0, outRect);
+    }
+
+    public static void apply(int gravity, int w, int h,
+            android.graphics.Rect container, android.graphics.Rect outRect,
+            int layoutDirection) {
+        int absGravity = getAbsoluteGravity(gravity, layoutDirection);
+        apply(absGravity, w, h, container, 0, 0, outRect);
     }
 
     public static void apply(int gravity, int w, int h,

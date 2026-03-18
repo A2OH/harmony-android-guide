@@ -8,8 +8,8 @@ public class CalendarView extends FrameLayout {
     private long mMinDate = Long.MIN_VALUE;
     private long mMaxDate = Long.MAX_VALUE;
 
-    public CalendarView() {}
-    public CalendarView(Object context) { super(context); }
+    public CalendarView() { super(new android.content.Context()); }
+    public CalendarView(android.content.Context context) { super(context); }
 
     public long getDate() { return mDate; }
 

@@ -32,8 +32,8 @@ public class AccessibilityNodeInfo {
     public static final int ACTION_PASTE = 0;
     public static final int ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY = 0;
     public static final int ACTION_PREVIOUS_HTML_ELEMENT = 0;
-    public static final int ACTION_SCROLL_BACKWARD = 0;
-    public static final int ACTION_SCROLL_FORWARD = 0;
+    public static final int ACTION_SCROLL_BACKWARD = 8192;
+    public static final int ACTION_SCROLL_FORWARD = 4096;
     public static final int ACTION_SELECT = 0;
     public static final int ACTION_SET_SELECTION = 0;
     public static final int ACTION_SET_TEXT = 0;
@@ -48,7 +48,31 @@ public class AccessibilityNodeInfo {
     public static final int MOVEMENT_GRANULARITY_PAGE = 0;
     public static final int MOVEMENT_GRANULARITY_PARAGRAPH = 0;
     public static final int MOVEMENT_GRANULARITY_WORD = 0;
+    public void addAction(AccessibilityAction action) {}
+    public void addAction(int action) {}
     public void addAction(Object p0) {}
+
+    public static final class AccessibilityAction {
+        public static final AccessibilityAction ACTION_SCROLL_FORWARD = new AccessibilityAction(4096, null);
+        public static final AccessibilityAction ACTION_SCROLL_BACKWARD = new AccessibilityAction(8192, null);
+        public static final AccessibilityAction ACTION_SCROLL_UP = new AccessibilityAction(0x01000000, null);
+        public static final AccessibilityAction ACTION_SCROLL_DOWN = new AccessibilityAction(0x01000001, null);
+        public static final AccessibilityAction ACTION_SCROLL_LEFT = new AccessibilityAction(0x01000002, null);
+        public static final AccessibilityAction ACTION_SCROLL_RIGHT = new AccessibilityAction(0x01000003, null);
+        public static final AccessibilityAction ACTION_CLICK = new AccessibilityAction(16, null);
+        public static final AccessibilityAction ACTION_LONG_CLICK = new AccessibilityAction(32, null);
+
+        private final int mActionId;
+        private final CharSequence mLabel;
+
+        public AccessibilityAction(int actionId, CharSequence label) {
+            mActionId = actionId;
+            mLabel = label;
+        }
+
+        public int getId() { return mActionId; }
+        public CharSequence getLabel() { return mLabel; }
+    }
     public void addChild(Object p0) {}
     public void addChild(Object p0, Object p1) {}
     public boolean canOpenPopup() { return false; }

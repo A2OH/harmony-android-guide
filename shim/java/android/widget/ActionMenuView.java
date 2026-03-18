@@ -17,12 +17,10 @@ public class ActionMenuView extends LinearLayout {
 
     private OnMenuItemClickListener mOnMenuItemClickListener;
 
-    public ActionMenuView() {
-        super();
+    public ActionMenuView() { super(new android.content.Context());
     }
 
-    public ActionMenuView(Object context) {
-        super();
+    public ActionMenuView(Object context) { super(new android.content.Context());
     }
 
     /**

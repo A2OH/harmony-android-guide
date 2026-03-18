@@ -4,7 +4,9 @@ package android.widget;
  * Android-compatible AutoCompleteTextView shim. Pure Java stub for compilation.
  */
 public class AutoCompleteTextView extends EditText {
-    public AutoCompleteTextView() { super(); }
+    public AutoCompleteTextView() { super(new android.content.Context()); }
+    public AutoCompleteTextView(android.content.Context context) { super(context); }
+    public AutoCompleteTextView(android.content.Context context, android.util.AttributeSet attrs) { super(context, attrs); }
 
     public void setAdapter(ListAdapter adapter) {}
     public void setThreshold(int threshold)     {}

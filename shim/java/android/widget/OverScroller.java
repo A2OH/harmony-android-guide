@@ -127,7 +127,7 @@ public class OverScroller {
      * Start a scroll with the default duration (250 ms).
      */
     public void startScroll(int startX, int startY, int dx, int dy) {
-        startScroll(startX, startY, dx, dy);
+        startScroll(startX, startY, dx, dy, 250);
     }
 
     // ── Fling ──

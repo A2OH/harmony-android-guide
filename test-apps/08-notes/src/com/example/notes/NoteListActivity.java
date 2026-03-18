@@ -27,7 +27,7 @@ public class NoteListActivity extends Activity {
         notes = dbHelper.getNotes();
 
         // Build UI programmatically
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
@@ -61,7 +61,7 @@ public class NoteListActivity extends Activity {
         root.addView(listView);
 
         // New Note button
-        Button newBtn = new Button();
+        Button newBtn = new Button(new android.content.Context());
         newBtn.setText("New Note");
         newBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -104,7 +104,7 @@ public class NoteListActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             Note note = notes.get(position);
-            LinearLayout row = new LinearLayout();
+            LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.VERTICAL);
 
             // Title

@@ -74,7 +74,7 @@ public class ContextWrapper extends Context {
     public SharedPreferences getSharedPreferences(String p0, int p1) { return null; }
     public Object getSystemService(String p0) { return super.getSystemService(p0); }
     public String getSystemServiceName(Object p0) { return null; }
-    public Object getTheme() { return null; }
+    public android.content.res.Resources.Theme getTheme() { return super.getTheme(); }
     public void grantUriPermission(String p0, Uri p1, int p2) {}
     public boolean isDeviceProtectedStorage() { return false; }
     public boolean moveDatabaseFrom(Context p0, String p1) { return false; }

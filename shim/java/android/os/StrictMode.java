@@ -29,6 +29,12 @@ public final class StrictMode {
         return sThreadPolicy;
     }
 
+    public static Span enterCriticalSpan(String name) { return new Span(); }
+
+    public static class Span {
+        public void finish() {}
+    }
+
     // ---- ThreadPolicy ----
     public static final class ThreadPolicy {
         public static final ThreadPolicy LAX = new ThreadPolicy();

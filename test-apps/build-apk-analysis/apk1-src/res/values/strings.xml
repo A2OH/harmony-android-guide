@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Multi Activity</string>
+    <string name="second_title">Second Screen</string>
+    <string name="third_title">Third Screen</string>
+    <string name="go_second">Go to Second</string>
+    <string name="go_third">Go to Third</string>
+    <string name="made_it">You made it!</string>
+</resources>

@@ -38,6 +38,10 @@ public class BitmapDrawable extends Drawable {
         this.bitmap = bitmap;
     }
 
+    public BitmapDrawable(android.content.res.Resources res, Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
     // ── Bitmap ───────────────────────────────────────────────────────────────
 
     public Bitmap getBitmap() { return bitmap; }

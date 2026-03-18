@@ -15,8 +15,7 @@ public class NumberPicker extends LinearLayout {
     private boolean wrapSelectorWheel = true;
     private OnValueChangeListener onValueChangeListener;
 
-    public NumberPicker() {
-        super();
+    public NumberPicker() { super(new android.content.Context());
     }
 
     /**

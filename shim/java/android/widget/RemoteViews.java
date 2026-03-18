@@ -17,6 +17,12 @@ import android.app.PendingIntent;
  */
 public class RemoteViews {
 
+    /** Annotation indicating a class can be used as a RemoteView. */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+    @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE)
+    public @interface RemoteView {}
+
+
     private final String mPackageName;
     private final int    mLayoutId;
 

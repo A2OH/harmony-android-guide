@@ -11,8 +11,7 @@ import android.view.ViewGroup;
  */
 public class TableRow extends LinearLayout {
 
-    public TableRow() {
-        super();
+    public TableRow() { super(new android.content.Context());
         setOrientation(HORIZONTAL);
     }
 

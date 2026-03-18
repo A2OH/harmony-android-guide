@@ -24,7 +24,7 @@ public class CheckoutActivity extends Activity {
         CartManager cart = new CartManager(this);
         orderNumber = cart.checkout();
 
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         TextView header = new TextView();
@@ -48,7 +48,7 @@ public class CheckoutActivity extends Activity {
         thankYou.setTextSize(14);
         root.addView(thankYou);
 
-        Button doneBtn = new Button();
+        Button doneBtn = new Button(new android.content.Context());
         doneBtn.setText("Done");
         doneBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {

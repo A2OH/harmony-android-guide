@@ -22,11 +22,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class View implements android.graphics.drawable.Drawable.Callback {
 
+    /** @hide */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)
+    public @interface ResolvedLayoutDir {}
+
     // ════════════════════════════════════════════════════════════════════════
     //  Constants (from AOSP)
     // ════════════════════════════════════════════════════════════════════════
 
     protected static final String VIEW_LOG_TAG = "View";
+    protected static boolean sPreserveMarginParamsInLayoutParamConversion;
     private static final boolean DBG = false;
 
     public static final int NO_ID = -1;
@@ -105,6 +110,9 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public static final int LAYOUT_DIRECTION_RTL = 1;
     public static final int LAYOUT_DIRECTION_INHERIT = 2;
     public static final int LAYOUT_DIRECTION_LOCALE = 3;
+    public static final int LAYOUT_DIRECTION_UNDEFINED = -1;
+    public static final int LAYOUT_DIRECTION_DEFAULT = LAYOUT_DIRECTION_INHERIT;
+    public static final int LAYOUT_DIRECTION_RESOLVED_DEFAULT = LAYOUT_DIRECTION_LTR;
 
     // ── Focus ──
     public static final int FOCUSABLE = 1;
@@ -338,8 +346,8 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     ViewParent mParent;
     private Object mTag;
     private android.util.SparseArray<Object> mKeyedTags;
-    private Object mLayoutParams;
-    android.content.Context mContext;
+    protected ViewGroup.LayoutParams mLayoutParams;
+    protected android.content.Context mContext;
 
     // Focus state
     private boolean mFocusable;
@@ -533,6 +541,13 @@ public class View implements android.graphics.drawable.Drawable.Callback {
 
         public static int makeMeasureSpec(int size, int mode) {
             return (size & ~MODE_MASK) | (mode & MODE_MASK);
+        }
+
+        public static int makeSafeMeasureSpec(int size, int mode) {
+            if (mode == UNSPECIFIED && size < 0) {
+                size = 0;
+            }
+            return makeMeasureSpec(size, mode);
         }
 
         public static int getMode(int measureSpec) {
@@ -1495,8 +1510,8 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public Object getRootView(Object unused) { return getRootView(); }
 
     // ── LayoutParams ──
-    public void setLayoutParams(Object p0) { mLayoutParams = p0; }
-    public Object getLayoutParams() { return mLayoutParams; }
+    public void setLayoutParams(ViewGroup.LayoutParams params) { mLayoutParams = params; }
+    public ViewGroup.LayoutParams getLayoutParams() { return mLayoutParams; }
 
     // ── Context ──
     public android.content.Context getContext() { return mContext; }
@@ -1532,7 +1547,7 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     }
     public boolean requestFocus(Object p0, Object p1) { return requestFocus(); }
     public boolean requestFocusFromTouch() { return requestFocus(); }
-    public Object findFocus() { return isFocused() ? this : null; }
+    public View findFocus() { return isFocused() ? this : null; }
     public Object focusSearch(Object p0) { return null; }
 
     // ── Selected ──
@@ -1750,7 +1765,15 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public void drawableHotspotChanged(float x, float y) {}
     public void drawableHotspotChanged(Object p0, Object p1) {}
 
-    public void drawableStateChanged() {}
+    protected void drawableStateChanged() {}
+    protected boolean verifyDrawable(android.graphics.drawable.Drawable who) { return who == mBackground; }
+    public void jumpDrawablesToCurrentState() {}
+    public void onPopulateAccessibilityEventInternal(android.view.accessibility.AccessibilityEvent event) {}
+    public int getImportantForAutofill() { return IMPORTANT_FOR_AUTOFILL_AUTO; }
+    public void setImportantForAutofill(int mode) {}
+    public boolean isOpaque() { return false; }
+    public void onVisibilityAggregated(boolean isVisible) {}
+    public boolean isDefaultFocusHighlightNeeded(android.graphics.drawable.Drawable background, android.graphics.drawable.Drawable foreground) { return true; }
     public void refreshDrawableState() {}
 
 
@@ -1849,8 +1872,8 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public int computeHorizontalScrollRange() { return getWidth(); }
     public Object computeSystemWindowInsets(Object p0, Object p1) { return null; }
     public int computeVerticalScrollExtent() { return getHeight(); }
-    public int computeVerticalScrollOffset() { return mScrollY; }
-    public int computeVerticalScrollRange() { return getHeight(); }
+    protected int computeVerticalScrollOffset() { return mScrollY; }
+    protected int computeVerticalScrollRange() { return getHeight(); }
     public Object createAccessibilityNodeInfo() { return null; }
     public void createContextMenu(Object p0) {}
     public Object dispatchApplyWindowInsets(Object p0) { return null; }
@@ -1871,6 +1894,7 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public boolean dispatchNestedScroll(Object p0, Object p1, Object p2, Object p3, Object p4) { return false; }
     public void dispatchPointerCaptureChanged(Object p0) {}
     public boolean dispatchPopulateAccessibilityEvent(Object p0) { return false; }
+    public boolean dispatchPopulateAccessibilityEventInternal(android.view.accessibility.AccessibilityEvent event) { return false; }
     public void dispatchProvideAutofillStructure(Object p0, Object p1) {}
     public void dispatchProvideStructure(Object p0) {}
     public void dispatchSetActivated(Object p0) {}
@@ -1892,7 +1916,7 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public Object getApplicationWindowToken() { return null; }
     public Object getAutofillId() { return null; }
     public int getAutofillType() { return 0; }
-    public float getBottomFadingEdgeStrength() { return 0f; }
+    protected float getBottomFadingEdgeStrength() { return 0f; }
     public int getBottomPaddingOffset() { return 0; }
     public float getCameraDistance() { return 0f; }
     public Object getClipBounds() { return null; }
@@ -1904,10 +1928,16 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public int getDrawableState(int unused) { return 0; }
     public void getDrawingRect(Object p0) {}
     public long getDrawingTime() { return android.os.SystemClock.uptimeMillis(); }
+    public ArrayList<View> getFocusables(int direction) { return new ArrayList<View>(); }
     public Object getFocusables(Object p0) { return new ArrayList<View>(); }
     public void getFocusedRect(Object p0) {}
-    public Object getForeground() { return null; }
+    public android.graphics.drawable.Drawable getForeground() { return null; }
     public int getForegroundGravity() { return 0; }
+    public boolean isForegroundInsidePadding() { return true; }
+    protected int mForegroundPaddingLeft;
+    protected int mForegroundPaddingTop;
+    protected int mForegroundPaddingRight;
+    protected int mForegroundPaddingBottom;
     public boolean getGlobalVisibleRect(Object p0, Object p1) { return false; }
     public boolean getGlobalVisibleRect(Object p0) { return false; }
     public android.os.Handler getHandler() { return null; }
@@ -1972,7 +2002,7 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public void setTooltipText(Object p0) {}
     public Object getTransitionName() { return null; }
     public void setTransitionName(Object p0) {}
-    public float getTopFadingEdgeStrength() { return 0f; }
+    protected float getTopFadingEdgeStrength() { return 0f; }
     public int getTopPaddingOffset() { return 0; }
     public Object getTouchables() { return new ArrayList<View>(); }
     public long getUniqueDrawingId() { return System.identityHashCode(this); }
@@ -2028,8 +2058,14 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public boolean isVerticalScrollBarEnabled() { return false; }
     public boolean isVisibleToUserForAutofill(Object p0) { return false; }
     public Object keyboardNavigationClusterSearch(Object p0, Object p1) { return null; }
-    public static int mergeDrawableStates(int[] baseState, int[] additionalState) { return 0; }
-    public static int mergeDrawableStates(Object p0, Object p1) { return 0; }
+    protected static int[] mergeDrawableStates(int[] baseState, int[] additionalState) {
+        int N = baseState.length;
+        int i = N - 1;
+        while (i >= 0 && baseState[i] == 0) { i--; }
+        System.arraycopy(additionalState, 0, baseState, i + 1, additionalState.length);
+        return baseState;
+    }
+    public static int mergeDrawableStatesCompat(Object p0, Object p1) { return 0; }
     public void offsetLeftAndRight(int offset) { mLeft += offset; mRight += offset; }
     public void offsetLeftAndRight(Object p0) { if (p0 instanceof Integer) offsetLeftAndRight((Integer) p0); }
     public void offsetTopAndBottom(int offset) { mTop += offset; mBottom += offset; }
@@ -2047,6 +2083,7 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public boolean onDragEvent(Object p0) { return false; }
     public void onDrawScrollBars(Object p0) {}
     public void onFinishTemporaryDetach() {}
+    public boolean onGenericMotionEvent(MotionEvent event) { return false; }
     public boolean onGenericMotionEvent(Object p0) { return false; }
     public void onHoverChanged(Object p0) {}
     public boolean onHoverEvent(Object p0) { return false; }
@@ -2054,13 +2091,16 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public boolean onKeyMultiple(Object p0, Object p1, Object p2) { return false; }
     public boolean onKeyPreIme(Object p0, Object p1) { return false; }
     public boolean onKeyShortcut(Object p0, Object p1) { return false; }
+    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {}
     public void onOverScrolled(Object p0, Object p1, Object p2, Object p3) {}
     public void onProvideAutofillStructure(Object p0, Object p1) {}
     public void onProvideAutofillVirtualStructure(Object p0, Object p1) {}
     public void onProvideContentCaptureStructure(Object p0, Object p1) {}
     public void onProvideStructure(Object p0) {}
     public void onProvideVirtualStructure(Object p0) {}
+    public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) { return null; }
     public Object onResolvePointerIcon(Object p0, Object p1) { return null; }
+    public void onRtlPropertiesChanged(@ResolvedLayoutDir int layoutDirection) {}
     public void onRtlPropertiesChanged(Object p0) {}
     public void onScreenStateChanged(Object p0) {}
     public boolean onSetAlpha(int alpha) { return false; }
@@ -2072,6 +2112,9 @@ public class View implements android.graphics.drawable.Drawable.Callback {
     public void onWindowFocusChanged(Object p0) {}
     public void onWindowFocusChanged(boolean hasWindowFocus) {}
     public void onWindowVisibilityChanged(Object p0) {}
+    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY,
+            int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY,
+            boolean isTouchEvent) { return false; }
     public boolean overScrollBy(Object p0, Object p1, Object p2, Object p3, Object p4,
             Object p5, Object p6, Object p7, Object p8) { return false; }
     public boolean performAccessibilityAction(Object p0, Object p1) { return false; }
@@ -2307,5 +2350,20 @@ public class View implements android.graphics.drawable.Drawable.Callback {
 
     protected boolean setOpticalFrame(int left, int top, int right, int bottom) {
         return setFrame(left, top, right, bottom);
+    }
+
+    // Accessibility internal methods (for AOSP ScrollView etc.)
+    public boolean performAccessibilityActionInternal(int action, android.os.Bundle arguments) { return false; }
+    public void onInitializeAccessibilityNodeInfoInternal(android.view.accessibility.AccessibilityNodeInfo info) {}
+    public void onInitializeAccessibilityEventInternal(android.view.accessibility.AccessibilityEvent event) {}
+
+    // Lifecycle callbacks
+    protected void onDetachedFromWindow() {}
+    protected void onAttachedToWindow() {}
+    public void invalidateParentIfNeeded() {}
+
+    protected void encodeProperties(@android.annotation.NonNull ViewHierarchyEncoder encoder) {
+        encoder.addProperty("id", getId());
+        encoder.addProperty("visibility", getVisibility());
     }
 }

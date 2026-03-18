@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Form App</string>
+    <string name="result_title">Results</string>
+    <string name="label_name">Name:</string>
+    <string name="label_email">Email:</string>
+    <string name="label_agree">I agree to terms</string>
+    <string name="btn_submit">Submit</string>
+    <string name="hint_name">Enter your name</string>
+    <string name="hint_email">Enter your email</string>
+</resources>

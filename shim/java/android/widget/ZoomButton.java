@@ -15,18 +15,18 @@ public class ZoomButton extends ImageButton {
     private long mZoomSpeed = 1000L;
 
     public ZoomButton() {
-        super();
+        super(new android.content.Context());
     }
 
-    public ZoomButton(Object context) {
+    public ZoomButton(android.content.Context context) {
         super(context);
     }
 
-    public ZoomButton(Object context, Object attrs) {
+    public ZoomButton(android.content.Context context, android.util.AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ZoomButton(Object context, Object attrs, int defStyleAttr) {
+    public ZoomButton(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 

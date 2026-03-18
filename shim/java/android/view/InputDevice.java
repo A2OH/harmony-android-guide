@@ -15,6 +15,16 @@ public class InputDevice {
     public static final int SOURCE_TOUCHSCREEN   = 0x00001002;
     public static final int SOURCE_MOUSE         = 0x00002002;
     public static final int SOURCE_JOYSTICK      = 0x01000010;
+    public static final int SOURCE_ROTARY_ENCODER = 0x00400000;
+
+    // Source class constants
+    public static final int SOURCE_CLASS_MASK     = 0x000000ff;
+    public static final int SOURCE_CLASS_NONE     = 0x00000000;
+    public static final int SOURCE_CLASS_BUTTON   = 0x00000001;
+    public static final int SOURCE_CLASS_POINTER  = 0x00000002;
+    public static final int SOURCE_CLASS_TRACKBALL= 0x00000004;
+    public static final int SOURCE_CLASS_POSITION = 0x00000008;
+    public static final int SOURCE_CLASS_JOYSTICK = 0x00000010;
 
     private final int mId;
     private final String mName;

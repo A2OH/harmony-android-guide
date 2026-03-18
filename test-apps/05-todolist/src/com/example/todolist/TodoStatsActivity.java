@@ -33,7 +33,7 @@ public class TodoStatsActivity extends Activity {
         prefs.edit().putLong(KEY_LAST_VIEWED, now).apply();
 
         // Build UI
-        LinearLayout root = new LinearLayout();
+        LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
         TextView header = new TextView();
@@ -59,7 +59,7 @@ public class TodoStatsActivity extends Activity {
         pendingView.setTextColor(0xFFFF9800);
         root.addView(pendingView);
 
-        Button backBtn = new Button();
+        Button backBtn = new Button(new android.content.Context());
         backBtn.setText("Back");
         backBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) { finish(); }

@@ -3383,9 +3383,9 @@ public class HeadlessTest {
         final int TEST_LAYOUT = 0x7f0e0001;
         android.view.LayoutInflater.registerLayout(TEST_LAYOUT, new android.view.LayoutInflater.ViewFactory() {
             public android.view.View createView(android.content.Context c, android.view.ViewGroup parent) {
-                android.widget.LinearLayout ll = new android.widget.LinearLayout();
+                android.widget.LinearLayout ll = new android.widget.LinearLayout(new android.content.Context());
                 ll.addView(new android.widget.TextView());
-                ll.addView(new android.widget.Button());
+                ll.addView(new android.widget.Button(new android.content.Context()));
                 return ll;
             }
         });
@@ -3406,13 +3406,13 @@ public class HeadlessTest {
         check("child 1 is Button", inflatedVg.getChildAt(1) instanceof android.widget.Button);
 
         // Register + inflate with attachToRoot=true
-        android.widget.FrameLayout regRoot = new android.widget.FrameLayout();
+        android.widget.FrameLayout regRoot = new android.widget.FrameLayout(new android.content.Context());
         android.view.View regView = inflater.inflate(TEST_LAYOUT, regRoot, true);
         check("registered attach returns root", regView == regRoot);
         check("registered root has 1 child", regRoot.getChildCount() == 1);
 
         // Register + inflate with attachToRoot=false
-        android.widget.FrameLayout regRoot2 = new android.widget.FrameLayout();
+        android.widget.FrameLayout regRoot2 = new android.widget.FrameLayout(new android.content.Context());
         android.view.View regView2 = inflater.inflate(TEST_LAYOUT, regRoot2, false);
         check("registered !attach returns child", regView2 != regRoot2);
         check("registered !attach root empty", regRoot2.getChildCount() == 0);
@@ -3510,12 +3510,12 @@ public class HeadlessTest {
         }
 
         // Test inflate with attachToRoot still works when bytes parsing fails
-        android.widget.FrameLayout root = new android.widget.FrameLayout();
+        android.widget.FrameLayout root = new android.widget.FrameLayout(new android.content.Context());
         android.view.View v3 = inflater.inflate(0x7f0effff, root, true);
         check("inflate fallback + attach returns root", v3 == root);
         check("root has child after attach", root.getChildCount() == 1);
 
-        android.widget.FrameLayout root2 = new android.widget.FrameLayout();
+        android.widget.FrameLayout root2 = new android.widget.FrameLayout(new android.content.Context());
         android.view.View v4 = inflater.inflate(0x7f0effff, root2, false);
         check("inflate fallback + !attach returns child", v4 != root2);
         check("root2 empty after !attach", root2.getChildCount() == 0);
@@ -5152,7 +5152,7 @@ public class HeadlessTest {
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
         android.graphics.Bitmap imgBmp = android.graphics.Bitmap.createBitmap(32, 32,
                 android.graphics.Bitmap.Config.ARGB_8888);
-        android.widget.ImageView iv = new android.widget.ImageView();
+        android.widget.ImageView iv = new android.widget.ImageView(new android.content.Context());
         iv.setImageBitmap(imgBmp);
         iv.draw(canvas);
         log = com.ohos.shim.bridge.OHBridge.getDrawLog(canvas.getNativeHandle());
@@ -5196,7 +5196,7 @@ public class HeadlessTest {
         android.graphics.Canvas canvas = new android.graphics.Canvas(bmp);
 
         // ── Item 1: LinearLayout vertical layout ──
-        android.widget.LinearLayout vLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout vLayout = new android.widget.LinearLayout(new android.content.Context());
         vLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
         android.view.View c1 = new android.view.View();
         android.view.View c2 = new android.view.View();
@@ -5212,7 +5212,7 @@ public class HeadlessTest {
         check("LinearLayout V: c1 height == 50", c1.getHeight() == 50);
 
         // LinearLayout horizontal
-        android.widget.LinearLayout hLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout hLayout = new android.widget.LinearLayout(new android.content.Context());
         hLayout.setOrientation(android.widget.LinearLayout.HORIZONTAL);
         android.view.View h1 = new android.view.View();
         android.view.View h2 = new android.view.View();
@@ -5225,7 +5225,7 @@ public class HeadlessTest {
         check("LinearLayout H: h2 left == 50", h2.getLeft() == 50);
 
         // ── Item 2: FrameLayout stacked layout ──
-        android.widget.FrameLayout frame = new android.widget.FrameLayout();
+        android.widget.FrameLayout frame = new android.widget.FrameLayout(new android.content.Context());
         android.view.View fChild1 = new android.view.View();
         android.view.View fChild2 = new android.view.View();
         fChild1.measure(spec50, spec50);
@@ -5240,7 +5240,7 @@ public class HeadlessTest {
         check("FrameLayout: child2 overlaps child1", fChild2.getTop() == 0);
 
         // ── Item 3: ViewGroup.measureChildren ──
-        android.widget.LinearLayout measGroup = new android.widget.LinearLayout();
+        android.widget.LinearLayout measGroup = new android.widget.LinearLayout(new android.content.Context());
         android.view.View mChild = new android.view.View();
         measGroup.addView(mChild);
         int parentSpec = android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY);
@@ -5265,7 +5265,7 @@ public class HeadlessTest {
             android.view.View.MeasureSpec.getSize(wrapSpec) == 180);
 
         // ── Item 4: View.requestLayout ──
-        android.widget.LinearLayout rlRoot = new android.widget.LinearLayout();
+        android.widget.LinearLayout rlRoot = new android.widget.LinearLayout(new android.content.Context());
         rlRoot.setOrientation(android.widget.LinearLayout.VERTICAL);
         android.view.View rlChild = new android.view.View();
         rlRoot.addView(rlChild);
@@ -5355,7 +5355,7 @@ public class HeadlessTest {
 
         // ── Item 8: Button onDraw ──
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.Button btn = new android.widget.Button();
+        android.widget.Button btn = new android.widget.Button(new android.content.Context());
         btn.setText("Click");
         btn.layout(0, 0, 100, 40);
         btn.draw(canvas);
@@ -5462,7 +5462,7 @@ public class HeadlessTest {
         // ── LinearLayout onMeasure ──
         // Children with WRAP_CONTENT take AT_MOST parent size, so measured == parent size.
         // With EXACTLY spec, LinearLayout gives children exact parent size.
-        android.widget.LinearLayout measLL = new android.widget.LinearLayout();
+        android.widget.LinearLayout measLL = new android.widget.LinearLayout(new android.content.Context());
         measLL.setOrientation(android.widget.LinearLayout.VERTICAL);
         android.view.View mc1 = new android.view.View();
         android.view.View mc2 = new android.view.View();
@@ -5638,7 +5638,7 @@ public class HeadlessTest {
 
         // Button with padding draws centered text
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.Button btn = new android.widget.Button();
+        android.widget.Button btn = new android.widget.Button(new android.content.Context());
         btn.setText("OK");
         btn.setPadding(20, 10, 20, 10);
         btn.layout(0, 0, 100, 40);
@@ -5711,7 +5711,7 @@ public class HeadlessTest {
         // ── Touch dispatch through ViewGroup with child hit testing ──
 
         final java.util.List<String> childTouchLog = new java.util.ArrayList<>();
-        android.widget.FrameLayout container = new android.widget.FrameLayout();
+        android.widget.FrameLayout container = new android.widget.FrameLayout(new android.content.Context());
         android.view.View childBtn = new android.view.View() {
             @Override
             public boolean onTouchEvent(android.view.MotionEvent event) {
@@ -8607,7 +8607,7 @@ public class HeadlessTest {
 
         // ── Weight distribution (vertical) ──
         // Two children with equal weight should split the space
-        android.widget.LinearLayout wLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout wLayout = new android.widget.LinearLayout(new android.content.Context());
         wLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
         android.view.View w1 = new android.view.View();
@@ -8633,7 +8633,7 @@ public class HeadlessTest {
         check("weight V: w1 width == 300", w1.getWidth() == 300);
 
         // ── Weight distribution (horizontal) ──
-        android.widget.LinearLayout hWeight = new android.widget.LinearLayout();
+        android.widget.LinearLayout hWeight = new android.widget.LinearLayout(new android.content.Context());
         hWeight.setOrientation(android.widget.LinearLayout.HORIZONTAL);
 
         android.view.View hw1 = new android.view.View();
@@ -8657,7 +8657,7 @@ public class HeadlessTest {
         check("weight H: hw1 height == 300", hw1.getHeight() == 300);
 
         // ── Unequal weights: 1:3 in 400px ──
-        android.widget.LinearLayout wLayout2 = new android.widget.LinearLayout();
+        android.widget.LinearLayout wLayout2 = new android.widget.LinearLayout(new android.content.Context());
         wLayout2.setOrientation(android.widget.LinearLayout.VERTICAL);
 
         android.view.View u1 = new android.view.View();
@@ -8676,7 +8676,7 @@ public class HeadlessTest {
         check("weight 1:3 u2 height == 300", u2.getHeight() == 300);
 
         // ── Gravity in vertical LinearLayout ──
-        android.widget.LinearLayout gLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout gLayout = new android.widget.LinearLayout(new android.content.Context());
         gLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
         android.view.View gc = new android.view.View();
@@ -8699,7 +8699,7 @@ public class HeadlessTest {
         grLp.gravity = android.view.Gravity.RIGHT;
         gr.setLayoutParams(grLp);
 
-        android.widget.LinearLayout grLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout grLayout = new android.widget.LinearLayout(new android.content.Context());
         grLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
         grLayout.addView(gr);
         grLayout.measure(exact300, exact300);
@@ -8708,7 +8708,7 @@ public class HeadlessTest {
         check("gravity right: child left == 200", gr.getLeft() == 200);
 
         // ── Margins in LinearLayout ──
-        android.widget.LinearLayout mLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout mLayout = new android.widget.LinearLayout(new android.content.Context());
         mLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
         android.view.View m1 = new android.view.View();
@@ -8733,7 +8733,7 @@ public class HeadlessTest {
         check("margin: m2 top == 70", m2.getTop() == 70);
 
         // ── FrameLayout gravity ──
-        android.widget.FrameLayout fGrav = new android.widget.FrameLayout();
+        android.widget.FrameLayout fGrav = new android.widget.FrameLayout(new android.content.Context());
         android.view.View fc = new android.view.View();
         android.widget.FrameLayout.LayoutParams fcLp =
                 new android.widget.FrameLayout.LayoutParams(100, 100, android.view.Gravity.CENTER);
@@ -8746,7 +8746,7 @@ public class HeadlessTest {
         check("FrameLayout center: child top == 100", fc.getTop() == 100);
 
         // ── FrameLayout gravity BOTTOM|RIGHT ──
-        android.widget.FrameLayout fBR = new android.widget.FrameLayout();
+        android.widget.FrameLayout fBR = new android.widget.FrameLayout(new android.content.Context());
         android.view.View fbr = new android.view.View();
         android.widget.FrameLayout.LayoutParams fbrLp =
                 new android.widget.FrameLayout.LayoutParams(50, 50,
@@ -8760,7 +8760,7 @@ public class HeadlessTest {
         check("FrameLayout bottom-right: top == 250", fbr.getTop() == 250);
 
         // ── FrameLayout margins ──
-        android.widget.FrameLayout fMarg = new android.widget.FrameLayout();
+        android.widget.FrameLayout fMarg = new android.widget.FrameLayout(new android.content.Context());
         android.view.View fmc = new android.view.View();
         android.widget.FrameLayout.LayoutParams fmcLp =
                 new android.widget.FrameLayout.LayoutParams(100, 100);
@@ -8801,7 +8801,7 @@ public class HeadlessTest {
                 && (resolved3 & android.view.View.MEASURED_STATE_TOO_SMALL) != 0);
 
         // ── WeightSum ──
-        android.widget.LinearLayout wsLayout = new android.widget.LinearLayout();
+        android.widget.LinearLayout wsLayout = new android.widget.LinearLayout(new android.content.Context());
         wsLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
         wsLayout.setWeightSum(4.0f);
 
@@ -9191,9 +9191,9 @@ public class HeadlessTest {
         check("removeRule clears to 0",
             lp.getRule(android.widget.RelativeLayout.BELOW) == 0);
         check("hasRule returns true for set rule",
-            lp.hasRule(android.widget.RelativeLayout.CENTER_IN_PARENT));
+            lp.getRules()[android.widget.RelativeLayout.CENTER_IN_PARENT] != 0);
         check("hasRule returns false for removed rule",
-            !lp.hasRule(android.widget.RelativeLayout.BELOW));
+            lp.getRules()[android.widget.RelativeLayout.BELOW] == 0);
 
         // -- getRules returns array indexed by verb --
         int[] rules = lp.getRules();
@@ -9210,7 +9210,7 @@ public class HeadlessTest {
             lpCopy.getRule(android.widget.RelativeLayout.CENTER_IN_PARENT) == android.widget.RelativeLayout.TRUE);
 
         // -- Basic layout: single child with ALIGN_PARENT_LEFT + ALIGN_PARENT_TOP --
-        android.widget.RelativeLayout rl = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child1 = new android.view.View();
         child1.setId(1);
         android.widget.RelativeLayout.LayoutParams lp1 =
@@ -9219,14 +9219,14 @@ public class HeadlessTest {
         lp1.addRule(android.widget.RelativeLayout.ALIGN_PARENT_TOP);
         child1.setLayoutParams(lp1);
         rl.addView(child1);
-        rl.doLayout(400, 300);
+        rl.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl.layout(0, 0, 400, 300);
         check("ALIGN_PARENT_LEFT+TOP: left==0", child1.getLeft() == 0);
         check("ALIGN_PARENT_LEFT+TOP: top==0", child1.getTop() == 0);
         check("ALIGN_PARENT_LEFT+TOP: width==100", child1.getWidth() == 100);
         check("ALIGN_PARENT_LEFT+TOP: height==50", child1.getHeight() == 50);
 
         // -- ALIGN_PARENT_RIGHT --
-        android.widget.RelativeLayout rl2 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl2 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child2 = new android.view.View();
         child2.setId(2);
         android.widget.RelativeLayout.LayoutParams lp2 =
@@ -9235,12 +9235,12 @@ public class HeadlessTest {
         lp2.addRule(android.widget.RelativeLayout.ALIGN_PARENT_TOP);
         child2.setLayoutParams(lp2);
         rl2.addView(child2);
-        rl2.doLayout(400, 300);
+        rl2.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl2.layout(0, 0, 400, 300);
         check("ALIGN_PARENT_RIGHT: right==400", child2.getRight() == 400);
         check("ALIGN_PARENT_RIGHT: left==300", child2.getLeft() == 300);
 
         // -- ALIGN_PARENT_BOTTOM --
-        android.widget.RelativeLayout rl3 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl3 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child3 = new android.view.View();
         child3.setId(3);
         android.widget.RelativeLayout.LayoutParams lp3 =
@@ -9249,12 +9249,12 @@ public class HeadlessTest {
         lp3.addRule(android.widget.RelativeLayout.ALIGN_PARENT_LEFT);
         child3.setLayoutParams(lp3);
         rl3.addView(child3);
-        rl3.doLayout(400, 300);
+        rl3.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl3.layout(0, 0, 400, 300);
         check("ALIGN_PARENT_BOTTOM: bottom==300", child3.getBottom() == 300);
         check("ALIGN_PARENT_BOTTOM: top==250", child3.getTop() == 250);
 
         // -- CENTER_IN_PARENT --
-        android.widget.RelativeLayout rl4 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl4 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child4 = new android.view.View();
         child4.setId(4);
         android.widget.RelativeLayout.LayoutParams lp4 =
@@ -9262,14 +9262,14 @@ public class HeadlessTest {
         lp4.addRule(android.widget.RelativeLayout.CENTER_IN_PARENT);
         child4.setLayoutParams(lp4);
         rl4.addView(child4);
-        rl4.doLayout(400, 300);
+        rl4.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl4.layout(0, 0, 400, 300);
         check("CENTER_IN_PARENT: left==150", child4.getLeft() == 150);
         check("CENTER_IN_PARENT: top==125", child4.getTop() == 125);
         check("CENTER_IN_PARENT: right==250", child4.getRight() == 250);
         check("CENTER_IN_PARENT: bottom==175", child4.getBottom() == 175);
 
         // -- CENTER_HORIZONTAL only --
-        android.widget.RelativeLayout rl5 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl5 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child5 = new android.view.View();
         child5.setId(5);
         android.widget.RelativeLayout.LayoutParams lp5 =
@@ -9278,12 +9278,12 @@ public class HeadlessTest {
         lp5.addRule(android.widget.RelativeLayout.ALIGN_PARENT_TOP);
         child5.setLayoutParams(lp5);
         rl5.addView(child5);
-        rl5.doLayout(400, 300);
+        rl5.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl5.layout(0, 0, 400, 300);
         check("CENTER_HORIZONTAL: left==150", child5.getLeft() == 150);
         check("CENTER_HORIZONTAL: top==0", child5.getTop() == 0);
 
         // -- CENTER_VERTICAL only --
-        android.widget.RelativeLayout rl6 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl6 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View child6 = new android.view.View();
         child6.setId(6);
         android.widget.RelativeLayout.LayoutParams lp6 =
@@ -9292,12 +9292,12 @@ public class HeadlessTest {
         lp6.addRule(android.widget.RelativeLayout.ALIGN_PARENT_LEFT);
         child6.setLayoutParams(lp6);
         rl6.addView(child6);
-        rl6.doLayout(400, 300);
+        rl6.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl6.layout(0, 0, 400, 300);
         check("CENTER_VERTICAL: top==125", child6.getTop() == 125);
         check("CENTER_VERTICAL: left==0", child6.getLeft() == 0);
 
         // -- BELOW sibling --
-        android.widget.RelativeLayout rl7 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl7 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View topView = new android.view.View();
         topView.setId(10);
         android.widget.RelativeLayout.LayoutParams lpTop =
@@ -9316,14 +9316,14 @@ public class HeadlessTest {
         belowView.setLayoutParams(lpBelow);
         rl7.addView(belowView);
 
-        rl7.doLayout(400, 300);
+        rl7.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl7.layout(0, 0, 400, 300);
         check("BELOW: topView top==0", topView.getTop() == 0);
         check("BELOW: topView bottom==60", topView.getBottom() == 60);
         check("BELOW: belowView top==60", belowView.getTop() == 60);
         check("BELOW: belowView bottom==100", belowView.getBottom() == 100);
 
         // -- RIGHT_OF sibling --
-        android.widget.RelativeLayout rl8 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl8 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View leftView = new android.view.View();
         leftView.setId(20);
         android.widget.RelativeLayout.LayoutParams lpLeft =
@@ -9342,13 +9342,13 @@ public class HeadlessTest {
         rightView.setLayoutParams(lpRight);
         rl8.addView(rightView);
 
-        rl8.doLayout(400, 300);
+        rl8.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl8.layout(0, 0, 400, 300);
         check("RIGHT_OF: leftView right==80", leftView.getRight() == 80);
         check("RIGHT_OF: rightView left==80", rightView.getLeft() == 80);
         check("RIGHT_OF: rightView right==200", rightView.getRight() == 200);
 
         // -- LEFT_OF sibling --
-        android.widget.RelativeLayout rl9 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl9 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View anchorRight = new android.view.View();
         anchorRight.setId(30);
         android.widget.RelativeLayout.LayoutParams lpAnchorRight =
@@ -9367,13 +9367,13 @@ public class HeadlessTest {
         leftOfView.setLayoutParams(lpLeftOf);
         rl9.addView(leftOfView);
 
-        rl9.doLayout(400, 300);
+        rl9.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl9.layout(0, 0, 400, 300);
         check("LEFT_OF: anchor left==300", anchorRight.getLeft() == 300);
         check("LEFT_OF: leftOfView right==300", leftOfView.getRight() == 300);
         check("LEFT_OF: leftOfView left==220", leftOfView.getLeft() == 220);
 
         // -- ABOVE sibling --
-        android.widget.RelativeLayout rl10 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl10 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View bottomAnchor = new android.view.View();
         bottomAnchor.setId(40);
         android.widget.RelativeLayout.LayoutParams lpBotAnchor =
@@ -9392,14 +9392,14 @@ public class HeadlessTest {
         aboveView.setLayoutParams(lpAbove);
         rl10.addView(aboveView);
 
-        rl10.doLayout(400, 300);
+        rl10.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl10.layout(0, 0, 400, 300);
         check("ABOVE: bottomAnchor bottom==300", bottomAnchor.getBottom() == 300);
         check("ABOVE: bottomAnchor top==240", bottomAnchor.getTop() == 240);
         check("ABOVE: aboveView bottom==240", aboveView.getBottom() == 240);
         check("ABOVE: aboveView top==200", aboveView.getTop() == 200);
 
         // -- ALIGN_LEFT + ALIGN_TOP with sibling --
-        android.widget.RelativeLayout rl11 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl11 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View refView = new android.view.View();
         refView.setId(50);
         android.widget.RelativeLayout.LayoutParams lpRef =
@@ -9419,14 +9419,14 @@ public class HeadlessTest {
         alignedView.setLayoutParams(lpAligned);
         rl11.addView(alignedView);
 
-        rl11.doLayout(400, 300);
+        rl11.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl11.layout(0, 0, 400, 300);
         check("ALIGN_LEFT: refView left==10", refView.getLeft() == 10);
         check("ALIGN_TOP: refView top==20", refView.getTop() == 20);
         check("ALIGN_LEFT: alignedView left==refView left", alignedView.getLeft() == refView.getLeft());
         check("ALIGN_TOP: alignedView top==refView top", alignedView.getTop() == refView.getTop());
 
         // -- Three-level chain: A -> B -> C --
-        android.widget.RelativeLayout rl12 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl12 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View chainA = new android.view.View();
         chainA.setId(60);
         android.widget.RelativeLayout.LayoutParams lpA =
@@ -9454,13 +9454,13 @@ public class HeadlessTest {
         chainC.setLayoutParams(lpC);
         rl12.addView(chainC);
 
-        rl12.doLayout(400, 300);
+        rl12.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl12.layout(0, 0, 400, 300);
         check("Chain: A top==0", chainA.getTop() == 0);
         check("Chain: B top==30 (below A)", chainB.getTop() == 30);
         check("Chain: C top==60 (below B)", chainC.getTop() == 60);
 
         // -- Margins with BELOW --
-        android.widget.RelativeLayout rl13 = new android.widget.RelativeLayout();
+        android.widget.RelativeLayout rl13 = new android.widget.RelativeLayout(new android.content.Context());
         android.view.View mTop = new android.view.View();
         mTop.setId(70);
         android.widget.RelativeLayout.LayoutParams lpMTop =
@@ -9481,7 +9481,7 @@ public class HeadlessTest {
         mBot.setLayoutParams(lpMBot);
         rl13.addView(mBot);
 
-        rl13.doLayout(400, 300);
+        rl13.measure(android.view.View.MeasureSpec.makeMeasureSpec(400, android.view.View.MeasureSpec.EXACTLY), android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY)); rl13.layout(0, 0, 400, 300);
         // BELOW uses: anchorParams.mBottom + anchorParams.bottomMargin + childParams.topMargin
         check("Margins: mTop bottom==50", mTop.getBottom() == 50);
         int expectedMBotTop = mTop.getBottom() + 10 + 5; // bottomMargin + topMargin
@@ -10239,11 +10239,12 @@ public class HeadlessTest {
         check("B33 RTL: rightMargin = start", mlpRtl.rightMargin == 10);
         check("B33 RTL: leftMargin = end", mlpRtl.leftMargin == 20);
 
-        // ── 23. generateDefaultLayoutParams ──
+        // ── 23. generateDefaultLayoutParams (now protected, test via generateLayoutParams) ──
         android.widget.FrameLayout genParent = new android.widget.FrameLayout(ctx);
-        Object defParams = genParent.generateDefaultLayoutParams();
-        check("B33 generateDefaultLayoutParams not null", defParams != null);
-        check("B33 generateDefaultLayoutParams is LayoutParams",
+        android.view.ViewGroup.LayoutParams defParams = genParent.generateLayoutParams(
+                (android.util.AttributeSet) null);
+        check("B33 generateLayoutParams(attrs) not null", defParams != null);
+        check("B33 generateLayoutParams(attrs) is LayoutParams",
                 defParams instanceof android.view.ViewGroup.LayoutParams);
 
         // ── 24. LayoutParams copy constructor ──
@@ -10283,13 +10284,13 @@ public class HeadlessTest {
         android.content.Context ctx = new android.content.Context();
 
         // ── 1. fillViewport ──
-        android.widget.ScrollView sv = new android.widget.ScrollView();
+        android.widget.ScrollView sv = new android.widget.ScrollView(new android.content.Context());
         check("B33 fillViewport default false", !sv.isFillViewport());
         sv.setFillViewport(true);
         check("B33 setFillViewport true", sv.isFillViewport());
 
         // ── 2. scrollTo clamping ──
-        android.widget.ScrollView clampSv = new android.widget.ScrollView();
+        android.widget.ScrollView clampSv = new android.widget.ScrollView(new android.content.Context());
         android.view.View tallChild = new android.view.View(ctx);
         clampSv.addView(tallChild);
         // Layout: ScrollView 300 tall, child 100 tall (no scroll range)
@@ -10300,7 +10301,7 @@ public class HeadlessTest {
         check("B33 scrollTo clamps to 0 when content < viewport", clampSv.getScrollY() == 0);
 
         // ── 3. scrollTo with tall content ──
-        android.widget.ScrollView tallSv = new android.widget.ScrollView();
+        android.widget.ScrollView tallSv = new android.widget.ScrollView(new android.content.Context());
         android.view.View tallContent = new android.view.View(ctx) {
             @Override
             protected void onMeasure(int w, int h) {
@@ -10701,7 +10702,7 @@ public class HeadlessTest {
         check("B35 BoringLayout.isBoring reuses metrics", result == reuse);
 
         // 18. EditText inherits from TextView
-        android.widget.EditText et = new android.widget.EditText();
+        android.widget.EditText et = new android.widget.EditText(new android.content.Context());
         et.setText("Editable");
         check("B35 EditText getText", "Editable".equals(et.getText().toString()));
         et.setHint("Type here");

@@ -26,7 +26,7 @@ public class ToggleButton extends Button {
     public ToggleButton() {
         // Button creates a BUTTON node; for ToggleButton we ideally want TOGGLE.
         // The shim layer uses the Button node and overlays checked state on top.
-        super();
+        super(new android.content.Context());
         registerToggleEvent();
     }
 

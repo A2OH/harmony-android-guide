@@ -35,9 +35,9 @@ public class ContentResolver {
     public static final int QUERY_ARG_SQL_SORT_ORDER = 0;
     public static final int QUERY_SORT_DIRECTION_ASCENDING = 0;
     public static final int QUERY_SORT_DIRECTION_DESCENDING = 0;
-    public static final int SCHEME_ANDROID_RESOURCE = 0;
-    public static final int SCHEME_CONTENT = 0;
-    public static final int SCHEME_FILE = 0;
+    public static final String SCHEME_ANDROID_RESOURCE = "android.resource";
+    public static final String SCHEME_CONTENT = "content";
+    public static final String SCHEME_FILE = "file";
     public static final int SYNC_EXTRAS_DISCARD_LOCAL_DELETIONS = 0;
     public static final int SYNC_EXTRAS_DO_NOT_RETRY = 0;
     public static final int SYNC_EXTRAS_EXPEDITED = 0;
@@ -129,4 +129,13 @@ public class ContentResolver {
         return 0;
     }
     public static void validateSyncExtrasBundle(Bundle p0) {}
+
+    public static class OpenResourceIdResult {
+        public android.content.res.Resources r;
+        public int id;
+    }
+
+    public OpenResourceIdResult getResourceId(android.net.Uri uri) throws java.io.FileNotFoundException {
+        return new OpenResourceIdResult();
+    }
 }
