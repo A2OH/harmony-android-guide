@@ -27,23 +27,23 @@ public class CheckoutActivity extends Activity {
         LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
-        TextView header = new TextView();
+        TextView header = new TextView(getApplicationContext());
         header.setText("Order Confirmed!");
         header.setTextSize(24);
         header.setTextColor(0xFF008800);
         root.addView(header);
 
-        TextView orderView = new TextView();
+        TextView orderView = new TextView(getApplicationContext());
         orderView.setText("Order #" + orderNumber);
         orderView.setTextSize(18);
         root.addView(orderView);
 
-        TextView summaryView = new TextView();
+        TextView summaryView = new TextView(getApplicationContext());
         summaryView.setText(itemCount + " items — " + total);
         summaryView.setTextSize(16);
         root.addView(summaryView);
 
-        TextView thankYou = new TextView();
+        TextView thankYou = new TextView(getApplicationContext());
         thankYou.setText("Thank you for choosing MockDonalds!");
         thankYou.setTextSize(14);
         root.addView(thankYou);

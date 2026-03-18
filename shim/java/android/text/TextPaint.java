@@ -66,4 +66,6 @@ public class TextPaint extends Paint {
         bgColor       = tp.bgColor;
         linkColor     = tp.linkColor;
     }
+
+    public static void setCompatibilityScaling(float factor) {}
 }

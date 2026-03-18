@@ -28,5 +28,11 @@ public interface Spannable extends Spanned {
     void removeSpan(Object what);
 
     /** Auto-generated stub. */
-    public static interface Factory {}
+    public static class Factory {
+        private static final Factory sInstance = new Factory();
+        public static Factory getInstance() { return sInstance; }
+        public Spannable newSpannable(CharSequence source) {
+            return (source instanceof Spannable) ? (Spannable) source : new SpannableString(source != null ? source.toString() : "");
+        }
+    }
 }

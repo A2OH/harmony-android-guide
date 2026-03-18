@@ -88,6 +88,12 @@ public class ColorStateList {
 
     // ── Object overrides ─────────────────────────────────────────────────────
 
+    public boolean isStateful() {
+        return stateSpecs.length > 1;
+    }
+
+    public ColorStateList withAlpha(int alpha) { return this; }
+
     @Override
     public String toString() {
         return "ColorStateList(defaultColor=0x" + Integer.toHexString(defaultColor) + ")";

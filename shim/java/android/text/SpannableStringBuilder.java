@@ -32,7 +32,7 @@ public class SpannableStringBuilder implements Editable, CharSequence {
     }
 
     private final List<SpanRec> mSpans = new ArrayList<>();
-    private Editable.InputFilter[] mFilters = new Editable.InputFilter[0];
+    private InputFilter[] mFilters = new InputFilter[0];
 
     // ── Constructors ─────────────────────────────────────────────────
 
@@ -129,12 +129,12 @@ public class SpannableStringBuilder implements Editable, CharSequence {
     }
 
     @Override
-    public void setFilters(Editable.InputFilter[] filters) {
-        mFilters = filters != null ? filters : new Editable.InputFilter[0];
+    public void setFilters(InputFilter[] filters) {
+        mFilters = filters != null ? filters : new InputFilter[0];
     }
 
     @Override
-    public Editable.InputFilter[] getFilters() {
+    public InputFilter[] getFilters() {
         return mFilters;
     }
 

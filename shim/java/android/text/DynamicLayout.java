@@ -89,6 +89,43 @@ public class DynamicLayout extends Layout {
         return Math.max(1, Math.round(base * spacingMult + spacingAdd));
     }
 
+    public static final class Builder {
+        private CharSequence mBase;
+        private CharSequence mDisplay;
+        private TextPaint mPaint;
+        private int mWidth;
+        private Alignment mAlignment = Alignment.ALIGN_NORMAL;
+        private float mSpacingMult = 1.0f;
+        private float mSpacingAdd = 0.0f;
+
+        private Builder() {}
+
+        public static Builder obtain(CharSequence base, TextPaint paint, int width) {
+            Builder b = new Builder();
+            b.mBase = base;
+            b.mDisplay = base;
+            b.mPaint = paint;
+            b.mWidth = width;
+            return b;
+        }
+
+        public Builder setDisplayText(CharSequence display) { mDisplay = display; return this; }
+        public Builder setAlignment(Alignment alignment) { mAlignment = alignment; return this; }
+        public Builder setLineSpacing(float add, float mult) { mSpacingAdd = add; mSpacingMult = mult; return this; }
+        public Builder setTextDirection(TextDirectionHeuristic textDir) { return this; }
+        public Builder setEllipsize(TextUtils.TruncateAt ellipsize) { return this; }
+        public Builder setEllipsizedWidth(int width) { return this; }
+        public Builder setBreakStrategy(int breakStrategy) { return this; }
+        public Builder setHyphenationFrequency(int frequency) { return this; }
+        public Builder setJustificationMode(int mode) { return this; }
+        public Builder setIncludePad(boolean includePad) { return this; }
+        public Builder setUseLineSpacingFromFallbacks(boolean value) { return this; }
+
+        public DynamicLayout build() {
+            return new DynamicLayout(mBase, mDisplay, mPaint, mWidth, mAlignment, mSpacingMult, mSpacingAdd, true);
+        }
+    }
+
     private static int estimateLineCount(CharSequence text, TextPaint paint, int width) {
         if (text == null || text.length() == 0 || width <= 0) return 1;
         float avgCharWidth = (paint != null) ? paint.getTextSize() * 0.6f : 10f;

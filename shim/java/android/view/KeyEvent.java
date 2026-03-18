@@ -380,6 +380,16 @@ public class KeyEvent {
         this.metaState = metaState;
     }
 
+    public KeyEvent(long downTime, long eventTime, int action, int keyCode, int repeatCount,
+                    int metaState, int deviceId, int scanCode, int flags) {
+        this.downTime = downTime;
+        this.eventTime = eventTime;
+        this.action = action;
+        this.keyCode = keyCode;
+        this.repeatCount = repeatCount;
+        this.metaState = metaState;
+    }
+
     // ── Getters ──
 
     public int getAction() { return action; }
@@ -430,10 +440,10 @@ public class KeyEvent {
     public boolean isTracking() { return (flags & FLAG_TRACKING) != 0; }
 
     public boolean dispatch(Object p0, Object p1, Object p2) { return false; }
-    public static Object changeAction(Object p0, Object p1) { return null; }
-    public static Object changeFlags(Object p0, Object p1) { return null; }
-    public static Object changeTimeRepeat(Object p0, Object p1, Object p2) { return null; }
-    public static Object changeTimeRepeat(Object p0, Object p1, Object p2, Object p3) { return null; }
+    public static KeyEvent changeAction(KeyEvent event, int action) { return event; }
+    public static KeyEvent changeFlags(KeyEvent event, int flags) { return event; }
+    public static KeyEvent changeTimeRepeat(KeyEvent event, long time, int count) { return event; }
+    public static KeyEvent changeTimeRepeat(KeyEvent event, long time, int count, int flags) { return event; }
     public static int getDeadChar(Object p0, Object p1) { return 0; }
     public static int keyCodeFromString(Object p0) { return 0; }
     public static Object keyCodeToString(Object p0) { return null; }

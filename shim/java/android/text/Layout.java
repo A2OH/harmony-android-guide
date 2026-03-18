@@ -11,7 +11,9 @@ public class Layout {
     public enum Alignment {
         ALIGN_NORMAL,
         ALIGN_CENTER,
-        ALIGN_OPPOSITE
+        ALIGN_OPPOSITE,
+        ALIGN_LEFT,
+        ALIGN_RIGHT
     }
 
     private CharSequence mText;
@@ -119,6 +121,12 @@ public class Layout {
 
     public static float getDesiredWidth(CharSequence source, TextPaint paint) { return 0; }
     public static float getDesiredWidth(CharSequence source, int start, int end, TextPaint paint) { return 0; }
+    public static float getDesiredWidthWithLimit(CharSequence source, int start, int end, TextPaint paint, TextDirectionHeuristic textDir, float limit) { return 0; }
+
+    public Alignment getParagraphAlignment(int line) { return mAlignment; }
+    public void getSelectionPath(int start, int end, Path dest) {}
+    public float getPrimaryHorizontal(int offset, boolean clamped) { return 0; }
+    public int getEllipsizedWidth() { return mWidth; }
 
     public void draw(Canvas c) {}
     public void draw(Canvas c, Path highlight, Paint highlightPaint, int cursorOffsetVertical) {}

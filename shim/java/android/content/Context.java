@@ -235,7 +235,7 @@ public class Context {
     public android.graphics.drawable.Drawable getDrawable(int id) { return null; }
     public android.content.res.Resources.Theme getTheme() { return null; }
     public boolean isAutofillCompatibilityEnabled() { return false; }
-    public Object getAutofillOptions() { return null; }
+    public AutofillOptions getAutofillOptions() { return null; }
     public Object getContentCaptureOptions() { return null; }
     public int getNextAutofillId() { return 0; }
     public void startActivityForResult(String who, android.content.Intent intent, int requestCode, android.os.Bundle options) {}

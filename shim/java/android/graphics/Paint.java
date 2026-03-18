@@ -327,6 +327,43 @@ public class Paint {
     public Object setXfermode(Object xfermode) { return xfermode; }
     public void setDither(boolean dither) { /* no-op */ }
     public void setTextSkewX(float skewX) { /* no-op */ }
+    public float getTextSkewX() { return 0f; }
+    public float getTextScaleX() { return 1.0f; }
+    public void setTextScaleX(float scaleX) { /* no-op */ }
+    public float getLetterSpacing() { return 0f; }
+    public void setLetterSpacing(float letterSpacing) { /* no-op */ }
+    public boolean isElegantTextHeight() { return false; }
+    public void setElegantTextHeight(boolean elegant) { /* no-op */ }
+    public String getFontFeatureSettings() { return null; }
+    public void setFontFeatureSettings(String settings) { /* no-op */ }
+    public String getFontVariationSettings() { return null; }
+    public boolean setFontVariationSettings(String fontVariationSettings) { return false; }
+    public void setTextLocales(android.os.LocaleList locales) { /* no-op */ }
+    public void setTextLocale(java.util.Locale locale) { /* no-op */ }
+    public java.util.Locale getTextLocale() { return java.util.Locale.getDefault(); }
+    public android.os.LocaleList getTextLocales() { return null; }
+    public void setWordSpacing(float wordSpacing) { /* no-op */ }
+    public float getWordSpacing() { return 0f; }
+    public boolean isUnderlineText() { return (flags & UNDERLINE_TEXT_FLAG) != 0; }
+    public void setUnderlineText(boolean underline) { if (underline) flags |= UNDERLINE_TEXT_FLAG; else flags &= ~UNDERLINE_TEXT_FLAG; }
+    public boolean isStrikeThruText() { return (flags & STRIKE_THRU_TEXT_FLAG) != 0; }
+    public void setStrikeThruText(boolean strike) { if (strike) flags |= STRIKE_THRU_TEXT_FLAG; else flags &= ~STRIKE_THRU_TEXT_FLAG; }
+    public void setFilterBitmap(boolean filter) { if (filter) flags |= FILTER_BITMAP_FLAG; else flags &= ~FILTER_BITMAP_FLAG; }
+    public boolean isFilterBitmap() { return (flags & FILTER_BITMAP_FLAG) != 0; }
+    public void setPathEffect(PathEffect effect) { /* no-op */ }
+    public PathEffect getPathEffect() { return null; }
+    public void setMaskFilter(MaskFilter maskfilter) { /* no-op */ }
+    public MaskFilter getMaskFilter() { return null; }
+    public void setColorFilter(ColorFilter filter) { /* no-op */ }
+    public ColorFilter getColorFilter() { return null; }
+    public boolean isSubpixelText() { return (flags & SUBPIXEL_TEXT_FLAG) != 0; }
+    public void setSubpixelText(boolean subpixelText) { if (subpixelText) flags |= SUBPIXEL_TEXT_FLAG; else flags &= ~SUBPIXEL_TEXT_FLAG; }
+    public boolean isLinearText() { return (flags & LINEAR_TEXT_FLAG) != 0; }
+    public void setLinearText(boolean linearText) { if (linearText) flags |= LINEAR_TEXT_FLAG; else flags &= ~LINEAR_TEXT_FLAG; }
+    public void setColor(long color) { this.color = (int) color; }
+    public float getRunAdvance(char[] text, int start, int end, int contextStart, int contextEnd, boolean isRtl, int offset) { return 0f; }
+    public int getOffsetForAdvance(char[] text, int start, int end, int contextStart, int contextEnd, boolean isRtl, float advance) { return start; }
+    public boolean hasGlyph(String string) { return true; }
 
     // ── Text measurement (advanced) ──
     public int getFontMetricsInt(FontMetricsInt fmi) {

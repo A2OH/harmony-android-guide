@@ -206,7 +206,9 @@ public class Window {
     public void togglePanel(int p0, KeyEvent p1) {}
 
     /** Auto-generated stub. */
-    public static interface OnContentApplyWindowInsetsListener {}
+    public static interface OnContentApplyWindowInsetsListener {
+        android.util.Pair<android.graphics.Insets, WindowInsets> onContentApplyWindowInsets(View view, WindowInsets insets);
+    }
 
     /** Auto-generated stub. */
     public static interface OnFrameMetricsAvailableListener {}

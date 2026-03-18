@@ -25,29 +25,24 @@ public class Spinner extends AdapterView {
     private int selectedPosition = 0;
     private ListAdapter adapter;
 
-    public Spinner() {
-        this(MODE_DROPDOWN);
-    }
-
     public Spinner(android.content.Context context) {
-        this(MODE_DROPDOWN);
+        super(context);
+        this.mode = MODE_DROPDOWN;
     }
 
     public Spinner(android.content.Context context, int mode) {
-        this(mode);
+        super(context);
+        this.mode = mode;
     }
 
     public Spinner(android.content.Context context, android.util.AttributeSet attrs) {
-        this(MODE_DROPDOWN);
+        super(context, attrs);
+        this.mode = MODE_DROPDOWN;
     }
 
     public Spinner(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
-        this(MODE_DROPDOWN);
-    }
-
-    public Spinner(int mode) {
-        super(); // STACK node via ViewGroup default
-        this.mode = mode;
+        super(context, attrs, defStyleAttr);
+        this.mode = MODE_DROPDOWN;
     }
 
     // ── Selection ──

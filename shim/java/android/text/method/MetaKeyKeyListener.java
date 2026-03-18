@@ -28,4 +28,7 @@ public class MetaKeyKeyListener {
     public boolean onKeyUp(View p0, Editable p1, int p2, KeyEvent p3) { return false; }
     public static void resetLockedMeta(Spannable p0) {}
     public static void resetMetaState(Spannable p0) {}
+    public static final int META_SELECTING = 0x800;
+    public static void startSelecting(android.view.View view, Spannable content) {}
+    public static void stopSelecting(android.view.View view, Spannable content) {}
 }

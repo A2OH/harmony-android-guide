@@ -42,6 +42,31 @@ public class TextClassification {
     /** Always returns null — no intent in shim. */
     public Object getIntent() { return null; }
 
+    /** Returns empty actions list. */
+    public List<android.app.RemoteAction> getActions() { return new ArrayList<>(); }
+
+    /** Request class for text classification. */
+    public static class Request {
+        private final CharSequence mText;
+        private final int mStartIndex;
+        private final int mEndIndex;
+        private Request(CharSequence text, int startIndex, int endIndex) {
+            mText = text; mStartIndex = startIndex; mEndIndex = endIndex;
+        }
+        public CharSequence getText() { return mText; }
+        public int getStartIndex() { return mStartIndex; }
+        public int getEndIndex() { return mEndIndex; }
+        public static class Builder {
+            private CharSequence mText;
+            private int mStartIndex;
+            private int mEndIndex;
+            public Builder(CharSequence text, int startIndex, int endIndex) {
+                mText = text; mStartIndex = startIndex; mEndIndex = endIndex;
+            }
+            public Request build() { return new Request(mText, mStartIndex, mEndIndex); }
+        }
+    }
+
     // -----------------------------------------------------------------
     // Builder
     // -----------------------------------------------------------------

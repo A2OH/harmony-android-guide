@@ -29,8 +29,14 @@ public class StackView extends AdapterView {
     private Adapter adapter;
     private int displayedChild = 0;
 
-    public StackView() {
-        super(NODE_TYPE_STACK);
+    public StackView(android.content.Context context) {
+        super(context);
+    }
+    public StackView(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public StackView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Adapter ──

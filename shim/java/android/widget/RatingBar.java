@@ -19,9 +19,17 @@ public class RatingBar extends ProgressBar {
     private boolean isIndicator = false;
     private OnRatingBarChangeListener onRatingBarChangeListener;
 
-    public RatingBar() {
-        super();
-        setMax(numStars * 2); // stepSize 0.5 → multiply by 2 for integer progress
+    public RatingBar(android.content.Context context) {
+        super(context);
+        setMax(numStars * 2);
+    }
+    public RatingBar(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+        setMax(numStars * 2);
+    }
+    public RatingBar(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        setMax(numStars * 2);
     }
 
     // ── Star count ──

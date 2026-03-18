@@ -19,8 +19,8 @@ public class ContentCaptureSession implements AutoCloseable {
      * @param view the view (android.view.View on real Android; Object here)
      * @return a new Object representing the ViewStructure (stub)
      */
-    public Object newViewStructure(Object view) {
-        return new Object();
+    public ViewStructure newViewStructure(View view) {
+        return null;
     }
 
     /**
@@ -62,6 +62,6 @@ public class ContentCaptureSession implements AutoCloseable {
         destroy();
     }
 
-    public Object getId() { return null; }
+    public int getId() { return 0; }
     public void internalNotifyViewTreeEvent(boolean started) {}
 }

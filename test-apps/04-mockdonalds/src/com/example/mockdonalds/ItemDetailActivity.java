@@ -28,19 +28,19 @@ public class ItemDetailActivity extends Activity {
         LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
-        TextView nameView = new TextView();
+        TextView nameView = new TextView(getApplicationContext());
         nameView.setText(itemName);
         nameView.setTextSize(24);
         root.addView(nameView);
 
-        TextView priceView = new TextView();
+        TextView priceView = new TextView(getApplicationContext());
         int cents = (int)(itemPrice * 100 + 0.5);
         priceView.setText("$" + (cents / 100) + "." + (cents % 100 < 10 ? "0" : "") + (cents % 100));
         priceView.setTextSize(18);
         priceView.setTextColor(0xFF008800);
         root.addView(priceView);
 
-        TextView descView = new TextView();
+        TextView descView = new TextView(getApplicationContext());
         descView.setText(itemDescription != null ? itemDescription : "");
         descView.setTextSize(14);
         root.addView(descView);

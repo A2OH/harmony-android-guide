@@ -449,6 +449,18 @@ public final class R {
         public static final int accessibilityActionHideTooltip = 300;
         public static final int accessibilityActionImeEnter = 301;
         public static final int autofill = 302;
+        public static final int copy = 303;
+        public static final int cut = 304;
+        public static final int paste = 305;
+        public static final int pasteAsPlainText = 306;
+        public static final int selectAll = 307;
+        public static final int undo = 308;
+        public static final int redo = 309;
+        public static final int replaceText = 310;
+        public static final int shareText = 311;
+        public static final int textAssist = 312;
+        public static final int accessibilityActionPageUp = 313;
+        public static final int accessibilityActionPageDown = 314;
     }
 
     public static final class layout {

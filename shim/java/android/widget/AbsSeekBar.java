@@ -31,8 +31,17 @@ public class AbsSeekBar extends ProgressBar {
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
-    public AbsSeekBar() {
-        super();
+    public AbsSeekBar(android.content.Context context) {
+        super(context);
+    }
+    public AbsSeekBar(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public AbsSeekBar(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+    public AbsSeekBar(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
     }
 
     // ── Thumb drawable ───────────────────────────────────────────────────────

@@ -26,6 +26,12 @@ public interface Spanned extends CharSequence {
     int SPAN_MARK_POINT   = 0x12;
     int SPAN_POINT_MARK   = 0x21;
     int SPAN_POINT_POINT  = 0x22;
+    int SPAN_PRIORITY_SHIFT = 16;
+    int SPAN_PRIORITY = 0x00FF0000;
+    int SPAN_INTERMEDIATE = 0x00000200;
+    int SPAN_USER_SHIFT = 24;
+    int SPAN_USER = 0xFF000000;
+    int SPAN_COMPOSING = 0x100;
 
     /**
      * Returns all spans of the specified type attached to this text between

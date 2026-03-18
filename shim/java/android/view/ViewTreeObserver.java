@@ -15,6 +15,7 @@ public class ViewTreeObserver {
 
     /** Package-private constructor. */
     ViewTreeObserver() {}
+    ViewTreeObserver(android.content.Context context) {}
 
     // ── Listener registration ────────────────────────────────────────────────
 

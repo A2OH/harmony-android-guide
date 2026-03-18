@@ -77,9 +77,6 @@ public class SearchView extends LinearLayout {
     /** Set the hint text shown when the search field is empty. */
     public void setQueryHint(CharSequence hint) {
         mQueryHint = hint != null ? hint.toString() : null;
-        if (mSearchInput.getNativeHandle() != 0 && mQueryHint != null) {
-            OHBridge.nodeSetAttrString(mSearchInput.getNativeHandle(), ATTR_TEXT_PLACEHOLDER, mQueryHint);
-        }
     }
 
     public CharSequence getQueryHint() {

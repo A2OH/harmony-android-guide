@@ -21,7 +21,7 @@ public class ViewRootImpl implements ViewParent {
     public ViewRootImpl() {}
 
     public static boolean isViewDescendantOf(View child, View parent) { return false; }
-    public Object getInsetsController() { return null; }
+    public WindowInsetsController getInsetsController() { return null; }
     public View getAccessibilityFocusedHost() { return null; }
     public void requestTransitionStart(Transition transition) {}
     public void requestTransitionStart(android.animation.LayoutTransition transition) {}
@@ -32,17 +32,19 @@ public class ViewRootImpl implements ViewParent {
     public void dispatchInvalidateOnAnimation(View view) {}
     public void dispatchInvalidateRectDelayed(Object info, long delayMilliseconds) {}
     public void dispatchInvalidateRectOnAnimation(Object info) {}
-    public Object getImeFocusController() { return null; }
+    public ImeFocusController getImeFocusController() { return new ImeFocusController(); }
     public WindowInsets getWindowInsets(boolean forceConstruct) { return new WindowInsets(); }
     public void updateSystemGestureExclusionRectsForView(View view) {}
     public boolean ensureTouchMode(boolean isInTouchMode) { return false; }
-    public boolean isInTouchMode() { return true; }
+    public static boolean isInTouchMode() { return true; }
     public boolean isInLayout() { return false; }
     public void setDragFocus(View view, DragEvent event) {}
     public boolean hasPointerCapture() { return false; }
     public void requestPointerCapture(boolean enable) {}
     public void setAccessibilityFocus(View view, AccessibilityEvent event) {}
-    public void requestLayoutDuringLayout(View view) {}
+    public boolean requestLayoutDuringLayout(View view) { return true; }
+    public void dispatchKeyFromIme(KeyEvent event) {}
+    public void dispatchKeyFromAutofill(KeyEvent event) {}
     public void getLastTouchPoint(Point outLocation) {}
     public int getLastTouchSource() { return 0; }
     public SurfaceControl getSurfaceControl() { return new SurfaceControl(); }

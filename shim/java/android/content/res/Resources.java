@@ -307,4 +307,6 @@ public class Resources {
     public String getResourcePackageName(int resId) { return ""; }
     public android.content.res.XmlResourceParser getXml(int id) { return null; }
     public static boolean resourceHasPackage(int resId) { return (resId >>> 24) != 0; }
+    public TypedArray obtainTypedArray(int id) { return new TypedArray(); }
+    public android.graphics.Typeface getFont(int id) { return null; }
 }

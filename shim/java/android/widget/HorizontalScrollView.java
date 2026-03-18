@@ -46,10 +46,6 @@ public class HorizontalScrollView extends FrameLayout {
         // no-op stub
     }
 
-    public int getScrollX() {
-        return 0;
-    }
-
     public int getMaxScrollAmount() {
         return 0;
     }

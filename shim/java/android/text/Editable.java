@@ -56,22 +56,18 @@ public interface Editable extends Spannable, Appendable {
      * Sets the filter array. Each filter is called in order before any
      * text change is committed.
      */
-    void setFilters(InputFilter[] filters);
+    void setFilters(android.text.InputFilter[] filters);
 
     /**
      * Returns the current filter array.
      */
-    InputFilter[] getFilters();
+    android.text.InputFilter[] getFilters();
 
-    /**
-     * Marker interface for input filters. A shim stub — real Android
-     * InputFilter is a functional interface that transforms input text.
-     */
-    interface InputFilter {
-        CharSequence filter(CharSequence source, int start, int end,
-                            Spanned dest, int dstart, int dend);
+    public static class Factory {
+        private static final Factory sInstance = new Factory();
+        public static Factory getInstance() { return sInstance; }
+        public Editable newEditable(CharSequence source) {
+            return new SpannableStringBuilder(source != null ? source : "");
+        }
     }
-
-    /** Auto-generated stub. */
-    public static interface Factory {}
 }

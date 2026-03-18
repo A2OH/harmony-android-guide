@@ -17,12 +17,14 @@ public class AbsSpinner extends AdapterView {
     private Object adapter;
     private int selectedPosition = INVALID_POSITION;
 
-    protected AbsSpinner() {
-        super();
+    protected AbsSpinner(android.content.Context context) {
+        super(context);
     }
-
-    protected AbsSpinner(int arkuiNodeType) {
-        super(arkuiNodeType);
+    protected AbsSpinner(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    protected AbsSpinner(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Adapter ──

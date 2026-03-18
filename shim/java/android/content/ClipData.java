@@ -45,6 +45,8 @@ public class ClipData implements Parcelable {
         public String getHtmlText() { return mHtmlText; }
         public Intent getIntent() { return mIntent; }
         public Uri getUri() { return mUri; }
+        public CharSequence coerceToText(Context context) { return mText; }
+        public CharSequence coerceToStyledText(Context context) { return mText; }
     }
 
     // ── Constructors ──

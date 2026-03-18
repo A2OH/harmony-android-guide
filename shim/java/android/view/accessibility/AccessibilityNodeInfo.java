@@ -3,7 +3,7 @@ package android.view.accessibility;
 public class AccessibilityNodeInfo {
     public AccessibilityNodeInfo() {}
 
-    public static final int ACTION_ACCESSIBILITY_FOCUS = 0;
+    public static final int ACTION_ACCESSIBILITY_FOCUS = 64;
     public static final String ACTION_ARGUMENT_COLUMN_INT = "ACTION_ARGUMENT_COLUMN_INT";
     public static final String ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN = "ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN";
     public static final String ACTION_ARGUMENT_HTML_ELEMENT_STRING = "ACTION_ARGUMENT_HTML_ELEMENT_STRING";
@@ -16,40 +16,40 @@ public class AccessibilityNodeInfo {
     public static final String ACTION_ARGUMENT_SELECTION_END_INT = "ACTION_ARGUMENT_SELECTION_END_INT";
     public static final String ACTION_ARGUMENT_SELECTION_START_INT = "ACTION_ARGUMENT_SELECTION_START_INT";
     public static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE = "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
-    public static final int ACTION_CLEAR_ACCESSIBILITY_FOCUS = 0;
-    public static final int ACTION_CLEAR_FOCUS = 0;
-    public static final int ACTION_CLEAR_SELECTION = 0;
-    public static final int ACTION_CLICK = 0;
-    public static final int ACTION_COLLAPSE = 0;
-    public static final int ACTION_COPY = 0;
-    public static final int ACTION_CUT = 0;
-    public static final int ACTION_DISMISS = 0;
-    public static final int ACTION_EXPAND = 0;
-    public static final int ACTION_FOCUS = 0;
-    public static final int ACTION_LONG_CLICK = 0;
-    public static final int ACTION_NEXT_AT_MOVEMENT_GRANULARITY = 0;
-    public static final int ACTION_NEXT_HTML_ELEMENT = 0;
-    public static final int ACTION_PASTE = 0;
-    public static final int ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY = 0;
-    public static final int ACTION_PREVIOUS_HTML_ELEMENT = 0;
+    public static final int ACTION_CLEAR_ACCESSIBILITY_FOCUS = 128;
+    public static final int ACTION_CLEAR_FOCUS = 2;
+    public static final int ACTION_CLEAR_SELECTION = 8;
+    public static final int ACTION_CLICK = 16;
+    public static final int ACTION_COLLAPSE = 0x00080000;
+    public static final int ACTION_COPY = 0x00004000;
+    public static final int ACTION_CUT = 0x00010000;
+    public static final int ACTION_DISMISS = 0x00100000;
+    public static final int ACTION_EXPAND = 0x00040000;
+    public static final int ACTION_FOCUS = 1;
+    public static final int ACTION_LONG_CLICK = 32;
+    public static final int ACTION_NEXT_AT_MOVEMENT_GRANULARITY = 256;
+    public static final int ACTION_NEXT_HTML_ELEMENT = 1024;
+    public static final int ACTION_PASTE = 0x00008000;
+    public static final int ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY = 512;
+    public static final int ACTION_PREVIOUS_HTML_ELEMENT = 2048;
     public static final int ACTION_SCROLL_BACKWARD = 8192;
     public static final int ACTION_SCROLL_FORWARD = 4096;
-    public static final int ACTION_SELECT = 0;
-    public static final int ACTION_SET_SELECTION = 0;
-    public static final int ACTION_SET_TEXT = 0;
+    public static final int ACTION_SELECT = 4;
+    public static final int ACTION_SET_SELECTION = 0x00020000;
+    public static final int ACTION_SET_TEXT = 0x00200000;
     public static final String EXTRA_DATA_RENDERING_INFO_KEY = "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
     public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
     public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX";
     public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_KEY";
-    public static final int FOCUS_ACCESSIBILITY = 0;
-    public static final int FOCUS_INPUT = 0;
+    public static final int FOCUS_ACCESSIBILITY = 2;
+    public static final int FOCUS_INPUT = 1;
     public static final int FLAG_INCLUDE_NOT_IMPORTANT_VIEWS = 0x00000002;
     public static final int FLAG_REPORT_VIEW_IDS = 0x00000008;
-    public static final int MOVEMENT_GRANULARITY_CHARACTER = 0;
-    public static final int MOVEMENT_GRANULARITY_LINE = 0;
-    public static final int MOVEMENT_GRANULARITY_PAGE = 0;
-    public static final int MOVEMENT_GRANULARITY_PARAGRAPH = 0;
-    public static final int MOVEMENT_GRANULARITY_WORD = 0;
+    public static final int MOVEMENT_GRANULARITY_CHARACTER = 1;
+    public static final int MOVEMENT_GRANULARITY_LINE = 4;
+    public static final int MOVEMENT_GRANULARITY_PAGE = 16;
+    public static final int MOVEMENT_GRANULARITY_PARAGRAPH = 8;
+    public static final int MOVEMENT_GRANULARITY_WORD = 2;
     public void addAction(AccessibilityAction action) {}
     public void addAction(int action) {}
     public void addAction(Object p0) {}
@@ -67,6 +67,30 @@ public class AccessibilityNodeInfo {
         public static final AccessibilityAction ACTION_SHOW_ON_SCREEN = new AccessibilityAction(0x01020036, null);
         public static final AccessibilityAction ACTION_SHOW_TOOLTIP = new AccessibilityAction(0x01020044, null);
         public static final AccessibilityAction ACTION_HIDE_TOOLTIP = new AccessibilityAction(0x01020045, null);
+        public static final AccessibilityAction ACTION_FOCUS = new AccessibilityAction(1, null);
+        public static final AccessibilityAction ACTION_CLEAR_FOCUS = new AccessibilityAction(2, null);
+        public static final AccessibilityAction ACTION_SELECT = new AccessibilityAction(4, null);
+        public static final AccessibilityAction ACTION_CLEAR_SELECTION = new AccessibilityAction(8, null);
+        public static final AccessibilityAction ACTION_ACCESSIBILITY_FOCUS = new AccessibilityAction(64, null);
+        public static final AccessibilityAction ACTION_CLEAR_ACCESSIBILITY_FOCUS = new AccessibilityAction(128, null);
+        public static final AccessibilityAction ACTION_NEXT_AT_MOVEMENT_GRANULARITY = new AccessibilityAction(256, null);
+        public static final AccessibilityAction ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY = new AccessibilityAction(512, null);
+        public static final AccessibilityAction ACTION_NEXT_HTML_ELEMENT = new AccessibilityAction(1024, null);
+        public static final AccessibilityAction ACTION_PREVIOUS_HTML_ELEMENT = new AccessibilityAction(2048, null);
+        public static final AccessibilityAction ACTION_SET_SELECTION = new AccessibilityAction(0x00020000, null);
+        public static final AccessibilityAction ACTION_EXPAND = new AccessibilityAction(0x00040000, null);
+        public static final AccessibilityAction ACTION_COLLAPSE = new AccessibilityAction(0x00080000, null);
+        public static final AccessibilityAction ACTION_DISMISS = new AccessibilityAction(0x00100000, null);
+        public static final AccessibilityAction ACTION_SET_TEXT = new AccessibilityAction(0x00200000, null);
+        public static final AccessibilityAction ACTION_COPY = new AccessibilityAction(0x00004000, null);
+        public static final AccessibilityAction ACTION_CUT = new AccessibilityAction(0x00010000, null);
+        public static final AccessibilityAction ACTION_PASTE = new AccessibilityAction(0x00008000, null);
+        public static final AccessibilityAction ACTION_IME_ENTER = new AccessibilityAction(0x01000007, null);
+        public static final AccessibilityAction ACTION_PAGE_UP = new AccessibilityAction(0x01000008, null);
+        public static final AccessibilityAction ACTION_PAGE_DOWN = new AccessibilityAction(0x01000009, null);
+        public static final AccessibilityAction ACTION_PAGE_LEFT = new AccessibilityAction(0x0100000a, null);
+        public static final AccessibilityAction ACTION_PAGE_RIGHT = new AccessibilityAction(0x0100000b, null);
+        public static final AccessibilityAction ACTION_PRESS_AND_HOLD = new AccessibilityAction(0x0100000c, null);
 
         private final int mActionId;
         private final CharSequence mLabel;
@@ -94,14 +118,14 @@ public class AccessibilityNodeInfo {
     public void getBoundsInScreen(Object p0) {}
     public Object getChild(Object p0) { return null; }
     public int getChildCount() { return 0; }
-    public Object getClassName() { return null; }
+    public CharSequence getClassName() { return null; }
     public Object getCollectionInfo() { return null; }
     public Object getCollectionItemInfo() { return null; }
-    public Object getContentDescription() { return null; }
+    public CharSequence getContentDescription() { return null; }
     public int getDrawingOrder() { return 0; }
-    public Object getError() { return null; }
+    public CharSequence getError() { return null; }
     public Object getExtras() { return null; }
-    public Object getHintText() { return null; }
+    public CharSequence getHintText() { return null; }
     public int getInputType() { return 0; }
     public Object getLabelFor() { return null; }
     public Object getLabeledBy() { return null; }
@@ -111,12 +135,12 @@ public class AccessibilityNodeInfo {
     public Object getPackageName() { return null; }
     public Object getParent() { return null; }
     public Object getRangeInfo() { return null; }
-    public Object getText() { return null; }
+    public CharSequence getText() { return null; }
     public int getTextSelectionEnd() { return 0; }
     public int getTextSelectionStart() { return 0; }
     public Object getTraversalAfter() { return null; }
     public Object getTraversalBefore() { return null; }
-    public Object getViewIdResourceName() { return null; }
+    public String getViewIdResourceName() { return null; }
     public Object getWindow() { return null; }
     public int getWindowId() { return 0; }
     public boolean isAccessibilityFocused() { return false; }
@@ -141,9 +165,10 @@ public class AccessibilityNodeInfo {
     public boolean isShowingHintText() { return false; }
     public boolean isTextEntryKey() { return false; }
     public boolean isVisibleToUser() { return false; }
-    public static Object obtain(Object p0) { return null; }
-    public static Object obtain(Object p0, Object p1) { return null; }
-    public static Object obtain() { return null; }
+    public static AccessibilityNodeInfo obtain(android.view.View source) { return new AccessibilityNodeInfo(); }
+    public static AccessibilityNodeInfo obtain(android.view.View root, int virtualDescendantId) { return new AccessibilityNodeInfo(); }
+    public static AccessibilityNodeInfo obtain() { return new AccessibilityNodeInfo(); }
+    public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) { return new AccessibilityNodeInfo(); }
     public boolean performAction(Object p0) { return false; }
     public boolean performAction(Object p0, Object p1) { return false; }
     public void recycle() {}

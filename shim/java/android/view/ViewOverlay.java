@@ -11,6 +11,9 @@ import android.graphics.drawable.Drawable;
  */
 public class ViewOverlay {
 
+    public ViewOverlay() {}
+    public ViewOverlay(android.content.Context context, View hostView) {}
+
     /**
      * Add a Drawable to the overlay. Accepted as {@code Object} to avoid
      * pulling in android.graphics.drawable.Drawable dependency chains.

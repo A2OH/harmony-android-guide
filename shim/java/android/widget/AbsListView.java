@@ -54,12 +54,14 @@ public class AbsListView extends AdapterView {
     private float mLastMotionY;
     private boolean mIsBeingDragged;
 
-    protected AbsListView() {
-        super();
+    protected AbsListView(android.content.Context context) {
+        super(context);
     }
-
-    protected AbsListView(int arkuiNodeType) {
-        super(arkuiNodeType);
+    protected AbsListView(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    protected AbsListView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ════════════════════════════════════════════════════════════════════════

@@ -9,9 +9,12 @@ import android.view.ViewGroup;
 import java.util.List;
 
 public class TvView extends ViewGroup {
-    public TvView(Context p0) {}
-    public TvView(Context p0, AttributeSet p1) {}
-    public TvView(Context p0, AttributeSet p1, int p2) {}
+    public TvView(Context p0) { super(p0); }
+    public TvView(Context p0, AttributeSet p1) { super(p0, p1); }
+    public TvView(Context p0, AttributeSet p1, int p2) { super(p0, p1, p2); }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {}
 
     public boolean dispatchUnhandledInputEvent(InputEvent p0) { return false; }
     public String getSelectedTrack(int p0) { return null; }

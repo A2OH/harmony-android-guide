@@ -6,6 +6,7 @@ import android.graphics.Rect;
 public final class WindowInsets {
     public WindowInsets() {}
     public WindowInsets(WindowInsets src) {}
+    public WindowInsets(Rect systemWindowInsets) {}
 
     public boolean hasInsets() { return false; }
     public boolean isConsumed() { return false; }
@@ -29,7 +30,9 @@ public final class WindowInsets {
     public WindowInsets consumeDisplayCutout() { return this; }
     public Insets getInsets(int typeMask) { return Insets.NONE; }
     public Insets getInsetsIgnoringVisibility(int typeMask) { return Insets.NONE; }
-    public Object getInsetsController() { return null; }
+    public WindowInsetsController getInsetsController() { return null; }
+    public WindowInsets inset(Rect r) { return this; }
+    public WindowInsets inset(int left, int top, int right, int bottom) { return this; }
     public static final int UNDEFINED_WINDOW_ID = -1;
 
     /** Auto-generated stub. */

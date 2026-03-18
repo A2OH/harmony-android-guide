@@ -1,8 +1,13 @@
 package android.widget;
-import android.view.ViewGroup;
+import android.content.Context;
+import android.util.AttributeSet;
 import android.view.ViewGroup;
 
 public class AbsoluteLayout extends ViewGroup {
-    public AbsoluteLayout() {}
+    public AbsoluteLayout(Context context) { super(context); }
+    public AbsoluteLayout(Context context, AttributeSet attrs) { super(context, attrs); }
+    public AbsoluteLayout(Context context, AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); }
 
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {}
 }

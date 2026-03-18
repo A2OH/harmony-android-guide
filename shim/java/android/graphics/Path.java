@@ -113,6 +113,10 @@ public class Path {
 
     // ── Object overrides ─────────────────────────────────────────────────────
 
+    public void computeBounds(RectF bounds, boolean exact) {
+        if (bounds != null) bounds.set(0, 0, 0, 0);
+    }
+
     @Override
     public String toString() {
         return "Path(fillType=" + fillType + ", empty=" + empty + ")";

@@ -48,6 +48,9 @@ public class CursorAnchorInfo {
         return mInsertionMarkerBottom;
     }
 
+    public android.graphics.RectF getCharacterBounds(int index) { return null; }
+    public int getCharacterBoundsFlags(int index) { return 0; }
+
     public static final class Builder {
         private int mSelectionStart;
         private int mSelectionEnd;

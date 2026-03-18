@@ -12,8 +12,11 @@ public class AdapterViewFlipper extends AdapterView {
     private boolean flipping = false;
     private int flipInterval = 3000; // default 3 s, matches Android default
 
-    public AdapterViewFlipper() {
-        super();
+    public AdapterViewFlipper(android.content.Context context) {
+        super(context);
+    }
+    public AdapterViewFlipper(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
     }
 
     // ── AdapterView abstract contract ──

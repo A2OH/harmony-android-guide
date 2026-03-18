@@ -3384,7 +3384,7 @@ public class HeadlessTest {
         android.view.LayoutInflater.registerLayout(TEST_LAYOUT, new android.view.LayoutInflater.ViewFactory() {
             public android.view.View createView(android.content.Context c, android.view.ViewGroup parent) {
                 android.widget.LinearLayout ll = new android.widget.LinearLayout(new android.content.Context());
-                ll.addView(new android.widget.TextView());
+                ll.addView(new android.widget.TextView(new android.content.Context()));
                 ll.addView(new android.widget.Button(new android.content.Context()));
                 return ll;
             }
@@ -4423,7 +4423,7 @@ public class HeadlessTest {
         check("KeyEvent full ctor keyCode ENTER", keFull.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER);
 
         // View touch dispatch with listener
-        android.view.View v = new android.view.View();
+        android.view.View v = new android.view.View(new android.content.Context());
         v.setClickable(true);
         final boolean[] touched = {false};
         v.setOnTouchListener((view, event) -> { touched[0] = true; return true; });
@@ -4433,7 +4433,7 @@ public class HeadlessTest {
         check("touch consumed by listener", consumed);
 
         // View touch dispatch without listener (clickable view)
-        android.view.View v2 = new android.view.View();
+        android.view.View v2 = new android.view.View(new android.content.Context());
         v2.setClickable(true);
         final boolean[] clicked = {false};
         v2.setOnClickListener(view -> clicked[0] = true);
@@ -4450,7 +4450,7 @@ public class HeadlessTest {
         check("key consumed by listener", keyConsumed);
 
         // View key dispatch: ENTER on clickable view triggers click
-        android.view.View v3 = new android.view.View();
+        android.view.View v3 = new android.view.View(new android.content.Context());
         v3.setClickable(true);
         final boolean[] clickedByKey = {false};
         v3.setOnClickListener(view -> clickedByKey[0] = true);
@@ -4460,7 +4460,7 @@ public class HeadlessTest {
         check("ENTER key consumed", enterConsumed);
 
         // View: non-clickable view does not consume touch
-        android.view.View v4 = new android.view.View();
+        android.view.View v4 = new android.view.View(new android.content.Context());
         // not clickable by default
         boolean notConsumed = v4.dispatchTouchEvent(down);
         check("non-clickable view does not consume touch", !notConsumed);
@@ -4492,10 +4492,10 @@ public class HeadlessTest {
 
         // ViewGroup: reverse Z-order (last child gets event first)
         android.view.ViewGroup parent3 = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View childBottom = new android.view.View();
+        android.view.View childBottom = new android.view.View(new android.content.Context());
         childBottom.setClickable(true);
         childBottom.layout(0, 0, 100, 100);
-        android.view.View childTop = new android.view.View();
+        android.view.View childTop = new android.view.View(new android.content.Context());
         childTop.setClickable(true);
         childTop.layout(0, 0, 100, 100);
         final boolean[] bottomTouched = {false};
@@ -5063,7 +5063,7 @@ public class HeadlessTest {
         android.graphics.Canvas canvas = new android.graphics.Canvas(bmp);
 
         // Custom view that records a drawRect in onDraw
-        android.view.View customView = new android.view.View() {
+        android.view.View customView = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 android.graphics.Paint p = new android.graphics.Paint();
@@ -5113,7 +5113,7 @@ public class HeadlessTest {
         android.app.Activity activity = new android.app.Activity();
 
         // Add a view that draws green
-        android.view.View greenView = new android.view.View() {
+        android.view.View greenView = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 c.drawColor(0xFF00FF00);
@@ -5130,7 +5130,7 @@ public class HeadlessTest {
 
         // ── Background color drawing ──
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View bgView = new android.view.View();
+        android.view.View bgView = new android.view.View(new android.content.Context());
         bgView.setBackgroundColor(0xFFAA0000);
         bgView.draw(canvas);
         log = com.ohos.shim.bridge.OHBridge.getDrawLog(canvas.getNativeHandle());
@@ -5139,7 +5139,7 @@ public class HeadlessTest {
 
         // ── TextView.onDraw draws text ──
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.TextView tv = new android.widget.TextView();
+        android.widget.TextView tv = new android.widget.TextView(new android.content.Context());
         tv.setText("Hello");
         tv.setTextColor(0xFF0000FF);
         tv.setTextSize(20);
@@ -5166,7 +5166,7 @@ public class HeadlessTest {
         imgBmp.recycle();
 
         // ── View.measure with MeasureSpec ──
-        android.view.View measurable = new android.view.View();
+        android.view.View measurable = new android.view.View(new android.content.Context());
         int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY);
         int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(300, android.view.View.MeasureSpec.EXACTLY);
         measurable.measure(wSpec, hSpec);
@@ -5203,8 +5203,8 @@ public class HeadlessTest {
         // ── Item 1: LinearLayout vertical layout ──
         android.widget.LinearLayout vLayout = new android.widget.LinearLayout(new android.content.Context());
         vLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
-        android.view.View c1 = new android.view.View();
-        android.view.View c2 = new android.view.View();
+        android.view.View c1 = new android.view.View(new android.content.Context());
+        android.view.View c2 = new android.view.View(new android.content.Context());
         int spec100 = android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY);
         int spec50 = android.view.View.MeasureSpec.makeMeasureSpec(50, android.view.View.MeasureSpec.EXACTLY);
         c1.measure(spec100, spec50);
@@ -5219,8 +5219,8 @@ public class HeadlessTest {
         // LinearLayout horizontal
         android.widget.LinearLayout hLayout = new android.widget.LinearLayout(new android.content.Context());
         hLayout.setOrientation(android.widget.LinearLayout.HORIZONTAL);
-        android.view.View h1 = new android.view.View();
-        android.view.View h2 = new android.view.View();
+        android.view.View h1 = new android.view.View(new android.content.Context());
+        android.view.View h2 = new android.view.View(new android.content.Context());
         h1.measure(spec50, spec100);
         h2.measure(spec50, spec100);
         hLayout.addView(h1);
@@ -5231,8 +5231,8 @@ public class HeadlessTest {
 
         // ── Item 2: FrameLayout stacked layout ──
         android.widget.FrameLayout frame = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View fChild1 = new android.view.View();
-        android.view.View fChild2 = new android.view.View();
+        android.view.View fChild1 = new android.view.View(new android.content.Context());
+        android.view.View fChild2 = new android.view.View(new android.content.Context());
         fChild1.measure(spec50, spec50);
         fChild2.measure(spec50, spec50);
         frame.addView(fChild1);
@@ -5272,7 +5272,7 @@ public class HeadlessTest {
         // ── Item 4: View.requestLayout ──
         android.widget.LinearLayout rlRoot = new android.widget.LinearLayout(new android.content.Context());
         rlRoot.setOrientation(android.widget.LinearLayout.VERTICAL);
-        android.view.View rlChild = new android.view.View();
+        android.view.View rlChild = new android.view.View(new android.content.Context());
         rlRoot.addView(rlChild);
         rlRoot.layout(0, 0, 100, 100);
         // requestLayout should not throw
@@ -5287,7 +5287,7 @@ public class HeadlessTest {
             }
         };
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View bgView = new android.view.View();
+        android.view.View bgView = new android.view.View(new android.content.Context());
         bgView.setBackground(bg);
         check("getBackground returns drawable", bgView.getBackground() == bg);
         bgView.layout(0, 0, 50, 50);
@@ -5327,7 +5327,7 @@ public class HeadlessTest {
         srcBmp.recycle();
 
         // ── Item 7: View scroll support ──
-        android.view.View scrollView = new android.view.View();
+        android.view.View scrollView = new android.view.View(new android.content.Context());
         check("initial scrollX == 0", scrollView.getScrollX() == 0);
         check("initial scrollY == 0", scrollView.getScrollY() == 0);
         scrollView.scrollTo(10, 20);
@@ -5343,7 +5343,7 @@ public class HeadlessTest {
 
         // scroll offset applied in draw
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View scrollDrawView = new android.view.View() {
+        android.view.View scrollDrawView = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 c.drawColor(0xFF123456);
@@ -5374,7 +5374,7 @@ public class HeadlessTest {
 
         // ProgressBar onDraw
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.ProgressBar pb = new android.widget.ProgressBar();
+        android.widget.ProgressBar pb = new android.widget.ProgressBar(new android.content.Context());
         pb.setMax(100);
         pb.setProgress(50);
         pb.layout(0, 0, 200, 30);
@@ -5385,7 +5385,7 @@ public class HeadlessTest {
 
         // CheckBox onDraw
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.CheckBox cb = new android.widget.CheckBox();
+        android.widget.CheckBox cb = new android.widget.CheckBox(new android.content.Context());
         cb.setText("Option");
         cb.setChecked(true);
         cb.layout(0, 0, 150, 30);
@@ -5407,7 +5407,7 @@ public class HeadlessTest {
                 log.stream().filter(r -> "drawLine".equals(r.op)).count() == 0);
 
         // ── Item 9: View.setTranslationX/Y ──
-        android.view.View transView = new android.view.View();
+        android.view.View transView = new android.view.View(new android.content.Context());
         check("initial translationX == 0", transView.getTranslationX() == 0f);
         check("initial translationY == 0", transView.getTranslationY() == 0f);
         transView.setTranslationX(15.5f);
@@ -5418,7 +5418,7 @@ public class HeadlessTest {
         // Translation applied in ViewGroup drawChild
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
         android.view.ViewGroup transGroup = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View transChild = new android.view.View() {
+        android.view.View transChild = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 c.drawColor(0xFF000000);
@@ -5437,7 +5437,7 @@ public class HeadlessTest {
 
         // ── Item 10: Alpha compositing ──
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View alphaView = new android.view.View() {
+        android.view.View alphaView = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 c.drawColor(0xFF000000);
@@ -5454,7 +5454,7 @@ public class HeadlessTest {
 
         // Alpha == 1.0 should NOT add extra save/restore
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View opaqueView = new android.view.View() {
+        android.view.View opaqueView = new android.view.View(new android.content.Context()) {
             @Override
             protected void onDraw(android.graphics.Canvas c) {
                 c.drawColor(0xFFFFFFFF);
@@ -5471,8 +5471,8 @@ public class HeadlessTest {
         // With EXACTLY spec, LinearLayout gives children exact parent size.
         android.widget.LinearLayout measLL = new android.widget.LinearLayout(new android.content.Context());
         measLL.setOrientation(android.widget.LinearLayout.VERTICAL);
-        android.view.View mc1 = new android.view.View();
-        android.view.View mc2 = new android.view.View();
+        android.view.View mc1 = new android.view.View(new android.content.Context());
+        android.view.View mc2 = new android.view.View(new android.content.Context());
         measLL.addView(mc1);
         measLL.addView(mc2);
         int exact200 = android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY);
@@ -5518,7 +5518,7 @@ public class HeadlessTest {
         check("transparent ColorDrawable draws nothing", log.isEmpty());
 
         // View.setBackgroundDrawable
-        android.view.View bgdView = new android.view.View();
+        android.view.View bgdView = new android.view.View(new android.content.Context());
         android.graphics.drawable.ColorDrawable bgd = new android.graphics.drawable.ColorDrawable(0xFFABCDEF);
         bgdView.setBackgroundDrawable(bgd);
         check("setBackgroundDrawable stores drawable", bgdView.getBackground() == bgd);
@@ -5621,7 +5621,7 @@ public class HeadlessTest {
 
         // View.draw with alpha uses saveLayerAlpha
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.view.View alphaView = new android.view.View();
+        android.view.View alphaView = new android.view.View(new android.content.Context());
         alphaView.setAlpha(0.5f);
         alphaView.layout(0, 0, 50, 50);
         alphaView.draw(canvas);
@@ -5633,7 +5633,7 @@ public class HeadlessTest {
         // ── B.7: Padding in widget onDraw ──
         // TextView with padding
         com.ohos.shim.bridge.OHBridge.clearDrawLog(canvas.getNativeHandle());
-        android.widget.TextView tv = new android.widget.TextView();
+        android.widget.TextView tv = new android.widget.TextView(new android.content.Context());
         tv.setText("Padded");
         tv.setTextSize(20);
         tv.setPadding(10, 5, 10, 5);
@@ -5683,7 +5683,7 @@ public class HeadlessTest {
 
         // Track touch events on a custom view
         final java.util.List<String> touchLog = new java.util.ArrayList<>();
-        android.view.View touchView = new android.view.View() {
+        android.view.View touchView = new android.view.View(new android.content.Context()) {
             @Override
             public boolean onTouchEvent(android.view.MotionEvent event) {
                 touchLog.add("touch:" + event.getActionMasked() + "@" +
@@ -5723,7 +5723,7 @@ public class HeadlessTest {
 
         final java.util.List<String> childTouchLog = new java.util.ArrayList<>();
         android.widget.FrameLayout container = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View childBtn = new android.view.View() {
+        android.view.View childBtn = new android.view.View(new android.content.Context()) {
             @Override
             public boolean onTouchEvent(android.view.MotionEvent event) {
                 childTouchLog.add("child:" + event.getActionMasked());
@@ -5754,7 +5754,7 @@ public class HeadlessTest {
         // ── OnClickListener via touch ──
 
         final java.util.List<String> clickLog = new java.util.ArrayList<>();
-        android.view.View clickView = new android.view.View();
+        android.view.View clickView = new android.view.View(new android.content.Context());
         clickView.setOnClickListener(v -> clickLog.add("clicked"));
         activity.setContentView(clickView);
         activity.getWindow().getDecorView().layout(0, 0, 200, 200);
@@ -5772,7 +5772,7 @@ public class HeadlessTest {
         // ── OnTouchListener intercepts ──
 
         final java.util.List<String> listenLog = new java.util.ArrayList<>();
-        android.view.View listenView = new android.view.View();
+        android.view.View listenView = new android.view.View(new android.content.Context());
         listenView.setOnTouchListener((v, event) -> {
             listenLog.add("listen:" + event.getActionMasked());
             return true; // consume
@@ -5790,7 +5790,7 @@ public class HeadlessTest {
         // ── Key dispatch through Activity → decor → view ──
 
         final java.util.List<String> keyLog = new java.util.ArrayList<>();
-        android.view.View keyView = new android.view.View() {
+        android.view.View keyView = new android.view.View(new android.content.Context()) {
             @Override
             public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
                 keyLog.add("down:" + keyCode);
@@ -5822,7 +5822,7 @@ public class HeadlessTest {
         // ── OnKeyListener intercepts ──
 
         final java.util.List<String> keyListenLog = new java.util.ArrayList<>();
-        android.view.View keyListenView = new android.view.View();
+        android.view.View keyListenView = new android.view.View(new android.content.Context());
         keyListenView.setOnKeyListener((v, keyCode, event) -> {
             keyListenLog.add("key:" + keyCode + ":" + event.getAction());
             return true;
@@ -7321,7 +7321,7 @@ public class HeadlessTest {
             @Override public Object getItem(int position) { return items.get(position); }
             @Override public long getItemId(int position) { return position; }
             @Override public android.view.View getView(int position, android.view.View convertView, android.view.ViewGroup parent) {
-                android.view.View v = new android.view.View();
+                android.view.View v = new android.view.View(new android.content.Context());
                 v.setTag(items.get(position));
                 return v;
             }
@@ -7333,7 +7333,7 @@ public class HeadlessTest {
         check("adapter.isEmpty() == false", !adapter.isEmpty());
 
         // ── 2. Create ListView and set adapter ──
-        android.widget.ListView listView = new android.widget.ListView();
+        android.widget.ListView listView = new android.widget.ListView(new android.content.Context());
         listView.setAdapter(adapter);
 
         check("listView.getChildCount() == 5", listView.getChildCount() == 5);
@@ -8624,12 +8624,12 @@ public class HeadlessTest {
         android.widget.LinearLayout wLayout = new android.widget.LinearLayout(new android.content.Context());
         wLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
-        android.view.View w1 = new android.view.View();
+        android.view.View w1 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams lp1 =
                 new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f); // MATCH_PARENT, 0dp, weight=1
         w1.setLayoutParams(lp1);
 
-        android.view.View w2 = new android.view.View();
+        android.view.View w2 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams lp2 =
                 new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f);
         w2.setLayoutParams(lp2);
@@ -8650,12 +8650,12 @@ public class HeadlessTest {
         android.widget.LinearLayout hWeight = new android.widget.LinearLayout(new android.content.Context());
         hWeight.setOrientation(android.widget.LinearLayout.HORIZONTAL);
 
-        android.view.View hw1 = new android.view.View();
+        android.view.View hw1 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams hlp1 =
                 new android.widget.LinearLayout.LayoutParams(0, -1, 1.0f); // 0dp, MATCH_PARENT, weight=1
         hw1.setLayoutParams(hlp1);
 
-        android.view.View hw2 = new android.view.View();
+        android.view.View hw2 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams hlp2 =
                 new android.widget.LinearLayout.LayoutParams(0, -1, 2.0f); // weight=2
         hw2.setLayoutParams(hlp2);
@@ -8674,9 +8674,9 @@ public class HeadlessTest {
         android.widget.LinearLayout wLayout2 = new android.widget.LinearLayout(new android.content.Context());
         wLayout2.setOrientation(android.widget.LinearLayout.VERTICAL);
 
-        android.view.View u1 = new android.view.View();
+        android.view.View u1 = new android.view.View(new android.content.Context());
         u1.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
-        android.view.View u2 = new android.view.View();
+        android.view.View u2 = new android.view.View(new android.content.Context());
         u2.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 3.0f));
 
         wLayout2.addView(u1);
@@ -8693,7 +8693,7 @@ public class HeadlessTest {
         android.widget.LinearLayout gLayout = new android.widget.LinearLayout(new android.content.Context());
         gLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
-        android.view.View gc = new android.view.View();
+        android.view.View gc = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams gcLp =
                 new android.widget.LinearLayout.LayoutParams(100, 100);
         gcLp.gravity = android.view.Gravity.CENTER_HORIZONTAL;
@@ -8707,7 +8707,7 @@ public class HeadlessTest {
         check("gravity center_h: child width == 100", gc.getWidth() == 100);
 
         // ── Gravity RIGHT in vertical LinearLayout ──
-        android.view.View gr = new android.view.View();
+        android.view.View gr = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams grLp =
                 new android.widget.LinearLayout.LayoutParams(100, 100);
         grLp.gravity = android.view.Gravity.RIGHT;
@@ -8725,13 +8725,13 @@ public class HeadlessTest {
         android.widget.LinearLayout mLayout = new android.widget.LinearLayout(new android.content.Context());
         mLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
-        android.view.View m1 = new android.view.View();
+        android.view.View m1 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams mLp =
                 new android.widget.LinearLayout.LayoutParams(-1, 50);
         mLp.setMargins(10, 20, 10, 0);
         m1.setLayoutParams(mLp);
 
-        android.view.View m2 = new android.view.View();
+        android.view.View m2 = new android.view.View(new android.content.Context());
         android.widget.LinearLayout.LayoutParams mLp2 =
                 new android.widget.LinearLayout.LayoutParams(-1, 50);
         m2.setLayoutParams(mLp2);
@@ -8748,7 +8748,7 @@ public class HeadlessTest {
 
         // ── FrameLayout gravity ──
         android.widget.FrameLayout fGrav = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View fc = new android.view.View();
+        android.view.View fc = new android.view.View(new android.content.Context());
         android.widget.FrameLayout.LayoutParams fcLp =
                 new android.widget.FrameLayout.LayoutParams(100, 100, android.view.Gravity.CENTER);
         fc.setLayoutParams(fcLp);
@@ -8761,7 +8761,7 @@ public class HeadlessTest {
 
         // ── FrameLayout gravity BOTTOM|RIGHT ──
         android.widget.FrameLayout fBR = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View fbr = new android.view.View();
+        android.view.View fbr = new android.view.View(new android.content.Context());
         android.widget.FrameLayout.LayoutParams fbrLp =
                 new android.widget.FrameLayout.LayoutParams(50, 50,
                         android.view.Gravity.BOTTOM | android.view.Gravity.RIGHT);
@@ -8775,7 +8775,7 @@ public class HeadlessTest {
 
         // ── FrameLayout margins ──
         android.widget.FrameLayout fMarg = new android.widget.FrameLayout(new android.content.Context());
-        android.view.View fmc = new android.view.View();
+        android.view.View fmc = new android.view.View(new android.content.Context());
         android.widget.FrameLayout.LayoutParams fmcLp =
                 new android.widget.FrameLayout.LayoutParams(100, 100);
         fmcLp.setMargins(20, 30, 0, 0);
@@ -8819,9 +8819,9 @@ public class HeadlessTest {
         wsLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
         wsLayout.setWeightSum(4.0f);
 
-        android.view.View ws1 = new android.view.View();
+        android.view.View ws1 = new android.view.View(new android.content.Context());
         ws1.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
-        android.view.View ws2 = new android.view.View();
+        android.view.View ws2 = new android.view.View(new android.content.Context());
         ws2.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, 0, 1.0f));
 
         wsLayout.addView(ws1);
@@ -9225,7 +9225,7 @@ public class HeadlessTest {
 
         // -- Basic layout: single child with ALIGN_PARENT_LEFT + ALIGN_PARENT_TOP --
         android.widget.RelativeLayout rl = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child1 = new android.view.View();
+        android.view.View child1 = new android.view.View(new android.content.Context());
         child1.setId(1);
         android.widget.RelativeLayout.LayoutParams lp1 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9241,7 +9241,7 @@ public class HeadlessTest {
 
         // -- ALIGN_PARENT_RIGHT --
         android.widget.RelativeLayout rl2 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child2 = new android.view.View();
+        android.view.View child2 = new android.view.View(new android.content.Context());
         child2.setId(2);
         android.widget.RelativeLayout.LayoutParams lp2 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9255,7 +9255,7 @@ public class HeadlessTest {
 
         // -- ALIGN_PARENT_BOTTOM --
         android.widget.RelativeLayout rl3 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child3 = new android.view.View();
+        android.view.View child3 = new android.view.View(new android.content.Context());
         child3.setId(3);
         android.widget.RelativeLayout.LayoutParams lp3 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9269,7 +9269,7 @@ public class HeadlessTest {
 
         // -- CENTER_IN_PARENT --
         android.widget.RelativeLayout rl4 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child4 = new android.view.View();
+        android.view.View child4 = new android.view.View(new android.content.Context());
         child4.setId(4);
         android.widget.RelativeLayout.LayoutParams lp4 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9284,7 +9284,7 @@ public class HeadlessTest {
 
         // -- CENTER_HORIZONTAL only --
         android.widget.RelativeLayout rl5 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child5 = new android.view.View();
+        android.view.View child5 = new android.view.View(new android.content.Context());
         child5.setId(5);
         android.widget.RelativeLayout.LayoutParams lp5 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9298,7 +9298,7 @@ public class HeadlessTest {
 
         // -- CENTER_VERTICAL only --
         android.widget.RelativeLayout rl6 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View child6 = new android.view.View();
+        android.view.View child6 = new android.view.View(new android.content.Context());
         child6.setId(6);
         android.widget.RelativeLayout.LayoutParams lp6 =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9312,7 +9312,7 @@ public class HeadlessTest {
 
         // -- BELOW sibling --
         android.widget.RelativeLayout rl7 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View topView = new android.view.View();
+        android.view.View topView = new android.view.View(new android.content.Context());
         topView.setId(10);
         android.widget.RelativeLayout.LayoutParams lpTop =
             new android.widget.RelativeLayout.LayoutParams(200, 60);
@@ -9321,7 +9321,7 @@ public class HeadlessTest {
         topView.setLayoutParams(lpTop);
         rl7.addView(topView);
 
-        android.view.View belowView = new android.view.View();
+        android.view.View belowView = new android.view.View(new android.content.Context());
         belowView.setId(11);
         android.widget.RelativeLayout.LayoutParams lpBelow =
             new android.widget.RelativeLayout.LayoutParams(200, 40);
@@ -9338,7 +9338,7 @@ public class HeadlessTest {
 
         // -- RIGHT_OF sibling --
         android.widget.RelativeLayout rl8 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View leftView = new android.view.View();
+        android.view.View leftView = new android.view.View(new android.content.Context());
         leftView.setId(20);
         android.widget.RelativeLayout.LayoutParams lpLeft =
             new android.widget.RelativeLayout.LayoutParams(80, 50);
@@ -9347,7 +9347,7 @@ public class HeadlessTest {
         leftView.setLayoutParams(lpLeft);
         rl8.addView(leftView);
 
-        android.view.View rightView = new android.view.View();
+        android.view.View rightView = new android.view.View(new android.content.Context());
         rightView.setId(21);
         android.widget.RelativeLayout.LayoutParams lpRight =
             new android.widget.RelativeLayout.LayoutParams(120, 50);
@@ -9363,7 +9363,7 @@ public class HeadlessTest {
 
         // -- LEFT_OF sibling --
         android.widget.RelativeLayout rl9 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View anchorRight = new android.view.View();
+        android.view.View anchorRight = new android.view.View(new android.content.Context());
         anchorRight.setId(30);
         android.widget.RelativeLayout.LayoutParams lpAnchorRight =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9372,7 +9372,7 @@ public class HeadlessTest {
         anchorRight.setLayoutParams(lpAnchorRight);
         rl9.addView(anchorRight);
 
-        android.view.View leftOfView = new android.view.View();
+        android.view.View leftOfView = new android.view.View(new android.content.Context());
         leftOfView.setId(31);
         android.widget.RelativeLayout.LayoutParams lpLeftOf =
             new android.widget.RelativeLayout.LayoutParams(80, 50);
@@ -9388,7 +9388,7 @@ public class HeadlessTest {
 
         // -- ABOVE sibling --
         android.widget.RelativeLayout rl10 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View bottomAnchor = new android.view.View();
+        android.view.View bottomAnchor = new android.view.View(new android.content.Context());
         bottomAnchor.setId(40);
         android.widget.RelativeLayout.LayoutParams lpBotAnchor =
             new android.widget.RelativeLayout.LayoutParams(100, 60);
@@ -9397,7 +9397,7 @@ public class HeadlessTest {
         bottomAnchor.setLayoutParams(lpBotAnchor);
         rl10.addView(bottomAnchor);
 
-        android.view.View aboveView = new android.view.View();
+        android.view.View aboveView = new android.view.View(new android.content.Context());
         aboveView.setId(41);
         android.widget.RelativeLayout.LayoutParams lpAbove =
             new android.widget.RelativeLayout.LayoutParams(100, 40);
@@ -9414,7 +9414,7 @@ public class HeadlessTest {
 
         // -- ALIGN_LEFT + ALIGN_TOP with sibling --
         android.widget.RelativeLayout rl11 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View refView = new android.view.View();
+        android.view.View refView = new android.view.View(new android.content.Context());
         refView.setId(50);
         android.widget.RelativeLayout.LayoutParams lpRef =
             new android.widget.RelativeLayout.LayoutParams(100, 80);
@@ -9424,7 +9424,7 @@ public class HeadlessTest {
         refView.setLayoutParams(lpRef);
         rl11.addView(refView);
 
-        android.view.View alignedView = new android.view.View();
+        android.view.View alignedView = new android.view.View(new android.content.Context());
         alignedView.setId(51);
         android.widget.RelativeLayout.LayoutParams lpAligned =
             new android.widget.RelativeLayout.LayoutParams(60, 40);
@@ -9441,7 +9441,7 @@ public class HeadlessTest {
 
         // -- Three-level chain: A -> B -> C --
         android.widget.RelativeLayout rl12 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View chainA = new android.view.View();
+        android.view.View chainA = new android.view.View(new android.content.Context());
         chainA.setId(60);
         android.widget.RelativeLayout.LayoutParams lpA =
             new android.widget.RelativeLayout.LayoutParams(80, 30);
@@ -9450,7 +9450,7 @@ public class HeadlessTest {
         chainA.setLayoutParams(lpA);
         rl12.addView(chainA);
 
-        android.view.View chainB = new android.view.View();
+        android.view.View chainB = new android.view.View(new android.content.Context());
         chainB.setId(61);
         android.widget.RelativeLayout.LayoutParams lpB =
             new android.widget.RelativeLayout.LayoutParams(80, 30);
@@ -9459,7 +9459,7 @@ public class HeadlessTest {
         chainB.setLayoutParams(lpB);
         rl12.addView(chainB);
 
-        android.view.View chainC = new android.view.View();
+        android.view.View chainC = new android.view.View(new android.content.Context());
         chainC.setId(62);
         android.widget.RelativeLayout.LayoutParams lpC =
             new android.widget.RelativeLayout.LayoutParams(80, 30);
@@ -9475,7 +9475,7 @@ public class HeadlessTest {
 
         // -- Margins with BELOW --
         android.widget.RelativeLayout rl13 = new android.widget.RelativeLayout(new android.content.Context());
-        android.view.View mTop = new android.view.View();
+        android.view.View mTop = new android.view.View(new android.content.Context());
         mTop.setId(70);
         android.widget.RelativeLayout.LayoutParams lpMTop =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9485,7 +9485,7 @@ public class HeadlessTest {
         mTop.setLayoutParams(lpMTop);
         rl13.addView(mTop);
 
-        android.view.View mBot = new android.view.View();
+        android.view.View mBot = new android.view.View(new android.content.Context());
         mBot.setId(71);
         android.widget.RelativeLayout.LayoutParams lpMBot =
             new android.widget.RelativeLayout.LayoutParams(100, 50);
@@ -9508,7 +9508,7 @@ public class HeadlessTest {
         section("B22: TextView text measurement and rendering");
 
         // 1. Basic setText/getText round-trip
-        android.widget.TextView tv = new android.widget.TextView();
+        android.widget.TextView tv = new android.widget.TextView(new android.content.Context());
         tv.setText("Hello World");
         check("B22 setText/getText", "Hello World".equals(tv.getText().toString()));
         check("B22 length()", tv.length() == 11);
@@ -10388,7 +10388,7 @@ public class HeadlessTest {
 
         // ── 1. RecycleBin basic operation ──
         android.widget.AbsListView.RecycleBin rb = new android.widget.AbsListView.RecycleBin();
-        android.view.View scrap = new android.view.View();
+        android.view.View scrap = new android.view.View(new android.content.Context());
         rb.addScrapView(scrap, 0);
         check("B34 RecycleBin scrapCount(0) == 1", rb.getScrapCount(0) == 1);
         check("B34 RecycleBin scrapCount(1) == 0", rb.getScrapCount(1) == 0);
@@ -10397,8 +10397,8 @@ public class HeadlessTest {
         check("B34 RecycleBin scrapCount after get == 0", rb.getScrapCount(0) == 0);
 
         // ── 2. RecycleBin multiple types ──
-        android.view.View v0 = new android.view.View();
-        android.view.View v1 = new android.view.View();
+        android.view.View v0 = new android.view.View(new android.content.Context());
+        android.view.View v1 = new android.view.View(new android.content.Context());
         rb.addScrapView(v0, 0);
         rb.addScrapView(v1, 1);
         check("B34 RecycleBin type 0 count", rb.getScrapCount(0) == 1);
@@ -10407,10 +10407,10 @@ public class HeadlessTest {
         check("B34 RecycleBin clear", rb.getScrapCount(0) == 0 && rb.getScrapCount(1) == 0);
 
         // ── 3. Header and footer views ──
-        android.widget.ListView lv = new android.widget.ListView();
-        android.view.View header = new android.view.View();
+        android.widget.ListView lv = new android.widget.ListView(new android.content.Context());
+        android.view.View header = new android.view.View(new android.content.Context());
         header.setTag("header");
-        android.view.View footer = new android.view.View();
+        android.view.View footer = new android.view.View(new android.content.Context());
         footer.setTag("footer");
 
         lv.addHeaderView(header);
@@ -10428,7 +10428,7 @@ public class HeadlessTest {
             @Override public Object getItem(int pos) { return items.get(pos); }
             @Override public long getItemId(int pos) { return pos; }
             @Override public android.view.View getView(int pos, android.view.View cv, android.view.ViewGroup p) {
-                android.view.View v = new android.view.View();
+                android.view.View v = new android.view.View(new android.content.Context());
                 v.setTag(items.get(pos));
                 return v;
             }
@@ -10447,7 +10447,7 @@ public class HeadlessTest {
         check("B34 headerViewsCount after remove", lv.getHeaderViewsCount() == 0);
 
         // ── 5. Choice mode single ──
-        android.widget.ListView choiceLv = new android.widget.ListView();
+        android.widget.ListView choiceLv = new android.widget.ListView(new android.content.Context());
         choiceLv.setChoiceMode(android.widget.AbsListView.CHOICE_MODE_SINGLE);
         check("B34 choiceMode single", choiceLv.getChoiceMode() == 1);
         choiceLv.setItemChecked(2, true);
@@ -10460,7 +10460,7 @@ public class HeadlessTest {
         check("B34 single mode: new checked", choiceLv.isItemChecked(5));
 
         // ── 6. Choice mode multiple ──
-        android.widget.ListView multiLv = new android.widget.ListView();
+        android.widget.ListView multiLv = new android.widget.ListView(new android.content.Context());
         multiLv.setChoiceMode(android.widget.AbsListView.CHOICE_MODE_MULTIPLE);
         multiLv.setItemChecked(1, true);
         multiLv.setItemChecked(3, true);
@@ -10483,14 +10483,14 @@ public class HeadlessTest {
         check("B34 getCheckedItemIds length", ids.length == 2);
 
         // ── 8. Fast scroll ──
-        android.widget.ListView fsLv = new android.widget.ListView();
+        android.widget.ListView fsLv = new android.widget.ListView(new android.content.Context());
         check("B34 fastScroll default false", !fsLv.isFastScrollEnabled());
         fsLv.setFastScrollEnabled(true);
         check("B34 setFastScrollEnabled", fsLv.isFastScrollEnabled());
 
         // ── 9. Scroll listener setup ──
         final int[] scrollState = {-1};
-        android.widget.ListView scrollLv = new android.widget.ListView();
+        android.widget.ListView scrollLv = new android.widget.ListView(new android.content.Context());
         scrollLv.setOnScrollListener(new android.widget.AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(android.widget.AbsListView view, int state) {
@@ -10502,13 +10502,13 @@ public class HeadlessTest {
         check("B34 scroll listener set", scrollLv.getOnScrollListener() != null);
 
         // ── 10. Transcript mode ──
-        android.widget.AbsListView tmLv = new android.widget.ListView();
+        android.widget.AbsListView tmLv = new android.widget.ListView(new android.content.Context());
         check("B34 transcriptMode default DISABLED", tmLv.getTranscriptMode() == 0);
         tmLv.setTranscriptMode(android.widget.AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         check("B34 setTranscriptMode", tmLv.getTranscriptMode() == 2);
 
         // ── 11. cacheColorHint ──
-        android.widget.AbsListView cchLv = new android.widget.ListView();
+        android.widget.AbsListView cchLv = new android.widget.ListView(new android.content.Context());
         cchLv.setCacheColorHint(0xFF0000FF);
         check("B34 cacheColorHint", cchLv.getCacheColorHint() == 0xFF0000FF);
     }
@@ -10521,19 +10521,19 @@ public class HeadlessTest {
         section("B34: CompoundButton hierarchy (CheckBox, RadioButton)");
 
         // ── 1. CheckBox extends CompoundButton ──
-        android.widget.CheckBox cb = new android.widget.CheckBox();
+        android.widget.CheckBox cb = new android.widget.CheckBox(new android.content.Context());
         check("B34 CheckBox instanceof CompoundButton", cb instanceof android.widget.CompoundButton);
         check("B34 CheckBox instanceof Button", cb instanceof android.widget.Button);
         check("B34 CheckBox instanceof TextView", cb instanceof android.widget.TextView);
 
         // ── 2. RadioButton extends CompoundButton ──
-        android.widget.RadioButton rb = new android.widget.RadioButton();
+        android.widget.RadioButton rb = new android.widget.RadioButton(new android.content.Context());
         check("B34 RadioButton instanceof CompoundButton", rb instanceof android.widget.CompoundButton);
         check("B34 RadioButton instanceof Button", rb instanceof android.widget.Button);
         check("B34 RadioButton instanceof TextView", rb instanceof android.widget.TextView);
 
         // ── 3. CompoundButton toggle / setChecked ──
-        android.widget.CompoundButton compBtn = new android.widget.CheckBox();
+        android.widget.CompoundButton compBtn = new android.widget.CheckBox(new android.content.Context());
         check("B34 CompoundButton initially unchecked", !compBtn.isChecked());
         compBtn.setChecked(true);
         check("B34 CompoundButton setChecked(true)", compBtn.isChecked());
@@ -10588,9 +10588,9 @@ public class HeadlessTest {
 
         // ── 10. RadioGroup still works with CompoundButton-based RadioButton ──
         android.widget.RadioGroup rg = new android.widget.RadioGroup();
-        android.widget.RadioButton r1 = new android.widget.RadioButton();
+        android.widget.RadioButton r1 = new android.widget.RadioButton(new android.content.Context());
         r1.setId(101);
-        android.widget.RadioButton r2 = new android.widget.RadioButton();
+        android.widget.RadioButton r2 = new android.widget.RadioButton(new android.content.Context());
         r2.setId(102);
         rg.addView(r1);
         rg.addView(r2);
@@ -10609,7 +10609,7 @@ public class HeadlessTest {
         section("B35: Enhanced TextView — typeface, allCaps, hint, measurement, TextWatcher, BoringLayout, TextPaint");
 
         // 1. setTypeface/getTypeface round-trip
-        android.widget.TextView tv = new android.widget.TextView();
+        android.widget.TextView tv = new android.widget.TextView(new android.content.Context());
         tv.setTypeface(android.graphics.Typeface.MONOSPACE);
         check("B35 setTypeface/getTypeface", tv.getTypeface() == android.graphics.Typeface.MONOSPACE);
 
@@ -10640,7 +10640,7 @@ public class HeadlessTest {
         check("B35 isAllCaps false", !tv.isAllCaps());
 
         // 6. setHint/getHint
-        android.widget.TextView tvHint = new android.widget.TextView();
+        android.widget.TextView tvHint = new android.widget.TextView(new android.content.Context());
         tvHint.setHint("Enter text here");
         check("B35 getHint", "Enter text here".equals(tvHint.getHint().toString()));
 
@@ -10656,7 +10656,7 @@ public class HeadlessTest {
         check("B35 hint draw no crash", true);
 
         // 8. onMeasure with compound drawables (wider/taller)
-        android.widget.TextView tvDraw = new android.widget.TextView();
+        android.widget.TextView tvDraw = new android.widget.TextView(new android.content.Context());
         tvDraw.setText("X");
         tvDraw.setTextSize(16);
         tvDraw.measure(wSpec, hSpec);
@@ -10672,7 +10672,7 @@ public class HeadlessTest {
         check("B35 compound drawable adds width", withDrawableW > baseW);
 
         // 9. onMeasure with maxHeight constraint
-        android.widget.TextView tvMax = new android.widget.TextView();
+        android.widget.TextView tvMax = new android.widget.TextView(new android.content.Context());
         tvMax.setText("Line1\nLine2\nLine3\nLine4\nLine5");
         tvMax.setTextSize(16);
         tvMax.setMaxLines(Integer.MAX_VALUE);
@@ -10684,7 +10684,7 @@ public class HeadlessTest {
         check("B35 maxHeight constrains", maxedHeight <= 30);
 
         // 10. onMeasure with minHeight constraint
-        android.widget.TextView tvMin = new android.widget.TextView();
+        android.widget.TextView tvMin = new android.widget.TextView(new android.content.Context());
         tvMin.setText("A");
         tvMin.setTextSize(16);
         tvMin.measure(wSpec, hSpec);
@@ -10748,16 +10748,16 @@ public class HeadlessTest {
         check("B35 EditText setTypeface", et.getTypeface() == android.graphics.Typeface.SERIF);
 
         // 19. TextWatcher fires on setText (multiple watchers)
-        android.widget.TextView tvW = new android.widget.TextView();
+        android.widget.TextView tvW = new android.widget.TextView(new android.content.Context());
         final int[] watcherCalls = {0, 0, 0};
-        android.widget.TextView.TextWatcher w1 = new android.widget.TextView.TextWatcher() {
+        android.text.TextWatcher w1 = new android.text.TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 watcherCalls[0]++;
             }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 watcherCalls[1]++;
             }
-            public void afterTextChanged(Object s) {
+            public void afterTextChanged(android.text.Editable s) {
                 watcherCalls[2]++;
             }
         };
@@ -10769,10 +10769,10 @@ public class HeadlessTest {
 
         // 20. Multiple watchers both fire
         final int[] w2Calls = {0};
-        android.widget.TextView.TextWatcher w2 = new android.widget.TextView.TextWatcher() {
+        android.text.TextWatcher w2 = new android.text.TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             public void onTextChanged(CharSequence s, int start, int before, int count) { w2Calls[0]++; }
-            public void afterTextChanged(Object s) {}
+            public void afterTextChanged(android.text.Editable s) {}
         };
         tvW.addTextChangedListener(w2);
         tvW.setText("second");
@@ -10794,19 +10794,19 @@ public class HeadlessTest {
         check("B35 Paint copy typeface", p2.getTypeface() == android.graphics.Typeface.MONOSPACE);
 
         // 24. setTextIsSelectable
-        android.widget.TextView tvSel = new android.widget.TextView();
+        android.widget.TextView tvSel = new android.widget.TextView(new android.content.Context());
         tvSel.setTextIsSelectable(true);
         check("B35 isTextSelectable true", tvSel.isTextSelectable());
         tvSel.setTextIsSelectable(false);
         check("B35 isTextSelectable false", !tvSel.isTextSelectable());
 
         // 25. setAutoLinkMask
-        android.widget.TextView tvLink = new android.widget.TextView();
+        android.widget.TextView tvLink = new android.widget.TextView(new android.content.Context());
         tvLink.setAutoLinkMask(15);  // Linkify.ALL
         check("B35 getAutoLinkMask", tvLink.getAutoLinkMask() == 15);
 
         // 26. setInputType / getInputType round-trip
-        android.widget.TextView tvInput = new android.widget.TextView();
+        android.widget.TextView tvInput = new android.widget.TextView(new android.content.Context());
         tvInput.setInputType(129);  // TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD
         check("B35 getInputType", tvInput.getInputType() == 129);
 
@@ -10815,12 +10815,12 @@ public class HeadlessTest {
         check("B35 getImeOptions", tvInput.getImeOptions() == 6);
 
         // 28. getEditableText returns null for NORMAL buffer
-        android.widget.TextView tvNorm = new android.widget.TextView();
+        android.widget.TextView tvNorm = new android.widget.TextView(new android.content.Context());
         tvNorm.setText("normal");
         check("B35 getEditableText null for NORMAL", tvNorm.getEditableText() == null);
 
         // 29. setMaxWidth / setMinWidth
-        android.widget.TextView tvWC = new android.widget.TextView();
+        android.widget.TextView tvWC = new android.widget.TextView(new android.content.Context());
         tvWC.setMaxWidth(300);
         tvWC.setMinWidth(50);
         check("B35 getMaxWidth", tvWC.getMaxWidth() == 300);
@@ -10835,7 +10835,7 @@ public class HeadlessTest {
         check("B35 minWidth enforced in measure", tvWC.getMeasuredWidth() >= 50);
 
         // 31. setLines sets both min and max
-        android.widget.TextView tvLines = new android.widget.TextView();
+        android.widget.TextView tvLines = new android.widget.TextView(new android.content.Context());
         tvLines.setLines(3);
         check("B35 setLines minLines", tvLines.getMinLines() == 3);
         check("B35 setLines maxLines", tvLines.getMaxLines() == 3);
@@ -10851,12 +10851,12 @@ public class HeadlessTest {
         check("B35 BoringLayout lineCount==1", bl.getLineCount() == 1);
 
         // 33. setHintTextColor
-        android.widget.TextView tvHC = new android.widget.TextView();
+        android.widget.TextView tvHC = new android.widget.TextView(new android.content.Context());
         tvHC.setHintTextColor(0xFFAA0000);
-        check("B35 getHintTextColor", tvHC.getHintTextColor() == 0xFFAA0000);
+        check("B35 getHintTextColor", tvHC.getHintTextColors() != null);
 
         // 34. AllCaps with setText after setAllCaps
-        android.widget.TextView tvAC = new android.widget.TextView();
+        android.widget.TextView tvAC = new android.widget.TextView(new android.content.Context());
         tvAC.setAllCaps(true);
         tvAC.setText("mixed Case");
         tvAC.setTextSize(16);

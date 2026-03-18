@@ -11,6 +11,10 @@ public final class AutofillId {
         mViewId = viewId;
     }
 
+    public AutofillId(AutofillId hostId, int virtualChildId) {
+        mViewId = hostId != null ? hostId.mViewId : 0;
+    }
+
     public AutofillId(AutofillId hostId, long virtualChildId, int sessionId) {
         mViewId = hostId != null ? hostId.mViewId : 0;
     }

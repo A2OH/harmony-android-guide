@@ -111,4 +111,8 @@ public class AccessibilityRecord {
     public void setMaxScrollY(int maxScrollY) { mMaxScrollY = maxScrollY; }
     public int getMaxScrollX() { return mMaxScrollX; }
     public int getMaxScrollY() { return mMaxScrollY; }
+    public void setAddedCount(int count) {}
+    public void setRemovedCount(int count) {}
+    public void setBeforeText(CharSequence text) {}
+    public void setPassword(boolean isPassword) {}
 }

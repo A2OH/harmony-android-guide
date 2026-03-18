@@ -1,18 +1,11 @@
 package android.widget;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.View;
-import android.view.ViewGroup;
-
+import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Shim: android.widget.AdapterView — abstract base for list/grid/spinner widgets
- * that are backed by an Adapter.
- *
- * Maps to an ArkUI STACK node by default; concrete subclasses override with the
- * appropriate node type (LIST, GRID, …).
+ * Shim: android.widget.AdapterView
  */
 public class AdapterView extends ViewGroup {
 
@@ -22,61 +15,53 @@ public class AdapterView extends ViewGroup {
     private OnItemClickListener  onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
 
-    protected AdapterView() {
-        super(); // STACK node type from ViewGroup default
+    public AdapterView(Context context) {
+        super(context);
+    }
+    public AdapterView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public AdapterView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
-    protected AdapterView(int arkuiNodeType) {
-        super(arkuiNodeType);
-    }
-
-    // ── Abstract adapter contract ──
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {}
 
     public int getCount() { return 0; }
     public Object getItemAtPosition(int position) { return null; }
 
-    // ── Click listeners ──
-
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
-
     public OnItemClickListener getOnItemClickListener() {
         return onItemClickListener;
     }
-
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.onItemLongClickListener = listener;
     }
 
-    /** Called by subclass or adapter infrastructure when an item is tapped. */
     protected void dispatchItemClick(View itemView, int position, long id) {
         if (onItemClickListener != null) {
             onItemClickListener.onItemClick(this, itemView, position, id);
         }
     }
 
-    // ── Interfaces ──
-
     public interface OnItemClickListener {
         void onItemClick(AdapterView parent, View view, int position, long id);
     }
-
     public interface OnItemLongClickListener {
         boolean onItemLongClick(AdapterView parent, View view, int position, long id);
     }
-
     public interface OnItemSelectedListener {
         void onItemSelected(AdapterView parent, View view, int position, long id);
         void onNothingSelected(AdapterView parent);
     }
 
     private OnItemSelectedListener onItemSelectedListener;
-
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
         this.onItemSelectedListener = listener;
     }
-
     public OnItemSelectedListener getOnItemSelectedListener() {
         return onItemSelectedListener;
     }

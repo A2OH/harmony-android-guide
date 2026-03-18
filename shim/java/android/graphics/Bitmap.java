@@ -41,6 +41,10 @@ public class Bitmap {
         return bmp;
     }
 
+    public static Bitmap createBitmap(android.util.DisplayMetrics display, int width, int height, Config config) {
+        return createBitmap(width, height, config);
+    }
+
     public static Bitmap createBitmap(Bitmap src) {
         if (src == null) throw new NullPointerException("src must not be null");
         Bitmap bmp = new Bitmap(src.width, src.height, src.config);

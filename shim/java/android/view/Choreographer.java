@@ -47,6 +47,10 @@ public class Choreographer {
 
     public long getFrameTime() { return System.nanoTime() / 1000000L; }
 
+    public void postCallback(int callbackType, Runnable action, Object token) {}
+    public void postCallbackDelayed(int callbackType, Runnable action, Object token, long delayMillis) {}
+    public void removeCallbacks(int callbackType, Runnable action, Object token) {}
+
     /**
      * Object invoked on each display frame.
      */

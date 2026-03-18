@@ -32,20 +32,16 @@ public class ListView extends AbsListView {
         @Override public void onInvalidated() { removeAllViews(); }
     };
 
-    public ListView() {
-        super(NODE_TYPE_LIST);
-    }
-
     public ListView(android.content.Context context) {
-        this();
+        super(context);
     }
 
     public ListView(android.content.Context context, android.util.AttributeSet attrs) {
-        this();
+        super(context, attrs);
     }
 
     public ListView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
-        this();
+        super(context, attrs, defStyleAttr);
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -274,8 +270,7 @@ public class ListView extends AbsListView {
     }
 
     @Override
-    public void layout(int l, int t, int r, int b) {
-        super.layout(l, t, r, b);
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int childTop = getPaddingTop();
         int childLeft = getPaddingLeft();
         int availWidth = (r - l) - getPaddingLeft() - getPaddingRight();
@@ -283,7 +278,6 @@ public class ListView extends AbsListView {
             android.view.View child = getChildAt(i);
             if (child.getVisibility() == GONE) continue;
             int cw = child.getMeasuredWidth() > 0 ? child.getMeasuredWidth() : availWidth;
-            // Ensure items fill the available width
             if (cw < availWidth) cw = availWidth;
             int ch = child.getMeasuredHeight() > 0 ? child.getMeasuredHeight() : 0;
             child.layout(childLeft, childTop, childLeft + cw, childTop + ch);

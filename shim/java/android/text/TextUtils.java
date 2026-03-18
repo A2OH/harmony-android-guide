@@ -6,7 +6,10 @@ public class TextUtils {
     public static final int CAP_MODE_CHARACTERS = 4096;
     public static final int CAP_MODE_SENTENCES = 16384;
     public static final int CAP_MODE_WORDS = 8192;
-    public static final int CHAR_SEQUENCE_CREATOR = 0;
+    public static final android.os.Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR = new android.os.Parcelable.Creator<CharSequence>() {
+        public CharSequence createFromParcel(android.os.Parcel in) { return in != null ? in.readString() : null; }
+        public CharSequence[] newArray(int size) { return new CharSequence[size]; }
+    };
     public static final int SAFE_STRING_FLAG_FIRST_LINE = 0x1;
     public static final int SAFE_STRING_FLAG_SINGLE_LINE = 0x2;
     public static final int SAFE_STRING_FLAG_TRIM = 0x4;
@@ -405,4 +408,12 @@ public class TextUtils {
     public static int getOffsetBefore(Object p0, Object p1) { return 0; }
     public static Object listEllipsize(Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6) { return null; }
     public static void writeToParcel(Object p0, Object p1, Object p2) {}
+
+    public static CharSequence trimToParcelableSize(CharSequence s) {
+        return s;
+    }
+    public static CharSequence trimToParcelableSize(CharSequence s, int maxLength) {
+        if (s == null || s.length() <= maxLength) return s;
+        return s.subSequence(0, maxLength);
+    }
 }

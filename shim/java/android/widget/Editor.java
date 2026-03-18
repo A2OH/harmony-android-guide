@@ -37,7 +37,7 @@ public class Editor {
     boolean mIsBeingLongClicked;
     boolean mIsBeingLongClickedByAccessibility;
     boolean mIsInsertionActionModeStartPending;
-    Object mKeyListener;
+    android.text.method.KeyListener mKeyListener;
     Object mProcessTextIntentActionsHandler;
     boolean mSelectAllOnFocus;
     Object mSelectionModifierCursorController;
@@ -50,27 +50,32 @@ public class Editor {
     Object mUndoInputFilter;
 
     public Editor() {}
+    public Editor(TextView textView) {}
 
     // Inner classes referenced by AOSP
     public static class InputContentType {
         public int imeOptions;
         public CharSequence imeActionLabel;
         public int imeActionId;
-        public Object onEditorActionListener;
+        public TextView.OnEditorActionListener onEditorActionListener;
         public String privateImeOptions;
-        public Object extras;
+        public android.os.Bundle extras;
+        public android.os.LocaleList imeHintLocales;
+        public boolean enterDown;
+        public int targetInputMethodUser;
     }
     public static class InputMethodState {
-        public Object mBatchEditNesting;
-        public Object mCursorChanged;
-        public Object mContentChanged;
-        public Object mChangedStart;
-        public Object mChangedEnd;
-        public Object mChangedDelta;
-        public Object mExtracting;
-        public Object mExtractedText;
+        public int mBatchEditNesting;
+        public boolean mCursorChanged;
+        public boolean mContentChanged;
+        public int mChangedStart;
+        public int mChangedEnd;
+        public int mChangedDelta;
+        public ExtractedTextRequest mExtractedTextRequest;
+        public ExtractedText mExtractedText;
         public int mExtractedTextGeneration;
-        public Object mCursorAnchorInfoBuilder;
+        public android.view.inputmethod.CursorAnchorInfo.Builder mCursorAnchorInfoBuilder;
+        public boolean mSelectionModeChanged;
     }
 
     // Methods called from TextView

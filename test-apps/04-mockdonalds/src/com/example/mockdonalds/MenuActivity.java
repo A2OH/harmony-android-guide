@@ -32,19 +32,19 @@ public class MenuActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
 
         // Header
-        TextView header = new TextView();
+        TextView header = new TextView(getApplicationContext());
         header.setText("MockDonalds Menu");
         header.setTextSize(24);
         header.setTextColor(0xFFFF0000);
         root.addView(header);
 
         // Cart count
-        cartCountView = new TextView();
+        cartCountView = new TextView(getApplicationContext());
         updateCartCount();
         root.addView(cartCountView);
 
         // Menu ListView
-        ListView listView = new ListView();
+        ListView listView = new ListView(getApplicationContext());
         listView.setAdapter(new MenuAdapter());
         listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
             @Override public void onItemClick(android.widget.AdapterView parent, android.view.View view, int position, long id) {
@@ -104,12 +104,12 @@ public class MenuActivity extends Activity {
             LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView nameView = new TextView();
+            TextView nameView = new TextView(getApplicationContext());
             nameView.setText(item.name);
             nameView.setTextSize(16);
             row.addView(nameView);
 
-            TextView priceView = new TextView();
+            TextView priceView = new TextView(getApplicationContext());
             priceView.setText("  " + item.getPriceString());
             priceView.setTextColor(0xFF008800);
             row.addView(priceView);

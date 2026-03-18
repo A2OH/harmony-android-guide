@@ -37,8 +37,14 @@ public class Gallery extends AdapterView {
     private float unselectedAlpha = 0.5f;
     private int gravity = 0;
 
-    public Gallery() {
-        super(NODE_TYPE_STACK);
+    public Gallery(android.content.Context context) {
+        super(context);
+    }
+    public Gallery(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public Gallery(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Adapter ──

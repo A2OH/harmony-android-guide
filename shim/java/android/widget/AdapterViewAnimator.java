@@ -19,8 +19,14 @@ public class AdapterViewAnimator extends AdapterView {
     private Object outAnimation;
     private boolean animateFirstView = true;
 
-    protected AdapterViewAnimator() {
-        super();
+    protected AdapterViewAnimator(android.content.Context context) {
+        super(context);
+    }
+    protected AdapterViewAnimator(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    protected AdapterViewAnimator(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Adapter ──

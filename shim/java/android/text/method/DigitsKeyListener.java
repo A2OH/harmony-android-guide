@@ -46,6 +46,10 @@ public class DigitsKeyListener implements KeyListener {
         return new DigitsKeyListener(accepted.toCharArray());
     }
 
+    public static DigitsKeyListener getInstance(java.util.Locale locale, boolean sign, boolean decimal) {
+        return getInstance(sign, decimal);
+    }
+
     /** Returns the set of accepted characters. */
     public char[] getAcceptedChars() {
         return accepted.clone();

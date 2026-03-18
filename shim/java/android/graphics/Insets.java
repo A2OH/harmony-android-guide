@@ -56,6 +56,8 @@ public final class Insets {
                 + ", right=" + right + ", bottom=" + bottom + "}";
     }
 
+    public Rect toRect() { return new Rect(left, top, right, bottom); }
+
     public int describeContents() { return 0; }
     public void writeToParcel(Object p0, Object p1) {}
 }

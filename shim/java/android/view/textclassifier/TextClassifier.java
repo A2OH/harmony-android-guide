@@ -40,4 +40,8 @@ public interface TextClassifier {
     TextLinks generateLinks(CharSequence text, Object options);
 
     String detectLanguage(CharSequence text);
+
+    String WIDGET_TYPE_TEXTVIEW = "textview";
+    String WIDGET_TYPE_EDITTEXT = "edittext";
+    String WIDGET_TYPE_UNSELECTABLE_TEXTVIEW = "nosel-textview";
 }

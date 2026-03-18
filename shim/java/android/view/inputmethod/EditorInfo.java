@@ -73,4 +73,8 @@ public class EditorInfo {
     public String[] contentMimeTypes;
     public int initialCapsMode;
     public CharSequence initialText;
+    public android.os.LocaleList hintLocales;
+    public String privateImeOptions;
+    public int targetInputMethodUser;
+    public void setInitialSurroundingText(CharSequence text) {}
 }

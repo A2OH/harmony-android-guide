@@ -17,5 +17,7 @@ public final class DisplayCutout {
     /** Auto-generated stub. */
     public static class ParcelableWrapper {
         public ParcelableWrapper() {}
+        public ParcelableWrapper(DisplayCutout cutout) {}
+        public DisplayCutout get() { return NO_CUTOUT; }
     }
 }

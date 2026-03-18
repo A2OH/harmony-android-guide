@@ -38,8 +38,26 @@ public class PrecomputedText implements Spannable {
             mTextDirection = b.mTextDirection;
         }
 
+        public Params(Object paint, Object textDirection, int breakStrategy, int hyphenationFrequency) {
+            mPaint = paint;
+            mTextDirection = textDirection;
+            mBreakStrategy = breakStrategy;
+            mHyphenationFrequency = hyphenationFrequency;
+        }
+
+        public static final int USABLE = 0;
+        public static final int UNUSABLE = 1;
+        public static final int NEED_RECOMPUTE = 2;
+
+        public int checkResultUsable(TextPaint paint, Object textDirection, int breakStrategy, int hyphenationFrequency) {
+            return USABLE;
+        }
+
+        @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)
+        public @interface CheckResultUsableResult {}
+
         /** Returns the TextPaint used for measurement. */
-        public Object getTextPaint() { return mPaint; }
+        public TextPaint getTextPaint() { return (TextPaint) mPaint; }
 
         /** Returns the break strategy. */
         public int getBreakStrategy() { return mBreakStrategy; }
@@ -48,7 +66,7 @@ public class PrecomputedText implements Spannable {
         public int getHyphenationFrequency() { return mHyphenationFrequency; }
 
         /** Returns the text direction heuristic. */
-        public Object getTextDirection() { return mTextDirection; }
+        public TextDirectionHeuristic getTextDirection() { return (TextDirectionHeuristic) mTextDirection; }
 
         // ── Builder ──────────────────────────────────────────────────
 

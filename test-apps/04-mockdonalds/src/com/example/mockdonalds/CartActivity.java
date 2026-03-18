@@ -28,23 +28,23 @@ public class CartActivity extends Activity {
         LinearLayout root = new LinearLayout(new android.content.Context());
         root.setOrientation(LinearLayout.VERTICAL);
 
-        TextView header = new TextView();
+        TextView header = new TextView(getApplicationContext());
         header.setText("Your Cart");
         header.setTextSize(24);
         root.addView(header);
 
         if (cartItems.isEmpty()) {
-            TextView emptyView = new TextView();
+            TextView emptyView = new TextView(getApplicationContext());
             emptyView.setText("Cart is empty");
             emptyView.setTextSize(16);
             root.addView(emptyView);
         } else {
-            ListView listView = new ListView();
+            ListView listView = new ListView(getApplicationContext());
             listView.setAdapter(new CartAdapter());
             root.addView(listView);
         }
 
-        totalView = new TextView();
+        totalView = new TextView(getApplicationContext());
         totalView.setText("Total: " + cartManager.getCartTotalString());
         totalView.setTextSize(20);
         totalView.setTextColor(0xFFFF0000);
@@ -100,11 +100,11 @@ public class CartActivity extends Activity {
             LinearLayout row = new LinearLayout(new android.content.Context());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView nameView = new TextView();
+            TextView nameView = new TextView(getApplicationContext());
             nameView.setText(item.name);
             row.addView(nameView);
 
-            TextView priceView = new TextView();
+            TextView priceView = new TextView(getApplicationContext());
             priceView.setText("  " + item.getPriceString());
             row.addView(priceView);
 

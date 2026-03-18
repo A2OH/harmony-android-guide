@@ -43,7 +43,7 @@ public final class RenderNode {
      * @param name optional debug name for the node
      * @param owningView the View that owns this node (may be null)
      */
-    public static RenderNode create(String name, View owningView) {
+    public static RenderNode create(String name, Object owningView) {
         return new RenderNode(name != null ? name : "");
     }
 
@@ -235,5 +235,8 @@ public final class RenderNode {
     public boolean setUsageHint(int usageHint) { return true; }
 
     /** Auto-generated stub. */
-    public static interface PositionUpdateListener {}
+    public static interface PositionUpdateListener {
+        void positionChanged(long frameNumber, int left, int top, int right, int bottom);
+        void positionLost(long frameNumber);
+    }
 }

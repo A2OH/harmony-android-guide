@@ -615,9 +615,6 @@ public class OHBridge {
     // ── Event dispatch ──
 
     public static void dispatchNodeEvent(int eventId, long nodeHandle, int eventKind, String stringData) {
-        android.view.View view = new android.view.View().findViewByHandle(nodeHandle);
-        if (view != null) {
-            view.onNativeEvent(eventId, eventKind, stringData);
-        }
+        // No-op in mock - AOSP View doesn't have onNativeEvent
     }
 }

@@ -23,8 +23,14 @@ public class ExpandableListView extends ListView {
     private OnGroupExpandListener onGroupExpandListener;
     private OnGroupCollapseListener onGroupCollapseListener;
 
-    public ExpandableListView() {
-        super();
+    public ExpandableListView(android.content.Context context) {
+        super(context);
+    }
+    public ExpandableListView(android.content.Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public ExpandableListView(android.content.Context context, android.util.AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     // ── Adapter ──

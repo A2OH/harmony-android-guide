@@ -22,4 +22,8 @@ public class TextClassificationManager {
     public TextClassifier createTextClassificationSession(Object request) {
         return classifier;
     }
+
+    public TextClassifier createTextClassificationSession(Object context, TextClassifier classifier) {
+        return classifier != null ? classifier : this.classifier;
+    }
 }

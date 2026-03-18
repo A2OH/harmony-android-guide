@@ -47,6 +47,19 @@ public class StaticLayout extends Layout {
             return this;
         }
 
+        public Builder setTextDirection(TextDirectionHeuristic textDir) { return this; }
+        public Builder setEllipsize(TextUtils.TruncateAt ellipsize) { return this; }
+        public Builder setEllipsizedWidth(int ellipsizedWidth) { return this; }
+        public Builder setMaxLines(int maxLines) { return this; }
+        public Builder setBreakStrategy(int breakStrategy) { return this; }
+        public Builder setHyphenationFrequency(int hyphenationFrequency) { return this; }
+        public Builder setJustificationMode(int justificationMode) { return this; }
+        public Builder setIncludePad(boolean includePad) { return this; }
+        public Builder setUseLineSpacingFromFallbacks(boolean useLineSpacingFromFallbacks) { return this; }
+        public Builder setIndents(int[] leftIndents, int[] rightIndents) { return this; }
+        public Builder setAvailableWidth(int availableWidth) { return this; }
+        public Builder setAddLastLineLineSpacing(boolean value) { return this; }
+
         public StaticLayout build() {
             return new StaticLayout(mText, mPaint, mWidth, mAlign, mSpacingMult, mSpacingAdd);
         }
