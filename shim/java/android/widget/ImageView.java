@@ -1008,8 +1008,10 @@ public class ImageView extends View {
                 Resources res = sCompatUseCorrectStreamDensity ? getResources() : null;
                 ImageDecoder.Source src = ImageDecoder.createSource(mContext.getContentResolver(),
                         uri, res);
-                return ImageDecoder.decodeDrawable(src, (decoder, info, s) -> {
-                    decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
+                return ImageDecoder.decodeDrawable(src, new ImageDecoder.OnHeaderDecodedListener() {
+                    @Override public void onHeaderDecoded(ImageDecoder decoder, ImageDecoder.ImageInfo info, ImageDecoder.Source s) {
+                        decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
+                    }
                 });
             } catch (IOException e) {
                 Log.w(LOG_TAG, "Unable to open content: " + uri, e);

@@ -12738,27 +12738,8 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                         mText, start, end)
                         .setDefaultLocales(getTextLocales())
                         .build();
-                final Supplier<TextClassification> supplier = () ->
-                        getTextClassificationSession().classifyText(request);
-                final Consumer<TextClassification> consumer = classification -> {
-                    if (classification != null) {
-                        if (!classification.getActions().isEmpty()) {
-                            try {
-                                classification.getActions().get(0).getActionIntent().send();
-                            } catch (PendingIntent.CanceledException e) {
-                                Log.e(LOG_TAG, "Error sending PendingIntent", e);
-                            }
-                        } else {
-                            Log.d(LOG_TAG, "No link action to perform");
-                        }
-                    } else {
-                        // classification == null
-                        Log.d(LOG_TAG, "Timeout while classifying text");
-                    }
-                };
-                CompletableFuture.supplyAsync(supplier)
-                        .completeOnTimeout(null, 1, TimeUnit.SECONDS)
-                        .thenAccept(consumer);
+                // Stub: text classification not supported in this shim
+                Log.d(LOG_TAG, "Text classification not supported");
                 return true;
             }
         }

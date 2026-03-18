@@ -9152,13 +9152,17 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             final Rect tempRect = new Rect();
             holder1.mView.getBoundsOnScreen(view1Bounds, true);
             holder2.mView.getBoundsOnScreen(view2Bounds, true);
-            final View child1 = holder1.mView.findViewByPredicateTraversal((view) -> {
-                view.getBoundsOnScreen(tempRect, true);
-                return !tempRect.equals(view1Bounds);
+            final View child1 = holder1.mView.findViewByPredicateTraversal(new Predicate<View>() {
+                @Override public boolean test(View view) {
+                    view.getBoundsOnScreen(tempRect, true);
+                    return !tempRect.equals(view1Bounds);
+                }
             }, null);
-            final View child2 = holder2.mView.findViewByPredicateTraversal((view) -> {
-                view.getBoundsOnScreen(tempRect, true);
-                return !tempRect.equals(view2Bounds);
+            final View child2 = holder2.mView.findViewByPredicateTraversal(new Predicate<View>() {
+                @Override public boolean test(View view) {
+                    view.getBoundsOnScreen(tempRect, true);
+                    return !tempRect.equals(view2Bounds);
+                }
             }, null);
 
 

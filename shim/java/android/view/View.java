@@ -2326,7 +2326,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * be extended in the future to hold our own class with more than just
      * a Rect. :)
      */
-    static final ThreadLocal<Rect> sThreadLocal = ThreadLocal.withInitial(Rect::new);
+    static final ThreadLocal<Rect> sThreadLocal = new ThreadLocal<Rect>() {
+        @Override protected Rect initialValue() { return new Rect(); }
+    };
 
     /**
      * Map used to store views' tags.
@@ -11464,7 +11466,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // Potentially racey from a background thread. It's ok if it's not perfect.
         final Handler h = getHandler();
         if (h != null) {
-            h.postAtFrontOfQueue(this::updateSystemGestureExclusionRects);
+            h.postAtFrontOfQueue(new Runnable() {
+                @Override public void run() { updateSystemGestureExclusionRects(); }
+            });
         }
     }
 
@@ -12878,8 +12882,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 // forward links to this view. We can't just find the view with the specified ID
                 // because view IDs need not be unique throughout the tree.
                 return root.findViewByPredicateInsideOut(startView,
-                    t -> findViewInsideOutShouldExist(rootView, t, t.mNextFocusForwardId)
-                            == startView);
+                    new Predicate<View>() {
+                        @Override public boolean test(View t) {
+                            return findViewInsideOutShouldExist(rootView, t, t.mNextFocusForwardId) == startView;
+                        }
+                    });
             }
         }
         return null;
@@ -12902,7 +12909,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 if (mID == View.NO_ID) return null;
                 final int id = mID;
                 return root.findViewByPredicateInsideOut(this,
-                        (Predicate<View>) t -> t.mNextClusterForwardId == id);
+                        new Predicate<View>() {
+                            @Override public boolean test(View t) {
+                                return t.mNextClusterForwardId == id;
+                            }
+                        });
             }
         }
         return null;
@@ -30130,8 +30141,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             setFlags(TOOLTIP, TOOLTIP);
             if (mTooltipInfo == null) {
                 mTooltipInfo = new TooltipInfo();
-                mTooltipInfo.mShowTooltipRunnable = this::showHoverTooltip;
-                mTooltipInfo.mHideTooltipRunnable = this::hideTooltip;
+                mTooltipInfo.mShowTooltipRunnable = new Runnable() {
+                    @Override public void run() { showHoverTooltip(); }
+                };
+                mTooltipInfo.mHideTooltipRunnable = new Runnable() {
+                    @Override public void run() { hideTooltip(); }
+                };
                 mTooltipInfo.mHoverSlop = ViewConfiguration.get(mContext).getScaledHoverSlop();
                 mTooltipInfo.clearAnchorPos();
             }
