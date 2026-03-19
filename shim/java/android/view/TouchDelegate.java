@@ -37,7 +37,7 @@ public class TouchDelegate {
      * @param event the motion event (Object to avoid dependency chains)
      * @return true if the event was handled
      */
-    public boolean onTouchEvent(Object event) {
+    public boolean onTouchEvent(MotionEvent event) {
         // no-op stub — always returns false
         return false;
     }

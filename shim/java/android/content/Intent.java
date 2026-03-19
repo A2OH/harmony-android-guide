@@ -75,6 +75,8 @@ public class Intent implements Cloneable, Parcelable {
     public static final int FLAG_ACTIVITY_MULTIPLE_TASK = 0x08000000;
     public static final int FLAG_ACTIVITY_NO_ANIMATION = 0x00010000;
     public static final int FLAG_ACTIVITY_REORDER_TO_FRONT = 0x00020000;
+    public static final int FLAG_ACTIVITY_NEW_DOCUMENT = 0x00080000;
+    public static final int FLAG_ACTIVITY_LAUNCH_ADJACENT = 0x00001000;
     public static final int FLAG_GRANT_READ_URI_PERMISSION = 0x00000001;
     public static final int FLAG_GRANT_WRITE_URI_PERMISSION = 0x00000002;
     public static final int FLAG_GRANT_PERSISTABLE_URI_PERMISSION = 0x00000040;

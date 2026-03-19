@@ -18,4 +18,6 @@ public class ActionMenuPresenter implements MenuPresenter {
     public boolean expandItemActionView(MenuBuilder menu, MenuItemImpl item) { return false; }
     public boolean collapseItemActionView(MenuBuilder menu, MenuItemImpl item) { return false; }
     public int getId() { return 0; }
+    public android.os.Parcelable onSaveInstanceState() { return null; }
+    public void onRestoreInstanceState(android.os.Parcelable state) {}
 }

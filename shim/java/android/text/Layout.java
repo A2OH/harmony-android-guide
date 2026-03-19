@@ -121,6 +121,7 @@ public class Layout {
 
     public static float getDesiredWidth(CharSequence source, TextPaint paint) { return 0; }
     public static float getDesiredWidth(CharSequence source, int start, int end, TextPaint paint) { return 0; }
+    public static float getDesiredWidth(CharSequence source, int start, int end, TextPaint paint, TextDirectionHeuristic textDir) { return 0; }
     public static float getDesiredWidthWithLimit(CharSequence source, int start, int end, TextPaint paint, TextDirectionHeuristic textDir, float limit) { return 0; }
 
     public Alignment getParagraphAlignment(int line) { return mAlignment; }

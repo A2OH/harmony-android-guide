@@ -199,4 +199,7 @@ public class Parcel {
         writeInt(1);
         val.writeToParcel(this, flags);
     }
+
+    public void readList(java.util.List outVal, ClassLoader loader) {}
+    public void writeList(java.util.List val) {}
 }

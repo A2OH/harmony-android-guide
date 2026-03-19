@@ -4,7 +4,7 @@ import android.content.Context;
 import android.view.MenuItem;
 
 /** Stub for AOSP MenuBuilder. */
-public class MenuBuilder {
+public class MenuBuilder implements android.view.Menu {
     public MenuBuilder() {}
     public MenuBuilder(Context context) {}
 
@@ -27,4 +27,8 @@ public class MenuBuilder {
     public MenuItem add(int titleRes) { return null; }
     public MenuItem add(int groupId, int itemId, int order, CharSequence title) { return null; }
     public MenuItem add(int groupId, int itemId, int order, int titleRes) { return null; }
+    public MenuItem findItem(int id) { return null; }
+    public void removeItem(int id) {}
+    public void collapseItemActionView(MenuItemImpl item) {}
+    public boolean expandItemActionView(MenuItemImpl item) { return false; }
 }

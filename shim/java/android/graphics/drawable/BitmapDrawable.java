@@ -61,6 +61,12 @@ public class BitmapDrawable extends Drawable {
         this.tileModeY = yMode;
     }
 
+    public void setTileModeXY(android.graphics.Shader.TileMode xMode, android.graphics.Shader.TileMode yMode) {
+        // Convert from Shader.TileMode to internal TileMode
+        this.tileModeX = xMode != null ? TileMode.valueOf(xMode.name()) : null;
+        this.tileModeY = yMode != null ? TileMode.valueOf(yMode.name()) : null;
+    }
+
     public void setTileModeX(TileMode xMode) { this.tileModeX = xMode; }
     public void setTileModeY(TileMode yMode) { this.tileModeY = yMode; }
 

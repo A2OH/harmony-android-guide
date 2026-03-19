@@ -4,7 +4,7 @@ package android.app;
  * Android-compatible PendingIntent shim.
  * Extended with OH-specific fields for AlarmManager→reminderAgent mapping.
  */
-public class PendingIntent {
+public class PendingIntent implements android.os.Parcelable {
     public static final int FLAG_ONE_SHOT = 1 << 30;
     public static final int FLAG_NO_CREATE = 1 << 29;
     public static final int FLAG_CANCEL_CURRENT = 1 << 28;
@@ -35,6 +35,27 @@ public class PendingIntent {
     public void setParamsJson(String json) { mParamsJson = json; }
     public int getReminderId() { return mReminderId; }
     public void setReminderId(int id) { mReminderId = id; }
+
+    public static PendingIntent getActivity(android.content.Context context, int requestCode,
+            android.content.Intent intent, int flags) {
+        return new PendingIntent(requestCode);
+    }
+
+    public static PendingIntent getBroadcast(android.content.Context context, int requestCode,
+            android.content.Intent intent, int flags) {
+        return new PendingIntent(requestCode);
+    }
+
+    public static PendingIntent getService(android.content.Context context, int requestCode,
+            android.content.Intent intent, int flags) {
+        return new PendingIntent(requestCode);
+    }
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {}
 
     public void send() throws CanceledException {
         // stub — no-op in shim layer

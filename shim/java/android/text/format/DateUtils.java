@@ -28,4 +28,24 @@ public class DateUtils {
     public static boolean isToday(long timeMillis) {
         return false;
     }
+
+    public static String formatElapsedTime(long elapsedSeconds) {
+        return formatElapsedTime(null, elapsedSeconds);
+    }
+
+    public static String formatElapsedTime(StringBuilder recycle, long elapsedSeconds) {
+        long hours = elapsedSeconds / 3600;
+        long minutes = (elapsedSeconds % 3600) / 60;
+        long seconds = elapsedSeconds % 60;
+        StringBuilder sb = recycle != null ? recycle : new StringBuilder(8);
+        sb.setLength(0);
+        if (hours > 0) {
+            sb.append(hours).append(':');
+            sb.append(String.format("%02d", minutes)).append(':');
+        } else {
+            sb.append(minutes).append(':');
+        }
+        sb.append(String.format("%02d", seconds));
+        return sb.toString();
+    }
 }

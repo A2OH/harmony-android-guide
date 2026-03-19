@@ -58,4 +58,7 @@ public class MenuItemImpl implements MenuItem {
     public MenuItem setNumericShortcut(char numericChar, int numericModifiers) { return this; }
     public int getNumericModifiers() { return 0; }
     public MenuItem setShortcut(char numericChar, char alphaChar, int numericModifiers, int alphaModifiers) { return this; }
+    public void setActionViewExpanded(boolean expanded) {}
+    public boolean requiresActionButton() { return false; }
+    public boolean requiresOverflow() { return false; }
 }

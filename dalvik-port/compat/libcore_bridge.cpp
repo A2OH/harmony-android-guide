@@ -330,17 +330,28 @@ static void JNICALL Posix_setenv(JNIEnv* env, jobject, jstring jname, jstring jv
 
 static jobject JNICALL Posix_getpwuid(JNIEnv* env, jobject, jint uid) {
     struct passwd* pw = getpwuid(uid);
-    if (pw == NULL) return NULL;
     jclass cls = env->FindClass("libcore/io/StructPasswd");
     if (cls == NULL) { env->ExceptionClear(); return NULL; }
     jmethodID ctor = env->GetMethodID(cls, "<init>",
         "(Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;)V");
     if (ctor == NULL) { env->ExceptionClear(); return NULL; }
-    jstring pw_name = env->NewStringUTF(pw->pw_name ? pw->pw_name : "");
-    jstring pw_dir  = env->NewStringUTF(pw->pw_dir ? pw->pw_dir : "/");
-    jstring pw_shell = env->NewStringUTF(pw->pw_shell ? pw->pw_shell : "/bin/sh");
-    return env->NewObject(cls, ctor, pw_name, (jint)pw->pw_uid,
-                          (jint)pw->pw_gid, pw_dir, pw_shell);
+    jstring pw_name, pw_dir, pw_shell;
+    jint pw_uid, pw_gid;
+    if (pw != NULL) {
+        pw_name = env->NewStringUTF(pw->pw_name ? pw->pw_name : "");
+        pw_dir  = env->NewStringUTF(pw->pw_dir ? pw->pw_dir : "/");
+        pw_shell = env->NewStringUTF(pw->pw_shell ? pw->pw_shell : "/bin/sh");
+        pw_uid = (jint)pw->pw_uid;
+        pw_gid = (jint)pw->pw_gid;
+    } else {
+        /* Fallback: return hardcoded root entry when /etc/passwd is missing */
+        pw_name = env->NewStringUTF("root");
+        pw_dir  = env->NewStringUTF("/");
+        pw_shell = env->NewStringUTF("/bin/sh");
+        pw_uid = (jint)uid;
+        pw_gid = 0;
+    }
+    return env->NewObject(cls, ctor, pw_name, pw_uid, pw_gid, pw_dir, pw_shell);
 }
 
 static jobject JNICALL Posix_stat(JNIEnv* env, jobject, jstring jpath) {

@@ -1,11 +1,17 @@
 package android.transition;
 
-public class TransitionListenerAdapter {
+/** Adapter class for TransitionListener with default no-op implementations. */
+public abstract class TransitionListenerAdapter implements Transition.TransitionListener {
     public TransitionListenerAdapter() {}
 
-    public void onTransitionCancel(Object p0) {}
-    public void onTransitionEnd(Object p0) {}
-    public void onTransitionPause(Object p0) {}
-    public void onTransitionResume(Object p0) {}
-    public void onTransitionStart(Object p0) {}
+    @Override
+    public void onTransitionStart(Transition transition) {}
+    @Override
+    public void onTransitionEnd(Transition transition) {}
+    @Override
+    public void onTransitionCancel(Transition transition) {}
+    @Override
+    public void onTransitionPause(Transition transition) {}
+    @Override
+    public void onTransitionResume(Transition transition) {}
 }

@@ -111,6 +111,20 @@ public class LayerDrawable extends Drawable {
     public int getLayerInsetTop(int index)    { checkIndex(index); return layers[index].insetTop; }
     public int getLayerInsetRight(int index)  { checkIndex(index); return layers[index].insetRight; }
     public int getLayerInsetBottom(int index) { checkIndex(index); return layers[index].insetBottom; }
+    public int getLayerInsetStart(int index)  { checkIndex(index); return layers[index].insetLeft; }
+    public int getLayerInsetEnd(int index)    { checkIndex(index); return layers[index].insetRight; }
+    public int getLayerGravity(int index)     { checkIndex(index); return 0; }
+    public int getLayerWidth(int index)       { checkIndex(index); return -1; }
+    public int getLayerHeight(int index)      { checkIndex(index); return -1; }
+    public void setLayerGravity(int index, int gravity) { checkIndex(index); }
+    public void setLayerWidth(int index, int width) { checkIndex(index); }
+    public void setLayerHeight(int index, int height) { checkIndex(index); }
+    public void setLayerInsetStart(int index, int s) { checkIndex(index); layers[index].insetLeft = s; }
+    public void setLayerInsetEnd(int index, int e) { checkIndex(index); layers[index].insetRight = e; }
+    public void setLayerInsetLeft(int index, int l) { checkIndex(index); layers[index].insetLeft = l; }
+    public void setLayerInsetRight(int index, int r) { checkIndex(index); layers[index].insetRight = r; }
+    public void setLayerInsetTop(int index, int t) { checkIndex(index); layers[index].insetTop = t; }
+    public void setLayerInsetBottom(int index, int b) { checkIndex(index); layers[index].insetBottom = b; }
 
     // ── Padding mode ─────────────────────────────────────────────────────────
 

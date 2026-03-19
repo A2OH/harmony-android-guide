@@ -64,6 +64,7 @@ public class ActionMenuView extends LinearLayout {
     public void setOverflowIcon(android.graphics.drawable.Drawable icon) {}
     public void setMenuCallbacks(com.android.internal.view.menu.MenuPresenter.Callback pcb,
                                   com.android.internal.view.menu.MenuBuilder.Callback mcb) {}
+    public void setPresenter(ActionMenuPresenter presenter) {}
 
     /**
      * Registers a callback for menu-item click events.

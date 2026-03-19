@@ -42,13 +42,8 @@ public class AnimationUtils {
      * @param id      resource id (ignored)
      * @return a stub TimeInterpolator that returns input unchanged
      */
-    public static TimeInterpolator loadInterpolator(Object context, int id) {
-        return new TimeInterpolator() {
-            @Override
-            public float getInterpolation(float input) {
-                return input;
-            }
-        };
+    public static Interpolator loadInterpolator(Object context, int id) {
+        return new LinearInterpolator();
     }
 
     /**

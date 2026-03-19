@@ -28,7 +28,13 @@ public class Transition {
     public boolean canRemoveViews() { return false; }
     public void captureEndValues(Object p0) {}
     public void captureStartValues(Object p0) {}
-    public Object clone() { return null; }
+    public Transition clone() {
+        try {
+            return (Transition) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
     public Object createAnimator(Object p0, Object p1, Object p2) { return null; }
     public Object excludeChildren(Object p0, Object p1) { return null; }
     public Object excludeTarget(Object p0, Object p1) { return null; }

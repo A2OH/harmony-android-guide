@@ -12,6 +12,7 @@ import java.util.Set;
 public abstract class ViewStructure {
 
     public void setClassName(String className) {}
+    public CharSequence getText() { return null; }
     public void setText(CharSequence text) {}
     public void setText(CharSequence text, int selectionStart, int selectionEnd) {}
     public void setTextLines(int[] charOffsets, int[] baselines) {}

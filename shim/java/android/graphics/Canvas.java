@@ -297,6 +297,12 @@ public class Canvas {
         if (nativeCanvas != 0) OHBridge.canvasScale(nativeCanvas, sx, sy);
     }
 
+    public void scale(float sx, float sy, float px, float py) {
+        translate(px, py);
+        scale(sx, sy);
+        translate(-px, -py);
+    }
+
     public void rotate(float degrees) {
         if (nativeCanvas != 0) OHBridge.canvasRotate(nativeCanvas, degrees, 0, 0);
     }
@@ -339,6 +345,7 @@ public class Canvas {
     }
 
     public boolean clipRect(Rect rect) { return true; }
+    public boolean clipRect(Rect rect, Region.Op op) { return true; }
     public boolean clipRect(RectF rect) { return true; }
     public boolean clipRect(int left, int top, int right, int bottom) {
         if (nativeCanvas != 0) OHBridge.canvasClipRect(nativeCanvas, (float) left, (float) top, (float) right, (float) bottom);

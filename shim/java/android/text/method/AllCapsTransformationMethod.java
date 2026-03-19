@@ -1,7 +1,7 @@
 package android.text.method;
 
 /** Auto-generated stub for AOSP compilation. */
-public class AllCapsTransformationMethod implements TransformationMethod {
+public class AllCapsTransformationMethod implements TransformationMethod2 {
     public AllCapsTransformationMethod() {}
     public AllCapsTransformationMethod(android.content.Context context) {}
     public CharSequence getTransformation(CharSequence source, Object view) {

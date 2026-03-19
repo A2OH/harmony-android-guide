@@ -20,4 +20,6 @@ public interface MenuPresenter {
     boolean expandItemActionView(MenuBuilder menu, MenuItemImpl item);
     boolean collapseItemActionView(MenuBuilder menu, MenuItemImpl item);
     int getId();
+    android.os.Parcelable onSaveInstanceState();
+    void onRestoreInstanceState(android.os.Parcelable state);
 }

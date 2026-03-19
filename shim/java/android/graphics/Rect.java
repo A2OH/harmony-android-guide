@@ -180,6 +180,15 @@ public class Rect {
         bottom -= dy;
     }
 
+    public void scale(float scale) {
+        if (scale != 1.0f) {
+            left = (int) (left * scale + 0.5f);
+            top = (int) (top * scale + 0.5f);
+            right = (int) (right * scale + 0.5f);
+            bottom = (int) (bottom * scale + 0.5f);
+        }
+    }
+
     // ── Flatten / unflatten ──────────────────────────────────────────────────
 
     public String flattenToString() {

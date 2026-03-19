@@ -94,6 +94,7 @@ public final class R {
     }
 
     public static final class transition {
+        public static final int no_transition = 0;
         private transition() {}
     }
 

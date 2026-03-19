@@ -126,7 +126,8 @@ public class Drawable {
      */
     public static abstract class ConstantState {
         public Drawable newDrawable() { return null; }
-        public Drawable newDrawable(Object resources) { return newDrawable(); }
+        public Drawable newDrawable(android.content.res.Resources resources) { return newDrawable(); }
+        public Drawable newDrawable(android.content.res.Resources resources, android.content.res.Resources.Theme theme) { return newDrawable(); }
         public int getChangingConfigurations() { return 0; }
     }
 

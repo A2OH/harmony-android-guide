@@ -387,6 +387,11 @@ public class Paint {
     // ── PorterDuffXfermode ──
     public PorterDuffXfermode setXfermode(PorterDuffXfermode xfermode) { return xfermode; }
 
+    // ── BlendMode ──
+    private BlendMode mBlendMode;
+    public void setBlendMode(BlendMode blendMode) { mBlendMode = blendMode; }
+    public BlendMode getBlendMode() { return mBlendMode; }
+
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override

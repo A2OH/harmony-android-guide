@@ -4,7 +4,7 @@ import java.util.Locale;
 
 /** Stub for AOSP libcore LocaleData used by NumberPicker. */
 public class LocaleData {
-    public String zeroDigit = "0";
+    public char zeroDigit = '0';
 
     public LocaleData() {}
 

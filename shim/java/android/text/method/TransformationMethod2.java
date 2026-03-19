@@ -1,7 +1,6 @@
 package android.text.method;
 
-/** Auto-generated stub for AOSP compilation. */
-public class TransformationMethod2 {
-    public TransformationMethod2() {}
-    public void setLengthChangesAllowed(boolean allowLengthChanges) {}
+/** Stub for AOSP TransformationMethod2 interface. */
+public interface TransformationMethod2 extends TransformationMethod {
+    void setLengthChangesAllowed(boolean allowLengthChanges);
 }

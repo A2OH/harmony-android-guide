@@ -1,6 +1,6 @@
 package android.animation;
 
-public class ValueAnimator {
+public class ValueAnimator extends Animator {
     public ValueAnimator() {}
 
     public static final int INFINITE = 0;
@@ -30,7 +30,7 @@ public class ValueAnimator {
     public void reverse() {}
     public void setCurrentFraction(Object p0) {}
     public void setCurrentPlayTime(Object p0) {}
-    public Object setDuration(Object p0) { return null; }
+    public ValueAnimator setDuration(long duration) { return this; }
     public void setEvaluator(Object p0) {}
     public void setFloatValues(Object p0) {}
     public static void setFrameDelay(Object p0) {}

@@ -14,6 +14,10 @@ public class SuggestionsAdapter extends CursorAdapter {
                               android.app.SearchManager searchManager) {
     }
 
+    public SuggestionsAdapter(Context context, SearchView searchView,
+                              android.app.SearchableInfo searchable, java.util.WeakHashMap cache) {
+    }
+
     public static String getColumnString(Cursor c, String columnName) {
         if (c == null || columnName == null) return null;
         try {

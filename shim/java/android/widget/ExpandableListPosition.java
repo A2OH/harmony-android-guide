@@ -28,9 +28,9 @@ public class ExpandableListPosition {
         return pos;
     }
 
-    public static ExpandableListPosition obtainPosition(int flatListPos) {
+    public static ExpandableListPosition obtainPosition(long flatListPos) {
         ExpandableListPosition pos = new ExpandableListPosition();
-        pos.flatListPos = flatListPos;
+        pos.flatListPos = (int) flatListPos;
         return pos;
     }
 

@@ -92,6 +92,7 @@ public class AccessibilityNodeInfo {
         public static final AccessibilityAction ACTION_PAGE_RIGHT = new AccessibilityAction(0x0100000b, null);
         public static final AccessibilityAction ACTION_PRESS_AND_HOLD = new AccessibilityAction(0x0100000c, null);
         public static final AccessibilityAction ACTION_SCROLL_TO_POSITION = new AccessibilityAction(0x0100000d, null);
+        public static final AccessibilityAction ACTION_SET_PROGRESS = new AccessibilityAction(0x0100000e, null);
 
         private final int mActionId;
         private final CharSequence mLabel;

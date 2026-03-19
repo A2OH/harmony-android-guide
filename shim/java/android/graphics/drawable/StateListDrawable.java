@@ -168,6 +168,13 @@ public class StateListDrawable extends Drawable {
         return true;
     }
 
+    public int findStateDrawableIndex(int[] stateSet) {
+        for (int i = 0; i < entries.size(); i++) {
+            if (java.util.Arrays.equals(entries.get(i).stateSet, stateSet)) return i;
+        }
+        return -1;
+    }
+
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override
