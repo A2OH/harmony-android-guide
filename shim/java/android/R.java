@@ -85,6 +85,7 @@ public final class R {
         public static final int VideoView_error_button = 0;
         public static final int VideoView_error_text_invalid_progressive_playback = 0;
         public static final int VideoView_error_text_unknown = 0;
+        public static final int autofill = 0x01020048;
         private string() {}
     }
 
@@ -131,6 +132,8 @@ public final class R {
     }
 
     public static final class styleable {
+        public static final int[] Theme = {};
+        public static final int Theme_textAppearanceLarge = 0;
         public static final int ImageView_tintMode = 0;
         public static final int ImageView_tint = 0;
         public static final int[] TextAppearance = {};

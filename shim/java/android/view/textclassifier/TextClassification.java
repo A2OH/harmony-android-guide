@@ -34,7 +34,7 @@ public class TextClassification {
     }
 
     /** Always returns null — no drawable support in shim. */
-    public Object getIcon() { return null; }
+    public android.graphics.drawable.Drawable getIcon() { return null; }
 
     /** Always returns null — no label in shim. */
     public CharSequence getLabel() { return null; }

@@ -61,6 +61,10 @@ public class SimpleMenu implements Menu {
     }
 
     @Override
+    public MenuItem add(int groupId, int itemId, int order, int titleRes) {
+        return add(groupId, itemId, order, (CharSequence) String.valueOf(titleRes));
+    }
+
     public MenuItem add(int titleRes) {
         return add(0, mItems.size(), mItems.size(), "@" + titleRes);
     }
@@ -73,6 +77,9 @@ public class SimpleMenu implements Menu {
 
     @Override
     public SubMenu addSubMenu(int titleRes) { return null; }
+
+    @Override
+    public SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes) { return null; }
 
     @Override
     public MenuItem getItem(int index) {

@@ -155,8 +155,8 @@ public class Context {
     public File getObbDir() { return null; }
     public File[] getObbDirs() { return null; }
     public String getPackageCodePath() { return null; }
-    public PackageManager getPackageManager() { return null; }
-    public String getPackageName() { return null; }
+    public PackageManager getPackageManager() { return new PackageManager(); }
+    public String getPackageName() { return ""; }
     public String getPackageResourcePath() { return null; }
     private Resources mResources;
     public Resources getResources() {

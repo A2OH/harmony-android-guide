@@ -227,6 +227,11 @@ public final class Magnifier {
             return this;
         }
 
+        /** Set whether to clip the magnifier content. */
+        public Builder setClippingEnabled(boolean enabled) {
+            return this;
+        }
+
         /** Builds and returns the configured {@link Magnifier}. */
         public Magnifier build() {
             return new Magnifier(this);
