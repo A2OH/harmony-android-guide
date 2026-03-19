@@ -457,6 +457,9 @@ public final class R {
         // Theme
         public static final int[] Theme = {};
         public static final int Theme_disabledAlpha = 900;
+        public static final int Theme_errorMessageBackground = 901;
+        public static final int Theme_errorMessageAboveBackground = 902;
+        public static final int Theme_textAppearanceLarge = 903;
 
         // ProgressBar
         public static final int[] ProgressBar = {};
@@ -766,6 +769,12 @@ public final class R {
         public static final int MenuItem_actionProviderClass = 20;
         public static final int MenuItem_contentDescription = 21;
         public static final int MenuItem_tooltipText = 22;
+
+        // Magnifier
+        public static final int[] Magnifier = {};
+        public static final int Magnifier_magnifierHorizontalOffset = 0;
+        public static final int Magnifier_magnifierVerticalOffset = 1;
+
     }
 
     public static final class attr {
@@ -843,6 +852,9 @@ public final class R {
         public static final int imageButtonStyle = 440;
         public static final int popupMenuStyle = 441;
         public static final int actionModeShareDrawable = 442;
+        public static final int textSelectHandleWindowStyle = 443;
+        public static final int isLightTheme = 444;
+        public static final int magnifierStyle = 445;
     }
 
     public static final class id {
@@ -906,6 +918,13 @@ public final class R {
         public static final int zoomControls = 338;
         public static final int hint = 339;
         public static final int primary = 340;
+        public static final int insertion_handle = 341;
+        public static final int selection_start_handle = 342;
+        public static final int selection_end_handle = 343;
+        public static final int addToDictionaryButton = 344;
+        public static final int deleteButton = 345;
+        public static final int suggestionContainer = 346;
+        public static final int suggestionWindowContainer = 347;
     }
 
     public static final class layout {
@@ -921,6 +940,9 @@ public final class R {
         public static final int tab_indicator_holo = 353;
         public static final int zoom_controls = 354;
         public static final int zoom_container = 355;
+        public static final int textview_hint = 356;
+        public static final int text_drag_thumbnail = 357;
+        public static final int text_edit_action_popup_text = 358;
     }
 
     public static final class dimen {
@@ -933,6 +955,8 @@ public final class R {
         public static final int search_view_preferred_width = 353;
         public static final int seekbar_thumb_exclusion_max_size = 354;
         public static final int toast_y_offset = 355;
+        public static final int textview_error_popup_default_width = 356;
+        public static final int text_handle_min_size = 357;
     }
 
     public static final class string {
@@ -963,6 +987,10 @@ public final class R {
         public static final int shareactionprovider_share_with = 361;
         public static final int shareactionprovider_share_with_application = 362;
         public static final int activity_chooser_view_see_all = 363;
+        public static final int paste_as_plain_text = 364;
+        public static final int delete = 365;
+        public static final int replace = 366;
+        public static final int autofill = 367;
     }
 
     public static final class drawable {
@@ -980,6 +1008,7 @@ public final class R {
         public static final int clock_hand_hour = 314;
         public static final int clock_hand_minute = 315;
         public static final int ic_contact_picture = 316;
+        public static final int text_edit_side_paste_window = 317;
     }
 
     public static final class color {
@@ -997,6 +1026,7 @@ public final class R {
 
     public static final class bool {
         public static final int config_useDefaultFocusHighlight = 500;
+        public static final int config_enableHapticTextHandle = 501;
     }
 
     public static final class integer {

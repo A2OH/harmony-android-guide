@@ -103,6 +103,14 @@ public class Layout {
     public int getEllipsisStart(int line) { return 0; }
     public int getLineVisibleEnd(int line) { return getLineEnd(line); }
     public int getOffsetForHorizontal(int line, float horiz) { return getLineStart(line); }
+    public int getOffsetForHorizontal(int line, float horiz, boolean primary) { return getOffsetForHorizontal(line, horiz); }
+    public boolean isLevelBoundary(int offset) { return false; }
+    public int getLineBottomWithoutSpacing(int line) { return getLineBottom(line); }
+    public long getLineRangeForDraw(Canvas canvas) { return TextUtils.packRangeInLong(0, getLineCount()); }
+    public void drawBackground(Canvas canvas, Path highlight, Paint highlightPaint, int cursorOffsetVertical, int firstLine, int lastLine) {}
+    public void drawText(Canvas canvas, int firstLine, int lastLine) {}
+    public boolean shouldClampCursor(int line) { return true; }
+    public int getRunRange(int offset) { return -1; }  // returns packed direction run range
     public int getOffsetToLeftOf(int offset) { return Math.max(0, offset - 1); }
     public int getOffsetToRightOf(int offset) { return offset + 1; }
     public float getLineLeft(int line) { return 0; }

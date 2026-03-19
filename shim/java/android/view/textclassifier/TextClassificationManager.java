@@ -26,4 +26,14 @@ public class TextClassificationManager {
     public TextClassifier createTextClassificationSession(Object context, TextClassifier classifier) {
         return classifier != null ? classifier : this.classifier;
     }
+
+    /** Get text classification settings for the given context. */
+    public static TextClassificationConstants getSettings(android.content.Context context) {
+        return new TextClassificationConstants();
+    }
+
+    /** Settings stub. */
+    public static class TextClassificationConstants {
+        public boolean isSmartTextShareEnabled() { return false; }
+    }
 }

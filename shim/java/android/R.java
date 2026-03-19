@@ -120,6 +120,8 @@ public final class R {
         public static final int Animation_DropDownDown = 0;
         public static final int Animation_DropDownUp = 0;
         public static final int Animation_PopupWindow = 0;
+        public static final int ThemeOverlay_Material_Dark = 0x01030300;
+        public static final int ThemeOverlay_Material_Light = 0x01030301;
         private style() {}
     }
 

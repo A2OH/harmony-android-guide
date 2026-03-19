@@ -18,6 +18,24 @@ public class TextAppearanceSpan {
     private final Object mTextColor;
     private final Object mLinkColor;
 
+    /** Context + style resource constructor. */
+    public TextAppearanceSpan(android.content.Context context, int appearance) {
+        mFamily = null;
+        mStyle = 0;
+        mTextSize = -1;
+        mTextColor = null;
+        mLinkColor = null;
+    }
+
+    /** Context + style resource + colorList constructor. */
+    public TextAppearanceSpan(android.content.Context context, int appearance, int colorList) {
+        mFamily = null;
+        mStyle = 0;
+        mTextSize = -1;
+        mTextColor = null;
+        mLinkColor = null;
+    }
+
     /**
      * @param family    font family name (e.g. "sans-serif"), or null
      * @param style     Typeface style flags (e.g. Typeface.BOLD)

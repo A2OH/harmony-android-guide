@@ -4,8 +4,8 @@
 
 This project runs **unmodified Android APKs on OpenHarmony** using:
 1. **Dalvik VM** -- KitKat-era VM ported to 64-bit (x86_64, OHOS aarch64, OHOS ARM32)
-2. **AOSP Framework** -- 89,000+ lines of unmodified AOSP code across 24 files (View, ViewGroup, TextView, LinearLayout, ListView, GridView, Spinner, etc.)
-3. **Stub Layer** -- ~140 minimal stub files for system service dependencies (ViewRootImpl, AccessibilityManager, etc.)
+2. **AOSP Framework** -- 140,000+ lines of unmodified AOSP code across 94+ files (View, ViewGroup, TextView, LinearLayout, ListView, GridView, Spinner, ScrollView, ProgressBar, SearchView, Toolbar, etc.)
+3. **Stub Layer** -- ~200 minimal stub files for system service dependencies (ViewRootImpl, AccessibilityManager, Editor deps, etc.)
 4. **OHBridge** -- JNI bridge (169 methods) routing Android API calls to OHOS native APIs
 5. **MiniServer** -- Lightweight replacement for Android SystemServer (6 managers, ~2000 lines)
 
@@ -19,7 +19,7 @@ Copy ENTIRE AOSP .java files unmodified. Never cherry-pick methods or modify AOS
 
 - Source: `/home/dspfac/aosp-android-11/frameworks/base/core/java/android/`
 - Target: `shim/java/android/` (same package path)
-- Currently: 89,000+ lines across 24 AOSP files (View, ViewGroup, TextView, AbsListView, ListView, GridView, Spinner, etc.)
+- Currently: 140,000+ lines across 94+ AOSP files (View, ViewGroup, TextView, AbsListView, ListView, GridView, Spinner, etc.)
 - When AOSP code references missing classes, create stub files that compile but return defaults
 - Use `scripts/aosp-stub-gen.py` to auto-generate stubs from compile errors
 - Fix compile errors in TEST code or STUB code, NEVER in AOSP code

@@ -23,4 +23,5 @@ public class SuggestionSpan extends CharacterStyle implements ParcelableSpan {
     public void setFlags(int p0) {}
     public void updateDrawState(TextPaint p0) {}
     public void writeToParcel(Parcel p0, int p1) {}
+    public int getUnderlineColor() { return 0; }
 }

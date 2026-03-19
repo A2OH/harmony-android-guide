@@ -34,6 +34,7 @@ public class MenuBuilder implements android.view.Menu {
     public android.view.SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) { return null; }
     public android.view.SubMenu addSubMenu(CharSequence title) { return null; }
     public android.view.SubMenu addSubMenu(int titleRes) { return null; }
+    public android.view.SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes) { return null; }
     public void removeGroup(int groupId) {}
     public void setGroupEnabled(int group, boolean enabled) {}
     public void setGroupVisible(int group, boolean visible) {}

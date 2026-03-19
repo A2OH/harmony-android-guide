@@ -421,6 +421,21 @@ public class TextUtils {
         return s.subSequence(0, maxLength);
     }
 
+    /** Pack two int values into a long. */
+    public static long packRangeInLong(int start, int end) {
+        return (((long) start) << 32) | (end & 0xFFFFFFFFL);
+    }
+
+    /** Unpack the start value from a packed long. */
+    public static int unpackRangeStartFromLong(long range) {
+        return (int) (range >>> 32);
+    }
+
+    /** Unpack the end value from a packed long. */
+    public static int unpackRangeEndFromLong(long range) {
+        return (int) (range & 0xFFFFFFFFL);
+    }
+
     public static boolean hasStyleSpan(Spanned spanned) {
         if (spanned == null) return false;
         Object[] spans = spanned.getSpans(0, spanned.length(), Object.class);

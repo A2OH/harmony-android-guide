@@ -240,4 +240,7 @@ public class SpannableStringBuilder implements Editable, CharSequence {
         if (source instanceof SpannableStringBuilder) return (SpannableStringBuilder) source;
         return new SpannableStringBuilder(source);
     }
+
+    /** Returns the current depth of text watcher callbacks. */
+    public int getTextWatcherDepth() { return 0; }
 }

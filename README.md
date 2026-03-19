@@ -4,7 +4,7 @@
 
 [![Tests](https://img.shields.io/badge/tests-2%2C476_pass-brightgreen)]()
 [![Shim Classes](https://img.shields.io/badge/shim_classes-2%2C056-blue)]()
-[![AOSP Lines](https://img.shields.io/badge/AOSP_framework-89%2C000%2B_lines-orange)]()
+[![AOSP Lines](https://img.shields.io/badge/AOSP_framework-140%2C000%2B_lines-orange)]()
 [![Architecture](https://img.shields.io/badge/approach-engine_%7E15_bridges-purple)]()
 [![License](https://img.shields.io/badge/license-Apache_2.0-blue)]()
 
@@ -84,7 +84,7 @@ This is structurally identical to how Flutter runs on OpenHarmony: Dart VM execu
 | Dalvik VM (x86_64) | **Working** | DEX execution, GC, multi-class loading |
 | Dalvik VM (OHOS ARM32) | **Working** | Static binary, Hello World + Activity lifecycle on QEMU |
 | Dalvik VM (OHOS aarch64) | **Working** | Static binary, Hello World via QEMU user-mode |
-| Android Framework (AOSP) | **89,000+ lines** | 24 files: View, ViewGroup, TextView, LinearLayout, RelativeLayout, FrameLayout, ListView, GridView, Spinner, etc. -- ALL unmodified |
+| Android Framework (AOSP) | **140,000+ lines** | 94+ files: View, ViewGroup, TextView, LinearLayout, RelativeLayout, FrameLayout, ListView, GridView, Spinner, etc. -- ALL unmodified |
 | Java Shim Layer | **2,056 classes** | 126,625 lines of Java covering the android.* API surface |
 | MiniServer | **Working** | Activity lifecycle, service routing, package management |
 | Activity Lifecycle | **Full** | create, start, resume, pause, stop, destroy + result codes |
@@ -114,7 +114,7 @@ Instead of reimplementing Android's layout engine, we compile the **real AOSP so
 | LinearLayout, FrameLayout, RelativeLayout | 4,680 | No |
 | ListView, AbsListView, GridView | 12,840 | No |
 | Spinner, AdapterView, ScrollView, etc. | 18,090+ | No |
-| **Total: 24 files** | **89,000+** | **0 changes** |
+| **Total: 94+ files** | **140,000+** | **0 changes** |
 
 Stubs are trivial (return null/0/false). The AOSP layout math runs identically to real Android.
 
@@ -155,12 +155,12 @@ graph TD
             BOOT["Boot Classpath<br/>(4,000 java.* classes)"]
         end
 
-        subgraph FRAMEWORK["AOSP Framework (89K+ lines, UNMODIFIED)"]
+        subgraph FRAMEWORK["AOSP Framework (140K+ lines, UNMODIFIED)"]
             VIEW["View (30K) + ViewGroup (9K)<br/>AOSP — layout, draw, touch"]
             TEXT["TextView (13K) + StaticLayout<br/>AOSP — word wrap, ellipsize"]
             LAYOUT["LinearLayout, RelativeLayout,<br/>FrameLayout, GridLayout, TableLayout<br/>AOSP — weight, gravity, constraints"]
             LIST["ListView (4K), AbsListView (6K),<br/>GridView, Spinner, ScrollView<br/>AOSP — recycler, headers, scroll"]
-            WIDGET["Button, ImageView, CheckedTextView,<br/>CompoundButton, ProgressBar, etc.<br/>AOSP — 24 files total"]
+            WIDGET["Button, ImageView, CheckedTextView,<br/>CompoundButton, ProgressBar, etc.<br/>AOSP — 94+ files total"]
             DATA["SQLiteDatabase, SharedPreferences,<br/>ContentProvider (shim + MiniServer)"]
             IPC["Activity, Fragment, Intent, Bundle,<br/>Service, BroadcastReceiver (shim)"]
         end

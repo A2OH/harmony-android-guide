@@ -126,6 +126,16 @@ public class DynamicLayout extends Layout {
         }
     }
 
+    public static final int INVALID_BLOCK_INDEX = -1;
+
+    public int[] getBlockEndLines() { return new int[0]; }
+    public int[] getBlockIndices() { return new int[0]; }
+    public int getNumberOfBlocks() { return 0; }
+    public int getBlockIndex(int index) { return INVALID_BLOCK_INDEX; }
+    public android.util.ArraySet<Integer> getBlocksAlwaysNeedToBeRedrawn() { return null; }
+    public int getIndexFirstChangedBlock() { return 0; }
+    public void setIndexFirstChangedBlock(int index) {}
+
     private static int estimateLineCount(CharSequence text, TextPaint paint, int width) {
         if (text == null || text.length() == 0 || width <= 0) return 1;
         float avgCharWidth = (paint != null) ? paint.getTextSize() * 0.6f : 10f;

@@ -73,13 +73,13 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public int flags = 0;
     public int launchMode = 0;
     public int maxRecents = 0;
-    public int parentActivityName = 0;
-    public int permission = 0;
+    public String parentActivityName;
+    public String permission;
     public int persistableMode = 0;
     public int screenOrientation = 0;
     public int softInputMode = 0;
-    public int targetActivity = 0;
-    public int taskAffinity = 0;
+    public String targetActivity;
+    public String taskAffinity;
     public int theme = 0;
     public int uiOptions = 0;
     public WindowLayout windowLayout = null;

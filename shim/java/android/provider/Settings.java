@@ -25,6 +25,7 @@ public class Settings {
     public static final String ACTION_MANAGE_OVERLAY_PERMISSION    = "android.settings.action.MANAGE_OVERLAY_PERMISSION";
     public static final String ACTION_MANAGE_WRITE_SETTINGS        = "android.settings.action.MANAGE_WRITE_SETTINGS";
     public static final String ACTION_NFC_SETTINGS                 = "android.settings.NFC_SETTINGS";
+    public static final String ACTION_USER_DICTIONARY_INSERT        = "com.android.settings.USER_DICTIONARY_INSERT";
 
     public Settings() {}
 

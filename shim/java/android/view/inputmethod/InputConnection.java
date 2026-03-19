@@ -5,6 +5,10 @@ package android.view.inputmethod;
  * Interface for an input method to interact with the application.
  */
 public interface InputConnection {
+    public static final int GET_TEXT_WITH_STYLES = 0x0001;
+    public static final int GET_EXTRACTED_TEXT_MONITOR = 0x0001;
+    public static final int CURSOR_UPDATE_IMMEDIATE = 1 << 0;
+    public static final int CURSOR_UPDATE_MONITOR = 1 << 1;
     CharSequence getTextBeforeCursor(int n, int flags);
     CharSequence getTextAfterCursor(int n, int flags);
     boolean commitText(CharSequence text, int newCursorPosition);

@@ -40,10 +40,25 @@ public class TextClassification {
     public CharSequence getLabel() { return null; }
 
     /** Always returns null — no intent in shim. */
-    public Object getIntent() { return null; }
+    public android.content.Intent getIntent() { return null; }
+
+    /** Always returns null — no click listener in shim. */
+    public android.view.View.OnClickListener getOnClickListener() { return null; }
 
     /** Returns empty actions list. */
     public List<android.app.RemoteAction> getActions() { return new ArrayList<>(); }
+
+    /** Create a PendingIntent from context and intent. */
+    public static android.app.PendingIntent createPendingIntent(
+            android.content.Context context, android.content.Intent intent, int requestCode) {
+        return android.app.PendingIntent.getActivity(context, requestCode, intent, 0);
+    }
+
+    /** Create an OnClickListener that fires the given PendingIntent. */
+    public static android.view.View.OnClickListener createIntentOnClickListener(
+            android.app.PendingIntent pendingIntent) {
+        return null;
+    }
 
     /** Request class for text classification. */
     public static class Request {

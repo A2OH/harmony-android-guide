@@ -28,7 +28,7 @@ public class RemoteAction {
     }
 
     /** Returns null — Icon not yet bridged to OH. */
-    public Object getIcon() { return null; }
+    public android.graphics.drawable.Icon getIcon() { return null; }
 
     public CharSequence getTitle() { return mTitle; }
 

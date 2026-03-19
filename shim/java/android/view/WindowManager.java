@@ -73,6 +73,9 @@ public interface WindowManager extends ViewManager {
         public static final int PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME = 0x00010000;
         public static final int PRIVATE_FLAG_WILL_NOT_REPLACE_ON_RELAUNCH = 0x00008000;
         public static final int TYPE_APPLICATION_SUB_PANEL = 1002;
+        public static final int TYPE_APPLICATION_ABOVE_SUB_PANEL = 1005;
+        public static final int FIRST_SUB_WINDOW = 1000;
+        public static final int LAST_SUB_WINDOW = 1999;
 
         /** Annotation stub. */
         @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)

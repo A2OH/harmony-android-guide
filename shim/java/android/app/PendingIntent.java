@@ -61,6 +61,11 @@ public class PendingIntent implements android.os.Parcelable {
         // stub — no-op in shim layer
     }
 
+    public void send(android.content.Context context, int code, android.content.Intent intent)
+            throws CanceledException {
+        // stub — no-op in shim layer
+    }
+
     public static class CanceledException extends Exception {
         public CanceledException() { super(); }
         public CanceledException(String message) { super(message); }

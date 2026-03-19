@@ -206,6 +206,9 @@ public class PackageManager {
     public void verifyPendingInstall(Object p0, Object p1) {}
     public int checkPermission(String permission, String packageName) { return PERMISSION_GRANTED; }
     public ResolveInfo resolveActivity(android.content.Intent intent, int flags) { return null; }
+    public java.util.List<ResolveInfo> queryIntentActivities(android.content.Intent intent, int flags) {
+        return new java.util.ArrayList<ResolveInfo>();
+    }
 
     public static class NameNotFoundException extends Exception {
         public NameNotFoundException() { super(); }

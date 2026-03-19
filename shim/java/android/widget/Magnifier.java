@@ -207,10 +207,44 @@ public final class Magnifier {
             return this;
         }
 
+        /** Set source bounds with left, top, right, bottom. */
+        public Builder setSourceBounds(int left, int top, int right, int bottom) {
+            return this;
+        }
+
+        /** Set fish-eye style magnifier. */
+        public Builder setFishEyeStyle() {
+            return this;
+        }
+
+        /** Set the source size. */
+        public Builder setSourceSize(int width, int height) {
+            return this;
+        }
+
+        /** Set default source-to-magnifier offset. */
+        public Builder setDefaultSourceToMagnifierOffset(int offsetX, int offsetY) {
+            return this;
+        }
+
         /** Builds and returns the configured {@link Magnifier}. */
         public Magnifier build() {
             return new Magnifier(this);
         }
+    }
+
+    /** Set the horizontal bounds of the source area. */
+    public void setSourceHorizontalBounds(int left, int right) {}
+
+    /** Update source positioning factors. */
+    public void updateSourceFactors(int halfSourceHeight, float zoom) {}
+
+    /** Get current position of the magnifier. */
+    public android.graphics.Point getPosition() { return new android.graphics.Point(0, 0); }
+
+    /** Create a builder with old-style magnifier defaults. */
+    public static Builder createBuilderWithOldMagnifierDefaults(View view) {
+        return new Builder(view);
     }
 
     // Public constants mirrored from Builder for callers that reference them

@@ -6,7 +6,7 @@ public class ComponentInfo extends PackageItemInfo {
     public int descriptionRes = 0;
     public int directBootAware = 0;
     public int enabled = 0;
-    public int exported = 0;
+    public boolean exported = false;
     public int processName = 0;
     public int splitName = 0;
 

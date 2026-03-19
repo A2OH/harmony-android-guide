@@ -67,8 +67,14 @@ public interface Menu {
     /** Close the menu. */
     void close();
 
+    /** Add a menu item with group, id, order and string resource title. */
+    MenuItem add(int groupId, int itemId, int order, int titleRes);
+
     /** Add a menu item with a string resource title. */
     MenuItem add(int titleRes);
+
+    /** Add a sub-menu with group, id, order and string resource title. */
+    SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes);
 
     /** Check if there are visible items. */
     boolean hasVisibleItems();

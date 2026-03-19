@@ -4,6 +4,9 @@ import android.widget.TextView;
 /** AOSP compilation stub. */
 public class EditableInputConnection implements InputConnection {
     public EditableInputConnection(TextView textView) {}
+
+    public static int getComposingSpanStart(android.text.Spannable sp) { return -1; }
+    public static int getComposingSpanEnd(android.text.Spannable sp) { return -1; }
     public CharSequence getTextBeforeCursor(int n, int flags) { return ""; }
     public CharSequence getTextAfterCursor(int n, int flags) { return ""; }
     public boolean commitText(CharSequence text, int newCursorPosition) { return false; }

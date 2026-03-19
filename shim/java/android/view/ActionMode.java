@@ -9,6 +9,7 @@ public class ActionMode {
 
     public static final int TYPE_PRIMARY = 0;
     public static final int TYPE_FLOATING = 1;
+    public static final int DEFAULT_HIDE_DURATION = 2000;
 
     private Object mTag;
     private boolean mTitleOptionalHint;
@@ -37,10 +38,16 @@ public class ActionMode {
     /** Finish and close this action mode. */
     public void finish() {}
 
+    /** Hide the action mode view for the given duration. */
+    public void hide(long duration) {}
+
     /** Invalidate the action mode and refresh the menu/action views. */
     public void invalidate() {
         // no-op stub
     }
+
+    /** Invalidate the content rect for the action mode. */
+    public void invalidateContentRect() {}
 
     /** Set a custom view for the action mode. */
     public void setCustomView(View view) {}
@@ -91,4 +98,13 @@ public class ActionMode {
     public int getType() { return TYPE_PRIMARY; }
     public void setType(int type) {}
     public boolean isTitleOptional() { return false; }
+
+    /** Callback2 extends Callback with content rect support. */
+    public static abstract class Callback2 implements Callback {
+        public void onGetContentRect(ActionMode mode, View view, android.graphics.Rect outRect) {
+            if (outRect != null) {
+                outRect.set(0, 0, view != null ? view.getWidth() : 0, view != null ? view.getHeight() : 0);
+            }
+        }
+    }
 }

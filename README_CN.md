@@ -4,7 +4,7 @@
 
 [![Tests](https://img.shields.io/badge/tests-2%2C476_pass-brightgreen)]()
 [![Shim Classes](https://img.shields.io/badge/shim_classes-2%2C056-blue)]()
-[![AOSP Lines](https://img.shields.io/badge/AOSP_framework-89%2C000%2B_lines-orange)]()
+[![AOSP Lines](https://img.shields.io/badge/AOSP_framework-140%2C000%2B_lines-orange)]()
 [![Architecture](https://img.shields.io/badge/approach-engine_%7E15_bridges-purple)]()
 [![License](https://img.shields.io/badge/license-Apache_2.0-blue)]()
 
@@ -84,7 +84,7 @@ graph LR
 | Dalvik VM (x86_64) | **可用** | DEX 执行、GC、多类加载 |
 | Dalvik VM (OHOS ARM32) | **可用** | 静态二进制，Hello World + Activity 生命周期（QEMU 测试） |
 | Dalvik VM (OHOS aarch64) | **可用** | 静态二进制，Hello World（QEMU user-mode） |
-| Android Framework (AOSP) | **89,000+ 行** | 24个文件：View, ViewGroup, TextView, LinearLayout, RelativeLayout, FrameLayout, ListView, GridView, Spinner等——全部未修改 |
+| Android Framework (AOSP) | **140,000+ 行** | 94+个文件：View, ViewGroup, TextView, LinearLayout, RelativeLayout, FrameLayout, ListView, GridView, Spinner等——全部未修改 |
 | Java Shim Layer | **2,056 个类** | 126,625 行 Java 代码，覆盖 android.* API 表面 |
 | MiniServer | **可用** | Activity 生命周期、Service 路由、Package 管理 |
 | Activity Lifecycle | **完整** | create, start, resume, pause, stop, destroy + result codes |
@@ -114,7 +114,7 @@ graph LR
 | LinearLayout, FrameLayout, RelativeLayout | 4,680 | 否 |
 | ListView, AbsListView, GridView | 12,840 | 否 |
 | Spinner, AdapterView, ScrollView等 | 18,090+ | 否 |
-| **合计：24个文件** | **89,000+** | **0处修改** |
+| **合计：94+个文件** | **140,000+** | **0处修改** |
 
 桩代码极简（return null/0/false）。AOSP布局计算逻辑与真实Android完全一致。
 

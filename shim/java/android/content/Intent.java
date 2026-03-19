@@ -67,6 +67,7 @@ public class Intent implements Cloneable, Parcelable {
     public static final String EXTRA_STREAM = "android.intent.extra.STREAM";
     public static final String EXTRA_INTENT = "android.intent.extra.INTENT";
     public static final String EXTRA_TITLE = "android.intent.extra.TITLE";
+    public static final String ACTION_PROCESS_TEXT = "android.intent.action.PROCESS_TEXT";
     public static final String EXTRA_PROCESS_TEXT = "android.intent.extra.PROCESS_TEXT";
     public static final String EXTRA_PROCESS_TEXT_READONLY = "android.intent.extra.PROCESS_TEXT_READONLY";
 

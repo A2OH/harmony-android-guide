@@ -6,8 +6,7 @@ import android.os.Parcelable;
 import android.util.Printer;
 
 public class ResolveInfo implements Parcelable {
-    // Original int stub fields (kept for binary compat)
-    public int activityInfo = 0;
+    public ActivityInfo activityInfo = new ActivityInfo();
     public int filter = 0;
     public int icon = 0;
     public int isDefault = 0;

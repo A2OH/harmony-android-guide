@@ -52,6 +52,18 @@ public class InputMethodManager {
         // no-op
     }
 
+    public boolean showSoftInput(View view, int flags, android.os.ResultReceiver resultReceiver) {
+        active = true;
+        return true;
+    }
+
+    public void updateSelection(View view, int selStart, int selEnd, int candStart, int candEnd) {}
+    public void updateSelection(android.widget.TextView view, int selStart, int selEnd, int candStart, int candEnd) {}
+    public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {}
+    public void updateCursorAnchorInfo(android.widget.TextView view, CursorAnchorInfo cursorAnchorInfo) {}
+    public boolean isFullscreenMode() { return false; }
+    public boolean isCursorAnchorInfoEnabled() { return false; }
+
     public void displayCompletions(View view, CompletionInfo[] completions) {}
     public void updateExtractedText(View view, int token, ExtractedText text) {}
 }

@@ -61,6 +61,13 @@ public class CursorAnchorInfo {
 
         public Builder() {}
 
+        public Builder reset() {
+            mSelectionStart = 0;
+            mSelectionEnd = 0;
+            mComposingTextStart = -1;
+            return this;
+        }
+
         public Builder setSelectionRange(int newStart, int newEnd) {
             mSelectionStart = newStart;
             mSelectionEnd = newEnd;
