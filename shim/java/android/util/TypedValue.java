@@ -176,6 +176,40 @@ public class TypedValue {
         return result;
     }
 
+    /**
+     * Converts a complex data integer to a fraction value.
+     */
+    public static float complexToFraction(int data, float base, float pbase) {
+        int unit = data & 0xF;
+        float fval = complexToFloat(data);
+        switch (unit) {
+            case COMPLEX_UNIT_FRACTION:        return fval * base;
+            case COMPLEX_UNIT_FRACTION_PARENT: return fval * pbase;
+            default:                           return fval;
+        }
+    }
+
+    /**
+     * Converts a complex data integer to a dimension pixel value.
+     */
+    public static float complexToDimension(int data, DisplayMetrics metrics) {
+        int unit = data & 0xF;
+        float fval = complexToFloat(data);
+        return applyDimension(unit, fval, metrics);
+    }
+
+    /**
+     * Converts a complex data integer to a dimension pixel size (rounded).
+     */
+    public static int complexToDimensionPixelSize(int data, DisplayMetrics metrics) {
+        float f = complexToDimension(data, metrics);
+        int res = (int) (f + 0.5f);
+        if (res != 0) return res;
+        if (f == 0) return 0;
+        if (f > 0) return 1;
+        return -1;
+    }
+
     // -----------------------------------------------------------------------
     // Object overrides
     // -----------------------------------------------------------------------

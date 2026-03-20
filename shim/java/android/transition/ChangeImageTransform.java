@@ -10,4 +10,10 @@ import android.widget.ImageView;
 public class ChangeImageTransform extends Transition {
 
     public ChangeImageTransform() {}
+
+    @Override
+    public void captureStartValues(TransitionValues transitionValues) {}
+
+    @Override
+    public void captureEndValues(TransitionValues transitionValues) {}
 }

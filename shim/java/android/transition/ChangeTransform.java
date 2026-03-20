@@ -29,4 +29,10 @@ public class ChangeTransform extends Transition {
     public boolean getReparentWithOverlay() {
         return mReparentWithOverlay;
     }
+
+    @Override
+    public void captureStartValues(TransitionValues transitionValues) {}
+
+    @Override
+    public void captureEndValues(TransitionValues transitionValues) {}
 }

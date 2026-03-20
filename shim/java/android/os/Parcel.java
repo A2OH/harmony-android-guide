@@ -202,4 +202,14 @@ public class Parcel {
 
     public void readList(java.util.List outVal, ClassLoader loader) {}
     public void writeList(java.util.List val) {}
+
+    public CharSequence readCharSequence() { return ""; }
+    public void writeCharSequence(CharSequence val) {}
+
+    @SuppressWarnings("unchecked")
+    public <T> void readTypedList(java.util.List<T> list, Parcelable.Creator<T> c) {}
+    public <T extends Parcelable> void writeTypedList(java.util.List<T> val) {}
+
+    public void writeStrongBinder(IBinder val) {}
+    public IBinder readStrongBinder() { return null; }
 }

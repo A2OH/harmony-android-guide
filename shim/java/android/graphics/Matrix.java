@@ -376,6 +376,14 @@ public class Matrix {
                values[6] + ", " + values[7] + ", " + values[8] + "]";
     }
 
+    public void toShortString(StringBuilder sb) {
+        sb.append(toShortString());
+    }
+
+    public void printShortString(java.io.PrintWriter pw) {
+        pw.print(toShortString());
+    }
+
     public enum ScaleToFit {
         FILL(0),
         START(1),

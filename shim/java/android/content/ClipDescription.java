@@ -9,7 +9,7 @@ import java.util.List;
  *
  * Describes the content on the clipboard: label and MIME types.
  */
-public class ClipDescription {
+public class ClipDescription implements android.os.Parcelable {
     public static final String MIMETYPE_TEXT_PLAIN = "text/plain";
     public static final String MIMETYPE_TEXT_HTML  = "text/html";
 
@@ -54,4 +54,16 @@ public class ClipDescription {
     public String toString() {
         return "ClipDescription{label=" + mLabel + ", mimeTypes=" + mMimeTypes + "}";
     }
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {}
+
+    public static final android.os.Parcelable.Creator<ClipDescription> CREATOR =
+            new android.os.Parcelable.Creator<ClipDescription>() {
+                public ClipDescription createFromParcel(android.os.Parcel in) { return null; }
+                public ClipDescription[] newArray(int size) { return new ClipDescription[size]; }
+            };
 }

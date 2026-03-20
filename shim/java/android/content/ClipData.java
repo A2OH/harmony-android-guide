@@ -134,4 +134,10 @@ public class ClipData implements Parcelable {
     public int describeContents() { return 0; }
     public void writeToParcel(Parcel p0, int p1) {}
     public void prepareToLeaveProcess(boolean leavingPackage) {}
+
+    public static final Parcelable.Creator<ClipData> CREATOR =
+            new Parcelable.Creator<ClipData>() {
+                public ClipData createFromParcel(Parcel in) { return null; }
+                public ClipData[] newArray(int size) { return new ClipData[size]; }
+            };
 }

@@ -2,6 +2,9 @@ package android.graphics;
 
 public class Region {
     public Region() {}
+    public Region(Rect r) {}
+    public Region(Region region) {}
+    public Region(int left, int top, int right, int bottom) {}
 
     public boolean contains(int x, int y) { return false; }
     public int describeContents() { return 0; }

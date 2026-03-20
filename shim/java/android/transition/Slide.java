@@ -27,4 +27,10 @@ public class Slide extends Transition {
     public int getSlideEdge() {
         return mSlideEdge;
     }
+
+    @Override
+    public void captureStartValues(TransitionValues transitionValues) {}
+
+    @Override
+    public void captureEndValues(TransitionValues transitionValues) {}
 }

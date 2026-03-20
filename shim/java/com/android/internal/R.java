@@ -970,6 +970,93 @@ public final class R {
         public static final int Magnifier_magnifierHorizontalOffset = 0;
         public static final int Magnifier_magnifierVerticalOffset = 1;
 
+        // Animation
+        public static final int[] Animation = {};
+        public static final int Animation_duration = 0;
+        public static final int Animation_startOffset = 1;
+        public static final int Animation_fillEnabled = 2;
+        public static final int Animation_fillBefore = 3;
+        public static final int Animation_fillAfter = 4;
+        public static final int Animation_repeatCount = 5;
+        public static final int Animation_repeatMode = 6;
+        public static final int Animation_zAdjustment = 7;
+        public static final int Animation_background = 8;
+        public static final int Animation_detachWallpaper = 9;
+        public static final int Animation_showWallpaper = 10;
+        public static final int Animation_hasRoundedCorners = 11;
+        public static final int Animation_interpolator = 12;
+
+        // AnimationSet
+        public static final int[] AnimationSet = {};
+        public static final int AnimationSet_shareInterpolator = 0;
+        public static final int AnimationSet_duration = 1;
+        public static final int AnimationSet_fillBefore = 2;
+        public static final int AnimationSet_fillAfter = 3;
+        public static final int AnimationSet_repeatMode = 4;
+        public static final int AnimationSet_startOffset = 5;
+
+        // AlphaAnimation
+        public static final int[] AlphaAnimation = {};
+        public static final int AlphaAnimation_fromAlpha = 0;
+        public static final int AlphaAnimation_toAlpha = 1;
+
+        // LayoutAnimation
+        public static final int[] LayoutAnimation = {};
+        public static final int LayoutAnimation_delay = 0;
+        public static final int LayoutAnimation_animationOrder = 1;
+        public static final int LayoutAnimation_animation = 2;
+        public static final int LayoutAnimation_interpolator = 3;
+
+        // TranslateAnimation
+        public static final int[] TranslateAnimation = {};
+        public static final int TranslateAnimation_fromXDelta = 0;
+        public static final int TranslateAnimation_toXDelta = 1;
+        public static final int TranslateAnimation_fromYDelta = 2;
+        public static final int TranslateAnimation_toYDelta = 3;
+
+        // ScaleAnimation
+        public static final int[] ScaleAnimation = {};
+        public static final int ScaleAnimation_fromXScale = 0;
+        public static final int ScaleAnimation_toXScale = 1;
+        public static final int ScaleAnimation_fromYScale = 2;
+        public static final int ScaleAnimation_toYScale = 3;
+        public static final int ScaleAnimation_pivotX = 4;
+        public static final int ScaleAnimation_pivotY = 5;
+
+        // RotateAnimation
+        public static final int[] RotateAnimation = {};
+        public static final int RotateAnimation_fromDegrees = 0;
+        public static final int RotateAnimation_toDegrees = 1;
+        public static final int RotateAnimation_pivotX = 2;
+        public static final int RotateAnimation_pivotY = 3;
+
+        // Transition
+        public static final int[] Transition = {};
+        public static final int Transition_duration = 0;
+        public static final int Transition_startDelay = 1;
+        public static final int Transition_matchOrder = 2;
+
+        // VisibilityTransition
+        public static final int[] VisibilityTransition = {};
+        public static final int VisibilityTransition_transitionVisibilityMode = 0;
+
+        // ChangeBounds
+        public static final int[] ChangeBounds = {};
+        public static final int ChangeBounds_resizeClip = 0;
+
+        // Fade
+        public static final int[] Fade = {};
+        public static final int Fade_fadingMode = 0;
+
+        // TransitionSet
+        public static final int[] TransitionSet = {};
+        public static final int TransitionSet_transitionOrdering = 0;
+
+        // Animator
+        public static final int[] Animator = {};
+        public static final int Animator_interpolator = 0;
+        public static final int Animator_duration = 1;
+
     }
 
     public static final class attr {
@@ -1128,6 +1215,9 @@ public final class R {
         public static final int deleteButton = 345;
         public static final int suggestionContainer = 346;
         public static final int suggestionWindowContainer = 347;
+        public static final int scene_layoutid_cache = 348;
+        public static final int current_scene = 349;
+        public static final int transition_overlay_view_tag = 350;
     }
 
     public static final class layout {

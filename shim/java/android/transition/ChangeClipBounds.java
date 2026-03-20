@@ -8,4 +8,10 @@ package android.transition;
 public class ChangeClipBounds extends Transition {
 
     public ChangeClipBounds() {}
+
+    @Override
+    public void captureStartValues(TransitionValues transitionValues) {}
+
+    @Override
+    public void captureEndValues(TransitionValues transitionValues) {}
 }

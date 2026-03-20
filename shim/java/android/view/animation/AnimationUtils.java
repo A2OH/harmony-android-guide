@@ -24,7 +24,7 @@ public class AnimationUtils {
     public static Animation loadAnimation(Object context, int id) {
         return new Animation() {
             @Override
-            protected void applyTransformation(float interpolatedTime, Object t) {}
+            protected void applyTransformation(float interpolatedTime, Transformation t) {}
         };
     }
 
@@ -32,7 +32,7 @@ public class AnimationUtils {
      * Loads a layout animation controller from a resource id.
      */
     public static LayoutAnimationController loadLayoutAnimation(Object context, int id) {
-        return new LayoutAnimationController();
+        return new LayoutAnimationController(loadAnimation(context, 0));
     }
 
     /**

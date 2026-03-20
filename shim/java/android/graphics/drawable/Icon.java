@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
  * Android-compatible Icon shim. Represents an icon that can be used for notifications
  * and other UI elements. Supports creation from resources, bitmaps, and file paths.
  */
-public class Icon {
+public class Icon implements android.os.Parcelable {
     private static final int TYPE_RESOURCE = 1;
     private static final int TYPE_BITMAP = 2;
     private static final int TYPE_FILE = 3;
@@ -74,4 +74,16 @@ public class Icon {
     public int getType() { return mType; }
     public int getResId() { return mResId; }
     public String getResPackage() { return mResPackage; }
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {}
+
+    public static final android.os.Parcelable.Creator<Icon> CREATOR =
+            new android.os.Parcelable.Creator<Icon>() {
+                public Icon createFromParcel(android.os.Parcel in) { return null; }
+                public Icon[] newArray(int size) { return new Icon[size]; }
+            };
 }
