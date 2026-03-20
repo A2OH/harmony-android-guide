@@ -173,7 +173,7 @@ public class Activity extends Context {
         if (canvasHandle == 0) return;
 
         android.graphics.Canvas canvas = new android.graphics.Canvas(canvasHandle, mSurfaceWidth, mSurfaceHeight);
-        canvas.drawColor(0xFFFFFFFF);
+        canvas.drawColor(DefaultTheme.COLOR_BG); // Holo Light gray #F5F5F5
         decorView.draw(canvas);
 
         com.ohos.shim.bridge.OHBridge.surfaceFlush(mSurfaceCtx);
