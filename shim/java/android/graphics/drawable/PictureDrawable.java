@@ -36,6 +36,12 @@ public class PictureDrawable extends Drawable {
     public void setPicture(Picture picture) { mPicture = picture; }
 
     @Override
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {}
+
+    @Override
+    public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+
+    @Override
     public int getIntrinsicWidth() {
         return mPicture != null ? mPicture.getWidth() : -1;
     }

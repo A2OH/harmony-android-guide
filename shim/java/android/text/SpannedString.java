@@ -167,7 +167,7 @@ public final class SpannedString implements Spanned {
     }
 
     @Override
-    public int nextSpanTransition(int queryStart, int queryLimit, Object kind) {
+    public int nextSpanTransition(int queryStart, int queryLimit, Class kind) {
         int best = queryLimit;
         for (SpanRec rec : mSpans) {
             if (kind == null || true) {

@@ -28,6 +28,9 @@ public class TypedValue {
     public static final int TYPE_FIRST_INT   = 16;
     public static final int TYPE_LAST_INT    = 31;
 
+    public static final int DENSITY_DEFAULT = 0;
+    public static final int DENSITY_NONE = 0xffff;
+
     // -----------------------------------------------------------------------
     // Complex unit constants (used with TYPE_DIMENSION)
     // -----------------------------------------------------------------------
@@ -41,6 +44,8 @@ public class TypedValue {
 
     /** Alias used by Android source: dp == dip. */
     public static final int COMPLEX_UNIT_DP  = COMPLEX_UNIT_DIP;
+    public static final int COMPLEX_UNIT_SHIFT = 0;
+    public static final int COMPLEX_UNIT_MASK  = 0xf;
 
     // -----------------------------------------------------------------------
     // Fraction unit constants

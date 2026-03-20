@@ -94,6 +94,11 @@ public class ColorStateList {
 
     public ColorStateList withAlpha(int alpha) { return this; }
 
+    public boolean hasFocusStateSpecified() { return false; }
+    public boolean canApplyTheme() { return false; }
+    public ColorStateList obtainForTheme(Resources.Theme theme) { return this; }
+    public int getChangingConfigurations() { return 0; }
+
     @Override
     public String toString() {
         return "ColorStateList(defaultColor=0x" + Integer.toHexString(defaultColor) + ")";

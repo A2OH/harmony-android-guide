@@ -3,9 +3,10 @@ package android.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class LruCache {
+@SuppressWarnings("unchecked")
+public class LruCache<K, V> {
 
-    private final LinkedHashMap map;
+    private final LinkedHashMap<K, V> map;
     private int maxSize;
     private int size;
 
@@ -15,24 +16,20 @@ public class LruCache {
     private int hitCount;
     private int missCount;
 
-    public LruCache() {
-        this(16);
-    }
-
     public LruCache(int maxSize) {
         if (maxSize <= 0) {
             throw new IllegalArgumentException("maxSize <= 0");
         }
         this.maxSize = maxSize;
-        this.map = new LinkedHashMap(0, 0.75f, true);
+        this.map = new LinkedHashMap<K, V>(0, 0.75f, true);
     }
 
-    public final Object get(Object key) {
+    public final V get(K key) {
         if (key == null) {
             throw new NullPointerException("key == null");
         }
 
-        Object mapValue;
+        V mapValue;
         synchronized (this) {
             mapValue = map.get(key);
             if (mapValue != null) {
@@ -42,8 +39,7 @@ public class LruCache {
             missCount++;
         }
 
-        // Attempt to create a value
-        Object createdValue = create(key);
+        V createdValue = create(key);
         if (createdValue == null) {
             return null;
         }
@@ -52,7 +48,6 @@ public class LruCache {
             createCount++;
             mapValue = map.put(key, createdValue);
             if (mapValue != null) {
-                // Conflict: put the old value back
                 map.put(key, mapValue);
             } else {
                 size += safeSizeOf(key, createdValue);
@@ -68,12 +63,12 @@ public class LruCache {
         }
     }
 
-    public final Object put(Object key, Object value) {
+    public final V put(K key, V value) {
         if (key == null || value == null) {
             throw new NullPointerException("key == null || value == null");
         }
 
-        Object previous;
+        V previous;
         synchronized (this) {
             putCount++;
             size += safeSizeOf(key, value);
@@ -90,22 +85,10 @@ public class LruCache {
         return previous;
     }
 
-    public void trimToSize(Object maxSizeObj) {
-        int targetSize;
-        if (maxSizeObj instanceof Integer) {
-            targetSize = (Integer) maxSizeObj;
-        } else if (maxSizeObj instanceof Number) {
-            targetSize = ((Number) maxSizeObj).intValue();
-        } else {
-            return;
-        }
-        trimToSize(targetSize);
-    }
-
     public void trimToSize(int targetSize) {
         while (true) {
-            Object key;
-            Object value;
+            K key;
+            V value;
             synchronized (this) {
                 if (size < 0 || (map.isEmpty() && size != 0)) {
                     throw new IllegalStateException(
@@ -116,7 +99,7 @@ public class LruCache {
                     break;
                 }
 
-                Map.Entry toEvict = (Map.Entry) map.entrySet().iterator().next();
+                Map.Entry<K, V> toEvict = map.entrySet().iterator().next();
                 key = toEvict.getKey();
                 value = toEvict.getValue();
                 map.remove(key);
@@ -128,12 +111,12 @@ public class LruCache {
         }
     }
 
-    public final Object remove(Object key) {
+    public final V remove(K key) {
         if (key == null) {
             throw new NullPointerException("key == null");
         }
 
-        Object previous;
+        V previous;
         synchronized (this) {
             previous = map.remove(key);
             if (previous != null) {
@@ -148,21 +131,14 @@ public class LruCache {
         return previous;
     }
 
-    public void entryRemoved(Object evicted, Object key, Object oldValue, Object newValue) {
-        // Overload to accept Object for stub compatibility
-        boolean ev = (evicted instanceof Boolean) ? (Boolean) evicted : false;
-        entryRemoved(ev, key, oldValue, newValue);
+    protected void entryRemoved(boolean evicted, K key, V oldValue, V newValue) {
     }
 
-    protected void entryRemoved(boolean evicted, Object key, Object oldValue, Object newValue) {
-        // Override point — default is no-op
-    }
-
-    public Object create(Object key) {
+    protected V create(K key) {
         return null;
     }
 
-    private int safeSizeOf(Object key, Object value) {
+    private int safeSizeOf(K key, V value) {
         int result = sizeOf(key, value);
         if (result < 0) {
             throw new IllegalStateException("Negative size: " + key + "=" + value);
@@ -170,12 +146,12 @@ public class LruCache {
         return result;
     }
 
-    public int sizeOf(Object key, Object value) {
+    protected int sizeOf(K key, V value) {
         return 1;
     }
 
     public final void evictAll() {
-        trimToSize(-1); // -1 will evict everything
+        trimToSize(-1);
     }
 
     public final synchronized int size() {
@@ -206,21 +182,18 @@ public class LruCache {
         return evictionCount;
     }
 
-    public final synchronized Map snapshot() {
-        return new LinkedHashMap(map);
+    public final synchronized Map<K, V> snapshot() {
+        return new LinkedHashMap<K, V>(map);
     }
 
-    public void resize(Object maxSizeObj) {
-        if (maxSizeObj instanceof Integer) {
-            int newMaxSize = (Integer) maxSizeObj;
-            if (newMaxSize <= 0) {
-                throw new IllegalArgumentException("maxSize <= 0");
-            }
-            synchronized (this) {
-                maxSize = newMaxSize;
-            }
-            trimToSize(newMaxSize);
+    public void resize(int newMaxSize) {
+        if (newMaxSize <= 0) {
+            throw new IllegalArgumentException("maxSize <= 0");
         }
+        synchronized (this) {
+            maxSize = newMaxSize;
+        }
+        trimToSize(newMaxSize);
     }
 
     @Override

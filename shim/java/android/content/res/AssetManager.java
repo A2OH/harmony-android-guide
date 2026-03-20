@@ -41,4 +41,8 @@ public class AssetManager {
     public void close() {
         // no-op — assets stay extracted for app lifetime
     }
+
+    public android.util.SparseArray<String> getAssignedPackageIdentifiers() {
+        return new android.util.SparseArray<String>();
+    }
 }

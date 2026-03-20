@@ -52,5 +52,5 @@ public interface Spanned extends CharSequence {
      * Returns the first offset >= {@code queryStart} where a span of type
      * {@code kind} begins or ends, or {@code queryLimit} if there is none.
      */
-    int nextSpanTransition(int queryStart, int queryLimit, Object kind);
+    int nextSpanTransition(int queryStart, int queryLimit, Class kind);
 }

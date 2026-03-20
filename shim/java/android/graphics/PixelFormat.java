@@ -5,6 +5,10 @@ package android.graphics;
  * and format info queries.
  */
 public class PixelFormat {
+
+    /** @hide */
+    public @interface Opacity {}
+
     public static final int UNKNOWN = 0;
     public static final int TRANSLUCENT = -3;
     public static final int TRANSPARENT = -2;

@@ -38,6 +38,11 @@ public class AdaptiveIconDrawable extends Drawable {
         if (mForeground != null) mForeground.setAlpha(alpha);
     }
 
+    @Override
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {}
+    @Override
+    public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+
     public Drawable getForeground() { return mForeground; }
     public Drawable getBackground() { return mBackground; }
 

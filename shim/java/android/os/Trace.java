@@ -9,6 +9,7 @@ public final class Trace {
     public static final long TRACE_TAG_VIEW = 1L << 3;
     public static final long TRACE_TAG_INPUT = 1L << 2;
     public static final long TRACE_TAG_APP = 1L << 12;
+    public static final long TRACE_TAG_RESOURCES = 1L << 13;
 
     private Trace() {}
 

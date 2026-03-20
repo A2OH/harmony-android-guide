@@ -55,6 +55,10 @@ public class ParcelFileDescriptor implements Closeable {
         return mFd;
     }
 
+    public static ParcelFileDescriptor dup(FileDescriptor fd) throws IOException {
+        return new ParcelFileDescriptor(fd != null ? fd : new FileDescriptor());
+    }
+
     @Override
     public void close() throws IOException {
         mClosed = true;

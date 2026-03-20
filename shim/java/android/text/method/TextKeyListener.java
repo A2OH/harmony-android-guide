@@ -30,6 +30,19 @@ public class TextKeyListener implements KeyListener {
         CHARACTERS
     }
 
+    public static final int META_SHIFT_ON = 1;
+    public static final int META_ALT_ON = 2;
+    public static final int META_SYM_ON = 4;
+    public static final int META_SELECTING = 0x800;
+
+    public static int getMetaState(CharSequence text, int meta) {
+        return 0;
+    }
+
+    public static int getMetaState(CharSequence text) {
+        return 0;
+    }
+
     private static TextKeyListener sInstance;
 
     private final Capitalize capitalize;

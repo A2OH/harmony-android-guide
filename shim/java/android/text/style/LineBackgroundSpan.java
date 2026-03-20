@@ -10,7 +10,7 @@ import android.graphics.Paint;
  * Allows apps that reference this interface to compile against the
  * OpenHarmony shim layer without modification.
  */
-public interface LineBackgroundSpan {
+public interface LineBackgroundSpan extends ParagraphStyle {
 
     /**
      * Draw the background for a line of text.

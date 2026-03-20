@@ -157,4 +157,9 @@ public final class FontsContract {
     public static Typeface fetchFonts(Object context, FontRequest request) {
         return null; // stub
     }
+
+    /** Synchronous font fetch — used by Typeface.java. Returns null (stub). */
+    public static Typeface getFontSync(android.provider.FontRequest request) {
+        return null;
+    }
 }

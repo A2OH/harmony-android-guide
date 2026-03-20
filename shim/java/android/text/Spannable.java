@@ -27,6 +27,11 @@ public interface Spannable extends Spanned {
      */
     void removeSpan(Object what);
 
+    /** Remove span with flags. Default delegates to removeSpan(what). */
+    default void removeSpan(Object what, int flags) {
+        removeSpan(what);
+    }
+
     /** Auto-generated stub. */
     public static class Factory {
         private static final Factory sInstance = new Factory();

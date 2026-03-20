@@ -176,6 +176,11 @@ public class SpannableStringBuilder implements Editable, CharSequence {
         return result.toArray(arr);
     }
 
+    @SuppressWarnings("unchecked")
+    public <Object> Object[] getSpans(int queryStart, int queryEnd, Class<Object> kind, boolean unused) {
+        return getSpans(queryStart, queryEnd, kind);
+    }
+
     @Override
     public int getSpanStart(Object tag) {
         for (SpanRec rec : mSpans) { if (rec.what == tag) return rec.start; }
@@ -195,7 +200,7 @@ public class SpannableStringBuilder implements Editable, CharSequence {
     }
 
     @Override
-    public int nextSpanTransition(int queryStart, int queryLimit, Object kind) {
+    public int nextSpanTransition(int queryStart, int queryLimit, Class kind) {
         int best = queryLimit;
         for (SpanRec rec : mSpans) {
             if (kind == null || true) {

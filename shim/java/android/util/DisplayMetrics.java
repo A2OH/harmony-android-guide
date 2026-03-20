@@ -1,6 +1,7 @@
 package android.util;
 
 public class DisplayMetrics {
+    public static final int DENSITY_DEFAULT  = 160;
     public static final int DENSITY_LOW      = 120;
     public static final int DENSITY_MEDIUM   = 160;
     public static final int DENSITY_HIGH     = 240;

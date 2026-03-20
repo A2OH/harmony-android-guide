@@ -54,6 +54,8 @@ public class Canvas {
 
     public int getWidth()  { return (bitmap != null) ? bitmap.getWidth()  : surfaceWidth; }
     public int getHeight() { return (bitmap != null) ? bitmap.getHeight() : surfaceHeight; }
+    public int getDensity() { return 160; }
+    public void setDensity(int density) { /* no-op */ }
 
     // ── Native handle access ─────────────────────────────────────────────────
 
@@ -141,6 +143,21 @@ public class Canvas {
         if (nativeCanvas != 0 && text != null) {
             OHBridge.canvasDrawText(nativeCanvas, text, x, y, ensureFont(paint), penFor(paint), brushFor(paint));
         }
+    }
+
+    public void drawText(CharSequence text, int start, int end, float x, float y, Paint paint) {
+        if (text == null) return;
+        drawText(text.toString().substring(start, end), x, y, paint);
+    }
+
+    public void drawText(char[] text, int index, int count, float x, float y, Paint paint) {
+        if (text == null) return;
+        drawText(new String(text, index, count), x, y, paint);
+    }
+
+    public void drawText(String text, int start, int end, float x, float y, Paint paint) {
+        if (text == null) return;
+        drawText(text.substring(start, end), x, y, paint);
     }
 
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
@@ -256,6 +273,19 @@ public class Canvas {
 
     public int save(int saveFlags) {
         return save();
+    }
+
+    public int saveLayer(float left, float top, float right, float bottom, Paint paint) {
+        return saveLayerAlpha(left, top, right, bottom, paint != null ? paint.getAlpha() : 255);
+    }
+
+    public int saveLayer(RectF bounds, Paint paint) {
+        if (bounds != null) return saveLayer(bounds.left, bounds.top, bounds.right, bounds.bottom, paint);
+        return saveLayer(0, 0, getWidth(), getHeight(), paint);
+    }
+
+    public int saveLayer(RectF bounds, Paint paint, int saveFlags) {
+        return saveLayer(bounds, paint);
     }
 
     public int saveLayerAlpha(float left, float top, float right, float bottom, int alpha) {

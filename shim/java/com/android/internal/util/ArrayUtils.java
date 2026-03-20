@@ -31,4 +31,25 @@ public class ArrayUtils {
         }
         return false;
     }
+
+    /** Create an int array with at least minLen elements. */
+    public static int[] newUnpaddedIntArray(int minLen) {
+        return new int[minLen];
+    }
+
+    /** Create an array of the given type with at least minLen elements. */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] newUnpaddedArray(Class<T> kind, int minLen) {
+        return (T[]) Array.newInstance(kind, minLen);
+    }
+
+    /** Create a long array with at least minLen elements. */
+    public static long[] newUnpaddedLongArray(int minLen) {
+        return new long[minLen];
+    }
+
+    /** Create a float array with at least minLen elements. */
+    public static float[] newUnpaddedFloatArray(int minLen) {
+        return new float[minLen];
+    }
 }

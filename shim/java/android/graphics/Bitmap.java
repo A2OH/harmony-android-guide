@@ -9,6 +9,8 @@ import com.ohos.shim.bridge.OHBridge;
  */
 public class Bitmap {
 
+    public static final int DENSITY_NONE = 0;
+
     public enum Config {
         ALPHA_8,
         RGB_565,
@@ -107,6 +109,31 @@ public class Bitmap {
     public void setHasAlpha(boolean hasAlpha) { /* no-op */ }
     public boolean hasAlpha() { return true; }
     public int getDensity() { return 160; }
+
+    public byte[] getNinePatchChunk() { return null; }
+    public void getOpticalInsets(Rect outInsets) { if (outInsets != null) outInsets.set(0, 0, 0, 0); }
+
+    public int getScaledWidth(int targetDensity) {
+        int d = getDensity();
+        return d == 0 ? width : width * targetDensity / d;
+    }
+
+    public int getScaledHeight(int targetDensity) {
+        int d = getDensity();
+        return d == 0 ? height : height * targetDensity / d;
+    }
+
+    public int getScaledWidth(Canvas canvas) { return getScaledWidth(canvas.getDensity()); }
+    public int getScaledHeight(Canvas canvas) { return getScaledHeight(canvas.getDensity()); }
+
+    public boolean hasMipMap() { return false; }
+    public void setHasMipMap(boolean hasMipMap) { /* no-op */ }
+    public NinePatch.InsetStruct getNinePatchInsets() { return null; }
+
+    public static int scaleFromDensity(int size, int sourceDensity, int targetDensity) {
+        if (sourceDensity == 0 || targetDensity == 0 || sourceDensity == targetDensity) return size;
+        return (size * targetDensity + (sourceDensity >> 1)) / sourceDensity;
+    }
 
     public Bitmap extractAlpha() {
         return createBitmap(width, height, Config.ALPHA_8);

@@ -1,34 +1,29 @@
 package android.text.style;
 import android.text.Layout;
 import android.text.ParcelableSpan;
-import android.text.Layout;
-import android.text.ParcelableSpan;
-
-import android.text.ParcelableSpan;
 
 /**
  * Android-compatible AlignmentSpan stub.
- * A2OH shim layer — delegates to OpenHarmony at runtime.
  */
 public interface AlignmentSpan {
 
     /**
      * Returns the alignment (Layout.Alignment) for the text.
      */
-    Object getAlignment();
+    Layout.Alignment getAlignment();
 
     /**
      * Standard implementation of AlignmentSpan.
      */
     class Standard implements AlignmentSpan, ParcelableSpan {
-        private final Object mAlignment;
+        private final Layout.Alignment mAlignment;
 
-        public Standard(Object alignment) {
+        public Standard(Layout.Alignment alignment) {
             mAlignment = alignment;
         }
 
         @Override
-        public Object getAlignment() {
+        public Layout.Alignment getAlignment() {
             return mAlignment;
         }
 

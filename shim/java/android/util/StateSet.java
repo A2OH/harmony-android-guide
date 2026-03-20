@@ -126,4 +126,17 @@ public final class StateSet {
         System.arraycopy(states, 0, trimmedStates, 0, newSize);
         return trimmedStates;
     }
+
+    public static boolean containsAttribute(int[][] stateSpecs, int attr) {
+        if (stateSpecs != null) {
+            for (int[] spec : stateSpecs) {
+                if (spec != null) {
+                    for (int state : spec) {
+                        if (state == attr || state == -attr) return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

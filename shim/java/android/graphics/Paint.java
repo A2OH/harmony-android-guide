@@ -18,6 +18,7 @@ public class Paint {
     public static final int DEV_KERN_TEXT_FLAG = 0x100;
     public static final int SUBPIXEL_TEXT_FLAG = 0x80;
     public static final int LINEAR_TEXT_FLAG = 0x40;
+    public static final int DITHER_FLAG = 0x04;
 
     // ── Style ────────────────────────────────────────────────────────────────
 
@@ -224,6 +225,11 @@ public class Paint {
         bounds.bottom = (int) fm.descent;
     }
 
+    public void getTextBounds(CharSequence text, int start, int end, Rect bounds) {
+        if (text == null || bounds == null) { if (bounds != null) bounds.set(0,0,0,0); return; }
+        getTextBounds(text.toString(), start, end, bounds);
+    }
+
     public void getTextBounds(char[] text, int index, int count, Rect bounds) {
         if (bounds == null) return;
         if (text == null || count <= 0) {
@@ -336,7 +342,10 @@ public class Paint {
     public Shader setShader(Shader shader) { return shader; }
     public Shader getShader() { return null; }
     public Object setXfermode(Object xfermode) { return xfermode; }
-    public void setDither(boolean dither) { /* no-op */ }
+    public Xfermode getXfermode() { return null; }
+    public boolean hasShadowLayer() { return false; }
+    public void setDither(boolean dither) { if (dither) flags |= DITHER_FLAG; else flags &= ~DITHER_FLAG; }
+    public boolean isDither() { return (flags & DITHER_FLAG) != 0; }
     public void setTextSkewX(float skewX) { /* no-op */ }
     public float getTextSkewX() { return 0f; }
     public float getTextScaleX() { return 1.0f; }
@@ -400,6 +409,30 @@ public class Paint {
     private BlendMode mBlendMode;
     public void setBlendMode(BlendMode blendMode) { mBlendMode = blendMode; }
     public BlendMode getBlendMode() { return mBlendMode; }
+
+    // ── Hyphenation edit (API 28+) ──
+    public @interface StartHyphenEdit {}
+    public @interface EndHyphenEdit {}
+
+    public static final int START_HYPHEN_EDIT_NO_EDIT = 0;
+    public static final int START_HYPHEN_EDIT_INSERT_HYPHEN = 1;
+    public static final int START_HYPHEN_EDIT_INSERT_ZWJ_AND_HYPHEN = 2;
+
+    public static final int END_HYPHEN_EDIT_NO_EDIT = 0;
+    public static final int END_HYPHEN_EDIT_INSERT_HYPHEN = 1;
+    public static final int END_HYPHEN_EDIT_REPLACE_WITH_HYPHEN = 2;
+    public static final int END_HYPHEN_EDIT_INSERT_ARMENIAN_HYPHEN = 3;
+    public static final int END_HYPHEN_EDIT_INSERT_MAQAF = 4;
+    public static final int END_HYPHEN_EDIT_INSERT_UCAS_HYPHEN = 5;
+    public static final int END_HYPHEN_EDIT_INSERT_ZWJ_AND_HYPHEN = 6;
+
+    private int mStartHyphenEdit;
+    private int mEndHyphenEdit;
+
+    public void setStartHyphenEdit(int startHyphen) { mStartHyphenEdit = startHyphen; }
+    public int getStartHyphenEdit() { return mStartHyphenEdit; }
+    public void setEndHyphenEdit(int endHyphen) { mEndHyphenEdit = endHyphen; }
+    public int getEndHyphenEdit() { return mEndHyphenEdit; }
 
     // ── Object overrides ─────────────────────────────────────────────────────
 

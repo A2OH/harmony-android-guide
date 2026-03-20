@@ -91,5 +91,8 @@ public class AnimatedVectorDrawable extends Drawable {
     public int getAlpha() { return 255; }
 
     @Override
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {}
+
+    @Override
     public int getOpacity() { return -3; /* PixelFormat.TRANSLUCENT */ }
 }

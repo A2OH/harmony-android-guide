@@ -48,6 +48,8 @@ public class Resources {
         public int getExplicitStyle(android.util.AttributeSet set) { return 0; }
         public void applyStyle(int resId, boolean force) {}
         public void setTo(Theme other) {}
+        public TypedArray resolveAttributes(int[] values, int[] attrs) { return new TypedArray(); }
+        public Resources getResources() { return Resources.getSystem(); }
     }
 
     private final DisplayMetrics mDisplayMetrics = new DisplayMetrics();
@@ -333,4 +335,22 @@ public class Resources {
 
     /** Stub for AOSP Display.java compilation. */
     public boolean hasOverrideDisplayAdjustments() { return false; }
+
+    /** Obtain attributes from a set, returning a TypedArray. */
+    public TypedArray obtainAttributes(android.util.AttributeSet set, int[] attrs) {
+        return new TypedArray(this, attrs != null ? new int[attrs.length] : new int[0], attrs != null ? attrs : new int[0], 0);
+    }
+
+    /** Return a DrawableInflater for this Resources. */
+    public android.graphics.drawable.DrawableInflater getDrawableInflater() {
+        return new android.graphics.drawable.DrawableInflater(this, getClass().getClassLoader());
+    }
+
+    public void getValueForDensity(int id, int density, android.util.TypedValue outValue, boolean resolveRefs) {
+        // stub: no-op
+    }
+
+    public java.io.InputStream openRawResource(int id, android.util.TypedValue value) {
+        return null;
+    }
 }

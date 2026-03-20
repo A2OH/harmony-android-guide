@@ -121,4 +121,7 @@ public class AnimatedImageDrawable extends Drawable {
         return "AnimatedImageDrawable(running=" + mRunning
              + ", repeatCount=" + mRepeatCount + ")";
     }
+
+    @Override
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {}
 }

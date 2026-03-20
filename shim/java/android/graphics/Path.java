@@ -100,6 +100,42 @@ public class Path {
         }
     }
 
+    public void addRect(float left, float top, float right, float bottom, Direction dir) {
+        empty = false;
+        if (nativeHandle != 0) OHBridge.pathAddRect(nativeHandle, left, top, right, bottom, dir == Direction.CCW ? 1 : 0);
+    }
+
+    public void addRoundRect(RectF rect, float[] radii, Direction dir) {
+        if (rect != null) {
+            empty = false;
+            // Approximate: draw as rect (rounded corners not supported in stub)
+            addRect(rect, dir);
+        }
+    }
+
+    public void addRoundRect(RectF rect, float rx, float ry, Direction dir) {
+        addRoundRect(rect, new float[]{rx, ry, rx, ry, rx, ry, rx, ry}, dir);
+    }
+
+    public void addRoundRect(float left, float top, float right, float bottom, float[] radii, Direction dir) {
+        addRoundRect(new RectF(left, top, right, bottom), radii, dir);
+    }
+
+    public void arcTo(RectF oval, float startAngle, float sweepAngle, boolean forceMoveTo) {
+        empty = false;
+        // stub: no native arc support, just mark non-empty
+    }
+
+    public void arcTo(RectF oval, float startAngle, float sweepAngle) {
+        arcTo(oval, startAngle, sweepAngle, false);
+    }
+
+    public void addOval(RectF oval, Direction dir) {
+        empty = false;
+        // stub: approximate as rect
+        if (oval != null) addRect(oval, dir);
+    }
+
     public void addCircle(float x, float y, float radius, Direction dir) {
         empty = false;
         if (nativeHandle != 0) OHBridge.pathAddCircle(nativeHandle, x, y, radius, dir == Direction.CCW ? 1 : 0);

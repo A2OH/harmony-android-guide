@@ -26,6 +26,21 @@ public final class R {
         public static final int calendarViewStyle = 0;
         public static final int galleryStyle = 0;
         public static final int videoViewStyle = 0;
+        public static final int drawable = 0;
+        public static final int id = 0;
+        public static final int state_focused = 0;
+        public static final int state_selected = 0;
+        public static final int state_enabled = 0;
+        public static final int state_checked = 0;
+        public static final int state_activated = 0;
+        public static final int state_window_focused = 0;
+        public static final int state_first = 0;
+        public static final int state_middle = 0;
+        public static final int state_single = 0;
+        public static final int state_accelerated = 0;
+        public static final int state_hovered = 0;
+        public static final int state_drag_can_accept = 0;
+        public static final int state_drag_hovered = 0;
         private attr() {}
     }
 

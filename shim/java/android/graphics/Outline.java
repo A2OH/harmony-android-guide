@@ -95,6 +95,11 @@ public class Outline {
         return false;
     }
 
+    public void setPath(Path path) {
+        mIsEmpty = (path == null || path.isEmpty());
+        mCanClip = false;
+    }
+
     public void offset(int dx, int dy) {
         if (mRect != null) {
             mRect.offset(dx, dy);

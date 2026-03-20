@@ -3,6 +3,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Drawable;
 
 public class TypedArray {
+    public TypedArray() {}
+    public TypedArray(Resources res, int[] data, int[] attrs, int len) {}
+
     public String getString(int index) {
         return null;
     }
@@ -111,4 +114,7 @@ public class TypedArray {
     public Resources getResources() { return new Resources(); }
     public int getSourceResourceId(int index, int defValue) { return defValue; }
     public boolean getValue(int index, android.util.TypedValue outValue) { return false; }
+    public String getPositionDescription() { return ""; }
+    public int[] extractThemeAttrs() { return null; }
+    public String getNonResourceString(int index) { return null; }
 }

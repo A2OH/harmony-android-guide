@@ -113,6 +113,14 @@ public final class ImageDecoder {
         return new Source() {};
     }
 
+    public static Source createSource(android.content.res.Resources res, InputStream is, int density) {
+        return new Source() {};
+    }
+
+    public static Source createSource(android.content.res.Resources res, InputStream is) {
+        return new Source() {};
+    }
+
     // ALLOCATOR constants already defined above
 
     // ------------------------------------------------------------------ //
@@ -175,6 +183,8 @@ public final class ImageDecoder {
 
     public void setMutableRequired(boolean mutable) {}
     public void setAllocator(int allocator) {}
+    public void setOnPartialImageListener(OnPartialImageListener listener) {}
+    public void setOutPaddingRect(android.graphics.Rect padding) {}
 
     public static final int ALLOCATOR_DEFAULT  = 0;
     public static final int ALLOCATOR_SOFTWARE = 1;

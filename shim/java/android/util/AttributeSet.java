@@ -52,4 +52,10 @@ public interface AttributeSet {
      * Returns the value of the {@code class} attribute, or null if absent.
      */
     String getClassAttribute();
+
+    /** Return the resource ID of the attribute name at the given index. */
+    default int getAttributeNameResource(int index) { return 0; }
+
+    /** Return a boolean value of the attribute at the given index. */
+    default boolean getAttributeBooleanValue(int index, boolean defaultValue) { return defaultValue; }
 }

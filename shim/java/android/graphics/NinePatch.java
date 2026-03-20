@@ -59,4 +59,30 @@ public class NinePatch {
     public static boolean isNinePatchChunk(byte[] chunk) {
         return chunk != null && chunk.length >= 32;
     }
+
+    public int getDensity() { return mBitmap != null ? mBitmap.getDensity() : 160; }
+
+    public static class InsetStruct {
+        public final Rect opticalRect;
+        public final Rect contentInsets;
+        public final Rect outlineRect;
+        public final float outlineRadius;
+        public final float outlineAlpha;
+
+        public InsetStruct(int ol, int ot, int or, int ob, int cl, int ct, int cr, int cb,
+                int outlineL, int outlineT, int outlineR, int outlineB, float outlineRad,
+                int layoutBoundsL, int layoutBoundsT, float decodeScale) {
+            opticalRect = new Rect(ol, ot, or, ob);
+            contentInsets = new Rect(cl, ct, cr, cb);
+            outlineRect = new Rect(outlineL, outlineT, outlineR, outlineB);
+            outlineRadius = outlineRad;
+            outlineAlpha = 1.0f;
+        }
+
+        public static Rect scaleInsets(int l, int t, int r, int b, float scale) {
+            return new Rect(
+                (int)(l * scale), (int)(t * scale),
+                (int)(r * scale), (int)(b * scale));
+        }
+    }
 }

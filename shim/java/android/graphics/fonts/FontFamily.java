@@ -26,6 +26,11 @@ public final class FontFamily {
         return mFonts.get(index);
     }
 
+    /** Native pointer for Typeface creation. Returns 0 (no native font). */
+    public long getNativePtr() { return 0; }
+
+    public long mNativePtr;
+
     // ------------------------------------------------------------------ //
     // Inner class: Builder
     // ------------------------------------------------------------------ //
@@ -34,6 +39,10 @@ public final class FontFamily {
         final List<Font> mFonts = new ArrayList<>();
 
         public Builder() {}
+
+        public Builder(Font font) {
+            if (font != null) mFonts.add(font);
+        }
 
         /**
          * Adds a font to the family being built.

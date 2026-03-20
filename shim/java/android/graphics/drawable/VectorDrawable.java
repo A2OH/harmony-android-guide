@@ -55,6 +55,12 @@ public class VectorDrawable extends Drawable {
     // ── Object overrides ─────────────────────────────────────────────────────
 
     @Override
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {}
+
+    @Override
+    public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+
+    @Override
     public String toString() {
         return "VectorDrawable(size=" + intrinsicWidth + "x" + intrinsicHeight + ")";
     }

@@ -214,10 +214,46 @@ public class PrecomputedText implements Spannable {
     }
 
     @Override
-    public int nextSpanTransition(int queryStart, int queryLimit, Object kind) {
+    public int nextSpanTransition(int queryStart, int queryLimit, Class kind) {
         if (mText instanceof Spanned) {
             return ((Spanned) mText).nextSpanTransition(queryStart, queryLimit, kind);
         }
         return queryLimit;
+    }
+
+    // ---- ParagraphInfo ----
+    public static class ParagraphInfo {
+        public final int paragraphEnd;
+        public final MeasuredParagraph measured;
+
+        public ParagraphInfo(int end, MeasuredParagraph mp) {
+            paragraphEnd = end;
+            measured = mp;
+        }
+    }
+
+    public ParagraphInfo[] getParagraphInfo() {
+        ParagraphInfo[] info = new ParagraphInfo[1];
+        info[0] = new ParagraphInfo(mText.length(),
+            MeasuredParagraph.buildForBidi(mText, 0, mText.length(), null, null));
+        return info;
+    }
+
+    public @Params.CheckResultUsableResult int checkResultUsable(int start, int end,
+            TextDirectionHeuristic textDir, TextPaint paint, int breakStrategy,
+            int hyphenationFrequency) {
+        return Params.USABLE;
+    }
+
+    public static ParagraphInfo[] createMeasuredParagraphs(CharSequence text, Params params,
+            int start, int end, boolean computeLayout) {
+        ParagraphInfo[] info = new ParagraphInfo[1];
+        info[0] = new ParagraphInfo(end,
+            MeasuredParagraph.buildForBidi(text, start, end, null, null));
+        return info;
+    }
+
+    public void getBounds(int start, int end, android.graphics.Rect bounds) {
+        if (bounds != null) bounds.set(0, 0, 0, 0);
     }
 }

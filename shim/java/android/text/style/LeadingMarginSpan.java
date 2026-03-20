@@ -46,6 +46,14 @@ public interface LeadingMarginSpan {
      * Default implementation of {@link LeadingMarginSpan} that stores fixed
      * first-line and rest-of-paragraph indent widths.
      */
+    /**
+     * Extension of LeadingMarginSpan that specifies the number of lines
+     * to apply the first-line margin to.
+     */
+    interface LeadingMarginSpan2 extends LeadingMarginSpan {
+        int getLeadingMarginLineCount();
+    }
+
     class Standard implements LeadingMarginSpan {
 
         private final int mFirst;

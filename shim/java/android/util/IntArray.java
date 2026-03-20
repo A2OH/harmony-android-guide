@@ -21,4 +21,5 @@ public class IntArray {
     public void clear() { mSize = 0; }
     public int binarySearch(int value) { return java.util.Arrays.binarySearch(mValues, 0, mSize, value); }
     public int[] toArray() { return java.util.Arrays.copyOf(mValues, mSize); }
+    public int[] getRawArray() { return mValues; }
 }

@@ -15,8 +15,20 @@ public final class FontStyle {
     public static final int FONT_WEIGHT_SEMI_BOLD = 0;
     public static final int FONT_WEIGHT_THIN = 0;
 
-    public FontStyle() {}
-    public FontStyle(int p0, int p1) {}
+    private int mWeight;
+    private int mSlant;
 
-    public int getSlant() { return 0; }
+    public FontStyle() { this(400, 0); }
+    public FontStyle(int weight, int slant) { mWeight = weight; mSlant = slant; }
+
+    public int getWeight() { return mWeight; }
+    public int getSlant() { return mSlant; }
+
+    /** Score for how closely this style matches target. Lower is better. */
+    public int getMatchScore(FontStyle target) {
+        if (target == null) return 0;
+        int weightDiff = Math.abs(mWeight - target.mWeight);
+        int slantDiff = (mSlant == target.mSlant) ? 0 : 1000;
+        return weightDiff + slantDiff;
+    }
 }

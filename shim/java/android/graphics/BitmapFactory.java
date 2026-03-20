@@ -39,6 +39,15 @@ public class BitmapFactory {
 
         /** Preferred pixel format for the output bitmap. */
         public Bitmap.Config inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        /** Screen density; used by resource loading. */
+        public int inScreenDensity;
+
+        /** Target density for scaling. */
+        public int inTargetDensity;
+
+        /** Source density. */
+        public int inDensity;
     }
 
     // ── Private constructor — utility class ──────────────────────────────────
@@ -255,5 +264,10 @@ public class BitmapFactory {
 
     public static Bitmap decodeResource(Resources res, int id, Options opts) {
         return null;
+    }
+
+    public static Bitmap decodeResourceStream(Resources res, android.util.TypedValue value,
+            InputStream is, Rect pad, Options opts) {
+        return decodeStream(is, pad, opts);
     }
 }

@@ -349,6 +349,13 @@ public class TextUtils {
     }
 
     /**
+     * Callback for text ellipsization; notifies what range was removed.
+     */
+    public interface EllipsizeCallback {
+        void ellipsized(int start, int end);
+    }
+
+    /**
      * Returns the given text truncated to fit within the given width,
      * with an ellipsis appended in the specified position.
      */
@@ -402,6 +409,16 @@ public class TextUtils {
     public static Object ellipsize(Object p0, Object p1, Object p2, Object p3, Object p4, Object p5) {
         return ellipsize(p0, p1, p2, p3);
     }
+
+    /** 5-arg ellipsize with preserveLength and callback. */
+    public static CharSequence ellipsize(CharSequence text, TextPaint paint,
+            float avail, TruncateAt where, boolean preserveLength, EllipsizeCallback callback) {
+        CharSequence result = ellipsize(text, paint, avail, where);
+        if (callback != null && text != null && result != null && result.length() < text.length()) {
+            callback.ellipsized(result.length(), text.length());
+        }
+        return result;
+    }
     public static Object expandTemplate(Object p0, Object p1) { return null; }
     public static int getCapsMode(Object p0, Object p1, Object p2) { return 0; }
     public static int getLayoutDirectionFromLocale(Object p0) { return 0; }
@@ -436,9 +453,58 @@ public class TextUtils {
         return (int) (range & 0xFFFFFFFFL);
     }
 
+    /** Copy spans from source to destination. */
+    @SuppressWarnings("unchecked")
+    public static void copySpansFrom(Spanned source, int start, int end,
+            Class kind, Spannable dest, int destoff) {
+        if (source == null || dest == null) return;
+        Object[] spans = source.getSpans(start, end, kind);
+        for (Object span : spans) {
+            int st = source.getSpanStart(span);
+            int en = source.getSpanEnd(span);
+            int fl = source.getSpanFlags(span);
+            int newSt = st - start + destoff;
+            int newEn = en - start + destoff;
+            if (newSt < 0) newSt = 0;
+            if (newEn > dest.length()) newEn = dest.length();
+            if (newSt <= newEn) {
+                dest.setSpan(span, newSt, newEn, fl);
+            }
+        }
+    }
+
+    /** Check if char could be RTL. */
+    public static boolean couldAffectRtl(char c) {
+        return (0x0590 <= c && c <= 0x08FF) || c == 0x200F || c == 0x202B
+                || c == 0x202E || c == 0x2067
+                || (0xFB1D <= c && c <= 0xFDFF) || (0xFE70 <= c && c <= 0xFEFF);
+    }
+
     public static boolean hasStyleSpan(Spanned spanned) {
         if (spanned == null) return false;
         Object[] spans = spanned.getSpans(0, spanned.length(), Object.class);
         return spans != null && spans.length > 0;
     }
+
+    /** The Unicode ellipsis character. */
+    public static final String ELLIPSIS_NORMAL = "\u2026";
+    public static final String ELLIPSIS_TWO_DOTS = "\u2025";
+    /** Filler character used in ellipsized text. */
+    public static final char ELLIPSIS_FILLER = '\uFEFF';
+
+    /** Return the ellipsis string for the given truncation mode. */
+    public static String getEllipsisString(TruncateAt method) {
+        return ELLIPSIS_NORMAL;
+    }
+
+    /** Obtain a char[] from a pool. */
+    public static char[] obtain(int len) {
+        return new char[len];
+    }
+
+    /** Return a char[] to the pool. No-op in stub. */
+    public static void recycle(char[] temp) {
+        // no-op
+    }
+
 }

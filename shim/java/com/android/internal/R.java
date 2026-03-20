@@ -8,6 +8,201 @@ package com.android.internal;
 public final class R {
 
     public static final class styleable {
+        // Drawable
+        public static final int[] Drawable = {};
+        public static final int Drawable_visible = 0;
+
+        // BitmapDrawable
+        public static final int[] BitmapDrawable = {};
+        public static final int BitmapDrawable_src = 0;
+        public static final int BitmapDrawable_mipMap = 1;
+        public static final int BitmapDrawable_autoMirrored = 2;
+        public static final int BitmapDrawable_alpha = 3;
+        public static final int BitmapDrawable_tintMode = 4;
+        public static final int BitmapDrawable_tint = 5;
+        public static final int BitmapDrawable_antialias = 6;
+        public static final int BitmapDrawable_filter = 7;
+        public static final int BitmapDrawable_dither = 8;
+        public static final int BitmapDrawable_gravity = 9;
+        public static final int BitmapDrawable_tileModeX = 10;
+        public static final int BitmapDrawable_tileModeY = 11;
+
+        // LayerDrawable
+        public static final int[] LayerDrawable = {};
+        public static final int LayerDrawable_paddingMode = 0;
+        public static final int LayerDrawable_opacity = 1;
+        public static final int LayerDrawable_autoMirrored = 2;
+        public static final int LayerDrawable_paddingStart = 3;
+        public static final int LayerDrawable_paddingEnd = 4;
+        public static final int LayerDrawable_paddingTop = 5;
+        public static final int LayerDrawable_paddingBottom = 6;
+        public static final int[] LayerDrawableItem = {};
+        public static final int LayerDrawableItem_left = 0;
+        public static final int LayerDrawableItem_top = 1;
+        public static final int LayerDrawableItem_right = 2;
+        public static final int LayerDrawableItem_bottom = 3;
+        public static final int LayerDrawableItem_width = 4;
+        public static final int LayerDrawableItem_height = 5;
+        public static final int LayerDrawableItem_gravity = 6;
+        public static final int LayerDrawableItem_drawable = 7;
+        public static final int LayerDrawableItem_id = 8;
+        public static final int LayerDrawableItem_start = 9;
+        public static final int LayerDrawableItem_end = 10;
+        public static final int LayerDrawable_paddingLeft = 11;
+        public static final int LayerDrawable_paddingRight = 12;
+
+        // StateListDrawable
+        public static final int[] StateListDrawable = {};
+        public static final int StateListDrawable_visible = 0;
+        public static final int StateListDrawable_variablePadding = 1;
+        public static final int StateListDrawable_constantSize = 2;
+        public static final int StateListDrawable_enterFadeDuration = 3;
+        public static final int StateListDrawable_exitFadeDuration = 4;
+        public static final int StateListDrawable_dither = 5;
+        public static final int StateListDrawable_autoMirrored = 6;
+        public static final int[] StateListDrawableItem = {};
+        public static final int StateListDrawableItem_drawable = 0;
+
+        // LevelListDrawable
+        public static final int[] LevelListDrawableItem = {};
+        public static final int LevelListDrawableItem_minLevel = 0;
+        public static final int LevelListDrawableItem_maxLevel = 1;
+        public static final int LevelListDrawableItem_drawable = 2;
+
+        // ShapeDrawable
+        public static final int[] ShapeDrawable = {};
+        public static final int ShapeDrawable_color = 0;
+        public static final int ShapeDrawable_width = 1;
+        public static final int ShapeDrawable_height = 2;
+        public static final int ShapeDrawable_dither = 3;
+        public static final int ShapeDrawable_tintMode = 4;
+        public static final int ShapeDrawable_tint = 5;
+        public static final int[] ShapeDrawablePadding = {};
+        public static final int ShapeDrawablePadding_left = 0;
+        public static final int ShapeDrawablePadding_top = 1;
+        public static final int ShapeDrawablePadding_right = 2;
+        public static final int ShapeDrawablePadding_bottom = 3;
+
+        // AnimationDrawable
+        public static final int[] AnimationDrawable = {};
+        public static final int AnimationDrawable_visible = 0;
+        public static final int AnimationDrawable_variablePadding = 1;
+        public static final int AnimationDrawable_oneshot = 2;
+        public static final int[] AnimationDrawableItem = {};
+        public static final int AnimationDrawableItem_duration = 0;
+        public static final int AnimationDrawableItem_drawable = 1;
+
+        // DrawableWrapper (for InsetDrawable, ClipDrawable, etc.)
+        public static final int[] DrawableWrapper = {};
+        public static final int DrawableWrapper_drawable = 0;
+
+        // GradientDrawable
+        public static final int[] GradientDrawable = {};
+        public static final int[] GradientDrawableSize = {};
+        public static final int[] GradientDrawableGradient = {};
+        public static final int[] GradientDrawableSolid = {};
+        public static final int[] GradientDrawableStroke = {};
+        public static final int[] GradientDrawablePadding = {};
+        public static final int[] GradientDrawableCorners = {};
+
+        // TransitionDrawable
+        public static final int[] TransitionDrawable = {};
+        public static final int[] DrawableStates = {};
+
+        // InsetDrawable
+        public static final int[] InsetDrawable = {};
+        public static final int InsetDrawable_drawable = 0;
+        public static final int InsetDrawable_visible = 1;
+        public static final int InsetDrawable_inset = 2;
+        public static final int InsetDrawable_insetLeft = 3;
+        public static final int InsetDrawable_insetRight = 4;
+        public static final int InsetDrawable_insetTop = 5;
+        public static final int InsetDrawable_insetBottom = 6;
+
+        // ClipDrawable
+        public static final int[] ClipDrawable = {};
+        public static final int ClipDrawable_drawable = 0;
+        public static final int ClipDrawable_clipOrientation = 1;
+        public static final int ClipDrawable_gravity = 2;
+
+        // RotateDrawable
+        public static final int[] RotateDrawable = {};
+        public static final int RotateDrawable_drawable = 0;
+
+        // ScaleDrawable
+        public static final int[] ScaleDrawable = {};
+        public static final int ScaleDrawable_drawable = 0;
+
+        // BitmapDrawable extra
+        public static final int BitmapDrawable_tileMode = 12;
+
+        // ColorDrawable
+        public static final int[] ColorDrawable = {};
+        public static final int ColorDrawable_color = 0;
+
+        // GradientDrawable details
+        public static final int GradientDrawable_shape = 0;
+        public static final int GradientDrawable_dither = 1;
+        public static final int GradientDrawable_tintMode = 2;
+        public static final int GradientDrawable_tint = 3;
+        public static final int GradientDrawable_innerRadius = 4;
+        public static final int GradientDrawable_innerRadiusRatio = 5;
+        public static final int GradientDrawable_thickness = 6;
+        public static final int GradientDrawable_thicknessRatio = 7;
+        public static final int GradientDrawable_useLevel = 8;
+        public static final int GradientDrawable_opticalInsetLeft = 9;
+        public static final int GradientDrawable_opticalInsetTop = 10;
+        public static final int GradientDrawable_opticalInsetRight = 11;
+        public static final int GradientDrawable_opticalInsetBottom = 12;
+        public static final int GradientDrawableSize_width = 0;
+        public static final int GradientDrawableSize_height = 1;
+        public static final int GradientDrawableGradient_startColor = 0;
+        public static final int GradientDrawableGradient_endColor = 1;
+        public static final int GradientDrawableGradient_centerColor = 2;
+        public static final int GradientDrawableGradient_centerX = 3;
+        public static final int GradientDrawableGradient_centerY = 4;
+        public static final int GradientDrawableGradient_type = 5;
+        public static final int GradientDrawableGradient_gradientRadius = 6;
+        public static final int GradientDrawableGradient_angle = 7;
+        public static final int GradientDrawableGradient_useLevel = 8;
+        public static final int GradientDrawableSolid_color = 0;
+        public static final int GradientDrawableStroke_width = 0;
+        public static final int GradientDrawableStroke_color = 1;
+        public static final int GradientDrawableStroke_dashWidth = 2;
+        public static final int GradientDrawableStroke_dashGap = 3;
+        public static final int GradientDrawablePadding_left = 0;
+        public static final int GradientDrawablePadding_top = 1;
+        public static final int GradientDrawablePadding_right = 2;
+        public static final int GradientDrawablePadding_bottom = 3;
+        public static final int[] DrawableCorners = {};
+        public static final int DrawableCorners_radius = 0;
+        public static final int DrawableCorners_topLeftRadius = 1;
+        public static final int DrawableCorners_topRightRadius = 2;
+        public static final int DrawableCorners_bottomLeftRadius = 3;
+        public static final int DrawableCorners_bottomRightRadius = 4;
+
+        // NinePatchDrawable
+        public static final int[] NinePatchDrawable = {};
+        public static final int NinePatchDrawable_src = 0;
+        public static final int NinePatchDrawable_dither = 1;
+        public static final int NinePatchDrawable_autoMirrored = 2;
+        public static final int NinePatchDrawable_alpha = 3;
+        public static final int NinePatchDrawable_tintMode = 4;
+        public static final int NinePatchDrawable_tint = 5;
+
+        // RotateDrawable details
+        public static final int RotateDrawable_pivotX = 1;
+        public static final int RotateDrawable_pivotY = 2;
+        public static final int RotateDrawable_fromDegrees = 3;
+        public static final int RotateDrawable_toDegrees = 4;
+
+        // ScaleDrawable details
+        public static final int ScaleDrawable_scaleWidth = 1;
+        public static final int ScaleDrawable_scaleHeight = 2;
+        public static final int ScaleDrawable_scaleGravity = 3;
+        public static final int ScaleDrawable_useIntrinsicSizeAsMinimum = 4;
+        public static final int ScaleDrawable_level = 5;
+
         // View
         public static final int[] View = {};
         public static final int View_background = 1;
@@ -855,6 +1050,14 @@ public final class R {
         public static final int textSelectHandleWindowStyle = 443;
         public static final int isLightTheme = 444;
         public static final int magnifierStyle = 445;
+        public static final int drawable = 446;
+        public static final int id = 447;
+        public static final int state_focused = 448;
+        public static final int state_selected = 449;
+        public static final int state_enabled = 450;
+        public static final int state_activated = 451;
+        public static final int state_window_focused = 452;
+        public static final int state_hovered = 453;
     }
 
     public static final class id {

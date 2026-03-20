@@ -38,7 +38,7 @@ public class LineBreaker {
     public Result computeLineBreaks(Object measuredText,
                                     Object constraints,
                                     int lineNumber) {
-        return null;
+        return new Result();
     }
 
     // ── Result ────────────────────────────────────────────────────────
@@ -63,6 +63,8 @@ public class LineBreaker {
         public boolean hasLineTab(int lineIndex) { return false; }
 
         public int getLineHyphenEdit(int lineIndex) { return 0; }
+        public int getStartLineHyphenEdit(int lineIndex) { return 0; }
+        public int getEndLineHyphenEdit(int lineIndex) { return 0; }
     }
 
     // ── ParagraphConstraints ──────────────────────────────────────────
@@ -96,6 +98,7 @@ public class LineBreaker {
         }
 
         public void setTabStops(float[] tabStops) { mTabStops = tabStops; }
+        public void setTabStops(float[] tabStops, float defaultTab) { mTabStops = tabStops; }
 
         public void setIndent(float firstWidth, int firstWidthLineCount) {
             mFirstWidth = firstWidth;
@@ -128,6 +131,10 @@ public class LineBreaker {
 
         public Builder setJustificationMode(int justificationMode) {
             mJustificationMode = justificationMode;
+            return this;
+        }
+
+        public Builder setIndents(int[] indents) {
             return this;
         }
 

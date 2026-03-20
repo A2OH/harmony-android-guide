@@ -1,8 +1,12 @@
-package com.android.internal.annotations;
-import java.lang.annotation.*;
+package android.annotation;
 
-@Retention(RetentionPolicy.CLASS)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+/**
+ * Stub: VisibleForTesting annotation with visibility levels.
+ */
+@Retention(RetentionPolicy.SOURCE)
 public @interface VisibleForTesting {
     int visibility() default Visibility.PRIVATE;
 
