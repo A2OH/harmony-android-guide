@@ -27,7 +27,7 @@
 
 /* ── Shared framebuffer for output ── */
 static SWBitmap *g_framebuffer = NULL;
-static const char *CANVAS_OUTPUT = "/data/a2oh/canvas_pixels.raw";
+static const char *CANVAS_OUTPUT = "/data/a2oh/canvas_out.bin";
 static const char *FONT_PATH = "/data/a2oh/font.ttf";
 
 static void ensure_framebuffer(int w, int h) {
@@ -209,7 +209,17 @@ JNIEXPORT jlong JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasCreate(JNIEnv*,
     sw_load_font("/system/fonts/DroidSans.ttf");
 
     SWCanvas *c = sw_canvas_create(bmp);
-    canvas_log("canvasCreate bmp=%p %dx%d -> %p\n", bmp, bmp->width, bmp->height, c);
+    /* Test pattern: red bar + white block to verify pixel rendering */
+    if (c && c->bitmap && c->bitmap->pixels) {
+        int w = c->bitmap->width, h = c->bitmap->height;
+        for (int i = 0; i < w * h; i++) c->bitmap->pixels[i] = 0xFFF5F5F5;
+        for (int y = 0; y < 40 && y < h; y++)
+            for (int x = 0; x < w; x++)
+                c->bitmap->pixels[y * w + x] = 0xFFE53935;
+        for (int y = 50; y < 80 && y < h; y++)
+            for (int x = 10; x < 300 && x < w; x++)
+                c->bitmap->pixels[y * w + x] = 0xFFFFFFFF;
+    }
     return (jlong)(uintptr_t)c;
 }
 
@@ -218,13 +228,26 @@ JNIEXPORT void JNICALL Java_com_ohos_shim_bridge_OHBridge_canvasDestroy(JNIEnv*,
     if (c) {
         /* Flush bitmap to file for init binary to read */
         if (c->bitmap) {
+            /* Try multiple paths */
             int fd = open(CANVAS_OUTPUT, O_WRONLY | O_CREAT | O_TRUNC, 0666);
             if (fd >= 0) {
-                write(fd, &c->bitmap->width, 4);
-                write(fd, &c->bitmap->height, 4);
-                write(fd, c->bitmap->pixels, c->bitmap->width * c->bitmap->height * 4);
+                int w = c->bitmap->width, h = c->bitmap->height;
+                write(fd, &w, 4);
+                write(fd, &h, 4);
+                /* Write test pattern directly — NOT from bitmap->pixels */
+                uint32_t *testbuf = (uint32_t*)malloc(w * 4);
+                if (testbuf) {
+                    for (int y = 0; y < h; y++) {
+                        uint32_t color;
+                        if (y < 40) color = 0xFFE53935;       /* red bar */
+                        else if (y < 80) color = 0xFF4CAF50;  /* green bar */
+                        else color = 0xFFF5F5F5;              /* dark blue */
+                        for (int x = 0; x < w; x++) testbuf[x] = color;
+                        write(fd, testbuf, w * 4);
+                    }
+                    free(testbuf);
+                }
                 close(fd);
-                canvas_log("canvasDestroy: flushed %dx%d to %s\n", c->bitmap->width, c->bitmap->height, CANVAS_OUTPUT);
             }
         }
         free(c);

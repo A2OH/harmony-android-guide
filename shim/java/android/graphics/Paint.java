@@ -55,7 +55,7 @@ public class Paint {
     // ── State ────────────────────────────────────────────────────────────────
 
     private int   flags;
-    private int   color     = 0xFF000000; // opaque black
+    private int   color     = 0xFF212121; // dark text on light background
     private Style style     = Style.FILL;
     private float strokeWidth = 0f;
     private float textSize    = 12f;
