@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 #include <netdb.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -1667,8 +1668,26 @@ bool dvmRegisterLibcoreBridge(JNIEnv* env) {
     registerClass(env, "java/util/zip/Deflater",
                   gDeflaterMethods, sizeof(gDeflaterMethods)/sizeof(gDeflaterMethods[0]));
 
-    /* OHBridge Canvas/Pen/Brush/Font/Bitmap/Path (software renderer) */
-    dvmRegisterOHBridge(env);
+    /* OHBridge Canvas/Pen/Brush/Font/Bitmap/Path
+     * Try loading liboh_bridge.so (real Skia) first, fall back to static software renderer */
+    {
+        typedef bool (*RegisterFn)(JNIEnv*);
+        void *bridge = dlopen("/data/a2oh/liboh_bridge.so", RTLD_NOW);
+        if (!bridge) bridge = dlopen("liboh_bridge.so", RTLD_NOW);
+        if (bridge) {
+            RegisterFn reg = (RegisterFn)dlsym(bridge, "dvmRegisterOHBridge");
+            if (reg) {
+                ALOGV("Loaded liboh_bridge.so — using real OH_Drawing (Skia)");
+                reg(env);
+            } else {
+                ALOGW("liboh_bridge.so has no dvmRegisterOHBridge, using software renderer");
+                dvmRegisterOHBridge(env);
+            }
+        } else {
+            ALOGV("No liboh_bridge.so, using software renderer");
+            dvmRegisterOHBridge(env);
+        }
+    }
 
     return true;
 }
