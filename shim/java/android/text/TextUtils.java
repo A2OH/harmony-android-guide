@@ -30,7 +30,7 @@ public class TextUtils {
         int length = a.length();
         if (length != b.length()) return false;
         if (a instanceof String && b instanceof String) {
-            return a.equals(b);
+            return ((String)a).equals((String)b);
         }
         for (int i = 0; i < length; i++) {
             if (a.charAt(i) != b.charAt(i)) return false;
