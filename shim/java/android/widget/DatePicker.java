@@ -190,10 +190,13 @@ public class DatePicker extends FrameLayout {
             setFirstDayOfWeek(firstDayOfWeek);
         }
 
-        mDelegate.setAutoFillChangeListener((v, y, m, d) -> {
-            final AutofillManager afm = context.getSystemService(AutofillManager.class);
-            if (afm != null) {
-                afm.notifyValueChanged(this);
+        mDelegate.setAutoFillChangeListener(new OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker v, int y, int m, int d) {
+                final AutofillManager afm = context.getSystemService(AutofillManager.class);
+                if (afm != null) {
+                    afm.notifyValueChanged(DatePicker.this);
+                }
             }
         });
     }

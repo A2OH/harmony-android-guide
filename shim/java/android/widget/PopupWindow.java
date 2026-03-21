@@ -264,10 +264,22 @@ public class PopupWindow {
     private boolean mIsAnchorRootAttached;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-    private final OnScrollChangedListener mOnScrollChangedListener = this::alignToAnchor;
+    private final OnScrollChangedListener mOnScrollChangedListener =
+            new OnScrollChangedListener() {
+                @Override
+                public void onScrollChanged() {
+                    alignToAnchor();
+                }
+            };
 
     private final View.OnLayoutChangeListener mOnLayoutChangeListener =
-            (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> alignToAnchor();
+            new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    alignToAnchor();
+                }
+            };
 
     private int mAnchorXoff;
     private int mAnchorYoff;
@@ -2642,15 +2654,18 @@ public class PopupWindow {
 
             // The cleanup runnable MUST be called even if the transition is
             // canceled before it starts (and thus can't call onTransitionEnd).
-            mCleanupAfterExit = () -> {
-                listener.onTransitionEnd(transition);
+            mCleanupAfterExit = new Runnable() {
+                @Override
+                public void run() {
+                    listener.onTransitionEnd(transition);
 
-                if (anchorRoot != null) {
-                    anchorRoot.removeOnAttachStateChangeListener(mOnAnchorRootDetachedListener);
+                    if (anchorRoot != null) {
+                        anchorRoot.removeOnAttachStateChangeListener(mOnAnchorRootDetachedListener);
+                    }
+
+                    // The listener was called. Our job here is done.
+                    mCleanupAfterExit = null;
                 }
-
-                // The listener was called. Our job here is done.
-                mCleanupAfterExit = null;
             };
 
             final Transition exitTransition = transition.clone();

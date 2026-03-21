@@ -1931,7 +1931,12 @@ public class SearchView extends LinearLayout implements CollapsibleActionView {
         private SearchView mSearchView;
 
         private boolean mHasPendingShowSoftInputRequest;
-        final Runnable mRunShowSoftInputIfNecessary = () -> showSoftInputIfNecessary();
+        final Runnable mRunShowSoftInputIfNecessary = new Runnable() {
+            @Override
+            public void run() {
+                showSoftInputIfNecessary();
+            }
+        };
 
         public SearchAutoComplete(Context context) {
             super(context);

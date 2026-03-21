@@ -2541,7 +2541,12 @@ public class Editor {
                         mTextView.removeCallbacks(mInsertionActionModeRunnable);
                     }
 
-                    mShowSuggestionRunnable = this::replace;
+                    mShowSuggestionRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            replace();
+                        }
+                    };
 
                     // removeCallbacks is performed on every touch
                     mTextView.postDelayed(mShowSuggestionRunnable,

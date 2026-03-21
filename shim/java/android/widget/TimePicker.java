@@ -152,10 +152,13 @@ public class TimePicker extends FrameLayout {
                         this, context, attrs, defStyleAttr, defStyleRes);
                 break;
         }
-        mDelegate.setAutoFillChangeListener((v, h, m) -> {
-            final AutofillManager afm = context.getSystemService(AutofillManager.class);
-            if (afm != null) {
-                afm.notifyValueChanged(this);
+        mDelegate.setAutoFillChangeListener(new OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker v, int h, int m) {
+                final AutofillManager afm = context.getSystemService(AutofillManager.class);
+                if (afm != null) {
+                    afm.notifyValueChanged(TimePicker.this);
+                }
             }
         });
     }

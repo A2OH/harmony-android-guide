@@ -748,18 +748,24 @@ public class Toast {
 
         @Override
         public void onToastShown() {
-            mHandler.post(() -> {
-                for (Callback callback : getCallbacks()) {
-                    callback.onToastShown();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (Callback callback : getCallbacks()) {
+                        callback.onToastShown();
+                    }
                 }
             });
         }
 
         @Override
         public void onToastHidden() {
-            mHandler.post(() -> {
-                for (Callback callback : getCallbacks()) {
-                    callback.onToastHidden();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (Callback callback : getCallbacks()) {
+                        callback.onToastHidden();
+                    }
                 }
             });
         }

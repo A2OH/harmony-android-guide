@@ -803,9 +803,12 @@ public class TextureView extends View {
 
     @UnsupportedAppUsage
     private final SurfaceTexture.OnFrameAvailableListener mUpdateListener =
-            surfaceTexture -> {
-                updateLayer();
-                invalidate();
+            new SurfaceTexture.OnFrameAvailableListener() {
+                @Override
+                public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+                    updateLayer();
+                    invalidate();
+                }
             };
 
     /**
