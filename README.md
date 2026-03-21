@@ -354,6 +354,8 @@ bash dalvik-port/deploy-mockdonalds-qemu.sh
 | 09 | SuperApp | ContentProvider, BroadcastReceiver, Service, AsyncTask, Handler, Clipboard | -- |
 | 10 | Layout Validator | Measure specs, layout params, nested ViewGroups | -- |
 | 11 | Frame Dump | Pixel-level rendering via Java2D, PNG output for visual debugging | -- |
+| 12 | UI Showcase | All 16 widget types with DefaultTheme (Holo Light visuals), side-by-side comparison with real Android | 43 |
+| 13 | Interactive Demo | 5 Activities with VNC click navigation: Counter (+/−/Reset), Form (EditText/CheckBox/RadioGroup/Submit), Shopping List (add/remove), About. Full touch→click→navigate→render cycle | 33 |
 
 ---
 

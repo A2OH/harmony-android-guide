@@ -350,6 +350,8 @@ bash dalvik-port/deploy-mockdonalds-qemu.sh
 | 09 | SuperApp | ContentProvider, BroadcastReceiver, Service, AsyncTask, Handler, Clipboard | -- |
 | 10 | Layout Validator | Measure specs, layout params, 嵌套 ViewGroup | -- |
 | 11 | Frame Dump | 像素级渲染（Java2D）、PNG 输出用于视觉调试 | -- |
+| 12 | UI Showcase | 16种控件 + DefaultTheme（Holo Light风格），与真实Android截图对比 | 43 |
+| 13 | Interactive Demo | 5个Activity，VNC点击导航：计数器（+/−/重置）、表单（输入框/复选框/单选/提交）、购物清单（添加/删除）、关于。完整触摸→点击→导航→渲染闭环 | 33 |
 
 ---
 
