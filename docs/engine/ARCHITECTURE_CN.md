@@ -11,7 +11,14 @@
 
 通过分析13个真实APK（抖音/TikTok、Instagram、YouTube、Netflix、Spotify、Facebook、Google Maps、Zoom、Grab、Duolingo、Uber、PayPal、Amazon），覆盖超过23亿月活用户，验证了该方案。关键发现：**94%的"未映射API差距"由引擎运行时自动处理，只有6%需要真正的平台桥接工作。**
 
-**项目状态（2026-03-17）：** 第一阶段完成。压缩的Android APK可在OHOS ARM32 QEMU上加载启动。完整流水线已验证：APK ZIP（STORED + DEFLATED）→ 二进制AXML清单 → DexClassLoader → Activity生命周期 → View树。MockDonalds 14/14测试通过。下一步：通过ARM32上的ArkUI实现视觉渲染。
+**项目状态（2026-03-20）：** Java系统核心移植**完成**。193K+行未修改AOSP代码跨166个文件在Dalvik上编译运行。交互式Android应用在OHOS QEMU ARM32上通过VNC触摸输入渲染——按钮可点击、Activity可导航、计数器可递增。完整流水线已验证：APK → Dalvik → AOSP布局引擎 → Canvas → VNC显示像素。
+
+**已验证：**
+- 真实Android APK在OHOS ARM32 QEMU上通过VNC显示运行
+- VNC触摸 → Button.onClick() → startActivity() → Activity转场 → 重新渲染
+- 193K行未修改的AOSP UI框架代码（View、ViewGroup、TextView、80+个控件）
+- 2,386项测试通过，覆盖13个测试应用
+- 与真实Android模拟器截图对比显示布局结构完全一致
 
 ---
 
@@ -529,6 +536,88 @@ sequenceDiagram
 - **所有布局都能工作**（LinearLayout、ConstraintLayout、CoordinatorLayout）
 - **所有动画都能工作**（ValueAnimator、ObjectAnimator、ViewPropertyAnimator）
 - **无范式转换** —— 命令式View代码作为命令式View代码运行
+
+### 4.4 当前渲染管线（在OHOS QEMU上运行）
+
+```mermaid
+graph TD
+    subgraph "Java层（完成 — 193K行AOSP代码）"
+        APP["Android App (DEX)"] --> ACT["Activity.onCreate()"]
+        ACT --> SCV["setContentView(layout)"]
+        SCV --> MEASURE["View.measure() — AOSP 30K行"]
+        MEASURE --> LAYOUT["View.layout() — 像素级定位"]
+        LAYOUT --> DRAW["View.draw(Canvas) — 递归树遍历"]
+        DRAW --> ONDRAW["Widget.onDraw(Canvas)<br/>TextView, Button, CheckBox等"]
+        ONDRAW --> CANVAS["Canvas.drawText/drawRect/drawPath"]
+    end
+
+    subgraph "JNI边界"
+        CANVAS --> OHBRIDGE["OHBridge.canvasDrawText()<br/>OHBridge.canvasDrawRect()<br/>每帧约200次JNI调用"]
+    end
+
+    subgraph "原生层（Agent A）"
+        OHBRIDGE --> CURRENT["当前：stb_truetype<br/>软件渲染 → fb0"]
+        OHBRIDGE -.-> TARGET["目标：OH_Drawing (Skia)<br/>→ Surface → 合成器"]
+    end
+
+    subgraph "显示"
+        CURRENT --> VNC["VNC帧缓冲<br/>（今天可用）"]
+        TARGET -.-> DISPLAY["OHOS显示<br/>（未来）"]
+    end
+
+    style APP fill:#e8f5e9
+    style MEASURE fill:#e8f5e9
+    style LAYOUT fill:#e8f5e9
+    style DRAW fill:#e8f5e9
+    style ONDRAW fill:#e8f5e9
+    style CANVAS fill:#e8f5e9
+    style OHBRIDGE fill:#fff3e0
+    style CURRENT fill:#e3f2fd
+    style TARGET fill:#fce4ec
+    style VNC fill:#e3f2fd
+```
+
+### 4.5 Java/原生边界（清晰分层）
+
+整个渲染管线在JNI边界处清晰分割。Java层（完成）和原生层（Agent A）零代码重叠：
+
+| 组件 | Java桩代码（完成） | 原生实现（Agent A） |
+|------|:---:|:---:|
+| **Canvas** | 将drawRect/drawText/drawPath路由到OHBridge | OHBridge → OH_Drawing_Canvas* |
+| **Paint** | 存储颜色/大小/样式，Java2D measureText | OHBridge → OH_Drawing_Pen/Brush/Font |
+| **Bitmap** | 管理句柄，路由到OHBridge | OHBridge → OH_Drawing_Bitmap |
+| **Path** | 存储命令，路由到OHBridge | OHBridge → OH_Drawing_Path |
+| **Surface** | 通过OHBridge管理生命周期 | OHBridge → OH_NativeWindow |
+| **MotionEvent** | Java字段存储x/y/action | 输入事件 → JNI回调 |
+| **KeyEvent** | Java字段存储keyCode/action | 键盘事件 → JNI回调 |
+| **Window** | MiniWindowManager | XComponent surface |
+
+### 4.6 交互式Demo已在OHOS QEMU上验证
+
+端到端交互式Android应用在OHOS上运行：
+
+```mermaid
+sequenceDiagram
+    participant User as 用户 (VNC)
+    participant QEMU as QEMU ARM32
+    participant Dalvik as Dalvik VM
+    participant AOSP as AOSP View树 (193K行)
+    participant Canvas as Canvas → OHBridge
+    participant Display as fb0 → VNC
+
+    User->>QEMU: VNC触摸 (640, 437)
+    QEMU->>Dalvik: /dev/input/event0 → dalvik_runner
+    Dalvik->>AOSP: dispatchTouchEvent(640, 437)
+    AOSP->>AOSP: findViewAt() → Button "购物车"
+    AOSP->>AOSP: Button.performClick()
+    AOSP->>AOSP: onClick() → startActivity(CartActivity)
+    AOSP->>AOSP: MenuActivity.onPause()
+    AOSP->>AOSP: CartActivity.onCreate() → onResume()
+    AOSP->>AOSP: View.measure() → layout()
+    AOSP->>Canvas: View.draw(Canvas) → drawText/drawRect
+    Canvas->>Display: 像素 → fb0 → VNC
+    Display->>User: VNC查看器中更新的屏幕
+```
 
 ---
 

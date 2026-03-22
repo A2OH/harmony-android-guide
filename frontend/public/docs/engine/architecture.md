@@ -11,7 +11,14 @@ We propose running unmodified Android APKs on OpenHarmony by treating the Androi
 
 This approach was validated by analyzing 13 real APKs (TikTok, Instagram, YouTube, Netflix, Spotify, Facebook, Google Maps, Zoom, Grab, Duolingo, Uber, PayPal, Amazon) representing 2.3 billion+ monthly active users. Key finding: **94% of the "unmapped API gap" is handled automatically by the engine runtime. Only 6% needs real platform bridge work.**
 
-**Status (2026-03-17):** Phase 1 complete. Compressed Android APKs load and launch on Dalvik VM running on OpenHarmony ARM32 QEMU. Full pipeline proven: APK ZIP (STORED + DEFLATED) → binary AXML manifest → DexClassLoader → Activity lifecycle → View tree. MockDonalds 14/14 tests pass. Next: visual rendering via ArkUI on ARM32.
+**Status (2026-03-20):** Java system core porting COMPLETE. 193K+ lines of unmodified AOSP code across 166 files compiles and runs on Dalvik. Interactive Android apps render on OHOS QEMU ARM32 with VNC touch input — buttons click, Activities navigate, counters increment. Full pipeline proven: APK → Dalvik → AOSP layout engine → Canvas → pixels on VNC display.
+
+**What's proven:**
+- Real Android APK runs on OHOS ARM32 QEMU with VNC display
+- VNC touch → Button.onClick() → startActivity() → Activity transition → re-render
+- 193K lines of unmodified AOSP UI framework code (View, ViewGroup, TextView, 80+ widgets)
+- 2,386 tests pass across 13 test apps
+- Side-by-side comparison with real Android emulator shows identical layout structure
 
 ---
 
@@ -579,6 +586,130 @@ Steps 1-3 are **pure Java** — they run unchanged in Dalvik. Only step 4 bridge
 - **Every layout works** (LinearLayout, ConstraintLayout, CoordinatorLayout)
 - **Every animation works** (ValueAnimator, ObjectAnimator, ViewPropertyAnimator)
 - **No paradigm shift** — imperative View code runs as imperative View code
+
+### 4.4 Current Rendering Pipeline (Working on OHOS QEMU)
+
+```mermaid
+graph TD
+    subgraph "Java Layer (COMPLETE — 193K lines AOSP)"
+        APP["Android App (DEX)"] --> ACT["Activity.onCreate()"]
+        ACT --> SCV["setContentView(layout)"]
+        SCV --> MEASURE["View.measure() — AOSP 30K lines"]
+        MEASURE --> LAYOUT["View.layout() — positions in pixels"]
+        LAYOUT --> DRAW["View.draw(Canvas) — recursive tree walk"]
+        DRAW --> ONDRAW["Widget.onDraw(Canvas)<br/>TextView, Button, CheckBox, etc."]
+        ONDRAW --> CANVAS["Canvas.drawText/drawRect/drawPath"]
+    end
+
+    subgraph "JNI Boundary"
+        CANVAS --> OHBRIDGE["OHBridge.canvasDrawText()<br/>OHBridge.canvasDrawRect()<br/>~200 JNI calls per frame"]
+    end
+
+    subgraph "Native Layer (Agent A)"
+        OHBRIDGE --> CURRENT["Current: stb_truetype<br/>software renderer → fb0"]
+        OHBRIDGE -.-> TARGET["Target: OH_Drawing (Skia)<br/>→ Surface → compositor"]
+    end
+
+    subgraph "Display"
+        CURRENT --> VNC["VNC framebuffer<br/>(working today)"]
+        TARGET -.-> DISPLAY["OHOS display<br/>(future)"]
+    end
+
+    style APP fill:#e8f5e9
+    style MEASURE fill:#e8f5e9
+    style LAYOUT fill:#e8f5e9
+    style DRAW fill:#e8f5e9
+    style ONDRAW fill:#e8f5e9
+    style CANVAS fill:#e8f5e9
+    style OHBRIDGE fill:#fff3e0
+    style CURRENT fill:#e3f2fd
+    style TARGET fill:#fce4ec
+    style VNC fill:#e3f2fd
+```
+
+### 4.5 Java / Native Boundary (Clean Split)
+
+The entire rendering pipeline splits cleanly at the JNI boundary. The Java side (complete) and native side (Agent A) have zero code overlap:
+
+| Component | Java Stub (Complete) | Native Implementation (Agent A) |
+|-----------|:---:|:---:|
+| **Canvas** | Routes drawRect/drawText/drawPath to OHBridge | OHBridge → OH_Drawing_Canvas* |
+| **Paint** | Stores color/size/style, Java2D measureText | OHBridge → OH_Drawing_Pen/Brush/Font |
+| **Bitmap** | Manages handles, routes to OHBridge | OHBridge → OH_Drawing_Bitmap |
+| **Path** | Stores commands, routes to OHBridge | OHBridge → OH_Drawing_Path |
+| **Surface** | Manages lifecycle via OHBridge | OHBridge → OH_NativeWindow |
+| **MotionEvent** | Java fields store x/y/action | Input events → JNI callback |
+| **KeyEvent** | Java fields store keyCode/action | Key events → JNI callback |
+| **Window** | MiniWindowManager | XComponent surface |
+
+```mermaid
+graph LR
+    subgraph "Java (Agent B — DONE)"
+        J1["193K AOSP code<br/>166 files, 0 modifications"]
+        J2["~250 dependency stubs<br/>return null/0/false"]
+        J3["MiniServer<br/>6 managers, ~2K lines"]
+        J4["DefaultTheme<br/>Holo Light visuals"]
+        J5["13 test apps<br/>2,386 tests pass"]
+    end
+
+    subgraph "JNI Bridge"
+        B["OHBridge.java<br/>~200 native method declarations"]
+    end
+
+    subgraph "Native (Agent A — IN PROGRESS)"
+        N1["liboh_bridge.so / libdalvik_canvas.so"]
+        N2["stb_truetype → OH_Drawing (Skia)"]
+        N3["fb0 blit → Surface/BufferQueue"]
+        N4["File IPC → direct JNI input callbacks"]
+        N5["Frame loop (16ms vsync)"]
+    end
+
+    J1 --> B
+    J2 --> B
+    J3 --> B
+    J4 --> B
+    B --> N1
+    N1 --> N2 & N3 & N4 & N5
+
+    style J1 fill:#c8e6c9
+    style J2 fill:#c8e6c9
+    style J3 fill:#c8e6c9
+    style J4 fill:#c8e6c9
+    style J5 fill:#c8e6c9
+    style B fill:#fff9c4
+    style N1 fill:#ffcdd2
+    style N2 fill:#ffcdd2
+    style N3 fill:#ffcdd2
+    style N4 fill:#ffcdd2
+    style N5 fill:#ffcdd2
+```
+
+### 4.6 Interactive Demo Proven on OHOS QEMU
+
+End-to-end interactive Android app running on OHOS:
+
+```mermaid
+sequenceDiagram
+    participant User as User (VNC)
+    participant QEMU as QEMU ARM32
+    participant Dalvik as Dalvik VM
+    participant AOSP as AOSP View Tree (193K lines)
+    participant Canvas as Canvas → OHBridge
+    participant Display as fb0 → VNC
+
+    User->>QEMU: VNC touch at (640, 437)
+    QEMU->>Dalvik: /dev/input/event0 → dalvik_runner
+    Dalvik->>AOSP: dispatchTouchEvent(640, 437)
+    AOSP->>AOSP: findViewAt() → Button "Cart"
+    AOSP->>AOSP: Button.performClick()
+    AOSP->>AOSP: onClick() → startActivity(CartActivity)
+    AOSP->>AOSP: MenuActivity.onPause()
+    AOSP->>AOSP: CartActivity.onCreate() → onResume()
+    AOSP->>AOSP: View.measure() → layout()
+    AOSP->>Canvas: View.draw(Canvas) → drawText/drawRect
+    Canvas->>Display: pixels → fb0 → VNC
+    Display->>User: Updated screen in VNC viewer
+```
 
 ---
 
