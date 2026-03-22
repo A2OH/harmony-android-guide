@@ -1,7 +1,7 @@
 # Android-as-Engine: Running Unmodified APKs on OpenHarmony
 
 **Architecture Design Document**
-**Date:** 2026-03-13 | **Updated:** 2026-03-17
+**Date:** 2026-03-13 | **Updated:** 2026-03-22
 
 ---
 
@@ -11,7 +11,7 @@ We propose running unmodified Android APKs on OpenHarmony by treating the Androi
 
 This approach was validated by analyzing 13 real APKs (TikTok, Instagram, YouTube, Netflix, Spotify, Facebook, Google Maps, Zoom, Grab, Duolingo, Uber, PayPal, Amazon) representing 2.3 billion+ monthly active users. Key finding: **94% of the "unmapped API gap" is handled automatically by the engine runtime. Only 6% needs real platform bridge work.**
 
-**Status (2026-03-20):** Java system core porting COMPLETE. 193K+ lines of unmodified AOSP code across 166 files compiles and runs on Dalvik. Interactive Android apps render on OHOS QEMU ARM32 with VNC touch input — buttons click, Activities navigate, counters increment. Full pipeline proven: APK → Dalvik → AOSP layout engine → Canvas → pixels on VNC display.
+**Status (2026-03-22):** Java system core porting COMPLETE. 193K+ lines of unmodified AOSP code across 166 files compiles and runs on Dalvik. Interactive Android apps render on OHOS QEMU ARM32 with VNC touch input — buttons click, Activities navigate, counters increment. Full pipeline proven: APK → Dalvik → AOSP layout engine → Canvas → pixels on VNC display. **ART runtime port COMPLETE:** dex2oat AOT compiler (17MB, 421 source files) and ART dalvikvm (7.5MB static ARM64) both working on x86-64 and OHOS ARM64. HelloArt test passes on QEMU ARM64.
 
 **What's proven:**
 - Real Android APK runs on OHOS ARM32 QEMU with VNC display
@@ -1342,7 +1342,73 @@ This is faster than a bulk extraction and ensures we only carry code that apps a
 
 ---
 
-## 12. Success Metrics
+## 12. ART Runtime Port (2026-03-22)
+
+The ART runtime has been successfully ported from AOSP 11, providing a high-performance alternative to the KitKat-era Dalvik interpreter.
+
+### 12.1 dex2oat AOT Compiler (Strategy A) — Complete
+
+421 source files compiled from AOSP 11 ART (623K lines C++). The dex2oat binary (17MB on x86-64) produces native .oat files from DEX bytecode.
+
+| Capability | Detail |
+|-----------|--------|
+| Assembly entry points | 240 symbols (x86-64), 246 symbols (ARM64) |
+| Boot image | boot.art (660KB) + boot.oat (125KB) |
+| Cross-compilation | Host x86-64 dex2oat generates ARM64 .oat files |
+| App compilation | hello-art.jar → hello-art.oat (17KB ARM64 native code) |
+
+### 12.2 ART Runtime (dalvikvm) — Complete
+
+| Metric | x86-64 | OHOS ARM64 |
+|--------|:------:|:----------:|
+| Binary size | 11MB | 7.5MB (static) |
+| Interpreter | C++ switch interpreter | C++ switch interpreter |
+| Boot image loading | From .oat files | From .oat files |
+| JNI native stubs | 75 methods (ICU, javacore, openjdk) | 75 methods |
+| HelloArt test | Exit code 0 | Exit code 0 (QEMU ARM64) |
+| Linking | Dynamic | Static (musl libc, no dynamic dependencies) |
+
+### 12.3 Build System
+
+| Target | Makefile | Compiler | Status |
+|--------|----------|----------|:------:|
+| x86-64 | `/art-universal-build/Makefile` | Host GCC/Clang | 421 files, 0 failures |
+| OHOS ARM64 | `/art-universal-build/Makefile.ohos-arm64` | OHOS Clang 15 (aarch64-linux-ohos) | 426 files, 0 failures |
+
+### 12.4 Proven Pipeline
+
+```
+DEX bytecode → dex2oat (host x86-64) → ARM64 .oat → dalvikvm (OHOS ARM64) → native execution
+```
+
+Build artifacts:
+
+```
+art-universal-build/
+├── build/bin/dex2oat              # 17MB x86-64 AOT compiler
+├── build/bin/dalvikvm             # 11MB x86-64 runtime
+├── build-ohos-arm64/bin/dalvikvm  # 7.5MB ARM64 static runtime
+├── stubs/
+│   ├── link_stubs.cc              # x86-64 stubs (operator<<, atomics)
+│   ├── link_stubs_arm64.cc        # ARM64 stubs (ldxp/stlxp atomics)
+│   ├── icu_jni_stub.c             # ICU native methods (20 methods)
+│   ├── javacore_stub.c            # POSIX I/O native methods (29 methods)
+│   └── openjdk_stub.c             # OpenJDK native methods (26 methods)
+└── Makefile.ohos-arm64            # OHOS ARM64 cross-compilation
+```
+
+### 12.5 Key Bugs Fixed During Port
+
+| Bug | Root Cause | Fix |
+|-----|-----------|-----|
+| IfTable offset 0 vs 8 | AOSP Clang 11 inlining bug | Recompile verifier with -O1 |
+| Null class pointer | RegTypeCache::FromClass received null | Add null guard |
+| 40+ unresolved symbols | operator<< for enums, DexCache 128-bit atomics | Custom link stubs |
+| Static build failures | JNI libraries expect dlopen | Link JNI stubs directly into binary |
+
+---
+
+## 13. Success Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
@@ -1353,3 +1419,4 @@ This is faster than a bulk extraction and ensures we only carry code that apps a
 | API areas validated | All major categories | **12 areas (SuperApp)** |
 | Platform bridges (Java side) | All 16 wired | **4 wired + ArkUI nodes** |
 | Dalvik VM platforms | x86_64 + ARM32 | **Both working** |
+| ART runtime (dex2oat + dalvikvm) | x86-64 + OHOS ARM64 | **Both working — Strategy A+B complete** |

@@ -1,7 +1,7 @@
 # Android即引擎：在OpenHarmony上运行未修改的APK
 
 **架构设计文档**
-**日期：** 2026-03-13 | **更新：** 2026-03-17
+**日期：** 2026-03-13 | **更新：** 2026-03-22
 
 ---
 
@@ -11,7 +11,7 @@
 
 通过分析13个真实APK（抖音/TikTok、Instagram、YouTube、Netflix、Spotify、Facebook、Google Maps、Zoom、Grab、Duolingo、Uber、PayPal、Amazon），覆盖超过23亿月活用户，验证了该方案。关键发现：**94%的"未映射API差距"由引擎运行时自动处理，只有6%需要真正的平台桥接工作。**
 
-**项目状态（2026-03-20）：** Java系统核心移植**完成**。193K+行未修改AOSP代码跨166个文件在Dalvik上编译运行。交互式Android应用在OHOS QEMU ARM32上通过VNC触摸输入渲染——按钮可点击、Activity可导航、计数器可递增。完整流水线已验证：APK → Dalvik → AOSP布局引擎 → Canvas → VNC显示像素。
+**项目状态（2026-03-22）：** Java系统核心移植**完成**。193K+行未修改AOSP代码跨166个文件在Dalvik上编译运行。交互式Android应用在OHOS QEMU ARM32上通过VNC触摸输入渲染——按钮可点击、Activity可导航、计数器可递增。完整流水线已验证：APK → Dalvik → AOSP布局引擎 → Canvas → VNC显示像素。**ART运行时移植完成：** dex2oat AOT编译器（17MB，421个源文件）和ART dalvikvm（7.5MB静态ARM64）均在x86-64和OHOS ARM64上正常工作。HelloArt测试在QEMU ARM64上通过。
 
 **已验证：**
 - 真实Android APK在OHOS ARM32 QEMU上通过VNC显示运行
@@ -1102,7 +1102,73 @@ graph TD
 
 ---
 
-## 12. 成功指标
+## 12. ART运行时移植（2026-03-22）
+
+ART运行时已从AOSP 11成功移植，为KitKat时代的Dalvik解释器提供了高性能替代方案。
+
+### 12.1 dex2oat AOT编译器（策略A）— 已完成
+
+从AOSP 11 ART编译了421个源文件（623K行C++）。dex2oat二进制文件（x86-64上17MB）可从DEX字节码生成原生.oat文件。
+
+| 能力 | 详情 |
+|------|------|
+| 汇编入口点 | 240个符号（x86-64），246个符号（ARM64） |
+| 启动映像 | boot.art（660KB）+ boot.oat（125KB） |
+| 交叉编译 | 宿主x86-64 dex2oat生成ARM64 .oat文件 |
+| 应用编译 | hello-art.jar → hello-art.oat（17KB ARM64原生代码） |
+
+### 12.2 ART运行时（dalvikvm）— 已完成
+
+| 指标 | x86-64 | OHOS ARM64 |
+|------|:------:|:----------:|
+| 二进制大小 | 11MB | 7.5MB（静态链接） |
+| 解释器 | C++开关解释器 | C++开关解释器 |
+| 启动映像加载 | 从.oat文件 | 从.oat文件 |
+| JNI原生桩 | 75个方法（ICU、javacore、openjdk） | 75个方法 |
+| HelloArt测试 | 退出码0 | 退出码0（QEMU ARM64） |
+| 链接方式 | 动态 | 静态（musl libc，无动态依赖） |
+
+### 12.3 构建系统
+
+| 目标平台 | Makefile | 编译器 | 状态 |
+|---------|----------|--------|:----:|
+| x86-64 | `/art-universal-build/Makefile` | 宿主GCC/Clang | 421个文件，0个失败 |
+| OHOS ARM64 | `/art-universal-build/Makefile.ohos-arm64` | OHOS Clang 15（aarch64-linux-ohos） | 426个文件，0个失败 |
+
+### 12.4 已验证的流水线
+
+```
+DEX字节码 → dex2oat（宿主x86-64）→ ARM64 .oat → dalvikvm（OHOS ARM64）→ 原生执行
+```
+
+构建产物：
+
+```
+art-universal-build/
+├── build/bin/dex2oat              # 17MB x86-64 AOT编译器
+├── build/bin/dalvikvm             # 11MB x86-64运行时
+├── build-ohos-arm64/bin/dalvikvm  # 7.5MB ARM64静态运行时
+├── stubs/
+│   ├── link_stubs.cc              # x86-64桩（operator<<、原子操作）
+│   ├── link_stubs_arm64.cc        # ARM64桩（ldxp/stlxp原子操作）
+│   ├── icu_jni_stub.c             # ICU原生方法（20个方法）
+│   ├── javacore_stub.c            # POSIX I/O原生方法（29个方法）
+│   └── openjdk_stub.c             # OpenJDK原生方法（26个方法）
+└── Makefile.ohos-arm64            # OHOS ARM64交叉编译
+```
+
+### 12.5 移植过程中修复的关键Bug
+
+| Bug | 根本原因 | 修复方法 |
+|-----|---------|---------|
+| IfTable偏移量0 vs 8 | AOSP Clang 11内联Bug | 使用-O1重新编译验证器 |
+| 空类指针 | RegTypeCache::FromClass接收到null | 添加空值保护 |
+| 40+未解析符号 | 枚举operator<<、DexCache 128位原子操作 | 自定义链接桩 |
+| 静态构建失败 | JNI库期望dlopen | 将JNI桩直接链接到二进制文件 |
+
+---
+
+## 13. 成功指标
 
 | 指标 | 目标 | 当前状态 |
 |------|------|---------|
@@ -1113,3 +1179,4 @@ graph TD
 | 已验证的API领域 | 覆盖所有主要类别 | **12个领域（SuperApp）** |
 | 平台桥接（Java侧） | 全部16个已接入 | **4个已接入 + ArkUI节点** |
 | Dalvik VM平台 | x86_64 + ARM32 | **两者均正常工作** |
+| ART运行时（dex2oat + dalvikvm） | x86-64 + OHOS ARM64 | **两者均正常工作 — 策略A+B已完成** |

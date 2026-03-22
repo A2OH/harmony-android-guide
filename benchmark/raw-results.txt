@@ -1,0 +1,122 @@
+================================================================
+  VM BENCHMARK SUITE -- Sun Mar 22 11:16:45 PDT 2026
+================================================================
+
+ART version:
+
+Host JVM version:
+openjdk version "21.0.6" 2025-01-21
+OpenJDK Runtime Environment JBR-21.0.6+9-895.97-nomod (build 21.0.6+9-b895.97)
+OpenJDK 64-Bit Server VM JBR-21.0.6+9-895.97-nomod (build 21.0.6+9-b895.97, mixed mode, sharing)
+
+============================================================
+  ART INTERPRETER RUNS (pure switch interpreter)
+============================================================
+>>> ART Interpreter -- Run 1 <<<
+METHOD_CALLS_10M: 687ms
+VIRTUAL_DISPATCH_10M: 800ms
+FIELD_ACCESS_10M: 820ms
+FIBONACCI_40: 23517ms
+TIGHT_LOOP_100M: 3443ms
+OBJECT_ALLOC_1M: 187ms
+ARRAY_OPS_1M: 70ms
+STRING_CONCAT_100K: 61ms
+HASHMAP_100K: 1037ms
+
+>>> ART Interpreter -- Run 2 <<<
+METHOD_CALLS_10M: 689ms
+VIRTUAL_DISPATCH_10M: 755ms
+FIELD_ACCESS_10M: 853ms
+FIBONACCI_40: 23692ms
+TIGHT_LOOP_100M: 3412ms
+OBJECT_ALLOC_1M: 183ms
+ARRAY_OPS_1M: 69ms
+STRING_CONCAT_100K: 60ms
+HASHMAP_100K: 1030ms
+
+>>> ART Interpreter -- Run 3 <<<
+METHOD_CALLS_10M: 764ms
+VIRTUAL_DISPATCH_10M: 779ms
+FIELD_ACCESS_10M: 801ms
+FIBONACCI_40: 23633ms
+TIGHT_LOOP_100M: 3469ms
+OBJECT_ALLOC_1M: 190ms
+ARRAY_OPS_1M: 69ms
+STRING_CONCAT_100K: 59ms
+HASHMAP_100K: 956ms
+
+============================================================
+  ART AOT RUNS (dex2oat compiled benchmark + boot image)
+============================================================
+>>> ART AOT -- Run 1 <<<
+METHOD_CALLS_10M: 675ms
+VIRTUAL_DISPATCH_10M: 828ms
+FIELD_ACCESS_10M: 692ms
+FIBONACCI_40: 21171ms
+TIGHT_LOOP_100M: 3080ms
+OBJECT_ALLOC_1M: 226ms
+ARRAY_OPS_1M: 77ms
+STRING_CONCAT_100K: 73ms
+HASHMAP_100K: 961ms
+
+>>> ART AOT -- Run 2 <<<
+METHOD_CALLS_10M: 686ms
+VIRTUAL_DISPATCH_10M: 798ms
+FIELD_ACCESS_10M: 655ms
+FIBONACCI_40: 21442ms
+TIGHT_LOOP_100M: 3355ms
+OBJECT_ALLOC_1M: 168ms
+ARRAY_OPS_1M: 63ms
+STRING_CONCAT_100K: 54ms
+HASHMAP_100K: 921ms
+
+>>> ART AOT -- Run 3 <<<
+METHOD_CALLS_10M: 607ms
+VIRTUAL_DISPATCH_10M: 666ms
+FIELD_ACCESS_10M: 682ms
+FIBONACCI_40: 21468ms
+TIGHT_LOOP_100M: 3468ms
+OBJECT_ALLOC_1M: 226ms
+ARRAY_OPS_1M: 82ms
+STRING_CONCAT_100K: 70ms
+HASHMAP_100K: 1139ms
+
+============================================================
+  HOST JVM RUNS (OpenJDK JIT reference)
+============================================================
+>>> Host JVM -- Run 1 <<<
+METHOD_CALLS_10M: 2ms
+VIRTUAL_DISPATCH_10M: 2ms
+FIELD_ACCESS_10M: 7ms
+FIBONACCI_40: 369ms
+TIGHT_LOOP_100M: 35ms
+OBJECT_ALLOC_1M: 31ms
+ARRAY_OPS_1M: 0ms
+STRING_CONCAT_100K: 1ms
+HASHMAP_100K: 42ms
+
+>>> Host JVM -- Run 2 <<<
+METHOD_CALLS_10M: 2ms
+VIRTUAL_DISPATCH_10M: 3ms
+FIELD_ACCESS_10M: 6ms
+FIBONACCI_40: 365ms
+TIGHT_LOOP_100M: 40ms
+OBJECT_ALLOC_1M: 36ms
+ARRAY_OPS_1M: 1ms
+STRING_CONCAT_100K: 1ms
+HASHMAP_100K: 46ms
+
+>>> Host JVM -- Run 3 <<<
+METHOD_CALLS_10M: 3ms
+VIRTUAL_DISPATCH_10M: 2ms
+FIELD_ACCESS_10M: 6ms
+FIBONACCI_40: 344ms
+TIGHT_LOOP_100M: 38ms
+OBJECT_ALLOC_1M: 24ms
+ARRAY_OPS_1M: 1ms
+STRING_CONCAT_100K: 4ms
+HASHMAP_100K: 43ms
+
+============================================================
+  ALL RUNS COMPLETE
+============================================================

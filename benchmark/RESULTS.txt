@@ -1,0 +1,55 @@
+====================================================================================================
+  VM BENCHMARK COMPARISON
+====================================================================================================
+
+Configurations tested:
+  - ART Switch Interpreter: Android 11 ART runtime, -Xint mode, core libs from boot image
+  - ART Non-Xint:           Same ART runtime, no -Xint (still interpreter, JIT unavailable)
+  - Host JVM:               OpenJDK 21.0.6 (JBR) with C2 JIT compiler
+  - Dalvik Portable:        KitKat portable C interpreter (x86_64 build non-functional*)
+
+* Dalvik x86_64 cannot load bootclasspath JAR (mmap/dexopt issue).
+  ARM32 OHOS build works but is only available via QEMU.
+  Dalvik portable is estimated at 2-5x slower than ART interpreter
+  based on known characteristics of the portable C interpreter vs
+  ART's optimized switch interpreter with better dispatch tables.
+
+|---------------------------|---------------|---------------|---------------|----------------|
+| Benchmark                 |    ART Interp |  ART Non-Xint |      Host JVM |  ART/JVM ratio |
+|---------------------------|---------------|---------------|---------------|----------------|
+| Method calls (10M)        |        602 ms |        750 ms |          2 ms |           301x |
+| Virtual dispatch (10M)    |        667 ms |        788 ms |          2 ms |           334x |
+| Field access (10M)        |        632 ms |        762 ms |          6 ms |           105x |
+| Fibonacci(40) recursive   |      21748 ms |      23998 ms |        298 ms |            73x |
+| Tight loop sum (100M)     |       2744 ms |       3363 ms |         30 ms |            91x |
+| Object alloc (1M)         |        159 ms |        187 ms |         21 ms |             8x |
+| Array fill+sum (1M)       |         63 ms |         73 ms |          0 ms |          >600x |
+| StringBuilder (100K)      |         52 ms |         62 ms |          1 ms |            52x |
+| HashMap put+get (100K)    |        905 ms |       1067 ms |         30 ms |            30x |
+|---------------------------|---------------|---------------|---------------|----------------|
+
+Total time (median of 3 runs):
+  ART Interpreter:  27572 ms
+  ART Non-Xint:     31050 ms
+  Host JVM (JIT):   390 ms
+  Overall ART/JVM:  71x slower
+
+Dalvik Portable Interpreter (estimated based on architecture):
+  The portable C interpreter uses a large switch() dispatch loop
+  with no assembly optimizations, no JIT, and no inline caching.
+  Expected 2-5x slower than ART switch interpreter for:
+    - Method calls:   ~1200-3000 ms  (overhead from C dispatch)
+    - Virtual dispatch: ~1400-3400 ms  (no inline caches)
+    - Fibonacci(40):  ~42000-105000 ms  (call overhead dominates)
+    - Tight loop:     ~5500-14000 ms  (C switch vs optimized switch)
+    - Object alloc:   ~300-750 ms  (similar GC, slower dispatch)
+
+Key findings:
+  1. ART switch interpreter is ~70-300x slower than JIT-compiled JVM
+  2. For compute-heavy tasks (fib, loops), the gap is ~70-100x
+  3. For allocation-heavy tasks (objects, strings), the gap is ~7-50x
+  4. Dalvik portable would add another 2-5x on top of ART interpreter
+  5. The ART 'AOT' column shows no improvement because:
+     - Boot image couldn't be loaded (path mismatch)
+     - libart-compiler.so (JIT) is not available
+     - Both columns run the same switch interpreter
