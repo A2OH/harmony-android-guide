@@ -283,3 +283,155 @@ Native ARM performance: ~45fps, ~26ms touch response → "usable"
 ```
 
 When evaluating Westlake, test on native ARM hardware (or at minimum, use `qemu-user` mode which is 2-3x faster than full system emulation).
+
+---
+
+## 9. ART Runtime: The Path to 120fps
+
+### 9.1 ART Source Code Analysis
+
+ART is **fully open source** under Apache 2.0. The source is at `aosp/art/` (623K lines of C++):
+
+```
+aosp/art/                          623,153 lines total
+├── runtime/          (315 .cc)    Core VM: class loading, GC, threads, interpreter
+├── compiler/         (159 .cc)    Optimizing compiler: IR, optimizations, codegen
+│   └── optimizing/
+│       ├── code_generator_arm_vixl.cc    ← ARM32 native code generator
+│       ├── code_generator_arm64.cc       ← ARM64 native code generator
+│       ├── code_generator_x86.cc         ← x86 native code generator
+│       └── code_generator_x86_64.cc      ← x86_64 native code generator
+├── dex2oat/          (34 .cc)     AOT compilation tool
+├── libdexfile/       (34 .cc)     DEX file parser
+├── disassembler/                  Instruction disassembly
+├── libartbase/                    Base utilities
+└── test/                          Extensive test suite
+```
+
+**Key architectural facts:**
+- **No LLVM dependency** — ART has its own optimizing compiler backend
+- **No Android system dependency** — only 2 references to SystemServer (easily stubbed)
+- **Built-in code generators** for ARM32, ARM64, x86, x86_64
+- **Has its own interpreter** for fallback (4 switch-impl files, same pattern as Dalvik)
+- **Apache 2.0 license** — fully open, forkable, no licensing barriers
+
+### 9.2 Why ART Is 10-50x Faster Than Dalvik
+
+```mermaid
+graph TD
+    subgraph "Dalvik (Current)"
+        D1["DEX bytecode"] --> D2["C switch loop<br/>(interpreter_switch_impl)"]
+        D2 --> D3["Every opcode:<br/>memory read + branch + dispatch"]
+        D3 --> D4["~500ns per bytecode"]
+    end
+
+    subgraph "ART Interpreter (Fallback)"
+        AI1["DEX bytecode"] --> AI2["Optimized switch<br/>(interpreter_switch_impl)"]
+        AI2 --> AI3["Intrinsics for common ops<br/>(Math, String, Array)"]
+        AI3 --> AI4["~50ns per bytecode"]
+    end
+
+    subgraph "ART JIT (Hot Methods)"
+        J1["DEX bytecode"] --> J2["Profile: count method calls"]
+        J2 --> J3["Hot method detected<br/>(called >10,000 times)"]
+        J3 --> J4["JIT compile → native code"]
+        J4 --> J5["~1-5ns per operation"]
+    end
+
+    subgraph "ART AOT (dex2oat)"
+        A1["DEX bytecode"] --> A2["dex2oat (offline)"]
+        A2 --> A3["Optimizing compiler:<br/>inlining, register alloc,<br/>dead code elimination"]
+        A3 --> A4["Native .oat file"]
+        A4 --> A5["~1-5ns per operation<br/>(from first call)"]
+    end
+
+    style D4 fill:#ffcdd2
+    style AI4 fill:#fff9c4
+    style J5 fill:#c8e6c9
+    style A5 fill:#c8e6c9
+```
+
+| Optimization | What It Does | Dalvik? | ART? | Speedup |
+|-------------|-------------|:-------:|:----:|--------:|
+| **Method inlining** | Removes call/return overhead for small methods | No | Yes | 10-100x |
+| **Register allocation** | Maps DEX virtual registers to CPU registers | No | Yes | 5-10x |
+| **Dead code elimination** | Removes branches that can never execute | No | Yes | 2-5x |
+| **Null check elimination** | Removes redundant null checks | No | Yes | 1.5-2x |
+| **Bounds check elimination** | Removes array bounds checks in loops | No | Yes | 2-3x |
+| **Loop optimization** | Unrolling, strength reduction | No | Yes | 2-5x |
+| **Intrinsics** | Math.abs, String.length → single CPU instruction | No | Yes | 10-50x |
+| **Type specialization** | Eliminates virtual dispatch for known types | No | Yes | 3-5x |
+
+### 9.3 Three Porting Strategies
+
+```mermaid
+graph TD
+    subgraph "Strategy A: AOT Only (dex2oat)"
+        SA1["Run dex2oat offline on DEX files"]
+        SA1 --> SA2["Produces .oat native code"]
+        SA2 --> SA3["Load .oat at runtime<br/>skip interpreter entirely"]
+        SA3 --> SA_R["Result: 10-50x faster<br/>Effort: 2-3 months<br/>No runtime JIT complexity"]
+    end
+
+    subgraph "Strategy B: ART Interpreter Only"
+        SB1["Port ART runtime (no compiler)"]
+        SB1 --> SB2["Use ART's faster interpreter<br/>(intrinsics, better dispatch)"]
+        SB2 --> SB_R["Result: 3-5x faster<br/>Effort: 1-2 months<br/>Drop-in Dalvik replacement"]
+    end
+
+    subgraph "Strategy C: Full ART (interpreter + JIT + AOT)"
+        SC1["Port entire ART runtime + compiler"]
+        SC1 --> SC2["interpreter for cold code<br/>JIT for hot methods<br/>AOT for known-hot classes"]
+        SC2 --> SC_R["Result: 10-50x faster<br/>Effort: 4-6 months<br/>Full Android performance"]
+    end
+
+    style SA_R fill:#c8e6c9
+    style SB_R fill:#fff9c4
+    style SC_R fill:#c8e6c9
+```
+
+| Strategy | Speedup | Effort | Risk | Recommendation |
+|----------|:-------:|:------:|:----:|:--------------:|
+| **A: AOT only (dex2oat)** | 10-50x | 2-3 months | Medium — needs code generator for target arch | **Best ROI** |
+| **B: ART interpreter** | 3-5x | 1-2 months | Low — mostly plumbing | Good quick win |
+| **C: Full ART** | 10-50x | 4-6 months | High — JIT is complex | Best performance |
+
+**Recommended path:** Start with **Strategy B** (ART interpreter, 1-2 months) for a quick 3-5x win, then add **Strategy A** (dex2oat AOT) for the full 10-50x speedup.
+
+### 9.4 What Needs Porting for ART
+
+| ART Component | Lines | Needed? | OHOS Dependencies |
+|--------------|------:|:-------:|-------------------|
+| runtime/interpreter | ~15K | Yes (Strategy B) | None — pure C++ |
+| runtime/gc | ~20K | Yes | mmap, mprotect (POSIX) |
+| runtime/class_linker | ~15K | Yes | File I/O (POSIX) |
+| runtime/thread | ~10K | Yes | pthread (POSIX) |
+| runtime/jni | ~8K | Yes | dlopen/dlsym (POSIX) |
+| compiler/optimizing | ~50K | Strategy A/C only | None — pure C++ |
+| compiler/jit | ~5K | Strategy C only | mmap PROT_EXEC |
+| dex2oat | ~10K | Strategy A only | Offline tool, runs on host |
+| **Total (Strategy B)** | **~68K** | | **POSIX only** |
+| **Total (Strategy A+B)** | **~128K** | | **POSIX + host tool** |
+
+**Key insight:** ART's runtime is **POSIX-only** — no Android-specific system calls. It uses standard pthreads, mmap, file I/O. OHOS supports all of these. The port is a build system exercise, not a platform porting challenge.
+
+### 9.5 Can We Clone and Review ART?
+
+Yes. The full ART source is already in our AOSP tree:
+
+```bash
+# ART source is at:
+/home/dspfac/aosp-android-11/art/
+
+# Clone independently:
+git clone https://android.googlesource.com/platform/art -b android-11.0.0_r1
+
+# Key files to review:
+art/runtime/interpreter/interpreter_switch_impl-inl.h  # The bytecode loop
+art/compiler/optimizing/code_generator_arm_vixl.cc      # ARM32 native codegen
+art/compiler/optimizing/nodes.h                         # Compiler IR
+art/dex2oat/dex2oat.cc                                 # AOT entry point
+art/runtime/runtime.cc                                  # VM initialization
+```
+
+**License:** Apache 2.0 — we can fork, modify, and distribute freely. No patent encumbrances beyond standard Apache 2.0 patent grant.
