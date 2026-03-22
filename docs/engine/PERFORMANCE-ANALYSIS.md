@@ -435,3 +435,42 @@ art/runtime/runtime.cc                                  # VM initialization
 ```
 
 **License:** Apache 2.0 — we can fork, modify, and distribute freely. No patent encumbrances beyond standard Apache 2.0 patent grant.
+
+---
+
+## 10. ART Strategy A Implementation Status (2026-03-22)
+
+### What's Built
+
+| Component | Files | Status |
+|-----------|:-----:|:------:|
+| dex2oat binary | 26MB ELF x86_64 | **Runs, prints usage** |
+| libdexfile | 17/17 | 100% |
+| libartbase | 27/27 | 100% |
+| compiler (optimizing) | 105/105 | 100% |
+| dex2oat driver | 17/17 | 100% |
+| VIXL ARM assembler | 23/23 | 100% |
+| android-base | 12/12 | 100% |
+| runtime | 217/217 | 100% |
+| **Total** | **421/421** | **100%** |
+
+### What Works
+
+```bash
+$ ./dex2oat --dex-file=app.dex --oat-file=out.oat --compiler-filter=verify --boot-image=:
+# Produces: out.vdex (3.2MB verified DEX container)
+```
+
+### Remaining Blocker
+
+dex2oat needs a **boot image** (boot.art + boot.oat) containing compiled `java.lang.Object`, `java.lang.String`, etc. Creating this requires either:
+1. Building from AOSP libcore source (complex — field layout must match ART's C++ mirror classes exactly)
+2. Extracting from a pre-built Android 11 system image (needs dynamic partition tools)
+3. Using an Android 11 emulator to pull the files via ADB
+
+### Next Steps
+
+1. Fix ISA path resolution crash in file_utils.cc (stub the path lookup)
+2. Create boot image from AOSP core-libart source with correct ART field layout
+3. AOT compile our interactive-demo.dex to native x86_64 code
+4. Cross-compile for ARM32 (code_generator_arm_vixl.cc already compiled)
