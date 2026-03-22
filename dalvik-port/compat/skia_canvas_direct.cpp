@@ -29,6 +29,7 @@
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkTypeface.h"
+#include "include/core/SkFontMgr.h"
 #include "include/core/SkData.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkRRect.h"
@@ -40,15 +41,36 @@ static const char *FONT_PATH = "/data/a2oh/font.ttf";
 
 /* ── Global typeface (raw pointer to avoid C++ global constructor) ── */
 static SkTypeface *g_typeface = nullptr;
+static SkFontMgr *g_fontMgr = nullptr;
+
+extern sk_sp<SkFontMgr> SkFontMgr_New_Custom_Directory(const char*);
+
 static void ensure_typeface() {
     if (g_typeface) return;
-    auto data = SkData::MakeFromFileName(FONT_PATH);
-    if (data) {
-        auto tf = SkTypeface::MakeFromData(data);
-        if (tf) { g_typeface = tf.release(); }
+    /* Create a font manager that scans /data/a2oh/ for .ttf files */
+    if (!g_fontMgr) {
+        auto mgr = SkFontMgr_New_Custom_Directory("/data/a2oh/");
+        if (mgr) g_fontMgr = mgr.release();
     }
-    /* Don't call MakeDefault — our null SkFontMgr crashes on dereference */
-    /* g_typeface may remain NULL — text rendering will be skipped */
+    if (g_fontMgr) {
+        /* Use the directory font manager to create typeface from font.ttf */
+        auto data = SkData::MakeFromFileName(FONT_PATH);
+        if (data) {
+            auto tf = g_fontMgr->makeFromData(data);
+            if (tf) { g_typeface = tf.release(); }
+        }
+        /* Fallback: pick first font the manager found */
+        if (!g_typeface && g_fontMgr->countFamilies() > 0) {
+            SkFontStyleSet *styleSet = g_fontMgr->createStyleSet(0);
+            if (styleSet && styleSet->count() > 0) {
+                auto tf = sk_sp<SkTypeface>(styleSet->createTypeface(0));
+                if (tf) g_typeface = tf.release();
+            }
+            if (styleSet) styleSet->unref();
+        }
+    }
+    if (g_typeface) fprintf(stderr, "Skia: typeface loaded OK\n");
+    else fprintf(stderr, "Skia: no typeface, text disabled\n");
 }
 
 /* ── Skia Canvas wrapper ── */
@@ -276,10 +298,8 @@ Java_com_ohos_shim_bridge_OHBridge_canvasDrawText(
     if (brush && brush != (SWBrush*)1) color = brush->color;
     else if (pen && pen != (SWPen*)1) color = pen->color;
 
-    if (g_typeface) { /* Only draw text if we have a font */
-        auto blob = SkTextBlob::MakeFromString(text, sc->font);
-        if (blob) sc->canvas->drawTextBlob(blob, x, y, makeFill(color));
-    }
+    auto blob = SkTextBlob::MakeFromString(text, sc->font);
+    if (blob) sc->canvas->drawTextBlob(blob, x, y, makeFill(color));
 
     env->ReleaseStringUTFChars(jtext, text);
 }
