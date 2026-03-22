@@ -47,10 +47,8 @@ static void ensure_typeface() {
         auto tf = SkTypeface::MakeFromData(data);
         if (tf) { g_typeface = tf.release(); }
     }
-    if (!g_typeface) {
-        auto tf = SkTypeface::MakeDefault();
-        if (tf) { g_typeface = tf.release(); }
-    }
+    /* Don't call MakeDefault — our null SkFontMgr crashes on dereference */
+    /* g_typeface may remain NULL — text rendering will be skipped */
 }
 
 /* ── Skia Canvas wrapper ── */
@@ -278,8 +276,10 @@ Java_com_ohos_shim_bridge_OHBridge_canvasDrawText(
     if (brush && brush != (SWBrush*)1) color = brush->color;
     else if (pen && pen != (SWPen*)1) color = pen->color;
 
-    auto blob = SkTextBlob::MakeFromString(text, sc->font);
-    if (blob) sc->canvas->drawTextBlob(blob, x, y, makeFill(color));
+    if (g_typeface) { /* Only draw text if we have a font */
+        auto blob = SkTextBlob::MakeFromString(text, sc->font);
+        if (blob) sc->canvas->drawTextBlob(blob, x, y, makeFill(color));
+    }
 
     env->ReleaseStringUTFChars(jtext, text);
 }
