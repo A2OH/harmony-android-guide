@@ -21,7 +21,7 @@ def patch(path, objdump_path):
     bl_va = None
     for line in r.stdout.split('\n'):
         for sym in ['do_init_fini>:', '__init_ssp>:', 'static_init_tls>:']:
-            if sym in line: addrs[sym[:-2]] = int(line.split()[0], 16)
+            if sym in line: addrs[sym[:-1]] = int(line.split()[0], 16)
         if 'bl' in line and '__init_tls>' in line and 'static_init_tls' not in line:
             m = re.match(r'\s*([0-9a-f]+):', line)
             if m: bl_va = int(m.group(1), 16)
