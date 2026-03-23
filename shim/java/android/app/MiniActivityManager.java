@@ -72,7 +72,9 @@ public class MiniActivityManager {
         try {
             Class<?> cls = mRegisteredClasses.get(className);
             if (cls == null) {
-                ClassLoader cl = MiniActivityManager.class.getClassLoader();
+                // Use context classloader (set by ART to app's PathClassLoader)
+                // NOT boot classloader (MiniActivityManager is on boot classpath)
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
                 if (cl == null) cl = ClassLoader.getSystemClassLoader();
                 cls = cl.loadClass(className);
             }
