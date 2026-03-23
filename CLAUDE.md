@@ -3,13 +3,22 @@
 ## What This Project Is
 
 This project runs **unmodified Android APKs on OpenHarmony** using:
-1. **Dalvik VM** -- KitKat-era VM ported to 64-bit (x86_64, OHOS aarch64, OHOS ARM32)
-2. **AOSP Framework** -- 193,000+ lines of unmodified AOSP code across 166 files (View, ViewGroup, TextView, LinearLayout, ListView, GridView, Spinner, ScrollView, ProgressBar, SearchView, Toolbar, etc.)
-3. **Stub Layer** -- ~250 minimal stub files for system service dependencies (ViewRootImpl, AccessibilityManager, Editor deps, etc.)
-4. **OHBridge** -- JNI bridge (169 methods) routing Android API calls to OHOS native APIs
-5. **MiniServer** -- Lightweight replacement for Android SystemServer (6 managers, ~2000 lines)
+1. **ART Runtime** -- AOSP 11 ART ported standalone (dex2oat AOT + dalvikvm runtime, 13-56x faster than Dalvik)
+2. **Dalvik VM** -- KitKat-era VM ported to 64-bit (x86_64, OHOS aarch64, OHOS ARM32) -- baseline/fallback
+3. **AOSP Framework** -- 193,000+ lines of unmodified AOSP code across 167+ files (View, ViewGroup, TextView, LinearLayout, ListView, GridView, Spinner, ScrollView, ProgressBar, SearchView, Toolbar, etc.)
+4. **Stub Layer** -- ~250 minimal stub files for system service dependencies (ViewRootImpl, AccessibilityManager, Editor deps, etc.)
+5. **OHBridge** -- JNI bridge (172 methods) routing Android API calls to OHOS native APIs
+6. **MiniServer** -- Lightweight replacement for Android SystemServer (6 managers, ~2000 lines)
 
 The engine approach: 99% of Android API calls stay inside the VM as pure Java. Only ~15 HAL-level boundaries cross to native code via JNI.
+
+**ART Runtime (Strategy A — COMPLETE):**
+- dex2oat: 17MB AOT compiler (421 source files from AOSP 11)
+- dalvikvm: 11MB x86-64, 7.5MB OHOS ARM64 (static)
+- Boot image: 8.7MB compiled native code
+- Real benchmark: 13-56x speedup over Dalvik (method calls 43x, fibonacci 56x)
+- Build: `A2OH/art-universal` repo, Makefile + Makefile.ohos-arm64
+- 75 JNI native stubs (ICU, javacore, openjdk)
 
 ## Key Skills for Building This Project
 
@@ -130,8 +139,10 @@ mkdir -p $ANDROID_DATA/dalvik-cache $ANDROID_ROOT/bin
 
 ```
 A2OH/westlake           -- Integration (this repo)
+A2OH/art-universal       -- ART runtime port (dex2oat + dalvikvm, Makefile build)
 A2OH/dalvik-universal    -- Dalvik VM source + 64-bit port
-A2OH/openharmony-wsl     -- OHOS build on WSL2/QEMU
+A2OH/openharmony-wsl     -- OHOS ARM32 build on WSL2/QEMU
+A2OH/openharmony-arm64   -- OHOS ARM64 build + QEMU aarch64 (ART deployment)
 ```
 
 ### This Repo Structure
@@ -174,6 +185,11 @@ westlake/
 | Render PNG screenshot | `java -cp build FrameDumper` -> `/tmp/*.png` |
 | Analyze an APK | `dexdump` -> categorize types -> gap report |
 | Add AOSP class to engine | Copy from AOSP, stub deps, compile, test (Option B) |
+| Build ART (x86-64) | `cd /home/dspfac/art-universal-build && make -j8 link link-runtime` |
+| Build ART (OHOS ARM64) | `make -f Makefile.ohos-arm64 -j8 link-runtime` |
+| AOT compile DEX for ARM64 | `dex2oat --dex-file=app.dex --instruction-set=arm64 --compiler-filter=speed` |
+| Run APK on ART | `scripts/run-apk.sh path/to/app.apk com.example.MainActivity` |
+| Run on OHOS ARM64 QEMU | See `docs/AGENT-A-TASKS.md` for boot commands |
 
 ## Project Key Paths
 
@@ -188,4 +204,12 @@ westlake/
 | API compatibility database | `database/api_compat.db` |
 | Dalvik VM (x86_64) | `dalvik-port/build/dalvikvm` |
 | Dalvik VM (OHOS ARM32) | `dalvik-port/build-ohos-arm32/dalvikvm` |
+| ART dex2oat (x86_64) | `/home/dspfac/art-universal-build/build/bin/dex2oat` |
+| ART dalvikvm (x86_64) | `/home/dspfac/art-universal-build/build/bin/dalvikvm` |
+| ART dalvikvm (OHOS ARM64) | `/home/dspfac/art-universal-build/build-ohos-arm64/bin/dalvikvm` |
+| ART boot image | `/home/dspfac/android-to-openharmony-migration/art-boot-image/` |
+| ART build system | `/home/dspfac/art-universal-build/Makefile` |
+| ART stubs | `/home/dspfac/art-universal-build/stubs/` |
+| OHOS deploy package | `ohos-deploy/` (dalvikvm + boot image + app + bridge) |
+| OHOS ARM64 QEMU | `/home/dspfac/openharmony-arm64/` |
 | AOSP source (local) | `/home/dspfac/aosp-android-11/frameworks/base/core/java/android/` |
