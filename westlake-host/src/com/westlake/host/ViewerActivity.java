@@ -41,16 +41,33 @@ public class ViewerActivity extends Activity {
         return true;
     }
 
+    private boolean loaded = false;
     private Runnable pollPng = new Runnable() {
         public void run() {
-            File f = new File(PNG_PATH);
-            if (f.exists() && f.length() > 100) {
-                Bitmap bmp = BitmapFactory.decodeFile(PNG_PATH);
-                if (bmp != null) iv.setImageBitmap(bmp);
+            if (!loaded) {
+                File f = new File(PNG_PATH);
+                if (f.exists() && f.length() > 100) {
+                    Bitmap bmp = BitmapFactory.decodeFile(PNG_PATH);
+                    if (bmp != null) {
+                        iv.setImageBitmap(bmp);
+                        loaded = true;
+                        // Keep polling for updates after touch
+                    }
+                }
+            } else {
+                // Check if PNG was updated (after touch navigation)
+                File f = new File(PNG_PATH);
+                long mod = f.lastModified();
+                if (mod > lastMod) {
+                    lastMod = mod;
+                    Bitmap bmp = BitmapFactory.decodeFile(PNG_PATH);
+                    if (bmp != null) iv.setImageBitmap(bmp);
+                }
             }
-            handler.postDelayed(this, 500);
+            handler.postDelayed(this, 200);
         }
     };
+    private long lastMod = 0;
 
     private void writeTouchEvent(int action, int x, int y) {
         try {

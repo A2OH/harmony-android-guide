@@ -130,6 +130,7 @@ public class MockDonaldsApp {
                         int seq = bb.getInt();
                         if (seq != lastTouchSeq && action == 1) { // Only process UP (click)
                             lastTouchSeq = seq;
+                            touchFile.delete(); // prevent re-read
                             System.out.println("[MockDonaldsApp] Click at (" + x + "," + y + ")");
                             // Find the clickable view at (x,y) and click it directly
                             android.view.View decor = current.getWindow().getDecorView();
@@ -171,9 +172,11 @@ public class MockDonaldsApp {
                                     System.out.println("[MockDonaldsApp] Navigated to " + next.getClass().getSimpleName());
                                 }
                                 next.renderFrame();
+                                // Signal C to write new PNG
                             }
                         } else if (seq != lastTouchSeq) {
-                            lastTouchSeq = seq; // consume DOWN/MOVE without processing
+                            lastTouchSeq = seq;
+                            touchFile.delete(); // prevent re-read // consume DOWN/MOVE without processing
                         }
                     }
                 } catch (Exception e) {
@@ -181,14 +184,8 @@ public class MockDonaldsApp {
                 }
             }
 
-            // Re-render
-            current.renderFrame();
+            // Only render on touch — no continuous rendering
             frameCount++;
-
-            if (frameCount % 600 == 0) {
-                System.out.println("[MockDonaldsApp] Frame " + frameCount
-                        + " activity=" + current.getClass().getSimpleName());
-            }
         }
         System.out.println("[MockDonaldsApp] Render loop ended after " + frameCount + " frames");
     }
