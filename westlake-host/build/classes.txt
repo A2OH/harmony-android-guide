@@ -1,0 +1,4 @@
+/home/dspfac/android-to-openharmony-migration/westlake-host/build/classes/com/westlake/host/ViewerActivity.class
+/home/dspfac/android-to-openharmony-migration/westlake-host/build/classes/com/westlake/host/R$string.class
+/home/dspfac/android-to-openharmony-migration/westlake-host/build/classes/com/westlake/host/R.class
+/home/dspfac/android-to-openharmony-migration/westlake-host/build/classes/com/westlake/host/R$attr.class
