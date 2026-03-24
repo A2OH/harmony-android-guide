@@ -73,12 +73,30 @@ public class MockDonaldsApp {
      * Simple render loop: re-render the current Activity's view tree.
      * Touch events arrive via OHBridge.dispatchTouchEvent() from native.
      */
-    private static final String TOUCH_PATH = "/sdcard/Android/data/com.westlake.host/files/touch.dat";
+    private static final String[] TOUCH_PATHS = {
+        "/sdcard/Android/data/com.westlake.host/files/touch.dat",
+        "/storage/emulated/0/Android/data/com.westlake.host/files/touch.dat",
+        "/data/local/tmp/a2oh/touch.dat",
+        "/sdcard/westlake_touch.dat"
+    };
 
     private static void renderLoop(Activity initialActivity, MiniActivityManager am) {
         long frameCount = 0;
         int lastTouchSeq = -1;
-        java.io.File touchFile = new java.io.File(TOUCH_PATH);
+        java.io.File touchFile = null;
+        // Find first readable touch file
+        for (String p : TOUCH_PATHS) {
+            java.io.File f = new java.io.File(p);
+            if (f.getParentFile() != null && f.getParentFile().exists()) {
+                touchFile = f;
+                System.out.println("[MockDonaldsApp] Touch file: " + p);
+                break;
+            }
+        }
+        if (touchFile == null) {
+            touchFile = new java.io.File(TOUCH_PATHS[0]);
+            System.out.println("[MockDonaldsApp] Touch file fallback: " + TOUCH_PATHS[0]);
+        }
 
         while (true) {
             try {
@@ -94,36 +112,36 @@ public class MockDonaldsApp {
             }
 
             // Check for touch events
-            try {
-                if (frameCount == 60) System.out.println("[TOUCH] checking " + touchFile.getAbsolutePath() + " exists=" + touchFile.exists() + " len=" + touchFile.length()); if (touchFile.exists() && touchFile.length() == 16) {
+            if (touchFile.exists() && touchFile.length() == 16) {
+                try {
                     java.io.FileInputStream fis = new java.io.FileInputStream(touchFile);
                     byte[] buf = new byte[16];
-                    fis.read(buf);
+                    int n = fis.read(buf);
                     fis.close();
-                    java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(buf);
-                    bb.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-                    int action = bb.getInt();
-                    int x = bb.getInt();
-                    int y = bb.getInt();
-                    int seq = bb.getInt();
-                    if (seq != lastTouchSeq) {
-                        lastTouchSeq = seq;
-                        // Map action: 0=DOWN, 1=UP, 2=MOVE
-                        int motionAction = action; // MotionEvent.ACTION_DOWN=0, UP=1, MOVE=2
-                        android.view.MotionEvent me = android.view.MotionEvent.obtain(
-                            0, 0, motionAction, (float)x, (float)y, 0);
-                        current.dispatchTouchEvent(me);
-                        if (action == 1) { // UP — re-render after click
-                            current = am.getResumedActivity(); // activity may have changed
-                            if (current != null) {
-                                current.renderFrame();
-                                System.out.println("[MockDonaldsApp] Touch UP at (" + x + "," + y + ") → " +
-                                    current.getClass().getSimpleName());
+                    if (n == 16) {
+                        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(buf);
+                        bb.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                        int action = bb.getInt();
+                        int x = bb.getInt();
+                        int y = bb.getInt();
+                        int seq = bb.getInt();
+                        if (seq != lastTouchSeq) {
+                            lastTouchSeq = seq;
+                            System.out.println("[MockDonaldsApp] Touch action=" + action
+                                + " at (" + x + "," + y + ") seq=" + seq);
+                            android.view.MotionEvent me = android.view.MotionEvent.obtain(
+                                0, 0, action, (float)x, (float)y, 0);
+                            current.dispatchTouchEvent(me);
+                            if (action == 1) {
+                                current = am.getResumedActivity();
+                                if (current != null) current.renderFrame();
                             }
                         }
                     }
+                } catch (Exception e) {
+                    if (frameCount < 10) System.out.println("[MockDonaldsApp] Touch error: " + e);
                 }
-            } catch (Exception e) { /* ignore touch read errors */ }
+            }
 
             // Re-render
             current.renderFrame();
