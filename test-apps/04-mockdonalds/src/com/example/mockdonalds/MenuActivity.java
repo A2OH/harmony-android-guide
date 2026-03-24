@@ -40,6 +40,7 @@ public class MenuActivity extends Activity {
 
         // Cart count
         cartCountView = new TextView(getApplicationContext());
+        cartCountView.setTextSize(14);
         updateCartCount();
         root.addView(cartCountView);
 
@@ -61,9 +62,10 @@ public class MenuActivity extends Activity {
         });
         root.addView(listView);
 
-        // Cart button
+        // Cart button with fixed height
         Button cartBtn = new Button(new android.content.Context());
         cartBtn.setText("View Cart");
+        cartBtn.setTextSize(18);
         cartBtn.setOnClickListener(new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
                 Intent intent = new Intent();
