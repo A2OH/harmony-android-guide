@@ -4,60 +4,41 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.widget.ImageView;
 import java.io.File;
 import java.io.FileInputStream;
 
-/**
- * Displays framebuffer.raw rendered by dalvikvm's Westlake engine.
- * Uses ImageView instead of SurfaceView to avoid double-buffer flicker.
- */
 public class ViewerActivity extends Activity {
     private static final String FB_PATH = "/data/local/tmp/a2oh/framebuffer.raw";
     private static final int FB_W = 480;
     private static final int FB_H = 800;
 
-    private ImageView imageView;
-    private Bitmap bitmap;
-    private int[] pixels;
-    private byte[] raw;
-    private Handler handler;
-    private long lastMod = 0;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        imageView = new ImageView(this);
-        imageView.setBackgroundColor(Color.BLACK);
-        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        setContentView(imageView);
+        ImageView iv = new ImageView(this);
+        iv.setBackgroundColor(Color.BLACK);
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        setContentView(iv);
 
-        bitmap = Bitmap.createBitmap(FB_W, FB_H, Bitmap.Config.ARGB_8888);
-        pixels = new int[FB_W * FB_H];
-        raw = new byte[FB_W * FB_H * 4];
-        handler = new Handler();
-
-        /* Poll for framebuffer updates */
-        handler.post(new Runnable() {
-            public void run() {
-                updateFrame();
-                handler.postDelayed(this, 100); /* 10fps polling */
-            }
-        });
+        /* Read framebuffer once and display */
+        Bitmap bmp = readFramebuffer();
+        if (bmp != null) {
+            iv.setImageBitmap(bmp);
+        }
     }
 
-    private void updateFrame() {
+    private Bitmap readFramebuffer() {
         try {
+            /* Wait for file to exist */
             File f = new File(FB_PATH);
-            if (!f.exists() || f.length() != FB_W * FB_H * 4) return;
-            long mod = f.lastModified();
-            if (mod == lastMod) return;
-            lastMod = mod;
+            for (int i = 0; i < 50 && (!f.exists() || f.length() != FB_W * FB_H * 4); i++) {
+                Thread.sleep(200);
+            }
+            if (!f.exists() || f.length() != FB_W * FB_H * 4) return null;
 
-            /* Check lock file */
-            if (new File(FB_PATH + ".lock").exists()) return;
-
+            /* Read */
+            byte[] raw = new byte[FB_W * FB_H * 4];
             FileInputStream fis = new FileInputStream(f);
             int total = 0;
             while (total < raw.length) {
@@ -66,9 +47,10 @@ public class ViewerActivity extends Activity {
                 total += n;
             }
             fis.close();
-            if (total != raw.length) return;
+            if (total != raw.length) return null;
 
             /* BGRA → ARGB */
+            int[] pixels = new int[FB_W * FB_H];
             for (int i = 0; i < FB_W * FB_H; i++) {
                 int off = i * 4;
                 int b = raw[off] & 0xFF;
@@ -77,10 +59,11 @@ public class ViewerActivity extends Activity {
                 int a = raw[off + 3] & 0xFF;
                 pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
             }
-            bitmap.setPixels(pixels, 0, FB_W, 0, 0, FB_W, FB_H);
-            imageView.setImageBitmap(bitmap);
+            Bitmap bmp = Bitmap.createBitmap(FB_W, FB_H, Bitmap.Config.ARGB_8888);
+            bmp.setPixels(pixels, 0, FB_W, 0, 0, FB_W, FB_H);
+            return bmp;
         } catch (Exception e) {
-            /* ignore */
+            return null;
         }
     }
 }
