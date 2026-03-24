@@ -1,11 +1,33 @@
 # Agent A Tasks: OHOS Native Side — Make Pixels Appear
 
-**Date:** 2026-03-23
-**Status:** MockDonalds RUNS end-to-end on x86_64 ART. Activity lifecycle + rendering loop working.
+**Date:** 2026-03-24
+**Status:** MockDonalds RUNS NATIVELY on Huawei Mate 20 Pro with real Android Views + touch navigation.
 
 ---
 
-## Milestone: MockDonalds Running (2026-03-23)
+## Milestone: MockDonalds on Real Phone (2026-03-24)
+
+MockDonalds runs on a Huawei Mate 20 Pro (LYA-L29, Android 10) using real
+Android Views (LinearLayout, ListView, Button, TextView). Full touch navigation
+works: menu -> item detail -> add to cart -> back to menu. Cart counter persists
+across navigation.
+
+**Key achievement:** Platform coupling reduced to only `liboh_bridge.so` (~25 C
+functions wrapping Canvas/Paint/Path) + `WestlakeActivity.java` (~150 lines).
+Everything else is platform-independent Java.
+
+### How it works on phone
+
+1. `WestlakeActivity` (extends `android.app.Activity`) creates a child-first `DexClassLoader`
+2. The classloader loads `app.dex` containing MockDonalds + MiniServer + shim classes
+3. Child-first loading ensures our shim `android.widget.*` classes take priority over framework
+4. `ShimCompat` handles framework version incompatibilities via reflection
+5. `OHBridge` has 170 registered JNI methods; on phone, `liboh_bridge.so` delegates to real Android Canvas/Paint/Path
+6. Real Android Views render natively — no custom canvas drawing needed
+
+---
+
+## Milestone: MockDonalds on x86_64 ART (2026-03-23)
 
 MockDonalds app runs the full Android Activity lifecycle on ART:
 
@@ -30,26 +52,52 @@ MockDonalds app runs the full Android Activity lifecycle on ART:
 
 ---
 
-## What was fixed to get here
+## Test Results Summary
 
-### Agent B fixes
-1. **artFindNativeMethod** — replaced stub with real `dlsym()` lookup in loaded libraries
-2. **MiniActivityManager classloader** — `Thread.currentThread().getContextClassLoader()` with `getSystemClassLoader()` fallback, so boot classpath code can find app classes
-3. **aosp-shim.dex** — rebuilt with overlapping classes excluded, correct DEX headers
-
-### Agent A fixes (platform/native side)
-1. **Runtime_nativeLoad** — was a no-op stub returning NULL ("success" without `dlopen`). Fixed to actually call `dlopen()` + `JNI_OnLoad`
-2. **registerNativesOrSkip** — changed from batch-or-nothing to per-method registration so one bad signature doesn't block all methods
-3. **ZipFile native methods** — implemented `open`, `close`, `getEntry`, `read`, `startsWithLOC`, `getTotal` + 8 more using mmap-based ZIP reading. Required by `ClassLoader.loadClass()` to scan boot classpath JARs
-4. **UnixFileSystem natives** — `initIDs`, `getBooleanAttributes0`, `canonicalize0`, `getLastModifiedTime0`, `createDirectory0`, `list0`, etc. Required for `java.io.File` operations
-5. **Math/StrictMath natives** — `sin`, `cos`, `tan`, `sqrt`, `pow`, `ceil`, `floor`, `exp`, `log` + 20 more. Wraps libc math functions. Required by `EdgeEffect` and rendering code
-6. **x86_64 OHBridge stub** — auto-generated 169 JNI method stubs matching exact DEX signatures from `aosp-shim.dex`, with working log output to stdout
-7. **x86_64 boot image** — generated with `dex2oat` for fast host testing (1.2s compile, <1s startup)
+| Platform | Runtime | FPS | Touch | Views | Status |
+|----------|---------|-----|-------|-------|--------|
+| x86_64 host | ART (AOT) | 60 | N/A | Headless draw log | 14/14 tests pass |
+| ARM64 on phone | dalvikvm | 120 | Yes | Canvas rendering | Working |
+| Mate 20 Pro native | Android 10 ART | Native | Yes | Real Android Views | Working |
 
 ---
 
-## Current architecture (x86_64 fast path)
+## What was fixed to get here
 
+### Phone-native milestone fixes
+1. **WestlakeActivity** — Child-first DexClassLoader that loads app.dex, delegates only `java.*` and `android.app.Activity` to parent
+2. **ShimCompat** — Reflection-based compatibility: handles `Context.getSystemService()`, `Resources`, `PackageManager` differences across framework versions
+3. **OHBridge phone bridge** — `liboh_bridge.so` with 170 JNI methods, delegates Canvas/Paint/Path to real Android implementations (~25 methods, 4 classes)
+4. **Touch pipeline** — DOWN/UP events written to file by viewer, read by dalvikvm event loop, dispatched to View tree
+5. **Activity navigation** — MiniActivityManager back stack: finish() pops, startActivity() pushes, cart state persists
+
+### x86_64 ART milestone fixes
+1. **Runtime_nativeLoad** — Was no-op stub. Fixed to actually `dlopen()` + `JNI_OnLoad`
+2. **registerNativesOrSkip** — Per-method registration so one bad signature doesn't block all methods
+3. **ZipFile natives** — 12+ methods using mmap-based ZIP reading for ClassLoader.loadClass()
+4. **UnixFileSystem natives** — File operations for java.io.File
+5. **Math/StrictMath natives** — 27+ methods wrapping libc math
+6. **x86_64 OHBridge stub** — Auto-generated 169 JNI stubs matching DEX signatures
+7. **x86_64 boot image** — dex2oat AOT compilation (1.2s compile, <1s startup)
+
+---
+
+## Current architecture
+
+### Phone-native path
+```
+Huawei Mate 20 Pro (Android 10)
+├── WestlakeActivity.java (host, child-first DexClassLoader)
+├── app.dex (MockDonalds + MiniServer + shim classes)
+├── liboh_bridge.so (~25 methods → real Canvas/Paint/Path)
+└── ShimCompat (reflection-based framework compat)
+
+ClassLoader chain:
+  BootClassLoader → PathClassLoader → Child-First DexClassLoader
+  (app.dex classes loaded first, framework only for java.*/Activity)
+```
+
+### x86_64 fast path
 ```
 Host x86_64
 ├── dalvikvm (x86_64, dynamically linked)
@@ -65,37 +113,52 @@ Host x86_64
 
 ---
 
-## ARM64 QEMU status
+## Platform coupling analysis
 
-**Blocked:** ART hangs at `InitNativeMethods` for 30+ minutes on emulated ARM64.
+**Platform-specific (must change per target):**
+- `liboh_bridge.so`: ~25 C functions wrapping Canvas, Paint, FontMetrics, Path
+- `WestlakeActivity.java`: ~150 lines, host Activity with child-first classloader
 
-- Boot image loads successfully (22ms)
-- Class tables added
-- Hangs during `RegisterRuntimeNativeMethods` or `WellKnownClasses::Init`
-- QEMU ARM64 emulation adds ~100x overhead vs native
-- stub libraries (libicu_jni.so, libopenjdk.so) deployed but static dalvikvm's dlopen may not find them
+**Platform-independent (unchanged across targets):**
+- MiniServer, MiniActivityManager, MiniWindowManager
+- All View classes (LinearLayout, ListView, Button, TextView, etc.)
+- ShimCompat, OHBridge Java side (170 methods)
+- All application code (MockDonalds)
+- Intent/Bundle/extras, BaseAdapter, Canvas/Paint Java API
 
-**Path forward:** Either:
-1. Build a faster kernel/QEMU (KVM acceleration if available)
-2. Pre-link the stub libraries into the dalvikvm binary statically
-3. Use x86_64 for development, deploy to real ARM64 hardware for VNC demo
+**Total platform-specific surface: ~150 lines Java + ~25 C functions**
 
 ---
 
-## Remaining work for P0 (pixels on VNC)
+## Known issues
 
-### Option A: ARM64 QEMU (blocked by speed)
-- Fix `InitNativeMethods` hang (need stub libs statically linked or faster emulation)
-- The ARM64 liboh_bridge.so already has real surface → fb0 → VNC pipeline
+| Issue | Severity | Notes |
+|-------|----------|-------|
+| No SQLite on phone path | Medium | In-memory data only |
+| No SharedPreferences | Medium | Cart state in memory only |
+| No XML layout inflation | Medium | Programmatic layouts only |
+| No Bitmap loading | Low | Text-only UI |
+| No animation | Low | Static transitions |
 
-### Option B: x86_64 with image output (works now)
-- Modify OHBridge stub to render to an image file instead of fb0
-- View rendered frames as PNG/PPM files
-- No VNC needed — just file output
+---
 
-### P1 (touch input)
-- ARM64 QEMU has virtio-tablet-pci for touch
-- x86_64 would need a different input mechanism
+## Remaining work
+
+### P0: OHOS port
+- Reimplement `liboh_bridge.so` (~25 functions) against ArkUI/Skia on OpenHarmony
+- Port `WestlakeActivity` equivalent for OHOS app entry point
+- Everything else stays the same
+
+### P1: Feature gaps
+- SQLite via JNI to native SQLite library
+- SharedPreferences with file-backed XML storage
+- XML layout inflation (AXML parser exists)
+- Bitmap loading via Skia/stb_image
+
+### P2: Polish
+- View animations
+- Resources.getString() from resources.arsc
+- Multi-window support
 
 ---
 
@@ -103,16 +166,18 @@ Host x86_64
 
 | What | Path |
 |------|------|
-| x86_64 dalvikvm | `/home/dspfac/art-universal-build/build/bin/dalvikvm` |
-| x86_64 boot image | `/tmp/a2ohd/x86_64/boot.art` + `boot.oat` |
+| WestlakeActivity | `android-to-openharmony-migration/phone/WestlakeActivity.java` |
+| liboh_bridge.so (phone) | `art-universal-build/stubs/oh_bridge_phone.c` |
+| ShimCompat | `android-to-openharmony-migration/shim/java/.../ShimCompat.java` |
+| MiniServer | `android-to-openharmony-migration/shim/java/.../MiniServer.java` |
+| x86_64 dalvikvm | `art-universal-build/build/bin/dalvikvm` |
 | x86_64 OHBridge stub | `/tmp/oh_bridge_x86_auto.c` (auto-generated) |
-| openjdk stub (Math+ZipFile) | `/home/dspfac/art-universal-build/stubs/openjdk_stub.c` |
-| javacore stub | `/home/dspfac/art-universal-build/stubs/javacore_stub.c` |
-| ARM64 dalvikvm | `/home/dspfac/art-universal-build/build-ohos-arm64/bin/dalvikvm` |
-| ARM64 userdata image | `/tmp/ohos-arm64-images/userdata-art.img` |
+| openjdk stub | `art-universal-build/stubs/openjdk_stub.c` |
+| javacore stub | `art-universal-build/stubs/javacore_stub.c` |
+| ARM64 dalvikvm | `art-universal-build/build-ohos-arm64/bin/dalvikvm` |
 | Test data dir (x86_64) | `/tmp/a2ohd/` |
-| QEMU (system) | `/tmp/qemu-8.2.2/build/qemu-system-aarch64` |
-| QEMU (user-mode) | `/tmp/qemu-8.2.2/build-user/qemu-aarch64` |
+| Westlake status doc | `docs/engine/WESTLAKE-STATUS.md` |
+| Westlake status (CN) | `docs/engine/WESTLAKE-STATUS_CN.md` |
 
 ## Run x86_64 test
 ```bash
@@ -131,7 +196,9 @@ $ART/bin/dalvikvm \
 
 ## Success criteria
 
-1. ~~artFindNativeMethod finds OHBridge methods via dlsym~~ ✅
-2. ~~MockDonalds MenuActivity launches and calls View.draw()~~ ✅
-3. Pixels appear on VNC via fb0 ⏳ (blocked by ARM64 speed)
-4. Touch input navigates between Activities ⏳
+1. ~~artFindNativeMethod finds OHBridge methods via dlsym~~ Done
+2. ~~MockDonalds MenuActivity launches and calls View.draw()~~ Done
+3. ~~MockDonalds runs on real phone with touch navigation~~ Done
+4. ~~Cart counter persists across Activity navigation~~ Done
+5. OHOS port: reimplement liboh_bridge.so for ArkUI/Skia -- Next
+6. SQLite + SharedPreferences -- P1
