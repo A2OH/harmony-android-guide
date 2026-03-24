@@ -73,7 +73,7 @@ public class MockDonaldsApp {
      * Simple render loop: re-render the current Activity's view tree.
      * Touch events arrive via OHBridge.dispatchTouchEvent() from native.
      */
-    private static final String TOUCH_PATH = "/sdcard/westlake_touch.dat";
+    private static final String TOUCH_PATH = "/sdcard/Android/data/com.westlake.host/files/touch.dat";
 
     private static void renderLoop(Activity initialActivity, MiniActivityManager am) {
         long frameCount = 0;
@@ -95,7 +95,7 @@ public class MockDonaldsApp {
 
             // Check for touch events
             try {
-                if (touchFile.exists() && touchFile.length() == 16) {
+                if (frameCount == 60) System.out.println("[TOUCH] checking " + touchFile.getAbsolutePath() + " exists=" + touchFile.exists() + " len=" + touchFile.length()); if (touchFile.exists() && touchFile.length() == 16) {
                     java.io.FileInputStream fis = new java.io.FileInputStream(touchFile);
                     byte[] buf = new byte[16];
                     fis.read(buf);

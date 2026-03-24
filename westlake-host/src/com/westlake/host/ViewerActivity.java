@@ -28,7 +28,7 @@ public class ViewerActivity extends Activity {
         iv.setScaleType(ImageView.ScaleType.FIT_XY);
         setContentView(iv);
         handler = new Handler();
-        touchPath = "/data/local/tmp/a2oh/touch.dat";
+        touchPath = getExternalFilesDir(null).getAbsolutePath() + "/touch.dat";
         handler.post(pollPng);
     }
 
@@ -39,7 +39,7 @@ public class ViewerActivity extends Activity {
         if (event.getAction() == MotionEvent.ACTION_DOWN) action = 0;
         else if (event.getAction() == MotionEvent.ACTION_UP) action = 1;
         writeTouchEvent(action, (int)x, (int)y);
-        try { new java.io.FileOutputStream("/data/local/tmp/a2oh/touched").close(); } catch(Exception ex){}
+        try { new java.io.FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/touched").close(); } catch(Exception ex){}
         return true;
     }
 
