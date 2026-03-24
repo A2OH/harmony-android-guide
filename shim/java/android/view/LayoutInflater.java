@@ -1,11 +1,15 @@
 package android.view;
 import android.content.Context;
+import android.content.res.BinaryXmlParser;
+import android.content.res.Resources;
+import android.content.res.ResourceTable;
 import android.util.AttributeSet;
 import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.HashMap;
+import org.xmlpull.v1.XmlPullParser;
 
 /**
  * LayoutInflater — inflates layout resources into View trees.
@@ -250,6 +254,450 @@ public class LayoutInflater {
             return root;
         }
         return view;
+    }
+
+    // ── AXML-based inflation via BinaryXmlParser ─────────────────────────
+
+    /**
+     * Inflate a layout from an XmlPullParser (typically a BinaryXmlParser
+     * wrapping compiled AXML data from an APK).
+     */
+    public View inflate(XmlPullParser parser, ViewGroup root) {
+        return inflate(parser, root, root != null);
+    }
+
+    /**
+     * Inflate a layout from an XmlPullParser with attachToRoot control.
+     * Walks the XML event stream, creating Views for each START_TAG and
+     * building the parent-child tree.
+     */
+    public View inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot) {
+        if (parser == null) return root;
+
+        View result = root;
+        try {
+            // Advance to the first START_TAG
+            int type;
+            while ((type = parser.next()) != XmlPullParser.START_TAG
+                    && type != XmlPullParser.END_DOCUMENT) {
+                // skip
+            }
+            if (type != XmlPullParser.START_TAG) {
+                return root; // no elements
+            }
+
+            String tagName = parser.getName();
+            boolean isMerge = "merge".equals(tagName);
+
+            View rootView = null;
+            if (isMerge) {
+                if (root == null) {
+                    throw new android.view.InflateException(
+                            "<merge /> can only be used with a valid ViewGroup root");
+                }
+                inflateChildren(parser, root);
+            } else {
+                rootView = createViewFromTag(tagName);
+                if (rootView == null) {
+                    rootView = new FrameLayout(mContext);
+                }
+
+                // Apply attributes from the parser to the root view
+                applyXmlAttributes(rootView, parser);
+
+                // Parse LayoutParams from the root element
+                ViewGroup.LayoutParams params = null;
+                if (root != null) {
+                    params = generateLayoutParams(root, parser);
+                }
+
+                // Inflate children if this is a ViewGroup
+                if (rootView instanceof ViewGroup) {
+                    inflateChildren(parser, (ViewGroup) rootView);
+                } else {
+                    // Skip to matching END_TAG
+                    skipToEndTag(parser);
+                }
+
+                // Attach to root or set layout params
+                if (root != null) {
+                    if (attachToRoot) {
+                        if (params != null) {
+                            root.addView(rootView, params);
+                        } else {
+                            root.addView(rootView);
+                        }
+                        result = root;
+                    } else {
+                        if (params != null) {
+                            rootView.setLayoutParams(params);
+                        }
+                        result = rootView;
+                    }
+                } else {
+                    result = rootView;
+                }
+            }
+        } catch (Exception e) {
+            // Inflation failed, return whatever we have
+        }
+        return result;
+    }
+
+    /**
+     * Inflate child elements from the parser into the given parent ViewGroup.
+     */
+    private void inflateChildren(XmlPullParser parser, ViewGroup parent) throws Exception {
+        int depth = parser.getDepth();
+        int type;
+
+        while (true) {
+            type = parser.next();
+            if (type == XmlPullParser.END_TAG && parser.getDepth() <= depth) {
+                break;
+            }
+            if (type == XmlPullParser.END_DOCUMENT) {
+                break;
+            }
+            if (type != XmlPullParser.START_TAG) {
+                continue;
+            }
+
+            String tagName = parser.getName();
+
+            // Handle <include> tag
+            if ("include".equals(tagName)) {
+                handleInclude(parser, parent);
+                continue;
+            }
+
+            // Handle <requestFocus> and <fragment>
+            if ("requestFocus".equals(tagName) || "fragment".equals(tagName)) {
+                skipToEndTag(parser);
+                continue;
+            }
+
+            // Create the child View
+            View child = createViewFromTag(tagName);
+            if (child == null) {
+                child = new View(mContext);
+            }
+
+            // Apply attributes
+            applyXmlAttributes(child, parser);
+
+            // Generate layout params from the parent
+            ViewGroup.LayoutParams params = generateLayoutParams(parent, parser);
+
+            // Inflate grandchildren if this child is a ViewGroup
+            if (child instanceof ViewGroup) {
+                inflateChildren(parser, (ViewGroup) child);
+            } else {
+                skipToEndTag(parser);
+            }
+
+            // Add to parent
+            if (params != null) {
+                parent.addView(child, params);
+            } else {
+                parent.addView(child);
+            }
+        }
+    }
+
+    /**
+     * Handle an <include> tag by inflating the referenced layout.
+     */
+    private void handleInclude(XmlPullParser parser, ViewGroup parent) throws Exception {
+        // Look for android:layout attribute (layout resource reference)
+        if (parser instanceof BinaryXmlParser) {
+            BinaryXmlParser bxp = (BinaryXmlParser) parser;
+            int count = bxp.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                String name = bxp.getAttributeName(i);
+                if ("layout".equals(name)) {
+                    int resId = bxp.getAttributeResourceValue(i, 0);
+                    if (resId != 0) {
+                        View included = inflate(resId, parent, false);
+                        if (included != null) {
+                            parent.addView(included);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        skipToEndTag(parser);
+    }
+
+    /**
+     * Skip events until we reach the matching END_TAG for the current element.
+     */
+    private void skipToEndTag(XmlPullParser parser) throws Exception {
+        int depth = 1;
+        while (depth > 0) {
+            int type = parser.next();
+            if (type == XmlPullParser.START_TAG) {
+                depth++;
+            } else if (type == XmlPullParser.END_TAG) {
+                depth--;
+            } else if (type == XmlPullParser.END_DOCUMENT) {
+                break;
+            }
+        }
+    }
+
+    // Common Android attribute resource IDs
+    private static final int ATTR_ID             = 0x010100d0;
+    private static final int ATTR_TEXT           = 0x01010014;
+    private static final int ATTR_TEXT_SIZE      = 0x01010095;
+    private static final int ATTR_TEXT_COLOR     = 0x01010098;
+    private static final int ATTR_BACKGROUND     = 0x010100d4;
+    private static final int ATTR_ORIENTATION    = 0x010100c4;
+    private static final int ATTR_GRAVITY        = 0x010100af;
+    private static final int ATTR_PADDING        = 0x010100d5;
+    private static final int ATTR_PADDING_LEFT   = 0x010100d6;
+    private static final int ATTR_PADDING_TOP    = 0x010100d7;
+    private static final int ATTR_PADDING_RIGHT  = 0x010100d8;
+    private static final int ATTR_PADDING_BOTTOM = 0x010100d9;
+    private static final int ATTR_VISIBILITY     = 0x010100dc;
+    private static final int ATTR_LAYOUT_WIDTH   = 0x010100f4;
+    private static final int ATTR_LAYOUT_HEIGHT  = 0x010100f5;
+    private static final int ATTR_LAYOUT_WEIGHT  = 0x01010181;
+    private static final int ATTR_HINT           = 0x01010043;
+    private static final int ATTR_MAX_LINES      = 0x01010153;
+    private static final int ATTR_SINGLE_LINE    = 0x0101015d;
+    private static final int ATTR_CLICKABLE      = 0x010100e5;
+
+    /**
+     * Apply XML attributes from a BinaryXmlParser to a View.
+     */
+    private void applyXmlAttributes(View view, XmlPullParser parser) {
+        if (!(parser instanceof BinaryXmlParser)) return;
+        BinaryXmlParser bxp = (BinaryXmlParser) parser;
+        int count = bxp.getAttributeCount();
+        if (count < 0) return;
+
+        Resources res = (mContext != null) ? mContext.getResources() : null;
+
+        for (int i = 0; i < count; i++) {
+            int resId = bxp.getAttributeNameResource(i);
+            String attrName = bxp.getAttributeName(i);
+            int attrType = bxp.getAttributeValueType(i);
+            int attrData = bxp.getAttributeValueData(i);
+
+            switch (resId) {
+                case ATTR_ID:
+                    view.setId(attrData);
+                    break;
+
+                case ATTR_TEXT:
+                    if (view instanceof TextView) {
+                        String text = resolveStringAttr(bxp, i, res);
+                        if (text != null) {
+                            ((TextView) view).setText(text);
+                        }
+                    }
+                    break;
+
+                case ATTR_TEXT_SIZE:
+                    if (view instanceof TextView) {
+                        float size = bxp.getAttributeFloatValue(i, 0f);
+                        if (size > 0) ((TextView) view).setTextSize(size);
+                    }
+                    break;
+
+                case ATTR_TEXT_COLOR:
+                    if (view instanceof TextView) {
+                        int color = resolveColorAttr(attrType, attrData, res);
+                        ((TextView) view).setTextColor(color);
+                    }
+                    break;
+
+                case ATTR_HINT:
+                    if (view instanceof TextView) {
+                        String hint = resolveStringAttr(bxp, i, res);
+                        if (hint != null) {
+                            ((TextView) view).setHint(hint);
+                        }
+                    }
+                    break;
+
+                case ATTR_MAX_LINES:
+                    if (view instanceof TextView) {
+                        ((TextView) view).setMaxLines(attrData);
+                    }
+                    break;
+
+                case ATTR_SINGLE_LINE:
+                    if (view instanceof TextView) {
+                        ((TextView) view).setSingleLine(attrData != 0);
+                    }
+                    break;
+
+                case ATTR_BACKGROUND:
+                    if (attrType == 0x1c || attrType == 0x1d ||
+                        attrType == 0x1e || attrType == 0x1f ||
+                        attrType == 0x11) {
+                        view.setBackgroundColor(attrData);
+                    } else if (attrType == 0x01 && res != null) {
+                        // reference to color resource
+                        view.setBackgroundColor(res.getColor(attrData));
+                    }
+                    break;
+
+                case ATTR_ORIENTATION:
+                    if (view instanceof LinearLayout) {
+                        ((LinearLayout) view).setOrientation(attrData);
+                    }
+                    break;
+
+                case ATTR_GRAVITY:
+                    if (view instanceof TextView) {
+                        ((TextView) view).setGravity(attrData);
+                    }
+                    break;
+
+                case ATTR_PADDING: {
+                    int px = bxp.getAttributeIntValue(i, 0);
+                    view.setPadding(px, px, px, px);
+                    break;
+                }
+
+                case ATTR_PADDING_LEFT:
+                    view.setPadding(bxp.getAttributeIntValue(i, 0),
+                            view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
+                    break;
+
+                case ATTR_PADDING_TOP:
+                    view.setPadding(view.getPaddingLeft(),
+                            bxp.getAttributeIntValue(i, 0),
+                            view.getPaddingRight(), view.getPaddingBottom());
+                    break;
+
+                case ATTR_PADDING_RIGHT:
+                    view.setPadding(view.getPaddingLeft(), view.getPaddingTop(),
+                            bxp.getAttributeIntValue(i, 0), view.getPaddingBottom());
+                    break;
+
+                case ATTR_PADDING_BOTTOM:
+                    view.setPadding(view.getPaddingLeft(), view.getPaddingTop(),
+                            view.getPaddingRight(), bxp.getAttributeIntValue(i, 0));
+                    break;
+
+                case ATTR_VISIBILITY:
+                    view.setVisibility(attrData);
+                    break;
+
+                case ATTR_CLICKABLE:
+                    view.setClickable(attrData != 0);
+                    break;
+
+                default:
+                    // Fall back to name-based attribute matching
+                    if (attrName != null) {
+                        applyByName(view, attrName, attrType, attrData,
+                                bxp.getAttributeValue(i), res);
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Apply attribute by name (fallback when resource ID is unknown).
+     */
+    private void applyByName(View view, String name, int type, int data,
+                              String rawValue, Resources res) {
+        if ("text".equals(name) && view instanceof TextView) {
+            String text = rawValue;
+            if (type == 0x01 && res != null && data != 0) {
+                text = res.getString(data);
+            }
+            if (text != null) ((TextView) view).setText(text);
+        } else if ("textSize".equals(name) && view instanceof TextView) {
+            float size = (type == 0x04) ? Float.intBitsToFloat(data) : data;
+            if (size > 0) ((TextView) view).setTextSize(size);
+        } else if ("textColor".equals(name) && view instanceof TextView) {
+            ((TextView) view).setTextColor(data);
+        } else if ("orientation".equals(name) && view instanceof LinearLayout) {
+            ((LinearLayout) view).setOrientation(data);
+        }
+    }
+
+    /**
+     * Resolve a string attribute value, handling both raw strings and @string/ references.
+     */
+    private String resolveStringAttr(BinaryXmlParser parser, int index, Resources res) {
+        int type = parser.getAttributeValueType(index);
+        int data = parser.getAttributeValueData(index);
+
+        // If it's a reference to a string resource, resolve it
+        if (type == 0x01 && res != null && data != 0) {
+            String resolved = res.getString(data);
+            if (resolved != null && !resolved.startsWith("string_")) {
+                return resolved;
+            }
+        }
+
+        // Otherwise use the raw string value
+        return parser.getAttributeValue(index);
+    }
+
+    /**
+     * Resolve a color attribute value, handling both inline colors and @color/ references.
+     */
+    private int resolveColorAttr(int type, int data, Resources res) {
+        if (type == 0x01 && res != null && data != 0) {
+            return res.getColor(data);
+        }
+        return data;
+    }
+
+    /**
+     * Generate LayoutParams for a child from the parser's current attributes.
+     * Reads layout_width, layout_height, layout_weight.
+     */
+    private ViewGroup.LayoutParams generateLayoutParams(ViewGroup parent, XmlPullParser parser) {
+        int width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        float weight = 0f;
+
+        if (parser instanceof BinaryXmlParser) {
+            BinaryXmlParser bxp = (BinaryXmlParser) parser;
+            int count = bxp.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                int resId = bxp.getAttributeNameResource(i);
+                int data = bxp.getAttributeValueData(i);
+
+                if (resId == ATTR_LAYOUT_WIDTH) {
+                    width = resolveLayoutDimension(data);
+                } else if (resId == ATTR_LAYOUT_HEIGHT) {
+                    height = resolveLayoutDimension(data);
+                } else if (resId == ATTR_LAYOUT_WEIGHT) {
+                    weight = Float.intBitsToFloat(data);
+                }
+            }
+        }
+
+        if (parent instanceof LinearLayout && weight != 0f) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, height);
+            lp.weight = weight;
+            return lp;
+        }
+
+        return new ViewGroup.LayoutParams(width, height);
+    }
+
+    /**
+     * Resolve a layout dimension value: MATCH_PARENT (-1), WRAP_CONTENT (-2), or px.
+     */
+    private int resolveLayoutDimension(int data) {
+        if (data == -1 || data == -2) {
+            return data; // MATCH_PARENT or WRAP_CONTENT
+        }
+        // Could be a dimension value; for simple cases, use raw value
+        return data;
     }
 
     /**

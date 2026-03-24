@@ -216,6 +216,17 @@ public class Resources {
     // ── Drawable resources ───────────────────────────────────────────────────
 
     public Drawable getDrawable(int id) {
+        // Try to resolve a color resource and return a ColorDrawable
+        Object reg = mRegistry.get(Integer.valueOf(id));
+        if (reg instanceof Integer) {
+            return new ColorDrawable(((Integer) reg).intValue());
+        }
+        if (mTable != null) {
+            int color = mTable.getColor(id);
+            if (color != 0xFF000000) {
+                return new ColorDrawable(color);
+            }
+        }
         return new ColorDrawable(0xFFCCCCCC);
     }
 
@@ -225,8 +236,86 @@ public class Resources {
 
     // ── Layout resources ─────────────────────────────────────────────────────
 
+    /**
+     * Get a layout resource as an XmlResourceParser.
+     * Tries registered layout bytes first, then ResourceTable file lookup.
+     * Returns a BinaryXmlParser wrapping the AXML data, or null if unavailable.
+     */
     public XmlResourceParser getLayout(int id) {
-        return null; // B9 will handle this
+        // 1. Try registered layout bytes
+        byte[] layoutData = getLayoutBytes(id);
+        if (layoutData != null && layoutData.length > 0) {
+            try {
+                return new BinaryXmlParser(layoutData);
+            } catch (Exception e) {
+                // fall through
+            }
+        }
+
+        // 2. Try loading from APK via ResourceTable
+        if (mTable != null) {
+            String layoutFile = mTable.getLayoutFileName(id);
+            if (layoutFile != null) {
+                byte[] xmlData = loadLayoutXmlFromApk(layoutFile);
+                if (xmlData != null && xmlData.length > 0) {
+                    try {
+                        return new BinaryXmlParser(xmlData);
+                    } catch (Exception e) {
+                        // fall through
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Load binary layout XML bytes from the extracted APK res/ directory.
+     */
+    private byte[] loadLayoutXmlFromApk(String layoutPath) {
+        try {
+            android.app.MiniServer server = android.app.MiniServer.get();
+            if (server != null) {
+                String resDir = null;
+                android.app.ApkInfo info = server.getApkInfo();
+                if (info != null) resDir = info.resDir;
+                if (resDir == null && info != null) resDir = info.extractDir;
+
+                if (resDir != null) {
+                    java.io.File xmlFile = new java.io.File(resDir, layoutPath);
+                    if (!xmlFile.exists() && layoutPath.startsWith("res/")) {
+                        xmlFile = new java.io.File(resDir, layoutPath.substring(4));
+                    }
+                    if (xmlFile.exists()) {
+                        return readFileBytes(xmlFile);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
+    }
+
+    private static byte[] readFileBytes(java.io.File file) {
+        try {
+            java.io.FileInputStream fis = new java.io.FileInputStream(file);
+            try {
+                byte[] data = new byte[(int) file.length()];
+                int offset = 0;
+                while (offset < data.length) {
+                    int n = fis.read(data, offset, data.length - offset);
+                    if (n < 0) break;
+                    offset += n;
+                }
+                return data;
+            } finally {
+                fis.close();
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // ── Array resources ──────────────────────────────────────────────────────

@@ -168,6 +168,101 @@ public class ResourceTable {
     }
 
     /**
+     * Get a color resource value by resource ID.
+     * Returns the raw integer ARGB value, or defValue if not found.
+     */
+    public int getColor(int resId) {
+        Integer v = mIntegers.get(resId);
+        return v != null ? v.intValue() : 0xFF000000;
+    }
+
+    /**
+     * Get a boolean resource value by resource ID.
+     */
+    public boolean getBoolean(int resId) {
+        Integer v = mIntegers.get(resId);
+        return v != null && v.intValue() != 0;
+    }
+
+    /**
+     * Get a dimension resource value by resource ID, scaled by the given density.
+     * The raw value is stored as a packed dimension; we decode and multiply by density.
+     *
+     * @param resId   the resource ID
+     * @param density screen density (e.g. 1.0f for mdpi, 2.0f for xhdpi)
+     * @return the dimension in pixels, or 0 if not found
+     */
+    public float getDimension(int resId, float density) {
+        Integer v = mIntegers.get(resId);
+        if (v == null) return 0f;
+        int data = v.intValue();
+        // Decode the packed dimension value
+        int unitType = data & 0x0F;
+        int radixType = (data >> 4) & 0x03;
+        int mantissa = data >> 8;
+
+        float value;
+        switch (radixType) {
+            case 0: value = mantissa; break;
+            case 1: value = mantissa / 128.0f; break;
+            case 2: value = mantissa / 32768.0f; break;
+            case 3: value = mantissa / 8388608.0f; break;
+            default: value = mantissa;
+        }
+
+        // Apply density scaling for dp/sp units
+        switch (unitType) {
+            case 0: return value; // px
+            case 1: return value * density; // dp
+            case 2: return value * density; // sp (simplified: same as dp)
+            case 3: return value * density * 72.0f; // pt
+            case 4: return value * density * 160.0f; // in
+            case 5: return value * density * (160.0f / 25.4f); // mm
+            default: return value;
+        }
+    }
+
+    /**
+     * Get the byte offset (in the APK) for a layout resource.
+     * In practice this returns the integer value stored for the resource ID,
+     * which for layout resources is typically a reference or file path index.
+     * Returns -1 if not found.
+     */
+    public int getLayoutResourceOffset(int resId) {
+        // Layout resources are typically stored as string references to file paths
+        // (e.g. "res/layout/activity_main.xml") rather than byte offsets.
+        // Return the integer value if present, which may be a reference.
+        Integer v = mIntegers.get(resId);
+        return v != null ? v.intValue() : -1;
+    }
+
+    /**
+     * Get the entry name for a resource ID (e.g. "activity_main" from "layout/activity_main").
+     */
+    public String getResourceEntryName(int resId) {
+        String name = mNames.get(resId);
+        if (name == null) return null;
+        int slash = name.indexOf('/');
+        if (slash >= 0 && slash + 1 < name.length()) {
+            return name.substring(slash + 1);
+        }
+        return name;
+    }
+
+    /**
+     * Get the type name for a resource ID (e.g. "layout" from "layout/activity_main").
+     */
+    public String getResourceTypeName(int resId) {
+        String name = mNames.get(resId);
+        if (name == null) return null;
+        int slash = name.indexOf('/');
+        if (slash > 0) {
+            return name.substring(0, slash);
+        }
+        return null;
+    }
+
+    /**
      * Get the number of integer resources parsed.
      */
     public int getIntegerCount() {
