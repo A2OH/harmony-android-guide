@@ -87,12 +87,12 @@ public class MiniActivityManager {
             return;
         }
 
-        // Initialize framework state
-        activity.mIntent = intent;
-        activity.mComponent = component;
-        activity.mApplication = mServer.getApplication();
-        activity.mFinished = false;
-        activity.mDestroyed = false;
+        // Initialize framework state (via reflection — on real Android, Activity fields differ)
+        ShimCompat.setActivityField(activity, "mIntent", intent);
+        ShimCompat.setActivityField(activity, "mComponent", component);
+        ShimCompat.setActivityField(activity, "mApplication", mServer.getApplication());
+        ShimCompat.setActivityField(activity, "mFinished", Boolean.FALSE);
+        ShimCompat.setActivityField(activity, "mDestroyed", Boolean.FALSE);
 
         // Create the ActivityRecord
         ActivityRecord record = new ActivityRecord();
@@ -144,11 +144,14 @@ public class MiniActivityManager {
         // Deliver result to caller if startActivityForResult was used
         if (record.caller != null && record.requestCode >= 0) {
             Activity callerActivity = record.caller.activity;
-            if (callerActivity != null && !callerActivity.mDestroyed) {
+            boolean callerDestroyed = ShimCompat.getActivityBooleanField(callerActivity, "mDestroyed", false);
+            if (callerActivity != null && !callerDestroyed) {
+                int resultCode = ShimCompat.getActivityIntField(activity, "mResultCode", 0);
+                android.content.Intent resultData = ShimCompat.getActivityField(activity, "mResultData", (android.content.Intent) null);
                 callerActivity.onActivityResult(
                     record.requestCode,
-                    activity.mResultCode,
-                    activity.mResultData
+                    resultCode,
+                    resultData
                 );
             }
         }
@@ -218,13 +221,13 @@ public class MiniActivityManager {
 
     private void performStart(ActivityRecord r) {
         Log.d(TAG, "  performStart: " + r.component.getClassName());
-        r.activity.mStarted = true;
+        ShimCompat.setActivityField(r.activity, "mStarted", Boolean.TRUE);
         r.activity.onStart();
     }
 
     private void performResume(ActivityRecord r) {
         Log.d(TAG, "  performResume: " + r.component.getClassName());
-        r.activity.mResumed = true;
+        ShimCompat.setActivityField(r.activity, "mResumed", Boolean.TRUE);
         mResumed = r;
         r.activity.onResume();
         r.activity.onPostResume();
@@ -232,7 +235,7 @@ public class MiniActivityManager {
 
     private void performPause(ActivityRecord r) {
         Log.d(TAG, "  performPause: " + r.component.getClassName());
-        r.activity.mResumed = false;
+        ShimCompat.setActivityField(r.activity, "mResumed", Boolean.FALSE);
         r.activity.onPause();
         if (r == mResumed) {
             mResumed = null;
@@ -240,15 +243,15 @@ public class MiniActivityManager {
     }
 
     private void performStop(ActivityRecord r) {
-        if (!r.activity.mStarted) return;
+        if (ShimCompat.getActivityBooleanField(r.activity, "mStarted", false) == false) return;
         Log.d(TAG, "  performStop: " + r.component.getClassName());
-        r.activity.mStarted = false;
+        ShimCompat.setActivityField(r.activity, "mStarted", Boolean.FALSE);
         r.activity.onStop();
     }
 
     private void performDestroy(ActivityRecord r) {
         Log.d(TAG, "  performDestroy: " + r.component.getClassName());
-        r.activity.mDestroyed = true;
+        ShimCompat.setActivityField(r.activity, "mDestroyed", Boolean.TRUE);
         r.activity.onDestroy();
     }
 

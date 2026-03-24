@@ -253,7 +253,7 @@ public class ActivityThread {
 
         // Create Application
         mApplication = createApplication(manifest.applicationClass);
-        mApplication.setPackageName(mPackageName);
+        ShimCompat.setPackageName(mApplication, mPackageName);
         log("I", "Application.onCreate()");
         mInstrumentation.callApplicationOnCreate(mApplication);
 
@@ -273,10 +273,10 @@ public class ActivityThread {
             return;
         }
 
-        // Attach framework state
-        activity.mApplication = mApplication;
-        activity.mComponent = component;
-        activity.mIntent = launchIntent;
+        // Attach framework state (via reflection — on real Android, Activity fields differ)
+        ShimCompat.setActivityField(activity, "mApplication", mApplication);
+        ShimCompat.setActivityField(activity, "mComponent", component);
+        ShimCompat.setActivityField(activity, "mIntent", launchIntent);
 
         log("I", "Activity created: " + activity.getClass().getName());
 
@@ -303,7 +303,8 @@ public class ActivityThread {
         mInstrumentation.callActivityOnDestroy(activity);
 
         if (activity.isFinishing()) {
-            log("I", "Activity finished with result " + activity.mResultCode);
+            int resultCode = ShimCompat.getActivityIntField(activity, "mResultCode", 0);
+            log("I", "Activity finished with result " + resultCode);
         }
 
         log("I", "--- ActivityThread complete ---");

@@ -33,7 +33,7 @@ public class MiniServer {
     private MiniServer(String packageName) {
         mPackageName = packageName;
         mApplication = new Application();
-        mApplication.setPackageName(packageName);
+        ShimCompat.setPackageName(mApplication, packageName);
         mActivityManager = new MiniActivityManager(this);
         mServiceManager = new MiniServiceManager(this);
         mPackageManager = new MiniPackageManager(packageName);
@@ -115,17 +115,17 @@ public class MiniServer {
                 // fallback to default Application
             }
         }
-        mApplication.setPackageName(info.packageName);
+        ShimCompat.setPackageName(mApplication, info.packageName);
 
         // Wire resources from parsed resources.arsc
         if (info.resourceTable instanceof android.content.res.ResourceTable) {
-            mApplication.getResources().loadResourceTable(
+            ShimCompat.loadResourceTable(mApplication.getResources(),
                     (android.content.res.ResourceTable) info.resourceTable);
         }
 
         // Wire assets from extracted assets/ directory
         if (info.assetDir != null) {
-            mApplication.getAssets().setAssetDir(info.assetDir);
+            ShimCompat.setAssetDir(mApplication.getAssets(), info.assetDir);
         }
 
         // Set native lib path for System.loadLibrary()
