@@ -218,16 +218,56 @@ a70b747  Complete MockDonalds app: 5 screens, category filter, cart
 
 ---
 
+## Milestone: Jetpack Compose (2026-03-25)
+
+After hours of fighting classloader issues with manual lifecycle injection, the
+breakthrough: **build with Gradle**. WestlakeActivity extends `ComponentActivity`
+(real AndroidX), Compose works natively with zero hacks.
+
+### What failed (and why)
+
+| Approach | Why It Failed |
+|----------|---------------|
+| Manual lifecycle via reflection/Proxy | Different classloaders = different class identities |
+| Shim LifecycleOwner in app.dex | Conflicted with compose.dex's LifecycleOwner |
+| R$id stubs for ViewTree tags | Wrong field names, missing fields, wrong packages |
+| Host DEX with lifecycle libs | LifecycleRegistry needs Kotlin on main thread |
+| SavedStateRegistry performRestore | Must happen at INITIALIZED state, before ON_CREATE |
+
+### What worked
+
+Build WestlakeActivity with Gradle as a real `ComponentActivity`:
+- Compose is a normal Gradle dependency
+- Lifecycle/SavedState/ViewModel managed by AndroidX
+- No reflection, no Proxy, no R$id stubs needed
+- `setContent { }` works out of the box
+- 14 seconds to build, 11MB APK
+
+### The key lesson
+
+Don't fight the framework. Use it as designed. Compose requires `ComponentActivity`
+with real AndroidX lifecycle. Trying to inject lifecycle from a different classloader
+is fundamentally broken because Java interfaces are identified by classloader + name,
+not just name.
+
+---
+
 ## What's Next
 
-1. **OHOS Port** — Reimplement `liboh_bridge.so` (~25 functions) against ArkUI/Skia on OpenHarmony
-2. **Full APK Loading** — Load APK's `classes.dex` + XML layouts + `resources.arsc` together
-3. **SQLite** — Wire `android.database.sqlite` to native SQLite
-4. **SharedPreferences** — File-backed XML storage
+1. **OHOS Port** — Reimplement `liboh_bridge.so` (~25 functions) against ArkUI/Skia
+2. **Compose on OHOS** — Replace Compose's Canvas backend with ArkUI/Skia rendering
+3. **Full APK Loading** — Load real APK's classes.dex + resources together
+4. **OkHttp/Retrofit** — Network calls (java.net.* already works on phone)
 
-The hard part is done. The entire Android app framework runs on a real phone with
-only 230 lines of platform-specific Java and 25 native C functions. Porting to
-OHOS means reimplementing those 25 functions — everything else stays the same.
+### Platform Coupling
+
+| Android-specific | OHOS replacement |
+|-----------------|------------------|
+| ComponentActivity | Shim Activity with lifecycle |
+| Compose Canvas → Android Canvas | Compose Canvas → ArkUI/Skia |
+| liboh_bridge.so (25 functions) | ArkUI native bridge |
+| DexClassLoader | ART on OHOS (works) |
+| View system (LinearLayout, etc.) | Our shim Views (work) |
 
 ---
 

@@ -1,22 +1,29 @@
 # Westlake Engine — Status Report
 
-**Date:** 2026-03-24
-**Status:** Multi-app platform running on Huawei Mate 20 Pro — MockDonalds + Dialer + Calculator
+**Date:** 2026-03-25
+**Status:** Jetpack Compose + multi-app platform on Huawei Mate 20 Pro
 
 ---
 
 ## Executive Summary
 
-The Westlake engine now hosts **multiple apps** on a single phone using real
-Android Views, driven by our custom Activity manager and compatibility layer.
-Three apps run in the same engine instance:
+The Westlake engine now runs **Jetpack Compose** natively on a real phone.
+The host Activity (`WestlakeActivity`) extends `ComponentActivity` with full
+AndroidX lifecycle support, built with Gradle + AGP 8.2 + Kotlin 1.9.
 
-1. **MockDonalds** — Full ordering app (menu, detail, cart, checkout, confirmation)
-2. **Dialer** — Phone dialer with keypad, call history, contacts, in-call screen (7 screens)
-3. **Calculator** — Functional calculator with XML-inflated layout
+A Compose Material 3 app gallery serves as the home screen. Custom View-based
+apps (MockDonalds, Dialer, Social Feed, Huawei Calculator) launch from the
+gallery and run with full touch navigation. Real installed APKs launch via
+`startActivity()`.
 
-All apps use native `LinearLayout`, `ListView`, `Button`, and `TextView` — not
-custom canvas drawing — and support full touch navigation.
+**Apps running on the engine:**
+
+1. **App Gallery** — Jetpack Compose Material 3 (LazyColumn, Cards, dark theme)
+2. **MockDonalds** — Full ordering app (5 screens, View-based)
+3. **Dialer** — Phone dialer (7 screens, View-based)
+4. **Social Feed** — Social media feed (View-based)
+5. **Huawei Calculator** — Real APK DEX + XML layout
+6. **Real installed APKs** — Calculator, Clock, Settings, Calendar via startActivity
 
 The engine has been validated on three platforms:
 
@@ -24,7 +31,87 @@ The engine has been validated on three platforms:
 |----------|---------|-----|--------|
 | x86_64 host (Linux) | ART (AOT) | 60 | Stable, primary dev target |
 | ARM64 on phone | dalvikvm (interpreter) | 120 | Runs natively on Mate 20 Pro |
-| Huawei Mate 20 Pro | Android 10 native ART | native | Full touch, real Views, 3 apps |
+| Huawei Mate 20 Pro | Android 10 native ART | native | Compose + View apps, 6 apps |
+
+---
+
+## Milestone: Jetpack Compose (2026-03-25)
+
+Jetpack Compose renders natively on the phone via a Gradle-built host APK.
+
+### Architecture
+
+```
+WestlakeActivity (extends ComponentActivity)
+├── onCreate: setContent { ComposeGallery() }   ← Compose renders immediately
+├── Engine thread: loads app.dex + aosp-shim.dex via DexClassLoader
+│   └── MockDonaldsApp.main() initializes MiniServer
+└── User taps app card → launchCustomApp(className, initMethod, showMethod)
+    └── Reflection call → MockApp.init(ctx) + MockApp.showMenu()
+        └── setContentView(viewRoot) replaces Compose with View-based UI
+            └── Back → showHome() restores Compose gallery
+```
+
+### Build System
+
+```
+westlake-host-gradle/
+├── build.gradle.kts          # AGP 8.2, Kotlin 1.9.10
+├── app/build.gradle.kts      # Compose BOM 2023.10, Material 3
+├── app/src/main/
+│   ├── java/.../WestlakeActivity.kt  # ComponentActivity + Compose
+│   ├── assets/
+│   │   ├── aosp-shim.dex    # 2,168 shim classes
+│   │   ├── app.dex           # Custom apps (MockDonalds, Dialer, etc.)
+│   │   └── material_icons.ttf
+│   └── jniLibs/arm64-v8a/
+│       ├── liboh_bridge.so
+│       └── libohbridge_android.so
+└── Output: app-debug.apk (11MB)
+```
+
+### Why Gradle (not manual build)
+
+Previous approach (manual javac + dx + aapt + jarsigner) failed for Compose:
+- Compose requires Kotlin compiler plugin (not available in manual builds)
+- AndroidX lifecycle/savedstate/viewmodel have complex dependency chains
+- R$id resource IDs must match between classloaders
+- LifecycleRegistry requires main thread + correct initialization order
+
+Gradle solves all of this — Compose is a normal dependency, lifecycle works
+natively, no reflection hacks needed.
+
+### Platform Coupling (Updated)
+
+**What depends on the Android phone:**
+
+| Component | Coupling | Notes |
+|-----------|----------|-------|
+| `ComponentActivity` | AndroidX library | On OHOS: replace with shim |
+| `setContent {}` | Compose runtime | On OHOS: Compose renders to Canvas → bridge |
+| `Canvas/Paint/Path` | Android framework | On OHOS: bridge to ArkUI/Skia (~25 functions) |
+| `View` classes | Android framework | On OHOS: our shim View classes |
+| `DexClassLoader` | Android runtime | On OHOS: ART runtime (already works) |
+| `Looper/Handler` | Android framework | On OHOS: our shim Looper |
+
+**What is platform-independent:**
+
+| Component | Description |
+|-----------|-------------|
+| All custom app code | MockDonalds, Dialer, Social Feed |
+| MiniServer + MiniActivityManager | Activity lifecycle management |
+| BinaryXmlParser + XmlTestHelper | XML layout inflation |
+| ShimCompat | Reflection-based framework compat |
+| OHBridge Java side | 170 JNI method declarations |
+| Compose gallery UI | MaterialTheme, LazyColumn, Cards |
+
+### OHOS Port Path
+
+To run on OpenHarmony:
+1. Replace `ComponentActivity` → custom Activity with shim lifecycle
+2. Replace Compose's Canvas backend → ArkUI/Skia rendering
+3. Keep all app code + shim layer unchanged
+4. Bridge ~25 Canvas/Paint/Path functions to OHOS native APIs
 
 ---
 
