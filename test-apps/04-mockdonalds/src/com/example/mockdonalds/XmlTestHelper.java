@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -371,5 +372,72 @@ public class XmlTestHelper {
             result.addView(label(ctx, desc, 12, 0xFF424242));
             if (child instanceof ViewGroup) dumpViewTree(ctx, result, (ViewGroup)child, depth+1);
         }
+    }
+
+    public static View testApkLayout(Context ctx, String assetName, String title) {
+        LinearLayout result = new LinearLayout(ctx);
+        result.setOrientation(LinearLayout.VERTICAL);
+        result.setPadding(dp(ctx,16), dp(ctx,16), dp(ctx,16), dp(ctx,16));
+        result.setBackgroundColor(0xFFFFFFFF);
+
+        result.addView(boldLabel(ctx, title + " Layout Inflation", 22, 0xFF212121));
+
+        try {
+            java.io.InputStream is = ctx.getAssets().open(assetName);
+            byte[] data = new byte[is.available()];
+            is.read(data);
+            is.close();
+
+            result.addView(label(ctx, "AXML: " + data.length + " bytes", 14, 0xFF757575));
+
+            android.content.res.BinaryXmlParser parser = new android.content.res.BinaryXmlParser(data);
+            View inflated = inflateFromParser(ctx, parser);
+
+            if (inflated != null) {
+                result.addView(boldLabel(ctx, "\u2705 Inflated: " + inflated.getClass().getSimpleName(), 18, 0xFF4CAF50));
+                if (inflated instanceof ViewGroup) {
+                    int total = countViews((ViewGroup) inflated);
+                    result.addView(label(ctx, "Total views: " + total, 14, 0xFF757575));
+                    dumpViewTree(ctx, result, (ViewGroup) inflated, 0);
+                }
+                View divider = new View(ctx);
+                divider.setBackgroundColor(0xFFE0E0E0);
+                LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(ctx,2));
+                dlp.setMargins(0, dp(ctx,12), 0, dp(ctx,12));
+                divider.setLayoutParams(dlp);
+                result.addView(divider);
+                result.addView(boldLabel(ctx, "Rendered View:", 16, 0xFF212121));
+                if (inflated.getParent() != null)
+                    ((ViewGroup) inflated.getParent()).removeView(inflated);
+                result.addView(inflated);
+            } else {
+                result.addView(boldLabel(ctx, "\u274C null", 18, 0xFFFF0000));
+            }
+        } catch (Exception e) {
+            result.addView(boldLabel(ctx, "\u274C " + e.getClass().getSimpleName(), 16, 0xFFFF0000));
+            result.addView(label(ctx, "" + e.getMessage(), 12, 0xFFFF0000));
+        }
+
+        Button back = new Button(ctx);
+        back.setText("\u2190 Back to Menu");
+        back.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { MockApp.showMenu(); }
+        });
+        result.addView(back);
+
+        // Wrap in ScrollView
+        ScrollView scroll = new ScrollView(ctx);
+        scroll.addView(result);
+        return scroll;
+    }
+
+    static int countViews(ViewGroup vg) {
+        int count = vg.getChildCount();
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View child = vg.getChildAt(i);
+            if (child instanceof ViewGroup) count += countViews((ViewGroup)child);
+        }
+        return count;
     }
 }

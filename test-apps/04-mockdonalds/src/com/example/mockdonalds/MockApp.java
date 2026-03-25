@@ -273,6 +273,15 @@ public class MockApp {
         });
         root.addView(calcBtn);
         menuView = root;
+        Button helloBtn = new Button(ctx);
+        helloBtn.setText("\uD83D\uDCF1 Test Hello APK (full standard Views)");
+        helloBtn.setTextSize(13);
+        helloBtn.setTextColor(WHITE);
+        helloBtn.setBackgroundColor(GREEN);
+        helloBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { show(XmlTestHelper.testApkLayout(ctx, "hello_layout.axml", "Hello APK")); }
+        });
+        root.addView(helloBtn);
         show(root);
     }
 
