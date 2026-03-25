@@ -266,23 +266,53 @@ unchanged on any target.
 
 ---
 
+## Milestone: XML Layout Inflation (2026-03-24)
+
+Binary XML (AXML) layout inflation from real APKs is now working on the phone.
+The engine can parse compiled Android XML layouts and create real Android Views
+from the parsed events, bypassing the phone's `LayoutInflater` (which expects
+internal `XmlBlock.Parser`).
+
+### Components
+
+| Component | Description |
+|-----------|-------------|
+| `BinaryXmlParser` | Parses compiled AXML format (string pool, resource IDs, XML tree) |
+| `XmlTestHelper.inflateFromParser()` | Walks XML events, creates Views via `createViewForTag()` |
+| `XmlTestHelper.applyAttributes()` | Handles layout_width/height/weight, text, textSize, textColor, orientation, padding, background, gravity |
+| `XmlTestHelper.loadCalculatorApp()` | Loads separate DEX + inflates XML layout + wires button handlers |
+
+### Tested APK Layouts
+
+| APK | Result |
+|-----|--------|
+| Custom Calculator (our DEX + XML) | Fully functional: layout inflated, buttons wired, arithmetic works |
+| Huawei Contacts Dialer (dialpad_huawei.xml) | Root LinearLayout inflated, custom Huawei View classes skipped |
+
+### Dimension Handling
+
+AXML `decodeDimension()` returns dp values labeled as "px". The inflater
+multiplies by display density (e.g., 3.0x on Mate 20 Pro) for correct sizing.
+
+---
+
 ## Known Issues
 
 | Issue | Severity | Description | Workaround |
 |-------|----------|-------------|------------|
 | No SQLite | Medium | SQLiteDatabase not available on phone path | In-memory data structures, no persistence across app restarts |
 | No SharedPreferences | Medium | SharedPreferences not implemented for phone path | Cart state held in memory, lost on app kill |
-| No XML layout inflation | Medium | LayoutInflater.inflate() not supported | All layouts built programmatically in Java code |
+| Custom View classes in APKs | Medium | Third-party APKs use custom View subclasses not in our shim | Must load APK's classes.dex alongside layout XML |
 | No resources.arsc on phone | Low | Resource string lookup not wired | Hardcoded strings in Java code |
 | No Bitmap loading | Low | BitmapFactory.decodeResource() not implemented | Text-only UI, no images |
 | No animation | Low | View animation framework not implemented | Static transitions between Activities |
 
 ### Path Forward
 
-1. **SQLite** — Port `android.database.sqlite` via JNI to native SQLite library (available on both Android and OHOS)
-2. **SharedPreferences** — Implement file-backed XML storage (straightforward)
-3. **XML layout inflation** — Implement `LayoutInflater` with binary XML parser (AXML parser already exists)
-4. **OHOS port** — Reimplement `liboh_bridge.so` (~25 functions) against ArkUI/Skia on OpenHarmony
+1. **OHOS port** — Reimplement `liboh_bridge.so` (~25 functions) against ArkUI/Skia on OpenHarmony
+2. **Full APK loading** — Load APK's classes.dex + XML layouts + resources.arsc together
+3. **SQLite** — Port `android.database.sqlite` via JNI to native SQLite library
+4. **SharedPreferences** — Implement file-backed XML storage
 
 ---
 
@@ -290,12 +320,17 @@ unchanged on any target.
 
 | What | Path |
 |------|------|
-| WestlakeActivity | `android-to-openharmony-migration/phone/WestlakeActivity.java` |
-| liboh_bridge.so source | `art-universal-build/stubs/oh_bridge_phone.c` |
-| ShimCompat | `android-to-openharmony-migration/shim/java/.../ShimCompat.java` |
-| MiniServer | `android-to-openharmony-migration/shim/java/.../MiniServer.java` |
-| MiniActivityManager | `android-to-openharmony-migration/shim/java/.../MiniActivityManager.java` |
-| MockDonalds app | `android-to-openharmony-migration/test-apps/mock/` |
-| OHBridge Java | `android-to-openharmony-migration/shim/java/.../OHBridge.java` |
+| WestlakeActivity | `westlake-host/src/com/westlake/host/WestlakeActivity.java` |
+| liboh_bridge.so (phone) | `westlake-host/jni/ohbridge_native.c` |
+| ShimCompat | `shim/java/android/app/ShimCompat.java` |
+| MiniServer | `shim/java/android/app/MiniServer.java` |
+| MiniActivityManager | `shim/java/android/app/MiniActivityManager.java` |
+| MockDonalds app | `test-apps/04-mockdonalds/src/com/example/mockdonalds/` |
+| MockApp (Material UI) | `test-apps/04-mockdonalds/src/com/example/mockdonalds/MockApp.java` |
+| XmlTestHelper | `test-apps/04-mockdonalds/src/com/example/mockdonalds/XmlTestHelper.java` |
+| BinaryXmlParser | `shim/java/android/content/res/BinaryXmlParser.java` |
+| OHBridge Java | `shim/java/com/ohos/shim/bridge/OHBridge.java` |
 | x86_64 dalvikvm | `art-universal-build/build/bin/dalvikvm` |
+| x86_64 OHBridge stub | `art-universal-build/stubs/ohbridge_stub.c` |
+| Software renderer | `art-universal-build/stubs/ohbridge_render.c` |
 | ARM64 dalvikvm | `art-universal-build/build-ohos-arm64/bin/dalvikvm` |

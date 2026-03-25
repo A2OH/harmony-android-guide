@@ -253,23 +253,49 @@ android.graphics.Path
 
 ---
 
+## 里程碑：XML 布局填充（2026-03-24）
+
+二进制 XML（AXML）布局填充已在手机上正常工作。引擎可以解析编译后的 Android XML 布局，并从解析事件中创建真实的 Android View，绕过手机的 `LayoutInflater`（它需要内部的 `XmlBlock.Parser`）。
+
+### 组件
+
+| 组件 | 描述 |
+|------|------|
+| `BinaryXmlParser` | 解析编译后的 AXML 格式（字符串池、资源 ID、XML 树） |
+| `XmlTestHelper.inflateFromParser()` | 遍历 XML 事件，通过 `createViewForTag()` 创建 View |
+| `XmlTestHelper.applyAttributes()` | 处理 layout_width/height/weight、text、textSize、textColor、orientation、padding、background、gravity |
+| `XmlTestHelper.loadCalculatorApp()` | 加载独立 DEX + 填充 XML 布局 + 绑定按钮处理器 |
+
+### 已测试 APK 布局
+
+| APK | 结果 |
+|-----|------|
+| 自建计算器（我们的 DEX + XML） | 完全可用：布局填充、按钮绑定、算术运算正常 |
+| 华为联系人拨号盘（dialpad_huawei.xml） | 根 LinearLayout 已填充，华为自定义 View 类被跳过 |
+
+### 尺寸处理
+
+AXML `decodeDimension()` 返回的 dp 值标记为 "px"。填充器乘以显示密度（如 Mate 20 Pro 上为 3.0x）以获得正确尺寸。
+
+---
+
 ## 已知问题
 
 | 问题 | 严重性 | 描述 | 临时解决方案 |
 |------|--------|------|-------------|
 | 无 SQLite | 中 | 手机路径上 SQLiteDatabase 不可用 | 内存数据结构，应用重启后不保留 |
 | 无 SharedPreferences | 中 | 手机路径上未实现 SharedPreferences | 购物车状态保存在内存中，应用被杀后丢失 |
-| 无 XML 布局填充 | 中 | 不支持 LayoutInflater.inflate() | 所有布局在 Java 代码中以编程方式构建 |
+| APK 中的自定义 View 类 | 中 | 第三方 APK 使用不在 shim 层中的自定义 View 子类 | 需要将 APK 的 classes.dex 与布局 XML 一起加载 |
 | 无 resources.arsc（手机端） | 低 | 资源字符串查找未接入 | Java 代码中硬编码字符串 |
 | 无 Bitmap 加载 | 低 | 未实现 BitmapFactory.decodeResource() | 纯文本 UI，无图片 |
 | 无动画 | 低 | 未实现 View 动画框架 | Activity 间静态转换 |
 
 ### 后续计划
 
-1. **SQLite** — 通过 JNI 将 `android.database.sqlite` 移植到原生 SQLite 库（Android 和 OHOS 上均可用）
-2. **SharedPreferences** — 实现基于文件的 XML 存储（比较简单）
-3. **XML 布局填充** — 使用二进制 XML 解析器实现 `LayoutInflater`（AXML 解析器已存在）
-4. **OHOS 移植** — 在 OpenHarmony 上针对 ArkUI/Skia 重新实现 `liboh_bridge.so`（约 25 个函数）
+1. **OHOS 移植** — 在 OpenHarmony 上针对 ArkUI/Skia 重新实现 `liboh_bridge.so`（约 25 个函数）
+2. **完整 APK 加载** — 将 APK 的 classes.dex + XML 布局 + resources.arsc 一起加载
+3. **SQLite** — 通过 JNI 将 `android.database.sqlite` 移植到原生 SQLite 库
+4. **SharedPreferences** — 实现基于文件的 XML 存储
 
 ---
 
@@ -277,12 +303,17 @@ android.graphics.Path
 
 | 内容 | 路径 |
 |------|------|
-| WestlakeActivity | `android-to-openharmony-migration/phone/WestlakeActivity.java` |
-| liboh_bridge.so 源码 | `art-universal-build/stubs/oh_bridge_phone.c` |
-| ShimCompat | `android-to-openharmony-migration/shim/java/.../ShimCompat.java` |
-| MiniServer | `android-to-openharmony-migration/shim/java/.../MiniServer.java` |
-| MiniActivityManager | `android-to-openharmony-migration/shim/java/.../MiniActivityManager.java` |
-| MockDonalds 应用 | `android-to-openharmony-migration/test-apps/mock/` |
-| OHBridge Java | `android-to-openharmony-migration/shim/java/.../OHBridge.java` |
+| WestlakeActivity | `westlake-host/src/com/westlake/host/WestlakeActivity.java` |
+| liboh_bridge.so（手机端） | `westlake-host/jni/ohbridge_native.c` |
+| ShimCompat | `shim/java/android/app/ShimCompat.java` |
+| MiniServer | `shim/java/android/app/MiniServer.java` |
+| MiniActivityManager | `shim/java/android/app/MiniActivityManager.java` |
+| MockDonalds 应用 | `test-apps/04-mockdonalds/src/com/example/mockdonalds/` |
+| MockApp（Material UI） | `test-apps/04-mockdonalds/src/com/example/mockdonalds/MockApp.java` |
+| XmlTestHelper | `test-apps/04-mockdonalds/src/com/example/mockdonalds/XmlTestHelper.java` |
+| BinaryXmlParser | `shim/java/android/content/res/BinaryXmlParser.java` |
+| OHBridge Java | `shim/java/com/ohos/shim/bridge/OHBridge.java` |
 | x86_64 dalvikvm | `art-universal-build/build/bin/dalvikvm` |
+| x86_64 OHBridge 存根 | `art-universal-build/stubs/ohbridge_stub.c` |
+| 软件渲染器 | `art-universal-build/stubs/ohbridge_render.c` |
 | ARM64 dalvikvm | `art-universal-build/build-ohos-arm64/bin/dalvikvm` |

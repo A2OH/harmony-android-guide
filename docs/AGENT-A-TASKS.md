@@ -136,7 +136,7 @@ Host x86_64
 |-------|----------|-------|
 | No SQLite on phone path | Medium | In-memory data only |
 | No SharedPreferences | Medium | Cart state in memory only |
-| No XML layout inflation | Medium | Programmatic layouts only |
+| Custom View classes in APKs | Medium | Must load APK's classes.dex alongside XML |
 | No Bitmap loading | Low | Text-only UI |
 | No animation | Low | Static transitions |
 
