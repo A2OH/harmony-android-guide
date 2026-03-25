@@ -303,6 +303,18 @@ public class MockApp {
             public void onClick(View v) { show(XmlTestHelper.testApkLayout(ctx, "real_dialpad.axml", "Huawei Dialer (REAL APK)")); }
         });
         root.addView(realBtn);
+        Button dialerBtn = new Button(ctx);
+        dialerBtn.setText("\uD83D\uDCDE Dialer App (Full Functional)");
+        dialerBtn.setTextSize(14);
+        dialerBtn.setTextColor(WHITE);
+        dialerBtn.setBackground(roundRect(0xFF1565C0, 8));
+        dialerBtn.setPadding(dp(16), dp(12), dp(16), dp(12));
+        dialerBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                com.example.dialer.DialerEntry.launch(ctx);
+            }
+        });
+        root.addView(dialerBtn);
     }
 
     static String activeCategory = "All";
