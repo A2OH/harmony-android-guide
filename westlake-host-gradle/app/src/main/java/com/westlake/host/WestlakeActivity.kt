@@ -74,6 +74,17 @@ class WestlakeActivity : ComponentActivity() {
     /** Launch a custom app from the engine DEX by calling its init+show methods */
     fun launchCustomApp(className: String, initMethod: String?, showMethod: String) {
         if (className == "COMPOSE_DEMO") { launchComposeDemo(); return }
+        if (className.startsWith("APK_VIEW:")) {
+            val parts = className.removePrefix("APK_VIEW:").split(":")
+            val pkg = parts[0]; val name = parts.getOrElse(1) { pkg }
+            try {
+                val apkPath = packageManager.getApplicationInfo(pkg, 0).sourceDir
+                setContent { ApkViewRunnerScreen(apkPath, name) }
+            } catch (e: Exception) {
+                Log.e(TAG, "APK not found: $pkg", e)
+            }
+            return
+        }
         if (className.startsWith("RUN_APK:")) {
             val parts = className.removePrefix("RUN_APK:").split(":")
             val pkg = parts[0]; val act = parts[1]; val name = parts.getOrElse(2) { pkg }
@@ -211,8 +222,7 @@ fun WestlakeHome() {
     val apps = remember {
         listOf(
             AppInfo("Compose Demo", "Navigation + Retrofit + Coil + ViewModel", Color(0xFF00BCD4), "COMPOSE_DEMO", null, ""),
-            AppInfo("Run Noice (Engine)", "Load APK inside Westlake engine", Color(0xFFE91E63), "RUN_APK:com.github.ashutoshgngwr.noice:com.github.ashutoshgngwr.noice.activity.MainActivity:Noice", null, ""),
-            AppInfo("Run Counter (Engine)", "Load APK inside Westlake engine", Color(0xFF9C27B0), "RUN_APK:me.tsukanov.counter:me.tsukanov.counter.ui.MainActivity:Counter", null, ""),
+            AppInfo("Counter (APK Resources)", "Real APK → resources.arsc → Views", Color(0xFF9C27B0), "APK_VIEW:me.tsukanov.counter:Counter", null, ""),
             AppInfo("MockDonalds", "Restaurant ordering", Color(0xFFDA291C), "com.example.mockdonalds.MockApp", "init", "showMenu"),
             AppInfo("Dialer", "Phone dialer", Color(0xFF1565C0), "com.example.dialer.DialerEntry", null, "launch"),
             AppInfo("Social Feed", "Social media", Color(0xFF1877F2), "com.example.socialfeed.SocialFeedApp", "init", "showFeed"),
