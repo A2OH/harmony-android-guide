@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
-public class Activity extends Context {
+public class Activity extends Context
+        implements androidx.lifecycle.LifecycleOwner,
+                   androidx.lifecycle.ViewModelStoreOwner,
+                   androidx.savedstate.SavedStateRegistryOwner {
 
     /* ── Framework-managed state ── */
     Intent mIntent;
@@ -22,8 +25,31 @@ public class Activity extends Context {
     android.view.Window mWindow;
     private FragmentManager mFragmentManager;
 
+    // AndroidX Lifecycle support for Compose (package-private for MiniActivityManager)
+    androidx.lifecycle.LifecycleRegistry mLifecycleRegistry;
+    androidx.lifecycle.ViewModelStore mViewModelStore;
+    androidx.savedstate.SavedStateRegistryController mSavedStateRegistryController;
+
     public Activity() {
         mWindow = new android.view.Window(this);
+        mLifecycleRegistry = new androidx.lifecycle.LifecycleRegistry(this);
+        mViewModelStore = new androidx.lifecycle.ViewModelStore();
+        mSavedStateRegistryController = androidx.savedstate.SavedStateRegistryController.create(this);
+    }
+
+    @Override
+    public androidx.lifecycle.Lifecycle getLifecycle() {
+        return mLifecycleRegistry;
+    }
+
+    @Override
+    public androidx.lifecycle.ViewModelStore getViewModelStore() {
+        return mViewModelStore;
+    }
+
+    @Override
+    public androidx.savedstate.SavedStateRegistry getSavedStateRegistry() {
+        return mSavedStateRegistryController.getSavedStateRegistry();
     }
 
     public static final int DEFAULT_KEYS_DIALER = 1;

@@ -216,10 +216,11 @@ public class MiniActivityManager {
 
     private void performCreate(ActivityRecord r, Bundle savedInstanceState) {
         Log.d(TAG, "  performCreate: " + r.component.getClassName());
+        // Dispatch lifecycle: restore saved state + ON_CREATE
+        dispatchLifecycleEvent(r.activity, "performRestore", savedInstanceState);
         try {
             r.activity.onCreate(savedInstanceState);
         } catch (IllegalAccessError e) {
-            // On real Android, Activity.onCreate is protected — use reflection
             try {
                 java.lang.reflect.Method m = Activity.class.getDeclaredMethod("onCreate", Bundle.class);
                 m.setAccessible(true);
@@ -230,6 +231,7 @@ public class MiniActivityManager {
                 cause.printStackTrace();
             }
         }
+        dispatchLifecycleEvent(r.activity, "ON_CREATE");
     }
 
     private void performStart(ActivityRecord r) {
@@ -244,6 +246,7 @@ public class MiniActivityManager {
                 m.invoke(r.activity);
             } catch (Exception ex) { Log.e(TAG, "performonStart reflection failed: " + ex); }
         }
+        dispatchLifecycleEvent(r.activity, "ON_START");
     }
 
     private void performResume(ActivityRecord r) {
@@ -268,10 +271,12 @@ public class MiniActivityManager {
                 m.invoke(r.activity);
             } catch (Exception ex) { /* onPostResume is optional */ }
         }
+        dispatchLifecycleEvent(r.activity, "ON_RESUME");
     }
 
     private void performPause(ActivityRecord r) {
         Log.d(TAG, "  performPause: " + r.component.getClassName());
+        dispatchLifecycleEvent(r.activity, "ON_PAUSE");
         ShimCompat.setActivityField(r.activity, "mResumed", Boolean.FALSE);
         try {
             r.activity.onPause();
@@ -300,6 +305,7 @@ public class MiniActivityManager {
                 m.invoke(r.activity);
             } catch (Exception ex) { Log.e(TAG, "performonStop reflection failed: " + ex); }
         }
+        dispatchLifecycleEvent(r.activity, "ON_STOP");
     }
 
     private void performDestroy(ActivityRecord r) {
@@ -341,6 +347,32 @@ public class MiniActivityManager {
     }
 
     /** Internal record tracking an Activity's state. */
+    /**
+     * Dispatch AndroidX Lifecycle events to the Activity's LifecycleRegistry.
+     * This bridges MiniActivityManager lifecycle to Compose's lifecycle system.
+     */
+    private void dispatchLifecycleEvent(Activity activity, String eventName) {
+        try {
+            if (activity.mLifecycleRegistry != null) {
+                androidx.lifecycle.Lifecycle.Event event =
+                    androidx.lifecycle.Lifecycle.Event.valueOf(eventName);
+                activity.mLifecycleRegistry.handleLifecycleEvent(event);
+            }
+        } catch (Exception e) {
+            // Lifecycle dispatch is best-effort
+        }
+    }
+
+    private void dispatchLifecycleEvent(Activity activity, String action, Bundle state) {
+        try {
+            if ("performRestore".equals(action) && activity.mSavedStateRegistryController != null) {
+                activity.mSavedStateRegistryController.performRestore(state);
+            }
+        } catch (Exception e) {
+            // SavedState restore is best-effort
+        }
+    }
+
     static class ActivityRecord {
         Activity activity;
         Intent intent;

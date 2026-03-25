@@ -120,8 +120,17 @@ public class WestlakeActivity extends Activity implements SurfaceHolder.Callback
                 return;
             }
 
+            // Load compose.dex if available
+            File composeDex = extractAsset("compose.dex", cacheDir);
+            if (composeDex != null) {
+                Log.i(TAG, "Compose DEX loaded: " + composeDex.length() + " bytes");
+            }
+
             // Create child-first classloader
             String dexPath = shimDex.getAbsolutePath() + ":" + appDex.getAbsolutePath();
+            if (composeDex != null) {
+                dexPath += ":" + composeDex.getAbsolutePath();
+            }
             File optDir = new File(cacheDir, "oat");
             optDir.mkdirs();
             String nativeLibDir = getApplicationInfo().nativeLibraryDir;
