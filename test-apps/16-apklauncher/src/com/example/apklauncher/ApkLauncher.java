@@ -131,11 +131,11 @@ public class ApkLauncher {
         row2.addView(appTile(MaterialIcons.CALCULATE, "Huawei Calc", 0xFF6A1B9A, true, new View.OnClickListener() {
             public void onClick(View v) { callShimMethod("loadHuaweiCalculator"); }
         }));
-        // Spacers for grid alignment
+        row2.addView(appTile(MaterialIcons.APPS, "Compose Test", 0xFFE91E63, true, new View.OnClickListener() {
+            public void onClick(View v) { callApp("com.example.composetest.ComposeTestApp", "init", "testCompose"); }
+        }));
         View sp1 = new View(ctx); sp1.setLayoutParams(new LinearLayout.LayoutParams(0, dp(1), 1));
-        View sp2 = new View(ctx); sp2.setLayoutParams(new LinearLayout.LayoutParams(0, dp(1), 1));
         row2.addView(sp1);
-        row2.addView(sp2);
         grid.addView(row2);
 
         // Real APKs section
