@@ -253,68 +253,39 @@ public class MockApp {
         });
         root.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
-        // XML Layout Test button
-        Button xmlBtn = new Button(ctx);
-        xmlBtn.setText("\uD83D\uDCC4 Test XML Layout Inflation");
-        xmlBtn.setTextSize(13);
-        xmlBtn.setTextColor(SECONDARY);
-        xmlBtn.setBackgroundColor(0xFFEEEEEE);
-        xmlBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { show(XmlTestHelper.testXmlInflation(ctx)); }
-        });
-        root.addView(xmlBtn);
-        Button calcBtn = new Button(ctx);
-        calcBtn.setText("\uD83E\uDDEE Test Calculator APK Layout");
-        calcBtn.setTextSize(13);
-        calcBtn.setTextColor(SECONDARY);
-        calcBtn.setBackgroundColor(0xFFE3F2FD);
-        calcBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { show(XmlTestHelper.testCalcLayout(ctx)); }
-        });
-        root.addView(calcBtn);
-        menuView = root;
-        Button helloBtn = new Button(ctx);
-        helloBtn.setText("\uD83D\uDCF1 Test Hello APK (full standard Views)");
-        helloBtn.setTextSize(13);
-        helloBtn.setTextColor(WHITE);
-        helloBtn.setBackgroundColor(GREEN);
-        helloBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { show(XmlTestHelper.testApkLayout(ctx, "hello_layout.axml", "Hello APK")); }
-        });
-        root.addView(helloBtn);
-        show(root);
-        Button calcAppBtn = new Button(ctx);
-        calcAppBtn.setText("\uD83E\uDDEE Run Calculator App (full APK)");
-        calcAppBtn.setTextSize(14);
-        calcAppBtn.setTextColor(WHITE);
-        calcAppBtn.setBackground(roundRect(0xFF1565C0, 8));
-        calcAppBtn.setPadding(dp(16), dp(12), dp(16), dp(12));
-        calcAppBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { show(XmlTestHelper.loadCalculatorApp(ctx)); }
-        });
-        root.addView(calcAppBtn);
-        Button realBtn = new Button(ctx);
-        realBtn.setText("\uD83D\uDCF1 Inflate REAL Huawei Dialer Layout");
-        realBtn.setTextSize(14);
-        realBtn.setTextColor(WHITE);
-        realBtn.setBackground(roundRect(0xFF6A1B9A, 8));
-        realBtn.setPadding(dp(16), dp(12), dp(16), dp(12));
-        realBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { show(XmlTestHelper.testApkLayout(ctx, "real_dialpad.axml", "Huawei Dialer (REAL APK)")); }
-        });
-        root.addView(realBtn);
+        // App launcher buttons (below menu list)
+        LinearLayout appsRow = new LinearLayout(ctx);
+        appsRow.setOrientation(LinearLayout.VERTICAL);
+        appsRow.setPadding(dp(8), dp(4), dp(8), dp(4));
+        appsRow.setBackgroundColor(WHITE);
+
         Button dialerBtn = new Button(ctx);
-        dialerBtn.setText("\uD83D\uDCDE Dialer App (Full Functional)");
+        dialerBtn.setText("\uD83D\uDCDE Dialer App");
         dialerBtn.setTextSize(14);
         dialerBtn.setTextColor(WHITE);
         dialerBtn.setBackground(roundRect(0xFF1565C0, 8));
-        dialerBtn.setPadding(dp(16), dp(12), dp(16), dp(12));
+        dialerBtn.setPadding(dp(16), dp(10), dp(16), dp(10));
         dialerBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 com.example.dialer.DialerEntry.launch(ctx);
             }
         });
-        root.addView(dialerBtn);
+        appsRow.addView(dialerBtn);
+
+        Button calcAppBtn = new Button(ctx);
+        calcAppBtn.setText("\uD83E\uDDEE Calculator App");
+        calcAppBtn.setTextSize(14);
+        calcAppBtn.setTextColor(WHITE);
+        calcAppBtn.setBackground(roundRect(0xFF2E7D32, 8));
+        calcAppBtn.setPadding(dp(16), dp(10), dp(16), dp(10));
+        calcAppBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { show(XmlTestHelper.loadCalculatorApp(ctx)); }
+        });
+        appsRow.addView(calcAppBtn);
+
+        root.addView(appsRow);
+        menuView = root;
+        show(root);
     }
 
     static String activeCategory = "All";
