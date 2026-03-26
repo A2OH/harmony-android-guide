@@ -73,6 +73,7 @@ class WestlakeActivity : ComponentActivity() {
 
     /** Launch a custom app from the engine DEX by calling its init+show methods */
     fun launchCustomApp(className: String, initMethod: String?, showMethod: String) {
+        if (className == "WESTLAKE_VM") { setContent { WestlakeVMScreen() }; return }
         if (className == "COMPOSE_DEMO") { launchComposeDemo(); return }
         if (className.startsWith("APK_VIEW:")) {
             val parts = className.removePrefix("APK_VIEW:").split(":")
@@ -221,6 +222,7 @@ class WestlakeActivity : ComponentActivity() {
 fun WestlakeHome() {
     val apps = remember {
         listOf(
+            AppInfo("Westlake VM", "Run MockDonalds in our own ART11", Color(0xFF4CAF50), "WESTLAKE_VM", null, ""),
             AppInfo("Compose Demo", "Navigation + Retrofit + Coil + ViewModel", Color(0xFF00BCD4), "COMPOSE_DEMO", null, ""),
             AppInfo("Noice (APK Resources)", "Production app → resources.arsc → Views", Color(0xFF26A69A), "APK_VIEW:com.github.ashutoshgngwr.noice:Noice", null, ""),
             AppInfo("Counter (APK Resources)", "Real APK → resources.arsc → Views", Color(0xFF9C27B0), "APK_VIEW:me.tsukanov.counter:Counter", null, ""),
