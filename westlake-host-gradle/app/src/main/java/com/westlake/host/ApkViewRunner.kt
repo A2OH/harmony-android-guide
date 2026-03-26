@@ -115,52 +115,7 @@ object ApkViewRunner {
             try {
                 val isNoice = apkPath.contains("noice")
                 if (isNoice) {
-                    // Use the phone's REAL LayoutInflater with the APK's resource context
-                    // This gives us full Material Design theme resolution
-                    try {
-                        val pkg = "com.github.ashutoshgngwr.noice"
-                        val apkContext = activity.createPackageContext(pkg,
-                            android.content.Context.CONTEXT_INCLUDE_CODE or
-                            android.content.Context.CONTEXT_IGNORE_SECURITY)
-                        val apkInflater = android.view.LayoutInflater.from(apkContext)
-                        steps.add("APK context + LayoutInflater created")
-
-                        // Get layout resource IDs from the APK's R class
-                        val apkR = apkContext.classLoader.loadClass("$pkg.R\$layout")
-                        val listRoot = LinearLayout(activity).apply {
-                            orientation = LinearLayout.VERTICAL
-                            setBackgroundColor(0xFF121212.toInt())
-                        }
-
-                        // Inflate actual layouts using phone's LayoutInflater
-                        val layoutNames = listOf("library_sound_list_item", "home_fragment", "library_fragment")
-                        for (name in layoutNames) {
-                            try {
-                                val resId = apkR.getField(name).getInt(null)
-                                val v = apkInflater.inflate(resId, null)
-                                if (v != null) {
-                                    steps.add("Inflated $name → ${v.javaClass.simpleName}")
-                                    listRoot.addView(TextView(activity).apply {
-                                        text = "── $name (R.layout.$name) ──"
-                                        textSize = 11f; setTextColor(0xFF4CAF50.toInt())
-                                        setPadding(16, 8, 16, 4)
-                                    })
-                                    listRoot.addView(v)
-                                    listRoot.addView(View(activity).apply {
-                                        setBackgroundColor(0xFF333333.toInt())
-                                    }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2))
-                                }
-                            } catch (e: Exception) {
-                                steps.add("$name: ${e.cause?.javaClass?.simpleName ?: e.javaClass.simpleName}: ${e.cause?.message?.take(80) ?: e.message?.take(80)}")
-                            }
-                        }
-
-                        inflatedView = ScrollView(activity).apply { addView(listRoot) }
-                    } catch (e: Exception) {
-                        steps.add("APK LayoutInflater failed: ${e.message?.take(100)}")
-                        // Fallback to hand-built UI
-                        inflatedView = buildNoiceLibrary(activity, table, apkPath)
-                    }
+                    inflatedView = buildNoiceNavigable(activity, table, steps)
                 } else {
                     inflatedView = buildFunctionalCounter(activity, layoutData, table)
                 }
@@ -1224,6 +1179,155 @@ object ApkViewRunner {
             textSize = 10f; setTextColor(0xFF4CAF50.toInt())
             setPadding(dp(12), dp(4), dp(12), dp(4)); setBackgroundColor(0xFF0A0A0A.toInt())
         })
+
+        return root
+    }
+
+    /**
+     * Build Noice with tab navigation — each tab inflates a different real layout from the APK.
+     */
+    private fun buildNoiceNavigable(activity: WestlakeActivity, table: SimpleResourceTable,
+                                     steps: MutableList<String>): View {
+        val density = activity.resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+
+        val pkg = "com.github.ashutoshgngwr.noice"
+
+        val root = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(0xFF121212.toInt())
+        }
+
+        // Back button
+        root.addView(LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setBackgroundColor(0xFF1B5E20.toInt())
+            setPadding(dp(8), dp(8), dp(16), dp(8))
+            gravity = Gravity.CENTER_VERTICAL
+            addView(Button(activity).apply {
+                text = "←"; textSize = 18f; setTextColor(Color.WHITE)
+                setBackgroundColor(Color.TRANSPARENT)
+                setOnClickListener { activity.showHome() }
+            }, LinearLayout.LayoutParams(dp(44), dp(40)))
+            addView(TextView(activity).apply {
+                text = "${table.strings["string/app_name"] ?: "Noice"} — Real APK Layouts"
+                textSize = 15f; setTextColor(Color.WHITE); typeface = Typeface.DEFAULT_BOLD
+            })
+        })
+
+        // Content area — swapped when tabs are tapped
+        val contentArea = FrameLayout(activity).apply {
+            setBackgroundColor(0xFF121212.toInt())
+        }
+
+        // Available layouts to navigate between
+        // Only layouts WITHOUT custom View classes (verified safe)
+        val pages = listOf(
+            "about_page" to (table.strings["string/about"] ?: "About"),
+            "alarms_fragment" to (table.strings["string/alarms"] ?: "Alarms"),
+            "alarm_ringer_activity" to "Alarm Ringer",
+            "home_fragment" to "Home",
+            "cancel_subscription_fragment" to "Subscription",
+            "delete_account_fragment" to "Delete Account",
+            "dialog_fragment__base" to "Dialog",
+            "app_intro_fragment" to "Intro",
+            "appintro_fragment_intro" to "Welcome",
+            "gift_card_details_fragment" to "Gift Card",
+            "donation_purchased_callback_fragment" to "Donation",
+            "custom_dialog" to "Custom Dialog",
+        )
+
+        fun loadPage(layoutName: String) {
+            contentArea.removeAllViews()
+            try {
+                val apkContext = activity.createPackageContext(pkg,
+                    android.content.Context.CONTEXT_INCLUDE_CODE or
+                    android.content.Context.CONTEXT_IGNORE_SECURITY)
+                // Use Material theme for better styling
+                val themed = android.view.ContextThemeWrapper(apkContext, android.R.style.Theme_Material_Light)
+                val apkInflater = android.view.LayoutInflater.from(themed)
+                val apkR = apkContext.classLoader.loadClass("$pkg.R\$layout")
+                val resId = apkR.getField(layoutName).getInt(null)
+                val v = apkInflater.inflate(resId, null)
+                if (v != null) {
+                    // Ensure visible on both dark and light backgrounds
+                    val wrapper = LinearLayout(activity).apply {
+                        orientation = LinearLayout.VERTICAL
+                        setBackgroundColor(0xFFFAFAFA.toInt())
+                        addView(TextView(activity).apply {
+                            text = "R.layout.$layoutName"
+                            textSize = 11f; setTextColor(0xFF1565C0.toInt())
+                            setPadding(dp(12), dp(6), dp(12), dp(6))
+                            setBackgroundColor(0xFFE3F2FD.toInt())
+                        })
+                        addView(v, LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT))
+                    }
+                    contentArea.addView(ScrollView(activity).apply {
+                        setBackgroundColor(0xFFFAFAFA.toInt())
+                        addView(wrapper)
+                    }, FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT))
+                }
+            } catch (e: Exception) {
+                val cause = e.cause ?: e
+                contentArea.addView(LinearLayout(activity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setBackgroundColor(0xFFFAFAFA.toInt())
+                    setPadding(dp(16), dp(16), dp(16), dp(16))
+                    addView(TextView(activity).apply {
+                        text = "Layout: $layoutName"
+                        textSize = 16f; setTextColor(0xFF212121.toInt()); typeface = Typeface.DEFAULT_BOLD
+                    })
+                    addView(TextView(activity).apply {
+                        text = "${cause.javaClass.simpleName}: ${cause.message}"
+                        textSize = 13f; setTextColor(Color.RED)
+                        setPadding(0, dp(8), 0, 0)
+                    })
+                })
+            }
+        }
+
+        // Tab bar
+        val tabScroll = android.widget.HorizontalScrollView(activity)
+        val tabRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(4), dp(6), dp(4), dp(6))
+            setBackgroundColor(0xFF1E1E1E.toInt())
+        }
+        for ((layoutName, label) in pages) {
+            val tab = Button(activity).apply {
+                text = label; textSize = 12f; setTextColor(Color.WHITE)
+                val bg = android.graphics.drawable.GradientDrawable()
+                bg.setColor(0xFF333333.toInt()); bg.cornerRadius = dp(16).toFloat()
+                background = bg
+                setPadding(dp(14), dp(6), dp(14), dp(6))
+                setOnClickListener { loadPage(layoutName) }
+            }
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(dp(3), 0, dp(3), 0)
+            tab.layoutParams = lp
+            tabRow.addView(tab)
+        }
+        tabScroll.addView(tabRow)
+        root.addView(tabScroll)
+
+        // Content
+        root.addView(contentArea, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+
+        // Resource info
+        root.addView(TextView(activity).apply {
+            text = "✓ ${table.strings.size} strings · Real layouts via createPackageContext + LayoutInflater"
+            textSize = 10f; setTextColor(0xFF4CAF50.toInt())
+            setPadding(dp(12), dp(4), dp(12), dp(4)); setBackgroundColor(0xFF0A0A0A.toInt())
+        })
+
+        // Load first page
+        loadPage(pages[0].first)
+        steps.add("Navigable Noice: ${pages.size} pages")
 
         return root
     }
