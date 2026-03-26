@@ -115,33 +115,52 @@ object ApkViewRunner {
             try {
                 val isNoice = apkPath.contains("noice")
                 if (isNoice) {
-                    // Inflate Noice's actual layouts from AXML
-                    val zip2 = ZipFile(apkPath)
-                    // Try multiple layouts: home, library, sound item
-                    val layoutFiles = listOf("res/Bw.xml", "res/0S.xml", "res/PH.xml", "res/DM.xml")
-                    val listRoot = LinearLayout(activity).apply {
-                        orientation = LinearLayout.VERTICAL
-                        setBackgroundColor(Color.WHITE)
-                    }
-                    for (file in layoutFiles) {
-                        val ze = zip2.getEntry(file) ?: continue
-                        val xmlData = zip2.getInputStream(ze).readBytes()
-                        listRoot.addView(TextView(activity).apply {
-                            text = "── $file (${xmlData.size} bytes) ──"
-                            textSize = 11f; setTextColor(0xFF1565C0.toInt())
-                            setPadding(16, 12, 16, 4)
-                        })
-                        val v = inflateAxml(activity, xmlData, table)
-                        if (v != null) {
-                            listRoot.addView(v)
-                            steps.add("Inflated $file → ${v.javaClass.simpleName}")
+                    // Use the phone's REAL LayoutInflater with the APK's resource context
+                    // This gives us full Material Design theme resolution
+                    try {
+                        val pkg = "com.github.ashutoshgngwr.noice"
+                        val apkContext = activity.createPackageContext(pkg,
+                            android.content.Context.CONTEXT_INCLUDE_CODE or
+                            android.content.Context.CONTEXT_IGNORE_SECURITY)
+                        val apkInflater = android.view.LayoutInflater.from(apkContext)
+                        steps.add("APK context + LayoutInflater created")
+
+                        // Get layout resource IDs from the APK's R class
+                        val apkR = apkContext.classLoader.loadClass("$pkg.R\$layout")
+                        val listRoot = LinearLayout(activity).apply {
+                            orientation = LinearLayout.VERTICAL
+                            setBackgroundColor(0xFF121212.toInt())
                         }
-                        listRoot.addView(View(activity).apply {
-                            setBackgroundColor(0xFFBBDEFB.toInt())
-                        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 3))
+
+                        // Inflate actual layouts using phone's LayoutInflater
+                        val layoutNames = listOf("library_sound_list_item", "home_fragment", "library_fragment")
+                        for (name in layoutNames) {
+                            try {
+                                val resId = apkR.getField(name).getInt(null)
+                                val v = apkInflater.inflate(resId, null)
+                                if (v != null) {
+                                    steps.add("Inflated $name → ${v.javaClass.simpleName}")
+                                    listRoot.addView(TextView(activity).apply {
+                                        text = "── $name (R.layout.$name) ──"
+                                        textSize = 11f; setTextColor(0xFF4CAF50.toInt())
+                                        setPadding(16, 8, 16, 4)
+                                    })
+                                    listRoot.addView(v)
+                                    listRoot.addView(View(activity).apply {
+                                        setBackgroundColor(0xFF333333.toInt())
+                                    }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2))
+                                }
+                            } catch (e: Exception) {
+                                steps.add("$name: ${e.cause?.javaClass?.simpleName ?: e.javaClass.simpleName}: ${e.cause?.message?.take(80) ?: e.message?.take(80)}")
+                            }
+                        }
+
+                        inflatedView = ScrollView(activity).apply { addView(listRoot) }
+                    } catch (e: Exception) {
+                        steps.add("APK LayoutInflater failed: ${e.message?.take(100)}")
+                        // Fallback to hand-built UI
+                        inflatedView = buildNoiceLibrary(activity, table, apkPath)
                     }
-                    zip2.close()
-                    inflatedView = ScrollView(activity).apply { addView(listRoot) }
                 } else {
                     inflatedView = buildFunctionalCounter(activity, layoutData, table)
                 }
