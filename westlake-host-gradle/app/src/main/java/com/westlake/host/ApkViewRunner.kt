@@ -114,10 +114,37 @@ object ApkViewRunner {
             var inflatedView: View? = null
             try {
                 val isNoice = apkPath.contains("noice")
-                inflatedView = if (isNoice)
-                    buildNoiceLibrary(activity, table, apkPath)
-                else
-                    buildFunctionalCounter(activity, layoutData, table)
+                if (isNoice) {
+                    // Inflate Noice's actual layouts from AXML
+                    val zip2 = ZipFile(apkPath)
+                    // Try multiple layouts: home, library, sound item
+                    val layoutFiles = listOf("res/Bw.xml", "res/0S.xml", "res/PH.xml", "res/DM.xml")
+                    val listRoot = LinearLayout(activity).apply {
+                        orientation = LinearLayout.VERTICAL
+                        setBackgroundColor(Color.WHITE)
+                    }
+                    for (file in layoutFiles) {
+                        val ze = zip2.getEntry(file) ?: continue
+                        val xmlData = zip2.getInputStream(ze).readBytes()
+                        listRoot.addView(TextView(activity).apply {
+                            text = "── $file (${xmlData.size} bytes) ──"
+                            textSize = 11f; setTextColor(0xFF1565C0.toInt())
+                            setPadding(16, 12, 16, 4)
+                        })
+                        val v = inflateAxml(activity, xmlData, table)
+                        if (v != null) {
+                            listRoot.addView(v)
+                            steps.add("Inflated $file → ${v.javaClass.simpleName}")
+                        }
+                        listRoot.addView(View(activity).apply {
+                            setBackgroundColor(0xFFBBDEFB.toInt())
+                        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 3))
+                    }
+                    zip2.close()
+                    inflatedView = ScrollView(activity).apply { addView(listRoot) }
+                } else {
+                    inflatedView = buildFunctionalCounter(activity, layoutData, table)
+                }
                 steps.add("Built UI from APK resources")
                 if (inflatedView != null) {
                     steps.add("Inflated: ${inflatedView!!.javaClass.simpleName}")
@@ -794,6 +821,82 @@ object ApkViewRunner {
             lp.addRule(RelativeLayout.CENTER_IN_PARENT)
 
         view.layoutParams = lp
+
+        // === Apply styling attributes from AXML ===
+        val density = context.resources.displayMetrics.density
+        fun dpF(v: Float) = (v * density).toInt()
+
+        // Padding
+        val pad = attrs["padding"]?.let { parseDimension(it) { dpF(it.toFloat()) } }
+        val padL = attrs["paddingLeft"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: pad ?: 0
+        val padT = attrs["paddingTop"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: pad ?: 0
+        val padR = attrs["paddingRight"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: pad ?: 0
+        val padB = attrs["paddingBottom"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: pad ?: 0
+        if (padL > 0 || padT > 0 || padR > 0 || padB > 0) {
+            view.setPadding(padL, padT, padR, padB)
+        }
+
+        // Margins
+        val margin = attrs["layout_margin"]?.let { parseDimension(it) { dpF(it.toFloat()) } }
+        val mL = attrs["layout_marginLeft"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: margin ?: 0
+        val mT = attrs["layout_marginTop"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: margin ?: 0
+        val mR = attrs["layout_marginRight"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: margin ?: 0
+        val mB = attrs["layout_marginBottom"]?.let { parseDimension(it) { dpF(it.toFloat()) } } ?: margin ?: 0
+        if (mL > 0 || mT > 0 || mR > 0 || mB > 0) {
+            lp.setMargins(mL, mT, mR, mB)
+        }
+
+        // Gravity
+        attrs["gravity"]?.let { g ->
+            val gVal = g.toIntOrNull(16) ?: g.toIntOrNull() ?: 0
+            if (gVal != 0 && view is TextView) (view as TextView).gravity = gVal
+        }
+        attrs["layout_gravity"]?.let { g ->
+            val gVal = g.toIntOrNull(16) ?: g.toIntOrNull() ?: 0
+            if (gVal != 0 && lp is LinearLayout.LayoutParams) (lp as LinearLayout.LayoutParams).gravity = gVal
+        }
+
+        // Background color (integer type)
+        attrs["background"]?.let { bg ->
+            if (bg.startsWith("0x") || bg.startsWith("#")) {
+                try {
+                    view.setBackgroundColor(bg.removePrefix("0x").removePrefix("#").toLong(16).toInt())
+                } catch (_: Exception) {}
+            }
+        }
+
+        // Visibility
+        when (attrs["visibility"]) {
+            "2", "gone" -> view.visibility = View.GONE
+            "1", "invisible" -> view.visibility = View.INVISIBLE
+        }
+
+        // Minimum height
+        attrs["minHeight"]?.let { parseDimension(it) { dpF(it.toFloat()) } }?.let {
+            if (it > 0) view.minimumHeight = it
+        }
+
+        // Elevation
+        attrs["elevation"]?.let { parseDimension(it) { dpF(it.toFloat()) } }?.let {
+            if (it > 0) view.elevation = it.toFloat()
+        }
+
+        // Text-specific attributes
+        if (view is TextView) {
+            attrs["textSize"]?.let {
+                val sp = it.replace("sp","").replace("px","").replace("dp","").toFloatOrNull()
+                if (sp != null) view.textSize = sp
+            }
+            attrs["textColor"]?.let { tc ->
+                val resolved = resolveResourceId(tc.removePrefix("@0x").removePrefix("@").toLongOrNull(16)?.toInt() ?: 0, table)
+                if (resolved != null && resolved.startsWith("#")) {
+                    try { view.setTextColor(android.graphics.Color.parseColor(resolved)) } catch (_: Exception) {}
+                } else if (tc.startsWith("0x") || tc.startsWith("#")) {
+                    try { view.setTextColor(tc.removePrefix("0x").removePrefix("#").toLong(16).toInt()) } catch (_: Exception) {}
+                }
+            }
+            attrs["hint"]?.let { view.hint = resolveText(it, table) }
+        }
 
         return view
     }
