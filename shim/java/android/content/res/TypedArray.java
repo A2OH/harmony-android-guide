@@ -59,7 +59,7 @@ public class TypedArray {
     }
 
     public boolean hasValue(int index) {
-        return false;
+        return true; // pretend all theme attributes exist (enables AppCompat)
     }
 
     public int getDimensionPixelOffset(int index, int defValue) {

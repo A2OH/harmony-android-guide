@@ -116,54 +116,118 @@ public class Activity extends Context {
 
     @Override
     public String getPackageName() {
-        return mComponent != null ? mComponent.getPackageName() : null;
+        if (mComponent != null) return mComponent.getPackageName();
+        // Fall back to host's package name (useful during APK loading)
+        if (HostBridge.hasHost()) {
+            String hostPkg = HostBridge.getHostPackageName();
+            if (hostPkg != null) return hostPkg;
+        }
+        return null;
     }
 
-    @Override
-    public Context getApplicationContext() {
-        return mApplication;
-    }
-
-    /**
-     * Returns the Application's Resources so that resource registrations
-     * on the Application context are visible to Activities (matches real Android
-     * where Activity and Application share the same ResourcesImpl).
-     */
-    /** Helper: get the host Activity instance via reflection (for delegating framework calls). */
-    private static Object getHostInstance() {
-        try {
-            return Class.forName("com.westlake.host.WestlakeActivity").getField("instance").get(null);
-        } catch (Exception e) { return null; }
-    }
+    // ── HostBridge-delegating overrides ────────────────────────────────────
+    // All host-dependent calls go through HostBridge to avoid ClassLoader
+    // type mismatches between shim classes and phone framework classes.
 
     @Override
     public android.content.pm.PackageManager getPackageManager() {
-        // Delegate to host's real PackageManager (has getActivityInfo etc.)
-        Object host = getHostInstance();
-        if (host != null) {
-            try {
-                return (android.content.pm.PackageManager) host.getClass()
-                    .getMethod("getPackageManager").invoke(host);
-            } catch (Exception e) {}
-        }
+        // Return the shim's PM (which delegates to host's real PM internally via HostBridge)
         return super.getPackageManager();
     }
 
     @Override
     public android.content.res.Resources getResources() {
+        // Use Application's Resources if available (same as real Android)
         if (mApplication != null) {
             return mApplication.getResources();
         }
-        // Fallback: use host Activity's resources (for APK loading in-process)
-        try {
-            Class<?> hostCls = Class.forName("com.westlake.host.WestlakeActivity");
-            Object hostInst = hostCls.getField("instance").get(null);
-            if (hostInst != null) {
-                return (android.content.res.Resources) hostInst.getClass()
-                    .getMethod("getResources").invoke(hostInst);
-            }
-        } catch (Exception e) {}
+        // Fallback: try to get host's Resources via HostBridge
+        // We can't return the host's Resources directly (different CL),
+        // but we can set up the shim Resources with host's display metrics etc.
         return super.getResources();
+    }
+
+    @Override
+    public android.content.res.Resources.Theme getTheme() {
+        // Try to proxy theme resolution from host
+        if (HostBridge.hasHost()) {
+            // For now return a shim Theme -- real theme attributes are resolved
+            // via obtainStyledAttributes which delegates to HostBridge
+            return super.getTheme();
+        }
+        return super.getTheme();
+    }
+
+    @Override
+    public Object getSystemService(String name) {
+        // Delegate to host's real system services for real functionality
+        if (HostBridge.hasHost()) {
+            Object service = HostBridge.getHostSystemService(name);
+            if (service != null) return service;
+        }
+        return super.getSystemService(name);
+    }
+
+    @Override
+    public Context getApplicationContext() {
+        if (mApplication != null) return mApplication;
+        // Don't delegate to host here -- the APK expects a Context from
+        // the shim's CL, not the phone's Context
+        return super.getApplicationContext();
+    }
+
+    @Override
+    public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs) {
+        if (HostBridge.hasHost()) {
+            return HostBridge.host_obtainStyledAttributes(attrs);
+        }
+        return super.obtainStyledAttributes(set, attrs);
+    }
+
+    @Override
+    public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
+        if (HostBridge.hasHost()) {
+            return HostBridge.host_obtainStyledAttributes(attrs);
+        }
+        return super.obtainStyledAttributes(set, attrs, defStyleAttr, defStyleRes);
+    }
+
+    @Override
+    public android.content.res.TypedArray obtainStyledAttributes(int resId, int[] attrs) {
+        if (HostBridge.hasHost()) {
+            return HostBridge.host_obtainStyledAttributes(resId, attrs);
+        }
+        return super.obtainStyledAttributes(resId, attrs);
+    }
+
+    @Override
+    public android.content.res.TypedArray obtainStyledAttributes(int[] attrs) {
+        if (HostBridge.hasHost()) {
+            return HostBridge.host_obtainStyledAttributes(attrs);
+        }
+        return super.obtainStyledAttributes(attrs);
+    }
+
+    @Override
+    public android.content.pm.ApplicationInfo getApplicationInfo() {
+        // Try to get real app info for the APK's package
+        if (HostBridge.hasHost() && mComponent != null) {
+            try {
+                return getPackageManager().getApplicationInfo(
+                    mComponent.getPackageName(), 0);
+            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+                // fall through
+            }
+        }
+        return super.getApplicationInfo();
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        // Return the child-first ClassLoader that loaded this Activity.
+        // This is critical: the APK's code must resolve android.* classes
+        // to the shim's versions, not the phone's boot CL versions.
+        return getClass().getClassLoader();
     }
 
     /* ── Surface rendering ── */

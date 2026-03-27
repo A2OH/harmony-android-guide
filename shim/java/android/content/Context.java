@@ -128,7 +128,19 @@ public class Context {
     public void enforceUriPermission(Uri p0, String p1, String p2, int p3, int p4, int p5, String p6) {}
     public String[] fileList() { return null; }
     public Context getApplicationContext() { return null; }
-    public ApplicationInfo getApplicationInfo() { return new ApplicationInfo(); }
+    public ApplicationInfo getApplicationInfo() {
+        if (android.app.HostBridge.hasHost()) {
+            String pkg = getPackageName();
+            if (pkg != null && !pkg.isEmpty()) {
+                try {
+                    return getPackageManager().getApplicationInfo(pkg, 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    // fall through
+                }
+            }
+        }
+        return new ApplicationInfo();
+    }
     private AssetManager mAssets;
     public AssetManager getAssets() {
         if (mAssets == null) mAssets = new AssetManager();
@@ -155,8 +167,18 @@ public class Context {
     public File getObbDir() { return null; }
     public File[] getObbDirs() { return null; }
     public String getPackageCodePath() { return null; }
-    public PackageManager getPackageManager() { return new PackageManager(); }
-    public String getPackageName() { return ""; }
+    private PackageManager mPackageManager;
+    public PackageManager getPackageManager() {
+        if (mPackageManager == null) mPackageManager = new PackageManager();
+        return mPackageManager;
+    }
+    public String getPackageName() {
+        if (android.app.HostBridge.hasHost()) {
+            String hostPkg = android.app.HostBridge.getHostPackageName();
+            if (hostPkg != null) return hostPkg;
+        }
+        return "";
+    }
     public String getPackageResourcePath() { return null; }
     private Resources mResources;
     public Resources getResources() {
@@ -165,6 +187,11 @@ public class Context {
     }
     public SharedPreferences getSharedPreferences(String p0, int p1) { return SharedPreferences.getInstance(p0); }
     public Object getSystemService(String p0) {
+        // Try host's real system services first (provides real WindowManager, LayoutInflater, etc.)
+        if (android.app.HostBridge.hasHost()) {
+            Object hostService = android.app.HostBridge.getHostSystemService(p0);
+            if (hostService != null) return hostService;
+        }
         return android.app.SystemServiceRegistry.getService(p0);
     }
     @SuppressWarnings("unchecked")
@@ -220,15 +247,27 @@ public class Context {
     public void updateServiceGroup(ServiceConnection p0, int p1, int p2) {}
 
     public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.host_obtainStyledAttributes(attrs);
+        }
         return new android.content.res.TypedArray();
     }
     public android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.host_obtainStyledAttributes(attrs);
+        }
         return new android.content.res.TypedArray();
     }
     public android.content.res.TypedArray obtainStyledAttributes(int resId, int[] attrs) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.host_obtainStyledAttributes(resId, attrs);
+        }
         return new android.content.res.TypedArray();
     }
     public android.content.res.TypedArray obtainStyledAttributes(int[] attrs) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.host_obtainStyledAttributes(attrs);
+        }
         return new android.content.res.TypedArray();
     }
 

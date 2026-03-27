@@ -67,6 +67,7 @@ public class MiniServer {
     public MiniServiceManager getServiceManager() { return mServiceManager; }
     public MiniPackageManager getPackageManager() { return mPackageManager; }
     public Application getApplication() { return mApplication; }
+    public void setApplication(Application app) { mApplication = app; }
     public String getPackageName() { return mPackageName; }
     public ApkInfo getApkInfo() { return mApkInfo; }
 

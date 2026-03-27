@@ -204,10 +204,128 @@ public class PackageManager {
     public void setMimeGroup(Object p0, Object p1) {}
     public void updateInstantAppCookie(Object p0) {}
     public void verifyPendingInstall(Object p0, Object p1) {}
-    public int checkPermission(String permission, String packageName) { return PERMISSION_GRANTED; }
-    public ResolveInfo resolveActivity(android.content.Intent intent, int flags) { return null; }
+    public int checkPermission(String permission, String packageName) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.pm_checkPermission(permission, packageName);
+        }
+        return PERMISSION_GRANTED;
+    }
+
+    public ResolveInfo resolveActivity(android.content.Intent intent, int flags) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.pm_resolveActivity(intent, flags);
+        }
+        return null;
+    }
+
     public java.util.List<ResolveInfo> queryIntentActivities(android.content.Intent intent, int flags) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.pm_queryIntentActivities(intent, flags);
+        }
         return new java.util.ArrayList<ResolveInfo>();
+    }
+
+    // ── Methods commonly called by real APKs (delegate to host's real PM) ───
+
+    /**
+     * Get ActivityInfo for a component. Real APKs call this to resolve theme,
+     * launch mode, etc. Delegates to host's real PM via HostBridge.
+     */
+    public ActivityInfo getActivityInfo(android.content.ComponentName component, int flags)
+            throws NameNotFoundException {
+        if (android.app.HostBridge.hasHost()) {
+            ActivityInfo result = android.app.HostBridge.pm_getActivityInfo(component, flags);
+            if (result != null && result.name != null) return result;
+        }
+        throw new NameNotFoundException(component != null ? component.flattenToString() : "null");
+    }
+
+    /**
+     * Get ApplicationInfo for a package. Real APKs call this for sourceDir,
+     * targetSdkVersion, flags, etc. Delegates to host's real PM.
+     */
+    public ApplicationInfo getApplicationInfo(String packageName, int flags)
+            throws NameNotFoundException {
+        if (android.app.HostBridge.hasHost()) {
+            ApplicationInfo result = android.app.HostBridge.pm_getApplicationInfo(packageName, flags);
+            if (result != null && result.packageName != null) return result;
+        }
+        throw new NameNotFoundException(packageName);
+    }
+
+    /**
+     * Get PackageInfo for a package. Real APKs call this for versionCode,
+     * versionName, etc. Delegates to host's real PM.
+     */
+    public PackageInfo getPackageInfo(String packageName, int flags)
+            throws NameNotFoundException {
+        if (android.app.HostBridge.hasHost()) {
+            PackageInfo result = android.app.HostBridge.pm_getPackageInfo(packageName, flags);
+            if (result != null) return result;
+        }
+        throw new NameNotFoundException(packageName);
+    }
+
+    /**
+     * Check if a system feature is available. Real APKs use this to check
+     * for camera, sensors, etc.
+     */
+    public boolean hasSystemFeature(String feature) {
+        if (android.app.HostBridge.hasHost()) {
+            return android.app.HostBridge.pm_hasSystemFeature(feature);
+        }
+        return false;
+    }
+
+    /**
+     * Get the label for a package. Delegates to host's real PM.
+     */
+    public CharSequence getApplicationLabel(ApplicationInfo info) {
+        if (android.app.HostBridge.hasHost() && info != null && info.packageName != null) {
+            Object hostPM = android.app.HostBridge.getHostPackageManager();
+            if (hostPM != null) {
+                try {
+                    // Get real ApplicationInfo from host PM
+                    java.lang.reflect.Method m = hostPM.getClass().getMethod(
+                        "getApplicationInfo", String.class, int.class);
+                    Object realAppInfo = m.invoke(hostPM, info.packageName, 0);
+                    if (realAppInfo != null) {
+                        java.lang.reflect.Method labelM = hostPM.getClass().getMethod(
+                            "getApplicationLabel", realAppInfo.getClass().getSuperclass());
+                        // Try with the exact class first, then with ApplicationInfo
+                        try {
+                            Object label = labelM.invoke(hostPM, realAppInfo);
+                            if (label != null) return label.toString();
+                        } catch (Exception e) {
+                            // Try alternate signature
+                            Class<?> aiClass = hostPM.getClass().getClassLoader()
+                                .loadClass("android.content.pm.ApplicationInfo");
+                            labelM = hostPM.getClass().getMethod("getApplicationLabel", aiClass);
+                            Object label = labelM.invoke(hostPM, realAppInfo);
+                            if (label != null) return label.toString();
+                        }
+                    }
+                } catch (Exception e) {
+                    android.util.Log.w("PackageManager", "getApplicationLabel: " + e);
+                }
+            }
+        }
+        return info != null && info.name != null ? info.name : "";
+    }
+
+    /**
+     * Set component enabled setting. No-op in shim but prevents crash.
+     */
+    public void setComponentEnabledSetting(android.content.ComponentName component,
+            int newState, int flags) {
+        // No-op in shim
+    }
+
+    /**
+     * Get component enabled setting. Always returns default.
+     */
+    public int getComponentEnabledSetting(android.content.ComponentName component) {
+        return COMPONENT_ENABLED_STATE_DEFAULT;
     }
 
     public static class NameNotFoundException extends Exception {

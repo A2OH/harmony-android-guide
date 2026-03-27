@@ -9,7 +9,7 @@ public class PackageItemInfo {
     public int icon = 0;
     public int labelRes = 0;
     public int logo = 0;
-    public int metaData = 0;
+    public android.os.Bundle metaData;
     public String name;
     public int nonLocalizedLabel = 0;
     public String packageName;

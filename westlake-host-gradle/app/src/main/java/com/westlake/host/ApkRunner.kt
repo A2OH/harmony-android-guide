@@ -126,6 +126,21 @@ object ApkRunner {
                     .invoke(am, launcherActivity, actClass)
                 steps.add("✅ Registered: $launcherActivity")
 
+                // Try to create the APK's custom Application class
+                try {
+                    // Get the real app's Application class name from PackageManager
+                    val realAppInfo = activity.packageManager.getApplicationInfo(pkg, 0)
+                    val appClassName = realAppInfo.className
+                    if (appClassName != null) {
+                        val appCls = apkLoader.loadClass(appClassName)
+                        val appObj = appCls.newInstance()
+                        try { server.javaClass.getMethod("setApplication", engineCl.loadClass("android.app.Application")).invoke(server, appObj) } catch (_: Exception) {}
+                        steps.add("✅ Application: ${appCls.simpleName}")
+                    }
+                } catch (e: Exception) {
+                    steps.add("⚠️ Application: ${e.message?.take(60)}")
+                }
+
                 // Create Intent and start Activity via MiniActivityManager
                 val intentClass = engineCl.loadClass("android.content.Intent")
                 val compNameClass = engineCl.loadClass("android.content.ComponentName")

@@ -207,6 +207,17 @@ class WestlakeActivity : ComponentActivity() {
             engineClassLoader = childFirst
             Thread.currentThread().contextClassLoader = childFirst
 
+            // Set HostBridge host reference so shim classes can delegate
+            // host-dependent calls (PackageManager, Resources, Theme, etc.)
+            // to the real phone framework via reflection.
+            try {
+                val bridgeCls = childFirst.loadClass("android.app.HostBridge")
+                bridgeCls.getMethod("setHost", Any::class.java).invoke(null, this@WestlakeActivity)
+                Log.i(TAG, "HostBridge: host set to WestlakeActivity")
+            } catch (e: Exception) {
+                Log.w(TAG, "HostBridge setup: $e")
+            }
+
             // Pre-load critical shim classes so they're cached before any APK loads.
             // This ensures the shim's concrete Window/Activity are used, not the phone's abstract ones.
             // Pre-load shim classes that MUST come from our DEX (not the phone's boot CL).

@@ -37,7 +37,25 @@ public class Window {
     private View mContentView;
     private int mFeatures;
     private int mFlags;
-    private Object mCallback;
+    private Callback mCallback;
+
+    public interface Callback {
+        boolean dispatchKeyEvent(KeyEvent event);
+        boolean dispatchTouchEvent(android.view.MotionEvent event);
+        boolean dispatchTrackballEvent(android.view.MotionEvent event);
+        void onContentChanged();
+        void onWindowFocusChanged(boolean hasFocus);
+        void onAttachedToWindow();
+        void onDetachedFromWindow();
+        void onWindowAttributesChanged(WindowManager.LayoutParams attrs);
+        boolean onMenuOpened(int featureId, android.view.Menu menu);
+        boolean onMenuItemSelected(int featureId, android.view.MenuItem item);
+        void onPanelClosed(int featureId, android.view.Menu menu);
+        boolean onSearchRequested();
+        View onCreatePanelView(int featureId);
+        boolean onCreatePanelMenu(int featureId, android.view.Menu menu);
+        boolean onPreparePanel(int featureId, View view, android.view.Menu menu);
+    }
     private CharSequence mTitle;
     private int mStatusBarColor;
     private int mNavigationBarColor;
@@ -68,7 +86,7 @@ public class Window {
     public boolean getAllowEnterTransitionOverlap() { return false; }
     public boolean getAllowReturnTransitionOverlap() { return false; }
     public Object getAttributes() { return null; }
-    public Object getCallback() { return mCallback; }
+    public Callback getCallback() { return mCallback; }
     public int getColorMode() { return 0; }
     public Window getContainer() { return null; }
     public Scene getContentScene() { return null; }
@@ -120,7 +138,8 @@ public class Window {
     public void setAttributes(Object p0) {}
     public void setBackgroundDrawable(Drawable p0) {}
     public void setBackgroundDrawableResource(int p0) {}
-    public void setCallback(Object p0) { mCallback = p0; }
+    public void setCallback(Callback p0) { mCallback = p0; }
+    public void setCallback(Object p0) { /* legacy */ }
     public void setChildDrawable(int p0, Drawable p1) {}
     public void setChildInt(int p0, int p1) {}
     public void setClipToOutline(boolean p0) {}
