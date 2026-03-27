@@ -63,6 +63,17 @@ private const val OP_CLIP_RECT       = 8
 private const val OP_DRAW_ROUND_RECT = 9
 private const val OP_DRAW_CIRCLE     = 10
 
+/**
+ * Configuration for launching an APK in the Westlake VM subprocess.
+ * If null/blank, falls back to the original MockDonalds behavior.
+ */
+data class ApkVmConfig(
+    val packageName: String,       // e.g. "me.tsukanov.counter"
+    val activityName: String,      // e.g. "me.tsukanov.counter.ui.MainActivity"
+    val displayName: String,       // e.g. "Simple Counter"
+    val apkSourceDir: String? = null // resolved from PackageManager at launch time
+)
+
 object WestlakeVM {
     private const val TAG = "WestlakeVM"
     // Use app's external files dir (accessible by both app and subprocess)
@@ -83,8 +94,17 @@ object WestlakeVM {
         "boot-core-icu4j.art", "boot-core-icu4j.oat", "boot-core-icu4j.vdex"
     )
 
-    fun start(): List<String> {
-        Log.i(TAG, "start() called")
+    /** Start MockDonalds (legacy entry point) */
+    fun start(): List<String> = startWithConfig(null)
+
+    /**
+     * Start the VM with an optional APK config.
+     * If apkConfig is null, runs the original MockDonalds app.
+     * If apkConfig is provided, extracts the APK's classes.dex, copies the APK,
+     * and launches via the generic WestlakeLauncher.
+     */
+    fun startWithConfig(apkConfig: ApkVmConfig?): List<String> {
+        Log.i(TAG, "startWithConfig() called, config=$apkConfig")
         val log = mutableListOf<String>()
         val activity = WestlakeActivity.instance ?: return listOf("No activity").also { Log.e(TAG, "No activity instance!") }
 
@@ -111,15 +131,75 @@ object WestlakeVM {
         // Use boot image if available (ART inserts /arm64/ automatically)
         val hasBootImage = File("$runDir/arm64/boot.art").exists()
         val bootArgs = if (hasBootImage) {
-            log.add("Boot image found — using AOT mode")
+            log.add("Boot image found -- using AOT mode")
             arrayOf("-Ximage:$runDir/boot.art")
         } else {
-            log.add("No boot image — interpreter mode (slow startup)")
+            log.add("No boot image -- interpreter mode (slow startup)")
             arrayOf("-Xnoimage-dex2oat")
         }
 
-        val cmd = arrayOf(dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
-            "-classpath", "$runDir/app.dex", "com.example.mockdonalds.MockDonaldsApp")
+        // Build command based on config
+        val cmd: Array<String>
+        val apkDevicePath: String?
+
+        if (apkConfig != null) {
+            // --- APK mode: extract DEX, copy APK, use WestlakeLauncher ---
+            val apkSrc = apkConfig.apkSourceDir
+            if (apkSrc == null || !File(apkSrc).exists()) {
+                log.add("ERROR: APK not found: $apkSrc")
+                return log
+            }
+
+            // Copy APK to app's private dir (writable by our process)
+            val apkName = apkConfig.packageName.replace(".", "_") + ".apk"
+            apkDevicePath = "${vmDir.absolutePath}/$apkName"
+            val apkDst = File(apkDevicePath)
+            if (!apkDst.exists() || apkDst.length() != File(apkSrc).length()) {
+                File(apkSrc).copyTo(apkDst, overwrite = true)
+                log.add("Copied APK: ${apkConfig.displayName}")
+            }
+
+            // Extract classes.dex from the APK
+            val dexName = apkConfig.packageName.replace(".", "_") + ".dex"
+            val dexPath = "${vmDir.absolutePath}/$dexName"
+            try {
+                val zipFile = java.util.zip.ZipFile(apkSrc)
+                val dexEntry = zipFile.getEntry("classes.dex")
+                if (dexEntry != null) {
+                    val input = zipFile.getInputStream(dexEntry)
+                    FileOutputStream(dexPath).use { out ->
+                        val buf = ByteArray(8192)
+                        var n: Int
+                        while (input.read(buf).also { n = it } > 0) out.write(buf, 0, n)
+                    }
+                    input.close()
+                    log.add("Extracted classes.dex (${File(dexPath).length() / 1024}KB)")
+                } else {
+                    log.add("WARNING: No classes.dex in APK")
+                }
+                zipFile.close()
+            } catch (e: Exception) {
+                log.add("DEX extraction error: ${e.message}")
+            }
+
+            // Classpath: the APK's DEX (shim is in bootclasspath already)
+            val classpath = dexPath
+
+            cmd = arrayOf(
+                dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
+                "-Dwestlake.apk.path=$apkDevicePath",
+                "-Dwestlake.apk.activity=${apkConfig.activityName}",
+                "-Dwestlake.apk.package=${apkConfig.packageName}",
+                "-classpath", classpath,
+                "com.westlake.engine.WestlakeLauncher"
+            )
+            log.add("Launching ${apkConfig.displayName} via WestlakeLauncher")
+        } else {
+            // --- Legacy MockDonalds mode ---
+            cmd = arrayOf(dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
+                "-classpath", "$runDir/app.dex", "com.example.mockdonalds.MockDonaldsApp")
+            log.add("Launching MockDonalds (legacy)")
+        }
 
         log.add("Starting from ${vmDir.absolutePath}...")
         try {
@@ -135,7 +215,7 @@ object WestlakeVM {
             process = pb.start()
             log.add("VM process started")
 
-            // Read output in background (no line limit — keep reading until process exits)
+            // Read output in background (no line limit -- keep reading until process exits)
             Thread {
                 try {
                     val reader = process!!.inputStream.bufferedReader()
@@ -517,6 +597,283 @@ fun WestlakeVMScreen() {
             Text(
                 "dalvikvm ARM64 | OHBridge → DisplayList IPC → Canvas replay | Touch → file → VM",
                 fontSize = 10.sp, color = Color(0xFF4CAF50),
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A)).padding(4.dp)
+            )
+        }
+    }
+}
+
+/**
+ * WestlakeVMApkScreen — runs a real APK in the dalvikvm subprocess.
+ * Same display list IPC as WestlakeVMScreen but launches via WestlakeLauncher
+ * with the APK's classes.dex extracted and loaded.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WestlakeVMApkScreen(config: ApkVmConfig) {
+    val activity = WestlakeActivity.instance ?: return
+    val scope = rememberCoroutineScope()
+    var logs by remember { mutableStateOf(listOf("Preparing ${config.displayName}...")) }
+    var frameBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var frameCount by remember { mutableIntStateOf(0) }
+    var isRunning by remember { mutableStateOf(false) }
+
+    // Resolve APK path and start VM
+    LaunchedEffect(Unit) {
+        // Resolve APK source dir from PackageManager
+        val resolvedConfig = try {
+            val appInfo = activity.packageManager.getApplicationInfo(config.packageName, 0)
+            config.copy(apkSourceDir = appInfo.sourceDir)
+        } catch (e: Exception) {
+            logs = listOf("ERROR: APK not installed: ${config.packageName}", e.message ?: "")
+            return@LaunchedEffect
+        }
+        logs = WestlakeVM.startWithConfig(resolvedConfig)
+        isRunning = true
+    }
+
+    // Frame reader — identical to WestlakeVMScreen (display list replay)
+    LaunchedEffect(isRunning) {
+        val shmFile = File(WestlakeVM.SHM_PATH)
+        var attempts = 0
+        while (isRunning && !shmFile.exists() && attempts < 100) {
+            delay(100)
+            attempts++
+        }
+
+        if (shmFile.exists() && shmFile.length() >= WLK_HEADER_SIZE) {
+            var version = 0
+            for (retry in 0 until 50) {
+                val peekRaf = RandomAccessFile(shmFile, "r")
+                val peekBuf = ByteArray(32)
+                peekRaf.read(peekBuf)
+                peekRaf.close()
+                val peekBB = ByteBuffer.wrap(peekBuf).order(ByteOrder.LITTLE_ENDIAN)
+                val magic = peekBB.getInt(0)
+                version = peekBB.getInt(4)
+                if (magic == WLK_MAGIC) break
+                delay(100)
+            }
+            Log.i("WestlakeVM", "APK SHM version=$version, file=${shmFile.length()} bytes")
+
+            if (version == 2 && shmFile.length() >= WLK_DLIST_TOTAL_SIZE) {
+                Log.i("WestlakeVM", "APK display list mode (version=2)")
+                val raf = RandomAccessFile(shmFile, "r")
+                val channel = raf.channel
+                val shm = channel.map(FileChannel.MapMode.READ_ONLY, 0, WLK_DLIST_TOTAL_SIZE.toLong())
+                shm.order(ByteOrder.LITTLE_ENDIAN)
+
+                val bmpA = android.graphics.Bitmap.createBitmap(480, 800, android.graphics.Bitmap.Config.ARGB_8888)
+                val bmpB = android.graphics.Bitmap.createBitmap(480, 800, android.graphics.Bitmap.Config.ARGB_8888)
+                var drawBmp = bmpA
+                var showBmp = bmpB
+                val canvasA = Canvas(bmpA)
+                val canvasB = Canvas(bmpB)
+                var canvas = canvasA
+                val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    try { typeface = android.graphics.Typeface.createFromFile("/system/fonts/Roboto-Regular.ttf") } catch (_: Exception) {}
+                }
+                var lastSeq = -1
+
+                try {
+                    while (isRunning) {
+                        val seq = shm.getInt(16)
+                        if (seq != lastSeq) {
+                            lastSeq = seq
+                            val listSize = shm.getInt(20)
+                            val baseCount = canvas.saveCount
+                            canvas.save()
+                            canvas.drawColor(android.graphics.Color.WHITE)
+
+                            var offset = WLK_HEADER_SIZE
+                            val endOffset = WLK_HEADER_SIZE + listSize.coerceAtMost(DLIST_MAX_SIZE)
+                            while (offset < endOffset) {
+                                val op = shm.get(offset).toInt() and 0xFF
+                                offset++
+                                when (op) {
+                                    OP_DRAW_COLOR -> { canvas.drawColor(shm.getInt(offset)); offset += 4 }
+                                    OP_DRAW_RECT -> {
+                                        val l = shm.getFloat(offset); offset += 4
+                                        val t = shm.getFloat(offset); offset += 4
+                                        val r = shm.getFloat(offset); offset += 4
+                                        val b = shm.getFloat(offset); offset += 4
+                                        paint.color = shm.getInt(offset); offset += 4
+                                        paint.style = Paint.Style.FILL
+                                        canvas.drawRect(l, t, r, b, paint)
+                                    }
+                                    OP_DRAW_TEXT -> {
+                                        val x = shm.getFloat(offset); offset += 4
+                                        val y = shm.getFloat(offset); offset += 4
+                                        val size = shm.getFloat(offset); offset += 4
+                                        paint.textSize = size
+                                        paint.color = shm.getInt(offset); offset += 4
+                                        paint.style = Paint.Style.FILL
+                                        val len = shm.getShort(offset).toInt() and 0xFFFF; offset += 2
+                                        if (len > 0 && offset + len <= endOffset) {
+                                            val chars = ByteArray(len)
+                                            for (i in 0 until len) chars[i] = shm.get(offset + i)
+                                            offset += len
+                                            canvas.drawText(String(chars, Charsets.UTF_8), x, y, paint)
+                                        } else { offset += len }
+                                    }
+                                    OP_DRAW_LINE -> {
+                                        val x1 = shm.getFloat(offset); offset += 4
+                                        val y1 = shm.getFloat(offset); offset += 4
+                                        val x2 = shm.getFloat(offset); offset += 4
+                                        val y2 = shm.getFloat(offset); offset += 4
+                                        paint.color = shm.getInt(offset); offset += 4
+                                        paint.strokeWidth = shm.getFloat(offset); offset += 4
+                                        paint.style = Paint.Style.STROKE
+                                        canvas.drawLine(x1, y1, x2, y2, paint)
+                                    }
+                                    OP_SAVE -> canvas.save()
+                                    OP_RESTORE -> { if (canvas.saveCount > baseCount + 1) canvas.restore() }
+                                    OP_TRANSLATE -> {
+                                        val dx = shm.getFloat(offset); offset += 4
+                                        val dy = shm.getFloat(offset); offset += 4
+                                        canvas.translate(dx, dy)
+                                    }
+                                    OP_CLIP_RECT -> {
+                                        val l = shm.getFloat(offset); offset += 4
+                                        val t = shm.getFloat(offset); offset += 4
+                                        val r = shm.getFloat(offset); offset += 4
+                                        val b = shm.getFloat(offset); offset += 4
+                                        canvas.clipRect(l, t, r, b)
+                                    }
+                                    OP_DRAW_ROUND_RECT -> {
+                                        val l = shm.getFloat(offset); offset += 4
+                                        val t = shm.getFloat(offset); offset += 4
+                                        val r = shm.getFloat(offset); offset += 4
+                                        val b = shm.getFloat(offset); offset += 4
+                                        val rx = shm.getFloat(offset); offset += 4
+                                        val ry = shm.getFloat(offset); offset += 4
+                                        paint.color = shm.getInt(offset); offset += 4
+                                        paint.style = Paint.Style.FILL
+                                        canvas.drawRoundRect(l, t, r, b, rx, ry, paint)
+                                    }
+                                    OP_DRAW_CIRCLE -> {
+                                        val cx = shm.getFloat(offset); offset += 4
+                                        val cy = shm.getFloat(offset); offset += 4
+                                        val radius = shm.getFloat(offset); offset += 4
+                                        paint.color = shm.getInt(offset); offset += 4
+                                        paint.style = Paint.Style.FILL
+                                        canvas.drawCircle(cx, cy, radius, paint)
+                                    }
+                                    else -> { Log.w("WestlakeVM", "Unknown dlist op $op at offset ${offset-1}"); break }
+                                }
+                            }
+                            canvas.restoreToCount(baseCount)
+                            frameBitmap = drawBmp
+                            frameCount++
+                            val tmp = drawBmp; drawBmp = showBmp; showBmp = tmp
+                            canvas = if (drawBmp === bmpA) canvasA else canvasB
+                        }
+                        delay(8)
+                    }
+                } finally { channel.close(); raf.close() }
+            } else {
+                // Fallback to PNG polling
+                while (isRunning) {
+                    delay(80)
+                    try {
+                        val file = File(WestlakeVM.PNG_PATH)
+                        if (file.exists() && file.length() > 100) {
+                            val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                            if (bmp != null) { frameBitmap = bmp; frameCount++ }
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+        } else {
+            while (isRunning) {
+                delay(80)
+                try {
+                    val file = File(WestlakeVM.PNG_PATH)
+                    if (file.exists() && file.length() > 100) {
+                        val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                        if (bmp != null) { frameBitmap = bmp; frameCount++ }
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            isRunning = false
+            WestlakeVM.stop()
+        }
+    }
+
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF4A148C)).padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    isRunning = false
+                    WestlakeVM.stop()
+                    activity.showHome()
+                }) { Text("<-", fontSize = 20.sp, color = Color.White) }
+                Text(config.displayName, fontSize = 16.sp, color = Color.White,
+                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text("Frame: $frameCount", fontSize = 12.sp, color = Color.White.copy(0.6f))
+            }
+
+            // Rendered frame display
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f)
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val scaleX = 480f / size.width
+                            val scaleY = 800f / size.height
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            WestlakeVM.sendTouch(0, down.position.x * scaleX, down.position.y * scaleY)
+                            do {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.firstOrNull() ?: break
+                                val vx = change.position.x * scaleX
+                                val vy = change.position.y * scaleY
+                                if (change.pressed) {
+                                    WestlakeVM.sendTouch(2, vx, vy)
+                                } else {
+                                    WestlakeVM.sendTouch(1, vx, vy)
+                                    break
+                                }
+                            } while (true)
+                        }
+                    }
+            ) {
+                frameBitmap?.let { bmp ->
+                    Image(
+                        bitmap = bmp.asImageBitmap(),
+                        contentDescription = "${config.displayName} VM Output",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: run {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(color = Color(0xFF9C27B0))
+                        Spacer(Modifier.height(16.dp))
+                        Text("${config.displayName} starting...", color = Color.White.copy(0.6f), fontSize = 14.sp)
+                        Text("(ART11 boot + APK load + first render)", color = Color.White.copy(0.4f), fontSize = 12.sp)
+                        Spacer(Modifier.height(8.dp))
+                        logs.takeLast(4).forEach { line ->
+                            Text(line, fontSize = 11.sp, color = Color.White.copy(0.5f))
+                        }
+                    }
+                }
+            }
+
+            // Status bar
+            Text(
+                "dalvikvm ARM64 | ${config.packageName} | DisplayList IPC",
+                fontSize = 10.sp, color = Color(0xFF9C27B0),
                 modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A)).padding(4.dp)
             )
         }

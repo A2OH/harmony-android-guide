@@ -17,7 +17,7 @@ import java.io.File;
 public class ContextWrapper extends Context {
     public ContextWrapper(Context p0) {}
 
-    protected void attachBaseContext(Context p0) {}
+    public void attachBaseContext(Context p0) {}
     public boolean bindService(Intent p0, ServiceConnection p1, int p2) { return super.bindService(p0, p1, p2); }
     public int checkCallingOrSelfPermission(String p0) { return 0; }
     public int checkCallingOrSelfUriPermission(Uri p0, int p1) { return 0; }

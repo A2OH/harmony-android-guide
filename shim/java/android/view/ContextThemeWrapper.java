@@ -83,7 +83,7 @@ public class ContextThemeWrapper extends ContextWrapper {
     }
 
     @Override
-    protected void attachBaseContext(Context newBase) {
+    public void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
     }
 

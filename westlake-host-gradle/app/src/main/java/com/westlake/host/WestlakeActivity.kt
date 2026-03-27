@@ -76,9 +76,24 @@ class WestlakeActivity : ComponentActivity() {
         setContent { ApkRunnerScreen(apkPath, launcherActivity, appName) }
     }
 
+    /** Run an APK in the dalvikvm subprocess via WestlakeLauncher */
+    fun launchVmApk(packageName: String, activityName: String, displayName: String) {
+        val config = ApkVmConfig(packageName = packageName, activityName = activityName, displayName = displayName)
+        setContent { WestlakeVMApkScreen(config) }
+    }
+
     /** Launch a custom app from the engine DEX by calling its init+show methods */
     fun launchCustomApp(className: String, initMethod: String?, showMethod: String) {
         if (className == "WESTLAKE_VM") { Log.i(TAG, "Launching WestlakeVM screen"); setContent { WestlakeVMScreen() }; return }
+        if (className.startsWith("VM_APK:")) {
+            // Format: VM_APK:package:activity:displayName
+            val parts = className.removePrefix("VM_APK:").split(":")
+            val pkg = parts[0]; val act = parts[1]; val name = parts.getOrElse(2) { pkg }
+            Log.i(TAG, "Launching VM APK: $pkg/$act ($name)")
+            val config = ApkVmConfig(packageName = pkg, activityName = act, displayName = name)
+            setContent { WestlakeVMApkScreen(config) }
+            return
+        }
         if (className == "SHIM_CANVAS") { Log.i(TAG, "Launching ShimCanvas screen"); setContent { ShimCanvasScreen() }; return }
         if (className.startsWith("NATIVE_APK:")) {
             val parts = className.removePrefix("NATIVE_APK:").split(":")
@@ -340,6 +355,7 @@ fun WestlakeHome() {
             AppInfo("Counter (Native)", "Real APK in-process", Color(0xFF9C27B0), "NATIVE_APK:me.tsukanov.counter:me.tsukanov.counter.ui.MainActivity:Simple Counter", null, ""),
             AppInfo("Calculator (Native)", "Huawei Calculator in-process", Color(0xFF4CAF50), "NATIVE_APK:com.huawei.calculator:com.huawei.calculator.Calculator:Calculator", null, ""),
             AppInfo("Westlake VM", "Run MockDonalds in our own ART11 (subprocess)", Color(0xFF4CAF50), "WESTLAKE_VM", null, ""),
+            AppInfo("Counter (VM)", "Simple Counter APK in ART11 subprocess", Color(0xFF9C27B0), "VM_APK:me.tsukanov.counter:me.tsukanov.counter.ui.MainActivity:Simple Counter", null, ""),
             AppInfo("Compose Demo", "Navigation + Retrofit + Coil + ViewModel", Color(0xFF00BCD4), "COMPOSE_DEMO", null, ""),
             AppInfo("Noice (APK Resources)", "Production app → resources.arsc → Views", Color(0xFF26A69A), "APK_VIEW:com.github.ashutoshgngwr.noice:Noice", null, ""),
             AppInfo("Counter (APK Resources)", "Real APK → resources.arsc → Views", Color(0xFF9C27B0), "APK_VIEW:me.tsukanov.counter:Counter", null, ""),
