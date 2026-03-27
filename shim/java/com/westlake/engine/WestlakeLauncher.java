@@ -67,7 +67,13 @@ public class WestlakeLauncher {
                 if (resDir != null && new java.io.File(resDir, "resources.arsc").exists()) {
                     // Use pre-extracted resources (host extracted them before spawning dalvikvm)
                     info = android.app.ApkLoader.loadFromExtracted(resDir, packageName);
-                    System.out.println("[WestlakeLauncher] Loaded from pre-extracted resources");
+                    // Store ApkInfo on MiniServer so LayoutInflater can find resDir
+                    try {
+                        java.lang.reflect.Field f = MiniServer.class.getDeclaredField("mApkInfo");
+                        f.setAccessible(true);
+                        f.set(server, info);
+                    } catch (Exception ex) { System.out.println("[WestlakeLauncher] setApkInfo: " + ex); }
+                    System.out.println("[WestlakeLauncher] Loaded from pre-extracted resources (resDir=" + info.resDir + ")");
 
                     // Wire resources to Application (same as MiniServer.loadApk does)
                     android.content.res.Resources res = server.getApplication().getResources();

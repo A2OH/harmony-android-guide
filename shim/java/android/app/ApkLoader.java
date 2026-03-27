@@ -270,6 +270,7 @@ public class ApkLoader {
 
         // Set res dir for layout inflation
         info.assetDir = resDir;
+        info.resDir = resDir;
 
         // Try to find launcher activity from the activity name property
         String activity = System.getProperty("westlake.apk.activity");

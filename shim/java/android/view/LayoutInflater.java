@@ -839,11 +839,13 @@ public class LayoutInflater {
                 if (info != null) resDir = info.resDir;
                 if (resDir == null) resDir = info != null ? info.extractDir : null;
 
+                System.out.println("[LayoutInflater] loadLayoutXml: resDir=" + resDir + " path=" + layoutPath);
                 if (resDir != null) {
                     java.io.File xmlFile = new java.io.File(resDir, layoutPath);
+                    System.out.println("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
                     if (!xmlFile.exists()) {
-                        // Try without res/ prefix
                         xmlFile = new java.io.File(resDir, layoutPath.startsWith("res/") ? layoutPath.substring(4) : layoutPath);
+                        System.out.println("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
                     }
                     if (xmlFile.exists()) {
                         return readFile(xmlFile);
