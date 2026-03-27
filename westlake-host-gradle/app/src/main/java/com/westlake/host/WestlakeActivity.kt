@@ -73,7 +73,7 @@ class WestlakeActivity : ComponentActivity() {
 
     /** Launch a custom app from the engine DEX by calling its init+show methods */
     fun launchCustomApp(className: String, initMethod: String?, showMethod: String) {
-        if (className == "WESTLAKE_VM") { setContent { WestlakeVMScreen() }; return }
+        if (className == "WESTLAKE_VM") { Log.i(TAG, "Launching WestlakeVM screen"); setContent { WestlakeVMScreen() }; return }
         if (className == "COMPOSE_DEMO") { launchComposeDemo(); return }
         if (className.startsWith("APK_VIEW:")) {
             val parts = className.removePrefix("APK_VIEW:").split(":")

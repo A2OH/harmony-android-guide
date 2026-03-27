@@ -1099,8 +1099,11 @@ public class Typeface {
     }
 
     private static Typeface getSystemDefaultTypeface(@NonNull String familyName) {
-        Typeface tf = sSystemFontMap.get(familyName);
-        return tf == null ? Typeface.DEFAULT : tf;
+        Typeface tf = sSystemFontMap != null ? sSystemFontMap.get(familyName) : null;
+        if (tf != null) return tf;
+        // During <clinit>, DEFAULT may not be set yet — create a stub typeface
+        if (sDefaultTypeface != null) return sDefaultTypeface;
+        return new Typeface(1); // stub native instance
     }
 
     /** @hide */

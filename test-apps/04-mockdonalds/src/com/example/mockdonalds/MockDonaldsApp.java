@@ -83,26 +83,34 @@ public class MockDonaldsApp {
                 shimRendering = true;
             } catch (Exception e) {
                 // On real Android: get the root view and display it natively
+                System.out.println("[MockDonaldsApp] Shim render failed: " + e);
                 System.out.println("[MockDonaldsApp] Using native Android rendering");
                 try {
-                    // MenuActivity stored root view in WestlakeActivity.shimRootView
-                    final android.view.View root = com.westlake.host.WestlakeActivity.shimRootView;
-                    if (root != null) {
-                        com.westlake.host.WestlakeActivity.instance.runOnUiThread(new Runnable() {
+                    // Use reflection to avoid hard dependency on WestlakeActivity class
+                    Class<?> hostCls = Class.forName("com.westlake.host.WestlakeActivity");
+                    final android.view.View root = (android.view.View) hostCls.getField("shimRootView").get(null);
+                    final Object hostInstance = hostCls.getField("instance").get(null);
+                    if (root != null && hostInstance != null) {
+                        java.lang.reflect.Method runOnUi = hostCls.getMethod("runOnUiThread", Runnable.class);
+                        runOnUi.invoke(hostInstance, new Runnable() {
                             public void run() {
-                                // Remove from any existing parent first
-                                if (root.getParent() != null) {
-                                    ((android.view.ViewGroup)root.getParent()).removeView(root);
+                                try {
+                                    if (root.getParent() != null) {
+                                        ((android.view.ViewGroup)root.getParent()).removeView(root);
+                                    }
+                                    java.lang.reflect.Method scv = hostInstance.getClass().getMethod("setContentView", android.view.View.class);
+                                    scv.invoke(hostInstance, root);
+                                    System.out.println("[MockDonaldsApp] Native content view set");
+                                } catch (Exception re) {
+                                    System.out.println("[MockDonaldsApp] setContentView failed: " + re);
                                 }
-                                com.westlake.host.WestlakeActivity.instance.setContentView(root);
-                                System.out.println("[MockDonaldsApp] Native content view set: " + root.getClass().getSimpleName());
                             }
                         });
                     } else {
-                        System.out.println("[MockDonaldsApp] No shimRootView available");
+                        System.out.println("[MockDonaldsApp] No shimRootView or host instance");
                     }
                 } catch (Exception ex) {
-                    System.out.println("[MockDonaldsApp] Native rendering setup failed: " + ex);
+                    System.out.println("[MockDonaldsApp] Native rendering not available: " + ex);
                 }
             }
             System.out.println("[MockDonaldsApp] Initial frame rendered (shim=" + shimRendering + ")");
@@ -120,11 +128,11 @@ public class MockDonaldsApp {
 
     /**
      * Simple render loop: re-render the current Activity's view tree.
-     * Touch events arrive via OHBridge.dispatchTouchEvent() from native.
+     * Touch events arrive via touch.dat file from the Compose host.
+     * Format: 16 bytes LE [action:i32, x:i32, y:i32, seq:i32]
+     * Actions: 0=DOWN, 1=UP, 2=MOVE
      */
-    private static final String[] TOUCH_PATHS = {
-        "/sdcard/Android/data/com.westlake.host/files/touch.dat",
-        "/storage/emulated/0/Android/data/com.westlake.host/files/touch.dat",
+    private static final String[] TOUCH_PATHS_FALLBACK = {
         "/data/local/tmp/a2oh/touch.dat",
         "/sdcard/westlake_touch.dat"
     };
@@ -132,20 +140,37 @@ public class MockDonaldsApp {
     private static void renderLoop(Activity initialActivity, MiniActivityManager am) {
         long frameCount = 0;
         int lastTouchSeq = -1;
+
+        // Prefer WESTLAKE_TOUCH env var (set by Compose host)
+        String envTouch = System.getenv("WESTLAKE_TOUCH");
         java.io.File touchFile = null;
-        // Find first readable touch file
-        for (String p : TOUCH_PATHS) {
-            java.io.File f = new java.io.File(p);
-            if (f.getParentFile() != null && f.getParentFile().exists()) {
-                touchFile = f;
-                System.out.println("[MockDonaldsApp] Touch file: " + p);
-                break;
+        if (envTouch != null && !envTouch.isEmpty()) {
+            touchFile = new java.io.File(envTouch);
+            // Ensure parent directory exists
+            java.io.File parent = touchFile.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            System.out.println("[MockDonaldsApp] Touch file (env): " + envTouch);
+        } else {
+            // Fallback: find first usable path
+            for (String p : TOUCH_PATHS_FALLBACK) {
+                java.io.File f = new java.io.File(p);
+                if (f.getParentFile() != null && f.getParentFile().exists()) {
+                    touchFile = f;
+                    System.out.println("[MockDonaldsApp] Touch file (fallback): " + p);
+                    break;
+                }
+            }
+            if (touchFile == null) {
+                touchFile = new java.io.File(TOUCH_PATHS_FALLBACK[0]);
+                System.out.println("[MockDonaldsApp] Touch file (default): " + TOUCH_PATHS_FALLBACK[0]);
             }
         }
-        if (touchFile == null) {
-            touchFile = new java.io.File(TOUCH_PATHS[0]);
-            System.out.println("[MockDonaldsApp] Touch file fallback: " + TOUCH_PATHS[0]);
-        }
+
+        // Track touch state for drag/scroll gestures
+        boolean needsRender = false;
+        long downTime = 0;
+        int lastTouchY = 0;       // Y of previous touch event (for drag delta)
+        int scrollOffset = 0;     // accumulated scroll offset in pixels
 
         while (true) {
             try {
@@ -170,66 +195,105 @@ public class MockDonaldsApp {
                     if (n == 16) {
                         java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(buf);
                         bb.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-                        int action = bb.getInt();
+                        int action = bb.getInt();  // 0=DOWN, 1=UP, 2=MOVE
                         int x = bb.getInt();
                         int y = bb.getInt();
                         int seq = bb.getInt();
-                        if (seq != lastTouchSeq && action == 1) { // Only process UP (click)
+
+                        if (seq != lastTouchSeq) {
                             lastTouchSeq = seq;
-                            touchFile.delete(); // prevent re-read
-                            System.out.println("[MockDonaldsApp] Click at (" + x + "," + y + ")");
-                            // Find the clickable view at (x,y) and click it directly
-                            android.view.View decor = null;
-                            try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
-                            android.view.View target = findViewAt(decor, x, y);
-                            if (target != null) {
-                                System.out.println("[MockDonaldsApp] Hit: " + target.getClass().getSimpleName()
-                                    + " bounds=(" + target.getLeft() + "," + target.getTop() + ")");
-                                // If it's a ListView item, use performItemClick
-                                android.view.ViewParent parent = target.getParent();
-                                while (parent != null) {
-                                    if (parent instanceof android.widget.ListView) {
-                                        android.widget.ListView lv = (android.widget.ListView) parent;
-                                        int pos = lv.getPositionForView(target);
-                                        if (pos >= 0) {
-                                            System.out.println("[MockDonaldsApp] ListView item " + pos + " clicked");
-                                            lv.performItemClick(target, pos, pos);
+
+                            long now = System.currentTimeMillis();
+                            if (action == 0) {
+                                // DOWN: start of gesture
+                                downTime = now;
+                                lastTouchY = y;
+                                System.out.println("[MockDonaldsApp] Touch DOWN at (" + x + "," + y + ")");
+                                current.dispatchTouchEvent(
+                                    android.view.MotionEvent.obtain(downTime, now, 0, (float)x, (float)y, 0));
+                                needsRender = true;
+                            } else if (action == 2) {
+                                // MOVE: drag/scroll
+                                if (downTime == 0) downTime = now;
+                                int deltaY = lastTouchY - y;  // positive = scroll down (finger moves up)
+                                lastTouchY = y;
+
+                                // Apply scroll to the scrollable view in the tree
+                                android.view.View decor = null;
+                                try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
+                                if (decor != null) {
+                                    // Scroll the decor view directly. Content is taller than
+                                    // the 800px surface. Use a generous max scroll since
+                                    // layout clips children to surface height.
+                                    // 8 menu items × ~170px + header ~200px ≈ 1560px total
+                                    int maxScroll = SURFACE_HEIGHT * 2; // generous limit
+                                    scrollOffset += deltaY;
+                                    if (scrollOffset < 0) scrollOffset = 0;
+                                    if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+                                    decor.scrollTo(0, scrollOffset);
+                                }
+
+                                current.dispatchTouchEvent(
+                                    android.view.MotionEvent.obtain(downTime, now, 2, (float)x, (float)y, 0));
+                                needsRender = true;
+                            } else if (action == 1) {
+                                // UP: end of gesture
+                                if (downTime == 0) downTime = now;
+                                System.out.println("[MockDonaldsApp] Touch UP at (" + x + "," + y + ")");
+                                current.dispatchTouchEvent(
+                                    android.view.MotionEvent.obtain(downTime, now, 1, (float)x, (float)y, 0));
+                                needsRender = true;
+
+                                // Also handle click for short taps (fallback for views without touch handling)
+                                android.view.View decor = null;
+                                try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
+                                if (decor != null) {
+                                    android.view.View target = findViewAt(decor, x, y);
+                                    if (target != null) {
+                                        // If it's a ListView item, use performItemClick
+                                        android.view.ViewParent parent = target.getParent();
+                                        while (parent != null) {
+                                            if (parent instanceof android.widget.ListView) {
+                                                android.widget.ListView lv = (android.widget.ListView) parent;
+                                                int pos = lv.getPositionForView(target);
+                                                if (pos >= 0) {
+                                                    System.out.println("[MockDonaldsApp] ListView item " + pos + " clicked");
+                                                    lv.performItemClick(target, pos, pos);
+                                                }
+                                                break;
+                                            }
+                                            if (parent instanceof android.view.View) {
+                                                parent = ((android.view.View) parent).getParent();
+                                            } else {
+                                                break;
+                                            }
                                         }
-                                        break;
-                                    }
-                                    if (parent instanceof android.view.View) {
-                                        parent = ((android.view.View) parent).getParent();
-                                    } else {
-                                        break;
+                                        target.performClick();
                                     }
                                 }
-                                // Also try regular click
-                                target.performClick();
-                            } else {
-                                // Fallback: dispatch DOWN+UP
-                                long now = System.currentTimeMillis();
-                                current.dispatchTouchEvent(android.view.MotionEvent.obtain(now, now, 0, (float)x, (float)y, 0));
-                                current.dispatchTouchEvent(android.view.MotionEvent.obtain(now, now+50, 1, (float)x, (float)y, 0));
+                                downTime = 0; // reset for next gesture
                             }
-                            // Activity may have changed after click
-                            Activity next = am.getResumedActivity();
-                            if (next != null) {
-                                if (next != current) {
+
+                            // Re-render after any touch event
+                            if (needsRender) {
+                                Activity next = am.getResumedActivity();
+                                if (next != null) {
+                                    if (next != current) {
+                                        try {
+                                            java.lang.reflect.Method sc = next.getClass().getMethod("onSurfaceCreated", long.class, int.class, int.class);
+                                            sc.invoke(next, 0L, SURFACE_WIDTH, SURFACE_HEIGHT);
+                                        } catch (Exception e2) {}
+                                        System.out.println("[MockDonaldsApp] Navigated to " + next.getClass().getSimpleName());
+                                    }
                                     try {
-                                        java.lang.reflect.Method sc = next.getClass().getMethod("onSurfaceCreated", long.class, int.class, int.class);
-                                        sc.invoke(next, 0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                                    } catch (Exception e2) {}
-                                    System.out.println("[MockDonaldsApp] Navigated to " + next.getClass().getSimpleName());
+                                        java.lang.reflect.Method rf = next.getClass().getMethod("renderFrame");
+                                        rf.invoke(next);
+                                    } catch (Exception e2) {
+                                        if (frameCount < 5) System.out.println("[MockDonaldsApp] renderFrame error: " + e2);
+                                    }
                                 }
-                                try {
-                                    java.lang.reflect.Method rf = next.getClass().getMethod("renderFrame");
-                                    rf.invoke(next);
-                                } catch (Exception e2) {}
-                                // Signal C to write new PNG
+                                needsRender = false;
                             }
-                        } else if (seq != lastTouchSeq) {
-                            lastTouchSeq = seq;
-                            touchFile.delete(); // prevent re-read // consume DOWN/MOVE without processing
                         }
                     }
                 } catch (Exception e) {
@@ -237,10 +301,44 @@ public class MockDonaldsApp {
                 }
             }
 
-            // Only render on touch — no continuous rendering
             frameCount++;
         }
         System.out.println("[MockDonaldsApp] Render loop ended after " + frameCount + " frames");
+    }
+
+    /** Find the first scrollable view (ListView or ScrollView) in the tree via BFS */
+    /** Recursively measure the total height of all views in the tree */
+    private static int measureTotalHeight(android.view.View v) {
+        if (!(v instanceof android.view.ViewGroup)) {
+            return v.getBottom();
+        }
+        android.view.ViewGroup vg = (android.view.ViewGroup) v;
+        int maxBottom = v.getBottom();
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            android.view.View child = vg.getChildAt(i);
+            // For vertical LinearLayout, children stack — sum their heights
+            int childTotal = child.getTop() + measureTotalHeight(child);
+            if (childTotal > maxBottom) maxBottom = childTotal;
+        }
+        return maxBottom;
+    }
+
+    private static android.view.View findScrollableView(android.view.View root) {
+        java.util.LinkedList<android.view.View> queue = new java.util.LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            android.view.View v = queue.poll();
+            if (v instanceof android.widget.ListView || v instanceof android.widget.ScrollView) {
+                return v;
+            }
+            if (v instanceof android.view.ViewGroup) {
+                android.view.ViewGroup vg = (android.view.ViewGroup) v;
+                for (int i = 0; i < vg.getChildCount(); i++) {
+                    queue.add(vg.getChildAt(i));
+                }
+            }
+        }
+        return null;
     }
 
     /** Find the deepest view containing the given point (absolute coords) */

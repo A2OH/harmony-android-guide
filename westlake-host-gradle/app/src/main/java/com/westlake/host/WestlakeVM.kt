@@ -6,7 +6,8 @@ import android.util.Log
 import android.view.MotionEvent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,9 +48,17 @@ object WestlakeVM {
     var process: Process? = null
     var touchSeq = 0
 
+    // Boot image files for AOT startup (core JARs only, in arm64/ subdir)
+    private val BOOT_IMAGE_FILES = listOf(
+        "boot.art", "boot.oat", "boot.vdex",
+        "boot-core-libart.art", "boot-core-libart.oat", "boot-core-libart.vdex",
+        "boot-core-icu4j.art", "boot-core-icu4j.oat", "boot-core-icu4j.vdex"
+    )
+
     fun start(): List<String> {
+        Log.i(TAG, "start() called")
         val log = mutableListOf<String>()
-        val activity = WestlakeActivity.instance ?: return listOf("No activity")
+        val activity = WestlakeActivity.instance ?: return listOf("No activity").also { Log.e(TAG, "No activity instance!") }
 
         // Kill any existing
         process?.destroyForcibly()
@@ -57,48 +67,58 @@ object WestlakeVM {
         // Copy dalvikvm to app's private dir (SELinux allows execute there)
         val vmDir = File(activity.filesDir, "vm").apply { mkdirs() }
         val srcDir = File(DALVIKVM_DIR)
-        for (name in listOf("dalvikvm","core-oj.jar","core-libart.jar","core-icu4j.jar","aosp-shim.dex","app.dex")) {
-            val src = File(srcDir, name)
-            val dst = File(vmDir, name)
-            if (src.exists() && (!dst.exists() || dst.length() != src.length())) {
-                src.copyTo(dst, overwrite = true)
-                if (name == "dalvikvm") dst.setExecutable(true, false)
-                log.add("Copied $name")
-            }
+        val dvmSrc = File(srcDir, "dalvikvm")
+        val dvmDst = File(vmDir, "dalvikvm")
+        if (dvmSrc.exists() && (!dvmDst.exists() || dvmDst.length() != dvmSrc.length())) {
+            dvmSrc.copyTo(dvmDst, overwrite = true)
+            dvmDst.setExecutable(true, false)
+            log.add("Copied dalvikvm")
         }
 
-        val dvm = "${vmDir.absolutePath}/dalvikvm"
-        val bcp = "${vmDir}/core-oj.jar:${vmDir}/core-libart.jar:${vmDir}/core-icu4j.jar:${vmDir}/aosp-shim.dex"
-        val cmd = arrayOf(dvm, "-Xbootclasspath:$bcp", "-Xnoimage-dex2oat", "-Xverify:none",
-            "-classpath", "${vmDir}/app.dex", "com.example.mockdonalds.MockDonaldsApp")
+        // Run from /data/local/tmp/westlake/ directly so boot image paths match
+        val dvm = dvmDst.absolutePath
+        val runDir = DALVIKVM_DIR
+        val bcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar:$runDir/aosp-shim.dex"
+
+        // Use boot image if available (ART inserts /arm64/ automatically)
+        val hasBootImage = File("$runDir/arm64/boot.art").exists()
+        val bootArgs = if (hasBootImage) {
+            log.add("Boot image found — using AOT mode")
+            arrayOf("-Ximage:$runDir/boot.art")
+        } else {
+            log.add("No boot image — interpreter mode (slow startup)")
+            arrayOf("-Xnoimage-dex2oat")
+        }
+
+        val cmd = arrayOf(dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
+            "-classpath", "$runDir/app.dex", "com.example.mockdonalds.MockDonaldsApp")
 
         log.add("Starting from ${vmDir.absolutePath}...")
         try {
             val pb = ProcessBuilder(*cmd)
-            pb.directory(vmDir)
-            pb.environment()["ANDROID_DATA"] = vmDir.absolutePath
-            pb.environment()["ANDROID_ROOT"] = vmDir.absolutePath
+            pb.directory(File(runDir))
+            pb.environment()["ANDROID_DATA"] = runDir
+            pb.environment()["ANDROID_ROOT"] = runDir
             pb.environment()["WESTLAKE_FRAME"] = PNG_PATH
             pb.environment()["WESTLAKE_TOUCH"] = TOUCH_PATH
             pb.redirectErrorStream(true)
             process = pb.start()
             log.add("VM process started")
 
-            // Read first few lines of output in background
+            // Read output in background (no line limit — keep reading until process exits)
             Thread {
                 try {
                     val reader = process!!.inputStream.bufferedReader()
                     var line = reader.readLine()
-                    var count = 0
-                    while (line != null && count < 100) {
-                        if (!line.contains("nullptr") && !line.contains("ziparchive") &&
-                            !line.contains("hidden_api") && !line.contains("DexFile") &&
+                    while (line != null) {
+                        // Log everything important, filter only verbose noise
+                        if (!line.contains("ziparchive:") && !line.contains("hidden_api") &&
                             line.isNotBlank()) {
                             Log.i(TAG, "VM: $line")
                         }
                         line = reader.readLine()
-                        count++
                     }
+                    Log.i(TAG, "VM process exited")
                 } catch (e: Exception) {
                     Log.e(TAG, "Reader error: $e")
                 }
@@ -151,7 +171,7 @@ fun WestlakeVMScreen() {
     // Poll for PNG frames
     LaunchedEffect(isRunning) {
         while (isRunning) {
-            delay(200) // 5fps polling
+            delay(80) // ~12fps polling for responsive scrolling
             try {
                 val file = File(WestlakeVM.PNG_PATH)
                 if (file.exists() && file.length() > 100) {
@@ -194,14 +214,35 @@ fun WestlakeVMScreen() {
             Box(
                 modifier = Modifier.fillMaxWidth().weight(1f)
                     .pointerInput(Unit) {
-                        detectTapGestures { offset ->
-                            // Scale touch to 480x800 virtual surface
+                        awaitEachGesture {
                             val scaleX = 480f / size.width
                             val scaleY = 800f / size.height
-                            val vx = offset.x * scaleX
-                            val vy = offset.y * scaleY
-                            WestlakeVM.sendTouch(1, vx, vy) // UP = click
-                            Log.i("WestlakeVM", "Touch: (${vx.toInt()}, ${vy.toInt()})")
+
+                            // Wait for first finger down
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val vx0 = down.position.x * scaleX
+                            val vy0 = down.position.y * scaleY
+                            WestlakeVM.sendTouch(0, vx0, vy0) // DOWN
+                            Log.i("WestlakeVM", "DOWN: (${vx0.toInt()}, ${vy0.toInt()})")
+
+                            // Track moves until release
+                            var lastMoveSeq = 0
+                            do {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.firstOrNull() ?: break
+                                val vx = change.position.x * scaleX
+                                val vy = change.position.y * scaleY
+
+                                if (change.pressed) {
+                                    // Send every MOVE event for responsive scrolling
+                                    WestlakeVM.sendTouch(2, vx, vy) // MOVE
+                                } else {
+                                    // Finger lifted — send UP
+                                    WestlakeVM.sendTouch(1, vx, vy) // UP
+                                    Log.i("WestlakeVM", "UP: (${vx.toInt()}, ${vy.toInt()})")
+                                    break
+                                }
+                            } while (true)
                         }
                     }
             ) {
@@ -220,7 +261,7 @@ fun WestlakeVMScreen() {
                         CircularProgressIndicator(color = Color(0xFF4CAF50))
                         Spacer(Modifier.height(16.dp))
                         Text("Westlake VM starting...", color = Color.White.copy(0.6f), fontSize = 14.sp)
-                        Text("(interpreter mode — first boot is slow)", color = Color.White.copy(0.4f), fontSize = 12.sp)
+                        Text("(waiting for ART11 boot + first render)", color = Color.White.copy(0.4f), fontSize = 12.sp)
                         Spacer(Modifier.height(8.dp))
                         logs.takeLast(3).forEach { line ->
                             Text(line, fontSize = 11.sp, color = Color.White.copy(0.5f))

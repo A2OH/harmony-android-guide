@@ -64,7 +64,7 @@ public class MenuActivity extends Activity {
 
         // Logo text
         TextView logo = new TextView(ctx);
-        logo.setText("\uD83C\uDF54 MockDonalds");
+        logo.setText("M  MockDonalds");
         logo.setTextSize(22);
         logo.setTextColor(GOLD_ACCENT);
         logo.setTypeface(Typeface.DEFAULT_BOLD);
@@ -79,7 +79,7 @@ public class MenuActivity extends Activity {
         cartBg.setCornerRadius(dp(ctx,16));
         cartLayout.setBackground(cartBg);
         cartBadge = new TextView(ctx);
-        cartBadge.setText("\uD83D\uDED2 Cart (" + cartCount + ")");
+        cartBadge.setText("Cart (" + cartCount + ")");
         cartBadge.setTextSize(14);
         cartBadge.setTextColor(TEXT_DARK);
         cartBadge.setTypeface(Typeface.DEFAULT_BOLD);
@@ -151,7 +151,7 @@ public class MenuActivity extends Activity {
         String emoji = getCategoryEmoji(item.category);
         TextView emojiView = new TextView(ctx);
         emojiView.setText(emoji);
-        emojiView.setTextSize(24);
+        emojiView.setTextSize(16);
         emojiView.setPadding(0, 0, dp(ctx,12), 0);
         topRow.addView(emojiView);
 
@@ -224,7 +224,7 @@ public class MenuActivity extends Activity {
 
         TextView bigEmoji = new TextView(ctx);
         bigEmoji.setText(getCategoryEmoji(item.category));
-        bigEmoji.setTextSize(64);
+        bigEmoji.setTextSize(32);
         bigEmoji.setGravity(Gravity.CENTER);
         heroSection.addView(bigEmoji);
 
@@ -281,7 +281,7 @@ public class MenuActivity extends Activity {
 
         // Add to Cart button
         Button addBtn = new Button(ctx);
-        addBtn.setText("\uD83D\uDED2  Add to Cart — $" + String.format("%.2f", item.price));
+        addBtn.setText("Add to Cart - $" + String.format("%.2f", item.price));
         addBtn.setTextSize(18);
         addBtn.setTextColor(Color.WHITE);
         addBtn.setTypeface(Typeface.DEFAULT_BOLD);
@@ -298,7 +298,7 @@ public class MenuActivity extends Activity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 cartCount++;
-                if (cartBadge != null) cartBadge.setText("\uD83D\uDED2 Cart (" + cartCount + ")");
+                if (cartBadge != null) cartBadge.setText("Cart (" + cartCount + ")");
                 goBackToMenu();
             }
         });
@@ -344,11 +344,11 @@ public class MenuActivity extends Activity {
     }
 
     private String getCategoryEmoji(String category) {
-        if ("Burgers".equals(category)) return "\uD83C\uDF54";
-        if ("Sides".equals(category)) return "\uD83C\uDF5F";
-        if ("Drinks".equals(category)) return "\uD83E\uDD64";
-        if ("Desserts".equals(category)) return "\uD83C\uDF70";
-        return "\uD83C\uDF7D";
+        if ("Burgers".equals(category)) return "[B]";
+        if ("Sides".equals(category)) return "[S]";
+        if ("Drinks".equals(category)) return "[D]";
+        if ("Desserts".equals(category)) return "[*]";
+        return "[?]";
     }
 
     private static int dp(Context ctx, int dp) {

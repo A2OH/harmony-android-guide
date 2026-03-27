@@ -164,17 +164,30 @@ public class Activity extends Context {
         // Apply default Holo-Light theme to widgets that have no drawables
         DefaultTheme.applyToViewTree(decorView);
 
+        // Layout at 3x surface height so scrollable content extends below the fold.
+        // Using EXACTLY so LinearLayout weight distribution works correctly.
+        int layoutHeight = mSurfaceHeight * 3;
         int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(mSurfaceWidth, android.view.View.MeasureSpec.EXACTLY);
-        int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(mSurfaceHeight, android.view.View.MeasureSpec.EXACTLY);
+        int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(layoutHeight, android.view.View.MeasureSpec.EXACTLY);
         decorView.measure(wSpec, hSpec);
-        decorView.layout(0, 0, mSurfaceWidth, mSurfaceHeight);
+        decorView.layout(0, 0, mSurfaceWidth, layoutHeight);
 
         long canvasHandle = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(mSurfaceCtx);
         if (canvasHandle == 0) return;
 
         android.graphics.Canvas canvas = new android.graphics.Canvas(canvasHandle, mSurfaceWidth, mSurfaceHeight);
         canvas.drawColor(DefaultTheme.COLOR_BG); // Holo Light gray #F5F5F5
+
+        // Apply scroll offset: translate canvas up by scrollY
+        int scrollY = decorView.getScrollY();
+        if (scrollY != 0) {
+            canvas.save();
+            canvas.translate(0, -scrollY);
+        }
         decorView.draw(canvas);
+        if (scrollY != 0) {
+            canvas.restore();
+        }
 
         com.ohos.shim.bridge.OHBridge.surfaceFlush(mSurfaceCtx);
     }
