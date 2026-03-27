@@ -14,6 +14,14 @@ public class SQLiteOpenHelper implements AutoCloseable {
         this(p0, p1, p2, p3, null);
     }
 
+    public SQLiteOpenHelper(Context p0, String p1, SQLiteDatabase.CursorFactory p2, int p3) {
+        this(p0, p1, (Object) p2, p3, null);
+    }
+
+    public SQLiteOpenHelper(Context p0, String p1, SQLiteDatabase.CursorFactory p2, int p3, DatabaseErrorHandler p4) {
+        this(p0, p1, (Object) p2, p3, p4);
+    }
+
     public SQLiteOpenHelper(Context p0, String p1, Object p2, int p3, DatabaseErrorHandler p4) {
         mContext = p0;
         mName = p1;

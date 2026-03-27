@@ -178,38 +178,29 @@ class WestlakeActivity : ComponentActivity() {
             val dexPath = "${shimDex.absolutePath}:${appDex.absolutePath}"
             val nativeLibDir = applicationInfo.nativeLibraryDir
 
-            val dexLoader = DexClassLoader(dexPath, optDir.absolutePath, nativeLibDir, classLoader)
-
-            // Child-first wrapper
-            val findClassMethod = ClassLoader::class.java.getDeclaredMethod("findClass", String::class.java)
-            findClassMethod.isAccessible = true
-
-            val childFirst = object : ClassLoader(classLoader) {
+            // Child-first DexClassLoader: classes from our shim DEX take priority over phone's framework.
+            // This is critical so that shim's concrete Context/Window/View are used instead of
+            // the phone's abstract versions. The DEFINING ClassLoader must be child-first so that
+            // when the JVM resolves dependencies of shim classes, it also finds shim classes.
+            val childFirst = object : DexClassLoader(dexPath, optDir.absolutePath, nativeLibDir, classLoader) {
                 override fun loadClass(name: String, resolve: Boolean): Class<*> {
-                    findLoadedClass(name)?.let { return it }
-                    if (name.startsWith("java.") || name.startsWith("javax.") ||
-                        name.startsWith("sun.") || name.startsWith("dalvik.system.") ||
-                        // Use phone's versions for classes with inner class conflicts
-                        name.startsWith("android.content.ComponentName") ||
-                        name.startsWith("android.content.Intent") ||
-                        name.startsWith("android.os.Bundle") ||
-                        name.startsWith("android.os.Parcel") ||
-                        name.startsWith("android.os.IBinder") ||
-                        name.startsWith("android.content.res.Configuration")) {
+                    synchronized(this) {
+                        findLoadedClass(name)?.let { return it }
+                        // Always delegate core Java/Dalvik classes to parent
+                        if (name.startsWith("java.") || name.startsWith("javax.") ||
+                            name.startsWith("sun.") || name.startsWith("dalvik.") ||
+                            name.startsWith("kotlin.") || name.startsWith("kotlinx.")) {
+                            return super.loadClass(name, resolve)
+                        }
+                        // Try our DEX first (child-first)
+                        try {
+                            val c = findClass(name)
+                            if (resolve) resolveClass(c)
+                            return c
+                        } catch (_: ClassNotFoundException) {}
+                        // Fall back to parent (phone's framework)
                         return super.loadClass(name, resolve)
                     }
-                    try {
-                        val c = findClassMethod.invoke(dexLoader, name) as? Class<*>
-                        if (c != null) {
-                            if (name == "android.view.Window" || name == "android.app.Activity")
-                                Log.i(TAG, "CL: $name → DEX (abstract=${java.lang.reflect.Modifier.isAbstract(c.modifiers)})")
-                            return c
-                        }
-                    } catch (_: Exception) {}
-                    val c = super.loadClass(name, resolve)
-                    if (name == "android.view.Window" || name == "android.app.Activity")
-                        Log.i(TAG, "CL: $name → PARENT (abstract=${java.lang.reflect.Modifier.isAbstract(c.modifiers)})")
-                    return c
                 }
             }
 
@@ -219,26 +210,7 @@ class WestlakeActivity : ComponentActivity() {
             // Pre-load critical shim classes so they're cached before any APK loads.
             // This ensures the shim's concrete Window/Activity are used, not the phone's abstract ones.
             // Pre-load shim classes that MUST come from our DEX (not the phone's boot CL).
-            // Exclude classes that have inner classes conflicting with the phone's versions
-            // (e.g., ComponentName$1 Comparator causes IllegalAccessError across ClassLoaders).
-            // Only include classes where the shim version differs materially from the phone's.
-            val shimClasses = listOf(
-                "android.view.Window",  // phone's is abstract, shim's is concrete
-                "android.app.Activity", // shim adds renderFrameTo, MiniServer support
-                "android.app.MiniServer", "android.app.MiniActivityManager",
-                "android.widget.LinearLayout", "android.widget.TextView",
-                "android.widget.FrameLayout", "android.widget.ListView",
-                "android.widget.Button", "android.widget.ScrollView",
-                "android.widget.BaseAdapter", "android.widget.AdapterView",
-                "android.view.ViewGroup",
-                "com.ohos.shim.bridge.OHBridge"
-            )
-            var preloaded = 0
-            for (cls in shimClasses) {
-                try { childFirst.loadClass(cls); preloaded++ } catch (_: Exception) {}
-            }
-            Log.i(TAG, "Pre-loaded $preloaded/${shimClasses.size} shim classes")
-            Log.i(TAG, "Engine DEX loaded (classloader ready, apps launch on tap)")
+            Log.i(TAG, "Engine DEX loaded (child-first DexClassLoader)")
 
         } catch (e: Exception) {
             Log.e(TAG, "Engine error: ${e.message}", e)

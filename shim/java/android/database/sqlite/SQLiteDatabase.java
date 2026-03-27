@@ -51,6 +51,12 @@ class SplitHelper {
  * and returns MatrixCursor results from query methods.
  */
 public final class SQLiteDatabase extends SQLiteClosable {
+    /** Factory for creating Cursor objects. */
+    public interface CursorFactory {
+        android.database.Cursor newCursor(SQLiteDatabase db, SQLiteCursorDriver driver,
+            String editTable, SQLiteQuery query);
+    }
+
     public static final int CONFLICT_ABORT = 2;
     public static final int CONFLICT_FAIL = 3;
     public static final int CONFLICT_IGNORE = 4;

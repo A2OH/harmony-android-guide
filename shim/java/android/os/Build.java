@@ -7,16 +7,24 @@ import com.ohos.shim.bridge.OHBridge;
  * Tier 1 — direct mapping of device info fields.
  */
 public class Build {
-    public static final String BRAND = OHBridge.getDeviceBrand();
-    public static final String MODEL = OHBridge.getDeviceModel();
-    public static final String MANUFACTURER = OHBridge.getDeviceBrand(); // OH doesn't separate manufacturer
-    public static final String DEVICE = OHBridge.getDeviceModel();
-    public static final String PRODUCT = OHBridge.getDeviceModel();
-    public static final String DISPLAY = OHBridge.getOSVersion();
+    private static String safeGetString(String method) {
+        try { return (String) OHBridge.class.getMethod(method).invoke(null); }
+        catch (Exception e) { return "Westlake"; }
+    }
+    private static int safeGetInt(String method) {
+        try { return (int) OHBridge.class.getMethod(method).invoke(null); }
+        catch (Exception e) { return 29; } // default to API 29
+    }
+    public static final String BRAND = safeGetString("getDeviceBrand");
+    public static final String MODEL = safeGetString("getDeviceModel");
+    public static final String MANUFACTURER = BRAND;
+    public static final String DEVICE = MODEL;
+    public static final String PRODUCT = MODEL;
+    public static final String DISPLAY = safeGetString("getOSVersion");
 
     public static class VERSION {
-        public static final String RELEASE = OHBridge.getOSVersion();
-        public static final int SDK_INT = OHBridge.getSDKVersion();
+        public static final String RELEASE = safeGetString("getOSVersion");
+        public static final int SDK_INT = safeGetInt("getSDKVersion");
     }
 
     public static class VERSION_CODES {

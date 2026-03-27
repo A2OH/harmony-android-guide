@@ -59,6 +59,7 @@ public class Window {
     public void closeAllPanels() {}
     public void closePanel(int p0) {}
     public View getDecorView() { return mDecorView; }
+    public LayoutInflater getLayoutInflater() { return LayoutInflater.from(mContext); }
 
     public Object findViewById(int p0) {
         if (mDecorView != null) return mDecorView.findViewById(p0);

@@ -758,11 +758,23 @@ public class LayoutInflater {
     public View onCreateView(String name, AttributeSet attrs) { return null; }
     public View onCreateView(View parent, String name, AttributeSet attrs) { return null; }
 
-    public Object getFactory() { return null; }
-    public Object getFactory2() { return null; }
+    public Factory getFactory() { return mFactory; }
+    public Factory2 getFactory2() { return mFactory2; }
     public Filter getFilter() { return null; }
-    public void setFactory(Object factory) {}
-    public void setFactory2(Object factory) {}
+    public void setFactory(Factory factory) { mFactory = factory; }
+    public void setFactory(Object factory) { /* legacy compat */ }
+    public void setFactory2(Factory2 factory) { mFactory2 = factory; }
+    public void setFactory2(Object factory) { /* legacy compat */ }
+
+    private Factory mFactory;
+    private Factory2 mFactory2;
+
+    public interface Factory {
+        View onCreateView(String name, Context context, AttributeSet attrs);
+    }
+    public interface Factory2 extends Factory {
+        View onCreateView(View parent, String name, Context context, AttributeSet attrs);
+    }
     public void setFilter(Filter filter) {}
 
     /** Inner Filter interface for allowed class filtering during inflation. */

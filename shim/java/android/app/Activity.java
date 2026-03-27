@@ -129,6 +129,26 @@ public class Activity extends Context {
      * on the Application context are visible to Activities (matches real Android
      * where Activity and Application share the same ResourcesImpl).
      */
+    /** Helper: get the host Activity instance via reflection (for delegating framework calls). */
+    private static Object getHostInstance() {
+        try {
+            return Class.forName("com.westlake.host.WestlakeActivity").getField("instance").get(null);
+        } catch (Exception e) { return null; }
+    }
+
+    @Override
+    public android.content.pm.PackageManager getPackageManager() {
+        // Delegate to host's real PackageManager (has getActivityInfo etc.)
+        Object host = getHostInstance();
+        if (host != null) {
+            try {
+                return (android.content.pm.PackageManager) host.getClass()
+                    .getMethod("getPackageManager").invoke(host);
+            } catch (Exception e) {}
+        }
+        return super.getPackageManager();
+    }
+
     @Override
     public android.content.res.Resources getResources() {
         if (mApplication != null) {
@@ -323,6 +343,9 @@ public class Activity extends Context {
     public Object getVoiceInteractor() { return null; }
     public int getVolumeControlStream() { return 0; }
     public android.view.Window getWindow() { return mWindow; }
+    public android.view.LayoutInflater getLayoutInflater() {
+        return mWindow != null ? mWindow.getLayoutInflater() : android.view.LayoutInflater.from(this);
+    }
     public Object getWindowManager() {
         return getSystemService(Context.WINDOW_SERVICE);
     }
@@ -385,6 +408,7 @@ public class Activity extends Context {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {}
     public void onRequestPermissionsResult(Object p0, Object p1, Object p2) {}
     public Object onRetainNonConfigurationInstance() { return null; }
+    public Object getLastNonConfigurationInstance() { return null; }
     public boolean onSearchRequested(Object p0) { return false; }
     public boolean onSearchRequested() { return false; }
     public void onTitleChanged(Object p0, Object p1) {}
