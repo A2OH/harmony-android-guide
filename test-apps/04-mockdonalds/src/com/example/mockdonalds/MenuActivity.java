@@ -306,10 +306,14 @@ public class MenuActivity extends Activity {
 
         scroll.addView(detail);
         setHostContentView(scroll);
+        try { setContentView(scroll); } catch (Exception e) {} // shim path
     }
 
     private void goBackToMenu() {
         if (menuRootView == null) return;
+        if (menuRootView.getParent() != null)
+            ((ViewGroup) menuRootView.getParent()).removeView(menuRootView);
+        try { setContentView(menuRootView); } catch (Exception e) {} // shim path
         try {
             Class<?> host = Class.forName("com.westlake.host.WestlakeActivity");
             final Activity hostAct = (Activity) host.getField("instance").get(null);

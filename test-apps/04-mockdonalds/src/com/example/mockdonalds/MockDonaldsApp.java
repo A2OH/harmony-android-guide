@@ -171,10 +171,11 @@ public class MockDonaldsApp {
         long downTime = 0;
         int lastTouchY = 0;       // Y of previous touch event (for drag delta)
         int scrollOffset = 0;     // accumulated scroll offset in pixels
+        int totalDragDistance = 0; // total abs Y movement in gesture (tap vs scroll)
 
         while (true) {
             try {
-                Thread.sleep(16); // ~60fps
+                Thread.sleep(4); // short sleep — render time fills the rest of 16ms frame budget
             } catch (InterruptedException e) {
                 break;
             }
@@ -208,6 +209,7 @@ public class MockDonaldsApp {
                                 // DOWN: start of gesture
                                 downTime = now;
                                 lastTouchY = y;
+                                totalDragDistance = 0;
                                 System.out.println("[MockDonaldsApp] Touch DOWN at (" + x + "," + y + ")");
                                 current.dispatchTouchEvent(
                                     android.view.MotionEvent.obtain(downTime, now, 0, (float)x, (float)y, 0));
@@ -217,6 +219,7 @@ public class MockDonaldsApp {
                                 if (downTime == 0) downTime = now;
                                 int deltaY = lastTouchY - y;  // positive = scroll down (finger moves up)
                                 lastTouchY = y;
+                                totalDragDistance += Math.abs(deltaY);
 
                                 // Apply scroll to the scrollable view in the tree
                                 android.view.View decor = null;
@@ -244,11 +247,12 @@ public class MockDonaldsApp {
                                     android.view.MotionEvent.obtain(downTime, now, 1, (float)x, (float)y, 0));
                                 needsRender = true;
 
-                                // Also handle click for short taps (fallback for views without touch handling)
+                                // Handle click only for short taps (not scroll gestures)
+                                if (totalDragDistance < 20) {
                                 android.view.View decor = null;
                                 try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
                                 if (decor != null) {
-                                    android.view.View target = findViewAt(decor, x, y);
+                                    android.view.View target = findViewAt(decor, x, y + scrollOffset);
                                     if (target != null) {
                                         // If it's a ListView item, use performItemClick
                                         android.view.ViewParent parent = target.getParent();
@@ -271,6 +275,14 @@ public class MockDonaldsApp {
                                         target.performClick();
                                     }
                                 }
+                                } // end if totalDragDistance < 20
+                                // Reset scroll when content view changes (e.g. item detail)
+                                android.view.View newDecor = null;
+                                try { newDecor = current.getWindow().getDecorView(); } catch (Exception e4) {}
+                                if (newDecor != null) {
+                                    newDecor.scrollTo(0, 0);
+                                }
+                                scrollOffset = 0;
                                 downTime = 0; // reset for next gesture
                             }
 

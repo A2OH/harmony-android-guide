@@ -28,21 +28,31 @@ import java.io.FileOutputStream
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
 /**
  * Westlake VM Display — spawns dalvikvm as subprocess,
  * displays rendered PNG output, forwards touch input.
  *
  * Pipeline:
- *   dalvikvm → OHBridge.surfaceFlush() → /sdcard/westlake_frame.png
- *   This screen → polls PNG → displays via Compose Image
+ *   dalvikvm → OHBridge.surfaceFlush() → shared memory (mmap) or PNG fallback
+ *   This screen → reads shm at ~60fps (or polls PNG at ~12fps) → displays via Compose Image
  *   This screen → touch event → /sdcard/westlake_touch.dat → dalvikvm reads
  */
+private const val WLK_HEADER_SIZE = 128
+private const val WLK_FRAME_SIZE = 480 * 800 * 4  // 1,536,000
+private const val WLK_TOTAL_SIZE = WLK_HEADER_SIZE + 2 * WLK_FRAME_SIZE
+private const val WLK_MAGIC = 0x574C4B46
+
 object WestlakeVM {
     private const val TAG = "WestlakeVM"
     // Use app's external files dir (accessible by both app and subprocess)
     val PNG_PATH: String get() = WestlakeActivity.instance?.getExternalFilesDir(null)?.absolutePath + "/westlake_frame.png"
     val TOUCH_PATH: String get() = WestlakeActivity.instance?.getExternalFilesDir(null)?.absolutePath + "/westlake_touch.dat"
+    // Shared memory path — /data/local/tmp (real ext4, not FUSE) for fast mmap
+    // Pre-created with: adb shell "dd if=/dev/zero of=...westlake_shm bs=1024 count=3001 && chmod 666 ..."
+    val SHM_PATH: String get() = "/data/local/tmp/westlake/westlake_shm"
     private const val DALVIKVM_DIR = "/data/local/tmp/westlake"
 
     var process: Process? = null
@@ -101,6 +111,7 @@ object WestlakeVM {
             pb.environment()["ANDROID_ROOT"] = runDir
             pb.environment()["WESTLAKE_FRAME"] = PNG_PATH
             pb.environment()["WESTLAKE_TOUCH"] = TOUCH_PATH
+            pb.environment()["WESTLAKE_SHM"] = SHM_PATH
             pb.redirectErrorStream(true)
             process = pb.start()
             log.add("VM process started")
@@ -168,20 +179,63 @@ fun WestlakeVMScreen() {
         isRunning = true
     }
 
-    // Poll for PNG frames
+    // Read frames from shared memory (mmap), fallback to PNG polling
     LaunchedEffect(isRunning) {
-        while (isRunning) {
-            delay(80) // ~12fps polling for responsive scrolling
+        // Wait for shm file to appear
+        val shmFile = File(WestlakeVM.SHM_PATH)
+        var attempts = 0
+        while (isRunning && !shmFile.exists() && attempts < 100) {
+            delay(100)
+            attempts++
+        }
+
+        if (shmFile.exists() && shmFile.length() >= WLK_TOTAL_SIZE) {
+            // mmap the shared memory
+            val raf = RandomAccessFile(shmFile, "r")
+            val channel = raf.channel
+            val shm = channel.map(FileChannel.MapMode.READ_ONLY, 0, WLK_TOTAL_SIZE.toLong())
+            shm.order(ByteOrder.LITTLE_ENDIAN)
+
+            // Pre-allocate bitmap
+            val bmp = android.graphics.Bitmap.createBitmap(480, 800, android.graphics.Bitmap.Config.ARGB_8888)
+            var lastSeq = -1
+
             try {
-                val file = File(WestlakeVM.PNG_PATH)
-                if (file.exists() && file.length() > 100) {
-                    val bmp = BitmapFactory.decodeFile(file.absolutePath)
-                    if (bmp != null) {
+                while (isRunning) {
+                    val seq = shm.getInt(16) // frame_seq
+                    if (seq != lastSeq) {
+                        lastSeq = seq
+                        val activeBuf = shm.getInt(20)
+                        val offset = WLK_HEADER_SIZE + activeBuf * WLK_FRAME_SIZE
+
+                        // Copy pixels to bitmap
+                        shm.position(offset)
+                        bmp.copyPixelsFromBuffer(shm)
+
                         frameBitmap = bmp
                         frameCount++
                     }
+                    delay(16) // ~60fps polling
                 }
-            } catch (_: Exception) {}
+            } finally {
+                channel.close()
+                raf.close()
+            }
+        } else {
+            // Fallback to PNG polling if no shm
+            while (isRunning) {
+                delay(80) // ~12fps polling for responsive scrolling
+                try {
+                    val file = File(WestlakeVM.PNG_PATH)
+                    if (file.exists() && file.length() > 100) {
+                        val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                        if (bmp != null) {
+                            frameBitmap = bmp
+                            frameCount++
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
         }
     }
 
@@ -272,7 +326,7 @@ fun WestlakeVMScreen() {
 
             // Status bar
             Text(
-                "dalvikvm ARM64 | OHBridge → PNG → Compose | Touch → file → VM",
+                "dalvikvm ARM64 | OHBridge → SHM/PNG → Compose | Touch → file → VM",
                 fontSize = 10.sp, color = Color(0xFF4CAF50),
                 modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A)).padding(4.dp)
             )
