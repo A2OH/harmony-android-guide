@@ -198,6 +198,38 @@ public class Activity extends Context {
     /** Force re-layout on next renderFrame (call after setContentView) */
     public void invalidateLayout() { mLayoutDone = false; }
 
+    /**
+     * Render the View tree to an external Android Canvas (in-process mode).
+     * Used when running inside the host app's process with real Skia rendering.
+     */
+    public void renderFrameTo(android.graphics.Canvas canvas, int width, int height) {
+        if (mWindow == null) return;
+        android.view.View decorView = mWindow.getDecorView();
+        if (decorView == null) return;
+
+        if (!mLayoutDone || decorView != mLastDecorView) {
+            DefaultTheme.applyToViewTree(decorView);
+            int layoutHeight = height * 3;
+            int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY);
+            int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(layoutHeight, android.view.View.MeasureSpec.EXACTLY);
+            decorView.measure(wSpec, hSpec);
+            decorView.layout(0, 0, width, layoutHeight);
+            mLayoutDone = true;
+            mLastDecorView = decorView;
+        }
+
+        canvas.drawColor(DefaultTheme.COLOR_BG);
+        int scrollY = decorView.getScrollY();
+        if (scrollY != 0) {
+            canvas.save();
+            canvas.translate(0, -scrollY);
+        }
+        decorView.draw(canvas);
+        if (scrollY != 0) {
+            canvas.restore();
+        }
+    }
+
     /* ── Input dispatch ── */
 
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {

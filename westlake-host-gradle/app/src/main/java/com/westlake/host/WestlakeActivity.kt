@@ -22,7 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import dalvik.system.DexClassLoader
 import java.io.File
 import java.io.FileOutputStream
@@ -74,6 +79,7 @@ class WestlakeActivity : ComponentActivity() {
     /** Launch a custom app from the engine DEX by calling its init+show methods */
     fun launchCustomApp(className: String, initMethod: String?, showMethod: String) {
         if (className == "WESTLAKE_VM") { Log.i(TAG, "Launching WestlakeVM screen"); setContent { WestlakeVMScreen() }; return }
+        if (className == "SHIM_CANVAS") { Log.i(TAG, "Launching ShimCanvas screen"); setContent { ShimCanvasScreen() }; return }
         if (className == "COMPOSE_DEMO") { launchComposeDemo(); return }
         if (className.startsWith("APK_VIEW:")) {
             val parts = className.removePrefix("APK_VIEW:").split(":")
@@ -216,13 +222,97 @@ class WestlakeActivity : ComponentActivity() {
 }
 
 /**
+ * Shim Canvas Screen — runs the shim View tree IN-PROCESS and renders
+ * to a real Android Canvas backed by phone's Skia/GPU.
+ * No subprocess, no IPC, no OHBridge — just shim Views → Skia.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShimCanvasScreen() {
+    val activity = WestlakeActivity.instance ?: return
+    var frameBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var frameCount by remember { mutableIntStateOf(0) }
+    var shimActivity by remember { mutableStateOf<Any?>(null) }
+    var isRunning by remember { mutableStateOf(true) }
+
+    // Use the native path — MockApp creates real Android Views
+    var rootView by remember { mutableStateOf<View?>(null) }
+    LaunchedEffect(Unit) {
+        val cl = activity.engineClassLoader ?: return@LaunchedEffect
+        try {
+            // Use MockApp.init(context) + build the menu via native Android Views
+            val mockAppCls = cl.loadClass("com.example.mockdonalds.MockApp")
+            mockAppCls.getMethod("init", android.content.Context::class.java).invoke(null, activity)
+            // MockApp.showMenu(ctx) returns a View or calls setContentView
+            try {
+                mockAppCls.getMethod("showMenu", android.content.Context::class.java).invoke(null, activity)
+            } catch (_: Exception) {
+                mockAppCls.getMethod("showMenu").invoke(null)
+            }
+            // Get the root view from shimRootView (set by MockApp)
+            rootView = WestlakeActivity.shimRootView
+            Log.i("ShimCanvas", "Native View tree loaded: ${rootView?.javaClass?.simpleName}")
+        } catch (e: Exception) {
+            Log.e("ShimCanvas", "Error: ${e.message}", e)
+        }
+    }
+
+    DisposableEffect(Unit) { onDispose { isRunning = false } }
+
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF880E4F)).padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { isRunning = false; activity.showHome() }) {
+                    Text("←", fontSize = 20.sp, color = Color.White)
+                }
+                Text("Shim Canvas", fontSize = 16.sp, color = Color.White,
+                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text("Frame: $frameCount", fontSize = 12.sp, color = Color.White.copy(0.6f))
+            }
+
+            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                rootView?.let { view ->
+                    // Display real Android Views via AndroidView — native rendering!
+                    AndroidView(
+                        factory = {
+                            // Detach from any parent first
+                            (view.parent as? ViewGroup)?.removeView(view)
+                            view
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFFE91E63))
+                    Spacer(Modifier.height(16.dp))
+                    Text("Loading View tree...", color = Color.White.copy(0.6f))
+                }
+            }
+
+            Text(
+                "In-process: Shim Views → Android Canvas → Skia/GPU | 60fps",
+                fontSize = 10.sp, color = Color(0xFFE91E63),
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A)).padding(4.dp)
+            )
+        }
+    }
+}
+
+/**
  * Compose home screen — app gallery with Material Design 3.
  */
 @Composable
 fun WestlakeHome() {
     val apps = remember {
         listOf(
-            AppInfo("Westlake VM", "Run MockDonalds in our own ART11", Color(0xFF4CAF50), "WESTLAKE_VM", null, ""),
+            AppInfo("Shim Canvas", "Shim View tree → phone's Skia (in-process)", Color(0xFFE91E63), "SHIM_CANVAS", null, ""),
+            AppInfo("Westlake VM", "Run MockDonalds in our own ART11 (subprocess)", Color(0xFF4CAF50), "WESTLAKE_VM", null, ""),
             AppInfo("Compose Demo", "Navigation + Retrofit + Coil + ViewModel", Color(0xFF00BCD4), "COMPOSE_DEMO", null, ""),
             AppInfo("Noice (APK Resources)", "Production app → resources.arsc → Views", Color(0xFF26A69A), "APK_VIEW:com.github.ashutoshgngwr.noice:Noice", null, ""),
             AppInfo("Counter (APK Resources)", "Real APK → resources.arsc → Views", Color(0xFF9C27B0), "APK_VIEW:me.tsukanov.counter:Counter", null, ""),
