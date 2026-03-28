@@ -55,6 +55,35 @@ public class WestlakeLauncher {
         MiniActivityManager am = server.getActivityManager();
         System.out.println("[WestlakeLauncher] MiniServer initialized");
 
+        // Try to create the APK's custom Application class
+        // (e.g., CounterApplication instead of generic Application)
+        if (packageName != null) {
+            // Common patterns: <pkg>.App, <pkg>.<Name>Application
+            String[] candidates = {
+                packageName + "." + packageName.substring(packageName.lastIndexOf('.') + 1)
+                    .substring(0, 1).toUpperCase()
+                    + packageName.substring(packageName.lastIndexOf('.') + 2) + "Application",
+                packageName + ".App",
+                packageName + ".MainApplication",
+                // For me.tsukanov.counter → CounterApplication
+                packageName + ".CounterApplication",
+            };
+            for (String appName : candidates) {
+                try {
+                    Class<?> appCls = Class.forName(appName);
+                    android.app.Application customApp = (android.app.Application) appCls.newInstance();
+                    server.setApplication(customApp);
+                    System.out.println("[WestlakeLauncher] Custom Application: " + appCls.getSimpleName());
+                    break;
+                } catch (ClassNotFoundException e) {
+                    // try next
+                } catch (Exception e) {
+                    System.out.println("[WestlakeLauncher] Application error: " + e);
+                    break;
+                }
+            }
+        }
+
         // Load APK resources — use pre-extracted dir if available (dalvikvm has no ZipFile JNI)
         Activity launchedActivity = null;
         String resDir = System.getProperty("westlake.apk.resdir");
@@ -118,23 +147,27 @@ public class WestlakeLauncher {
 
                 launchedActivity = am.getResumedActivity();
             } catch (Exception e) {
-                System.out.println("[WestlakeLauncher] APK load error: " + e);
+                System.out.println("[WestlakeLauncher] APK load error (non-fatal): " + e);
                 e.printStackTrace();
-                return;
+                // Don't return — try to render whatever we have
             }
         } else {
             System.out.println("[WestlakeLauncher] No APK path, nothing to launch");
-            return;
         }
 
+        // Try to get the launched activity even if errors occurred
         if (launchedActivity == null) {
-            System.out.println("[WestlakeLauncher] ERROR: Activity failed to launch");
-            return;
+            launchedActivity = am.getResumedActivity();
         }
-        System.out.println("[WestlakeLauncher] Activity launched: " + launchedActivity.getClass().getName());
+        if (launchedActivity == null) {
+            System.out.println("[WestlakeLauncher] WARNING: No activity, rendering empty surface");
+        }
+        if (launchedActivity != null) {
+            System.out.println("[WestlakeLauncher] Activity launched: " + launchedActivity.getClass().getName());
+        }
 
-        // Render loop
-        if (nativeOk) {
+        // Render loop — render even if Activity partially failed
+        if (nativeOk && launchedActivity != null) {
             System.out.println("[WestlakeLauncher] Creating surface " + SURFACE_WIDTH + "x" + SURFACE_HEIGHT);
             try {
                 java.lang.reflect.Method m = launchedActivity.getClass().getMethod(
