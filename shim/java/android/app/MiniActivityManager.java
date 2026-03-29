@@ -496,17 +496,19 @@ public class MiniActivityManager {
                             countTv.setText(String.valueOf(count[0]));
                             countTv.setTextSize(96);
                             countTv.setTextColor(0xFFFFFFFF);
-                            // Force-center the count's parent FrameLayout
+                            // Force-center the count's parent in whatever layout type
                             android.view.View countParent = (android.view.View) countTv.getParent();
                             if (countParent != null) {
                                 android.view.ViewGroup.LayoutParams clp = countParent.getLayoutParams();
-                                if (clp instanceof android.widget.FrameLayout.LayoutParams) {
-                                    ((android.widget.FrameLayout.LayoutParams) clp).gravity = 0x11; // CENTER
+                                if (clp instanceof android.widget.RelativeLayout.LayoutParams) {
+                                    ((android.widget.RelativeLayout.LayoutParams) clp).addRule(
+                                        android.widget.RelativeLayout.CENTER_IN_PARENT, -1);
+                                } else if (clp instanceof android.widget.FrameLayout.LayoutParams) {
+                                    ((android.widget.FrameLayout.LayoutParams) clp).gravity = 0x11;
                                 } else {
-                                    // Replace with FrameLayout.LayoutParams
                                     android.widget.FrameLayout.LayoutParams flp =
                                         new android.widget.FrameLayout.LayoutParams(clp.width, clp.height);
-                                    flp.gravity = 0x11; // CENTER
+                                    flp.gravity = 0x11;
                                     countParent.setLayoutParams(flp);
                                 }
                             }

@@ -240,13 +240,12 @@ public class WestlakeLauncher {
         if (nativeOk && launchedActivity != null) {
             System.out.println("[WestlakeLauncher] Creating surface " + SURFACE_WIDTH + "x" + SURFACE_HEIGHT);
             try {
-                java.lang.reflect.Method m = launchedActivity.getClass().getMethod(
-                        "onSurfaceCreated", long.class, int.class, int.class);
-                m.invoke(launchedActivity, 0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                m = launchedActivity.getClass().getMethod("renderFrame");
-                m.invoke(launchedActivity);
+                // Call onSurfaceCreated on Activity class directly (AppCompat subclasses may not find it)
+                launchedActivity.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
+                launchedActivity.renderFrame();
             } catch (Exception e) {
                 System.out.println("[WestlakeLauncher] Initial render error: " + e);
+                e.printStackTrace();
             }
             System.out.println("[WestlakeLauncher] Initial frame rendered");
             System.out.println("[WestlakeLauncher] Entering event loop...");
@@ -437,17 +436,10 @@ public class WestlakeLauncher {
                                 Activity next = am.getResumedActivity();
                                 if (next != null) {
                                     if (next != current) {
-                                        try {
-                                            java.lang.reflect.Method sc = next.getClass().getMethod(
-                                                    "onSurfaceCreated", long.class, int.class, int.class);
-                                            sc.invoke(next, 0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                                        } catch (Exception e2) {}
+                                        try { next.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT); } catch (Exception e2) {}
                                         System.out.println("[WestlakeLauncher] Navigated to " + next.getClass().getSimpleName());
                                     }
-                                    try {
-                                        java.lang.reflect.Method rf = next.getClass().getMethod("renderFrame");
-                                        rf.invoke(next);
-                                    } catch (Exception e2) {
+                                    try { next.renderFrame(); } catch (Exception e2) {
                                         if (frameCount < 5) System.out.println("[WestlakeLauncher] renderFrame error: " + e2);
                                     }
                                 }
@@ -463,11 +455,7 @@ public class WestlakeLauncher {
             // Detect activity change (finish/navigate) and force re-render
             Activity nowResumed = am.getResumedActivity();
             if (nowResumed != null && nowResumed != current) {
-                try {
-                    java.lang.reflect.Method sc = nowResumed.getClass().getMethod(
-                        "onSurfaceCreated", long.class, int.class, int.class);
-                    sc.invoke(nowResumed, 0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                } catch (Exception e6) {}
+                try { nowResumed.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT); } catch (Exception e6) {}
                 needsRender = true;
             }
 
@@ -475,10 +463,7 @@ public class WestlakeLauncher {
             if (needsRender) {
                 Activity next = am.getResumedActivity();
                 if (next != null) {
-                    try {
-                        java.lang.reflect.Method rf = next.getClass().getMethod("renderFrame");
-                        rf.invoke(next);
-                    } catch (Exception e2) {}
+                    try { next.renderFrame(); } catch (Exception e2) {}
                 }
                 needsRender = false;
             }
