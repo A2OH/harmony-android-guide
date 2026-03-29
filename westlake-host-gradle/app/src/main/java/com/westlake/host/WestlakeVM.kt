@@ -71,7 +71,8 @@ object WestlakeVM {
     private val BOOT_IMAGE_FILES = listOf(
         "boot.art", "boot.oat", "boot.vdex",
         "boot-core-libart.art", "boot-core-libart.oat", "boot-core-libart.vdex",
-        "boot-core-icu4j.art", "boot-core-icu4j.oat", "boot-core-icu4j.vdex"
+        "boot-core-icu4j.art", "boot-core-icu4j.oat", "boot-core-icu4j.vdex",
+        "boot-aosp-shim.art", "boot-aosp-shim.oat", "boot-aosp-shim.vdex"
     )
 
     /** Start MockDonalds (legacy entry point) */
@@ -107,11 +108,31 @@ object WestlakeVM {
         val runDir = DALVIKVM_DIR
         val bcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar:$runDir/aosp-shim.dex"
 
-        // Always use boot image when available (interpreter too slow for large shim)
-        val hasBootImage = File("$runDir/arm64/boot.art").exists()
+        // Copy boot image to app dir (SELinux blocks .oat execution from shell_data_file)
+        val appArm64 = File(vmDir, "arm64").apply { mkdirs() }
+        val srcArm64 = File("$runDir/arm64")
+        if (srcArm64.exists()) {
+            for (name in BOOT_IMAGE_FILES) {
+                val src = File(srcArm64, name)
+                val dst = File(appArm64, name)
+                if (src.exists() && (!dst.exists() || dst.length() != src.length())) {
+                    src.copyTo(dst, overwrite = true)
+                    dst.setExecutable(true, false)
+                }
+            }
+        }
+        // Also copy boot.art to vmDir root
+        val bootArtSrc = File("$runDir/boot.art")
+        val bootArtDst = File(vmDir, "boot.art")
+        if (bootArtSrc.exists() && (!bootArtDst.exists() || bootArtDst.length() != bootArtSrc.length())) {
+            bootArtSrc.copyTo(bootArtDst, overwrite = true)
+        }
+
+        // Use boot image from app dir (SELinux-safe)
+        val hasBootImage = File(appArm64, "boot.art").exists()
         val bootArgs = if (hasBootImage) {
-            log.add("Boot image -- AOT mode")
-            arrayOf("-Ximage:$runDir/boot.art")
+            log.add("Boot image -- AOT mode (app dir)")
+            arrayOf("-Ximage:${vmDir.absolutePath}/boot.art")
         } else {
             log.add("Interpreter mode")
             arrayOf("-Xnoimage-dex2oat")
