@@ -326,9 +326,48 @@ public class WestlakeLauncher {
             boolean hasContent = decor instanceof android.view.ViewGroup
                 && ((android.view.ViewGroup) decor).getChildCount() > 0;
             if (!hasContent) {
-                System.out.println("[WestlakeLauncher] No content view — creating McDonald's splash screen");
+                System.out.println("[WestlakeLauncher] No content view — trying to inflate real splash layout");
+                android.view.View splashView = null;
+
+                // Try to inflate the real splash layout from extracted res/
                 try {
-                    // Create a simple McDonald's-themed splash screen
+                    String rd = System.getProperty("westlake.apk.resdir");
+                    if (rd != null) {
+                        String[] layoutNames = {
+                            "activity_splash_screen", "splash_screen", "activity_splash",
+                            "splash", "activity_main", "main"
+                        };
+                        for (String name : layoutNames) {
+                            java.io.File layoutFile = new java.io.File(rd + "/res/layout/" + name + ".xml");
+                            if (layoutFile.exists()) {
+                                System.out.println("[WestlakeLauncher] Found layout: " + name + ".xml (" + layoutFile.length() + " bytes)");
+                                java.io.FileInputStream fis = new java.io.FileInputStream(layoutFile);
+                                byte[] axmlData = new byte[(int) layoutFile.length()];
+                                int off = 0;
+                                while (off < axmlData.length) {
+                                    int n = fis.read(axmlData, off, axmlData.length - off);
+                                    if (n < 0) break;
+                                    off += n;
+                                }
+                                fis.close();
+                                android.view.LayoutInflater inflater = android.view.LayoutInflater.from(launchedActivity);
+                                android.content.res.BinaryXmlParser parser =
+                                    new android.content.res.BinaryXmlParser(axmlData);
+                                splashView = inflater.inflate(parser, null);
+                                if (splashView != null) {
+                                    System.out.println("[WestlakeLauncher] Inflated real layout: " + splashView.getClass().getSimpleName());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("[WestlakeLauncher] Layout inflate error: " + e.getMessage());
+                }
+
+                // Fallback: programmatic McDonald's splash
+                if (splashView == null) {
+                    System.out.println("[WestlakeLauncher] Using programmatic splash fallback");
                     android.widget.LinearLayout splash = new android.widget.LinearLayout(launchedActivity);
                     splash.setOrientation(android.widget.LinearLayout.VERTICAL);
                     splash.setBackgroundColor(0xFFDA291C); // McDonald's red
@@ -337,7 +376,7 @@ public class WestlakeLauncher {
                     android.widget.TextView title = new android.widget.TextView(launchedActivity);
                     title.setText("McDonald's");
                     title.setTextSize(48);
-                    title.setTextColor(0xFFFFCC00); // McDonald's gold
+                    title.setTextColor(0xFFFFCC00);
                     title.setGravity(android.view.Gravity.CENTER);
                     splash.addView(title);
 
@@ -357,15 +396,18 @@ public class WestlakeLauncher {
                     status.setPadding(0, 60, 0, 0);
                     splash.addView(status);
 
-                    // Set content via Window to bypass AppCompatDelegate
+                    splashView = splash;
+                }
+
+                // Set content via Window
+                try {
                     android.view.Window win = launchedActivity.getWindow();
                     if (win != null) {
-                        win.setContentView(splash);
+                        win.setContentView(splashView);
                         System.out.println("[WestlakeLauncher] Set splash via Window.setContentView");
                     }
-                    System.out.println("[WestlakeLauncher] Splash screen set (programmatic)");
                 } catch (Exception e) {
-                    System.out.println("[WestlakeLauncher] Splash creation error: " + e.getMessage());
+                    System.out.println("[WestlakeLauncher] setContentView error: " + e.getMessage());
                 }
             }
         }
