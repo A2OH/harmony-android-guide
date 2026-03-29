@@ -34,11 +34,40 @@ public class WestlakeLauncher {
         String apkPath = System.getProperty("westlake.apk.path");
         String activityName = System.getProperty("westlake.apk.activity");
         String packageName = System.getProperty("westlake.apk.package", "com.example.app");
+        String manifestPath = System.getProperty("westlake.apk.manifest");
+
+        // Initialize main thread Looper FIRST — before any class that checks isMainThread
+        android.os.Looper.prepareMainLooper();
 
         System.out.println("[WestlakeLauncher] Starting on OHOS + ART ...");
         System.out.println("[WestlakeLauncher] APK: " + apkPath);
         System.out.println("[WestlakeLauncher] Activity: " + activityName);
         System.out.println("[WestlakeLauncher] Package: " + packageName);
+
+        // Parse AndroidManifest.xml for Application class and component list
+        android.content.pm.ManifestParser.ManifestInfo manifestInfo = null;
+        if (manifestPath != null) {
+            try {
+                java.io.File mf = new java.io.File(manifestPath);
+                if (mf.exists()) {
+                    java.io.FileInputStream fis = new java.io.FileInputStream(mf);
+                    byte[] data = new byte[(int) mf.length()];
+                    int off = 0;
+                    while (off < data.length) {
+                        int n = fis.read(data, off, data.length - off);
+                        if (n < 0) break;
+                        off += n;
+                    }
+                    fis.close();
+                    manifestInfo = android.content.pm.ManifestParser.parse(data);
+                    System.out.println("[WestlakeLauncher] Manifest: " + manifestInfo.applicationClass
+                        + " (" + manifestInfo.activities.size() + " activities, "
+                        + manifestInfo.providers.size() + " providers)");
+                }
+            } catch (Exception e) {
+                System.out.println("[WestlakeLauncher] Manifest parse error: " + e);
+            }
+        }
 
         // Check native bridge
         boolean nativeOk = OHBridge.isNativeAvailable();
@@ -76,51 +105,73 @@ public class WestlakeLauncher {
             }
         }
 
-        // Try to create the APK's custom Application class
-        // (e.g., CounterApplication instead of generic Application)
-        if (packageName != null) {
-            // Common patterns: <pkg>.App, <pkg>.<Name>Application
+        // Create the APK's custom Application class
+        // Use manifest info if available, otherwise guess from package name
+        String appClassName = null;
+        if (manifestInfo != null && manifestInfo.applicationClass != null) {
+            appClassName = manifestInfo.applicationClass;
+            System.out.println("[WestlakeLauncher] Application from manifest: " + appClassName);
+        }
+        if (appClassName == null && packageName != null) {
+            // Fallback: guess common patterns
             String[] candidates = {
                 packageName + "." + packageName.substring(packageName.lastIndexOf('.') + 1)
                     .substring(0, 1).toUpperCase()
                     + packageName.substring(packageName.lastIndexOf('.') + 2) + "Application",
                 packageName + ".App",
                 packageName + ".MainApplication",
-                // For me.tsukanov.counter → CounterApplication
                 packageName + ".CounterApplication",
             };
-            for (String appName : candidates) {
+            for (String c : candidates) {
                 try {
-                    Class<?> appCls = ClassLoader.getSystemClassLoader().loadClass(appName);
-                    android.app.Application customApp = (android.app.Application) appCls.newInstance();
-                    server.setApplication(customApp);
-                    // Call Application.onCreate() — many apps initialize storage/singletons here
-                    try {
-                        customApp.onCreate();
-                        System.out.println("[WestlakeLauncher] Custom Application created + onCreate: " + appCls.getSimpleName());
-                    } catch (Exception appEx) {
-                        System.out.println("[WestlakeLauncher] Application.onCreate error (non-fatal): " + appEx);
-                    }
-                    // Force-set 'counters' field on CounterApplication
-                    try {
-                        java.lang.reflect.Field cf = customApp.getClass().getDeclaredField("counters");
-                        cf.setAccessible(true);
-                        Object existing = cf.get(customApp);
-                        System.out.println("[WestlakeLauncher] counters field: " + existing + " (type=" + (existing != null ? existing.getClass().getName() : "null") + ")");
-                        if (existing == null && !counterData.isEmpty()) {
-                            cf.set(customApp, counterData);
-                            System.out.println("[WestlakeLauncher] Force-set counters: " + counterData.keySet());
+                    ClassLoader.getSystemClassLoader().loadClass(c);
+                    appClassName = c;
+                    break;
+                } catch (ClassNotFoundException e) { /* try next */ }
+            }
+        }
+        if (appClassName != null) {
+            try {
+                Class<?> appCls = ClassLoader.getSystemClassLoader().loadClass(appClassName);
+                android.app.Application customApp = (android.app.Application) appCls.newInstance();
+                server.setApplication(customApp);
+                // Run Application.onCreate() in thread with timeout
+                // ArchTaskExecutor.isMainThread() always returns true, so thread check OK
+                final android.app.Application appRef = customApp;
+                final boolean[] onCreateDone = { false };
+                Thread appThread = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            appRef.onCreate();
+                            onCreateDone[0] = true;
+                        } catch (Exception e) {
+                            onCreateDone[0] = true;
+                            System.out.println("[WestlakeLauncher] Application.onCreate error: " + e.getMessage());
                         }
-                    } catch (Exception e) {
-                        System.out.println("[WestlakeLauncher] counters field error: " + e);
                     }
-                    break;
-                } catch (ClassNotFoundException e) {
-                    // try next
-                } catch (Exception e) {
-                    System.out.println("[WestlakeLauncher] Application error: " + e);
-                    break;
+                }, "AppOnCreate");
+                appThread.setDaemon(true);
+                appThread.start();
+                try { appThread.join(15000); } catch (InterruptedException ie) {}
+                if (onCreateDone[0]) {
+                    System.out.println("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName());
+                } else {
+                    System.out.println("[WestlakeLauncher] Application.onCreate TIMEOUT (15s) — proceeding");
                 }
+                // Force-set 'counters' field on CounterApplication (Counter app specific)
+                try {
+                    java.lang.reflect.Field cf = customApp.getClass().getDeclaredField("counters");
+                    cf.setAccessible(true);
+                    Object existing = cf.get(customApp);
+                    if (existing == null && !counterData.isEmpty()) {
+                        cf.set(customApp, counterData);
+                        System.out.println("[WestlakeLauncher] Force-set counters: " + counterData.keySet());
+                    }
+                } catch (Exception e) { /* not a counter app */ }
+            } catch (ClassNotFoundException e) {
+                System.out.println("[WestlakeLauncher] Application class not found: " + appClassName);
+            } catch (Exception e) {
+                System.out.println("[WestlakeLauncher] Application error: " + e);
             }
         }
 

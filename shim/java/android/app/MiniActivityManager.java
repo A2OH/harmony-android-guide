@@ -111,11 +111,26 @@ public class MiniActivityManager {
             performStop(prev);
         }
 
-        // Push and start the new activity
+        // Push and start the new activity — catch ALL exceptions to ensure Activity is usable
         mStack.add(record);
-        performCreate(record, null);
-        performStart(record);
-        performResume(record);
+        mResumed = record; // Set early so getResumedActivity() works even if lifecycle crashes
+        try {
+            performCreate(record, null);
+        } catch (Throwable e) {
+            Log.e(TAG, "startActivity performCreate threw: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+        try {
+            performStart(record);
+            Log.d(TAG, "  performStart DONE for " + className);
+        } catch (Throwable e) {
+            Log.e(TAG, "startActivity performStart threw: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+        try {
+            performResume(record);
+            Log.d(TAG, "  performResume DONE for " + className);
+        } catch (Throwable e) {
+            Log.e(TAG, "startActivity performResume threw: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
     }
 
     /**
@@ -222,28 +237,45 @@ public class MiniActivityManager {
         // Dispatch lifecycle: restore saved state + ON_CREATE
         dispatchLifecycleEvent(r.activity, "performRestore", savedInstanceState);
         boolean createNPE = false;
-        try {
-            r.activity.onCreate(savedInstanceState);
-        } catch (NullPointerException e) {
-            // Non-fatal: some apps crash on null ActionBar etc. but still create valid Views
-            Log.w(TAG, "performCreate NPE (non-fatal): " + e.getMessage());
-            createNPE = true;
-        } catch (IllegalAccessError e) {
-            try {
-                java.lang.reflect.Method m = Activity.class.getDeclaredMethod("onCreate", Bundle.class);
-                m.setAccessible(true);
-                m.invoke(r.activity, savedInstanceState);
-            } catch (Exception ex) {
-                Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                Log.e(TAG, "performCreate failed: " + cause.getClass().getSimpleName() + ": " + cause.getMessage());
-                cause.printStackTrace();
+
+        // Run onCreate in thread with timeout (complex apps can hang in DI init)
+        final Activity actRef = r.activity;
+        final Bundle ssRef = savedInstanceState;
+        final boolean[] done = { false };
+        final Exception[] error = { null };
+        Thread ocThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    actRef.onCreate(ssRef);
+                    done[0] = true;
+                } catch (Exception e) {
+                    error[0] = e;
+                    done[0] = true;
+                }
             }
+        }, "ActivityOnCreate");
+        ocThread.setDaemon(true);
+        ocThread.start();
+        try { ocThread.join(15000); } catch (InterruptedException ie) {}
+
+        if (!done[0]) {
+            Log.w(TAG, "performCreate TIMEOUT (15s) for " + r.component.getClassName() + " — proceeding");
+        } else if (error[0] instanceof NullPointerException) {
+            Log.w(TAG, "performCreate NPE (non-fatal): " + error[0].getMessage());
+            createNPE = true;
+        } else if (error[0] != null) {
+            Log.e(TAG, "performCreate error: " + error[0].getClass().getSimpleName() + ": " + error[0].getMessage());
         }
+
         // If onCreate NPE'd (e.g., ActionBar null), try to discover and add missing fragments
         if (createNPE) {
             tryRecoverFragments(r.activity);
         }
-        dispatchLifecycleEvent(r.activity, "ON_CREATE");
+        try {
+            dispatchLifecycleEvent(r.activity, "ON_CREATE");
+        } catch (Exception e) {
+            Log.w(TAG, "performCreate lifecycle dispatch error: " + e.getMessage());
+        }
     }
 
     /**
@@ -756,9 +788,15 @@ public class MiniActivityManager {
                 java.lang.reflect.Method m = Activity.class.getDeclaredMethod("onStart");
                 m.setAccessible(true);
                 m.invoke(r.activity);
-            } catch (Exception ex) { Log.e(TAG, "performonStart reflection failed: " + ex); }
+            } catch (Exception ex) { Log.e(TAG, "performStart reflection failed: " + ex); }
+        } catch (Exception e) {
+            Log.w(TAG, "performStart error (non-fatal): " + e.getMessage());
         }
-        dispatchLifecycleEvent(r.activity, "ON_START");
+        try {
+            dispatchLifecycleEvent(r.activity, "ON_START");
+        } catch (Exception e) {
+            Log.w(TAG, "performStart lifecycle dispatch error: " + e.getMessage());
+        }
     }
 
     private void performResume(ActivityRecord r) {
@@ -774,7 +812,9 @@ public class MiniActivityManager {
                 java.lang.reflect.Method m = Activity.class.getDeclaredMethod("onResume");
                 m.setAccessible(true);
                 m.invoke(r.activity);
-            } catch (Exception ex) { Log.e(TAG, "performonResume reflection failed: " + ex); }
+            } catch (Exception ex) { Log.e(TAG, "performResume reflection failed: " + ex); }
+        } catch (Exception e) {
+            Log.w(TAG, "performResume error (non-fatal): " + e.getMessage());
         }
         try {
             r.activity.onPostResume();
@@ -787,7 +827,11 @@ public class MiniActivityManager {
                 m.invoke(r.activity);
             } catch (Exception ex) { /* onPostResume is optional */ }
         }
-        dispatchLifecycleEvent(r.activity, "ON_RESUME");
+        try {
+            dispatchLifecycleEvent(r.activity, "ON_RESUME");
+        } catch (Exception e) {
+            Log.w(TAG, "performResume lifecycle dispatch error: " + e.getMessage());
+        }
     }
 
     private void performPause(ActivityRecord r) {

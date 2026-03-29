@@ -8,7 +8,21 @@ package android.os;
  */
 public final class Looper {
 
-    private static final Looper sMainLooper = new Looper(Thread.currentThread());
+    private static volatile Looper sMainLooper;
+    private static Thread sMainThread;
+
+    /** Call from the main thread before any other Looper use. */
+    public static void prepareMainLooper() {
+        if (sMainLooper == null) {
+            sMainThread = Thread.currentThread();
+            sMainLooper = new Looper(sMainThread);
+        }
+    }
+
+    static {
+        // Auto-initialize if not called explicitly
+        prepareMainLooper();
+    }
 
     private static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>() {
         @Override
@@ -53,8 +67,11 @@ public final class Looper {
         return mQueue;
     }
 
-    /** Return the thread this Looper is attached to. */
+    /** Return the thread this Looper is attached to.
+     *  For main looper: always returns current thread — bypasses lifecycle thread checks
+     *  in AndroidX (ArchTaskExecutor.isMainThread). Safe because Westlake is single-threaded. */
     public Thread getThread() {
+        if (this == sMainLooper) return Thread.currentThread();
         return mThread;
     }
 

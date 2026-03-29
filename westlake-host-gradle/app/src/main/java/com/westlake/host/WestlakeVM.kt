@@ -154,35 +154,40 @@ object WestlakeVM {
                 log.add("Copied APK: ${apkConfig.displayName}")
             }
 
-            // Extract classes.dex from the APK
-            val dexName = apkConfig.packageName.replace(".", "_") + ".dex"
-            val dexPath = "${vmDir.absolutePath}/$dexName"
+            // Extract ALL classesN.dex from the APK (multi-dex support)
+            val dexPaths = mutableListOf<String>()
             try {
                 val zipFile = java.util.zip.ZipFile(apkSrc)
-                val dexEntry = zipFile.getEntry("classes.dex")
-                if (dexEntry != null) {
-                    val input = zipFile.getInputStream(dexEntry)
-                    FileOutputStream(dexPath).use { out ->
-                        val buf = ByteArray(8192)
-                        var n: Int
-                        while (input.read(buf).also { n = it } > 0) out.write(buf, 0, n)
+                for (entry in zipFile.entries()) {
+                    if (entry.name.startsWith("classes") && entry.name.endsWith(".dex")) {
+                        val dexName = apkConfig.packageName.replace(".", "_") + "_" + entry.name
+                        val dexPath = "${vmDir.absolutePath}/$dexName"
+                        val dexFile = File(dexPath)
+                        if (!dexFile.exists() || dexFile.length() != entry.size) {
+                            zipFile.getInputStream(entry).use { inp ->
+                                FileOutputStream(dexPath).use { out ->
+                                    val buf = ByteArray(8192)
+                                    var n: Int
+                                    while (inp.read(buf).also { n = it } > 0) out.write(buf, 0, n)
+                                }
+                            }
+                        }
+                        dexPaths.add(dexPath)
                     }
-                    input.close()
-                    log.add("Extracted classes.dex (${File(dexPath).length() / 1024}KB)")
-                } else {
-                    log.add("WARNING: No classes.dex in APK")
                 }
                 zipFile.close()
+                log.add("Extracted ${dexPaths.size} DEX files")
             } catch (e: Exception) {
                 log.add("DEX extraction error: ${e.message}")
             }
+            val dexClasspath = dexPaths.joinToString(":")
 
             // Extract resources.arsc for the shim's resource parser (no ZipFile JNI in dalvikvm)
             val resDir = File(vmDir, "apk_res").apply { mkdirs() }
             try {
                 val zipFile = java.util.zip.ZipFile(apkSrc)
                 for (entry in zipFile.entries()) {
-                    if (entry.name == "resources.arsc" || entry.name.startsWith("res/")) {
+                    if (entry.name == "resources.arsc" || entry.name.startsWith("res/") || entry.name == "AndroidManifest.xml") {
                         val outFile = File(resDir, entry.name)
                         outFile.parentFile?.mkdirs()
                         if (!entry.isDirectory) {
@@ -202,14 +207,16 @@ object WestlakeVM {
                 log.add("Resource extraction: ${e.message}")
             }
 
-            // Classpath: the APK's DEX (shim is in bootclasspath already)
+            // Classpath: all the APK's DEX files (shim is in bootclasspath already)
+            val manifestPath = "${resDir.absolutePath}/AndroidManifest.xml"
             cmd = arrayOf(
                 dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
                 "-Dwestlake.apk.path=$apkDevicePath",
                 "-Dwestlake.apk.activity=${apkConfig.activityName}",
                 "-Dwestlake.apk.package=${apkConfig.packageName}",
                 "-Dwestlake.apk.resdir=${resDir.absolutePath}",
-                "-classpath", dexPath,
+                "-Dwestlake.apk.manifest=$manifestPath",
+                "-classpath", dexClasspath,
                 "com.westlake.engine.WestlakeLauncher"
             )
             log.add("Launching ${apkConfig.displayName} via WestlakeLauncher")
