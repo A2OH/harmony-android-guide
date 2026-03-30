@@ -153,7 +153,7 @@ public class WestlakeLauncher {
                 }, "AppOnCreate");
                 appThread.setDaemon(true);
                 appThread.start();
-                try { appThread.join(10000); } catch (InterruptedException ie) {}
+                try { appThread.join(15000); } catch (InterruptedException ie) {}
                 if (onCreateDone[0]) {
                     System.err.println("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName());
                 } else {
