@@ -267,8 +267,8 @@ public class WestlakeLauncher {
                     }
                 } catch (Exception e) { /* can't check, try normal launch */ }
 
-                if (isHiltActivity) {
-                    System.out.println("[WestlakeLauncher] Hilt activity detected — using proxy Activity");
+                if (false && isHiltActivity) {
+                    System.err.println("[WestlakeLauncher] Hilt activity detected — using proxy Activity");
                     launchedActivity = new android.app.Activity();
                     launchedActivity.setTitle(packageName);
                     // Wire to MiniServer
