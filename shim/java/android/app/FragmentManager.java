@@ -164,8 +164,9 @@ public class FragmentManager {
     public boolean isDestroyed() { return false; }
     public boolean isStateSaved() { return false; }
 
-    public void executePendingTransactions() {
+    public boolean executePendingTransactions() {
         // No-op in synchronous shim — all transactions execute immediately
+        return true;
     }
 
     public boolean executePendingTransactions(boolean allowStateLoss) {

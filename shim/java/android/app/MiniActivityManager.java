@@ -261,6 +261,7 @@ public class MiniActivityManager {
         final Exception[] error = { null };
         Thread ocThread = new Thread(new Runnable() {
             public void run() {
+                Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
                 try {
                     actRef.onCreate(ssRef);
                     done[0] = true;

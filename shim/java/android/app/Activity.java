@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
-public class Activity extends Context {
+public class Activity extends Context implements android.view.Window.Callback {
 
     /* ── Framework-managed state ── */
     Intent mIntent;
@@ -25,6 +25,16 @@ public class Activity extends Context {
 
     public Activity() {
         mWindow = new android.view.Window(this);
+        mWindow.setCallback(this);
+    }
+
+    public void registerActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
+        Application app = getApplication();
+        if (app != null) app.registerActivityLifecycleCallbacks(callback);
+    }
+    public void unregisterActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
+        Application app = getApplication();
+        if (app != null) app.unregisterActivityLifecycleCallbacks(callback);
     }
 
     public static final int DEFAULT_KEYS_DIALER = 1;
@@ -399,6 +409,7 @@ public class Activity extends Context {
         if (p0 instanceof android.view.MotionEvent) return dispatchTouchEvent((android.view.MotionEvent) p0);
         return false;
     }
+    public boolean dispatchTrackballEvent(android.view.MotionEvent event) { return false; }
     public boolean dispatchTrackballEvent(Object p0) { return false; }
     public void dump(Object p0, Object p1, Object p2, Object p3) {}
     public boolean enterPictureInPictureMode(Object p0) { return false; }
@@ -473,6 +484,12 @@ public class Activity extends Context {
     public void onCreateContextMenu(Object p0, Object p1, Object p2) {}
     public void onCreateNavigateUpTaskStack(Object p0) {}
     public boolean onCreateOptionsMenu(Object p0) { return false; }
+    public android.view.View onCreatePanelView(int featureId) { return null; }
+    public boolean onCreatePanelMenu(int featureId, android.view.Menu menu) { return false; }
+    public boolean onPreparePanel(int featureId, android.view.View view, android.view.Menu menu) { return false; }
+    public boolean onMenuOpened(int featureId, android.view.Menu menu) { return false; }
+    public boolean onMenuItemSelected(int featureId, android.view.MenuItem item) { return false; }
+    public void onPanelClosed(int featureId, android.view.Menu menu) {}
     public boolean onCreatePanelMenu(Object p0, Object p1) { return false; }
     public void onDetachedFromWindow() {}
     public void onEnterAnimationComplete() {}
@@ -515,7 +532,9 @@ public class Activity extends Context {
     public void onTrimMemory(Object p0) {}
     public void onUserInteraction() {}
     public void onUserLeaveHint() {}
+    public void onWindowAttributesChanged(android.view.WindowManager.LayoutParams attrs) {}
     public void onWindowAttributesChanged(Object p0) {}
+    public void onWindowFocusChanged(boolean hasFocus) {}
     public void onWindowFocusChanged(Object p0) {}
     public void openContextMenu(Object p0) {}
     public void openOptionsMenu() {}
