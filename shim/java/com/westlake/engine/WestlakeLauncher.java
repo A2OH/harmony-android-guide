@@ -137,38 +137,27 @@ public class WestlakeLauncher {
                 server.setApplication(customApp);
                 // Skip Application.onCreate() for Dagger/Hilt apps — DI never completes
                 // in interpreter mode due to missing Android system services
-                boolean skipOnCreate = false;
-                try {
-                    // Check if the app uses Hilt (has Hilt_* generated class)
-                    String hiltName = "dagger.hilt.android.internal.managers.ApplicationComponentManager";
-                    ClassLoader.getSystemClassLoader().loadClass(hiltName);
-                    skipOnCreate = true;
-                    System.out.println("[WestlakeLauncher] Dagger/Hilt detected — skipping Application.onCreate()");
-                } catch (ClassNotFoundException e) { /* not a Hilt app */ }
-
-                if (!skipOnCreate) {
-                    // Non-Hilt apps: run onCreate normally with timeout
-                    final android.app.Application appRef = customApp;
-                    final boolean[] onCreateDone = { false };
-                    Thread appThread = new Thread(new Runnable() {
-                        public void run() {
-                            try {
-                                appRef.onCreate();
-                                onCreateDone[0] = true;
-                            } catch (Exception e) {
-                                onCreateDone[0] = true;
-                                System.out.println("[WestlakeLauncher] Application.onCreate error: " + e.getMessage());
-                            }
+                // Run Application.onCreate with timeout (30s — DI may take time)
+                final android.app.Application appRef = customApp;
+                final boolean[] onCreateDone = { false };
+                final Thread appThread = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            appRef.onCreate();
+                            onCreateDone[0] = true;
+                        } catch (Throwable e) {
+                            onCreateDone[0] = true;
+                            System.err.println("[WestlakeLauncher] Application.onCreate error: " + e.getMessage());
                         }
-                    }, "AppOnCreate");
-                    appThread.setDaemon(true);
-                    appThread.start();
-                    try { appThread.join(15000); } catch (InterruptedException ie) {}
-                    if (onCreateDone[0]) {
-                        System.out.println("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName());
-                    } else {
-                        System.out.println("[WestlakeLauncher] Application.onCreate TIMEOUT — proceeding");
                     }
+                }, "AppOnCreate");
+                appThread.setDaemon(true);
+                appThread.start();
+                try { appThread.join(30000); } catch (InterruptedException ie) {}
+                if (onCreateDone[0]) {
+                    System.err.println("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName());
+                } else {
+                    System.err.println("[WestlakeLauncher] Application.onCreate TIMEOUT (30s) — proceeding");
                 }
                 // Force-set 'counters' field on CounterApplication (Counter app specific)
                 try {
