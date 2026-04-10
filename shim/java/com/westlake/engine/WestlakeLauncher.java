@@ -667,7 +667,72 @@ public class WestlakeLauncher {
 
                 // Fallback: programmatic McDonald's splash
                 if (splashView == null) {
-                    System.err.println("[WestlakeLauncher] Using programmatic splash fallback");
+                    System.err.println("[WestlakeLauncher] Using OHBridge direct render (no View tree)");
+                    // Skip View tree — render directly via OHBridge if available
+                    if (nativeOk) {
+                        try {
+                            long surf = OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
+                            long canv = OHBridge.surfaceGetCanvas(surf);
+                            OHBridge.canvasDrawColor(canv, 0xFFDA291C); // MCD red
+                            long font = OHBridge.fontCreate();
+                            long pen = OHBridge.penCreate();
+                            long brush = OHBridge.brushCreate();
+                            OHBridge.fontSetSize(font, 48);
+                            OHBridge.penSetColor(pen, 0xFFFFCC00);
+                            OHBridge.canvasDrawText(canv, "McDonald's", 100, 300, font, pen, brush);
+                            OHBridge.fontSetSize(font, 18);
+                            OHBridge.penSetColor(pen, 0xFFFFFFFF);
+                            OHBridge.canvasDrawText(canv, "Running on Westlake Engine", 60, 400, font, pen, brush);
+                            OHBridge.fontSetSize(font, 14);
+                            OHBridge.penSetColor(pen, 0xCCFFFFFF);
+                            OHBridge.canvasDrawText(canv, "framework.jar + 33 MCD DEX files", 60, 440, font, pen, brush);
+                            if (splashImageData != null) {
+                                OHBridge.canvasDrawImage(canv, splashImageData, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
+                            }
+                            OHBridge.surfaceFlush(surf);
+                            System.err.println("[WestlakeLauncher] OHBridge splash frame sent!");
+                        } catch (Throwable t) {
+                            System.err.println("[WestlakeLauncher] OHBridge render: " + t.getMessage());
+                        }
+                    }
+                    // Skip programmatic View fallback — go to render loop
+                    splashView = null;
+                }
+                if (false) {
+                    // Dead code — original View-based fallback kept for reference
+                    System.err.println("[WestlakeLauncher] UNREACHABLE programmatic splash");
+                    // Ensure Activity has a valid base context for View construction
+                    try {
+                        if (launchedActivity.getResources() == null) {
+                            throw new RuntimeException("no resources");
+                        }
+                    } catch (Throwable noCtx) {
+                        try {
+                            // Create a minimal ContextImpl via reflection
+                            Class<?> ci = Class.forName("android.app.ContextImpl");
+                            java.lang.reflect.Method csm = ci.getDeclaredMethod("createSystemContext",
+                                Class.forName("android.app.ActivityThread"));
+                            csm.setAccessible(true);
+                            // Get or create an ActivityThread
+                            Class<?> atClass = Class.forName("android.app.ActivityThread");
+                            Object at = null;
+                            try {
+                                java.lang.reflect.Method cat = atClass.getDeclaredMethod("currentActivityThread");
+                                cat.setAccessible(true);
+                                at = cat.invoke(null);
+                            } catch (Throwable t2) {}
+                            if (at == null) {
+                                at = atClass.getDeclaredConstructor().newInstance();
+                            }
+                            android.content.Context sysCtx = (android.content.Context) csm.invoke(null, at);
+                            java.lang.reflect.Field mBase = android.content.ContextWrapper.class.getDeclaredField("mBase");
+                            mBase.setAccessible(true);
+                            mBase.set(launchedActivity, sysCtx);
+                            System.err.println("[WestlakeLauncher] Injected ContextImpl into Activity");
+                        } catch (Throwable t3) {
+                            System.err.println("[WestlakeLauncher] Context inject failed: " + t3.getMessage());
+                        }
+                    }
                     android.widget.LinearLayout splash = new android.widget.LinearLayout(launchedActivity);
                     splash.setOrientation(android.widget.LinearLayout.VERTICAL);
                     splash.setBackgroundColor(0xFFDA291C); // McDonald's red
@@ -720,12 +785,11 @@ public class WestlakeLauncher {
         if (nativeOk && launchedActivity != null) {
             System.err.println("[WestlakeLauncher] Creating surface " + SURFACE_WIDTH + "x" + SURFACE_HEIGHT);
             try {
-                // Call onSurfaceCreated on Activity class directly (AppCompat subclasses may not find it)
+                // Call onSurfaceCreated — may not exist on real framework Activity
                 launchedActivity.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
                 launchedActivity.renderFrame();
-            } catch (Exception e) {
-                System.err.println("[WestlakeLauncher] Initial render error: " + e);
-                e.printStackTrace();
+            } catch (Throwable e) {
+                System.err.println("[WestlakeLauncher] Initial render: " + e.getClass().getSimpleName() + " (framework Activity — using OHBridge direct)");
             }
             System.err.println("[WestlakeLauncher] Initial frame rendered");
             System.err.println("[WestlakeLauncher] Entering event loop...");
