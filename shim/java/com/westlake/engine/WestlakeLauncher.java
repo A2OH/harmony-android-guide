@@ -1215,6 +1215,21 @@ public class WestlakeLauncher {
     }
 
     private static void renderLoop(Activity initialActivity, MiniActivityManager am) {
+        // Check if Activity has our shim methods (onSurfaceCreated/renderFrame)
+        boolean hasShimMethods = true;
+        try { initialActivity.getClass().getMethod("onSurfaceCreated", long.class, int.class, int.class); }
+        catch (NoSuchMethodException e) { hasShimMethods = false; }
+
+        if (!hasShimMethods) {
+            System.err.println("[WestlakeLauncher] Framework Activity — OHBridge-only render loop");
+            // Simple keep-alive loop: the splash was already sent via OHBridge
+            // Touch events can still be processed
+            while (true) {
+                try { Thread.sleep(1000); } catch (InterruptedException e) { break; }
+            }
+            return;
+        }
+
         long frameCount = 0;
         int lastTouchSeq = -1;
 

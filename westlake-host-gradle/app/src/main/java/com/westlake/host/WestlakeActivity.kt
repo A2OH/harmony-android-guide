@@ -160,8 +160,7 @@ class WestlakeActivity : ComponentActivity() {
                 true
             }
             // Create floating overlay window to show frames ON TOP of MCD
-            // Skip canDrawOverlays check — try anyway (root/debuggable app may succeed)
-            if (true) {
+            if (false) { // Disabled — overlay window needs proper permission
                 Log.i(TAG, "Overlay mode: creating floating window")
                 val wm = getSystemService(WINDOW_SERVICE) as android.view.WindowManager
                 // Use TYPE_TOAST (2005) — doesn't need SYSTEM_ALERT_WINDOW on most ROMs

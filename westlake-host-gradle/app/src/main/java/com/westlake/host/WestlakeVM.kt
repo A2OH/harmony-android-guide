@@ -254,7 +254,9 @@ object WestlakeVM {
                     val f = File("$runDir/${multiDexPrefix}${i}.dex")
                     if (f.exists()) mcdCp.append(":${f.absolutePath}")
                 }
-                val mcdBcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar:$runDir/aosp-shim.dex"
+                // Include framework.jar if available — enables real Android framework classes
+                val fwJar = if (File("$runDir/framework.jar").exists()) ":$runDir/framework.jar" else ""
+                val mcdBcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar$fwJar:$runDir/aosp-shim.dex"
 
                 // Start mock backend server for cached API responses
                 val mockDataDir = "$runDir/mock-backend"
