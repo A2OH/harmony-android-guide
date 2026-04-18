@@ -3264,6 +3264,13 @@ public class WestlakeLauncher {
             return null;
         }
         try {
+            android.view.Window window = activity.getWindow();
+            if (window != null) {
+                android.view.View decor = window.getDecorView();
+                if (decor != null) {
+                    return safeFindViewById(decor, id, label + ".decor");
+                }
+            }
             return activity.findViewById(id);
         } catch (Throwable t) {
             startupLog("[WestlakeLauncher] safeFindViewById(" + label + ") error", t);
