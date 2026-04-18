@@ -10,6 +10,7 @@ public class LongSparseLongArray {
     private long[] mKeys;
     private long[] mValues;
     private int mSize;
+    private int mInitialCapacity;
 
     public LongSparseLongArray() {
         this(10);
@@ -17,22 +18,76 @@ public class LongSparseLongArray {
 
     public LongSparseLongArray(int initialCapacity) {
         if (initialCapacity < 1) initialCapacity = 1;
+        mInitialCapacity = initialCapacity;
         mKeys = new long[initialCapacity];
         mValues = new long[initialCapacity];
         mSize = 0;
     }
 
-    public int size() { return mSize; }
+    private void ensureStorage(int minCapacity) {
+        if (mInitialCapacity < 1) {
+            mInitialCapacity = 1;
+        }
+        if (mSize < 0) {
+            mSize = 0;
+        }
+        if (minCapacity < 1) {
+            minCapacity = Math.max(mInitialCapacity, 1);
+        }
+        if (mKeys == null || mValues == null) {
+            int cap = Math.max(minCapacity, Math.max(mInitialCapacity, mSize));
+            if (cap < 1) {
+                cap = 1;
+            }
+            mKeys = new long[cap];
+            mValues = new long[cap];
+            if (mSize > cap) {
+                mSize = cap;
+            }
+            return;
+        }
+        int currentCap = Math.min(mKeys.length, mValues.length);
+        if (currentCap < minCapacity) {
+            int newCap = currentCap < 1 ? 1 : currentCap;
+            while (newCap < minCapacity) {
+                newCap *= 2;
+            }
+            long[] newKeys = new long[newCap];
+            long[] newValues = new long[newCap];
+            if (mSize > currentCap) {
+                mSize = currentCap;
+            }
+            System.arraycopy(mKeys, 0, newKeys, 0, mSize);
+            System.arraycopy(mValues, 0, newValues, 0, mSize);
+            mKeys = newKeys;
+            mValues = newValues;
+        }
+    }
+
+    public int size() {
+        if (mSize < 0) {
+            mSize = 0;
+        }
+        return mSize;
+    }
 
     public long keyAt(int index) {
+        ensureStorage(index + 1);
         return mKeys[index];
     }
 
     public long valueAt(int index) {
+        ensureStorage(index + 1);
         return mValues[index];
     }
 
     public int indexOfKey(long key) {
+        if (mKeys == null || mValues == null || mSize <= 0) {
+            if (mSize < 0) {
+                mSize = 0;
+            }
+            return -1;
+        }
         for (int i = 0; i < mSize; i++) {
             if (mKeys[i] == key) return i;
         }
@@ -40,19 +95,12 @@ public class LongSparseLongArray {
     }
 
     public void put(long key, long value) {
+        ensureStorage(Math.max(mSize + 1, 1));
         int idx = indexOfKey(key);
         if (idx >= 0) {
             mValues[idx] = value;
         } else {
-            if (mSize >= mKeys.length) {
-                int newCap = mKeys.length * 2;
-                long[] newKeys = new long[newCap];
-                long[] newValues = new long[newCap];
-                System.arraycopy(mKeys, 0, newKeys, 0, mSize);
-                System.arraycopy(mValues, 0, newValues, 0, mSize);
-                mKeys = newKeys;
-                mValues = newValues;
-            }
+            ensureStorage(mSize + 1);
             mKeys[mSize] = key;
             mValues[mSize] = value;
             mSize++;

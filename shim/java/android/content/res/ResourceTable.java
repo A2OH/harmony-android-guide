@@ -410,10 +410,51 @@ public class ResourceTable {
         byte[] strBytes = new byte[byteLen];
         buf.get(strBytes);
         try {
-            return new String(strBytes, "UTF-8");
+            return decodeUtf8(strBytes);
         } catch (Exception e) {
             return "";
         }
+    }
+
+    private String decodeUtf8(byte[] data) {
+        char[] out = new char[data.length * 2];
+        int in = 0;
+        int outLen = 0;
+        while (in < data.length) {
+            int b0 = data[in] & 0xFF;
+            if (b0 < 0x80) {
+                out[outLen++] = (char) b0;
+                in++;
+                continue;
+            }
+            if ((b0 & 0xE0) == 0xC0 && in + 1 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x1F) << 6) | b1);
+                in += 2;
+                continue;
+            }
+            if ((b0 & 0xF0) == 0xE0 && in + 2 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x0F) << 12) | (b1 << 6) | b2);
+                in += 3;
+                continue;
+            }
+            if ((b0 & 0xF8) == 0xF0 && in + 3 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                int b3 = data[in + 3] & 0x3F;
+                int cp = ((b0 & 0x07) << 18) | (b1 << 12) | (b2 << 6) | b3;
+                cp -= 0x10000;
+                out[outLen++] = (char) (0xD800 | (cp >> 10));
+                out[outLen++] = (char) (0xDC00 | (cp & 0x3FF));
+                in += 4;
+                continue;
+            }
+            out[outLen++] = '\uFFFD';
+            in++;
+        }
+        return new String(out, 0, outLen);
     }
 
     private String readUtf16String(ByteBuffer buf) {

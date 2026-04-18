@@ -63,9 +63,9 @@ class TextLine {
     }
 
     public void draw(Canvas c, float x, int top, int y, int bottom) {
-        if (mText == null || mPaint == null) return;
+        if (c == null || mText == null || mPaint == null) return;
         String sub = mText.toString().substring(mStart, mEnd);
-        c.drawText(sub, x, (float) y, mPaint);
+        Canvas.safeDrawText(c, sub, x, (float) y, mPaint);
     }
 
     /**

@@ -5,40 +5,72 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
+import androidx.lifecycle.ViewModelStore;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.savedstate.SavedStateRegistry;
 import androidx.savedstate.SavedStateRegistryController;
 import androidx.savedstate.SavedStateRegistryOwner;
+import com.westlake.engine.WestlakeLauncher;
 
 public class ComponentActivity extends FragmentActivity
-        implements LifecycleOwner, SavedStateRegistryOwner {
+        implements LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
 
-    private final LifecycleRegistry mLifecycleRegistry = new LifecycleRegistry(this);
-    private final SavedStateRegistryController mSavedStateRegistryController =
-            SavedStateRegistryController.create(this);
+    private LifecycleRegistry mLifecycleRegistry;
+    private SavedStateRegistryController mSavedStateRegistryController;
+    private ViewModelStore mViewModelStore;
 
-    private final java.util.List<androidx.activity.contextaware.OnContextAvailableListener> mContextListeners =
+    private java.util.List<androidx.activity.contextaware.OnContextAvailableListener> mContextListeners =
             new java.util.ArrayList<>();
     private boolean mContextAvailableFired = false;
 
     public ComponentActivity() {}
 
+    private LifecycleRegistry ensureLifecycleRegistry() {
+        if (mLifecycleRegistry == null) {
+            mLifecycleRegistry = new LifecycleRegistry(this);
+        }
+        return mLifecycleRegistry;
+    }
+
+    private SavedStateRegistryController ensureSavedStateRegistryController() {
+        if (mSavedStateRegistryController == null) {
+            mSavedStateRegistryController = SavedStateRegistryController.create(this);
+        }
+        return mSavedStateRegistryController;
+    }
+
+    private ViewModelStore ensureViewModelStore() {
+        if (mViewModelStore == null) {
+            mViewModelStore = new ViewModelStore();
+        }
+        return mViewModelStore;
+    }
+
+    private java.util.List<androidx.activity.contextaware.OnContextAvailableListener>
+            ensureContextListeners() {
+        if (mContextListeners == null) {
+            mContextListeners = new java.util.ArrayList<>();
+        }
+        return mContextListeners;
+    }
+
     @Override
-    public Lifecycle getLifecycle() { return mLifecycleRegistry; }
+    public Lifecycle getLifecycle() { return ensureLifecycleRegistry(); }
 
     @Override
     public SavedStateRegistry getSavedStateRegistry() {
-        return mSavedStateRegistryController.getSavedStateRegistry();
+        return ensureSavedStateRegistryController().getSavedStateRegistry();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mSavedStateRegistryController.performRestore(savedInstanceState);
+        ensureSavedStateRegistryController().performRestore(savedInstanceState);
         // Fire OnContextAvailableListeners BEFORE super.onCreate()
         // This is where Hilt's inject() callback runs
         if (!mContextAvailableFired) {
             mContextAvailableFired = true;
             for (androidx.activity.contextaware.OnContextAvailableListener l :
-                    new java.util.ArrayList<>(mContextListeners)) {
+                    new java.util.ArrayList<>(ensureContextListeners())) {
                 try {
                     // Try obfuscated name first (R8 renames onContextAvailable → a)
                     try {
@@ -48,7 +80,7 @@ public class ComponentActivity extends FragmentActivity
                         l.onContextAvailable(this);
                     }
                 } catch (Throwable t) {
-                    System.err.println("[ComponentActivity] OnContextAvailable error: " + t);
+                    WestlakeLauncher.dumpThrowable("[ComponentActivity] OnContextAvailable", t);
                 }
             }
         }
@@ -57,30 +89,31 @@ public class ComponentActivity extends FragmentActivity
         } catch (Throwable t) {
             // Catch NPEs from super chain (e.g., refreshBasketLayout) so the Activity's
             // own onCreate code (fragment setup, ViewModels) can still run
-            System.err.println("[ComponentActivity] super.onCreate caught: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+            WestlakeLauncher.dumpThrowable("[ComponentActivity] super.onCreate", t);
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mSavedStateRegistryController.performSave(outState);
+        ensureSavedStateRegistryController().performSave(outState);
     }
 
     public void addOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener listener) {
-        mContextListeners.add(listener);
+        ensureContextListeners().add(listener);
         // If context already available, fire immediately
         if (mContextAvailableFired) {
             try { listener.onContextAvailable(this); } catch (Throwable t) {}
         }
     }
     public void removeOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener listener) {
-        mContextListeners.remove(listener);
+        ensureContextListeners().remove(listener);
     }
     public void addOnBackPressedCallback(Object callback) { /* stub */ }
     private final OnBackPressedDispatcher mOnBackPressedDispatcher = new OnBackPressedDispatcher();
     public OnBackPressedDispatcher getOnBackPressedDispatcher() { return mOnBackPressedDispatcher; }
-    public Object getViewModelStore() { return null; }
+    @Override
+    public ViewModelStore getViewModelStore() { return ensureViewModelStore(); }
 
     public <I, O> androidx.activity.result.ActivityResultLauncher<I> registerForActivityResult(
             androidx.activity.result.contract.ActivityResultContract<I, O> contract,

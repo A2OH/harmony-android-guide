@@ -39,9 +39,6 @@ public class MiniServer {
         mPackageManager = new MiniPackageManager(packageName);
         try {
             SystemServiceRegistry.init();
-            // Register LayoutInflater as a system service
-            SystemServiceRegistry.registerService(Context.LAYOUT_INFLATER_SERVICE,
-                    new LayoutInflater(mApplication));
         } catch (NoSuchMethodError | NoClassDefFoundError e) {
             // On real Android, SystemServiceRegistry is already initialized
             android.util.Log.w("MiniServer", "SystemServiceRegistry.init() skipped: " + e.getClass().getSimpleName());
@@ -49,27 +46,99 @@ public class MiniServer {
     }
 
     /** Initialize the MiniServer singleton. Call once at engine startup. */
-    public static void init(String packageName) {
-        sInstance = new MiniServer(packageName);
-        sInstance.mApplication.onCreate();
+    public static MiniServer init(String packageName) {
+        android.util.Log.i("MiniServer", "init begin pkg=" + packageName);
+        MiniServer instance = new MiniServer(packageName);
+        android.util.Log.i("MiniServer", "init constructed instance=" + instance);
+        sInstance = instance;
+        android.util.Log.i("MiniServer", "init assigned singleton");
+        instance.mApplication.onCreate();
+        android.util.Log.i("MiniServer", "init complete app=" + instance.mApplication
+                + " am=" + instance.mActivityManager + " pm=" + instance.mPackageManager);
+        return instance;
     }
 
     /** Get the singleton instance. */
     public static MiniServer get() {
         if (sInstance == null) {
             // Auto-init with default package for testing
-            init("com.example.app");
+            android.util.Log.i("MiniServer", "get() missing singleton, auto-init");
+            return init("com.example.app");
         }
+        android.util.Log.i("MiniServer", "get() returning existing singleton=" + sInstance);
         return sInstance;
+    }
+
+    /** Return the current singleton without auto-initializing it. */
+    public static MiniServer peek() {
+        return sInstance;
+    }
+
+    public static String currentPackageName() {
+        if (sInstance == null) {
+            return null;
+        }
+        return sInstance.mPackageName;
+    }
+
+    public static MiniActivityManager currentActivityManager() {
+        return sInstance != null ? sInstance.mActivityManager : null;
+    }
+
+    public static Application currentApplication() {
+        return sInstance != null ? sInstance.mApplication : null;
+    }
+
+    public static void currentSetApplication(Application app) {
+        if (sInstance == null) {
+            return;
+        }
+        sInstance.mApplication = app != null ? app : new Application();
+        ShimCompat.setPackageName(sInstance.mApplication, sInstance.mPackageName);
+    }
+
+    public static void currentSetPackageName(String packageName) {
+        if (sInstance == null || packageName == null || packageName.isEmpty()) {
+            return;
+        }
+        sInstance.mPackageName = packageName;
+        if (sInstance.mApplication != null) {
+            ShimCompat.setPackageName(sInstance.mApplication, packageName);
+        }
+        if (sInstance.mPackageManager != null) {
+            sInstance.mPackageManager.setPackageName(packageName);
+        }
+    }
+
+    public static ApkInfo currentLoadApk(String apkPath) throws IOException {
+        MiniServer server = get();
+        if (server == null) {
+            throw new IllegalStateException("MiniServer unavailable");
+        }
+        return server.loadApk(apkPath);
     }
 
     public MiniActivityManager getActivityManager() { return mActivityManager; }
     public MiniServiceManager getServiceManager() { return mServiceManager; }
     public MiniPackageManager getPackageManager() { return mPackageManager; }
     public Application getApplication() { return mApplication; }
-    public void setApplication(Application app) { mApplication = app; }
+    public void setApplication(Application app) {
+        mApplication = app != null ? app : new Application();
+        ShimCompat.setPackageName(mApplication, mPackageName);
+    }
     public String getPackageName() { return mPackageName; }
     public ApkInfo getApkInfo() { return mApkInfo; }
+
+    public void setPackageName(String packageName) {
+        if (packageName == null || packageName.isEmpty()) {
+            return;
+        }
+        mPackageName = packageName;
+        if (mApplication != null) {
+            ShimCompat.setPackageName(mApplication, packageName);
+        }
+        mPackageManager.setPackageName(packageName);
+    }
 
     /**
      * Start an Activity by class name (convenience for testing).
@@ -78,8 +147,9 @@ public class MiniServer {
     public void startActivity(String activityClassName) {
         try {
             Class<?> cls = Class.forName(activityClassName);
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName(mPackageName, activityClassName));
+            Intent intent = Intent.makeMainActivity(new ComponentName(mPackageName, activityClassName));
+            intent.setPackage(mPackageName);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mActivityManager.startActivity(null, intent, -1);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Activity class not found: " + activityClassName, e);
@@ -110,7 +180,7 @@ public class MiniServer {
         mApkInfo = info;
 
         // Update package info
-        mPackageName = info.packageName;
+        setPackageName(info.packageName);
 
         // If manifest declares a custom Application class, instantiate it
         if (info.applicationClassName != null) {

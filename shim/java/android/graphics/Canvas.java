@@ -61,6 +61,10 @@ public class Canvas {
 
     public long getNativeHandle() { return nativeCanvas; }
 
+    public static boolean isUsable(Canvas canvas) {
+        return canvas != null && canvas.nativeCanvas != 0;
+    }
+
     // ── Pen/Brush/Font sync from Paint ───────────────────────────────────────
 
     private long ensurePen(Paint paint) {
@@ -103,10 +107,101 @@ public class Canvas {
         return (s != Paint.Style.STROKE) ? ensureBrush(paint) : 0;
     }
 
+    private static long ensurePenSafe(Canvas canvas, Paint paint) {
+        if (canvas == null) return 0;
+        if (canvas.nativePenCache == 0) canvas.nativePenCache = OHBridge.penCreate();
+        if (paint != null) {
+            OHBridge.penSetColor(canvas.nativePenCache, paint.getColor());
+            OHBridge.penSetWidth(canvas.nativePenCache, paint.getStrokeWidth());
+            OHBridge.penSetAntiAlias(canvas.nativePenCache, paint.isAntiAlias());
+            OHBridge.penSetCap(canvas.nativePenCache, paint.getStrokeCap().ordinal());
+            OHBridge.penSetJoin(canvas.nativePenCache, paint.getStrokeJoin().ordinal());
+        }
+        return canvas.nativePenCache;
+    }
+
+    private static long ensureBrushSafe(Canvas canvas, Paint paint) {
+        if (canvas == null) return 0;
+        if (canvas.nativeBrushCache == 0) canvas.nativeBrushCache = OHBridge.brushCreate();
+        if (paint != null) {
+            OHBridge.brushSetColor(canvas.nativeBrushCache, paint.getColor());
+        }
+        return canvas.nativeBrushCache;
+    }
+
+    private static long ensureFontSafe(Canvas canvas, Paint paint) {
+        if (canvas == null) return 0;
+        if (canvas.nativeFontCache == 0) canvas.nativeFontCache = OHBridge.fontCreate();
+        if (paint != null) {
+            OHBridge.fontSetSize(canvas.nativeFontCache, paint.getTextSize());
+        }
+        return canvas.nativeFontCache;
+    }
+
+    private static long penForSafe(Canvas canvas, Paint paint) {
+        if (paint == null) return 0;
+        Paint.Style s = paint.getStyle();
+        return (s != Paint.Style.FILL) ? ensurePenSafe(canvas, paint) : 0;
+    }
+
+    private static long brushForSafe(Canvas canvas, Paint paint) {
+        if (paint == null) return 0;
+        Paint.Style s = paint.getStyle();
+        return (s != Paint.Style.STROKE) ? ensureBrushSafe(canvas, paint) : 0;
+    }
+
+    public static void safeDrawColor(Canvas canvas, int color) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawColor(canvas.nativeCanvas, color);
+    }
+
+    public static void safeDrawRect(Canvas canvas, float left, float top, float right, float bottom, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawRect(canvas.nativeCanvas, left, top, right, bottom,
+                penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawCircle(Canvas canvas, float cx, float cy, float radius, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawCircle(canvas.nativeCanvas, cx, cy, radius,
+                penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawLine(Canvas canvas, float startX, float startY, float stopX, float stopY, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawLine(canvas.nativeCanvas, startX, startY, stopX, stopY, ensurePenSafe(canvas, paint));
+    }
+
+    public static void safeDrawRoundRect(Canvas canvas, float left, float top, float right, float bottom,
+                                         float rx, float ry, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawRoundRect(canvas.nativeCanvas, left, top, right, bottom, rx, ry,
+                penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawArc(Canvas canvas, float left, float top, float right, float bottom,
+                                   float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawArc(canvas.nativeCanvas, left, top, right, bottom, startAngle, sweepAngle,
+                useCenter, penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawOval(Canvas canvas, float left, float top, float right, float bottom, Paint paint) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasDrawOval(canvas.nativeCanvas, left, top, right, bottom,
+                penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawPath(Canvas canvas, Path path, Paint paint) {
+        if (!isUsable(canvas) || path == null) return;
+        OHBridge.canvasDrawPath(canvas.nativeCanvas, path.getNativeHandle(),
+                penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
     // ── Draw operations ──────────────────────────────────────────────────────
 
     public void drawColor(int color) {
-        if (nativeCanvas != 0) OHBridge.canvasDrawColor(nativeCanvas, color);
+        safeDrawColor(this, color);
     }
 
     public void drawColor(int color, PorterDuff.Mode mode) {
@@ -114,9 +209,7 @@ public class Canvas {
     }
 
     public void drawRect(float left, float top, float right, float bottom, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawRect(nativeCanvas, left, top, right, bottom, penFor(paint), brushFor(paint));
-        }
+        safeDrawRect(this, left, top, right, bottom, paint);
     }
 
     public void drawRect(Rect r, Paint paint) {
@@ -128,21 +221,15 @@ public class Canvas {
     }
 
     public void drawCircle(float cx, float cy, float radius, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawCircle(nativeCanvas, cx, cy, radius, penFor(paint), brushFor(paint));
-        }
+        safeDrawCircle(this, cx, cy, radius, paint);
     }
 
     public void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawLine(nativeCanvas, startX, startY, stopX, stopY, ensurePen(paint));
-        }
+        safeDrawLine(this, startX, startY, stopX, stopY, paint);
     }
 
     public void drawText(String text, float x, float y, Paint paint) {
-        if (nativeCanvas != 0 && text != null) {
-            OHBridge.canvasDrawText(nativeCanvas, text, x, y, ensureFont(paint), penFor(paint), brushFor(paint));
-        }
+        safeDrawText(this, text, x, y, paint);
     }
 
     public void drawText(CharSequence text, int start, int end, float x, float y, Paint paint) {
@@ -160,8 +247,20 @@ public class Canvas {
         drawText(text.substring(start, end), x, y, paint);
     }
 
+    public static void safeDrawText(Canvas canvas, String text, float x, float y, Paint paint) {
+        if (!isUsable(canvas) || text == null) return;
+        OHBridge.canvasDrawText(canvas.nativeCanvas, text, x, y,
+                ensureFontSafe(canvas, paint), penForSafe(canvas, paint), brushForSafe(canvas, paint));
+    }
+
+    public static void safeDrawText(Canvas canvas, CharSequence text, int start, int end,
+                                    float x, float y, Paint paint) {
+        if (text == null || start < 0 || end < start || end > text.length()) return;
+        safeDrawText(canvas, text.subSequence(start, end).toString(), x, y, paint);
+    }
+
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
-        if (nativeCanvas != 0 && bitmap != null) {
+        if (isUsable(this) && bitmap != null) {
             int bw = bitmap.getWidth(), bh = bitmap.getHeight();
             // Skip views with insane dimensions (corrupt layout)
             if (bw > 4000 || bh > 4000) return;
@@ -217,9 +316,7 @@ public class Canvas {
 
     public void drawRoundRect(float left, float top, float right, float bottom,
                               float rx, float ry, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawRoundRect(nativeCanvas, left, top, right, bottom, rx, ry, penFor(paint), brushFor(paint));
-        }
+        safeDrawRoundRect(this, left, top, right, bottom, rx, ry, paint);
     }
 
     public void drawRoundRect(RectF rect, float rx, float ry, Paint paint) {
@@ -228,9 +325,7 @@ public class Canvas {
 
     public void drawArc(float left, float top, float right, float bottom,
                         float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawArc(nativeCanvas, left, top, right, bottom, startAngle, sweepAngle, useCenter, penFor(paint), brushFor(paint));
-        }
+        safeDrawArc(this, left, top, right, bottom, startAngle, sweepAngle, useCenter, paint);
     }
     public void drawArc(RectF oval, float startAngle, float sweepAngle,
                         boolean useCenter, Paint paint) {
@@ -238,18 +333,14 @@ public class Canvas {
     }
 
     public void drawOval(float left, float top, float right, float bottom, Paint paint) {
-        if (nativeCanvas != 0) {
-            OHBridge.canvasDrawOval(nativeCanvas, left, top, right, bottom, penFor(paint), brushFor(paint));
-        }
+        safeDrawOval(this, left, top, right, bottom, paint);
     }
     public void drawOval(RectF oval, Paint paint) {
         if (oval != null) drawOval(oval.left, oval.top, oval.right, oval.bottom, paint);
     }
 
     public void drawPath(Path path, Paint paint) {
-        if (nativeCanvas != 0 && path != null) {
-            OHBridge.canvasDrawPath(nativeCanvas, path.getNativeHandle(), penFor(paint), brushFor(paint));
-        }
+        safeDrawPath(this, path, paint);
     }
 
     public void drawPicture(Picture picture) { /* no-op */ }
@@ -282,11 +373,7 @@ public class Canvas {
     // ── Transform stack ──────────────────────────────────────────────────────
 
     public int save() {
-        if (nativeCanvas != 0) OHBridge.canvasSave(nativeCanvas);
-        // AOSP returns the save count before the save (used by restoreToCount)
-        int count = saveDepth;
-        saveDepth++;
-        return count;
+        return safeSave(this);
     }
 
     public int save(int saveFlags) {
@@ -307,17 +394,10 @@ public class Canvas {
     }
 
     public int saveLayerAlpha(float left, float top, float right, float bottom, int alpha) {
-        // OH_Drawing doesn't have native saveLayerAlpha.
-        // We approximate by doing a save + clipRect. The alpha parameter is stored
-        // for potential use but true blending requires OH_Drawing_CanvasSaveLayer.
-        if (nativeCanvas != 0) {
-            OHBridge.canvasSave(nativeCanvas);
-            if (left != 0 || top != 0 || right != 0 || bottom != 0) {
-                OHBridge.canvasClipRect(nativeCanvas, left, top, right, bottom);
-            }
+        int count = safeSave(this);
+        if (left != 0 || top != 0 || right != 0 || bottom != 0) {
+            safeClipRect(this, left, top, right, bottom);
         }
-        int count = saveDepth;
-        saveDepth++;
         return count;
     }
 
@@ -329,20 +409,18 @@ public class Canvas {
     }
 
     public void restore() {
-        if (saveDepth > 1) {
-            saveDepth--;
-            if (nativeCanvas != 0) OHBridge.canvasRestore(nativeCanvas);
-        }
+        safeRestore(this);
     }
 
     public int getSaveCount() { return saveDepth; }
 
     public void translate(float dx, float dy) {
-        if (nativeCanvas != 0) OHBridge.canvasTranslate(nativeCanvas, dx, dy);
+        safeTranslate(this, dx, dy);
     }
 
     public void scale(float sx, float sy) {
-        if (nativeCanvas != 0) OHBridge.canvasScale(nativeCanvas, sx, sy);
+        if (!isUsable(this)) return;
+        OHBridge.canvasScale(nativeCanvas, sx, sy);
     }
 
     public void scale(float sx, float sy, float px, float py) {
@@ -352,23 +430,21 @@ public class Canvas {
     }
 
     public void rotate(float degrees) {
-        if (nativeCanvas != 0) OHBridge.canvasRotate(nativeCanvas, degrees, 0, 0);
+        if (!isUsable(this)) return;
+        OHBridge.canvasRotate(nativeCanvas, degrees, 0, 0);
     }
 
     public void rotate(float degrees, float px, float py) {
-        if (nativeCanvas != 0) OHBridge.canvasRotate(nativeCanvas, degrees, px, py);
+        if (!isUsable(this)) return;
+        OHBridge.canvasRotate(nativeCanvas, degrees, px, py);
     }
 
     public void restoreToCount(int saveCount) {
-        if (saveCount < 1) saveCount = 1; // can't restore past initial state
-        while (saveDepth > saveCount) {
-            saveDepth--;
-            if (nativeCanvas != 0) OHBridge.canvasRestore(nativeCanvas);
-        }
+        safeRestoreToCount(this, saveCount);
     }
 
     public void concat(Matrix matrix) {
-        if (nativeCanvas != 0 && matrix != null) {
+        if (isUsable(this) && matrix != null) {
             float[] vals = new float[9];
             matrix.getValues(vals);
             OHBridge.canvasConcat(nativeCanvas, vals);
@@ -377,7 +453,7 @@ public class Canvas {
 
     public void setMatrix(Matrix matrix) {
         // Reset then concat — OH_Drawing doesn't have setMatrix directly
-        if (nativeCanvas != 0) {
+        if (isUsable(this)) {
             // Restore to base state then apply
             if (matrix != null && !matrix.isIdentity()) {
                 float[] vals = new float[9];
@@ -396,15 +472,51 @@ public class Canvas {
     public boolean clipRect(Rect rect, Region.Op op) { return true; }
     public boolean clipRect(RectF rect) { return true; }
     public boolean clipRect(int left, int top, int right, int bottom) {
-        if (nativeCanvas != 0) OHBridge.canvasClipRect(nativeCanvas, (float) left, (float) top, (float) right, (float) bottom);
+        safeClipRect(this, left, top, right, bottom);
         return true;
     }
     public void clipRect(float left, float top, float right, float bottom) {
-        if (nativeCanvas != 0) OHBridge.canvasClipRect(nativeCanvas, left, top, right, bottom);
+        safeClipRect(this, left, top, right, bottom);
+    }
+
+    public static int safeSave(Canvas canvas) {
+        if (canvas == null) return 1;
+        if (canvas.nativeCanvas != 0) OHBridge.canvasSave(canvas.nativeCanvas);
+        int count = canvas.saveDepth;
+        canvas.saveDepth++;
+        return count;
+    }
+
+    public static void safeRestore(Canvas canvas) {
+        if (canvas == null) return;
+        if (canvas.saveDepth > 1) {
+            canvas.saveDepth--;
+            if (canvas.nativeCanvas != 0) OHBridge.canvasRestore(canvas.nativeCanvas);
+        }
+    }
+
+    public static void safeRestoreToCount(Canvas canvas, int saveCount) {
+        if (canvas == null) return;
+        if (saveCount < 1) saveCount = 1;
+        while (canvas.saveDepth > saveCount) {
+            canvas.saveDepth--;
+            if (canvas.nativeCanvas != 0) OHBridge.canvasRestore(canvas.nativeCanvas);
+        }
+    }
+
+    public static void safeTranslate(Canvas canvas, float dx, float dy) {
+        if (!isUsable(canvas)) return;
+        OHBridge.canvasTranslate(canvas.nativeCanvas, dx, dy);
+    }
+
+    public static void safeClipRect(Canvas canvas, float left, float top, float right, float bottom) {
+        if (!isUsable(canvas)) return;
+        // The pipe-backed OHBridge clip stack is still unstable under real app
+        // view recursion. Treat clipping as advisory so rendering survives.
     }
 
     public void clipPath(Path path) {
-        if (nativeCanvas != 0 && path != null) OHBridge.canvasClipPath(nativeCanvas, path.getNativeHandle());
+        // Clip-path rendering is not stable in the standalone bridge yet.
     }
 
     // ── Cleanup ──────────────────────────────────────────────────────────────

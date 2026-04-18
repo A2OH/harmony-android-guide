@@ -57,7 +57,8 @@ data class ApkVmConfig(
     val packageName: String,       // e.g. "me.tsukanov.counter"
     val activityName: String,      // e.g. "me.tsukanov.counter.ui.MainActivity"
     val displayName: String,       // e.g. "Simple Counter"
-    val apkSourceDir: String? = null // resolved from PackageManager at launch time
+    val apkSourceDir: String? = null, // resolved from PackageManager at launch time
+    val allowRealFrameworkFallback: Boolean = false
 )
 
 object WestlakeVM {
@@ -124,8 +125,11 @@ object WestlakeVM {
         val srcDir = File(DALVIKVM_DIR)
         val dvmSrc = File(srcDir, "dalvikvm")
         val dvmDst = File(vmDir, "dalvikvm")
-        if (dvmSrc.exists() && (!dvmDst.exists() || dvmDst.length() != dvmSrc.length())) {
+        if (dvmSrc.exists() && (!dvmDst.exists()
+                || dvmDst.length() != dvmSrc.length()
+                || dvmDst.lastModified() != dvmSrc.lastModified())) {
             dvmSrc.copyTo(dvmDst, overwrite = true)
+            dvmDst.setLastModified(dvmSrc.lastModified())
             dvmDst.setExecutable(true, false)
             log.add("Copied dalvikvm")
         }
@@ -215,8 +219,14 @@ object WestlakeVM {
 
         // Build command based on config
         val cmd: Array<String>
+        var envApkPath: String? = null
+        var envActivityName: String? = null
+        var envPackageName: String? = null
+        var envResDir: String? = null
+        var envManifestPath: String? = null
 
         if (apkConfig != null) {
+            val frameworkPolicy = if (apkConfig.allowRealFrameworkFallback) "allow_real" else "westlake_only"
             // --- APK mode: extract DEX, copy APK, use WestlakeLauncher ---
             val apkSrc = apkConfig.apkSourceDir
             // Check for DEX-only app (tipcalc.dex at runDir)
@@ -240,23 +250,27 @@ object WestlakeVM {
                 val fullBcp = "$bcp:$dexOnlyPath"
                 cmd = arrayOf(
                     dvm, "-Xbootclasspath:$fullBcp", *bootArgs, "-Xverify:none",
+                    "-Dwestlake.framework.policy=$frameworkPolicy",
                     "-Dwestlake.apk.path=$dexOnlyPath",
                     "-Dwestlake.apk.activity=${apkConfig.activityName}",
                     "-Dwestlake.apk.package=${apkConfig.packageName}",
                     "-classpath", dexOnlyPath,
-                    "com.westlake.engine.WestlakeLauncher"
+                    "com.westlake.engine.WestlakeLauncher",
+                    "--apk-path", dexOnlyPath,
+                    "--apk-activity", apkConfig.activityName,
+                    "--apk-package", apkConfig.packageName
                 )
+                envApkPath = dexOnlyPath
+                envActivityName = apkConfig.activityName
+                envPackageName = apkConfig.packageName
                 log.add("DEX-only: ${apkConfig.displayName}")
             } else if (isMultiDexPushed) {
-                // Multi-DEX app (McDonald's) — bionic dalvikvm with stb_image + libwebp
+                // Multi-DEX app (McDonald's) — run on Westlake's dalvikvm, not app_process64.
                 val mcdCp = StringBuilder("$runDir/${multiDexPrefix}.dex")
                 for (i in 2..33) {
                     val f = File("$runDir/${multiDexPrefix}${i}.dex")
                     if (f.exists()) mcdCp.append(":${f.absolutePath}")
                 }
-                // Include framework.jar if available — enables real Android framework classes
-                val fwJar = if (File("$runDir/framework.jar").exists()) ":$runDir/framework.jar" else ""
-                val mcdBcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar$fwJar:$runDir/aosp-shim.dex"
 
                 // Start mock backend server for cached API responses
                 val mockDataDir = "$runDir/mock-backend"
@@ -273,41 +287,49 @@ object WestlakeVM {
                     "-Dhttps.proxyHost=127.0.0.1", "-Dhttps.proxyPort=$mockPort"
                 ) else emptyArray()
 
-                // Deploy boot image from nativeLibDir to framework/arm64/ if not already done
-                val fwDir = File("$runDir/framework/arm64").apply { mkdirs() }
-                for ((artName, soName) in bootFileMap) {
-                    val src = File(nativeLibDir, soName)
-                    val dst = File(fwDir, artName)
-                    if (src.exists() && (!dst.exists() || dst.length() != src.length())) {
-                        try {
-                            Runtime.getRuntime().exec(arrayOf("ln", "-sf", src.absolutePath, dst.absolutePath)).waitFor()
-                        } catch (e: Exception) {
-                            try { src.copyTo(dst, overwrite = true) } catch (_: Exception) {}
-                        }
-                    }
+                val sharedResDir = File("$runDir/mcd_res")
+                val privateResDir = File(vmDir, "mcd_res")
+                val guestResDir = if (sharedResDir.exists()) {
+                    sharedResDir.absolutePath
+                } else {
+                    privateResDir.absolutePath
                 }
-                // Force interpreter-only mode: JIT gets SIGILL under untrusted_app SELinux context
-                // String factory rewrites work in interpreter mode on Pixel 7 Pro (Android 16)
-                val mcdImageArgs = arrayOf("-Xnoimage-dex2oat", "-Xusejit:false", "-Xint")
-                log.add("Interpreter mode (JIT disabled — SELinux)")
+                if (sharedResDir.exists()) {
+                    try {
+                        if (privateResDir.exists()) privateResDir.deleteRecursively()
+                        sharedResDir.copyRecursively(privateResDir, overwrite = true)
+                        log.add("Copied McD resources to private dir")
+                    } catch (e: Exception) {
+                        log.add("McD resource copy failed: ${e.message}")
+                    }
+                } else {
+                    log.add("WARNING: missing extracted resources at ${sharedResDir.absolutePath}")
+                }
 
                 cmd = arrayOf(
-                    dvm, "-Xbootclasspath:$mcdBcp", *mcdImageArgs, "-Xverify:none",
-                    "-Xgc:nonconcurrent", "-Xms256m", "-Xmx768m", "-Xss4m",
-                    "-Djava.home=$runDir",
-                    // Fix kotlinx.coroutines scheduler — static dalvikvm reports bogus availableProcessors()
-                    "-Dkotlinx.coroutines.scheduler.core.pool.size=4",
-                    "-Dkotlinx.coroutines.scheduler.max.pool.size=8",
+                    dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
+                    "-Xgc:nonconcurrent", "-Xms256m", "-Xmx768m",
                     *proxyArgs,
+                    "-Dwestlake.framework.policy=$frameworkPolicy",
                     "-Dwestlake.apk.package=${apkConfig.packageName}",
                     "-Dwestlake.apk.activity=${apkConfig.activityName}",
                     "-Dwestlake.apk.path=$runDir/mcd_classes.dex",
-                    "-Dwestlake.apk.resdir=$runDir/mcd_res",
-                    "-Dwestlake.apk.manifest=$runDir/mcd_res/AndroidManifest.xml",
+                    "-Dwestlake.apk.resdir=$guestResDir",
+                    "-Dwestlake.apk.manifest=$guestResDir/AndroidManifest.xml",
                     "-classpath", mcdCp.toString(),
-                    "com.westlake.engine.WestlakeLauncher"
+                    "com.westlake.engine.WestlakeLauncher",
+                    "--apk-path", "$runDir/mcd_classes.dex",
+                    "--apk-activity", apkConfig.activityName,
+                    "--apk-package", apkConfig.packageName,
+                    "--apk-resdir", guestResDir,
+                    "--apk-manifest", "$guestResDir/AndroidManifest.xml"
                 )
-                log.add("Multi-DEX: ${apkConfig.displayName} (subprocess pipe mode)")
+                envApkPath = "$runDir/mcd_classes.dex"
+                envActivityName = apkConfig.activityName
+                envPackageName = apkConfig.packageName
+                envResDir = guestResDir
+                envManifestPath = "$guestResDir/AndroidManifest.xml"
+                log.add("Multi-DEX: ${apkConfig.displayName} (Westlake dalvikvm)")
             } else {
 
             // Copy APK to app's private dir (writable by our process)
@@ -376,14 +398,25 @@ object WestlakeVM {
             val manifestPath = "${resDir.absolutePath}/AndroidManifest.xml"
             cmd = arrayOf(
                 dvm, "-Xbootclasspath:$bcp", *bootArgs, "-Xverify:none",
+                "-Dwestlake.framework.policy=$frameworkPolicy",
                 "-Dwestlake.apk.path=$apkDevicePath",
                 "-Dwestlake.apk.activity=${apkConfig.activityName}",
                 "-Dwestlake.apk.package=${apkConfig.packageName}",
                 "-Dwestlake.apk.resdir=${resDir.absolutePath}",
                 "-Dwestlake.apk.manifest=$manifestPath",
                 "-classpath", dexClasspath,
-                "com.westlake.engine.WestlakeLauncher"
+                "com.westlake.engine.WestlakeLauncher",
+                "--apk-path", apkDevicePath,
+                "--apk-activity", apkConfig.activityName,
+                "--apk-package", apkConfig.packageName,
+                "--apk-resdir", resDir.absolutePath,
+                "--apk-manifest", manifestPath
             )
+            envApkPath = apkDevicePath
+            envActivityName = apkConfig.activityName
+            envPackageName = apkConfig.packageName
+            envResDir = resDir.absolutePath
+            envManifestPath = manifestPath
             log.add("Launching ${apkConfig.displayName} via WestlakeLauncher")
             } // end else (APK mode, not DEX-only)
         } else {
@@ -409,23 +442,60 @@ object WestlakeVM {
             pubLibs.writeText("libandroid.so\nlibc.so\nlibdl.so\nliblog.so\nlibm.so\nlibz.so\n")
         }
 
+        if (apkConfig != null) {
+            val launchMeta = buildString {
+                envApkPath?.let { append("westlake.apk.path=").append(it).append('\n') }
+                envActivityName?.let { append("westlake.apk.activity=").append(it).append('\n') }
+                envPackageName?.let { append("westlake.apk.package=").append(it).append('\n') }
+                envResDir?.let { append("westlake.apk.resdir=").append(it).append('\n') }
+                envManifestPath?.let { append("westlake.apk.manifest=").append(it).append('\n') }
+            }
+            if (launchMeta.isNotEmpty()) {
+                File(runDir, "westlake-launch.properties").writeText(launchMeta)
+                log.add("Wrote westlake-launch.properties")
+            }
+        }
+
         log.add("Starting from ${vmDir.absolutePath}...")
         try {
             val pb = ProcessBuilder(*cmd)
             pb.directory(File(runDir))
-            pb.environment()["ANDROID_DATA"] = runDir
-            // ANDROID_ROOT: for multi-DEX, use runDir (has arm64/boot.art for shell runs)
-            // For app context, vmDir has fake dex2oat + security.properties
-            pb.environment()["ANDROID_ROOT"] = runDir
-            pb.environment()["BOOTCLASSPATH"] = bcp
-            pb.environment()["DEX2OATBOOTCLASSPATH"] = bcp
+            // For dalvikvm64 (system binary): use real system paths
+            val useSysDvm = cmd.firstOrNull() == "dalvikvm64" || cmd.firstOrNull() == "app_process64"
+            pb.environment()["ANDROID_DATA"] = if (useSysDvm) "/data" else runDir
+            pb.environment()["ANDROID_ROOT"] = if (useSysDvm) "/system" else runDir
+            pb.environment()["ANDROID_ART_ROOT"] = "/apex/com.android.art"
+            pb.environment()["ANDROID_I18N_ROOT"] = "/apex/com.android.i18n"
+            pb.environment()["ANDROID_TZDATA_ROOT"] = "/apex/com.android.tzdata"
+            envApkPath?.let { pb.environment()["WESTLAKE_APK_PATH"] = it }
+            envActivityName?.let { pb.environment()["WESTLAKE_APK_ACTIVITY"] = it }
+            envPackageName?.let { pb.environment()["WESTLAKE_APK_PACKAGE"] = it }
+            envResDir?.let { pb.environment()["WESTLAKE_APK_RESDIR"] = it }
+            envManifestPath?.let { pb.environment()["WESTLAKE_APK_MANIFEST"] = it }
+            if (!useSysDvm) {
+                pb.environment()["BOOTCLASSPATH"] = bcp
+                pb.environment()["DEX2OATBOOTCLASSPATH"] = bcp
+            }
+            // For dalvikvm64: inherit system BOOTCLASSPATH (has all APEX JARs)
             pb.environment()["WESTLAKE_TOUCH"] = TOUCH_PATH
-            pb.environment()["LD_LIBRARY_PATH"] = runDir
+            // For dalvikvm64: .so files in shell_data_file context can't be executed.
+            // Copy libframework_stubs.so to app's nativeLibDir (has app_data_file context).
+            if (useSysDvm) {
+                val stubSrc = File(runDir, "libframework_stubs.so")
+                val stubDst = File(nativeLibDir, "libframework_stubs.so")
+                if (stubSrc.exists() && (!stubDst.exists() || stubDst.length() != stubSrc.length())) {
+                    try { stubSrc.copyTo(stubDst, overwrite = true); stubDst.setExecutable(true) }
+                    catch (e: Exception) { Log.w(TAG, "Failed to copy stubs .so: $e") }
+                }
+                pb.environment()["LD_LIBRARY_PATH"] = "$nativeLibDir:$runDir"
+            } else {
+                pb.environment()["LD_LIBRARY_PATH"] = runDir
+            }
             // For app_process64: CLASSPATH tells it which DEX to load
             val mcdApkEnv = try {
                 activity.packageManager.getApplicationInfo("com.mcdonalds.app", 0).sourceDir
             } catch (e: Exception) { "" }
-            if (mcdApkEnv.isNotEmpty()) {
+            if (cmd.firstOrNull() == "app_process64" && mcdApkEnv.isNotEmpty()) {
                 pb.environment()["CLASSPATH"] = "$runDir/aosp-shim.dex:$mcdApkEnv"
             }
             // Do NOT redirectErrorStream — stdout is binary pipe, stderr is text logs

@@ -77,7 +77,7 @@ public class Window {
     public void closeAllPanels() {}
     public void closePanel(int p0) {}
     public View getDecorView() { return mDecorView; }
-    public LayoutInflater getLayoutInflater() { return LayoutInflater.from(mContext); }
+    public LayoutInflater getLayoutInflater() { return new LayoutInflater(mContext); }
 
     public <T extends View> T findViewById(int id) {
         if (mDecorView != null) return mDecorView.findViewById(id);
@@ -149,27 +149,48 @@ public class Window {
     public void setColorMode(int p0) {}
     public void setContainer(Window p0) {}
     public void setContentView(int layoutResID) {
-        android.util.Log.i("Window", "setContentView(resId=0x" + Integer.toHexString(layoutResID) + ")");
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        if (inflater == null) { android.util.Log.e("Window", "LayoutInflater is null!"); return; }
-        // Inflate into a temporary FrameLayout root (needed for <merge> tags and LayoutParams)
-        // Then move children to the decor
-        android.widget.FrameLayout tempRoot = new android.widget.FrameLayout(mContext);
-        View inflated = null;
         try {
-            inflated = inflater.inflate(layoutResID, tempRoot, true);
-        } catch (Throwable t) {
-            try { inflated = inflater.inflate(layoutResID, null); } catch (Throwable t2) {}
-        }
-        android.util.Log.i("Window", "inflate result: " + (inflated != null ? inflated.getClass().getSimpleName() : "null")
-            + " children=" + tempRoot.getChildCount());
-        if (tempRoot.getChildCount() > 0) {
-            // Use the first child (the actual content) — avoid wrapping in extra FrameLayout
-            View content = tempRoot.getChildAt(0);
-            tempRoot.removeAllViews();
-            setContentView(content);
-        } else if (inflated != null && inflated != tempRoot) {
-            setContentView(inflated);
+            android.util.Log.i("Window", "setContentView(resId=0x"
+                    + Integer.toHexString(layoutResID) + ")");
+            LayoutInflater inflater = new LayoutInflater(mContext);
+            if (inflater == null) {
+                android.util.Log.e("Window", "LayoutInflater is null!");
+                return;
+            }
+            android.widget.FrameLayout tempRoot = new android.widget.FrameLayout(mContext);
+            android.util.Log.i("Window", "tempRoot created: " + tempRoot.getClass().getSimpleName());
+            View inflated = null;
+            try {
+                inflated = inflater.inflate(layoutResID, tempRoot, true);
+                android.util.Log.i("Window", "inflate with tempRoot returned");
+            } catch (Throwable t) {
+                android.util.Log.w("Window", "inflate with tempRoot failed: "
+                        + t.getClass().getName() + ": " + t.getMessage());
+                try {
+                    inflated = inflater.inflate(layoutResID, null);
+                    android.util.Log.i("Window", "inflate without root returned");
+                } catch (Throwable t2) {
+                    android.util.Log.w("Window", "inflate without root failed: "
+                            + t2.getClass().getName() + ": " + t2.getMessage());
+                }
+            }
+            android.util.Log.i("Window", "inflate result: "
+                    + (inflated != null ? inflated.getClass().getSimpleName() : "null")
+                    + " children=" + tempRoot.getChildCount());
+            if (tempRoot.getChildCount() > 0) {
+                View content = tempRoot.getChildAt(0);
+                tempRoot.removeAllViews();
+                setContentView(content);
+            } else if (inflated != null && inflated != tempRoot) {
+                setContentView(inflated);
+            } else if (inflated == null) {
+                android.util.Log.w("Window", "setContentView left decor empty for layout 0x"
+                        + Integer.toHexString(layoutResID));
+            }
+        } catch (Throwable outer) {
+            android.util.Log.e("Window", "setContentView outer failure for 0x"
+                    + Integer.toHexString(layoutResID) + ": "
+                    + outer.getClass().getName() + ": " + outer.getMessage());
         }
     }
     public void setContentView(View p0) {
@@ -177,16 +198,32 @@ public class Window {
     }
     public void setContentView(View p0, Object p1) {
         mContentView = p0;
-        if (mDecorView instanceof ViewGroup) {
-            ViewGroup decor = (ViewGroup) mDecorView;
-            decor.removeAllViews();
-            decor.addView(p0);
-            System.err.println("[Window] setContentView(View) decor children=" + decor.getChildCount());
+        if (p0 == null) {
+            return;
+        }
+        try {
+            if (mDecorView instanceof ViewGroup && mDecorView != p0) {
+                ViewGroup decor = (ViewGroup) mDecorView;
+                decor.removeAllViews();
+                decor.addView(p0);
+            } else {
+                mDecorView = p0;
+            }
+        } catch (Throwable ignored) {
+            // The standalone shim still trips layout-param and parent wiring faults when
+            // wrapping arbitrary app views in the fake decor container. Fall back to using
+            // the content root directly as the decor view.
+            mDecorView = p0;
         }
         // Tag decor with the owning Activity so View.invalidate() can trigger renderFrame()
         if (mContext instanceof android.app.Activity) {
             mDecorView.setTag(mContext);
+            try {
+                ((android.app.Activity) mContext).invalidateLayout();
+            } catch (Throwable ignored) {
+            }
         }
+        ensureMcdToolbarShell();
     }
     public void setDecorCaptionShade(int p0) {}
     public void setDecorFitsSystemWindows(boolean p0) {}
@@ -206,6 +243,96 @@ public class Window {
     public void setIcon(int p0) {}
     public void setLayout(int p0, int p1) {}
     public void setLocalFocus(boolean p0, boolean p1) {}
+
+    private int resolveResourceId(String type, String name) {
+        if (mContext == null || type == null || name == null) {
+            return 0;
+        }
+        try {
+            android.content.res.Resources res = mContext.getResources();
+            if (res == null) {
+                return 0;
+            }
+            String[] packages = {
+                    mContext.getPackageName(),
+                    "com.mcdonalds.app",
+                    "com.mcdonalds.homedashboard"
+            };
+            for (int i = 0; i < packages.length; i++) {
+                String pkg = packages[i];
+                if (pkg == null || pkg.isEmpty()) {
+                    continue;
+                }
+                int id = res.getIdentifier(name, type, pkg);
+                if (id != 0) {
+                    return id;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return 0;
+    }
+
+    private void ensureMcdToolbarShell() {
+        if (mDecorView == null || mContext == null) {
+            return;
+        }
+        try {
+            int toolbarId = resolveResourceId("id", "toolbar");
+            int basketLayoutId = resolveResourceId("id", "basket_layout");
+            int pageRootId = resolveResourceId("id", "page_root");
+            if (toolbarId == 0 || basketLayoutId == 0) {
+                return;
+            }
+
+            View toolbarView = mDecorView.findViewById(toolbarId);
+            if (toolbarView instanceof com.mcdonalds.mcduikit.widget.McDToolBarView
+                    && toolbarView.findViewById(basketLayoutId) != null) {
+                return;
+            }
+
+            ViewGroup parent = null;
+            ViewGroup.LayoutParams replacementLp = null;
+            int index = 0;
+            if (toolbarView != null) {
+                ViewParent rawParent = toolbarView.getParent();
+                if (rawParent instanceof ViewGroup) {
+                    parent = (ViewGroup) rawParent;
+                    replacementLp = toolbarView.getLayoutParams();
+                    index = parent.indexOfChild(toolbarView);
+                    parent.removeView(toolbarView);
+                }
+            } else {
+                View pageRoot = pageRootId != 0 ? mDecorView.findViewById(pageRootId) : null;
+                if (pageRoot != null) {
+                    ViewParent rawParent = pageRoot.getParent();
+                    if (rawParent instanceof ViewGroup) {
+                        parent = (ViewGroup) rawParent;
+                        index = parent.indexOfChild(pageRoot);
+                    }
+                }
+            }
+            if (parent == null) {
+                return;
+            }
+
+            com.mcdonalds.mcduikit.widget.McDToolBarView replacement =
+                    new com.mcdonalds.mcduikit.widget.McDToolBarView(mContext);
+            replacement.setId(toolbarId);
+            if (replacementLp == null) {
+                replacementLp = new android.widget.LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            parent.addView(replacement, index, replacementLp);
+            android.util.Log.i("Window", "ensureMcdToolbarShell installed toolbar="
+                    + replacement.getClass().getSimpleName() + " basket="
+                    + (replacement.findViewById(basketLayoutId) != null));
+        } catch (Throwable t) {
+            android.util.Log.w("Window", "ensureMcdToolbarShell failed: "
+                    + t.getClass().getName() + ": " + t.getMessage());
+        }
+    }
     public void setLogo(int p0) {}
     public void setMediaController(MediaController p0) {}
     public void setNavigationBarColor(int p0) { mNavigationBarColor = p0; }

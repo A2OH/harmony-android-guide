@@ -7,6 +7,8 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
+import com.westlake.engine.WestlakeLauncher;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +43,21 @@ import java.util.Map;
 public class WestlakeActivityThread {
 
     private static final String TAG = "WestlakeActivityThread";
+
+    private static String throwableSummary(Throwable t) {
+        if (t == null) {
+            return "null";
+        }
+        String message = null;
+        try {
+            message = t.getMessage();
+        } catch (Throwable ignored) {
+        }
+        if (message == null || message.isEmpty()) {
+            return t.getClass().getName();
+        }
+        return t.getClass().getName() + ": " + message;
+    }
 
     // ── Singleton ──────────────────────────────────────────────────────────
 
@@ -183,15 +200,26 @@ public class WestlakeActivityThread {
                 app = mFactory.instantiateApplication(classLoader, cls);
             } catch (Exception e) {
                 log("W", "AppComponentFactory.instantiateApplication failed for "
-                        + cls + ": " + e);
+                        + cls + ": " + throwableSummary(e));
             }
 
             if (app == null) {
                 try {
                     Class<?> clazz = classLoader.loadClass(cls);
-                    app = (Application) clazz.getDeclaredConstructor().newInstance();
+                    Object nativeInstance = com.westlake.engine.WestlakeLauncher.tryAllocInstance(clazz);
+                    if (nativeInstance != null) {
+                        app = (Application) nativeInstance;
+                    } else {
+                        Object unsafeInstance = AppComponentFactory.tryAllocateInstance(clazz);
+                        if (unsafeInstance != null) {
+                            app = (Application) unsafeInstance;
+                        } else {
+                            app = (Application) clazz.getDeclaredConstructor().newInstance();
+                        }
+                    }
                 } catch (Exception e) {
-                    log("W", "Fallback Application creation failed for " + cls + ": " + e);
+                    log("W", "Fallback Application creation failed for " + cls + ": "
+                            + throwableSummary(e));
                     app = new Application();
                 }
             }
@@ -206,7 +234,7 @@ public class WestlakeActivityThread {
                 try {
                     instrumentation.callApplicationOnCreate(app);
                 } catch (Exception e) {
-                    log("W", "Application.onCreate() threw: " + e);
+                    log("W", "Application.onCreate() threw: " + throwableSummary(e));
                 }
             }
 
@@ -290,21 +318,67 @@ public class WestlakeActivityThread {
      * @param savedState  Saved instance state bundle, or null for fresh launch.
      * @return The launched Activity, or null on failure.
      */
+    public static Activity launchActivity(WestlakeActivityThread thread,
+                                          String className,
+                                          String packageName,
+                                          Intent intent) {
+        if (thread == null) {
+            throw new NullPointerException("thread");
+        }
+        return thread.performLaunchActivityImpl(className, packageName, intent, null);
+    }
+
     public Activity performLaunchActivity(String className, String packageName,
                                            Intent intent, Bundle savedState) {
+        return performLaunchActivityImpl(className, packageName, intent, savedState);
+    }
+
+    private Activity performLaunchActivityImpl(String className, String packageName,
+                                               Intent intent, Bundle savedState) {
+        WestlakeLauncher.trace("[WestlakeActivityThread] performLaunchActivity begin: " + className);
         log("I", "performLaunchActivity: " + className);
 
         // ── Step 1: Resolve component and classloader ──
         if (intent == null) {
             intent = new Intent();
         }
-        ComponentName component = intent.getComponent();
-        if (component == null) {
-            component = new ComponentName(
-                    packageName != null ? packageName : "",
-                    className);
-            intent.setComponent(component);
+        String resolvedPackageName = resolveLaunchPackageName(packageName, className, intent);
+        if (resolvedPackageName != null && !resolvedPackageName.isEmpty()) {
+            packageName = resolvedPackageName;
+            if (intent.getPackage() == null || intent.getPackage().isEmpty()
+                    || isPlaceholderPackage(intent.getPackage())) {
+                intent.setPackage(resolvedPackageName);
+            }
         }
+        ComponentName component = intent.getComponent();
+        if (component == null || isPlaceholderPackage(component.getPackageName())) {
+            String componentPackage = component != null ? component.getPackageName() : null;
+            String stablePackage = resolveLaunchPackageName(componentPackage, className, intent);
+            if (isPlaceholderPackage(stablePackage)) {
+                stablePackage = choosePackageCandidate(packageName);
+            }
+            if (isPlaceholderPackage(stablePackage)) {
+                stablePackage = knownPackageForClass(className);
+            }
+            if (!isPlaceholderPackage(stablePackage)) {
+                component = new ComponentName(stablePackage, className);
+                intent.setComponent(component);
+                intent.setPackage(stablePackage);
+            }
+        }
+        if (isPlaceholderPackage(packageName) && component != null) {
+            packageName = component.getPackageName();
+        }
+        if (isPlaceholderPackage(packageName)) {
+            packageName = resolveLaunchPackageName(packageName, className, intent);
+        }
+        if (component == null && !isPlaceholderPackage(packageName)) {
+            component = new ComponentName(packageName, className);
+            intent.setComponent(component);
+            intent.setPackage(packageName);
+        }
+        WestlakeLauncher.trace("[WestlakeActivityThread] component resolved: pkg="
+                + packageName + " cls=" + (component != null ? component.getClassName() : className));
 
         ClassLoader cl = getClassLoader();
         AppComponentFactory factory = mAppComponentFactory != null
@@ -348,10 +422,11 @@ public class WestlakeActivityThread {
                             if (rtCl == null) rtCl = Thread.currentThread().getContextClassLoader();
                             if (rtCl == null) rtCl = ClassLoader.getSystemClassLoader();
                             Object nested = java.lang.reflect.Proxy.newProxyInstance(rtCl, new Class<?>[]{rt}, stubRef[0]);
-                            System.err.println("[StubProxy] " + mn + "() → proxy(" + rt.getSimpleName() + ") cl=" + rtCl.getClass().getSimpleName());
+                            log("D", "[StubProxy] " + mn + "() -> proxy(" + rt.getSimpleName()
+                                    + ") cl=" + rtCl.getClass().getSimpleName());
                             return nested;
                         } catch (Throwable t) {
-                            System.err.println("[StubProxy] " + mn + "() → FAIL: " + t.getMessage());
+                            log("W", "[StubProxy] " + mn + "() -> fail: " + t.getMessage());
                             return null;
                         }
                     }
@@ -365,16 +440,16 @@ public class WestlakeActivityThread {
                             uf.setAccessible(true);
                             Object unsafe = uf.get(null);
                             Object inst = unsafe.getClass().getMethod("allocateInstance", Class.class).invoke(unsafe, rt);
-                            System.err.println("[StubProxy] " + mn + "() → Unsafe.allocateInstance(" + rt.getSimpleName() + ")");
+                            log("D", "[StubProxy] " + mn + "() -> Unsafe.allocateInstance(" + rt.getSimpleName() + ")");
                             return inst;
                         } catch (Throwable u) {
-                            System.err.println("[StubProxy] " + mn + "() → Unsafe failed: " + u.getMessage());
+                            log("W", "[StubProxy] " + mn + "() -> Unsafe failed: " + u.getMessage());
                         }
                     }
                     return null;
                 }
             };
-            for (java.lang.reflect.Field f : helperClass.getDeclaredFields()) {
+            for (java.lang.reflect.Field f : safeGetDeclaredFields(helperClass)) {
                 try {
                     if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
                     f.setAccessible(true);
@@ -405,7 +480,7 @@ public class WestlakeActivityThread {
             // getOrderModuleInteractor() chains through dataSourceModuleProvider.I()
             // The field scan above should proxy dataSourceModuleProvider, making I() return a nested proxy.
             // But verify and fix if needed.
-            for (java.lang.reflect.Method m : helperClass.getDeclaredMethods()) {
+            for (java.lang.reflect.Method m : safeGetDeclaredMethods(helperClass)) {
                 if (!java.lang.reflect.Modifier.isStatic(m.getModifiers())) continue;
                 if (m.getParameterTypes().length > 0) continue;
                 Class<?> mrt = m.getReturnType();
@@ -418,7 +493,7 @@ public class WestlakeActivityThread {
                         // The method may chain through a DIFFERENT-typed field (e.g., DataSourceModuleProvider.I() → OrderModuleInteractor)
                         // First try: find field with SAME type as return
                         boolean fixed = false;
-                        for (java.lang.reflect.Field bf : helperClass.getDeclaredFields()) {
+                        for (java.lang.reflect.Field bf : safeGetDeclaredFields(helperClass)) {
                             try {
                                 if (bf.getType() == mrt && java.lang.reflect.Modifier.isStatic(bf.getModifiers())) {
                                     bf.setAccessible(true);
@@ -437,7 +512,7 @@ public class WestlakeActivityThread {
                         // Still null? The backing field might be a different interface type (e.g., DataSourceModuleProvider)
                         // Re-check all interface fields — ensure they're proxied
                         if (!fixed) {
-                            for (java.lang.reflect.Field bf : helperClass.getDeclaredFields()) {
+                            for (java.lang.reflect.Field bf : safeGetDeclaredFields(helperClass)) {
                                 try {
                                     if (!java.lang.reflect.Modifier.isStatic(bf.getModifiers())) continue;
                                     bf.setAccessible(true);
@@ -474,9 +549,17 @@ public class WestlakeActivityThread {
         // ── Step 4: Instantiate the Activity via Instrumentation ──
         Activity activity = null;
         try {
+            WestlakeLauncher.trace("[WestlakeActivityThread] step4 newActivity");
             activity = mInstrumentation.newActivity(cl, className, intent);
+            if (activity == null) {
+                throw new InstantiationException(
+                        "Instrumentation returned null for " + className);
+            }
+            WestlakeLauncher.trace("[WestlakeActivityThread] step4 newActivity OK: "
+                    + activity.getClass().getName());
             log("I", "  Created activity: " + activity.getClass().getName());
         } catch (Exception e) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] step4 newActivity failed", e);
             if (!mInstrumentation.onException(null, e)) {
                 log("E", "  Unable to instantiate activity " + className + ": " + e);
                 throw new RuntimeException(
@@ -508,13 +591,15 @@ public class WestlakeActivityThread {
         }
 
         // ── Step 6: Attach the activity ──
-        long t6 = System.currentTimeMillis();
         log("D", "  Step 6: attach " + className);
+        WestlakeLauncher.trace("[WestlakeActivityThread] step6 attach begin");
         attachActivity(activity, baseContext, app, intent, component);
-        log("D", "  Step 6 done (" + (System.currentTimeMillis() - t6) + "ms)");
+        WestlakeLauncher.trace("[WestlakeActivityThread] step6 attach done");
 
         // ── Step 7: Create the ActivityClientRecord ──
+        WestlakeLauncher.trace("[WestlakeActivityThread] step7 record begin");
         ActivityClientRecord r = new ActivityClientRecord();
+        WestlakeLauncher.trace("[WestlakeActivityThread] step7 record created");
         r.activity = activity;
         r.intent = intent;
         r.component = component;
@@ -526,14 +611,18 @@ public class WestlakeActivityThread {
         synchronized (mActivities) {
             mActivities.put(r.token, r);
         }
+        WestlakeLauncher.trace("[WestlakeActivityThread] step7 record stored");
 
         // ── Step 8: Call onCreate via Instrumentation ──
-        long t8 = System.currentTimeMillis();
         log("D", "  Step 8: callActivityOnCreate " + className);
         try {
+            ensureNamedComponentActivitySavedStateReady(activity);
+            WestlakeLauncher.trace("[WestlakeActivityThread] step8 onCreate begin");
             mInstrumentation.callActivityOnCreate(activity, savedState);
-            log("I", "  onCreate complete for " + className + " (" + (System.currentTimeMillis() - t8) + "ms)");
-        } catch (Exception e) {
+            WestlakeLauncher.trace("[WestlakeActivityThread] step8 onCreate done");
+            log("I", "  onCreate complete for " + className);
+        } catch (Throwable e) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] step8 onCreate failed", e);
             if (!mInstrumentation.onException(activity, e)) {
                 log("E", "  onCreate failed for " + className + ": " + e);
                 throw new RuntimeException(
@@ -542,6 +631,98 @@ public class WestlakeActivityThread {
         }
 
         return activity;
+    }
+
+    private void ensureNamedComponentActivitySavedStateReady(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        try {
+            Class<?> componentActivityClass =
+                    findNamedClassOnHierarchy(activity.getClass(), "androidx.activity.ComponentActivity");
+            if (componentActivityClass == null) {
+                return;
+            }
+            Object controller = getNamedField(activity, componentActivityClass,
+                    "savedStateRegistryController");
+            if (controller == null) {
+                ClassLoader loader = chooseClassLoader(componentActivityClass);
+                controller = newSavedStateRegistryController(loader, activity);
+                if (controller != null) {
+                    setNamedField(activity, componentActivityClass, "savedStateRegistryController",
+                            controller);
+                    controller = getNamedField(activity, componentActivityClass,
+                            "savedStateRegistryController");
+                }
+            }
+            if (controller != null) {
+                invokeNoArgIfPresent(controller, "c", "performAttach");
+                enableNamedSavedStateHandles(chooseClassLoader(componentActivityClass), activity);
+            }
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] ensureNamedComponentActivitySavedStateReady", t);
+        }
+    }
+
+    private static boolean isPlaceholderPackage(String packageName) {
+        return packageName == null
+                || packageName.isEmpty()
+                || "app".equals(packageName)
+                || "com.example.app".equals(packageName);
+    }
+
+    private static String knownPackageForClass(String className) {
+        if (className == null || className.isEmpty()) {
+            return null;
+        }
+        if (className.startsWith("com.mcdonalds.")) {
+            return "com.mcdonalds.app";
+        }
+        return null;
+    }
+
+    private static String choosePackageCandidate(String candidate) {
+        if (isPlaceholderPackage(candidate)) {
+            return null;
+        }
+        return candidate;
+    }
+
+    private static String resolveLaunchPackageName(String packageName, String className, Intent intent) {
+        String candidate = choosePackageCandidate(packageName);
+        if (candidate != null) {
+            return candidate;
+        }
+        if (intent != null) {
+            candidate = choosePackageCandidate(intent.getPackage());
+            if (candidate != null) {
+                return candidate;
+            }
+            ComponentName component = intent.getComponent();
+            if (component != null) {
+                candidate = choosePackageCandidate(component.getPackageName());
+                if (candidate != null) {
+                    return candidate;
+                }
+            }
+        }
+        candidate = choosePackageCandidate(MiniServer.currentPackageName());
+        if (candidate != null) {
+            return candidate;
+        }
+        candidate = choosePackageCandidate(System.getProperty("westlake.apk.package"));
+        if (candidate != null) {
+            return candidate;
+        }
+        candidate = knownPackageForClass(className);
+        if (candidate != null) {
+            return candidate;
+        }
+        if (packageName != null && !packageName.isEmpty()) {
+            return packageName;
+        }
+        return null;
     }
 
     /**
@@ -564,67 +745,40 @@ public class WestlakeActivityThread {
     private void attachActivity(Activity activity, Context baseContext,
                                  Application app, Intent intent,
                                  ComponentName component) {
-        // Skip AOSP attach() — it calls protected attachBaseContext() which fails
-        // cross-classloader. Instead, set mBase directly via reflection + Unsafe.
+        WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity begin: "
+                + activity.getClass().getName());
         boolean attached = false;
         try {
-            // Use ContextWrapper.mBase field to inject the context directly
-            java.lang.reflect.Field mBase = android.content.ContextWrapper.class.getDeclaredField("mBase");
-            mBase.setAccessible(true);
-            mBase.set(activity, baseContext);
+            setInstanceField(activity, android.content.Context.class, "mBase", baseContext);
             attached = true;
-            log("D", "  Set mBase directly on Activity (skip attach())");
-        } catch (Exception e) {
-            log("D", "  mBase set failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity base context set");
+        } catch (Throwable e) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] attachActivity base context failed", e);
         }
+
+        ensureActivityWindow(activity);
 
         // Try 2: Direct field setting (always works with the shim's Activity)
         // Even if attach() succeeded, ensure critical fields are set.
-        ShimCompat.setActivityField(activity, "mApplication", app);
-        ShimCompat.setActivityField(activity, "mIntent", intent);
-        ShimCompat.setActivityField(activity, "mComponent", component);
-        ShimCompat.setActivityField(activity, "mFinished", Boolean.FALSE);
-        ShimCompat.setActivityField(activity, "mDestroyed", Boolean.FALSE);
+        try { setInstanceField(activity, android.app.Activity.class, "mApplication", app); } catch (Throwable ignored) {}
+        try { setInstanceField(activity, android.app.Activity.class, "mIntent", intent); } catch (Throwable ignored) {}
+        try { setInstanceField(activity, android.app.Activity.class, "mComponent", component); } catch (Throwable ignored) {}
+        try { setInstanceField(activity, android.app.Activity.class, "mFinished", Boolean.FALSE); } catch (Throwable ignored) {}
+        try { setInstanceField(activity, android.app.Activity.class, "mDestroyed", Boolean.FALSE); } catch (Throwable ignored) {}
+        WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity core fields set");
+        initializeAndroidxActivityState(activity);
+        WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity AndroidX init done");
 
-        // Try to create REAL Android Resources backed by the installed APK
-        // This gives us proper resource resolution via the framework's AssetManager
-        try {
-            String apkPath = System.getProperty("westlake.apk.path");
-            if (apkPath != null && new java.io.File(apkPath).exists()) {
-                Object am = android.content.res.AssetManager.class.getDeclaredConstructor().newInstance();
-                java.lang.reflect.Method addPath = am.getClass().getDeclaredMethod("addAssetPath", String.class);
-                addPath.setAccessible(true);
-                addPath.invoke(am, apkPath);
-                // Set this AssetManager on the activity's Resources
-                android.content.res.Resources actRes = activity.getResources();
-                if (actRes != null) {
-                    java.lang.reflect.Field amField = android.content.res.Resources.class.getDeclaredField("mResourcesImpl");
-                    // On newer Android, Resources wraps ResourcesImpl which wraps AssetManager
-                    // Try setting AssetManager directly
-                    try {
-                        Object impl = amField.get(actRes);
-                        java.lang.reflect.Field implAm = impl.getClass().getDeclaredField("mAssets");
-                        implAm.setAccessible(true);
-                        implAm.set(impl, am);
-                        log("I", "Injected REAL AssetManager from " + apkPath);
-                    } catch (Throwable t) {
-                        // Try older approach
-                        java.lang.reflect.Field oldAm = android.content.res.Resources.class.getDeclaredField("mAssets");
-                        oldAm.setAccessible(true);
-                        oldAm.set(actRes, am);
-                        log("I", "Injected REAL AssetManager (legacy) from " + apkPath);
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            log("W", "Real AssetManager inject: " + t.getMessage());
-        }
+        // Skip direct framework AssetManager surgery here. It is still unstable on the
+        // standalone ART path and can recurse badly during reflected field access.
+        WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity asset inject skipped");
 
         // Wire ResourceTable to the activity's resources
         // Try MiniServer's ApkInfo first (it has the parsed resources.arsc)
         try {
             android.content.res.Resources actRes = activity.getResources();
             String resDir = System.getProperty("westlake.apk.resdir");
+            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource wiring begin");
 
             // Try to get ResourceTable from MiniServer's ApkInfo
             android.app.MiniServer server = android.app.MiniServer.get();
@@ -638,6 +792,7 @@ public class WestlakeActivityThread {
                         Object table = rtField.get(apkInfo);
                         if (table instanceof android.content.res.ResourceTable) {
                             ShimCompat.loadResourceTable(actRes, (android.content.res.ResourceTable) table);
+                            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource table wired");
                             log("I", "Wired ResourceTable to " + activity.getClass().getSimpleName());
                         }
                     }
@@ -655,7 +810,9 @@ public class WestlakeActivityThread {
             }
             ShimCompat.setApkPath(actRes, System.getProperty("westlake.apk.path"));
             if (resDir != null) ShimCompat.setAssetDir(activity.getAssets(), resDir);
+            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource wiring done");
         } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] attachActivity resource wiring failed", t);
             log("W", "Resource wiring: " + t.getMessage());
         }
 
@@ -665,6 +822,597 @@ public class WestlakeActivityThread {
         if (!attached) {
             log("D", "  Attached via direct field setting");
         }
+        WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity end");
+    }
+
+    private void ensureActivityWindow(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        android.view.Window window = null;
+        try {
+            window = activity.getWindow();
+        } catch (Throwable ignored) {
+        }
+        if (window == null) {
+            try {
+                android.view.Window fallback = new android.view.Window(activity);
+                fallback.setCallback(activity);
+                setInstanceField(activity, android.app.Activity.class, "mWindow", fallback);
+                window = fallback;
+                WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity fallback window created");
+            } catch (Throwable t) {
+                WestlakeLauncher.dumpThrowable(
+                        "[WestlakeActivityThread] attachActivity fallback window failed", t);
+                return;
+            }
+        }
+        try {
+            window.setCallback(activity);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] attachActivity window callback failed", t);
+        }
+    }
+
+    private void initializeAndroidxActivityState(Activity activity) {
+        boolean anySeeded = false;
+        try {
+            anySeeded |= initializeNamedCoreComponentActivityState(activity);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX core init failed", t);
+            log("W", "AndroidX core init failed: " + throwableTag(t));
+        }
+        try {
+            anySeeded |= initializeNamedComponentActivityState(activity);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX component init failed", t);
+            log("W", "AndroidX component init failed: " + throwableTag(t));
+        }
+        try {
+            anySeeded |= initializeNamedAppCompatActivityState(activity);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX appcompat init failed", t);
+            log("W", "AndroidX appcompat init failed: " + throwableTag(t));
+        }
+        if (anySeeded) {
+            WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX init complete");
+        }
+    }
+
+    private boolean initializeNamedCoreComponentActivityState(Activity activity) throws Exception {
+        Class<?> coreActivityClass =
+                findNamedClassOnHierarchy(activity.getClass(), "androidx.core.app.ComponentActivity");
+        if (coreActivityClass == null) {
+            return false;
+        }
+        ClassLoader loader = chooseClassLoader(coreActivityClass);
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX core init lifecycle");
+        Object lifecycleRegistry = null;
+        if (activity instanceof androidx.lifecycle.LifecycleOwner) {
+            lifecycleRegistry = new androidx.lifecycle.LifecycleRegistry(
+                    (androidx.lifecycle.LifecycleOwner) activity);
+        } else {
+            Class<?> lifecycleOwnerClass = loadNamedClass(loader, "androidx.lifecycle.LifecycleOwner");
+            lifecycleRegistry = newNamedInstance(loader, "androidx.lifecycle.LifecycleRegistry",
+                    new Class<?>[]{lifecycleOwnerClass}, new Object[]{activity});
+        }
+        setNamedFieldIfNull(activity, coreActivityClass, "lifecycleRegistry",
+                lifecycleRegistry);
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX core init extra data");
+        setNamedFieldIfNull(activity, coreActivityClass, "extraDataMap",
+                newNamedInstance(loader, "androidx.collection.SimpleArrayMap"));
+        return true;
+    }
+
+    private boolean initializeNamedComponentActivityState(Activity activity) throws Exception {
+        Class<?> componentActivityClass =
+                findNamedClassOnHierarchy(activity.getClass(), "androidx.activity.ComponentActivity");
+        if (componentActivityClass == null) {
+            return false;
+        }
+        ClassLoader loader = chooseClassLoader(componentActivityClass);
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX init context helper");
+        setNamedFieldIfNull(activity, componentActivityClass, "contextAwareHelper",
+                newNamedInstance(loader, "androidx.activity.contextaware.ContextAwareHelper"));
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX init menu host");
+        setNamedFieldIfNull(activity, componentActivityClass, "menuHostHelper",
+                newNamedInstance(loader, "androidx.core.view.MenuHostHelper",
+                        new Class<?>[]{Runnable.class},
+                        new Object[]{new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    activity.invalidateOptionsMenu();
+                                } catch (Throwable ignored) {
+                                }
+                            }
+                        }}));
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX init saved state");
+        Object savedStateController = newSavedStateRegistryController(loader, activity);
+        if (savedStateController != null) {
+            // Constructor-bypassed APK-owned ComponentActivity expects this final field to
+            // exist before onCreate() runs; write it directly and verify the readback.
+            setNamedField(activity, componentActivityClass, "savedStateRegistryController",
+                    savedStateController);
+            Object savedStateReadback = getNamedField(activity, componentActivityClass,
+                    "savedStateRegistryController");
+            Log.i(TAG, "savedState controller write="
+                    + describeObject(savedStateController)
+                    + " readback=" + describeObject(savedStateReadback));
+            log("I", "AndroidX saved-state controller="
+                    + describeObject(savedStateController)
+                    + " readback=" + describeObject(savedStateReadback));
+            invokeNoArgIfPresent(savedStateReadback, "c", "performAttach");
+            enableNamedSavedStateHandles(loader, activity);
+            log("I", "AndroidX saved-state attach invoked for "
+                    + componentActivityClass.getName());
+            return true;
+        }
+        return false;
+    }
+
+    private boolean initializeNamedAppCompatActivityState(Activity activity) throws Exception {
+        Class<?> appCompatActivityClass =
+                findNamedClassOnHierarchy(activity.getClass(), "androidx.appcompat.app.AppCompatActivity");
+        if (appCompatActivityClass == null) {
+            return false;
+        }
+        WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX appcompat init");
+        invokeNoArgIfPresent(activity, appCompatActivityClass, "Z");
+        return true;
+    }
+
+    private Object newSavedStateRegistryController(ClassLoader loader, Activity activity) {
+        try {
+            Class<?> appControllerClass =
+                    loadNamedClassChildFirst(loader,
+                            "androidx.savedstate.SavedStateRegistryController");
+            Class<?> appOwnerClass =
+                    loadNamedClassChildFirst(loader,
+                            "androidx.savedstate.SavedStateRegistryOwner");
+            Log.i(TAG, "savedState app classes controller="
+                    + describeClass(appControllerClass)
+                    + " owner=" + describeClass(appOwnerClass)
+                    + " activity=" + describeObject(activity));
+            if (appControllerClass != null
+                    && appOwnerClass != null
+                    && appOwnerClass.isInstance(activity)) {
+                Object appController = buildSavedStateRegistryController(
+                        appControllerClass,
+                        appOwnerClass,
+                        activity,
+                        "[WestlakeActivityThread] app SavedStateRegistryController");
+                if (appController != null) {
+                    return appController;
+                }
+            }
+
+            Class<?> controllerClass =
+                    loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryController");
+            Class<?> ownerClass =
+                    loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryOwner");
+            Object controller = buildSavedStateRegistryController(
+                    controllerClass,
+                    ownerClass,
+                    activity,
+                    "[WestlakeActivityThread] SavedStateRegistryController");
+            if (controller != null) {
+                return controller;
+            }
+            return null;
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] SavedStateRegistryController init", t);
+            return null;
+        }
+    }
+
+    private Object buildSavedStateRegistryController(Class<?> controllerClass,
+                                                     Class<?> ownerClass,
+                                                     Activity activity,
+                                                     String label) {
+        if (controllerClass == null
+                || ownerClass == null
+                || activity == null
+                || !ownerClass.isInstance(activity)) {
+            return null;
+        }
+        Object controller = invokeStaticSingleArgIfPresent(controllerClass, "a", ownerClass, activity);
+        if (controller != null) {
+            return controller;
+        }
+        controller = invokeStaticSingleArgIfPresent(controllerClass, "create", ownerClass, activity);
+        if (controller != null) {
+            return controller;
+        }
+        try {
+            java.lang.reflect.Field companionField = controllerClass.getDeclaredField("c");
+            companionField.setAccessible(true);
+            Object companion = companionField.get(null);
+            controller = invokeSingleArgIfPresent(companion, "b", ownerClass, activity);
+            if (controller != null) {
+                return controller;
+            }
+        } catch (NoSuchFieldException ignored) {
+        } catch (Throwable companionError) {
+            WestlakeLauncher.dumpThrowable(label + " companion", companionError);
+        }
+        return null;
+    }
+
+    private void enableNamedSavedStateHandles(ClassLoader loader, Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        try {
+            Class<?> appSupportClass =
+                    loadNamedClassChildFirst(loader,
+                            "androidx.lifecycle.SavedStateHandleSupport");
+            Class<?> appOwnerClass =
+                    loadNamedClassChildFirst(loader,
+                            "androidx.savedstate.SavedStateRegistryOwner");
+            if (appSupportClass != null
+                    && appOwnerClass != null
+                    && appOwnerClass.isInstance(activity)) {
+                invokeStaticSingleArgIfPresent(appSupportClass, "c", appOwnerClass, activity);
+                return;
+            }
+
+            Class<?> supportClass =
+                    loadNamedClass(loader, "androidx.lifecycle.SavedStateHandleSupport");
+            Class<?> ownerClass =
+                    loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryOwner");
+            invokeStaticSingleArgIfPresent(supportClass, "c", ownerClass, activity);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] SavedStateHandleSupport enable", t);
+        }
+    }
+
+    private void setInstanceFieldIfNull(Object target, Class<?> owner, String fieldName, Object value)
+            throws Exception {
+        java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        Object current = field.get(target);
+        if (current == null) {
+            field.set(target, value);
+        }
+    }
+
+    private void setInstanceField(Object target, Class<?> owner, String fieldName, Object value)
+            throws Exception {
+        java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
+    }
+
+    private void setNamedFieldIfNull(Object target, Class<?> owner, String fieldName, Object value)
+            throws Exception {
+        if (target == null || owner == null || value == null) {
+            return;
+        }
+        java.lang.reflect.Field field = findFieldOnHierarchy(owner, fieldName);
+        if (field == null) {
+            return;
+        }
+        field.setAccessible(true);
+        Object current = field.get(target);
+        if (current == null) {
+            setFieldValue(target, field, value);
+        }
+    }
+
+    private void setNamedField(Object target, Class<?> owner, String fieldName, Object value)
+            throws Exception {
+        if (target == null || owner == null || value == null) {
+            return;
+        }
+        java.lang.reflect.Field field = findFieldOnHierarchy(owner, fieldName);
+        if (field == null) {
+            return;
+        }
+        setFieldValue(target, field, value);
+    }
+
+    private Object getNamedField(Object target, Class<?> owner, String fieldName) throws Exception {
+        if (target == null || owner == null) {
+            return null;
+        }
+        java.lang.reflect.Field field = findFieldOnHierarchy(owner, fieldName);
+        if (field == null) {
+            return null;
+        }
+        field.setAccessible(true);
+        return field.get(target);
+    }
+
+    private void setFieldValue(Object target, java.lang.reflect.Field field, Object value)
+            throws Exception {
+        if (target == null || field == null) {
+            return;
+        }
+        field.setAccessible(true);
+        try {
+            field.set(target, value);
+            Object current = field.get(target);
+            if (current == value || (current != null && current.equals(value))) {
+                return;
+            }
+        } catch (Throwable ignored) {
+        }
+        forceSetFieldViaUnsafe(target, field, value);
+    }
+
+    private void forceSetFieldViaUnsafe(Object target, java.lang.reflect.Field field, Object value)
+            throws Exception {
+        Throwable lastError = null;
+        String[] unsafeClasses = {"jdk.internal.misc.Unsafe", "sun.misc.Unsafe"};
+        for (String unsafeName : unsafeClasses) {
+            try {
+                Class<?> unsafeClass = Class.forName(unsafeName);
+                java.lang.reflect.Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+                unsafeField.setAccessible(true);
+                Object unsafe = unsafeField.get(null);
+                long offset = ((Number) unsafeClass
+                        .getMethod("objectFieldOffset", java.lang.reflect.Field.class)
+                        .invoke(unsafe, field)).longValue();
+                unsafeClass.getMethod("putObject", Object.class, long.class, Object.class)
+                        .invoke(unsafe, target, offset, value);
+                return;
+            } catch (Throwable t) {
+                lastError = t;
+            }
+        }
+        if (lastError instanceof Exception) {
+            throw (Exception) lastError;
+        }
+        if (lastError instanceof Error) {
+            throw (Error) lastError;
+        }
+        throw new IllegalStateException("Unable to force-set field " + field.getName());
+    }
+
+    private Object newNamedOwnedInstance(ClassLoader loader, String className,
+                                         Class<?> ownerClass, Object ownerInstance,
+                                         String errorLabel) {
+        try {
+            return newNamedInstance(loader, className, new Class<?>[]{ownerClass},
+                    new Object[]{ownerInstance});
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(errorLabel, t);
+            return null;
+        }
+    }
+
+    private Object newNamedLazy(ClassLoader loader, String producerClassName,
+                                Class<?> ownerClass, Object ownerInstance,
+                                String errorLabel) {
+        try {
+            Object producer = newNamedOwnedInstance(loader, producerClassName, ownerClass,
+                    ownerInstance, errorLabel);
+            if (producer == null) {
+                return null;
+            }
+            Class<?> function0Class = loadNamedClass(loader, "kotlin.jvm.functions.Function0");
+            Class<?> lazyKtClass = loadNamedClass(loader, "kotlin.LazyKt");
+            java.lang.reflect.Method method =
+                    findMethodOnHierarchy(lazyKtClass, "b", function0Class);
+            if (method == null || !java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+                return null;
+            }
+            method.setAccessible(true);
+            return method.invoke(null, producer);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(errorLabel, t);
+            return null;
+        }
+    }
+
+    private String describeObject(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        Class<?> cls = value.getClass();
+        ClassLoader loader = cls.getClassLoader();
+        return cls.getName() + " loader="
+                + (loader == null ? "bootstrap" : loader.getClass().getName());
+    }
+
+    private String describeClass(Class<?> cls) {
+        if (cls == null) {
+            return "null";
+        }
+        ClassLoader loader = cls.getClassLoader();
+        return cls.getName() + " loader="
+                + (loader == null ? "bootstrap" : loader.getClass().getName());
+    }
+
+    private java.lang.reflect.Field findFieldOnHierarchy(Class<?> start, String fieldName) {
+        Class<?> current = start;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ignored) {
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private Class<?> findNamedClassOnHierarchy(Class<?> start, String className) {
+        Class<?> current = start;
+        while (current != null && current != Object.class) {
+            if (className.equals(current.getName())) {
+                return current;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private ClassLoader chooseClassLoader(Class<?> cls) {
+        if (cls != null && cls.getClassLoader() != null) {
+            return cls.getClassLoader();
+        }
+        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        if (contextLoader != null) {
+            return contextLoader;
+        }
+        return ClassLoader.getSystemClassLoader();
+    }
+
+    private Class<?> loadNamedClass(ClassLoader loader, String className) throws ClassNotFoundException {
+        if (loader != null) {
+            return Class.forName(className, false, loader);
+        }
+        return Class.forName(className);
+    }
+
+    private Class<?> loadNamedClassChildFirst(ClassLoader loader, String className)
+            throws ClassNotFoundException {
+        if (loader != null) {
+            try {
+                java.lang.reflect.Method findLoaded =
+                        ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+                findLoaded.setAccessible(true);
+                Object loaded = findLoaded.invoke(loader, className);
+                if (loaded instanceof Class<?>) {
+                    return (Class<?>) loaded;
+                }
+            } catch (Throwable ignored) {
+            }
+            try {
+                java.lang.reflect.Method findClass =
+                        findMethodOnHierarchy(loader.getClass(), "findClass", String.class);
+                if (findClass != null) {
+                    findClass.setAccessible(true);
+                    Object direct = findClass.invoke(loader, className);
+                    if (direct instanceof Class<?>) {
+                        return (Class<?>) direct;
+                    }
+                }
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (!(cause instanceof ClassNotFoundException)) {
+                    throw new ClassNotFoundException(className, cause);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        return loadNamedClass(loader, className);
+    }
+
+    private Object newNamedInstance(ClassLoader loader, String className) throws Exception {
+        Class<?> cls = loadNamedClass(loader, className);
+        java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        return ctor.newInstance();
+    }
+
+    private Object newNamedInstance(ClassLoader loader, String className,
+                                    Class<?>[] parameterTypes, Object[] args) throws Exception {
+        Class<?> cls = loadNamedClass(loader, className);
+        java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor(parameterTypes);
+        ctor.setAccessible(true);
+        return ctor.newInstance(args);
+    }
+
+    private Object invokeNoArgIfPresent(Object target, String... methodNames) {
+        if (target == null || methodNames == null) {
+            return null;
+        }
+        for (String methodName : methodNames) {
+            if (methodName == null || methodName.isEmpty()) {
+                continue;
+            }
+            try {
+                java.lang.reflect.Method method = findMethodOnHierarchy(target.getClass(), methodName);
+                if (method == null) {
+                    continue;
+                }
+                method.setAccessible(true);
+                return method.invoke(target);
+            } catch (Throwable t) {
+                WestlakeLauncher.dumpThrowable(
+                        "[WestlakeActivityThread] invoke " + methodName + " failed", t);
+            }
+        }
+        return null;
+    }
+
+    private Object invokeNoArgIfPresent(Object target, Class<?> owner, String... methodNames) {
+        if (owner == null) {
+            return null;
+        }
+        for (String methodName : methodNames) {
+            if (methodName == null || methodName.isEmpty()) {
+                continue;
+            }
+            try {
+                java.lang.reflect.Method method = findMethodOnHierarchy(owner, methodName);
+                if (method == null) {
+                    continue;
+                }
+                method.setAccessible(true);
+                return method.invoke(target);
+            } catch (Throwable t) {
+                WestlakeLauncher.dumpThrowable(
+                        "[WestlakeActivityThread] invoke " + methodName + " failed", t);
+            }
+        }
+        return null;
+    }
+
+    private Object invokeSingleArgIfPresent(Object target, String methodName,
+                                            Class<?> parameterType, Object arg) {
+        if (target == null || methodName == null) {
+            return null;
+        }
+        try {
+            java.lang.reflect.Method method =
+                    findMethodOnHierarchy(target.getClass(), methodName, parameterType);
+            if (method == null) {
+                return null;
+            }
+            method.setAccessible(true);
+            return method.invoke(target, arg);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] invoke " + methodName + " failed", t);
+            return null;
+        }
+    }
+
+    private Object invokeStaticSingleArgIfPresent(Class<?> owner, String methodName,
+                                                  Class<?> parameterType, Object arg) {
+        if (owner == null || methodName == null) {
+            return null;
+        }
+        try {
+            java.lang.reflect.Method method = findMethodOnHierarchy(owner, methodName, parameterType);
+            if (method == null || !java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+                return null;
+            }
+            method.setAccessible(true);
+            return method.invoke(null, arg);
+        } catch (Throwable t) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] invoke static " + methodName + " failed", t);
+            return null;
+        }
+    }
+
+    private java.lang.reflect.Method findMethodOnHierarchy(Class<?> start, String methodName,
+                                                           Class<?>... parameterTypes) {
+        Class<?> current = start;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredMethod(methodName, parameterTypes);
+            } catch (NoSuchMethodException ignored) {
+            }
+            current = current.getSuperclass();
+        }
+        return null;
     }
 
     /**
@@ -673,7 +1421,7 @@ public class WestlakeActivityThread {
      */
     private java.lang.reflect.Method findAttachMethod(Class<?> clazz) {
         while (clazz != null && clazz != Object.class) {
-            for (java.lang.reflect.Method m : clazz.getDeclaredMethods()) {
+            for (java.lang.reflect.Method m : safeGetDeclaredMethods(clazz)) {
                 if ("attach".equals(m.getName())
                         && m.getParameterCount() >= 6) {
                     return m;
@@ -1010,6 +1758,14 @@ public class WestlakeActivityThread {
         mPackageName = packageName;
         mClassLoader = classLoader;
         mLooper = Looper.getMainLooper();
+        try {
+            if (classLoader != null) {
+                Thread.currentThread().setContextClassLoader(classLoader);
+                WestlakeLauncher.patchProblematicAppClasses(classLoader);
+            }
+        } catch (Throwable t) {
+            log("W", "attach patchProblematicAppClasses failed: " + throwableSummary(t));
+        }
 
         // Create Instrumentation
         mInstrumentation = new WestlakeInstrumentation(this);
@@ -1019,10 +1775,38 @@ public class WestlakeActivityThread {
 
         // Reuse existing Application if available (avoid re-running blocking onCreate)
         try {
-            Application existing = MiniServer.get().getApplication();
+            Application existing = MiniServer.currentApplication();
             if (existing != null) {
-                mInitialApplication = existing;
-                log("I", "Reusing existing Application from MiniServer (skip makeApplication)");
+                String existingPkg = null;
+                try {
+                    existingPkg = existing.getPackageName();
+                } catch (Throwable ignored) {
+                }
+                if (isPlaceholderPackage(existingPkg)) {
+                    existingPkg = MiniServer.currentPackageName();
+                }
+                if (isPlaceholderPackage(existingPkg)) {
+                    try {
+                        existingPkg = System.getProperty("westlake.apk.package");
+                    } catch (Throwable ignored) {
+                    }
+                }
+                if (isPlaceholderPackage(existingPkg) && !isPlaceholderPackage(packageName)) {
+                    existingPkg = packageName;
+                    ShimCompat.setPackageName(existing, packageName);
+                    MiniServer.currentSetPackageName(packageName);
+                }
+                if (packageName != null
+                        && !packageName.isEmpty()
+                        && existingPkg != null
+                        && !existingPkg.isEmpty()
+                        && !packageName.equals(existingPkg)) {
+                    log("W", "Ignoring MiniServer Application package mismatch: existing="
+                            + existingPkg + " expected=" + packageName);
+                } else {
+                    mInitialApplication = existing;
+                    log("I", "Reusing existing Application from MiniServer (skip makeApplication)");
+                }
             }
         } catch (Exception ignored) {}
         if (mInitialApplication == null) {
@@ -1045,7 +1829,7 @@ public class WestlakeActivityThread {
                 ClassLoader appCl = mInitialApplication != null ? mInitialApplication.getClass().getClassLoader() : classLoader;
                 // Find DataSourceHelper and set its static fields from the singleton
                 Class<?> helperClass = appCl.loadClass("com.mcdonalds.mcdcoreapp.common.model.DataSourceHelper");
-                for (java.lang.reflect.Field f : helperClass.getDeclaredFields()) {
+                for (java.lang.reflect.Field f : safeGetDeclaredFields(helperClass)) {
                     if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
                     f.setAccessible(true);
                     if (f.get(null) != null) continue; // already set
@@ -1064,7 +1848,7 @@ public class WestlakeActivityThread {
                     } else if (fType.isInterface() || !fType.isPrimitive()) {
                         // Try ALL methods on the singleton that return the right type
                         boolean found = false;
-                        for (java.lang.reflect.Method m : singleton.getClass().getMethods()) {
+                        for (java.lang.reflect.Method m : safeGetMethods(singleton.getClass())) {
                             try {
                                 if (m.getParameterTypes().length == 0 && fType.isAssignableFrom(m.getReturnType())) {
                                     Object val = m.invoke(singleton);
@@ -1105,13 +1889,13 @@ public class WestlakeActivityThread {
                     log("I", "Created Crypto instance: " + crypto);
                     // Find and populate Crypto fields on ALL DataSourceHelper-cached objects
                     Class<?> dsh = appCl.loadClass("com.mcdonalds.mcdcoreapp.common.model.DataSourceHelper");
-                    for (java.lang.reflect.Field df : dsh.getDeclaredFields()) {
+                    for (java.lang.reflect.Field df : safeGetDeclaredFields(dsh)) {
                         if (!java.lang.reflect.Modifier.isStatic(df.getModifiers())) continue;
                         df.setAccessible(true);
                         Object obj = df.get(null);
                         if (obj == null) continue;
                         // Search this object's fields for Crypto-typed fields
-                        for (java.lang.reflect.Field of : obj.getClass().getDeclaredFields()) {
+                        for (java.lang.reflect.Field of : safeGetDeclaredFields(obj.getClass())) {
                             if (of.getType() == cryptoClass || of.getType().getName().contains("Crypto")) {
                                 of.setAccessible(true);
                                 if (of.get(obj) == null) {
@@ -1256,7 +2040,6 @@ public class WestlakeActivityThread {
 
             } catch (Exception e) {
                 log("E", "APK launch failed: " + e);
-                e.printStackTrace(System.err);
             }
             return;
         }
@@ -1290,7 +2073,7 @@ public class WestlakeActivityThread {
     /** Initialize any static helper class by populating its null fields from the singleton */
     private void initStaticHelperFromSingleton(ClassLoader cl, Object singleton, String className) throws Exception {
         Class<?> helperClass = cl.loadClass(className);
-        for (java.lang.reflect.Field f : helperClass.getDeclaredFields()) {
+        for (java.lang.reflect.Field f : safeGetDeclaredFields(helperClass)) {
             if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
             f.setAccessible(true);
             if (f.get(null) != null) continue;
@@ -1300,7 +2083,7 @@ public class WestlakeActivityThread {
             if (fType.isPrimitive()) continue;
             // Try singleton methods that return this type
             if (fType.isInstance(singleton)) { f.set(null, singleton); continue; }
-            for (java.lang.reflect.Method m : singleton.getClass().getMethods()) {
+            for (java.lang.reflect.Method m : safeGetMethods(singleton.getClass())) {
                 try {
                     if (m.getParameterTypes().length == 0 && fType.isAssignableFrom(m.getReturnType())) {
                         Object val = m.invoke(singleton);
@@ -1320,6 +2103,68 @@ public class WestlakeActivityThread {
     // ── Logging ────────────────────────────────────────────────────────────
 
     private static void log(String level, String msg) {
-        System.err.println(level + "/" + TAG + ": " + msg);
+        try {
+            WestlakeLauncher.trace("[" + TAG + "/" + level + "] " + msg);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static java.lang.reflect.Field[] safeGetDeclaredFields(Class<?> cls) {
+        if (cls == null) {
+            return new java.lang.reflect.Field[0];
+        }
+        try {
+            java.lang.reflect.Field[] fields = cls.getDeclaredFields();
+            if (fields != null) {
+                return fields;
+            }
+            log("W", "getDeclaredFields returned null for " + cls.getName());
+        } catch (Throwable t) {
+            log("W", "getDeclaredFields failed for " + cls.getName() + ": " + throwableTag(t));
+        }
+        return new java.lang.reflect.Field[0];
+    }
+
+    private static java.lang.reflect.Method[] safeGetDeclaredMethods(Class<?> cls) {
+        if (cls == null) {
+            return new java.lang.reflect.Method[0];
+        }
+        try {
+            java.lang.reflect.Method[] methods = cls.getDeclaredMethods();
+            if (methods != null) {
+                return methods;
+            }
+            log("W", "getDeclaredMethods returned null for " + cls.getName());
+        } catch (Throwable t) {
+            log("W", "getDeclaredMethods failed for " + cls.getName() + ": " + throwableTag(t));
+        }
+        return new java.lang.reflect.Method[0];
+    }
+
+    private static java.lang.reflect.Method[] safeGetMethods(Class<?> cls) {
+        if (cls == null) {
+            return new java.lang.reflect.Method[0];
+        }
+        try {
+            java.lang.reflect.Method[] methods = cls.getMethods();
+            if (methods != null) {
+                return methods;
+            }
+            log("W", "getMethods returned null for " + cls.getName());
+        } catch (Throwable t) {
+            log("W", "getMethods failed for " + cls.getName() + ": " + throwableTag(t));
+        }
+        return new java.lang.reflect.Method[0];
+    }
+
+    private static String throwableTag(Throwable t) {
+        if (t == null) {
+            return "null";
+        }
+        String message = t.getMessage();
+        if (message == null || message.isEmpty()) {
+            return t.getClass().getName();
+        }
+        return t.getClass().getName() + ": " + message;
     }
 }

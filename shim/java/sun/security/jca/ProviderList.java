@@ -25,8 +25,13 @@ public class ProviderList {
     public int size() { return providers.size(); }
     public Provider getProvider(int index) { return providers.get(index); }
 
-    public ProviderList.ServiceList getServices(String type, String algorithm) {
-        return new ServiceList(type, algorithm);
+    public List<Provider.Service> getServices(String type, String algorithm) {
+        List<Provider.Service> services = new ArrayList<>();
+        for (Provider p : providers) {
+            Provider.Service s = p.getService(type, algorithm);
+            if (s != null) services.add(s);
+        }
+        return services;
     }
 
     public Provider.Service getService(String type, String algorithm) {

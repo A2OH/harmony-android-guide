@@ -152,119 +152,14 @@ class WestlakeActivity : ComponentActivity() {
             return
         }
         if (className == "WESTLAKE_ART_MCD") {
-            Log.i(TAG, "Launching MCD via in-process Westlake ART engine")
-            // Mutable state for Compose UI
-            val statusLines = androidx.compose.runtime.mutableStateListOf<String>()
-            statusLines.add("Initializing Westlake ART v114...")
-
-            setContent {
-                androidx.compose.material3.Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF27251F) // MCD dark brown
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(16.dp)
-                    ) {
-                        // MCD-style header
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Westlake", fontSize = 28.sp, color = Color(0xFFFFC72C),
-                                fontWeight = FontWeight.Bold) // MCD gold
-                            Spacer(Modifier.width(8.dp))
-                            Text("ART Engine", fontSize = 20.sp, color = Color.White)
-                        }
-                        Text("McDonald's App via ART v114 Interpreter",
-                            fontSize = 14.sp, color = Color(0xFFDA291C), // MCD red
-                            modifier = Modifier.padding(bottom = 12.dp))
-                        // Scrollable status output
-                        androidx.compose.foundation.lazy.LazyColumn(
-                            modifier = Modifier.fillMaxSize()
-                                .background(Color(0xFF1A1A1A), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                                .padding(12.dp)
-                        ) {
-                            items(statusLines.size) { i ->
-                                val line = statusLines[i]
-                                val color = when {
-                                    line.startsWith("[OK]") -> Color(0xFF4CAF50)
-                                    line.startsWith("[FAIL]") -> Color(0xFFDA291C)
-                                    line.startsWith("===") -> Color(0xFFFFC72C)
-                                    line.startsWith("  ") -> Color(0xFF888888)
-                                    else -> Color(0xFFCCCCCC)
-                                }
-                                Text(line, fontSize = 13.sp, color = color,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                            }
-                        }
-                    }
-                }
-            }
-
-            com.westlake.engine.WestlakeEngine.init()
-            Thread {
-                val dir = "/data/local/tmp/westlake"
-                val bcp = "core-oj-a15.jar:core-libart-a15.jar:art-patch.jar:framework.jar"
-                val mcdDexes = (1..33).joinToString(":") { i ->
-                    if (i == 1) "mcd_classes.dex" else "mcd_classes$i.dex"
-                }
-                val rc = com.westlake.engine.WestlakeEngine.start(
-                    bootClassPath = "$bcp:$dir/mcdloader.jar:$mcdDexes",
-                    dexPaths = "",
-                    mainClass = "McdLoader",
-                    args = emptyArray()
-                )
-                Log.i(TAG, "Westlake ART engine returned: $rc")
-
-                // Read engine stderr log and display in Compose UI
-                val stderrFile = java.io.File(cacheDir, "stderr.log")
-                runOnUiThread {
-                    statusLines.clear()
-                    if (stderrFile.exists()) {
-                        stderrFile.readLines().forEach { line ->
-                            // Filter to show only [OK], [FAIL], ===, hierarchy lines etc.
-                            val trimmed = line.trim()
-                            if (trimmed.startsWith("[OK]") || trimmed.startsWith("[FAIL]") ||
-                                trimmed.startsWith("[--]") || trimmed.startsWith("===") ||
-                                trimmed.startsWith("Running") || trimmed.startsWith("Class hierarchy") ||
-                                trimmed.startsWith("SplashActivity methods") ||
-                                trimmed.startsWith("Attempting") ||
-                                (trimmed.startsWith("  ") && (trimmed.contains("com.") || trimmed.contains("android.") ||
-                                 trimmed.contains("java.") || trimmed.contains("androidx.") || trimmed.contains("void ") ||
-                                 trimmed.contains("kotlin.")))) {
-                                statusLines.add(trimmed)
-                            }
-                        }
-                    }
-                    if (rc == 0) {
-                        statusLines.add("")
-                        statusLines.add("[OK] Engine completed successfully")
-                    } else {
-                        statusLines.add("[FAIL] Engine returned: $rc")
-                    }
-                }
-
-                // After engine validates MCD classes, launch the real SplashActivity
-                if (rc == 0) {
-                    Thread.sleep(2000) // Show results for 2 seconds
-                    runOnUiThread {
-                        try {
-                            val intent = android.content.Intent()
-                            intent.setClassName("com.mcdonalds.app",
-                                "com.mcdonalds.mcdcoreapp.common.activity.SplashActivity")
-                            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                            Log.i(TAG, "MCD SplashActivity launched via Westlake!")
-                        } catch (e: Exception) {
-                            Log.e(TAG, "MCD launch failed: ${e.message}")
-                            runOnUiThread {
-                                statusLines.add("")
-                                statusLines.add("[FAIL] Could not launch MCD Activity: ${e.message}")
-                            }
-                        }
-                    }
-                }
-            }.start()
+            Log.i(TAG, "Launching MCD via Westlake ART VM")
+            val config = ApkVmConfig(
+                packageName = "com.mcdonalds.app",
+                activityName = "com.mcdonalds.mcdcoreapp.common.activity.SplashActivity",
+                displayName = "McDonald's (ART)",
+                allowRealFrameworkFallback = false
+            )
+            setContent { WestlakeVMApkScreen(config) }
             return
         }
         if (className == "WESTLAKE_VM_MCD") {

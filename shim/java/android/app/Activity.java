@@ -127,13 +127,29 @@ public class Activity extends Context implements android.view.Window.Callback {
 
     @Override
     public String getPackageName() {
-        if (mComponent != null) return mComponent.getPackageName();
-        // Fall back to host's package name (useful during APK loading)
+        if (mComponent != null) {
+            String pkg = mComponent.getPackageName();
+            if (pkg != null && !pkg.isEmpty()) return pkg;
+        }
+        if (mApplication != null) {
+            String appPkg = mApplication.getPackageName();
+            if (appPkg != null && !appPkg.isEmpty()) return appPkg;
+        }
+        try {
+            MiniServer server = MiniServer.get();
+            if (server != null) {
+                String serverPkg = server.getPackageName();
+                if (serverPkg != null && !serverPkg.isEmpty()) return serverPkg;
+            }
+        } catch (Throwable ignored) {
+        }
+        String propPkg = System.getProperty("westlake.apk.package");
+        if (propPkg != null && !propPkg.isEmpty()) return propPkg;
         if (HostBridge.hasHost()) {
             String hostPkg = HostBridge.getHostPackageName();
-            if (hostPkg != null) return hostPkg;
+            if (hostPkg != null && !hostPkg.isEmpty()) return hostPkg;
         }
-        return null;
+        return "";
     }
 
     // ── HostBridge-delegating overrides ────────────────────────────────────
@@ -171,6 +187,9 @@ public class Activity extends Context implements android.view.Window.Callback {
 
     @Override
     public Object getSystemService(String name) {
+        if (Context.LAYOUT_INFLATER_SERVICE.equals(name)) {
+            return new android.view.LayoutInflater(this);
+        }
         // Delegate to host's real system services for real functionality
         if (HostBridge.hasHost()) {
             Object service = HostBridge.getHostSystemService(name);
@@ -270,17 +289,21 @@ public class Activity extends Context implements android.view.Window.Callback {
 
         // Re-layout when content changed
         if (!mLayoutDone || decorView != mLastDecorView) {
-            DefaultTheme.applyToViewTree(decorView);
+            try {
+                DefaultTheme.applyToViewTree(decorView);
+            } catch (Throwable ignored) {
+            }
             int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(mSurfaceWidth, android.view.View.MeasureSpec.EXACTLY);
             int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(mSurfaceHeight, android.view.View.MeasureSpec.EXACTLY);
             decorView.measure(wSpec, hSpec);
             decorView.layout(0, 0, mSurfaceWidth, mSurfaceHeight);
             // Force BottomNavigationView to bottom of screen after layout
-            fixBottomNav(decorView, mSurfaceWidth, mSurfaceHeight);
+            try {
+                fixBottomNav(decorView, mSurfaceWidth, mSurfaceHeight);
+            } catch (Throwable ignored) {
+            }
             mLayoutDone = true;
             mLastDecorView = decorView;
-            // Dump view tree bounds for debugging
-            dumpViewTree(decorView, "", 0);
         }
 
         long canvasHandle = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(mSurfaceCtx);
@@ -315,7 +338,15 @@ public class Activity extends Context implements android.view.Window.Callback {
 
     /** Force BottomNavigationView to bottom of screen after layout pass */
     private void fixBottomNav(android.view.View root, int screenW, int screenH) {
-        if (root.getClass().getSimpleName().contains("BottomNavigationView")) {
+        if (root == null) {
+            return;
+        }
+        String simpleName = null;
+        try {
+            simpleName = root.getClass().getSimpleName();
+        } catch (Throwable ignored) {
+        }
+        if (simpleName != null && simpleName.contains("BottomNavigationView")) {
             int navH = root.getMeasuredHeight();
             if (navH < 50) navH = 112;
             root.layout(0, screenH - navH, screenW, screenH);
@@ -356,7 +387,10 @@ public class Activity extends Context implements android.view.Window.Callback {
         if (decorView == null) return;
 
         if (!mLayoutDone || decorView != mLastDecorView) {
-            DefaultTheme.applyToViewTree(decorView);
+            try {
+                DefaultTheme.applyToViewTree(decorView);
+            } catch (Throwable ignored) {
+            }
             int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY);
             int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(height, android.view.View.MeasureSpec.EXACTLY);
             decorView.measure(wSpec, hSpec);

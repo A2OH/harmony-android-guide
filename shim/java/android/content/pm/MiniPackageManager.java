@@ -41,6 +41,12 @@ public class MiniPackageManager {
 
     public String getPackageName() { return mPackageName; }
 
+    public void setPackageName(String packageName) {
+        if (packageName != null && !packageName.isEmpty()) {
+            mPackageName = packageName;
+        }
+    }
+
     // ── Registration API ────────────────────────────────────────────────────
 
     /**

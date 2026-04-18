@@ -2327,7 +2327,26 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * a Rect. :)
      */
     static final ThreadLocal<Rect> sThreadLocal = new ThreadLocal<Rect>() {
-        @Override protected Rect initialValue() { return new Rect(); }
+        private final Rect mRect = new Rect();
+
+        @Override
+        public Rect get() {
+            return mRect;
+        }
+
+        @Override
+        public void set(Rect value) {
+            if (value == null) {
+                mRect.setEmpty();
+            } else {
+                mRect.set(value);
+            }
+        }
+
+        @Override
+        protected Rect initialValue() {
+            return mRect;
+        }
     };
 
     /**
@@ -6297,8 +6316,19 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             }
 
             final int id = mHostView.getId();
-            final String idText = id == NO_ID ? "" : " with id '"
-                    + mHostView.getContext().getResources().getResourceEntryName(id) + "'";
+            String idText = "";
+            if (id != NO_ID) {
+                String entryName = null;
+                try {
+                    final Context hostContext = mHostView.getContext();
+                    final Resources hostResources = hostContext != null ? hostContext.getResources() : null;
+                    if (hostResources != null) {
+                        entryName = hostResources.getResourceEntryName(id);
+                    }
+                } catch (Throwable ignored) {
+                }
+                idText = " with id '" + (entryName != null ? entryName : ("0x" + Integer.toHexString(id))) + "'";
+            }
             throw new IllegalStateException("Could not find method " + mMethodName
                     + "(View) in a parent or ancestor Context for android:onClick "
                     + "attribute defined on view " + mHostView.getClass() + idText);
@@ -6490,6 +6520,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             if (id > 0 && Resources.resourceHasPackage(id) && r != null) {
                 try {
                     String pkgname;
+                    String typename = null;
+                    String entryname = null;
                     switch (id&0xff000000) {
                         case 0x7f000000:
                             pkgname="app";
@@ -6501,15 +6533,15 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                             pkgname = r.getResourcePackageName(id);
                             break;
                     }
-                    String typename = r.getResourceTypeName(id);
-                    String entryname = r.getResourceEntryName(id);
+                    typename = r.getResourceTypeName(id);
+                    entryname = r.getResourceEntryName(id);
                     out.append(" ");
                     out.append(pkgname);
                     out.append(":");
                     out.append(typename);
                     out.append("/");
                     out.append(entryname);
-                } catch (Resources.NotFoundException e) {
+                } catch (Throwable e) {
                 }
             }
         }
@@ -8847,10 +8879,16 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             String pkg, type, entry;
             try {
                 final Resources res = getResources();
-                entry = res.getResourceEntryName(id);
-                type = res.getResourceTypeName(id);
-                pkg = res.getResourcePackageName(id);
+                if (res != null) {
+                    entry = res.getResourceEntryName(id);
+                    type = res.getResourceTypeName(id);
+                    pkg = res.getResourcePackageName(id);
+                } else {
+                    entry = type = pkg = null;
+                }
             } catch (Resources.NotFoundException e) {
+                entry = type = pkg = null;
+            } catch (Throwable t) {
                 entry = type = pkg = null;
             }
             structure.setId(id, pkg, type, entry);
@@ -9464,10 +9502,14 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             String entry = null;
             String pkg = null;
             try {
-                entry = res.getResourceEntryName(id);
-                pkg = res.getResourcePackageName(id);
+                if (res != null) {
+                    entry = res.getResourceEntryName(id);
+                    pkg = res.getResourcePackageName(id);
+                }
             } catch (Resources.NotFoundException e) {
                 // ignore
+            } catch (Throwable t) {
+                // ignore broken resource lookups in the standalone shim runtime
             }
             if (entry != null && pkg != null && pkg.equals(mContext.getPackageName())) {
                 return true;
@@ -23694,10 +23736,21 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         if (background != null) {
-            Rect padding = sThreadLocal.get();
-            if (padding == null) {
+            // Standalone ART sometimes trips over ThreadLocal map setup during early
+            // bootstrap. Fall back to an ephemeral Rect instead of crashing background
+            // installation for otherwise-valid views like ScrollView.
+            Rect padding;
+            try {
+                padding = sThreadLocal.get();
+                if (padding == null) {
+                    padding = new Rect();
+                    try {
+                        sThreadLocal.set(padding);
+                    } catch (Throwable ignored) {
+                    }
+                }
+            } catch (Throwable ignored) {
                 padding = new Rect();
-                sThreadLocal.set(padding);
             }
             resetResolvedDrawablesInternal();
             background.setLayoutDirection(getLayoutDirection());
@@ -30098,6 +30151,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * on the screen.
      */
     boolean shouldDrawRoundScrollbar() {
+        // Westlake does not target wearable round-scrollbar rendering, and the
+        // standalone ART path is still unstable around attribute/theme lookups
+        // that get pulled in during layout. Keep this disabled in the shim.
+        return false;
+
+        /*
         if (!mResources.getConfiguration().isScreenRound() || mAttachInfo == null) {
             return false;
         }
@@ -30117,6 +30176,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         getLocationInWindow(mAttachInfo.mTmpLocation);
         return mAttachInfo.mTmpLocation[0] == insets.getStableInsetLeft()
                 && mAttachInfo.mTmpLocation[1] == insets.getStableInsetTop();
+        */
     }
 
     /**

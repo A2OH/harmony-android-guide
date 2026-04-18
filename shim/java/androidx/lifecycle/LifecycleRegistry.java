@@ -9,6 +9,7 @@ public class LifecycleRegistry extends Lifecycle {
     private final LifecycleOwner mOwner;
 
     public LifecycleRegistry(LifecycleOwner owner) { mOwner = owner; }
+    public LifecycleRegistry(LifecycleOwner owner, boolean enforceMainThread) { this(owner); }
 
     @Override public void addObserver(LifecycleObserver observer) {
         if (observer != null) mObservers.add(observer);
@@ -32,4 +33,12 @@ public class LifecycleRegistry extends Lifecycle {
     }
     public void markState(State state) { mState = state; }
     public int getObserverCount() { return mObservers.size(); }
+
+    // AndroidX-obfuscated aliases used by app-shipped activity/fragment code.
+    public State d() { return getCurrentState(); }
+    public void g(LifecycleObserver observer) { removeObserver(observer); }
+    public void l(Event event) { handleLifecycleEvent(event); }
+    public void n(State state) { markState(state); }
+    public void p(State state) { markState(state); }
+    public void q(State state) { setCurrentState(state); }
 }

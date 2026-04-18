@@ -8,7 +8,97 @@ public final class ComponentName implements Parcelable, Comparable<ComponentName
     private final String mPackage;
     private final String mClass;
 
+    private static boolean isUsablePackage(String pkg) {
+        if (pkg == null || pkg.isEmpty()) {
+            return false;
+        }
+        return !"app".equals(pkg) && !"com.example.app".equals(pkg);
+    }
+
+    private static String knownPackageForClass(String cls) {
+        if (cls == null || cls.isEmpty()) {
+            return null;
+        }
+        if (cls.startsWith("com.mcdonalds.")) {
+            return "com.mcdonalds.app";
+        }
+        return null;
+    }
+
+    private static String fallbackPackage(String cls) {
+        try {
+            String pkg = System.getProperty("westlake.apk.package");
+            if (isUsablePackage(pkg)) {
+                return pkg;
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            String pkg = android.app.MiniServer.currentPackageName();
+            if (isUsablePackage(pkg)) {
+                return pkg;
+            }
+        } catch (Throwable ignored) {
+        }
+        String pkg = knownPackageForClass(cls);
+        if (isUsablePackage(pkg)) {
+            return pkg;
+        }
+        try {
+            android.app.MiniServer server = android.app.MiniServer.peek();
+            if (server != null) {
+                pkg = server.getPackageName();
+                if (isUsablePackage(pkg)) {
+                    return pkg;
+                }
+                android.app.Application app = server.getApplication();
+                if (app != null) {
+                    pkg = app.getPackageName();
+                    if (isUsablePackage(pkg)) {
+                        return pkg;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            android.app.Application currentApp = android.app.MiniServer.currentApplication();
+            if (currentApp != null) {
+                pkg = currentApp.getPackageName();
+                if (isUsablePackage(pkg)) {
+                    return pkg;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            if (android.app.HostBridge.hasHost()) {
+                pkg = android.app.HostBridge.getHostPackageName();
+            }
+        } catch (Throwable ignored) {
+            pkg = null;
+        }
+        if (isUsablePackage(pkg)) {
+            String knownPkg = knownPackageForClass(cls);
+            if (isUsablePackage(knownPkg) && !pkg.equals(knownPkg)) {
+                return knownPkg;
+            }
+            if (isUsablePackage(pkg)) {
+                return pkg;
+            }
+        }
+        return knownPackageForClass(cls);
+    }
+
     public ComponentName(String pkg, String cls) {
+        if (pkg == null || pkg.isEmpty()) {
+            String fallback = fallbackPackage(cls);
+            if (fallback != null && !fallback.isEmpty()) {
+                android.util.Log.w("ComponentName", "Recovered missing package for "
+                        + cls + " -> " + fallback);
+                pkg = fallback;
+            }
+        }
         if (pkg == null) throw new IllegalArgumentException("package name is null");
         if (cls == null) throw new IllegalArgumentException("class name is null");
         mPackage = pkg;

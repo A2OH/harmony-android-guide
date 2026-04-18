@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
 
+import com.westlake.engine.WestlakeLauncher;
+
 /**
  * WestlakeInstrumentation -- enhanced Instrumentation for the Westlake Engine.
  *
@@ -29,6 +31,67 @@ import android.os.PersistableBundle;
 public class WestlakeInstrumentation extends Instrumentation {
 
     private static final String TAG = "WestlakeInstrumentation";
+
+    private static String throwableSummary(Throwable t) {
+        if (t == null) {
+            return "null";
+        }
+        String message = null;
+        try {
+            message = t.getMessage();
+        } catch (Throwable ignored) {
+        }
+        if (message == null || message.isEmpty()) {
+            return t.getClass().getName();
+        }
+        return t.getClass().getName() + ": " + message;
+    }
+
+    private static java.lang.reflect.Field findFieldInHierarchy(Class<?> type, String name) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Field field = c.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException ignored) {
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private void seedCtorBypassedHiltActivityState(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        boolean isHiltActivity = false;
+        for (Class<?> c = activity.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            if (c.getName().contains("Hilt_")) {
+                isHiltActivity = true;
+                break;
+            }
+        }
+        if (!isHiltActivity) {
+            return;
+        }
+        try {
+            java.lang.reflect.Field lockField =
+                    findFieldInHierarchy(activity.getClass(), "componentManagerLock");
+            if (lockField != null && lockField.get(activity) == null) {
+                lockField.set(activity, new Object());
+            }
+            java.lang.reflect.Field injectedField =
+                    findFieldInHierarchy(activity.getClass(), "injected");
+            if (injectedField != null) {
+                injectedField.setBoolean(activity, false);
+            }
+            log("I", "Seeded ctor-bypassed Hilt activity state for "
+                    + activity.getClass().getSimpleName());
+        } catch (Throwable t) {
+            log("W", "seedCtorBypassedHiltActivityState failed: " + throwableSummary(t));
+        }
+    }
 
     /** Back-reference to the ActivityThread that owns us. */
     private final WestlakeActivityThread mThread;
@@ -85,37 +148,46 @@ public class WestlakeInstrumentation extends Instrumentation {
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
         Activity activity = null;
+        WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity begin: " + className);
 
         // Try AppComponentFactory first (for Hilt / custom factory support)
         AppComponentFactory factory = getFactory();
         try {
             activity = factory.instantiateActivity(cl, className, intent);
             if (activity != null) {
+                WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity factory OK: "
+                        + activity.getClass().getName());
                 log("D", "newActivity via AppComponentFactory: " + className
                         + " -> " + activity.getClass().getName());
             }
         } catch (Exception e) {
-            log("W", "AppComponentFactory.instantiateActivity failed for " + className
-                    + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeInstrumentation] newActivity factory failed", e);
+            WestlakeLauncher.trace(
+                    "[WestlakeInstrumentation] newActivity factory -> fallback allocate");
             // Fall through to manual creation
         }
 
         // Fallback: direct class loading
         if (activity == null) {
-            try {
-                Class<?> clazz = cl.loadClass(className);
-                activity = (Activity) clazz.getDeclaredConstructor().newInstance();
-                log("D", "newActivity via reflection: " + className);
-            } catch (java.lang.reflect.InvocationTargetException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-                throw new InstantiationException(
-                        "Failed to instantiate " + className + ": " + cause);
-            } catch (NoSuchMethodException e) {
-                // No zero-arg constructor, try newInstance() on class directly
-                Class<?> clazz = cl.loadClass(className);
-                activity = (Activity) clazz.newInstance();
-                log("D", "newActivity via Class.newInstance(): " + className);
+            WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity fallback allocate: "
+                    + className);
+            Class<?> clazz = WestlakeLauncher.resolveAppClassOrNull(className);
+            if (clazz == null) {
+                try {
+                    clazz = Class.forName(className, false, cl);
+                } catch (Throwable ignored) {
+                }
+            }
+            if (clazz == null) {
+                clazz = cl.loadClass(className);
+            }
+            WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity fallback class: "
+                    + (clazz != null ? clazz.getName() : "null"));
+            activity = allocateActivity(clazz, className, null);
+            if (activity != null) {
+                WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity fallback OK: "
+                        + activity.getClass().getName());
             }
         }
 
@@ -126,7 +198,73 @@ public class WestlakeInstrumentation extends Instrumentation {
             }
         }
 
+        WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity done: "
+                + (activity != null ? activity.getClass().getName() : "null"));
         return activity;
+    }
+
+    private Activity allocateActivity(Class<?> clazz, String className, Throwable cause)
+            throws InstantiationException, IllegalAccessException {
+        if (clazz == null) {
+            InstantiationException wrapped =
+                    new InstantiationException("Failed to instantiate " + className + ": null class");
+            if (cause != null) {
+                wrapped.initCause(cause);
+            }
+            throw wrapped;
+        }
+        WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity start: "
+                + clazz.getName());
+        Object nativeInstance = WestlakeLauncher.tryAllocInstance(clazz);
+        if (nativeInstance instanceof Activity) {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity native OK");
+            log("W", "newActivity via nativeAllocInstance(): " + className);
+            return (Activity) nativeInstance;
+        }
+        WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity native miss: "
+                + (nativeInstance != null ? nativeInstance.getClass().getName() : "null"));
+        try {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity sun Unsafe begin");
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            Object unsafe = field.get(null);
+            Activity activity = (Activity) unsafeClass.getMethod("allocateInstance", Class.class)
+                    .invoke(unsafe, clazz);
+            WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity sun Unsafe OK");
+            log("W", "newActivity via Unsafe.allocateInstance(): " + className);
+            return activity;
+        } catch (Throwable ignored) {
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeInstrumentation] allocateActivity sun Unsafe failed", ignored);
+            try {
+                WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity jdk Unsafe begin");
+                Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
+                java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+                field.setAccessible(true);
+                Object unsafe = field.get(null);
+                Activity activity = (Activity) unsafeClass.getMethod("allocateInstance", Class.class)
+                        .invoke(unsafe, clazz);
+                WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity jdk Unsafe OK");
+                log("W", "newActivity via jdk Unsafe.allocateInstance(): " + className);
+                return activity;
+            } catch (Throwable ignoredToo) {
+                WestlakeLauncher.dumpThrowable(
+                        "[WestlakeInstrumentation] allocateActivity jdk Unsafe failed", ignoredToo);
+                if (cause instanceof InstantiationException) {
+                    throw (InstantiationException) cause;
+                }
+                if (cause instanceof IllegalAccessException) {
+                    throw (IllegalAccessException) cause;
+                }
+                InstantiationException wrapped =
+                        new InstantiationException("Failed to instantiate " + className + ": " + cause);
+                if (cause != null) {
+                    wrapped.initCause(cause);
+                }
+                throw wrapped;
+            }
+        }
     }
 
     // ── Lifecycle dispatch ──────────────────────────────────────────────────
@@ -136,184 +274,81 @@ public class WestlakeInstrumentation extends Instrumentation {
      */
     @Override
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
-        // Dispatch pre-create callbacks
-        dispatchLifecycleCallback("onActivityPreCreated", activity, icicle);
-
-        // Dump ALL null fields on BaseActivity and its supers
+        WestlakeLauncher.trace("[WestlakeInstrumentation] callActivityOnCreate begin: "
+                + activity.getClass().getName());
         try {
-            Class<?> cls = activity.getClass();
-            while (cls != null && !cls.getName().equals("java.lang.Object")) {
-                if (cls.getSimpleName().contains("BaseActivity") || cls.getSimpleName().contains("McdLauncher")) {
-                    for (java.lang.reflect.Field f : cls.getDeclaredFields()) {
-                        if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
-                        f.setAccessible(true);
-                        Object v = f.get(activity);
-                        if (v == null) System.err.println("[FIELDS] " + cls.getSimpleName() + "." + f.getName() + " : " + f.getType().getName() + " = NULL");
-                    }
-                }
-                cls = cls.getSuperclass();
-            }
-        } catch (Throwable t) {}
-        // Pre-onCreate diagnostic: check if getApplication() works
-        Application app = activity.getApplication();
-        System.err.println("[WI] Pre-onCreate: getApplication()=" + (app != null ? app.getClass().getName() : "NULL"));
-        if (app != null) {
-            // Try the exact chain: getApplication().b().a()
+            WestlakeLauncher.patchProblematicAppClasses(activity.getClass().getClassLoader());
+        } catch (Throwable t) {
+            log("W", "patchProblematicAppClasses failed: " + throwableSummary(t));
+        }
+        try {
+            dispatchLifecycleCallback("onActivityPreCreated", activity, icicle);
+        } catch (Throwable t) {
+            log("W", "onActivityPreCreated failed: " + throwableSummary(t));
+        }
+        try {
+            seedCtorBypassedHiltActivityState(activity);
+        } catch (Throwable t) {
+            log("W", "seedCtorBypassedHiltActivityState failed: " + throwableSummary(t));
+        }
+        try {
+            maybeInitHilt(activity);
+        } catch (Throwable t) {
+            log("W", "maybeInitHilt failed: " + throwableSummary(t));
+        }
+        // ComponentActivity already dispatches OnContextAvailableListeners inside
+        // its own onCreate() implementation. Firing the hook here as well can
+        // double-invoke obfuscated Hilt/setup callbacks and recurse badly.
+        if (!(activity instanceof androidx.activity.ComponentActivity)) {
             try {
-                java.lang.reflect.Method bMethod = app.getClass().getMethod("b");
-                Object acm = bMethod.invoke(app);
-                System.err.println("[WI]   .b() = " + (acm != null ? acm.getClass().getSimpleName() : "NULL"));
-                if (acm != null) {
-                    java.lang.reflect.Method aMethod = acm.getClass().getMethod("a");
-                    Object comp = aMethod.invoke(acm);
-                    System.err.println("[WI]   .a() = " + (comp != null ? comp.getClass().getSimpleName() : "NULL"));
-                    // Also check field 'a' directly
-                    java.lang.reflect.Field aField = acm.getClass().getField("a");
-                    Object fieldVal = aField.get(acm);
-                    System.err.println("[WI]   field a = " + (fieldVal != null ? fieldVal.getClass().getSimpleName() : "NULL"));
-                }
+                maybeFireContextAvailable(activity);
             } catch (Throwable t) {
-                System.err.println("[WI]   chain test: " + t);
+                log("W", "maybeFireContextAvailable failed: " + throwableSummary(t));
             }
-        }
-        // Fire Hilt's _initHiltInternal BEFORE onCreate — sets up DI injection
-        try {
-            java.lang.reflect.Method hiltInit = activity.getClass().getDeclaredMethod("_initHiltInternal");
-            hiltInit.setAccessible(true);
-            hiltInit.invoke(activity);
-            System.err.println("[WI] Hilt _initHiltInternal() invoked for " + activity.getClass().getSimpleName());
-        } catch (NoSuchMethodException nsme) {
-            // Not a Hilt activity — ok
-        } catch (Throwable t) {
-            System.err.println("[WI] Hilt init failed: " + t.getMessage());
         }
 
-        // Fire OnContextAvailableListener (Hilt registers one in _initHiltInternal)
+        Throwable onCreateFailure = null;
         try {
-            java.lang.reflect.Method fireListeners = null;
-            for (java.lang.reflect.Method m : activity.getClass().getMethods()) {
-                if (m.getName().equals("a") && m.getParameterTypes().length == 1
-                        && m.getParameterTypes()[0] == android.content.Context.class) {
-                    fireListeners = m;
-                    break;
-                }
-            }
-            if (fireListeners != null) {
-                fireListeners.invoke(activity, activity);
-                System.err.println("[WI] OnContextAvailable fired");
-            }
-        } catch (Throwable t) {
-            System.err.println("[WI] OnContextAvailable fire: " + t.getMessage());
-        }
-
-        // Try onCreate — use reflection for cross-classloader protected access
-        boolean onCreateSuccess = false;
-        try {
-            try {
-                java.lang.reflect.Method oc = android.app.Activity.class.getDeclaredMethod("onCreate", android.os.Bundle.class);
-                oc.setAccessible(true);
-                oc.invoke(activity, icicle);
-            } catch (java.lang.reflect.InvocationTargetException ite) {
-                throw ite.getCause() != null ? ite.getCause() : ite;
-            }
-            onCreateSuccess = true;
+            WestlakeLauncher.trace("[WestlakeInstrumentation] invoking Activity.onCreate: "
+                    + activity.getClass().getName());
+            activity.onCreate(icicle);
         } catch (Throwable firstEx) {
-            System.err.println("[WI] onCreate threw (catching): " + firstEx.getMessage());
-            // Try to set content view from known layout names
-            try {
-                android.content.res.Resources res = activity.getResources();
-                android.content.res.ResourceTable table = (res != null) ? res.getResourceTable() : null;
-                if (table != null) {
-                    for (String layoutName : new String[]{"activity_home_dashboard", "activity_base"}) {
-                        for (int id = 0x7f0e0000; id < 0x7f0e0200; id++) {
-                            String n = table.getResourceName(id);
-                            if (n != null && n.contains(layoutName)) {
-                                activity.setContentView(id);
-                                System.err.println("[WI] Recovered: setContentView(0x" + Integer.toHexString(id) + ") for " + activity.getClass().getSimpleName());
-                                break;
-                            }
-                        }
-                        if (activity.getWindow() != null && activity.getWindow().getDecorView() instanceof android.view.ViewGroup
-                                && ((android.view.ViewGroup) activity.getWindow().getDecorView()).getChildCount() > 0) break;
-                    }
-                }
-            } catch (Throwable t3) {
-                System.err.println("[WI] Recovery setContentView failed: " + t3.getMessage());
-            }
-            // Check if content view was set before the crash
-            boolean realContentSet = false;
-            try {
-                android.view.View decor = activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
-                realContentSet = decor instanceof android.view.ViewGroup && ((android.view.ViewGroup) decor).getChildCount() > 0;
-            } catch (Throwable t) {}
-            if (realContentSet) {
-                System.err.println("[WI] Content view already set — running remaining onCreate steps");
-                // Run the BaseActivity.onCreate() steps that come AFTER clearV1OrderData():
-                // inflateDefaultLayout → setPageLayout → setPageView → initPageListeners
-                runPostCrashSetup(activity);
-                resolveImageDrawables(activity);
-                // Skip second recovery — go straight to post-create callbacks
-                onCreateSuccess = true; // not really, but prevents second recovery
-            }
-            if (onCreateSuccess) {
-                // runPostCrashSetup handled it — skip second recovery path
-            } else {
-            firstEx.printStackTrace(System.err);
-
-            // Recovery: find and set layout by name
-            try {
-                int layoutId = 0x7f0e0530; // default: splash
-                String actName = activity.getClass().getSimpleName().toLowerCase();
-                android.content.res.Resources res = activity.getResources();
-                if (res != null) {
-                    // Try activity-specific layouts in preference order
-                    String[] tries;
-                    if (actName.contains("dashboard") || actName.contains("home")) {
-                        tries = new String[]{"activity_home_dashboard", "activity_dashboard_new", "activity_base"};
-                    } else if (actName.contains("splash")) {
-                        tries = new String[]{"activity_splash_screen"};
-                    } else {
-                        tries = new String[]{
-                            "activity_" + actName.replace("activity", "").trim(),
-                            "activity_base"
-                        };
-                    }
-                    for (String name : tries) {
-                        int id = res.getIdentifier(name, "layout", "com.mcdonalds.app");
-                        if (id != 0) {
-                            layoutId = id;
-                            System.err.println("[WI] Found layout '" + name + "' → 0x" + Integer.toHexString(id));
-                            break;
-                        }
-                    }
-                }
-                activity.setContentView(layoutId);
-                System.err.println("[WI] Recovered: setContentView(0x" + Integer.toHexString(layoutId) + ") for " + activity.getClass().getSimpleName());
-                // Resolve drawable resources for all ImageViews in the view tree
-                resolveImageDrawables(activity);
-                // Try to navigate to the home/dashboard screen
-                // SplashActivity has launchHome() and launchHomeScreen() methods
-                try {
-                    // First set up the presenter that launchHome needs
-                    java.lang.reflect.Method lh = activity.getClass().getDeclaredMethod("launchHome");
-                    lh.setAccessible(true);
-                    lh.invoke(activity);
-                    System.err.println("[WI] launchHome() succeeded!");
-                } catch (Throwable lhEx) {
-                    System.err.println("[WI] launchHome failed: " + lhEx);
-                    // Queue dashboard launch for after render loop starts (avoid thread crash)
-                    System.err.println("[WI] Dashboard navigation queued");
-                    WestlakeActivityThread.pendingDashboardClass = "com.mcdonalds.homedashboard.activity.HomeDashboardActivity";
-                }
-            } catch (Throwable recoverEx) {
-                System.err.println("[WI] Recovery failed: " + recoverEx.getMessage());
-            }
-            } // end else (!onCreateSuccess)
+            onCreateFailure = firstEx;
+            log("W", "onCreate initial failure: " + throwableSummary(firstEx));
         }
 
-        // Dispatch post-create callbacks
-        dispatchLifecycleCallback("onActivityCreated", activity, icicle);
-        dispatchLifecycleCallback("onActivityPostCreated", activity, icicle);
+        if (onCreateFailure != null) {
+            try {
+                if (hasDecorChildren(activity)) {
+                    log("I", "Content view already set, running post-crash setup");
+                    runPostCrashSetup(activity);
+                    resolveImageDrawables(activity);
+                } else {
+                    recoverAfterOnCreateFailure(activity);
+                }
+            } catch (Throwable recoveryFailure) {
+                log("W", "onCreate recovery failed: " + throwableSummary(recoveryFailure));
+            }
+        }
+
+        try {
+            maybeInstallFallbackContent(activity);
+        } catch (Throwable t) {
+            log("W", "fallback content failed: " + throwableSummary(t));
+        }
+
+        try {
+            dispatchLifecycleCallback("onActivityCreated", activity, icicle);
+        } catch (Throwable t) {
+            log("W", "onActivityCreated failed: " + throwableSummary(t));
+        }
+        try {
+            dispatchLifecycleCallback("onActivityPostCreated", activity, icicle);
+        } catch (Throwable t) {
+            log("W", "onActivityPostCreated failed: " + throwableSummary(t));
+        }
+        WestlakeLauncher.trace("[WestlakeInstrumentation] callActivityOnCreate done: "
+                + activity.getClass().getName());
     }
 
     /**
@@ -326,6 +361,376 @@ public class WestlakeInstrumentation extends Instrumentation {
         activity.onCreate(icicle, persistentState);
         dispatchLifecycleCallback("onActivityCreated", activity, icicle);
         dispatchLifecycleCallback("onActivityPostCreated", activity, icicle);
+    }
+
+    private void maybeInitHilt(Activity activity) {
+        try {
+            java.lang.reflect.Method hiltInit = activity.getClass().getDeclaredMethod("_initHiltInternal");
+            hiltInit.setAccessible(true);
+            hiltInit.invoke(activity);
+            log("I", "Hilt _initHiltInternal() invoked for " + activity.getClass().getSimpleName());
+        } catch (NoSuchMethodException ignored) {
+        } catch (Throwable t) {
+            log("W", "Hilt init failed: " + t.getMessage());
+        }
+    }
+
+    private void maybeFireContextAvailable(Activity activity) {
+        try {
+            for (java.lang.reflect.Method m : safeGetMethods(activity.getClass())) {
+                if (m.getName().equals("a")
+                        && m.getParameterTypes().length == 1
+                        && m.getParameterTypes()[0] == android.content.Context.class) {
+                    m.invoke(activity, activity);
+                    log("I", "OnContextAvailable fired");
+                    break;
+                }
+            }
+        } catch (Throwable t) {
+            log("W", "OnContextAvailable fire failed: " + t.getMessage());
+        }
+    }
+
+    private boolean hasDecorChildren(Activity activity) {
+        try {
+            android.view.View decor = activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
+            return decor instanceof android.view.ViewGroup
+                    && ((android.view.ViewGroup) decor).getChildCount() > 0;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private android.view.ViewGroup findPageContentContainer(Activity activity) {
+        if (activity == null) {
+            return null;
+        }
+        try {
+            int pageContentId = resolveResourceId(activity, "id", "page_content");
+            android.view.View pageContentView =
+                    pageContentId != 0 ? activity.findViewById(pageContentId) : null;
+            if (pageContentView instanceof android.view.ViewGroup) {
+                return (android.view.ViewGroup) pageContentView;
+            }
+        } catch (Throwable t) {
+            log("W", "findPageContentContainer failed: " + throwableSummary(t));
+        }
+        return null;
+    }
+
+    private boolean ensureMcdToolbarShell(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+        try {
+            int toolbarId = resolveResourceId(activity, "id", "toolbar");
+            int basketLayoutId = resolveResourceId(activity, "id", "basket_layout");
+            int pageRootId = resolveResourceId(activity, "id", "page_root");
+
+            android.view.View toolbarView = toolbarId != 0 ? activity.findViewById(toolbarId) : null;
+            if (basketLayoutId != 0 && toolbarView != null
+                    && toolbarView.findViewById(basketLayoutId) != null) {
+                return true;
+            }
+
+            com.mcdonalds.mcduikit.widget.McDToolBarView replacement =
+                    new com.mcdonalds.mcduikit.widget.McDToolBarView(activity);
+            if (toolbarId != 0) {
+                replacement.setId(toolbarId);
+            }
+
+            android.view.ViewGroup.LayoutParams replacementLp = null;
+            android.view.ViewGroup parent = null;
+            int index = 0;
+            if (toolbarView != null) {
+                android.view.ViewParent rawParent = toolbarView.getParent();
+                if (rawParent instanceof android.view.ViewGroup) {
+                    parent = (android.view.ViewGroup) rawParent;
+                    replacementLp = toolbarView.getLayoutParams();
+                    index = parent.indexOfChild(toolbarView);
+                    parent.removeView(toolbarView);
+                }
+            } else {
+                android.view.View pageRoot = pageRootId != 0 ? activity.findViewById(pageRootId) : null;
+                if (pageRoot != null) {
+                    android.view.ViewParent rawParent = pageRoot.getParent();
+                    if (rawParent instanceof android.view.ViewGroup) {
+                        parent = (android.view.ViewGroup) rawParent;
+                        index = parent.indexOfChild(pageRoot);
+                    }
+                }
+            }
+
+            if (parent == null) {
+                return false;
+            }
+            if (replacementLp == null) {
+                replacementLp = new android.widget.LinearLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            parent.addView(replacement, index, replacementLp);
+            return basketLayoutId != 0 && replacement.findViewById(basketLayoutId) != null;
+        } catch (Throwable t) {
+            log("W", "ensureMcdToolbarShell failed: " + throwableSummary(t));
+            return false;
+        }
+    }
+
+    private boolean ensureStructuredPageShell(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+        try {
+            if (findPageContentContainer(activity) == null) {
+                int baseLayoutId = resolveResourceId(activity, "layout", "base_layout");
+                if (baseLayoutId != 0) {
+                    activity.setContentView(baseLayoutId);
+                    log("I", "Installed base_layout shell 0x"
+                            + Integer.toHexString(baseLayoutId));
+                }
+            }
+            android.view.ViewGroup pageContent = findPageContentContainer(activity);
+            if (pageContent == null) {
+                return false;
+            }
+            ensureMcdToolbarShell(activity);
+            return true;
+        } catch (Throwable t) {
+            log("W", "ensureStructuredPageShell failed: " + throwableSummary(t));
+            return false;
+        }
+    }
+
+    private boolean inflateIntoPageContent(Activity activity, int contentLayoutId) {
+        if (activity == null || contentLayoutId == 0) {
+            return false;
+        }
+        try {
+            android.view.ViewGroup pageContent = findPageContentContainer(activity);
+            if (pageContent == null) {
+                return false;
+            }
+            if (pageContent.getChildCount() > 0) {
+                pageContent.removeAllViews();
+            }
+            activity.getLayoutInflater().inflate(contentLayoutId, pageContent, true);
+            return true;
+        } catch (Throwable t) {
+            log("W", "inflateIntoPageContent failed: " + throwableSummary(t));
+            return false;
+        }
+    }
+
+    private void maybeInstallFallbackContent(Activity activity) {
+        if (activity == null || hasDecorChildren(activity)) {
+            return;
+        }
+        String actName = activity.getClass().getSimpleName().toLowerCase();
+        if (!(actName.contains("dashboard") || actName.contains("home"))) {
+            return;
+        }
+        WestlakeLauncher.populateDashboardFallback(activity);
+        if (hasDecorChildren(activity)) {
+            log("I", "Installed fallback dashboard for " + activity.getClass().getSimpleName());
+            resolveImageDrawables(activity);
+        } else {
+            log("W", "Fallback dashboard install left decor empty for "
+                    + activity.getClass().getSimpleName());
+        }
+    }
+
+    private void recoverAfterOnCreateFailure(Activity activity) {
+        try {
+            if (recoverUsingStructuredPageLayouts(activity)) {
+                resolveImageDrawables(activity);
+                return;
+            }
+
+            int layoutId = invokeIntMethod(activity, "getContentPageLayoutId");
+            String actName = activity.getClass().getSimpleName().toLowerCase();
+            android.content.res.Resources res = activity.getResources();
+            if (res != null) {
+                String[] tries;
+                if (layoutId != 0) {
+                    tries = new String[0];
+                } else if (actName.contains("dashboard") || actName.contains("home")) {
+                    tries = new String[]{"activity_home_dashboard", "activity_dashboard_new", "activity_base"};
+                } else if (actName.contains("splash")) {
+                    tries = new String[]{"activity_splash_screen"};
+                } else {
+                    tries = new String[]{
+                        "activity_" + actName.replace("activity", "").trim(),
+                        "activity_base"
+                    };
+                }
+                for (String name : tries) {
+                    int id = resolveResourceId(activity, "layout", name);
+                    if (id != 0) {
+                        layoutId = id;
+                        log("I", "Found layout '" + name + "' -> 0x" + Integer.toHexString(id));
+                        break;
+                    }
+                }
+            }
+            if (layoutId == 0) {
+                layoutId = 0x7f0e0530; // toolbar_close_back, true last-resort fallback
+            }
+            boolean structuredInflate = ensureStructuredPageShell(activity)
+                    && inflateIntoPageContent(activity, layoutId);
+            if (structuredInflate) {
+                log("I", "Recovered page_content inflate(0x"
+                        + Integer.toHexString(layoutId) + ") for "
+                        + activity.getClass().getSimpleName());
+            } else {
+                activity.setContentView(layoutId);
+                log("I", "Recovered setContentView(0x" + Integer.toHexString(layoutId)
+                        + ") for " + activity.getClass().getSimpleName());
+            }
+            resolveImageDrawables(activity);
+            maybeInstallFallbackContent(activity);
+            try {
+                java.lang.reflect.Method lh = activity.getClass().getDeclaredMethod("launchHome");
+                lh.setAccessible(true);
+                lh.invoke(activity);
+                log("I", "launchHome() succeeded");
+            } catch (Throwable lhEx) {
+                log("W", "launchHome failed: " + lhEx);
+                WestlakeActivityThread.pendingDashboardClass =
+                        "com.mcdonalds.homedashboard.activity.HomeDashboardActivity";
+                log("I", "Dashboard navigation queued");
+            }
+        } catch (Throwable recoverEx) {
+            log("W", "Recovery failed: " + recoverEx.getMessage());
+        }
+    }
+
+    private boolean recoverUsingStructuredPageLayouts(Activity activity) {
+        boolean recovered = false;
+        try {
+            java.lang.reflect.Method setPage = findMethodInHierarchy(activity.getClass(), "setPageLayout");
+            if (setPage != null) {
+                setPage.setAccessible(true);
+                setPage.invoke(activity);
+                recovered = ensureStructuredPageShell(activity) || hasDecorChildren(activity);
+                log("I", "recovery setPageLayout() done");
+            }
+        } catch (Throwable t) {
+            log("W", "recovery setPageLayout failed: " + throwableSummary(t));
+        }
+        try {
+            java.lang.reflect.Method setView = findMethodInHierarchy(activity.getClass(), "setPageView");
+            if (setView != null) {
+                ensureStructuredPageShell(activity);
+                setView.setAccessible(true);
+                setView.invoke(activity);
+                recovered = hasDecorChildren(activity) || recovered;
+                log("I", "recovery setPageView() done");
+            }
+        } catch (Throwable t) {
+            log("W", "recovery setPageView failed: " + throwableSummary(t));
+        }
+
+        int pageContentId = resolveResourceId(activity, "id", "page_content");
+        int contentLayoutId = invokeIntMethod(activity, "getContentPageLayoutId");
+        if (pageContentId != 0 && contentLayoutId != 0) {
+            try {
+                if (ensureStructuredPageShell(activity)
+                        && inflateIntoPageContent(activity, contentLayoutId)) {
+                    recovered = true;
+                    log("I", "recovery inflated content layout 0x"
+                            + Integer.toHexString(contentLayoutId)
+                            + " into page_content");
+                }
+            } catch (Throwable t) {
+                log("W", "recovery content inflate failed: " + throwableSummary(t));
+            }
+        }
+
+        String actName = activity.getClass().getSimpleName().toLowerCase();
+        if (actName.contains("dashboard") || actName.contains("home")) {
+            int containerId = invokeIntMethod(activity, "getFragmentContainerId");
+            if (containerId == 0) {
+                containerId = resolveResourceId(activity, "id", "home_dashboard_container");
+            }
+            try {
+                android.view.View containerView = activity.findViewById(containerId);
+                if (containerView != null) {
+                    containerView.setVisibility(android.view.View.VISIBLE);
+                }
+                int intermediateId = resolveResourceId(activity, "id", "intermediate_layout_container");
+                android.view.View intermediateView = activity.findViewById(intermediateId);
+                if (intermediateView != null) {
+                    intermediateView.setVisibility(android.view.View.GONE);
+                }
+                if (containerView instanceof android.view.ViewGroup) {
+                    android.view.ViewGroup container = (android.view.ViewGroup) containerView;
+                    if (container.getChildCount() == 0) {
+                        int fragmentLayoutId = resolveResourceId(activity, "layout", "fragment_home_dashboard");
+                        if (fragmentLayoutId != 0) {
+                            activity.getLayoutInflater().inflate(fragmentLayoutId, container, true);
+                            recovered = true;
+                            log("I", "recovery inflated fragment_home_dashboard into container 0x"
+                                    + Integer.toHexString(containerId));
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                log("W", "recovery dashboard container inflate failed: " + throwableSummary(t));
+            }
+        }
+        return recovered && hasDecorChildren(activity);
+    }
+
+    private int resolveResourceId(Activity activity, String type, String name) {
+        if (activity == null || type == null || name == null) {
+            return 0;
+        }
+        try {
+            android.content.res.Resources res = activity.getResources();
+            if (res == null) {
+                return 0;
+            }
+            String[] packages = {
+                    activity.getPackageName(),
+                    "com.mcdonalds.app",
+                    "com.mcdonalds.homedashboard"
+            };
+            for (int i = 0; i < packages.length; i++) {
+                String pkg = packages[i];
+                if (pkg == null || pkg.isEmpty()) {
+                    continue;
+                }
+                int id = res.getIdentifier(name, type, pkg);
+                if (id != 0) {
+                    return id;
+                }
+            }
+        } catch (Throwable t) {
+            log("W", "resolveResourceId(" + type + "/" + name + ") failed: "
+                    + throwableSummary(t));
+        }
+        return 0;
+    }
+
+    private int invokeIntMethod(Activity activity, String name) {
+        if (activity == null || name == null) {
+            return 0;
+        }
+        try {
+            java.lang.reflect.Method method = findMethodInHierarchy(activity.getClass(), name);
+            if (method == null) {
+                return 0;
+            }
+            method.setAccessible(true);
+            Object value = method.invoke(activity);
+            if (value instanceof Integer) {
+                return ((Integer) value).intValue();
+            }
+        } catch (Throwable t) {
+            log("W", name + "() failed: " + throwableSummary(t));
+        }
+        return 0;
     }
 
     /**
@@ -422,10 +827,12 @@ public class WestlakeInstrumentation extends Instrumentation {
      */
     @Override
     public boolean onException(Object obj, Throwable e) {
-        String objDesc = obj != null ? obj.getClass().getName() : "null";
-        log("E", "Exception in " + objDesc + ": " + e);
-        if (e != null) {
-            e.printStackTrace(System.err);
+        String objTag = obj != null ? obj.getClass().getName() : "null";
+        String errTag = e != null ? e.getClass().getName() : "null";
+        try {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] onException obj="
+                    + objTag + " err=" + errTag);
+        } catch (Throwable ignored) {
         }
         // Return true = exception handled, don't crash
         return true;
@@ -562,7 +969,34 @@ public class WestlakeInstrumentation extends Instrumentation {
     // ── Logging ────────────────────────────────────────────────────────────
 
     private static void log(String level, String msg) {
-        System.err.println(level + "/" + TAG + ": " + msg);
+        try {
+            WestlakeLauncher.trace("[" + TAG + "/" + level + "] " + msg);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static java.lang.reflect.Method[] safeGetDeclaredMethods(Class<?> cls) {
+        if (cls == null) {
+            return new java.lang.reflect.Method[0];
+        }
+        try {
+            java.lang.reflect.Method[] methods = cls.getDeclaredMethods();
+            return methods != null ? methods : new java.lang.reflect.Method[0];
+        } catch (Throwable ignored) {
+            return new java.lang.reflect.Method[0];
+        }
+    }
+
+    private static java.lang.reflect.Method[] safeGetMethods(Class<?> cls) {
+        if (cls == null) {
+            return new java.lang.reflect.Method[0];
+        }
+        try {
+            java.lang.reflect.Method[] methods = cls.getMethods();
+            return methods != null ? methods : new java.lang.reflect.Method[0];
+        } catch (Throwable ignored) {
+            return new java.lang.reflect.Method[0];
+        }
     }
 
     /**
@@ -582,7 +1016,7 @@ public class WestlakeInstrumentation extends Instrumentation {
             if (inflateDefault != null) {
                 inflateDefault.setAccessible(true);
                 shouldInflate = (Boolean) inflateDefault.invoke(activity);
-                System.err.println("[WI] inflateDefaultLayout() = " + shouldInflate);
+                log("I", "inflateDefaultLayout() = " + shouldInflate);
             }
             if (shouldInflate) {
                 // setPageLayout: calls setContentView(R.layout.base_layout) in McDBaseActivity
@@ -591,7 +1025,7 @@ public class WestlakeInstrumentation extends Instrumentation {
                     setPage.setAccessible(true);
                     setPage.invoke(activity);
                     layoutDone = true;
-                    System.err.println("[WI] setPageLayout() done");
+                    log("I", "setPageLayout() done");
                 }
                 // setPageView: finds toolbar views — will NPE on missing navigation/toolbar
                 try {
@@ -599,10 +1033,10 @@ public class WestlakeInstrumentation extends Instrumentation {
                     if (setView != null) {
                         setView.setAccessible(true);
                         setView.invoke(activity);
-                        System.err.println("[WI] setPageView() done");
+                        log("I", "setPageView() done");
                     }
                 } catch (Throwable sv) {
-                    System.err.println("[WI] setPageView() threw: " +
+                    log("W", "setPageView() threw: " +
                         (sv.getCause() != null ? sv.getCause().getMessage() : sv.getMessage()));
                 }
                 // initPageListeners
@@ -615,8 +1049,8 @@ public class WestlakeInstrumentation extends Instrumentation {
                 } catch (Throwable t) {}
             }
         } catch (Throwable t) {
-            System.err.println("[WI] runPostCrashSetup layout: " + t.getMessage());
-            if (t.getCause() != null) System.err.println("[WI]   cause: " + t.getCause().getMessage());
+            log("W", "runPostCrashSetup layout: " + t.getMessage());
+            if (t.getCause() != null) log("W", "runPostCrashSetup cause: " + t.getCause().getMessage());
         }
         // Apply McD styling to the inflated layout
         if (layoutDone) {
@@ -642,7 +1076,7 @@ public class WestlakeInstrumentation extends Instrumentation {
                 if (lp != null && lp.height < 50) {
                     lp.height = 112;
                     toolbar.setLayoutParams(lp);
-                    System.err.println("[WI] Fixed toolbar height to 112px");
+                    log("I", "Fixed toolbar height to 112px");
                 }
                 toolbar.setBackgroundColor(0xFF27251F); // McD dark
                 // Also set dark on all toolbar children (ImageView backgrounds cover the toolbar bg)
@@ -674,7 +1108,7 @@ public class WestlakeInstrumentation extends Instrumentation {
                 }
                 // Force layout at bottom of screen (override LinearLayout stacking)
                 nav.layout(0, 688, 480, 800); // 800 - 112 = 688
-                System.err.println("[WI] Fixed navigation at bottom (688-800)");
+                log("I", "Fixed navigation at bottom (688-800)");
             }
             // Add golden arches centered in toolbar
             if (toolbar instanceof android.view.ViewGroup) {
@@ -704,7 +1138,7 @@ public class WestlakeInstrumentation extends Instrumentation {
                     if (container != null) break;
                 }
                 if (container instanceof android.view.ViewGroup) {
-                    System.err.println("[WI] Found real fragment container: id=0x"
+                    log("I", "Found real fragment container: id=0x"
                         + Integer.toHexString(container.getId()) + " " + container.getMeasuredWidth() + "x" + container.getMeasuredHeight());
                     // Force container to fill parent
                     android.view.ViewGroup.LayoutParams clp = container.getLayoutParams();
@@ -715,12 +1149,12 @@ public class WestlakeInstrumentation extends Instrumentation {
                     }
                     populateRealMenuData(activity, (android.view.ViewGroup) container);
                 } else {
-                    System.err.println("[WI] No fragment container found, trying decor root");
+                    log("I", "No fragment container found, trying decor root");
                     populateRealMenuData(activity, (android.view.ViewGroup) decor);
                 }
             }
         } catch (Throwable t) {
-            System.err.println("[WI] applyMcDStyling: " + t.getMessage());
+            log("W", "applyMcDStyling: " + t.getMessage());
         }
     }
 
@@ -751,7 +1185,7 @@ public class WestlakeInstrumentation extends Instrumentation {
         // Read menu data from captured JSON on disk
         String[][] menuItems = loadMenuFromCapturedData();
         if (menuItems == null || menuItems.length == 0) {
-            System.err.println("[WI] No captured menu data found, using fallback");
+            log("I", "No captured menu data found, using fallback");
             menuItems = new String[][] {
                 {"Big Mac\u00AE", "$5.99"}, {"Quarter Pounder\u00AE with Cheese", "$6.19"},
                 {"10 pc. Chicken McNuggets\u00AE", "$5.49"}, {"McChicken\u00AE", "$2.49"},
@@ -799,7 +1233,7 @@ public class WestlakeInstrumentation extends Instrumentation {
         container.addView(scrollView, new android.widget.FrameLayout.LayoutParams(
             android.view.ViewGroup.LayoutParams.MATCH_PARENT,
             android.view.ViewGroup.LayoutParams.MATCH_PARENT));
-        System.err.println("[WI] Populated " + menuItems.length + " real menu items into content container");
+        log("I", "Populated " + menuItems.length + " real menu items into content container");
     }
 
     /** Load menu items from captured McDonald's API JSON file on device. */
@@ -837,10 +1271,10 @@ public class WestlakeInstrumentation extends Instrumentation {
                 pos = nameEnd + 1;
             }
             if (items.isEmpty()) return null;
-            System.err.println("[WI] Loaded " + items.size() + " menu items from " + path);
+            log("I", "Loaded " + items.size() + " menu items from " + path);
             return items.toArray(new String[0][]);
         } catch (Throwable t) {
-            System.err.println("[WI] loadMenuFromCapturedData error: " + t);
+            log("W", "loadMenuFromCapturedData error: " + t);
             return null;
         }
     }
@@ -936,7 +1370,7 @@ public class WestlakeInstrumentation extends Instrumentation {
     private java.lang.reflect.Method findMethodInHierarchy(Class<?> cls, String name) {
         while (cls != null && cls != Object.class) {
             try {
-                for (java.lang.reflect.Method m : cls.getDeclaredMethods()) {
+                for (java.lang.reflect.Method m : safeGetDeclaredMethods(cls)) {
                     if (m.getName().equals(name) && m.getParameterTypes().length == 0) return m;
                 }
             } catch (Throwable t) {}
@@ -951,7 +1385,7 @@ public class WestlakeInstrumentation extends Instrumentation {
             android.view.View root = activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
             if (root != null) resolveImageDrawablesRecursive(root, activity);
         } catch (Throwable t) {
-            System.err.println("[WI] resolveImageDrawables: " + t.getMessage());
+            log("W", "resolveImageDrawables: " + t.getMessage());
         }
     }
 
@@ -966,8 +1400,8 @@ public class WestlakeInstrumentation extends Instrumentation {
                     android.graphics.drawable.Drawable d = ctx.getDrawable(resId);
                     if (d != null && !(d instanceof android.graphics.drawable.ColorDrawable)) {
                         iv.setImageDrawable(d);
-                        System.err.println("[WI] Resolved drawable 0x" + Integer.toHexString(resId)
-                            + " for ImageView → " + d.getIntrinsicWidth() + "x" + d.getIntrinsicHeight());
+                        log("I", "Resolved drawable 0x" + Integer.toHexString(resId)
+                            + " for ImageView -> " + d.getIntrinsicWidth() + "x" + d.getIntrinsicHeight());
                     }
                 }
             } catch (Throwable t) { /* skip */ }

@@ -24,9 +24,19 @@ public final class SavedStateRegistry {
     public void unregisterSavedStateProvider(String key) {
         mProviders.remove(key);
     }
+    public void e(String key) { unregisterSavedStateProvider(key); }
 
     public Bundle consumeRestoredStateForKey(String key) {
         return null; // No saved state in our shim
+    }
+    public Bundle a(String key) { return consumeRestoredStateForKey(key); }
+
+    public SavedStateProvider b(String key) {
+        return mProviders.get(key);
+    }
+
+    public void d(Class<?> recreatedClass) {
+        // Recreation callbacks are not supported in the shim.
     }
 
     public boolean isRestored() { return mRestored; }

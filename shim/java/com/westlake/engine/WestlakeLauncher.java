@@ -26,14 +26,887 @@ import com.ohos.shim.bridge.OHBridge;
  *     com.westlake.engine.WestlakeLauncher
  */
 public class WestlakeLauncher {
+    private static boolean sLastApplicationCtorBypassed;
     private static final String TAG = "WestlakeLauncher";
     private static final int SURFACE_WIDTH = 480;
     private static final int SURFACE_HEIGHT = 800;
+    private static final String FRAMEWORK_POLICY_PROP = "westlake.framework.policy";
+    private static final String FRAMEWORK_POLICY_WESTLAKE_ONLY = "westlake_only";
+    private static native void nativeLog(String message);
+    private static native boolean nativeCanOpenFile(String path);
+    private static native byte[] nativeReadFileBytes(String path);
+    private static native String nativeVmProperty(String key);
+    private static native int nativeVmArgCount();
+    private static native String nativeVmArg(int index);
+    private static native ClassLoader nativeSystemClassLoader();
+    private static native Class<?> nativeFindClass(String className);
+    private static native Object nativeAllocInstance(Class<?> target);
+    private static native boolean nativePatchClassNoop(String className, ClassLoader loader);
+    private static native void nativePrimeLaunchConfig();
+    private static native void nativePrintException(Throwable t);
+    private static String sBootApkPath;
+    private static String sBootActivityName;
+    private static String sBootPackageName;
+    private static String sBootManifestPath;
+    private static String sBootResDir;
+    private static final java.util.HashMap<String, String> sLaunchFileProps = new java.util.HashMap<String, String>();
+    private static final java.util.ArrayList<Activity> sInstalledDashboardFallbacks =
+            new java.util.ArrayList<Activity>();
+    private static boolean sLaunchFileLoaded;
+    private static boolean sLoggedAppClassLoaders;
+    private static boolean sLoggedDashboardOwnership;
+    private static boolean sDirectDashboardFallbackActive;
     public static byte[] splashImageData; // Raw image bytes for OP_IMAGE rendering
     /** Real Android context when running on app_process64 */
     public static Object sRealContext;
     /** Pre-rendered icons bitmap (PNG bytes) from real framework */
     private static byte[] realIconsPng;
+
+    public static boolean isRealFrameworkFallbackAllowed() {
+        return !FRAMEWORK_POLICY_WESTLAKE_ONLY.equals(System.getProperty(FRAMEWORK_POLICY_PROP));
+    }
+
+    private static ClassLoader engineClassLoader() {
+        ClassLoader cl = WestlakeLauncher.class.getClassLoader();
+        return cl != null ? cl : Object.class.getClassLoader();
+    }
+
+    private static void stderrLog(String message) {
+        // Avoid java.io writes during standalone ART bootstrap. On the current
+        // Westlake path, FileOutputStream.write() re-enters BlockGuard and
+        // ThreadLocal initialization, which is still unstable and can derail
+        // activity startup before the real failure is reached.
+    }
+
+    private static void startupLog(String message) {
+        // Keep startup logging side-effect free. PrintStream/charset setup is not
+        // reliable yet on the pure Westlake path, and pulling it in here aborts boot.
+        // Also avoid android.util.Log here: once OHBridge is live, Log.i() routes
+        // through native bridge logging and that path is still crash-prone during
+        // early activity bootstrap.
+        if (message == null) return;
+        stderrLog("[WestlakeLauncher] " + message);
+        try {
+            nativeLog("[WestlakeLauncher] " + message);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void startupLog(String message, Throwable t) {
+        startupLog(message + ": " + throwableTag(t));
+    }
+
+    private static String throwableTag(Throwable t) {
+        return t == null ? "null" : t.getClass().getName();
+    }
+
+    private static String safeThrowableMessage(Throwable t) {
+        if (t == null) {
+            return null;
+        }
+        try {
+            return t.getMessage();
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static String throwableSummary(Throwable t) {
+        if (t == null) {
+            return "null";
+        }
+        String message = safeThrowableMessage(t);
+        if (message == null || message.isEmpty()) {
+            return throwableTag(t);
+        }
+        return throwableTag(t) + ": " + message;
+    }
+
+    public static void dumpThrowable(String prefix, Throwable t) {
+        if (prefix != null) {
+            startupLog(prefix + ": " + throwableSummary(t));
+        } else if (t != null) {
+            startupLog(throwableSummary(t));
+        }
+    }
+
+    private static void logThrowableFrames(String prefix, Throwable t, int maxFrames) {
+        if (t == null) {
+            return;
+        }
+        try {
+            StackTraceElement[] frames = t.getStackTrace();
+            if (frames == null) {
+                return;
+            }
+            int count = Math.min(maxFrames, frames.length);
+            for (int i = 0; i < count; i++) {
+                StackTraceElement frame = frames[i];
+                if (frame == null) {
+                    continue;
+                }
+                startupLog(prefix + " #" + i + " " + frame.getClassName()
+                        + "." + frame.getMethodName() + ":" + frame.getLineNumber());
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static void trace(String message) {
+        if (message == null) {
+            return;
+        }
+        // Keep fine-grained lifecycle tracing off the JNI log bridge. The launch
+        // path still trips interpreter/JNI faults when every WAT step re-enters
+        // nativeLog(), so route trace-only diagnostics to stderr.
+        stderrLog("[WestlakeLauncher] " + message);
+    }
+
+    public static Object tryAllocInstance(Class<?> target) {
+        if (target == null) {
+            return null;
+        }
+        try {
+            startupLog("[WestlakeLauncher] tryAllocInstance begin: " + target.getName());
+            Object instance = nativeAllocInstance(target);
+            startupLog("[WestlakeLauncher] tryAllocInstance result: "
+                    + (instance != null ? instance.getClass().getName() : "null"));
+            return instance;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] nativeAllocInstance failed for "
+                    + target.getName() + ": " + throwableTag(t));
+            return null;
+        }
+    }
+
+    private static Object tryUnsafeAllocInstance(Class<?> target) {
+        if (target == null) {
+            return null;
+        }
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            Object unsafe = field.get(null);
+            return unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, target);
+        } catch (Throwable ignored) {
+            try {
+                Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
+                java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+                field.setAccessible(true);
+                Object unsafe = field.get(null);
+                return unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, target);
+            } catch (Throwable ignoredToo) {
+                return null;
+            }
+        }
+    }
+
+    private static void primeAllocatedApplication(android.app.Application app) {
+        if (app == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Field callbacksField =
+                    android.app.Application.class.getDeclaredField("mCallbacks");
+            callbacksField.setAccessible(true);
+            if (callbacksField.get(app) == null) {
+                callbacksField.set(app, new java.util.ArrayList());
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static android.app.Application instantiateApplicationInstance(
+            Class<?> appCls, String appClassName, boolean preferAllocation) throws Throwable {
+        sLastApplicationCtorBypassed = false;
+        Throwable ctorError = null;
+        if (preferAllocation) {
+            Object allocated = tryAllocInstance(appCls);
+            if (!(allocated instanceof android.app.Application)) {
+                allocated = tryUnsafeAllocInstance(appCls);
+            }
+            if (allocated instanceof android.app.Application) {
+                android.app.Application app = (android.app.Application) allocated;
+                primeAllocatedApplication(app);
+                sLastApplicationCtorBypassed = true;
+                startupLog("[WestlakeLauncher] Application allocated without ctor: " + appClassName);
+                return app;
+            }
+        }
+        try {
+            Object instance = appCls.getDeclaredConstructor().newInstance();
+            if (instance instanceof android.app.Application) {
+                return (android.app.Application) instance;
+            }
+        } catch (Throwable t) {
+            ctorError = t;
+            startupLog("[WestlakeLauncher] Application ctor failed for " + appClassName
+                    + ": " + throwableTag(t));
+        }
+        Object allocated = tryAllocInstance(appCls);
+        if (!(allocated instanceof android.app.Application)) {
+            allocated = tryUnsafeAllocInstance(appCls);
+        }
+        if (allocated instanceof android.app.Application) {
+            android.app.Application app = (android.app.Application) allocated;
+            primeAllocatedApplication(app);
+            sLastApplicationCtorBypassed = true;
+            startupLog("[WestlakeLauncher] Application ctor bypassed after failure: " + appClassName);
+            return app;
+        }
+        if (ctorError != null) {
+            throw ctorError;
+        }
+        throw new InstantiationException("Failed to instantiate application " + appClassName);
+    }
+
+    public static void patchProblematicAppClasses(ClassLoader loader) {
+        if (loader == null) {
+            return;
+        }
+        String[] classes = {
+            "com.newrelic.agent.android.tracing.TraceMachine",
+            "com.newrelic.agent.android.tracing.Trace",
+            "com.newrelic.agent.android.NewRelic",
+        };
+        for (int i = 0; i < classes.length; i++) {
+            String className = classes[i];
+            try {
+                if (nativePatchClassNoop(className, loader)) {
+                    startupLog("[WestlakeLauncher] Patched " + className
+                            + " on " + loaderTag(loader));
+                }
+            } catch (Throwable t) {
+                startupLog("[WestlakeLauncher] Patch failed for " + className
+                        + ": " + throwableTag(t));
+            }
+        }
+    }
+
+    private static String propOrSnapshot(String key, String snapshot) {
+        try {
+            String value = System.getProperty(key);
+            if (value != null && !value.isEmpty()) {
+                return value;
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            String value = nativeVmProperty(key);
+            if (value != null && !value.isEmpty()) {
+                return value;
+            }
+        } catch (Throwable ignored) {
+        }
+        String argFlag = argFlagForProperty(key);
+        if (argFlag != null) {
+            String value = nativeArgValue(argFlag);
+            if (value != null && !value.isEmpty()) {
+                return value;
+            }
+        }
+        String fileValue = launchFileProperty(key);
+        if (fileValue != null && !fileValue.isEmpty()) {
+            return fileValue;
+        }
+        return snapshot;
+    }
+
+    private static String copyString(String value) {
+        return value == null ? null : new String(value);
+    }
+
+    private static String normalizePackageName(String packageName) {
+        if (packageName == null) {
+            return null;
+        }
+        return packageName.isEmpty() ? null : packageName;
+    }
+
+    private static boolean isPlaceholderPackage(String packageName) {
+        packageName = normalizePackageName(packageName);
+        return packageName == null
+                || "app".equals(packageName)
+                || "com.example.app".equals(packageName);
+    }
+
+    private static String packageFromClassName(String className) {
+        if (className == null || className.isEmpty()) {
+            return null;
+        }
+        int dot = className.lastIndexOf('.');
+        if (dot <= 0) {
+            return null;
+        }
+        return className.substring(0, dot);
+    }
+
+    private static String canonicalPackageName(
+            String packageName,
+            String activityName,
+            android.content.pm.ManifestParser.ManifestInfo manifestInfo) {
+        packageName = normalizePackageName(packageName);
+        if (!isPlaceholderPackage(packageName)) {
+            return packageName;
+        }
+        if (manifestInfo != null
+                && manifestInfo.packageName != null
+                && !manifestInfo.packageName.isEmpty()) {
+            return manifestInfo.packageName;
+        }
+        String derived = packageFromClassName(activityName);
+        if (derived != null && !derived.isEmpty()) {
+            return derived;
+        }
+        return packageName;
+    }
+
+    private static String stableLaunchPackage(
+            String fallbackPackage,
+            String activityName,
+            android.content.pm.ManifestParser.ManifestInfo manifestInfo) {
+        String candidate = normalizePackageName(sBootPackageName);
+        if (candidate == null) {
+            candidate = normalizePackageName(launchFileProperty("westlake.apk.package"));
+        }
+        if (candidate == null) {
+            candidate = normalizePackageName(nativeArgValue("--apk-package"));
+        }
+        if (candidate == null) {
+            try {
+                candidate = normalizePackageName(System.getProperty("westlake.apk.package"));
+            } catch (Throwable ignored) {
+            }
+        }
+        if (candidate == null) {
+            candidate = normalizePackageName(fallbackPackage);
+        }
+        return canonicalPackageName(candidate, activityName, manifestInfo);
+    }
+
+    private static String packageFallbackForKnownApps(String packageName, String activityName) {
+        if (activityName != null && activityName.startsWith("com.mcdonalds.")) {
+            return "com.mcdonalds.app";
+        }
+        return packageName;
+    }
+
+    private static String preferredLaunchPackage(
+            String primaryPackage,
+            String secondaryPackage,
+            String activityName,
+            android.content.pm.ManifestParser.ManifestInfo manifestInfo) {
+        String candidate = stableLaunchPackage(primaryPackage, activityName, manifestInfo);
+        candidate = packageFallbackForKnownApps(candidate, activityName);
+        if (!isPlaceholderPackage(candidate)) {
+            return candidate;
+        }
+        candidate = stableLaunchPackage(secondaryPackage, activityName, manifestInfo);
+        candidate = packageFallbackForKnownApps(candidate, activityName);
+        if (!isPlaceholderPackage(candidate)) {
+            return candidate;
+        }
+        candidate = canonicalPackageName(primaryPackage, activityName, manifestInfo);
+        candidate = packageFallbackForKnownApps(candidate, activityName);
+        if (!isPlaceholderPackage(candidate)) {
+            return candidate;
+        }
+        candidate = canonicalPackageName(secondaryPackage, activityName, manifestInfo);
+        candidate = packageFallbackForKnownApps(candidate, activityName);
+        if (!isPlaceholderPackage(candidate)) {
+            return candidate;
+        }
+        return candidate;
+    }
+
+    private static void persistLaunchPackage(String packageName) {
+        packageName = normalizePackageName(packageName);
+        if (isPlaceholderPackage(packageName)) {
+            return;
+        }
+        sBootPackageName = copyString(packageName);
+        try {
+            System.setProperty("westlake.apk.package", packageName);
+        } catch (Throwable ignored) {
+        }
+        try {
+            MiniServer.currentSetPackageName(packageName);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static String argFlagForProperty(String key) {
+        if ("westlake.apk.path".equals(key)) return "--apk-path";
+        if ("westlake.apk.activity".equals(key)) return "--apk-activity";
+        if ("westlake.apk.package".equals(key)) return "--apk-package";
+        if ("westlake.apk.resdir".equals(key)) return "--apk-resdir";
+        if ("westlake.apk.manifest".equals(key)) return "--apk-manifest";
+        return null;
+    }
+
+    private static String launchFileProperty(String key) {
+        if (!sLaunchFileLoaded) {
+            sLaunchFileLoaded = true;
+            String[] candidates = {
+                "/data/local/tmp/westlake/westlake-launch.properties",
+                "/data/local/tmp/westlake/launch.properties"
+            };
+            for (String path : candidates) {
+                byte[] data = tryReadFileBytes(path);
+                if (data == null || data.length == 0) {
+                    continue;
+                }
+                try {
+                    String text = new String(data);
+                    int start = 0;
+                    while (start <= text.length()) {
+                        int end = text.indexOf('\n', start);
+                        if (end < 0) {
+                            end = text.length();
+                        }
+                        String line = text.substring(start, end).trim();
+                        if (!line.isEmpty()) {
+                            int eq = line.indexOf('=');
+                            if (eq > 0 && eq < line.length() - 1) {
+                                sLaunchFileProps.put(line.substring(0, eq), line.substring(eq + 1));
+                            }
+                        }
+                        if (end >= text.length()) {
+                            break;
+                        }
+                        start = end + 1;
+                    }
+                    startupLog("[WestlakeLauncher] Launch file loaded: " + path);
+                    break;
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return sLaunchFileProps.get(key);
+    }
+
+    private static String argValue(String[] args, String flag) {
+        if (args == null || flag == null) {
+            return nativeArgValue(flag);
+        }
+        for (int i = 0; i + 1 < args.length; i++) {
+            if (flag.equals(args[i])) {
+                String value = args[i + 1];
+                if (value != null && !value.isEmpty()) {
+                    return value;
+                }
+                return null;
+            }
+        }
+        return nativeArgValue(flag);
+    }
+
+    private static String nativeArgValue(String flag) {
+        try {
+            int count = nativeVmArgCount();
+            for (int i = 0; i + 1 < count; i++) {
+                String current = nativeVmArg(i);
+                if (flag.equals(current)) {
+                    String value = nativeVmArg(i + 1);
+                    if (value != null && !value.isEmpty()) {
+                        return value;
+                    }
+                    return null;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private static boolean isBootClassLoader(ClassLoader cl) {
+        return cl == null || "java.lang.BootClassLoader".equals(cl.getClass().getName());
+    }
+
+    private static String loaderTag(ClassLoader cl) {
+        if (cl == null) return "null";
+        try {
+            return cl.getClass().getName();
+        } catch (Throwable t) {
+            return "<error:" + throwableTag(t) + ">";
+        }
+    }
+
+    private static void logClassOwnership(String label, Class<?> cls) {
+        if (cls == null) {
+            startupLog("[WestlakeLauncher] Ownership " + label + "=null");
+            return;
+        }
+        try {
+            Class<?> superCls = cls.getSuperclass();
+            startupLog("[WestlakeLauncher] Ownership " + label
+                    + " class=" + cls.getName()
+                    + " loader=" + loaderTag(cls.getClassLoader())
+                    + " super=" + (superCls != null ? superCls.getName() : "null")
+                    + " superLoader=" + (superCls != null ? loaderTag(superCls.getClassLoader()) : "null"));
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] Ownership " + label + " failed", t);
+        }
+    }
+
+    private static void logDashboardOwnershipOnce(Activity activity, Object fragment) {
+        if (sLoggedDashboardOwnership) {
+            return;
+        }
+        sLoggedDashboardOwnership = true;
+        try {
+            logClassOwnership("engine.FragmentActivity.ref", androidx.fragment.app.FragmentActivity.class);
+            logClassOwnership("engine.Fragment.ref", androidx.fragment.app.Fragment.class);
+            logClassOwnership("engine.FragmentManager.ref", androidx.fragment.app.FragmentManager.class);
+            if (activity != null) {
+                logClassOwnership("dashboard.activity", activity.getClass());
+                startupLog("[WestlakeLauncher] Ownership dashboard.activity instanceof shim.FragmentActivity="
+                        + (activity instanceof androidx.fragment.app.FragmentActivity));
+            }
+            if (fragment != null) {
+                logClassOwnership("dashboard.fragment", fragment.getClass());
+                startupLog("[WestlakeLauncher] Ownership dashboard.fragment instanceof shim.Fragment="
+                        + (fragment instanceof androidx.fragment.app.Fragment));
+            }
+            Class<?> resolved = resolveAppClassOrNull("com.mcdonalds.homedashboard.fragment.HomeDashboardFragment");
+            if (resolved != null) {
+                logClassOwnership("dashboard.fragment.resolved", resolved);
+                startupLog("[WestlakeLauncher] Ownership resolved fragment assignableTo shim.Fragment="
+                        + androidx.fragment.app.Fragment.class.isAssignableFrom(resolved));
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] Ownership dashboard snapshot failed", t);
+        }
+    }
+
+    private static Class<?> findNamedClassOnHierarchy(Class<?> start, String className) {
+        if (start == null || className == null || className.isEmpty()) {
+            return null;
+        }
+        for (Class<?> c = start; c != null && c != Object.class; c = c.getSuperclass()) {
+            if (className.equals(c.getName())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private static void logAppClassLoadersOnce() {
+        if (sLoggedAppClassLoaders) {
+            return;
+        }
+        sLoggedAppClassLoaders = true;
+        try {
+            String contextTag = loaderTag(Thread.currentThread().getContextClassLoader());
+            String systemTag;
+            try {
+                systemTag = loaderTag(nativeSystemClassLoader());
+            } catch (Throwable t) {
+                systemTag = "<throws:" + throwableTag(t) + ">";
+            }
+            String engineTag = loaderTag(WestlakeLauncher.class.getClassLoader());
+            startupLog("[WestlakeLauncher] Loader snapshot:"
+                    + " context=" + contextTag
+                    + " system=" + systemTag
+                    + " engine=" + engineTag
+                    + " classPath=" + System.getProperty("java.class.path"));
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] Loader snapshot failed", t);
+        }
+    }
+
+    private static void ensureAppContextClassLoader() {
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
+        if (!isBootClassLoader(current)) {
+            return;
+        }
+        try {
+            ClassLoader nativeLoader = nativeSystemClassLoader();
+            if (!isBootClassLoader(nativeLoader)) {
+                Thread.currentThread().setContextClassLoader(nativeLoader);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static ClassLoader appClassLoader() {
+        logAppClassLoadersOnce();
+        ensureAppContextClassLoader();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (!isBootClassLoader(cl)) {
+            return cl;
+        }
+        try {
+            cl = nativeSystemClassLoader();
+        } catch (Throwable ignored) {
+            cl = null;
+        }
+        return isBootClassLoader(cl) ? null : cl;
+    }
+
+    private static Class<?> loadAppClass(String className) throws ClassNotFoundException {
+        ClassNotFoundException last = null;
+        ClassLoader cl = appClassLoader();
+        if (!isBootClassLoader(cl)) {
+            try {
+                return Class.forName(className, false, cl);
+            } catch (ClassNotFoundException e) {
+                last = e;
+            }
+            try {
+                return cl.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                last = e;
+            }
+        }
+        try {
+            Class<?> nativeCls = nativeFindClass(className);
+            if (nativeCls != null) {
+                return nativeCls;
+            }
+        } catch (Throwable ignored) {
+        }
+        if (last != null) {
+            throw last;
+        }
+        throw new ClassNotFoundException(className + " (no app class loader)");
+    }
+
+    private static java.lang.reflect.Method findLoaderMethod(Class<?> start,
+                                                             String methodName,
+                                                             Class<?>... parameterTypes) {
+        Class<?> current = start;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredMethod(methodName, parameterTypes);
+            } catch (NoSuchMethodException ignored) {
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private static Class<?> loadAppClassChildFirst(String className) throws ClassNotFoundException {
+        ClassNotFoundException last = null;
+        ClassLoader cl = appClassLoader();
+        if (!isBootClassLoader(cl)) {
+            try {
+                java.lang.reflect.Method findLoaded =
+                        ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+                findLoaded.setAccessible(true);
+                Object loaded = findLoaded.invoke(cl, className);
+                if (loaded instanceof Class<?>) {
+                    return (Class<?>) loaded;
+                }
+            } catch (Throwable ignored) {
+            }
+            try {
+                java.lang.reflect.Method findClass = findLoaderMethod(cl.getClass(), "findClass",
+                        String.class);
+                if (findClass != null) {
+                    findClass.setAccessible(true);
+                    Object direct = findClass.invoke(cl, className);
+                    if (direct instanceof Class<?>) {
+                        return (Class<?>) direct;
+                    }
+                }
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof ClassNotFoundException) {
+                    last = (ClassNotFoundException) cause;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (last != null) {
+            throw last;
+        }
+        return loadAppClass(className);
+    }
+
+    public static Class<?> resolveAppClassOrNull(String className) {
+        if (className == null || className.isEmpty()) {
+            return null;
+        }
+        try {
+            return loadAppClass(className);
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] resolveAppClassOrNull failed: "
+                    + className + " -> " + throwableTag(t));
+            return null;
+        }
+    }
+
+    public static Class<?> resolveAppClassChildFirstOrNull(String className) {
+        if (className == null || className.isEmpty()) {
+            return null;
+        }
+        try {
+            return loadAppClassChildFirst(className);
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] resolveAppClassChildFirstOrNull failed: "
+                    + className + " -> " + throwableTag(t));
+            return null;
+        }
+    }
+
+    private static Intent buildLaunchIntent(String packageName, String className) {
+        String resolvedPackage = packageName;
+        String resolvedClass = className;
+        if (resolvedClass != null && resolvedClass.startsWith(".")
+                && resolvedPackage != null && !resolvedPackage.isEmpty()) {
+            resolvedClass = resolvedPackage + resolvedClass;
+        }
+        if ((resolvedPackage == null || resolvedPackage.isEmpty())
+                && resolvedClass != null && !resolvedClass.isEmpty()) {
+            int dot = resolvedClass.lastIndexOf('.');
+            if (dot > 0) {
+                resolvedPackage = resolvedClass.substring(0, dot);
+            }
+        }
+        if (resolvedPackage == null || resolvedPackage.isEmpty()) {
+            resolvedPackage = MiniServer.currentPackageName();
+        }
+        if (resolvedPackage == null || resolvedPackage.isEmpty()) {
+            resolvedPackage = sBootPackageName;
+        }
+        if (resolvedPackage == null || resolvedPackage.isEmpty()) {
+            resolvedPackage = launchFileProperty("westlake.apk.package");
+        }
+        if (resolvedPackage == null || resolvedPackage.isEmpty()) {
+            try {
+                resolvedPackage = System.getProperty("westlake.apk.package");
+            } catch (Throwable ignored) {
+            }
+        }
+        resolvedPackage = packageFallbackForKnownApps(resolvedPackage, resolvedClass);
+        if (resolvedPackage == null || resolvedPackage.isEmpty()
+                || resolvedClass == null || resolvedClass.isEmpty()) {
+            throw new IllegalArgumentException("launch component unresolved: pkg="
+                    + packageName + " cls=" + className);
+        }
+        ComponentName component = new ComponentName(resolvedPackage, resolvedClass);
+        Intent intent = Intent.makeMainActivity(component);
+        intent.setPackage(resolvedPackage);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
+    }
+
+    private static boolean canOpenFile(String path) {
+        if (path == null || path.isEmpty()) return false;
+        try {
+            return nativeCanOpenFile(path);
+        } catch (Throwable ignored) {
+        }
+        java.io.FileInputStream fis = null;
+        try {
+            fis = new java.io.FileInputStream(path);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
+
+    private static byte[] readFileBytes(String path) throws java.io.IOException {
+        if (path == null || path.isEmpty()) {
+            throw new java.io.IOException("Empty path");
+        }
+        try {
+            byte[] data = nativeReadFileBytes(path);
+            if (data != null) {
+                return data;
+            }
+        } catch (Throwable ignored) {
+        }
+        java.io.FileInputStream fis = new java.io.FileInputStream(path);
+        try {
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(8192);
+            byte[] buf = new byte[8192];
+            while (true) {
+                int n = fis.read(buf);
+                if (n < 0) break;
+                if (n == 0) continue;
+                out.write(buf, 0, n);
+            }
+            return out.toByteArray();
+        } finally {
+            fis.close();
+        }
+    }
+
+    private static byte[] tryReadFileBytes(String path) {
+        try {
+            return readFileBytes(path);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static String joinPath(String base, String relative) {
+        if (base == null || relative == null || relative.isEmpty()) {
+            return null;
+        }
+        return base.endsWith("/") ? (base + relative) : (base + "/" + relative);
+    }
+
+    private static String leafName(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        int slash = path.lastIndexOf('/');
+        return slash >= 0 ? path.substring(slash + 1) : path;
+    }
+
+    private static String parentPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        int slash = path.lastIndexOf('/');
+        if (slash <= 0) {
+            return null;
+        }
+        return path.substring(0, slash);
+    }
+
+    private static String resolveReadableResDir(String preferredPath) {
+        String[] candidates = {
+            preferredPath,
+            "/data/local/tmp/westlake/mcd_res",
+            "/data/local/tmp/westlake/apk_res",
+            System.getProperty("user.dir", ".") + "/apk_res"
+        };
+        for (String candidate : candidates) {
+            if (candidate == null || candidate.isEmpty()) {
+                continue;
+            }
+            if (canOpenFile(candidate + "/resources.arsc")) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static android.app.ApkInfo buildDexOnlyInfo(
+            String packageName, String activityName, String resDir) {
+        android.app.ApkInfo info = new android.app.ApkInfo();
+        info.packageName = packageFallbackForKnownApps(
+                canonicalPackageName(packageName, activityName, null), activityName);
+        info.launcherActivity = activityName;
+        info.assetDir = resDir;
+        info.resDir = resDir;
+        if (activityName != null && !activityName.isEmpty()) {
+            info.activities.add(activityName);
+        }
+        return info;
+    }
 
     public static void main(String[] args) {
         // Disable hidden API restrictions FIRST (critical for app_process64 mode)
@@ -46,49 +919,160 @@ public class WestlakeLauncher {
                 "setHiddenApiExemptions", String[].class);
             setExemptions.setAccessible(true);
             setExemptions.invoke(runtime, (Object) new String[]{"L"});
-            System.err.println("[WestlakeLauncher] Hidden API exemptions set (all classes)");
+            startupLog("Hidden API exemptions set (all classes)");
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] Hidden API bypass: " + t.getMessage());
+            startupLog("Hidden API bypass unavailable");
         }
 
-        // Load framework native stubs BEFORE any framework class init
+        // Load framework native stubs — but SKIP if running under app_process64
+        // (it already has libandroid_runtime.so with all real framework natives)
+        boolean hasRealRuntime = false;
+        boolean strictWestlake = FRAMEWORK_POLICY_WESTLAKE_ONLY.equals(
+            System.getProperty(FRAMEWORK_POLICY_PROP));
         try {
+            // Some strict-Westlake runs expose enough framework stubs for
+            // Bitmap.createBitmap() to succeed. Treat the runtime as "real"
+            // only when the real ActivityThread app_process entrypoints are
+            // also present; our shim ActivityThread does not define them.
+            android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888);
+            Class<?> atProbe = Class.forName("android.app.ActivityThread");
+            atProbe.getDeclaredMethod("systemMain");
+            atProbe.getDeclaredMethod("getSystemContext");
+            hasRealRuntime = true;
+            startupLog("Real framework natives detected (app_process64)");
+        } catch (Throwable t) { /* no real runtime — need stubs */ }
+
+        // In strict Westlake mode the runtime already called JNI_OnLoad_framework,
+        // so avoid System.load/System.loadLibrary here; those paths pull in
+        // java.nio.file and currently crash during file-system bootstrap.
+        if (strictWestlake) {
+            startupLog("Framework stubs pre-registered by runtime");
+        } else try {
             System.loadLibrary("framework_stubs");
-            System.err.println("[WestlakeLauncher] Framework stubs loaded");
+            startupLog("Framework stubs loaded");
         } catch (Throwable t) {
-            // Try absolute path
             try {
                 System.load("/data/local/tmp/westlake/libframework_stubs.so");
-                System.err.println("[WestlakeLauncher] Framework stubs loaded (absolute)");
+                startupLog("Framework stubs loaded (absolute)");
             } catch (Throwable t2) {
-                System.err.println("[WestlakeLauncher] Framework stubs: " + t2.getMessage());
+                startupLog("Framework stubs unavailable");
             }
         }
 
-        String apkPath = System.getProperty("westlake.apk.path");
-        String activityName = System.getProperty("westlake.apk.activity");
-        String packageName = System.getProperty("westlake.apk.package", "com.example.app");
-        String manifestPath = System.getProperty("westlake.apk.manifest");
+        try {
+            nativePrimeLaunchConfig();
+        } catch (Throwable ignored) {
+        }
+        String apkPath = argValue(args, "--apk-path");
+        if (apkPath == null) apkPath = propOrSnapshot("westlake.apk.path", sBootApkPath);
+        String activityName = argValue(args, "--apk-activity");
+        if (activityName == null) activityName = propOrSnapshot("westlake.apk.activity", sBootActivityName);
+        String packageName = argValue(args, "--apk-package");
+        if (packageName == null) packageName = propOrSnapshot("westlake.apk.package", sBootPackageName);
+        packageName = normalizePackageName(packageName);
+        if (packageName == null || packageName.isEmpty()) packageName = "com.example.app";
+        String manifestPath = argValue(args, "--apk-manifest");
+        if (manifestPath == null) manifestPath = propOrSnapshot("westlake.apk.manifest", sBootManifestPath);
+        String bootResDir = argValue(args, "--apk-resdir");
+        if (bootResDir == null) bootResDir = propOrSnapshot("westlake.apk.resdir", sBootResDir);
+        if (apkPath != null && !apkPath.isEmpty()) sBootApkPath = copyString(apkPath);
+        if (activityName != null && !activityName.isEmpty()) sBootActivityName = copyString(activityName);
+        if (packageName != null && !packageName.isEmpty()) sBootPackageName = copyString(packageName);
+        if (manifestPath != null && !manifestPath.isEmpty()) sBootManifestPath = copyString(manifestPath);
+        if (bootResDir != null && !bootResDir.isEmpty()) sBootResDir = copyString(bootResDir);
+        boolean allowRealFrameworkFallback = isRealFrameworkFallbackAllowed();
+        ensureAppContextClassLoader();
 
         // Initialize main thread Looper FIRST — before any class that checks isMainThread
         android.os.Looper.prepareMainLooper();
 
-        System.err.println("[WestlakeLauncher] Starting on OHOS + ART ...");
-        System.err.println("[WestlakeLauncher] APK: " + apkPath);
-        System.err.println("[WestlakeLauncher] Activity: " + activityName);
-        System.err.println("[WestlakeLauncher] Package: " + packageName);
+        startupLog("Starting on OHOS + ART ...");
+        startupLog("APK: " + apkPath);
+        startupLog("Activity: " + activityName);
+        startupLog("Package: " + packageName);
+        startupLog("Framework policy: "
+            + (allowRealFrameworkFallback ? "allow_real" : "westlake_only"));
 
-        // Try to create a real Android context for the APK (works on app_process64)
+        if (hasRealRuntime && !allowRealFrameworkFallback) {
+            startupLog("FATAL: real framework runtime detected in strict Westlake mode");
+            System.exit(86);
+            return;
+        }
+
+        // Create a real Android context using the full framework
         try {
             Class<?> atClass = Class.forName("android.app.ActivityThread");
-            Object at = atClass.getMethod("systemMain").invoke(null);
-            Object sysCtx = atClass.getMethod("getSystemContext").invoke(at);
-            if (sysCtx instanceof android.content.Context && packageName != null) {
+            Object at;
+            Object sysCtx;
+
+            if (hasRealRuntime) {
+                // app_process64: use systemMain() directly — real natives handle everything
+                startupLog("Using ActivityThread.systemMain() (real runtime)");
+                at = atClass.getDeclaredMethod("systemMain").invoke(null);
+                sysCtx = atClass.getDeclaredMethod("getSystemContext").invoke(at);
+                startupLog("SystemContext acquired from ActivityThread.systemMain()");
+                // Try to create MCD package context for its resources
+                if (allowRealFrameworkFallback && sysCtx instanceof android.content.Context) {
+                    try {
+                        // Use the installed MCD app's resources
+                        android.content.Context mcdCtx = ((android.content.Context) sysCtx)
+                            .createPackageContext("com.mcdonalds.app",
+                                android.content.Context.CONTEXT_INCLUDE_CODE |
+                                android.content.Context.CONTEXT_IGNORE_SECURITY);
+                        startupLog("MCD context acquired");
+                        startupLog("MCD resources available");
+                        sRealContext = mcdCtx;
+                    } catch (Throwable pe) {
+                        startupLog("MCD context failed", pe);
+                        sRealContext = (android.content.Context) sysCtx;
+                    }
+                }
+            } else {
+            // dalvikvm64: need stub ServiceManager + manual ActivityThread
+            startupLog("Using manual ActivityThread (stub runtime)");
+
+            // Inject stub ServiceManager
+            Class<?> smClass = Class.forName("android.os.ServiceManager");
+            java.lang.reflect.Field cacheField = smClass.getDeclaredField("sCache");
+            cacheField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, android.os.IBinder> cache =
+                (java.util.Map<String, android.os.IBinder>) cacheField.get(null);
+            String[] services = {"activity","package","window","display","alarm","power",
+                "connectivity","wifi","audio","vibrator","notification","accessibility",
+                "input_method","input","clipboard","statusbar","deviceidle","device_policy",
+                "content","account","user","sensor_privacy","job_scheduler","device_config",
+                "color_display","uimode","overlay","autofill","batterystats","media_session",
+                "textclassification","SurfaceFlinger","permission","appops","rollback",
+                "usagestats","dropbox","companiondevice","trust","appwidget","wallpaper",
+                "dreams","people","locale","telephony.registry"};
+            for (String s : services) cache.put(s, new android.os.Binder());
+            // Also set sServiceManager proxy
+            java.lang.reflect.Field smField = smClass.getDeclaredField("sServiceManager");
+            smField.setAccessible(true);
+            java.lang.reflect.Method asInterface = Class.forName("android.os.ServiceManagerNative")
+                .getDeclaredMethod("asInterface", android.os.IBinder.class);
+            asInterface.setAccessible(true);
+            smField.set(null, asInterface.invoke(null, new android.os.Binder()));
+            startupLog("ServiceManager injected (" + services.length + " services)");
+
+            // Create ActivityThread (dalvikvm64 path)
+            java.lang.reflect.Constructor<?> atCtor = atClass.getDeclaredConstructor();
+            atCtor.setAccessible(true);
+            at = atCtor.newInstance();
+            java.lang.reflect.Field sCurrentAT = atClass.getDeclaredField("sCurrentActivityThread");
+            sCurrentAT.setAccessible(true);
+            sCurrentAT.set(null, at);
+
+            sysCtx = atClass.getDeclaredMethod("getSystemContext").invoke(at);
+            startupLog("SystemContext acquired from stub ActivityThread");
+            } // end of !hasRealRuntime else block
+            if (allowRealFrameworkFallback && sysCtx instanceof android.content.Context && packageName != null) {
                 android.content.Context realCtx = ((android.content.Context) sysCtx)
                     .createPackageContext(packageName, 3); // INCLUDE_CODE | IGNORE_SECURITY
-                System.err.println("[WestlakeLauncher] Real Android context: " + realCtx.getClass().getName());
+                startupLog("Real Android context acquired");
                 android.content.res.Resources realRes = realCtx.getResources();
-                System.err.println("[WestlakeLauncher] Real Resources: " + realRes);
+                startupLog("Real resources acquired");
                 sRealContext = realCtx;
 
                 // Render real McD drawables directly to a bitmap and send through pipe
@@ -117,71 +1101,62 @@ public class WestlakeLauncher {
                             } catch (Throwable t) { y += 40; }
                         }
                     }
-                    System.err.println("[WestlakeLauncher] Drew " + found + " real drawables");
+                    startupLog("Drew " + found + " real drawables");
 
                     // Compress to PNG and send via pipe
                     java.io.ByteArrayOutputStream pngOut = new java.io.ByteArrayOutputStream();
                     bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, pngOut);
                     byte[] png = pngOut.toByteArray();
-                    System.err.println("[WestlakeLauncher] Real icons PNG: " + png.length + " bytes");
+                    startupLog("Real icons PNG prepared (" + png.length + " bytes)");
 
                     // Store for rendering after OHBridge is initialized
                     realIconsPng = png;
                     bmp.recycle();
                 } catch (Throwable t) {
-                    System.err.println("[WestlakeLauncher] Real drawable error: " + t);
+                    startupLog("Real drawable capture failed");
                 }
             }
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] Real context not available (custom ART): " + t.getMessage());
+            startupLog("Real context not available (custom ART)");
         }
 
         // Parse AndroidManifest.xml for Application class and component list
         android.content.pm.ManifestParser.ManifestInfo manifestInfo = null;
-        if (manifestPath != null) {
+        manifestPath = propOrSnapshot("westlake.apk.manifest", sBootManifestPath);
+        if (manifestPath != null && !manifestPath.isEmpty()) {
             try {
-                java.io.File mf = new java.io.File(manifestPath);
-                if (mf.exists()) {
-                    java.io.FileInputStream fis = new java.io.FileInputStream(mf);
-                    byte[] data = new byte[(int) mf.length()];
-                    int off = 0;
-                    while (off < data.length) {
-                        int n = fis.read(data, off, data.length - off);
-                        if (n < 0) break;
-                        off += n;
-                    }
-                    fis.close();
+                byte[] data = readFileBytes(manifestPath);
+                if (data != null && data.length > 0) {
                     manifestInfo = android.content.pm.ManifestParser.parse(data);
-                    System.err.println("[WestlakeLauncher] Manifest: " + manifestInfo.applicationClass
+                    startupLog("Manifest: " + manifestInfo.applicationClass
                         + " (" + manifestInfo.activities.size() + " activities, "
                         + manifestInfo.providers.size() + " providers)");
                 }
             } catch (Exception e) {
-                System.err.println("[WestlakeLauncher] Manifest parse error: " + e);
+                startupLog("Manifest parse error", e);
             }
         }
 
         // Check native bridge
         boolean nativeOk = OHBridge.isNativeAvailable();
-        System.err.println("[WestlakeLauncher] OHBridge native: " + (nativeOk ? "LOADED" : "UNAVAILABLE"));
+        startupLog("OHBridge native: " + (nativeOk ? "LOADED" : "UNAVAILABLE"));
 
         if (nativeOk) {
             int rc = 0;
             try { rc = OHBridge.arkuiInit(); } catch (UnsatisfiedLinkError e) { /* subprocess — no arkui */ }
-            System.err.println("[WestlakeLauncher] arkuiInit() = " + rc);
+            startupLog("arkuiInit() = " + rc);
 
             // If real icons were pre-rendered (app_process64), send immediately
             if (realIconsPng != null) {
-                System.err.println("[WestlakeLauncher] Sending real icons frame...");
+                startupLog("Sending real icons frame...");
                 try {
                     long surf = OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
                     long canv = OHBridge.surfaceGetCanvas(surf);
                     OHBridge.canvasDrawImage(canv, realIconsPng, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
                     int flushResult = OHBridge.surfaceFlush(surf);
-                    System.err.println("[WestlakeLauncher] Real icons frame sent! flush=" + flushResult + " (" + realIconsPng.length + " bytes)");
+                    startupLog("Real icons frame sent! flush=" + flushResult + " (" + realIconsPng.length + " bytes)");
                 } catch (Throwable t) {
-                    System.err.println("[WestlakeLauncher] Real icons send error: " + t);
-                    t.printStackTrace(System.err);
+                    startupLog("Real icons send error");
                 }
                 // Continue to Activity launch (don't block here — pipe stays open via render loop)
             }
@@ -190,22 +1165,50 @@ public class WestlakeLauncher {
         // Load native Android framework resource engine
         try {
             System.loadLibrary("test_jni");
-            System.err.println("[WestlakeLauncher] test_jni loaded OK!");
+            startupLog("test_jni loaded OK!");
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] test_jni FAILED: " + t.getMessage());
+            startupLog("test_jni failed");
         }
         try {
             System.loadLibrary("androidfw_jni");
-            System.err.println("[WestlakeLauncher] libandroidfw_jni LOADED!");
+            startupLog("libandroidfw_jni loaded");
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] libandroidfw_jni FAILED: " + t.getMessage());
+            startupLog("libandroidfw_jni failed");
         }
 
+        String bootstrapApkPath = propOrSnapshot("westlake.apk.path", sBootApkPath);
+        if (bootstrapApkPath != null && !bootstrapApkPath.isEmpty()) apkPath = bootstrapApkPath;
+        String bootstrapActivity = propOrSnapshot("westlake.apk.activity", sBootActivityName);
+        if (bootstrapActivity != null && !bootstrapActivity.isEmpty()) activityName = bootstrapActivity;
+        String bootstrapPackage = stableLaunchPackage(packageName, activityName, manifestInfo);
+        if (bootstrapPackage != null && !bootstrapPackage.isEmpty()) packageName = bootstrapPackage;
+        String bootstrapManifest = propOrSnapshot("westlake.apk.manifest", sBootManifestPath);
+        if (bootstrapManifest != null && !bootstrapManifest.isEmpty()) manifestPath = bootstrapManifest;
+        String bootstrapResDir = propOrSnapshot("westlake.apk.resdir", sBootResDir);
+        if (bootstrapResDir != null && !bootstrapResDir.isEmpty()) bootResDir = bootstrapResDir;
+        packageName = canonicalPackageName(packageName, activityName, manifestInfo);
+        packageName = packageFallbackForKnownApps(packageName, activityName);
+        if (apkPath != null && !apkPath.isEmpty()) sBootApkPath = copyString(apkPath);
+        if (activityName != null && !activityName.isEmpty()) sBootActivityName = copyString(activityName);
+        if (packageName != null && !packageName.isEmpty()) sBootPackageName = copyString(packageName);
+        if (manifestPath != null && !manifestPath.isEmpty()) sBootManifestPath = copyString(manifestPath);
+        if (bootResDir != null && !bootResDir.isEmpty()) sBootResDir = copyString(bootResDir);
+        startupLog("[WestlakeLauncher] Bootstrap props refreshed: apk=" + apkPath
+            + " activity=" + activityName + " package=" + packageName + " resDir=" + bootResDir);
+
         // Initialize MiniServer
-        MiniServer.init(packageName);
-        MiniServer server = MiniServer.get();
-        MiniActivityManager am = server.getActivityManager();
-        System.err.println("[WestlakeLauncher] MiniServer initialized");
+        startupLog("MiniServer init begin pkg=" + packageName);
+        MiniServer server = MiniServer.init(packageName);
+        startupLog("MiniServer init returned server=" + server);
+        MiniActivityManager am = MiniServer.currentActivityManager();
+        startupLog("MiniServer activityManager=" + am);
+        if (server == null) {
+            throw new IllegalStateException("MiniServer.init returned null");
+        }
+        if (am == null) {
+            throw new IllegalStateException("MiniServer activity manager missing");
+        }
+        startupLog("MiniServer initialized");
 
         // Pre-seed SharedPreferences BEFORE any app code runs
         if ("me.tsukanov.counter".equals(packageName)) {
@@ -216,7 +1219,7 @@ public class WestlakeLauncher {
                          .putInt("Steps", 42)
                          .putInt("Coffee", 3)
                          .apply();
-                System.err.println("[WestlakeLauncher] Pre-seeded 3 counters");
+                startupLog("Pre-seeded 3 counters");
             }
         }
         // Store counter data to set on CounterApplication after its creation
@@ -233,41 +1236,29 @@ public class WestlakeLauncher {
         String appClassName = null;
         if (manifestInfo != null && manifestInfo.applicationClass != null) {
             appClassName = manifestInfo.applicationClass;
-            System.err.println("[WestlakeLauncher] Application from manifest: " + appClassName);
+            startupLog("[WestlakeLauncher] Application from manifest: " + appClassName);
         }
-        if (appClassName == null && packageName != null) {
-            // Fallback: guess common patterns
-            String[] candidates = {
-                packageName + "." + packageName.substring(packageName.lastIndexOf('.') + 1)
-                    .substring(0, 1).toUpperCase()
-                    + packageName.substring(packageName.lastIndexOf('.') + 2) + "Application",
-                packageName + ".App",
-                packageName + ".MainApplication",
-                packageName + ".CounterApplication",
-            };
-            for (String c : candidates) {
-                try {
-                    ClassLoader.getSystemClassLoader().loadClass(c);
-                    appClassName = c;
-                    break;
-                } catch (ClassNotFoundException e) { /* try next */ }
-            }
+        if ("com.mcdonalds.app.application.McDMarketApplication".equals(appClassName)) {
+            startupLog("[WestlakeLauncher] Skipping custom McDMarketApplication bootstrap");
+            appClassName = null;
         }
-        // Detect Hilt/Dagger apps
+        // Detect only explicit Hilt-generated Application classes here. The
+        // broader McDonald's package/application heuristic regressed launch by
+        // forcing an early ctor-bypassed Application path that was absent in
+        // the last accepted baseline.
         boolean isHiltApp = false;
         if (appClassName != null) {
-            try {
-                ClassLoader.getSystemClassLoader().loadClass(
-                    "dagger.hilt.android.internal.managers.ApplicationComponentManager");
+            if (appClassName.contains("Hilt_")) {
                 isHiltApp = true;
-                System.err.println("[WestlakeLauncher] Hilt/Dagger app detected");
-            } catch (ClassNotFoundException e) { /* not Hilt */ }
+                startupLog("[WestlakeLauncher] Hilt/Dagger app detected");
+            }
         }
 
         if (appClassName != null) {
             try {
-                Class<?> appCls = ClassLoader.getSystemClassLoader().loadClass(appClassName);
-                android.app.Application customApp = (android.app.Application) appCls.newInstance();
+                Class<?> appCls = loadAppClass(appClassName);
+                android.app.Application customApp = instantiateApplicationInstance(
+                        appCls, appClassName, isHiltApp);
                 // Attach real Android context as base (critical for app_process64 mode)
                 if (sRealContext instanceof android.content.Context) {
                     try {
@@ -275,26 +1266,22 @@ public class WestlakeLauncher {
                             .getDeclaredMethod("attachBaseContext", android.content.Context.class);
                         attach.setAccessible(true);
                         attach.invoke(customApp, (android.content.Context) sRealContext);
-                        System.err.println("[WestlakeLauncher] Attached real context to Application");
+                        startupLog("[WestlakeLauncher] Attached real context to Application");
                     } catch (Throwable t) {
-                        System.err.println("[WestlakeLauncher] attachBaseContext failed: " + t);
+                        startupLog("[WestlakeLauncher] attachBaseContext failed: " + throwableTag(t));
                     }
                 }
-                server.setApplication(customApp);
+                MiniServer.currentSetApplication(customApp);
 
                 // Wire up resources + AssetManager BEFORE Application.onCreate()
                 // so config files (gma_api_config.json, etc.) are accessible
                 {
-                    String earlyResDir = System.getProperty("westlake.apk.resdir");
-                    if (earlyResDir == null || !new java.io.File(earlyResDir, "resources.arsc").exists()) {
-                        String[] fallbacks = { "/data/local/tmp/westlake/mcd_res", "/data/local/tmp/westlake/apk_res" };
-                        for (String fb : fallbacks) {
-                            if (new java.io.File(fb, "resources.arsc").exists()) { earlyResDir = fb; break; }
-                        }
-                    }
+                    String earlyResDir = resolveReadableResDir(
+                        propOrSnapshot("westlake.apk.resdir", sBootResDir));
                     if (earlyResDir != null) {
                         try {
-                            android.app.ApkInfo earlyInfo = android.app.ApkLoader.loadFromExtracted(earlyResDir, packageName);
+                            android.app.ApkInfo earlyInfo = android.app.ApkLoader.loadFromExtracted(
+                                earlyResDir, packageName, activityName);
                             try {
                                 java.lang.reflect.Field f = MiniServer.class.getDeclaredField("mApkInfo");
                                 f.setAccessible(true);
@@ -308,15 +1295,16 @@ public class WestlakeLauncher {
                             if (earlyInfo.assetDir != null) {
                                 ShimCompat.setAssetDir(customApp.getAssets(), earlyInfo.assetDir);
                             }
-                            System.err.println("[WestlakeLauncher] Early resource/asset setup done (resDir=" + earlyResDir + ")");
+                            startupLog("[WestlakeLauncher] Early resource/asset setup done (resDir=" + earlyResDir + ")");
                         } catch (Exception ex) {
-                            System.err.println("[WestlakeLauncher] Early resource setup failed: " + ex);
+                            startupLog("[WestlakeLauncher] Early resource setup failed: " + ex.getClass().getName());
                         }
                     }
                 }
 
-                // Run Application.onCreate with timeout for ALL apps (including Hilt)
-                // Hilt apps need onCreate to set up the component manager
+                // Run Application.onCreate with timeout for all apps. Skipping it
+                // for ctor-bypassed McD/Hilt experiments regressed launch before
+                // the last accepted baseline, so keep the normal threaded path.
                 {
                     final android.app.Application appRef = customApp;
                     final boolean[] onCreateDone = { false };
@@ -329,36 +1317,36 @@ public class WestlakeLauncher {
                             } catch (Throwable e) {
                                 onCreateDone[0] = true;
                                 onCreateError[0] = e;
-                                System.err.println("[WestlakeLauncher] Application.onCreate error: " + e);
-                                e.printStackTrace(System.err);
+                                startupLog("[WestlakeLauncher] Application.onCreate error: " + throwableTag(e));
                             }
                         }
                     }, "AppOnCreate");
                     appThread.setDaemon(true);
                     appThread.start();
-                    int timeoutMs = isHiltApp ? 3000 : 5000; // Short timeout: Hilt DI completes in <1s, rest is blocking analytics
-                    // Wait with periodic progress reporting
+                    int timeoutMs = isHiltApp ? 3000 : 5000; // Hilt DI should settle quickly
                     long startTime = System.currentTimeMillis();
                     int reportInterval = 10000; // 10s
                     while (!onCreateDone[0] && (System.currentTimeMillis() - startTime) < timeoutMs) {
                         try { appThread.join(reportInterval); } catch (InterruptedException ie) {}
                         if (!onCreateDone[0]) {
                             long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-                            System.err.println("[WestlakeLauncher] Application.onCreate still running (" + elapsed + "s)...");
+                            startupLog("[WestlakeLauncher] Application.onCreate still running (" + elapsed + "s)...");
                         }
                     }
                     if (onCreateDone[0]) {
-                        System.err.println("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName()
-                            + (onCreateError[0] != null ? " (with error: " + onCreateError[0].getMessage() + ")" : ""));
+                        startupLog("[WestlakeLauncher] Application.onCreate done: " + appCls.getSimpleName()
+                            + (onCreateError[0] != null
+                            ? " (with error: " + throwableTag(onCreateError[0]) + ")"
+                            : ""));
                     } else {
-                        System.err.println("[WestlakeLauncher] Application.onCreate TIMEOUT (" + timeoutMs + "ms)"
+                        startupLog("[WestlakeLauncher] Application.onCreate TIMEOUT (" + timeoutMs + "ms)"
                             + " — continuing anyway (DI may be partial)");
                     }
                     // Force-kill the background thread to prevent CPU starvation and memory growth
                     if (!onCreateDone[0]) {
                         try { appThread.interrupt(); } catch (Throwable t) {}
                         try { appThread.stop(); } catch (Throwable t) {}  // deprecated but necessary
-                        System.err.println("[WestlakeLauncher] Killed Application.onCreate() thread");
+                        startupLog("[WestlakeLauncher] Killed Application.onCreate() thread");
                     }
                 }
                 // Force-set 'counters' field on CounterApplication (Counter app specific)
@@ -368,199 +1356,303 @@ public class WestlakeLauncher {
                     Object existing = cf.get(customApp);
                     if (existing == null && !counterData.isEmpty()) {
                         cf.set(customApp, counterData);
-                        System.err.println("[WestlakeLauncher] Force-set counters: " + counterData.keySet());
+                        startupLog("[WestlakeLauncher] Force-set counters: " + counterData.keySet());
                     }
                 } catch (Exception e) { /* not a counter app */ }
             } catch (ClassNotFoundException e) {
-                System.err.println("[WestlakeLauncher] Application class not found: " + appClassName);
+                startupLog("[WestlakeLauncher] Application class not found: " + appClassName);
             } catch (Throwable e) {
-                System.err.println("[WestlakeLauncher] Application error (caught): " + e);
-                e.printStackTrace(System.err);
+                startupLog("[WestlakeLauncher] Application error (caught)", e);
                 // Continue without the custom Application
             }
         }
 
         // Load APK resources — use pre-extracted dir if available (dalvikvm has no ZipFile JNI)
         Activity launchedActivity = null;
-        String targetActivity = activityName;
-        String resDir = System.getProperty("westlake.apk.resdir");
-        if (apkPath != null && !apkPath.isEmpty()) {
-            try {
-                System.err.println("[WestlakeLauncher] Loading APK: " + apkPath);
-                System.err.println("[WestlakeLauncher] ResDir: " + resDir);
+        Class<?> resolvedActivityClass = null;
+        String resolvedApkPath = propOrSnapshot("westlake.apk.path", sBootApkPath);
+        if (resolvedApkPath != null && !resolvedApkPath.isEmpty()) {
+            apkPath = resolvedApkPath;
+        }
+        String resolvedActivityName = propOrSnapshot("westlake.apk.activity", sBootActivityName);
+        if (resolvedActivityName != null && !resolvedActivityName.isEmpty()) {
+            activityName = resolvedActivityName;
+        }
+        String resolvedPackageName = stableLaunchPackage(packageName, activityName, manifestInfo);
+        if (resolvedPackageName != null && !resolvedPackageName.isEmpty()) {
+            packageName = resolvedPackageName;
+        }
+        packageName = canonicalPackageName(packageName, activityName, manifestInfo);
+        packageName = packageFallbackForKnownApps(packageName, activityName);
+        String resDir = propOrSnapshot("westlake.apk.resdir", sBootResDir);
+        if (apkPath != null && !apkPath.isEmpty()) sBootApkPath = copyString(apkPath);
+        if (activityName != null && !activityName.isEmpty()) sBootActivityName = copyString(activityName);
+        if (packageName != null && !packageName.isEmpty()) sBootPackageName = copyString(packageName);
+        if (resDir != null && !resDir.isEmpty()) sBootResDir = copyString(resDir);
+        String launchApkPath = sBootApkPath != null ? copyString(sBootApkPath) : copyString(apkPath);
+        String launchActivity = sBootActivityName != null ? copyString(sBootActivityName) : copyString(activityName);
+        String launchPackage = stableLaunchPackage(packageName, launchActivity, manifestInfo);
+        launchPackage = packageFallbackForKnownApps(launchPackage, launchActivity);
+        String launchResDir = sBootResDir != null ? copyString(sBootResDir) : copyString(resDir);
+        String targetPackageName = stableLaunchPackage(launchPackage, launchActivity, manifestInfo);
+        targetPackageName = packageFallbackForKnownApps(targetPackageName, launchActivity);
+        if (targetPackageName == null || targetPackageName.isEmpty()) {
+            targetPackageName = "app";
+        }
+        String targetActivity = launchActivity;
+        startupLog("[WestlakeLauncher] Resolved launch props: apk=" + launchApkPath
+            + " activity=" + launchActivity + " package=" + launchPackage + " resDir=" + launchResDir);
+        startupLog("[WestlakeLauncher] Launch snapshot: apk=" + sBootApkPath
+            + " activity=" + sBootActivityName + " package=" + sBootPackageName + " resDir=" + sBootResDir);
+        try {
+            apkPath = launchApkPath;
+            activityName = launchActivity;
+            packageName = launchPackage;
+            resDir = launchResDir;
+            targetActivity = launchActivity;
+            packageName = preferredLaunchPackage(
+                    packageName, targetPackageName, targetActivity, manifestInfo);
+            targetPackageName = preferredLaunchPackage(
+                    targetPackageName, packageName, targetActivity, manifestInfo);
+            if (apkPath == null) apkPath = "";
+            if (isPlaceholderPackage(packageName)) {
+                packageName = targetPackageName;
+            }
+            if (isPlaceholderPackage(targetPackageName)) {
+                targetPackageName = packageName;
+            }
+            packageName = packageFallbackForKnownApps(packageName, targetActivity);
+            targetPackageName = packageFallbackForKnownApps(targetPackageName, targetActivity);
+            if (packageName == null || packageName.isEmpty()) {
+                packageName = packageFallbackForKnownApps("app", targetActivity);
+            }
+            if (targetPackageName == null || targetPackageName.isEmpty()
+                    || isPlaceholderPackage(targetPackageName)) {
+                targetPackageName = packageName;
+            }
+            persistLaunchPackage(packageName);
+            persistLaunchPackage(targetPackageName);
+            startupLog("[WestlakeLauncher] Package handoff: launch=" + launchPackage
+                    + " resolved=" + packageName + " target=" + targetPackageName);
+            startupLog("[WestlakeLauncher] Loading APK: " + apkPath);
+            startupLog("[WestlakeLauncher] ResDir: " + resDir);
 
-                android.app.ApkInfo info;
-                // Check resDir — also try fallback paths if the primary path isn't accessible
-                String effectiveResDir = resDir;
-                if (effectiveResDir != null && !new java.io.File(effectiveResDir, "resources.arsc").exists()) {
-                    System.err.println("[WestlakeLauncher] ResDir not accessible: " + effectiveResDir);
-                    // Try sibling of the dalvikvm binary
-                    String[] fallbacks = {
-                        "/data/local/tmp/westlake/apk_res",
-                        System.getProperty("user.dir", ".") + "/apk_res"
-                    };
-                    for (String fb : fallbacks) {
-                        if (new java.io.File(fb, "resources.arsc").exists()) {
-                            effectiveResDir = fb;
-                            System.err.println("[WestlakeLauncher] Using fallback resDir: " + fb);
-                            break;
-                        }
-                    }
-                }
-                if (effectiveResDir != null && new java.io.File(effectiveResDir, "resources.arsc").exists()) {
-                    // Use pre-extracted resources (host extracted them before spawning dalvikvm)
-                    info = android.app.ApkLoader.loadFromExtracted(effectiveResDir, packageName);
-                    // Also load split APK resources (xxxhdpi, en, etc.)
-                    android.content.res.Resources appRes2 = null;
-                    try { appRes2 = server.getApplication().getResources(); } catch (Throwable t) {}
-                    for (String splitName : new String[]{"resources_xxxhdpi.arsc", "resources_en.arsc"}) {
-                        java.io.File splitArsc = new java.io.File(effectiveResDir, splitName);
-                        if (splitArsc.exists() && appRes2 != null) {
-                            try {
-                                java.io.FileInputStream fis = new java.io.FileInputStream(splitArsc);
-                                byte[] data = new byte[(int) splitArsc.length()];
-                                int off = 0;
-                                while (off < data.length) { int n = fis.read(data, off, data.length - off); if (n < 0) break; off += n; }
-                                fis.close();
-                                android.content.res.ResourceTableParser.parse(data, appRes2);
-                                System.err.println("[WestlakeLauncher] Loaded split: " + splitName
-                                    + " (" + data.length + " bytes, entries=" + appRes2.getResourceTable().getStringCount() + ")");
-                            } catch (Throwable t) {
-                                System.err.println("[WestlakeLauncher] Split error (" + splitName + "): " + t);
-                                t.printStackTrace(System.err);
-                            }
-                        } else {
-                            System.err.println("[WestlakeLauncher] Split " + splitName + " exists=" + splitArsc.exists() + " appRes=" + (appRes2 != null));
-                        }
-                    }
-                    // Store ApkInfo on MiniServer so LayoutInflater can find resDir
+            android.app.ApkInfo info;
+            // Check resDir — also try fallback paths if the primary path isn't accessible
+            boolean preferredResReadable = resDir != null && canOpenFile(resDir + "/resources.arsc");
+            String effectiveResDir = resolveReadableResDir(resDir);
+            if (resDir != null && !preferredResReadable) {
+                startupLog("[WestlakeLauncher] ResDir not accessible: " + resDir);
+            }
+            if (effectiveResDir != null && resDir != null && !effectiveResDir.equals(resDir)) {
+                startupLog("[WestlakeLauncher] Using fallback resDir: " + effectiveResDir);
+            }
+            if (effectiveResDir != null) {
+                startupLog("[WestlakeLauncher] Using pre-extracted loader for " + effectiveResDir);
+                // Use pre-extracted resources (host extracted them before spawning dalvikvm)
+                info = android.app.ApkLoader.loadFromExtracted(
+                    effectiveResDir, packageName, activityName);
+                info.packageName = packageName;
+                info.launcherActivity = activityName;
+                if ((info.activities == null || info.activities.isEmpty())
+                        && activityName != null && !activityName.isEmpty()) {
                     try {
-                        java.lang.reflect.Field f = MiniServer.class.getDeclaredField("mApkInfo");
-                        f.setAccessible(true);
-                        f.set(server, info);
-                    } catch (Exception ex) { System.err.println("[WestlakeLauncher] setApkInfo: " + ex); }
-                    System.err.println("[WestlakeLauncher] Loaded from pre-extracted resources (resDir=" + info.resDir + ")");
-
-                    // Wire resources to Application (same as MiniServer.loadApk does)
-                    android.content.res.Resources res = server.getApplication().getResources();
-                    if (info.resourceTable != null) {
-                        ShimCompat.loadResourceTable(res, (android.content.res.ResourceTable) info.resourceTable);
-                        System.err.println("[WestlakeLauncher] ResourceTable wired to Application");
+                        info.activities.add(activityName);
+                    } catch (Throwable ignored) {
                     }
-                    // Set APK path for layout inflation (LayoutInflater reads AXML from here)
-                    ShimCompat.setApkPath(res, apkPath);
-                    // Set asset dir for extracted res/ layouts
-                    if (info.assetDir != null) {
-                        ShimCompat.setAssetDir(server.getApplication().getAssets(), info.assetDir);
-                    }
-                } else {
-                    info = server.loadApk(apkPath);
                 }
-                System.err.println("[WestlakeLauncher] APK loaded: " + info);
-                System.err.println("[WestlakeLauncher]   package: " + info.packageName);
-                System.err.println("[WestlakeLauncher]   activities: " + info.activities);
-                System.err.println("[WestlakeLauncher]   launcher: " + info.launcherActivity);
-                System.err.println("[WestlakeLauncher]   dex paths: " + info.dexPaths);
+                // Also load split APK resources (xxxhdpi, en, etc.)
+                android.content.res.Resources appRes2 = null;
+                try {
+                    android.app.Application currentApp = MiniServer.currentApplication();
+                    if (currentApp != null) {
+                        appRes2 = currentApp.getResources();
+                    }
+                } catch (Throwable t) {}
+                for (String splitName : new String[]{"resources_xxxhdpi.arsc", "resources_en.arsc"}) {
+                    String splitPath = effectiveResDir + "/" + splitName;
+                    byte[] data = tryReadFileBytes(splitPath);
+                    if (data != null && appRes2 != null) {
+                        try {
+                            android.content.res.ResourceTableParser.parse(data, appRes2);
+                            startupLog("[WestlakeLauncher] Loaded split: " + splitName
+                                + " (" + data.length + " bytes, entries=" + appRes2.getResourceTable().getStringCount() + ")");
+                        } catch (Throwable t) {
+                            startupLog("[WestlakeLauncher] Split error (" + splitName + ")", t);
+                        }
+                    } else {
+                        startupLog("[WestlakeLauncher] Split " + splitName + " exists=" + (data != null) + " appRes=" + (appRes2 != null));
+                    }
+                }
+                // Store ApkInfo on MiniServer so LayoutInflater can find resDir
+                try {
+                    java.lang.reflect.Field f = MiniServer.class.getDeclaredField("mApkInfo");
+                    f.setAccessible(true);
+                    f.set(server, info);
+                } catch (Exception ex) { startupLog("[WestlakeLauncher] setApkInfo", ex); }
+                startupLog("[WestlakeLauncher] Loaded from pre-extracted resources (resDir=" + info.resDir + ")");
+
+                // Wire resources to Application (same as MiniServer.loadApk does)
+                android.app.Application currentApp = MiniServer.currentApplication();
+                android.content.res.Resources res = currentApp != null ? currentApp.getResources() : null;
+                if (info.resourceTable != null) {
+                    ShimCompat.loadResourceTable(res, (android.content.res.ResourceTable) info.resourceTable);
+                    startupLog("[WestlakeLauncher] ResourceTable wired to Application");
+                }
+                // Set APK path for layout inflation (LayoutInflater reads AXML from here)
+                if (res != null) {
+                    ShimCompat.setApkPath(res, apkPath);
+                }
+                // Set asset dir for extracted res/ layouts
+                if (info.assetDir != null && currentApp != null) {
+                    ShimCompat.setAssetDir(currentApp.getAssets(), info.assetDir);
+                }
+            } else if (apkPath != null && apkPath.endsWith(".apk")) {
+                startupLog("[WestlakeLauncher] Falling back to APK Zip loader");
+                info = MiniServer.currentLoadApk(apkPath);
+            } else {
+                startupLog("[WestlakeLauncher] No readable extracted resources; continuing with dex-only metadata");
+                info = buildDexOnlyInfo(packageName, activityName, resDir);
+            }
+            info.packageName = preferredLaunchPackage(
+                    info.packageName, targetPackageName, targetActivity, manifestInfo);
+            if (isPlaceholderPackage(packageName)) {
+                packageName = info.packageName;
+            }
+            if (!isPlaceholderPackage(info.packageName)) {
+                targetPackageName = info.packageName;
+                packageName = info.packageName;
+                System.setProperty("westlake.apk.package", info.packageName);
+                MiniServer.currentSetPackageName(info.packageName);
+            }
+            startupLog("[WestlakeLauncher] APK loaded: " + info);
+            startupLog("[WestlakeLauncher]   package: " + info.packageName);
+            startupLog("[WestlakeLauncher]   activity count: " + info.activities.size());
+            startupLog("[WestlakeLauncher]   launcher: " + info.launcherActivity);
+            startupLog("[WestlakeLauncher]   dex count: " + info.dexPaths.size());
 
                 // Determine which activity to launch (declared before try for catch visibility)
-                targetActivity = activityName;
                 if (targetActivity == null || targetActivity.isEmpty()) {
                     targetActivity = info.launcherActivity;
                 }
-                if (targetActivity == null || targetActivity.isEmpty()) {
-                    if (!info.activities.isEmpty()) {
-                        targetActivity = info.activities.get(0);
-                    }
+	                if (targetActivity == null) {
+	                    startupLog("[WestlakeLauncher] ERROR: No activity to launch");
+	                    return;
+	                }
+                targetPackageName = preferredLaunchPackage(
+                        info.packageName, targetPackageName, targetActivity, manifestInfo);
+                targetPackageName = preferredLaunchPackage(
+                        targetPackageName, packageName, targetActivity, manifestInfo);
+                if (!isPlaceholderPackage(targetPackageName)) {
+                    packageName = targetPackageName;
+                    persistLaunchPackage(targetPackageName);
                 }
-                if (targetActivity == null) {
-                    System.err.println("[WestlakeLauncher] ERROR: No activity to launch");
-                    return;
-                }
 
-                System.err.println("[WestlakeLauncher] Launching: " + targetActivity);
+		                startupLog("[WestlakeLauncher] Launching: " + targetActivity);
 
-                // For Hilt apps: skip real activity (constructor hangs in DI)
-                // Create a plain Activity with the app's splash content instead
-                boolean isHiltActivity = false;
-                try {
-                    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                    if (cl == null) cl = ClassLoader.getSystemClassLoader();
-                    Class<?> actCls = cl.loadClass(targetActivity);
-                    // Check if superclass chain contains "Hilt_"
-                    Class<?> sc = actCls.getSuperclass();
-                    while (sc != null) {
-                        if (sc.getName().contains("Hilt_")) { isHiltActivity = true; break; }
-                        sc = sc.getSuperclass();
+		                // For Hilt apps: skip real activity (constructor hangs in DI)
+		                // Create a plain Activity with the app's splash content instead
+		                boolean isHiltActivity = false;
+			                try {
+		                    Class<?> actCls = loadAppClass(targetActivity);
+                        resolvedActivityClass = actCls;
+                        am.registerActivityClass(targetActivity, actCls);
+                        startupLog("[WestlakeLauncher] Resolved activity class via "
+                            + actCls.getClassLoader());
+		                    // Check if superclass chain contains "Hilt_"
+		                    Class<?> sc = actCls.getSuperclass();
+		                    while (sc != null) {
+		                        if (sc.getName().contains("Hilt_")) { isHiltActivity = true; break; }
+		                        sc = sc.getSuperclass();
+		                    }
+		                } catch (Exception e) {
+                        startupLog("[WestlakeLauncher] Activity class resolve failed", e);
                     }
-                } catch (Exception e) { /* can't check, try normal launch */ }
 
-                if (isHiltActivity) {
-                    // Use WestlakeActivityThread for Hilt apps — proper AOSP lifecycle with DI injection
-                    System.err.println("[WestlakeLauncher] Hilt activity — using WestlakeActivityThread");
-                    final String launchPkg2 = info.packageName != null ? info.packageName : packageName;
-                    final String fTarget2 = targetActivity;
-                    final Activity[] result2 = { null };
-
-                    // Find the Application class name from manifest
                     String appClass = null;
                     if (manifestInfo != null && manifestInfo.applicationClass != null) {
                         appClass = manifestInfo.applicationClass;
                     }
-
-                    // Initialize WestlakeActivityThread (AOSP-style lifecycle)
-                    final android.app.WestlakeActivityThread wat = android.app.WestlakeActivityThread.currentActivityThread();
-                    if (wat.getInstrumentation() == null) {
-                        wat.attach(launchPkg2, appClass, Thread.currentThread().getContextClassLoader());
-                        System.err.println("[WestlakeLauncher] WestlakeActivityThread attached");
+                    ClassLoader activityClassLoader = resolvedActivityClass != null
+                        ? resolvedActivityClass.getClassLoader()
+                        : Thread.currentThread().getContextClassLoader();
+                    if (activityClassLoader == null) {
+                        activityClassLoader = Thread.currentThread().getContextClassLoader();
                     }
+
+                        boolean preferWat = isHiltActivity
+                            || "com.mcdonalds.app".equals(targetPackageName);
+		                if (preferWat) {
+		                    // Use WestlakeActivityThread for Hilt apps — proper AOSP lifecycle with DI injection
+		                    startupLog("[WestlakeLauncher] Using WestlakeActivityThread");
+	                    final String fTarget2 = targetActivity;
+	                    final String launchPkg2 = preferredLaunchPackage(
+                                info.packageName, targetPackageName, fTarget2, manifestInfo);
+                    final Activity[] result2 = { null };
+
+	                    // Initialize WestlakeActivityThread (AOSP-style lifecycle)
+	                    final android.app.WestlakeActivityThread wat = android.app.WestlakeActivityThread.currentActivityThread();
+	                    if (wat.getInstrumentation() == null) {
+                            startupLog("[WestlakeLauncher] WestlakeActivityThread attach begin");
+                            try {
+                                persistLaunchPackage(launchPkg2);
+	                            wat.attach(launchPkg2, appClass, activityClassLoader);
+	                            startupLog("[WestlakeLauncher] WestlakeActivityThread attached");
+                            } catch (Throwable attachError) {
+                                startupLog("[WestlakeLauncher] WestlakeActivityThread attach failed", attachError);
+                                throw attachError;
+                            }
+	                    }
 
                     // Launch synchronously on main thread (no timeout needed)
                     try {
-                        Intent intent = new Intent();
-                        intent.setComponent(new ComponentName(launchPkg2, fTarget2));
-                        result2[0] = wat.performLaunchActivity(fTarget2, launchPkg2, intent, null);
+                        startupLog("[WestlakeLauncher] WAT launch args: pkg="
+                                + launchPkg2 + " cls=" + fTarget2);
+                        startupLog("[WestlakeLauncher] WAT launch via direct ActivityThread path");
+                        Intent watIntent = new Intent(Intent.ACTION_MAIN);
+                        watIntent.setComponent(new ComponentName(launchPkg2, fTarget2));
+                        watIntent.setPackage(launchPkg2);
+                        watIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startupLog("[WestlakeLauncher] WAT intent: pkg="
+                                + watIntent.getPackage() + " cmp=" + watIntent.getComponent());
+                        result2[0] = android.app.WestlakeActivityThread.launchActivity(
+                                wat, fTarget2, launchPkg2, watIntent);
                         if (result2[0] != null) {
                             launchedActivity = result2[0];
-                            System.err.println("[WestlakeLauncher] Activity created: " + launchedActivity.getClass().getName());
+                            startupLog("[WestlakeLauncher] Activity created: " + launchedActivity.getClass().getName());
                             // Queue dashboard navigation
                             android.app.WestlakeActivityThread.pendingDashboardClass =
                                 "com.mcdonalds.homedashboard.activity.HomeDashboardActivity";
                         }
                     } catch (Throwable e) {
-                        System.err.println("[WestlakeLauncher] WestlakeActivityThread error: " + e.getMessage());
+	                        dumpThrowable("[WestlakeLauncher] WestlakeActivityThread error", e);
                     }
-                    if (launchedActivity == null) {
-                        // Fallback
-                        Intent fallbackIntent = new Intent();
-                        fallbackIntent.setComponent(new ComponentName(launchPkg2, fTarget2));
-                        am.startActivity(null, fallbackIntent, -1);
-                        launchedActivity = am.getResumedActivity();
-                    }
-                } else {
-                    Intent intent = new Intent();
-                    String launchPkg = info.packageName != null ? info.packageName : packageName;
-                    intent.setComponent(new ComponentName(launchPkg, targetActivity));
-                    am.startActivity(null, intent, -1);
-                    launchedActivity = am.getResumedActivity();
-                }
-            } catch (Exception e) {
-                System.err.println("[WestlakeLauncher] APK load error (non-fatal): " + e);
-                // Fallback: launch activity directly if class is on classpath
-                if (targetActivity != null && launchedActivity == null) {
-                    try {
-                        String pkg = packageName != null ? packageName : "app";
-                        Intent intent = new Intent();
-                        intent.setComponent(new ComponentName(pkg, targetActivity));
-                        am.startActivity(null, intent, -1);
-                        launchedActivity = am.getResumedActivity();
-                        System.err.println("[WestlakeLauncher] Fallback launch OK: " + targetActivity);
-                    } catch (Exception e2) {
-                        System.err.println("[WestlakeLauncher] Fallback launch failed: " + e2.getMessage());
-                    }
+		                    if (launchedActivity == null) {
+		                        // Fallback
+		                        Intent fallbackIntent = buildLaunchIntent(launchPkg2, fTarget2);
+	                        am.startActivity(null, fallbackIntent, -1, resolvedActivityClass);
+	                        launchedActivity = am.getResumedActivity();
+	                    }
+		                } else {
+		                    String launchPkg = targetPackageName;
+		                    Intent intent = buildLaunchIntent(launchPkg, targetActivity);
+		                    am.startActivity(null, intent, -1, resolvedActivityClass);
+		                    launchedActivity = am.getResumedActivity();
+		                }
+		        } catch (Exception e) {
+            startupLog("[WestlakeLauncher] APK load error (non-fatal)", e);
+            // Fallback: launch activity directly if class is on classpath
+		            if (targetActivity != null && launchedActivity == null) {
+		                try {
+		                    String pkg = targetPackageName;
+		                    Intent intent = buildLaunchIntent(pkg, targetActivity);
+		                    am.startActivity(null, intent, -1, resolvedActivityClass);
+	                    launchedActivity = am.getResumedActivity();
+	                    startupLog("[WestlakeLauncher] Fallback launch OK: " + targetActivity);
+                } catch (Exception e2) {
+                    startupLog("[WestlakeLauncher] Fallback launch failed", e2);
                 }
             }
-        } else {
-            System.err.println("[WestlakeLauncher] No APK path, nothing to launch");
         }
 
         // Try to get the launched activity even if errors occurred
@@ -568,28 +1660,24 @@ public class WestlakeLauncher {
             launchedActivity = am.getResumedActivity();
         }
         if (launchedActivity == null) {
-            System.err.println("[WestlakeLauncher] WARNING: No activity, rendering empty surface");
+            startupLog("[WestlakeLauncher] WARNING: No activity, rendering empty surface");
         }
         if (launchedActivity != null) {
-            System.err.println("[WestlakeLauncher] Activity launched: " + launchedActivity.getClass().getName());
+            startupLog("[WestlakeLauncher] Activity launched: " + launchedActivity.getClass().getName());
 
             // Always load splash image for OP_IMAGE background rendering
             {
-                String rDir = System.getProperty("westlake.apk.resdir");
+                String rDir = propOrSnapshot("westlake.apk.resdir", sBootResDir);
                 if (rDir != null && splashImageData == null) {
                     String[] tryPaths = {"res/drawable/splash_screen.webp", "res/drawable-xxhdpi-v4/splash_screen.webp",
                             "res/drawable/splash_screen.png"};
                     for (String p : tryPaths) {
-                        java.io.File f = new java.io.File(rDir, p);
-                        if (f.exists()) {
-                            try {
-                                java.io.FileInputStream fis = new java.io.FileInputStream(f);
-                                splashImageData = new byte[(int) f.length()];
-                                int off = 0;
-                                while (off < splashImageData.length) { int n = fis.read(splashImageData, off, splashImageData.length - off); if (n <= 0) break; off += n; }
-                                fis.close();
-                                System.err.println("[WestlakeLauncher] Loaded splash image: " + f.getName() + " (" + splashImageData.length + " bytes)");
-                            } catch (Exception ex) { /* ignore */ }
+                        String path = joinPath(rDir, p);
+                        byte[] data = tryReadFileBytes(path);
+                        if (data != null && data.length > 0) {
+                            splashImageData = data;
+                            startupLog("[WestlakeLauncher] Loaded splash image: " + leafName(path)
+                                    + " (" + splashImageData.length + " bytes)");
                             break;
                         }
                     }
@@ -601,64 +1689,50 @@ public class WestlakeLauncher {
             boolean hasContent = decor instanceof android.view.ViewGroup
                 && ((android.view.ViewGroup) decor).getChildCount() > 0;
             if (!hasContent) {
-                System.err.println("[WestlakeLauncher] No content view — trying to inflate real splash layout");
+                startupLog("[WestlakeLauncher] No content view — trying to inflate real splash layout");
                 android.view.View splashView = null;
 
                 // Try to inflate the real splash layout from extracted res/
                 try {
-                    String rd = System.getProperty("westlake.apk.resdir");
+                    String rd = propOrSnapshot("westlake.apk.resdir", sBootResDir);
                     if (rd != null) {
                         String[] layoutNames = {
                             "activity_splash_screen", "splash_screen", "activity_splash",
                             "splash", "activity_main", "main"
                         };
                         for (String name : layoutNames) {
-                            java.io.File layoutFile = new java.io.File(rd + "/res/layout/" + name + ".xml");
-                            if (layoutFile.exists()) {
-                                System.err.println("[WestlakeLauncher] Found layout: " + name + ".xml (" + layoutFile.length() + " bytes)");
-                                java.io.FileInputStream fis = new java.io.FileInputStream(layoutFile);
-                                byte[] axmlData = new byte[(int) layoutFile.length()];
-                                int off = 0;
-                                while (off < axmlData.length) {
-                                    int n = fis.read(axmlData, off, axmlData.length - off);
-                                    if (n < 0) break;
-                                    off += n;
-                                }
-                                fis.close();
+                            String layoutPath = joinPath(rd, "res/layout/" + name + ".xml");
+                            byte[] axmlData = tryReadFileBytes(layoutPath);
+                            if (axmlData != null && axmlData.length > 0) {
+                                startupLog("[WestlakeLauncher] Found layout: " + name + ".xml (" + axmlData.length + " bytes)");
                                 android.view.LayoutInflater inflater = android.view.LayoutInflater.from(launchedActivity);
                                 android.content.res.BinaryXmlParser parser =
                                     new android.content.res.BinaryXmlParser(axmlData);
                                 splashView = inflater.inflate(parser, null);
                                 if (splashView != null) {
-                                    System.err.println("[WestlakeLauncher] Inflated real layout: " + splashView.getClass().getSimpleName());
+                                    startupLog("[WestlakeLauncher] Inflated real layout: " + splashView.getClass().getSimpleName());
                                     break;
                                 }
                             }
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println("[WestlakeLauncher] Layout inflate error: " + e.getMessage());
+                    startupLog("[WestlakeLauncher] Layout inflate error", e);
                 }
 
                 // Load real splash image bytes (will be drawn directly via OP_IMAGE before view tree)
                 {
-                    String rDir = System.getProperty("westlake.apk.resdir");
+                    String rDir = propOrSnapshot("westlake.apk.resdir", sBootResDir);
                     if (rDir != null) {
                         String[] tryPaths = {"res/drawable/splash_screen.webp", "res/drawable-xxhdpi-v4/splash_screen.webp",
                                 "res/drawable-xhdpi-v4/splash_screen.webp", "res/drawable/splash_screen.png"};
                         for (String p : tryPaths) {
-                            java.io.File f = new java.io.File(rDir, p);
-                            if (f.exists()) {
-                                try {
-                                    java.io.FileInputStream fis = new java.io.FileInputStream(f);
-                                    splashImageData = new byte[(int) f.length()];
-                                    int off = 0;
-                                    while (off < splashImageData.length) { int n = fis.read(splashImageData, off, splashImageData.length - off); if (n <= 0) break; off += n; }
-                                    fis.close();
-                                    System.err.println("[WestlakeLauncher] Loaded splash image: " + f.getName() + " (" + splashImageData.length + " bytes)");
-                                } catch (Exception ex) {
-                                    System.err.println("[WestlakeLauncher] Splash image error: " + ex.getMessage());
-                                }
+                            String path = joinPath(rDir, p);
+                            byte[] data = tryReadFileBytes(path);
+                            if (data != null && data.length > 0) {
+                                splashImageData = data;
+                                startupLog("[WestlakeLauncher] Loaded splash image: " + leafName(path)
+                                        + " (" + splashImageData.length + " bytes)");
                                 break;
                             }
                         }
@@ -667,7 +1741,7 @@ public class WestlakeLauncher {
 
                 // Fallback: programmatic McDonald's splash
                 if (splashView == null) {
-                    System.err.println("[WestlakeLauncher] Using OHBridge direct render (no View tree)");
+                    startupLog("[WestlakeLauncher] Using OHBridge direct render (no View tree)");
                     // Skip View tree — render directly via OHBridge if available
                     if (nativeOk) {
                         try {
@@ -690,9 +1764,9 @@ public class WestlakeLauncher {
                                 OHBridge.canvasDrawImage(canv, splashImageData, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
                             }
                             OHBridge.surfaceFlush(surf);
-                            System.err.println("[WestlakeLauncher] OHBridge splash frame sent!");
+                            startupLog("[WestlakeLauncher] OHBridge splash frame sent!");
                         } catch (Throwable t) {
-                            System.err.println("[WestlakeLauncher] OHBridge render: " + t.getMessage());
+                            startupLog("[WestlakeLauncher] OHBridge render unavailable", t);
                         }
                     }
                     // Skip programmatic View fallback — go to render loop
@@ -700,7 +1774,7 @@ public class WestlakeLauncher {
                 }
                 if (false) {
                     // Dead code — original View-based fallback kept for reference
-                    System.err.println("[WestlakeLauncher] UNREACHABLE programmatic splash");
+                    startupLog("[WestlakeLauncher] UNREACHABLE programmatic splash");
                     // Ensure Activity has a valid base context for View construction
                     try {
                         if (launchedActivity.getResources() == null) {
@@ -728,9 +1802,9 @@ public class WestlakeLauncher {
                             java.lang.reflect.Field mBase = android.content.ContextWrapper.class.getDeclaredField("mBase");
                             mBase.setAccessible(true);
                             mBase.set(launchedActivity, sysCtx);
-                            System.err.println("[WestlakeLauncher] Injected ContextImpl into Activity");
+                            startupLog("[WestlakeLauncher] Injected ContextImpl into Activity");
                         } catch (Throwable t3) {
-                            System.err.println("[WestlakeLauncher] Context inject failed: " + t3.getMessage());
+                            startupLog("[WestlakeLauncher] Context inject failed", t3);
                         }
                     }
                     android.widget.LinearLayout splash = new android.widget.LinearLayout(launchedActivity);
@@ -773,29 +1847,29 @@ public class WestlakeLauncher {
                             ((android.view.ViewGroup) splashView.getParent()).removeView(splashView);
                         }
                         win.setContentView(splashView);
-                        System.err.println("[WestlakeLauncher] Set splash via Window.setContentView");
+                        startupLog("[WestlakeLauncher] Set splash via Window.setContentView");
                     }
                 } catch (Exception e) {
-                    System.err.println("[WestlakeLauncher] setContentView error: " + e.getMessage());
+                    startupLog("[WestlakeLauncher] setContentView error", e);
                 }
             }
         }
 
         // Render loop — render even if Activity partially failed
         if (nativeOk && launchedActivity != null) {
-            System.err.println("[WestlakeLauncher] Creating surface " + SURFACE_WIDTH + "x" + SURFACE_HEIGHT);
+            startupLog("[WestlakeLauncher] Creating surface " + SURFACE_WIDTH + "x" + SURFACE_HEIGHT);
             try {
                 // Call onSurfaceCreated — may not exist on real framework Activity
                 launchedActivity.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
                 launchedActivity.renderFrame();
             } catch (Throwable e) {
-                System.err.println("[WestlakeLauncher] Initial render: " + e.getClass().getSimpleName() + " (framework Activity — using OHBridge direct)");
+                startupLog("[WestlakeLauncher] Initial render: " + e.getClass().getSimpleName() + " (framework Activity — using OHBridge direct)");
             }
-            System.err.println("[WestlakeLauncher] Initial frame rendered");
-            System.err.println("[WestlakeLauncher] Entering event loop...");
+            startupLog("[WestlakeLauncher] Initial frame rendered");
+            startupLog("[WestlakeLauncher] Entering event loop...");
             renderLoop(launchedActivity, am);
         } else {
-            System.err.println("[WestlakeLauncher] Running in headless mode (no native bridge)");
+            startupLog("[WestlakeLauncher] Running in headless mode (no native bridge)");
         }
     }
 
@@ -832,31 +1906,23 @@ public class WestlakeLauncher {
                 "splash", "fragment_splash", "activity_main", "main"
             };
             for (String name : layoutNames) {
-                java.io.File layoutFile = new java.io.File(resDir + "/res/layout/" + name + ".xml");
-                if (layoutFile.exists()) {
-                    System.err.println("[WestlakeLauncher] Trying real layout: " + name + ".xml (" + layoutFile.length() + " bytes)");
+                String layoutPath = joinPath(resDir, "res/layout/" + name + ".xml");
+                byte[] axmlData = tryReadFileBytes(layoutPath);
+                if (axmlData != null && axmlData.length > 0) {
+                    startupLog("[WestlakeLauncher] Trying real layout: " + name + ".xml (" + axmlData.length + " bytes)");
                     try {
-                        java.io.FileInputStream fis = new java.io.FileInputStream(layoutFile);
-                        byte[] axmlData = new byte[(int) layoutFile.length()];
-                        int off = 0;
-                        while (off < axmlData.length) {
-                            int n = fis.read(axmlData, off, axmlData.length - off);
-                            if (n < 0) break;
-                            off += n;
-                        }
-                        fis.close();
                         android.view.LayoutInflater inflater = android.view.LayoutInflater.from(activity);
                         android.content.res.BinaryXmlParser parser =
                             new android.content.res.BinaryXmlParser(axmlData);
                         splashView = inflater.inflate(parser, null);
                         if (splashView != null) {
-                            System.err.println("[WestlakeLauncher] Inflated real splash: " + splashView.getClass().getSimpleName()
+                            startupLog("[WestlakeLauncher] Inflated real splash: " + splashView.getClass().getSimpleName()
                                 + " children=" + (splashView instanceof android.view.ViewGroup
                                     ? ((android.view.ViewGroup) splashView).getChildCount() : 0));
                             break;
                         }
                     } catch (Exception e) {
-                        System.err.println("[WestlakeLauncher] Layout inflate error (" + name + "): " + e.getMessage());
+                        startupLog("[WestlakeLauncher] Layout inflate error (" + name + ")", e);
                     }
                 }
             }
@@ -873,17 +1939,8 @@ public class WestlakeLauncher {
                 // Try to inflate splash_screen_view.xml into the fragment container
                 if (resDir != null && splashView instanceof android.view.ViewGroup) {
                     try {
-                        java.io.File splashContent = new java.io.File(resDir + "/res/layout/splash_screen_view.xml");
-                        if (splashContent.exists()) {
-                            java.io.FileInputStream fis2 = new java.io.FileInputStream(splashContent);
-                            byte[] data2 = new byte[(int) splashContent.length()];
-                            int off2 = 0;
-                            while (off2 < data2.length) {
-                                int n = fis2.read(data2, off2, data2.length - off2);
-                                if (n < 0) break;
-                                off2 += n;
-                            }
-                            fis2.close();
+                        byte[] data2 = tryReadFileBytes(joinPath(resDir, "res/layout/splash_screen_view.xml"));
+                        if (data2 != null && data2.length > 0) {
                             android.view.LayoutInflater inflater = android.view.LayoutInflater.from(activity);
                             android.content.res.BinaryXmlParser parser2 =
                                 new android.content.res.BinaryXmlParser(data2);
@@ -934,29 +1991,29 @@ public class WestlakeLauncher {
                                             }
                                         }
                                     }
-                                    System.err.println("[WestlakeLauncher] Injected branded splash into fragment container");
+                                    startupLog("[WestlakeLauncher] Injected branded splash into fragment container");
                                 } else {
                                     ((android.view.ViewGroup) splashView).addView(branded,
                                         new android.view.ViewGroup.LayoutParams(-1, -1));
-                                    System.err.println("[WestlakeLauncher] Injected branded splash into root");
+                                    startupLog("[WestlakeLauncher] Injected branded splash into root");
                                 }
                             }
                         }
                     } catch (Exception e) {
-                        System.err.println("[WestlakeLauncher] Splash content inflate error: " + e.getMessage());
+                        startupLog("[WestlakeLauncher] Splash content inflate error", e);
                     }
                 }
 
                 activity.getWindow().setContentView(splashView);
-                System.err.println("[WestlakeLauncher] Set real splash layout as content");
+                startupLog("[WestlakeLauncher] Set real splash layout as content");
                 return; // Success — use real layout
             } catch (Exception e) {
-                System.err.println("[WestlakeLauncher] setContentView error: " + e.getMessage());
+                startupLog("[WestlakeLauncher] setContentView error", e);
             }
         }
 
         // Fallback to hardcoded UI
-        System.err.println("[WestlakeLauncher] No real splash found — using hardcoded menu");
+        startupLog("[WestlakeLauncher] No real splash found — using hardcoded menu");
         buildMcDonaldsUI(activity, am, null);
     }
 
@@ -1087,7 +2144,1363 @@ public class WestlakeLauncher {
         if (win != null) {
             win.setContentView(root);
         }
-        System.err.println("[WestlakeLauncher] Built interactive McDonald's UI (" + items.length + " menu items)");
+        startupLog("[WestlakeLauncher] Built interactive McDonald's UI (" + items.length + " menu items)");
+    }
+
+    private static int resolveAppResourceId(Activity activity, String type, String name) {
+        if (activity == null || type == null || name == null) {
+            return 0;
+        }
+        try {
+            android.content.res.Resources res = activity.getResources();
+            if (res == null) {
+                return 0;
+            }
+            String[] packages = {
+                    activity.getPackageName(),
+                    propOrSnapshot("westlake.apk.package", sBootPackageName),
+                    sBootPackageName,
+                    "com.mcdonalds.app",
+                    "com.mcdonalds.homedashboard"
+            };
+            for (int i = 0; i < packages.length; i++) {
+                String pkg = packages[i];
+                if (pkg == null || pkg.isEmpty()) {
+                    continue;
+                }
+                int id = res.getIdentifier(name, type, pkg);
+                if (id != 0) {
+                    return id;
+                }
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] resolveAppResourceId(" + type + "/" + name + ")", t);
+        }
+        if ("layout".equals(type)) {
+            if ("activity_home_dashboard".equals(name)) return 0x7f0e0058;
+            if ("activity_base".equals(name)) return 0x7f0e0038;
+            if ("base_layout".equals(name)) return 0x7f0e00ee;
+            if ("fragment_home_dashboard".equals(name)) return 0x7f0e027d;
+        } else if ("id".equals(type)) {
+            if ("home_dashboard_container".equals(name)) return 0x7f0b0ae8;
+            if ("intermediate_layout_container".equals(name)) return 0x7f0b0b83;
+            if ("immersive_container".equals(name)) return 0x7f0b0b68;
+            if ("nestedScrollView".equals(name)) return 0x7f0b0f0b;
+            if ("page_content".equals(name)) return 0x7f0b11e0;
+            if ("page_content_holder".equals(name)) return 0x7f0b11e1;
+            if ("parent_container".equals(name)) return 0x7f0b11fa;
+            if ("sections_container".equals(name)) return 0x7f0b16c5;
+        }
+        return 0;
+    }
+
+    private static android.widget.TextView dashboardText(
+            android.content.Context context,
+            String text,
+            float size,
+            int color) {
+        android.widget.TextView view = new android.widget.TextView(context);
+        view.setText(text);
+        view.setTextSize(size);
+        view.setTextColor(color);
+        return view;
+    }
+
+    private static void addDashboardOfferRow(
+            android.content.Context context,
+            android.view.ViewGroup parent,
+            String title,
+            String price) {
+        android.widget.LinearLayout row = new android.widget.LinearLayout(context);
+        row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        row.setPadding(0, 24, 0, 8);
+
+        android.widget.TextView titleView = dashboardText(context, title, 18, 0xFF333333);
+        android.widget.TextView priceView = dashboardText(context, price, 18, 0xFF555555);
+
+        android.widget.LinearLayout.LayoutParams titleParams =
+                llp(0, -2, 1f);
+        row.addView(titleView, titleParams);
+        row.addView(priceView,
+                llp(-2, -2));
+
+        parent.addView(row,
+                llp(-1, -2));
+    }
+
+    private static android.widget.LinearLayout.LayoutParams llp(int width, int height) {
+        return new android.widget.LinearLayout.LayoutParams(width, height, 0f);
+    }
+
+    private static android.widget.LinearLayout.LayoutParams llp(
+            int width, int height, float weight) {
+        android.widget.LinearLayout.LayoutParams params =
+                new android.widget.LinearLayout.LayoutParams(width, height, weight);
+        params.width = width;
+        params.height = height;
+        params.weight = weight;
+        return params;
+    }
+
+    private static android.widget.LinearLayout.LayoutParams dashboardCanvasLp() {
+        android.widget.LinearLayout.LayoutParams params =
+                new android.widget.LinearLayout.LayoutParams(-1, SURFACE_HEIGHT);
+        params.width = -1;
+        params.height = SURFACE_HEIGHT;
+        return params;
+    }
+
+    private static int resolveAppColor(
+            Activity activity, String name, int fallbackColor) {
+        if (activity == null || name == null) {
+            return fallbackColor;
+        }
+        int colorId = resolveAppResourceId(activity, "color", name);
+        if (colorId == 0) {
+            return fallbackColor;
+        }
+        try {
+            android.content.res.Resources res = activity.getResources();
+            if (res != null) {
+                return res.getColor(colorId);
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] resolveAppColor(" + name + ")", t);
+        }
+        return fallbackColor;
+    }
+
+    private static int resolveAppDimension(
+            Activity activity, String name, int fallbackPx) {
+        if (activity == null || name == null) {
+            return fallbackPx;
+        }
+        int dimenId = resolveAppResourceId(activity, "dimen", name);
+        if (dimenId == 0) {
+            return fallbackPx;
+        }
+        try {
+            android.content.res.Resources res = activity.getResources();
+            if (res != null) {
+                return res.getDimensionPixelOffset(dimenId);
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] resolveAppDimension(" + name + ")", t);
+        }
+        return fallbackPx;
+    }
+
+    private static void drawDashboardSkeleton(
+            android.content.Context context,
+            android.graphics.Canvas canvas,
+            int width,
+            int height) {
+        if (canvas == null || width <= 0 || height <= 0) {
+            return;
+        }
+        float density = safeDensity(context);
+        android.graphics.Paint fill = new android.graphics.Paint();
+        fill.setStyle(android.graphics.Paint.Style.FILL);
+        fill.setAntiAlias(true);
+
+        android.graphics.Paint dividerPaint = new android.graphics.Paint();
+        dividerPaint.setColor(0xFFE3E3E3);
+        dividerPaint.setStrokeWidth(Math.max(1f, density));
+
+        fill.setColor(0xFFF7F7F7);
+        canvas.drawRect(0, 0, width, height, fill);
+
+        int pad = dpPx(context, 18);
+        int y = dpPx(context, 24);
+
+        fill.setColor(0xFFDA291C);
+        int heroHeight = dpPx(context, 104);
+        canvas.drawRect(pad, y, width - pad, y + heroHeight, fill);
+        fill.setColor(0xFFFFC72C);
+        canvas.drawRect(pad + dpPx(context, 18), y + dpPx(context, 20),
+                pad + dpPx(context, 118), y + dpPx(context, 34), fill);
+        fill.setColor(0xFFFFE2DE);
+        canvas.drawRect(pad + dpPx(context, 18), y + dpPx(context, 48),
+                width - pad - dpPx(context, 90), y + dpPx(context, 58), fill);
+
+        y += heroHeight + dpPx(context, 18);
+        int[] accentColors = {
+                0xFFF5C518,
+                0xFFDA291C,
+                0xFFFFBC0D,
+                0xFF6F6F6F,
+        };
+        for (int i = 0; i < accentColors.length; i++) {
+            fill.setColor(0xFFFFFFFF);
+            int rowHeight = dpPx(context, 62);
+            canvas.drawRect(pad, y, width - pad, y + rowHeight, fill);
+            fill.setColor(accentColors[i]);
+            canvas.drawRect(pad + dpPx(context, 16), y + dpPx(context, 18),
+                    pad + dpPx(context, 52), y + dpPx(context, 44), fill);
+            fill.setColor(0xFF27251F);
+            canvas.drawRect(pad + dpPx(context, 64), y + dpPx(context, 16),
+                    width - pad - dpPx(context, 120), y + dpPx(context, 26), fill);
+            fill.setColor(0xFF777777);
+            canvas.drawRect(pad + dpPx(context, 64), y + dpPx(context, 34),
+                    width - pad - dpPx(context, 160), y + dpPx(context, 42), fill);
+            fill.setColor(0xFFB0B0B0);
+            canvas.drawRect(width - pad - dpPx(context, 72), y + dpPx(context, 22),
+                    width - pad - dpPx(context, 16), y + dpPx(context, 40), fill);
+            canvas.drawLine(pad, y + rowHeight, width - pad, y + rowHeight, dividerPaint);
+            y += rowHeight + dpPx(context, 10);
+        }
+
+        fill.setColor(0xFFE9E9E9);
+        int footerTop = height - dpPx(context, 54);
+        canvas.drawRect(pad, footerTop, width - pad, footerTop + dpPx(context, 34), fill);
+        fill.setColor(0xFF888888);
+        int tabWidth = (width - (pad * 2) - dpPx(context, 32)) / 5;
+        for (int i = 0; i < 5; i++) {
+            int left = pad + dpPx(context, 8) + (i * tabWidth);
+            canvas.drawRect(left, footerTop + dpPx(context, 10),
+                    left + dpPx(context, 26), footerTop + dpPx(context, 18), fill);
+        }
+    }
+
+    private static android.view.View buildProgrammaticDashboardFallbackRoot(Activity activity) {
+        if (activity == null) {
+            return null;
+        }
+        startupLog("[WestlakeLauncher] buildDashboardRoot begin");
+        final int idHomeContainer = 0x7f0b0ae8;
+
+        android.widget.LinearLayout root = new android.widget.LinearLayout(activity) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                int desiredWidth = SURFACE_WIDTH;
+                int desiredHeight = Math.max(SURFACE_HEIGHT, dpPx(getContext(), 640));
+                int measuredWidth = android.view.View.resolveSize(desiredWidth, widthMeasureSpec);
+                int measuredHeight = android.view.View.resolveSize(desiredHeight, heightMeasureSpec);
+                setMeasuredDimension(measuredWidth, measuredHeight);
+            }
+
+            @Override
+            protected void onDraw(android.graphics.Canvas canvas) {
+                super.onDraw(canvas);
+                drawDashboardSkeleton(getContext(), canvas, getWidth(), getHeight());
+            }
+        };
+        startupLog("[WestlakeLauncher] buildDashboardRoot root new");
+        root.setWillNotDraw(false);
+        root.setMinimumHeight(dpPx(activity, 420));
+        root.setId(idHomeContainer);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+        startupLog("[WestlakeLauncher] buildDashboardRoot root orientation");
+        startupLog("[WestlakeLauncher] buildDashboardRoot root ready");
+        startupLog("[WestlakeLauncher] buildDashboardRoot done");
+
+        return root;
+    }
+
+    private static Object findDashboardFragmentInstance(Activity activity) {
+        if (activity == null) {
+            return null;
+        }
+        for (Class<?> c = activity.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            java.lang.reflect.Field[] fields = c.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                java.lang.reflect.Field f = fields[i];
+                try {
+                    f.setAccessible(true);
+                    Object value = f.get(activity);
+                    if (value != null) {
+                        String typeName = value.getClass().getName();
+                        if (typeName != null && typeName.endsWith("HomeDashboardFragment")) {
+                            return value;
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return null;
+    }
+
+    private static java.lang.reflect.Field findFieldOnHierarchy(Class<?> type, String name) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Field field = c.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException ignored) {
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static void seedHiltFragmentContext(Object fragment, Activity activity) {
+        if (fragment == null || activity == null) {
+            return;
+        }
+        try {
+            Class<?> fragClass = fragment.getClass();
+            boolean isHomeDashboardFragment =
+                    "com.mcdonalds.homedashboard.fragment.HomeDashboardFragment".equals(
+                            fragClass.getName());
+            if (isHomeDashboardFragment) {
+                java.lang.reflect.Field contextWrapperField =
+                        findFieldOnHierarchy(fragClass, "D");
+                java.lang.reflect.Field contextFixField =
+                        findFieldOnHierarchy(fragClass, "E");
+                if (contextWrapperField != null && contextWrapperField.get(fragment) == null) {
+                    try {
+                        ClassLoader cl = fragClass.getClassLoader();
+                        Class<?> managerClass = cl != null
+                                ? cl.loadClass("dagger.hilt.android.internal.managers.FragmentComponentManager")
+                                : Class.forName("dagger.hilt.android.internal.managers.FragmentComponentManager");
+                        java.lang.reflect.Method[] methods = managerClass.getDeclaredMethods();
+                        for (int i = 0; i < methods.length; i++) {
+                            java.lang.reflect.Method method = methods[i];
+                            if (method == null
+                                    || !"b".equals(method.getName())
+                                    || !java.lang.reflect.Modifier.isStatic(method.getModifiers())
+                                    || method.getParameterTypes().length != 2) {
+                                continue;
+                            }
+                            method.setAccessible(true);
+                            Object wrapper = method.invoke(null, activity, fragment);
+                            if (wrapper != null) {
+                                contextWrapperField.set(fragment, wrapper);
+                                startupLog("[WestlakeLauncher] Seeded Hilt fragment context wrapper");
+                                break;
+                            }
+                        }
+                    } catch (Throwable wrapperError) {
+                        startupLog("[WestlakeLauncher] seedHiltFragmentContext wrapper",
+                                wrapperError);
+                    }
+                }
+                if (contextFixField != null) {
+                    contextFixField.setBoolean(fragment, true);
+                }
+            }
+            java.lang.reflect.Field componentLockField =
+                    findFieldOnHierarchy(fragClass, "I");
+            java.lang.reflect.Field injectedField =
+                    findFieldOnHierarchy(fragClass, "J");
+            if (componentLockField != null && componentLockField.get(fragment) == null) {
+                componentLockField.set(fragment, new Object());
+                startupLog("[WestlakeLauncher] Seeded Hilt fragment component lock");
+            }
+            if (injectedField != null) {
+                boolean skipInject = isHomeDashboardFragment;
+                injectedField.setBoolean(fragment, skipInject);
+                if (skipInject) {
+                    startupLog("[WestlakeLauncher] Skipping Hilt inject for HomeDashboardFragment attach");
+                }
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] seedHiltFragmentContext", t);
+        }
+    }
+
+    private static void seedHomeDashboardFragmentCtorState(Object fragment) {
+        if (fragment == null) {
+            return;
+        }
+        try {
+            Class<?> fragClass = fragment.getClass();
+            if (!"com.mcdonalds.homedashboard.fragment.HomeDashboardFragment".equals(
+                    fragClass.getName())) {
+                return;
+            }
+            ClassLoader cl = fragClass.getClassLoader();
+            java.lang.reflect.Field disposablesField =
+                    findFieldOnHierarchy(fragClass, "K0");
+            if (disposablesField != null && disposablesField.get(fragment) == null) {
+                try {
+                    Object disposables = tryCtorSeedAlloc(
+                            cl, "io.reactivex.disposables.CompositeDisposable");
+                    if (disposables != null) {
+                        disposablesField.set(fragment, disposables);
+                    }
+                } catch (Throwable fieldError) {
+                    startupLog("[WestlakeLauncher] seedHomeDashboardFragmentCtorState K0",
+                            fieldError);
+                }
+            }
+            java.lang.reflect.Field listField =
+                    findFieldOnHierarchy(fragClass, "O0");
+            if (listField != null && listField.get(fragment) == null) {
+                try {
+                    listField.set(fragment, new java.util.ArrayList<>());
+                } catch (Throwable fieldError) {
+                    startupLog("[WestlakeLauncher] seedHomeDashboardFragmentCtorState O0",
+                            fieldError);
+                }
+            }
+            java.lang.reflect.Field dealsProviderField =
+                    findFieldOnHierarchy(fragClass, "T0");
+            if (dealsProviderField != null && dealsProviderField.get(fragment) == null) {
+                try {
+                    Object dealsProvider = tryCtorSeedAlloc(
+                            cl, "com.mcdonalds.homedashboard.deals.DealsFragmentProvider");
+                    if (dealsProvider != null) {
+                        dealsProviderField.set(fragment, dealsProvider);
+                    }
+                } catch (Throwable fieldError) {
+                    startupLog("[WestlakeLauncher] seedHomeDashboardFragmentCtorState T0",
+                            fieldError);
+                }
+            }
+            java.lang.reflect.Field shouldTrackViewField =
+                    findFieldOnHierarchy(fragClass, "mShouldTrackView");
+            if (shouldTrackViewField != null) {
+                try {
+                    shouldTrackViewField.setBoolean(fragment, true);
+                } catch (Throwable fieldError) {
+                    startupLog("[WestlakeLauncher] seedHomeDashboardFragmentCtorState mShouldTrackView",
+                            fieldError);
+                }
+            }
+            startupLog("[WestlakeLauncher] Seeded HomeDashboardFragment ctor fields");
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] seedHomeDashboardFragmentCtorState", t);
+        }
+    }
+
+    private static Object tryCtorSeedAlloc(ClassLoader cl, String className) {
+        if (className == null || className.isEmpty()) {
+            return null;
+        }
+        try {
+            Class<?> target = cl != null ? cl.loadClass(className) : Class.forName(className);
+            Object instance = tryAllocInstance(target);
+            if (instance == null) {
+                instance = tryUnsafeAllocInstance(target);
+            }
+            return instance;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] tryCtorSeedAlloc " + className, t);
+            return null;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static void seedSupportFragmentBaseState(Object fragment, Activity activity) {
+        if (fragment == null) {
+            return;
+        }
+        try {
+            if (fragment instanceof androidx.fragment.app.Fragment) {
+                java.lang.reflect.Field activityField =
+                        findFieldOnHierarchy(fragment.getClass(), "mActivity");
+                java.lang.reflect.Field hostField =
+                        findFieldOnHierarchy(fragment.getClass(), "mHost");
+                java.lang.reflect.Field parentManagerField =
+                        findFieldOnHierarchy(fragment.getClass(), "mFragmentManager");
+                java.lang.reflect.Field childManagerField =
+                        findFieldOnHierarchy(fragment.getClass(), "mChildFragmentManager");
+                java.lang.reflect.Field menuVisibleField =
+                        findFieldOnHierarchy(fragment.getClass(), "mMenuVisible");
+                java.lang.reflect.Field userVisibleHintField =
+                        findFieldOnHierarchy(fragment.getClass(), "mUserVisibleHint");
+                java.lang.reflect.Field lifecycleRegistryField =
+                        findFieldOnHierarchy(fragment.getClass(), "mLifecycleRegistry");
+                java.lang.reflect.Field activityContextField =
+                        findFieldOnHierarchy(fragment.getClass(), "mActivityContext");
+                java.lang.reflect.Field saveStateCallbackField =
+                        findFieldOnHierarchy(fragment.getClass(), "mSaveStateCallback");
+
+                androidx.fragment.app.FragmentActivity hostActivity =
+                        activity instanceof androidx.fragment.app.FragmentActivity
+                                ? (androidx.fragment.app.FragmentActivity) activity
+                                : null;
+
+                if (activityField != null && hostActivity != null && activityField.get(fragment) == null) {
+                    activityField.set(fragment, hostActivity);
+                }
+                if (hostField != null && activity != null && hostField.get(fragment) == null) {
+                    hostField.set(fragment, activity);
+                }
+                if (activityContextField != null && activity != null
+                        && activityContextField.get(fragment) == null) {
+                    activityContextField.set(fragment, activity);
+                }
+                if (saveStateCallbackField != null && activity != null
+                        && saveStateCallbackField.get(fragment) == null) {
+                    saveStateCallbackField.set(fragment, activity);
+                }
+                startupLog("[WestlakeLauncher] seedSupportFragmentBaseState shim host/activity ready");
+
+                androidx.fragment.app.FragmentManager parentManager =
+                        hostActivity != null ? hostActivity.getSupportFragmentManager() : null;
+                if (parentManagerField != null && parentManager != null && parentManagerField.get(fragment) == null) {
+                    parentManagerField.set(fragment, parentManager);
+                }
+                if (hostActivity != null) {
+                    ((androidx.fragment.app.Fragment) fragment).getChildFragmentManager();
+                } else if (childManagerField != null && childManagerField.get(fragment) == null) {
+                    childManagerField.set(fragment, new androidx.fragment.app.FragmentManager());
+                }
+                startupLog("[WestlakeLauncher] seedSupportFragmentBaseState child-manager ready");
+
+                if (lifecycleRegistryField != null && lifecycleRegistryField.get(fragment) == null) {
+                    lifecycleRegistryField.set(fragment,
+                            new androidx.lifecycle.LifecycleRegistry(
+                                    (androidx.lifecycle.LifecycleOwner) fragment));
+                }
+                if (menuVisibleField != null) {
+                    menuVisibleField.setBoolean(fragment, true);
+                }
+                if (userVisibleHintField != null) {
+                    userVisibleHintField.setBoolean(fragment, true);
+                }
+                startupLog("[WestlakeLauncher] Seeded support Fragment base fields");
+                return;
+            }
+
+            Class<?> fragmentBaseClass = null;
+            for (Class<?> c = fragment.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+                if ("androidx.fragment.app.Fragment".equals(c.getName())) {
+                    fragmentBaseClass = c;
+                    break;
+                }
+            }
+            if (fragmentBaseClass == null) {
+                return;
+            }
+
+            ClassLoader cl = fragment.getClass().getClassLoader();
+            if (cl == null) {
+                cl = fragmentBaseClass.getClassLoader();
+            }
+            java.lang.reflect.Field whoField = findFieldOnHierarchy(fragmentBaseClass, "mWho");
+            java.lang.reflect.Field stateField = findFieldOnHierarchy(fragmentBaseClass, "mState");
+            java.lang.reflect.Field childManagerField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mChildFragmentManager");
+            java.lang.reflect.Field menuVisibleField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mMenuVisible");
+            java.lang.reflect.Field userVisibleHintField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mUserVisibleHint");
+            java.lang.reflect.Field maxStateField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mMaxState");
+            java.lang.reflect.Field liveDataField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mViewLifecycleOwnerLiveData");
+            java.lang.reflect.Field nextLocalRequestCodeField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mNextLocalRequestCode");
+            java.lang.reflect.Field onPreAttachedListenersField =
+                    findFieldOnHierarchy(fragmentBaseClass, "mOnPreAttachedListeners");
+
+            if (stateField != null) {
+                stateField.setInt(fragment, -1);
+            }
+            if (whoField != null && whoField.get(fragment) == null) {
+                whoField.set(fragment, java.util.UUID.randomUUID().toString());
+            }
+            startupLog("[WestlakeLauncher] seedSupportFragmentBaseState who/state ready");
+            if (childManagerField != null && childManagerField.get(fragment) == null) {
+                Class<?> fmImplClass;
+                try {
+                    fmImplClass = cl != null
+                            ? cl.loadClass("androidx.fragment.app.FragmentManagerImpl")
+                            : Class.forName("androidx.fragment.app.FragmentManagerImpl");
+                } catch (Throwable noImpl) {
+                    fmImplClass = cl != null
+                            ? cl.loadClass("androidx.fragment.app.FragmentManager")
+                            : Class.forName("androidx.fragment.app.FragmentManager");
+                }
+                Object childManager = null;
+                try {
+                    childManager = tryAllocInstance(fmImplClass);
+                    if (childManager == null) {
+                        childManager = tryUnsafeAllocInstance(fmImplClass);
+                    }
+                } catch (Throwable allocError) {
+                    startupLog("[WestlakeLauncher] seedSupportFragmentBaseState child-manager alloc",
+                            allocError);
+                }
+                if (childManager != null) {
+                    childManagerField.set(fragment, childManager);
+                }
+            }
+            if (menuVisibleField != null) {
+                menuVisibleField.setBoolean(fragment, true);
+            }
+            if (userVisibleHintField != null) {
+                userVisibleHintField.setBoolean(fragment, true);
+            }
+            startupLog("[WestlakeLauncher] seedSupportFragmentBaseState child-manager ready");
+            if (maxStateField != null && maxStateField.get(fragment) == null) {
+                Class<?> lifecycleStateClass = cl != null
+                        ? cl.loadClass("androidx.lifecycle.Lifecycle$State")
+                        : Class.forName("androidx.lifecycle.Lifecycle$State");
+                @SuppressWarnings("unchecked")
+                Class<? extends java.lang.Enum> enumClass =
+                        (Class<? extends java.lang.Enum>) lifecycleStateClass;
+                Object resumed = java.lang.Enum.valueOf(enumClass, "RESUMED");
+                maxStateField.set(fragment, resumed);
+            }
+            startupLog("[WestlakeLauncher] seedSupportFragmentBaseState max-state ready");
+            if (liveDataField != null && liveDataField.get(fragment) == null) {
+                Class<?> mutableLiveDataClass = cl != null
+                        ? cl.loadClass("androidx.lifecycle.MutableLiveData")
+                        : Class.forName("androidx.lifecycle.MutableLiveData");
+                java.lang.reflect.Constructor<?> liveDataCtor =
+                        mutableLiveDataClass.getDeclaredConstructor();
+                liveDataCtor.setAccessible(true);
+                liveDataField.set(fragment, liveDataCtor.newInstance());
+            }
+            if (nextLocalRequestCodeField != null && nextLocalRequestCodeField.get(fragment) == null) {
+                nextLocalRequestCodeField.set(fragment, new java.util.concurrent.atomic.AtomicInteger());
+            }
+            if (onPreAttachedListenersField != null && onPreAttachedListenersField.get(fragment) == null) {
+                onPreAttachedListenersField.set(fragment, new java.util.ArrayList());
+            }
+            startupLog("[WestlakeLauncher] Seeded support Fragment base fields");
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] seedSupportFragmentBaseState", t);
+        }
+    }
+
+    private static void primeSupportFragmentHost(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        try {
+            if (activity instanceof androidx.fragment.app.FragmentActivity) {
+                try {
+                    androidx.fragment.app.FragmentManager fm =
+                            ((androidx.fragment.app.FragmentActivity) activity).getSupportFragmentManager();
+                    java.lang.reflect.Field hostField =
+                            findFieldOnHierarchy(fm != null ? fm.getClass() : null, "mHost");
+                    if (hostField != null && hostField.get(fm) == null) {
+                        hostField.set(fm, activity);
+                    }
+                } catch (Throwable directShimError) {
+                    startupLog("[WestlakeLauncher] primeSupportFragmentHost direct manager", directShimError);
+                }
+                startupLog("[WestlakeLauncher] Primed shim support FragmentManager host");
+            }
+
+            Class<?> fragmentActivityClass = null;
+            for (Class<?> c = activity.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+                if ("androidx.fragment.app.FragmentActivity".equals(c.getName())) {
+                    fragmentActivityClass = c;
+                    break;
+                }
+            }
+            if (fragmentActivityClass == null) {
+                return;
+            }
+            startupLog("[WestlakeLauncher] primeSupportFragmentHost class="
+                    + fragmentActivityClass.getName());
+
+            ClassLoader cl = fragmentActivityClass.getClassLoader();
+            java.lang.reflect.Field fragmentsField =
+                    findFieldOnHierarchy(fragmentActivityClass, "mFragments");
+            if (fragmentsField == null) {
+                startupLog("[WestlakeLauncher] primeSupportFragmentHost mFragments field missing");
+                return;
+            }
+
+            Object controller = fragmentsField.get(activity);
+            if (controller == null) {
+                Class<?> hostCallbacksClass =
+                        cl.loadClass("androidx.fragment.app.FragmentActivity$HostCallbacks");
+                java.lang.reflect.Constructor<?> hostCtor =
+                        hostCallbacksClass.getDeclaredConstructor(fragmentActivityClass);
+                hostCtor.setAccessible(true);
+                Object hostCallbacks = hostCtor.newInstance(activity);
+
+                Class<?> hostCallbackClass =
+                        cl.loadClass("androidx.fragment.app.FragmentHostCallback");
+                Class<?> controllerClass =
+                        cl.loadClass("androidx.fragment.app.FragmentController");
+                java.lang.reflect.Method buildController =
+                        controllerClass.getDeclaredMethod("b", hostCallbackClass);
+                buildController.setAccessible(true);
+                controller = buildController.invoke(null, hostCallbacks);
+                fragmentsField.set(activity, controller);
+                startupLog("[WestlakeLauncher] Created FragmentActivity.mFragments controller");
+            } else {
+                startupLog("[WestlakeLauncher] Reusing FragmentActivity.mFragments controller");
+            }
+
+            java.lang.reflect.Field lifecycleField =
+                    findFieldOnHierarchy(fragmentActivityClass, "mFragmentLifecycleRegistry");
+            if (lifecycleField != null && lifecycleField.get(activity) == null) {
+                lifecycleField.set(activity, new androidx.lifecycle.LifecycleRegistry(
+                        (androidx.lifecycle.LifecycleOwner) activity));
+            }
+            java.lang.reflect.Field stoppedField =
+                    findFieldOnHierarchy(fragmentActivityClass, "mStopped");
+            if (stoppedField != null) {
+                stoppedField.setBoolean(activity, true);
+            }
+
+            java.lang.reflect.Method getManager = controller.getClass().getDeclaredMethod("l");
+            getManager.setAccessible(true);
+            Object fragmentManager = getManager.invoke(controller);
+            java.lang.reflect.Field hostField =
+                    findFieldOnHierarchy(fragmentManager.getClass(), "x");
+            if (hostField != null && hostField.get(fragmentManager) == null) {
+                Class<?> fragmentClass = cl.loadClass("androidx.fragment.app.Fragment");
+                java.lang.reflect.Method attachHost =
+                        controller.getClass().getDeclaredMethod("a", fragmentClass);
+                attachHost.setAccessible(true);
+                attachHost.invoke(controller, new Object[]{null});
+                startupLog("[WestlakeLauncher] Attached support FragmentManager host");
+            } else {
+                startupLog("[WestlakeLauncher] Support FragmentManager host already attached");
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] primeSupportFragmentHost", t);
+        }
+    }
+
+    private static void attachFragmentToActivity(Object fragment, Class<?> fragClass, Activity activity) {
+        if (fragment == null || fragClass == null || activity == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Method onAttach = null;
+            for (Class<?> c = fragClass; c != null; c = c.getSuperclass()) {
+                try {
+                    onAttach = c.getDeclaredMethod("onAttach", android.content.Context.class);
+                    break;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+            if (onAttach != null) {
+                onAttach.setAccessible(true);
+                onAttach.invoke(fragment, activity);
+                startupLog("[WestlakeLauncher] HomeDashboardFragment onAttach(Context) invoked");
+                return;
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] HomeDashboardFragment onAttach(Context)", t);
+        }
+        try {
+            java.lang.reflect.Method onAttach = null;
+            for (Class<?> c = fragClass; c != null; c = c.getSuperclass()) {
+                try {
+                    onAttach = c.getDeclaredMethod("onAttach", Activity.class);
+                    break;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+            if (onAttach != null) {
+                onAttach.setAccessible(true);
+                onAttach.invoke(fragment, activity);
+                startupLog("[WestlakeLauncher] HomeDashboardFragment onAttach(Activity) invoked");
+            }
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] HomeDashboardFragment onAttach(Activity)", t);
+        }
+    }
+
+    private static void invokeFragmentLifecycleMethod(
+            Object fragment,
+            Class<?> fragClass,
+            String name,
+            Class<?>[] paramTypes,
+            Object[] args) {
+        if (fragment == null || fragClass == null || name == null) {
+            return;
+        }
+        for (Class<?> c = fragClass; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Method m = c.getDeclaredMethod(name, paramTypes);
+                m.setAccessible(true);
+                m.invoke(fragment, args);
+                startupLog("[WestlakeLauncher] HomeDashboardFragment " + name + "() invoked");
+                return;
+            } catch (NoSuchMethodException ignored) {
+            } catch (Throwable t) {
+                startupLog("[WestlakeLauncher] HomeDashboardFragment " + name, t);
+                return;
+            }
+        }
+    }
+
+    private static boolean tryAttachHomeDashboardFragment(
+            Activity activity,
+            android.view.ViewGroup homeContainer) {
+        if (activity == null || homeContainer == null) {
+            return false;
+        }
+        try {
+            Object fragment = findDashboardFragmentInstance(activity);
+            Class<?> fragClass = fragment != null ? fragment.getClass()
+                    : loadAppClass("com.mcdonalds.homedashboard.fragment.HomeDashboardFragment");
+            if (fragClass == null) {
+                return false;
+            }
+            if (fragment == null) {
+                try {
+                    fragment = fragClass.getDeclaredConstructor().newInstance();
+                } catch (Throwable ctorError) {
+                    fragment = tryAllocInstance(fragClass);
+                    if (fragment == null) {
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment ctor/alloc failed", ctorError);
+                        return false;
+                    }
+                }
+            }
+
+            logDashboardOwnershipOnce(activity, fragment);
+            seedHomeDashboardFragmentCtorState(fragment);
+            seedSupportFragmentBaseState(fragment, activity);
+            seedHiltFragmentContext(fragment, activity);
+
+            boolean fragmentManagerAttempted = false;
+            Class<?> runtimeFragmentClass =
+                    findNamedClassOnHierarchy(fragment.getClass(), "androidx.fragment.app.Fragment");
+            Class<?> runtimeFragmentActivityClass =
+                    findNamedClassOnHierarchy(activity.getClass(), "androidx.fragment.app.FragmentActivity");
+            if (runtimeFragmentClass != null && runtimeFragmentActivityClass != null) {
+                try {
+                    fragmentManagerAttempted = true;
+                    primeSupportFragmentHost(activity);
+                    startupLog("[WestlakeLauncher] HomeDashboardFragment activity class="
+                            + activity.getClass().getName());
+                    int containerId = homeContainer.getId();
+                    if (containerId == 0) {
+                        containerId = resolveAppResourceId(activity, "id", "home_dashboard_container");
+                        if (containerId != 0) {
+                            homeContainer.setId(containerId);
+                        }
+                    }
+                    if (containerId != 0) {
+                        android.view.View liveContainer = activity.findViewById(containerId);
+                        if (liveContainer == null) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment container missing: 0x"
+                                    + Integer.toHexString(containerId));
+                            return false;
+                        }
+                        java.lang.reflect.Method getSupportFragmentManager =
+                                runtimeFragmentActivityClass.getMethod("getSupportFragmentManager");
+                        Object fm = getSupportFragmentManager.invoke(activity);
+                        if (fm == null) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment support FragmentManager is null");
+                            return false;
+                        }
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment support FragmentManager ready");
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment support FragmentManager class="
+                                + (fm != null ? fm.getClass().getName() : "null"));
+                        Object tx;
+                        try {
+                            java.lang.reflect.Method beginTransaction =
+                                    fm.getClass().getMethod("beginTransaction");
+                            tx = beginTransaction.invoke(fm);
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment transaction begin");
+                        } catch (Throwable beginError) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment beginTransaction", beginError);
+                            throw beginError;
+                        }
+                        Object existingFragment = null;
+                        try {
+                            java.lang.reflect.Method findFragmentById =
+                                    fm.getClass().getMethod("findFragmentById", int.class);
+                            existingFragment = findFragmentById.invoke(fm, containerId);
+                            if (existingFragment == null) {
+                                java.lang.reflect.Method findFragmentByTag =
+                                        fm.getClass().getMethod("findFragmentByTag", String.class);
+                                existingFragment = findFragmentByTag.invoke(fm, "HomeDashboardFragment");
+                            }
+                        } catch (Throwable lookupError) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment existing lookup", lookupError);
+                        }
+                        if (existingFragment != null && existingFragment != fragment) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment transaction=replace");
+                            java.lang.reflect.Method replace = tx.getClass().getMethod(
+                                    "replace", int.class, runtimeFragmentClass, String.class);
+                            replace.invoke(tx, containerId, fragment, "HomeDashboardFragment");
+                        } else {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment transaction=add");
+                            java.lang.reflect.Method add = tx.getClass().getMethod(
+                                    "add", int.class, runtimeFragmentClass, String.class);
+                            add.invoke(tx, containerId, fragment, "HomeDashboardFragment");
+                        }
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment transaction commitNow");
+                        java.lang.reflect.Method commitNowAllowingStateLoss =
+                                tx.getClass().getMethod("commitNowAllowingStateLoss");
+                        commitNowAllowingStateLoss.invoke(tx);
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment transaction committed");
+                        java.lang.reflect.Method getView =
+                                runtimeFragmentClass.getMethod("getView");
+                        Object fragViewObj = getView.invoke(fragment);
+                        android.view.View fragView =
+                                fragViewObj instanceof android.view.View
+                                        ? (android.view.View) fragViewObj
+                                        : null;
+                        if (fragView != null || homeContainer.getChildCount() > 0) {
+                            startupLog("[WestlakeLauncher] HomeDashboardFragment attached via FragmentManager");
+                            return true;
+                        }
+                        startupLog("[WestlakeLauncher] HomeDashboardFragment FragmentManager attach produced no view");
+                    }
+                } catch (Throwable fmError) {
+                    startupLog("[WestlakeLauncher] HomeDashboardFragment FragmentManager attach", fmError);
+                    logThrowableFrames("[WestlakeLauncher] HomeDashboardFragment FragmentManager attach",
+                            fmError, 12);
+                }
+            }
+
+            if (fragmentManagerAttempted && runtimeFragmentClass != null) {
+                startupLog("[WestlakeLauncher] HomeDashboardFragment skipping manual re-attach after FragmentManager failure");
+                return false;
+            }
+
+            for (Class<?> c = activity.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Field f = c.getDeclaredField("mHomeDashboardFragment");
+                    f.setAccessible(true);
+                    if (f.get(activity) == null) {
+                        f.set(activity, fragment);
+                    }
+                    break;
+                } catch (NoSuchFieldException ignored) {
+                } catch (Throwable ignored) {
+                    break;
+                }
+            }
+
+            attachFragmentToActivity(fragment, fragClass, activity);
+            invokeFragmentLifecycleMethod(fragment, fragClass, "onCreate",
+                    new Class<?>[]{android.os.Bundle.class},
+                    new Object[]{null});
+
+            android.view.LayoutInflater inflater = activity.getLayoutInflater();
+            java.lang.reflect.Method onCreateView = null;
+            for (Class<?> c = fragClass; c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    onCreateView = c.getDeclaredMethod("onCreateView",
+                            android.view.LayoutInflater.class,
+                            android.view.ViewGroup.class,
+                            android.os.Bundle.class);
+                    break;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+            if (onCreateView == null) {
+                return false;
+            }
+            onCreateView.setAccessible(true);
+            Object fragViewObj = onCreateView.invoke(fragment, inflater, homeContainer, null);
+            if (!(fragViewObj instanceof android.view.View)) {
+                startupLog("[WestlakeLauncher] HomeDashboardFragment onCreateView returned null");
+                return false;
+            }
+
+            android.view.View fragView = (android.view.View) fragViewObj;
+            homeContainer.removeAllViews();
+            homeContainer.addView(fragView);
+            startupLog("[WestlakeLauncher] HomeDashboardFragment view attached: "
+                    + fragView.getClass().getName());
+
+            invokeFragmentLifecycleMethod(fragment, fragClass, "onViewCreated",
+                    new Class<?>[]{android.view.View.class, android.os.Bundle.class},
+                    new Object[]{fragView, null});
+            invokeFragmentLifecycleMethod(fragment, fragClass, "onActivityCreated",
+                    new Class<?>[]{android.os.Bundle.class},
+                    new Object[]{null});
+            invokeFragmentLifecycleMethod(fragment, fragClass, "onStart",
+                    new Class<?>[0], new Object[0]);
+            invokeFragmentLifecycleMethod(fragment, fragClass, "onResume",
+                    new Class<?>[0], new Object[0]);
+            return homeContainer.getChildCount() > 0;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] tryAttachHomeDashboardFragment", t);
+            logThrowableFrames("[WestlakeLauncher] tryAttachHomeDashboardFragment", t, 12);
+            return false;
+        }
+    }
+
+    private static boolean installProgrammaticHomeDashboardFragment(
+            Activity activity,
+            android.view.ViewGroup homeContainer) {
+        if (activity == null || homeContainer == null) {
+            return false;
+        }
+        try {
+            homeContainer.removeAllViews();
+            startupLog("[WestlakeLauncher] buildProgrammaticHomeDashboardFragment cleared");
+            if (tryAttachHomeDashboardFragment(activity, homeContainer)) {
+                startupLog("[WestlakeLauncher] Programmatic HomeDashboardFragment attached");
+                return true;
+            }
+            startupLog("[WestlakeLauncher] Skipping fragment_home_dashboard shell inflate after attach failure");
+            int sectionsContainerId = resolveAppResourceId(activity, "id", "sections_container");
+            android.view.View content = buildDashboardCanvasContent(activity);
+            if (content == null) {
+                startupLog("[WestlakeLauncher] buildProgrammaticHomeDashboardFragment content=null");
+                return false;
+            }
+            if (sectionsContainerId != 0) {
+                content.setId(sectionsContainerId);
+            }
+            android.view.ViewGroup.LayoutParams homeParams;
+            if (homeContainer instanceof android.widget.LinearLayout) {
+                homeParams = new android.widget.LinearLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else if (homeContainer instanceof android.widget.FrameLayout) {
+                homeParams = new android.widget.FrameLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else if (homeContainer instanceof android.widget.RelativeLayout) {
+                homeParams = new android.widget.RelativeLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                homeParams = new android.view.ViewGroup.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            String homeClassName = homeContainer.getClass().getName();
+            if (homeClassName != null
+                    && homeClassName.startsWith("com.westlake.engine.WestlakeLauncher$")) {
+                startupLog("[WestlakeLauncher] installProgrammaticHomeDashboardFragment skipping launcher-owned root");
+                return false;
+            }
+            homeContainer.addView(content, homeParams);
+            startupLog("[WestlakeLauncher] buildProgrammaticHomeDashboardFragment created minimal scaffold");
+            if (homeContainer.getChildCount() > 0) {
+                startupLog("[WestlakeLauncher] Programmatic fragment_home_dashboard installed");
+                return true;
+            }
+            startupLog("[WestlakeLauncher] Programmatic fragment_home_dashboard left home container empty");
+            return false;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] installProgrammaticHomeDashboardFragment", t);
+            logThrowableFrames("[WestlakeLauncher] installProgrammaticHomeDashboardFragment", t, 10);
+            return false;
+        }
+    }
+
+    private static int dpPx(android.content.Context context, int dp) {
+        float density = 1f;
+        try {
+            if (context != null && context.getResources() != null
+                    && context.getResources().getDisplayMetrics() != null
+                    && context.getResources().getDisplayMetrics().density > 0f) {
+                density = context.getResources().getDisplayMetrics().density;
+            }
+        } catch (Throwable ignored) {
+        }
+        return Math.max(1, (int) (dp * density + 0.5f));
+    }
+
+    private static android.view.View buildDashboardCanvasContent(
+            final android.content.Context context) {
+        android.view.View view = new android.view.View(context) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                int desiredWidth = SURFACE_WIDTH;
+                int desiredHeight = Math.max(SURFACE_HEIGHT, dpPx(context, 640));
+                int measuredWidth = android.view.View.resolveSize(desiredWidth, widthMeasureSpec);
+                int measuredHeight = android.view.View.resolveSize(desiredHeight, heightMeasureSpec);
+                setMeasuredDimension(measuredWidth, measuredHeight);
+            }
+
+            @Override
+            protected void onDraw(android.graphics.Canvas canvas) {
+                super.onDraw(canvas);
+                drawDashboardSkeleton(context, canvas, getWidth(), getHeight());
+            }
+        };
+        view.setMinimumHeight(dpPx(context, 420));
+        return view;
+    }
+
+    private static float safeDensity(android.content.Context context) {
+        try {
+            if (context != null
+                    && context.getResources() != null
+                    && context.getResources().getDisplayMetrics() != null
+                    && context.getResources().getDisplayMetrics().density > 0f) {
+                return context.getResources().getDisplayMetrics().density;
+            }
+        } catch (Throwable ignored) {
+        }
+        return 1f;
+    }
+
+    private static boolean isDashboardFallbackInstalled(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+        try {
+            synchronized (sInstalledDashboardFallbacks) {
+                for (int i = 0; i < sInstalledDashboardFallbacks.size(); i++) {
+                    if (sInstalledDashboardFallbacks.get(i) == activity) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    private static void markDashboardFallbackInstalled(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        try {
+            synchronized (sInstalledDashboardFallbacks) {
+                for (int i = 0; i < sInstalledDashboardFallbacks.size(); i++) {
+                    if (sInstalledDashboardFallbacks.get(i) == activity) {
+                        return;
+                    }
+                }
+                sInstalledDashboardFallbacks.add(activity);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static android.view.View safeFindViewById(Activity activity, int id, String label) {
+        if (activity == null || id == 0) {
+            return null;
+        }
+        try {
+            return activity.findViewById(id);
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] safeFindViewById(" + label + ") error", t);
+            return null;
+        }
+    }
+
+    private static android.view.View safeFindViewById(android.view.View root, int id, String label) {
+        if (root == null || id == 0) {
+            return null;
+        }
+        try {
+            return root.findViewById(id);
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] safeFindViewById(" + label + ") root error", t);
+            return null;
+        }
+    }
+
+    private static boolean installDashboardViewFallback(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+        try {
+            int homeContainerId = resolveAppResourceId(activity, "id", "home_dashboard_container");
+            int pageContentId = resolveAppResourceId(activity, "id", "page_content");
+            int contentLayoutId = resolveAppResourceId(activity, "layout", "activity_home_dashboard");
+            android.view.View installedRoot = null;
+            startupLog("[WestlakeLauncher] installDashboardViewFallback ids: home=0x"
+                    + Integer.toHexString(homeContainerId) + " page=0x"
+                    + Integer.toHexString(pageContentId) + " layout=0x"
+                    + Integer.toHexString(contentLayoutId));
+
+            android.view.View containerView =
+                    safeFindViewById(activity, homeContainerId, "home_dashboard_container.initial");
+            startupLog("[WestlakeLauncher] installDashboardViewFallback initial container="
+                    + (containerView != null ? containerView.getClass().getName() : "null"));
+            if (false && !(containerView instanceof android.view.ViewGroup) && contentLayoutId != 0) {
+                try {
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback direct setContentView(activity_home_dashboard)");
+                    activity.setContentView(contentLayoutId);
+                    containerView = safeFindViewById(activity, homeContainerId,
+                            "home_dashboard_container.after_direct");
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback post-direct container="
+                            + (containerView != null ? containerView.getClass().getName() : "null"));
+                } catch (Throwable directSetContentViewError) {
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback direct setContentView error",
+                            directSetContentViewError);
+                    logThrowableFrames("[WestlakeLauncher] installDashboardViewFallback direct setContentView",
+                            directSetContentViewError, 12);
+                }
+            }
+            if (!(containerView instanceof android.view.ViewGroup)) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback building root");
+                android.view.View root = buildProgrammaticDashboardFallbackRoot(activity);
+                if (root != null) {
+                    installedRoot = root;
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback root class="
+                            + root.getClass().getName());
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback setContentView begin");
+                    activity.setContentView(root);
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback setContentView done");
+                    startupLog("[WestlakeLauncher] Installed programmatic dashboard root");
+                    containerView = safeFindViewById(root, homeContainerId,
+                            "home_dashboard_container.after_root");
+                    if (!(containerView instanceof android.view.ViewGroup)
+                            && root instanceof android.view.ViewGroup) {
+                        containerView = root;
+                        startupLog("[WestlakeLauncher] installDashboardViewFallback using root as container");
+                    }
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback post-root container="
+                            + (containerView != null ? containerView.getClass().getName() : "null"));
+                }
+            }
+            if (containerView == null
+                    && pageContentId != 0
+                    && contentLayoutId != 0) {
+                android.view.View pageContentView =
+                        safeFindViewById(activity, pageContentId, "page_content");
+                startupLog("[WestlakeLauncher] installDashboardViewFallback pageContent="
+                        + (pageContentView != null ? pageContentView.getClass().getName() : "null"));
+                if (pageContentView instanceof android.view.ViewGroup) {
+                    android.view.ViewGroup pageContent = (android.view.ViewGroup) pageContentView;
+                    if (pageContent.getChildCount() == 0) {
+                        startupLog("[WestlakeLauncher] installDashboardViewFallback inflating activity_home_dashboard");
+                        activity.getLayoutInflater().inflate(contentLayoutId, pageContent, true);
+                        startupLog("[WestlakeLauncher] Inflated activity_home_dashboard into page_content");
+                    }
+                    containerView = safeFindViewById(activity, homeContainerId,
+                            "home_dashboard_container.after_inflate");
+                    startupLog("[WestlakeLauncher] installDashboardViewFallback post-inflate container="
+                            + (containerView != null ? containerView.getClass().getName() : "null"));
+                }
+            }
+            if (!(containerView instanceof android.view.ViewGroup)) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback no container");
+                return false;
+            }
+
+            int intermediateId = resolveAppResourceId(activity, "id", "intermediate_layout_container");
+            android.view.View intermediate =
+                    safeFindViewById(activity, intermediateId, "intermediate_layout_container");
+            if (intermediate != null) {
+                intermediate.setVisibility(android.view.View.GONE);
+            }
+
+            android.view.ViewGroup homeContainer = (android.view.ViewGroup) containerView;
+            homeContainer.setVisibility(android.view.View.VISIBLE);
+
+            int fragmentLayoutId = resolveAppResourceId(activity, "layout", "fragment_home_dashboard");
+            startupLog("[WestlakeLauncher] installDashboardViewFallback fragmentLayout=0x"
+                    + Integer.toHexString(fragmentLayoutId));
+            boolean installedProgrammaticFragment = false;
+            if (homeContainer.getChildCount() == 0 && fragmentLayoutId != 0) {
+                startupLog("[WestlakeLauncher] Skipping direct fragment_home_dashboard inflate");
+                installedProgrammaticFragment =
+                        installProgrammaticHomeDashboardFragment(activity, homeContainer);
+            }
+
+            if (installedProgrammaticFragment && homeContainer.getChildCount() > 0) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback using programmatic dashboard scaffold");
+                return true;
+            }
+            if (installedProgrammaticFragment) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback programmatic scaffold incomplete");
+            }
+
+            int sectionsId = resolveAppResourceId(activity, "id", "sections_container");
+            android.view.View sectionsView =
+                    safeFindViewById(installedRoot, sectionsId, "sections_container.root");
+            if (sectionsView == null) {
+                sectionsView = safeFindViewById(activity, sectionsId, "sections_container");
+            }
+            startupLog("[WestlakeLauncher] installDashboardViewFallback sections="
+                    + (sectionsView != null ? sectionsView.getClass().getName() : "null"));
+            if (installedProgrammaticFragment
+                    && sectionsView instanceof android.view.ViewGroup
+                    && ((android.view.ViewGroup) sectionsView).getChildCount() > 0) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback using real dashboard scaffold");
+                return true;
+            }
+            if (sectionsView == null && homeContainer.getChildCount() > 0) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback keeping real home container children="
+                        + homeContainer.getChildCount());
+                return true;
+            }
+            if (!(sectionsView instanceof android.view.ViewGroup)) {
+                sectionsView = homeContainer;
+                startupLog("[WestlakeLauncher] installDashboardViewFallback using home container as fallback sections");
+            }
+
+            android.view.ViewGroup sections = (android.view.ViewGroup) sectionsView;
+            if (sections.getChildCount() > 0) {
+                startupLog("[WestlakeLauncher] installDashboardViewFallback keeping existing sections children="
+                        + sections.getChildCount());
+                return true;
+            }
+            sections.removeAllViews();
+            startupLog("[WestlakeLauncher] installDashboardViewFallback cleared sections");
+
+            if (sections == homeContainer) {
+                String sectionClassName = sections.getClass().getName();
+                if (sectionClassName != null
+                        && sectionClassName.startsWith("com.westlake.engine.WestlakeLauncher$")) {
+                    sections.setWillNotDraw(false);
+                    startupLog("[WestlakeLauncher] Dashboard fallback using drawable home container root");
+                    return true;
+                }
+            }
+
+            android.content.Context context = activity;
+            sections.addView(buildDashboardCanvasContent(context),
+                    dashboardCanvasLp());
+
+            startupLog("[WestlakeLauncher] Dashboard fallback injected into real view tree");
+            return true;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] installDashboardViewFallback error", t);
+            logThrowableFrames("[WestlakeLauncher] installDashboardViewFallback", t, 12);
+            return false;
+        }
+    }
+
+    private static boolean shouldUseTextOnlyDashboardMenu(Activity activity) {
+        try {
+            String prop = System.getProperty("westlake.text_menu_only");
+            if (prop != null && ("1".equals(prop) || "true".equalsIgnoreCase(prop))) {
+                return activity != null;
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            String env = System.getenv("WESTLAKE_TEXT_MENU_ONLY");
+            if (env != null && ("1".equals(env) || "true".equalsIgnoreCase(env))) {
+                return activity != null;
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    private static void drawTextOnlyDashboardMenu() {
+        if (!OHBridge.isNativeAvailable()) {
+            return;
+        }
+        long surf = OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
+        long canv = OHBridge.surfaceGetCanvas(surf);
+        long font = OHBridge.fontCreate();
+        long pen = OHBridge.penCreate();
+        long brush = OHBridge.brushCreate();
+
+        OHBridge.canvasDrawColor(canv, 0xFFF5F5F5);
+
+        OHBridge.fontSetSize(font, 30);
+        OHBridge.penSetColor(pen, 0xFFDA291C);
+        OHBridge.canvasDrawText(canv, "McDonald's", 36, 90, font, pen, brush);
+
+        OHBridge.fontSetSize(font, 18);
+        OHBridge.penSetColor(pen, 0xFF333333);
+        OHBridge.canvasDrawText(canv, "Text-only menu", 36, 130, font, pen, brush);
+
+        OHBridge.fontSetSize(font, 20);
+        OHBridge.penSetColor(pen, 0xFF111111);
+        OHBridge.canvasDrawText(canv, "Big Mac Combo        $5.99", 36, 210, font, pen, brush);
+        OHBridge.canvasDrawText(canv, "2 for $6 Mix & Match", 36, 260, font, pen, brush);
+        OHBridge.canvasDrawText(canv, "Free Medium Fries    Reward", 36, 310, font, pen, brush);
+        OHBridge.canvasDrawText(canv, "10 pc McNuggets      $6.79", 36, 360, font, pen, brush);
+        OHBridge.canvasDrawText(canv, "Quarter Pounder      $6.49", 36, 410, font, pen, brush);
+        OHBridge.canvasDrawText(canv, "McFlurry OREO        $3.49", 36, 460, font, pen, brush);
+
+        OHBridge.fontSetSize(font, 16);
+        OHBridge.penSetColor(pen, 0xFF666666);
+        OHBridge.canvasDrawText(canv, "Home   Deals   Order   Rewards   More", 24, 730, font, pen, brush);
+
+        OHBridge.surfaceFlush(surf);
+        sDirectDashboardFallbackActive = true;
+        startupLog("[WestlakeLauncher] Text-only dashboard menu drawn via OHBridge");
     }
 
     private static final String[] TOUCH_PATHS_FALLBACK = {
@@ -1099,129 +3512,188 @@ public class WestlakeLauncher {
      * Build a visible McDonald's dashboard UI on the activity's content view.
      * Uses the real base_layout container and adds mock menu content.
      */
-    private static void populateDashboard(Activity activity) {
+    public static void populateDashboardFallback(Activity activity) {
+        if (isDashboardFallbackInstalled(activity)) {
+            startupLog("[WestlakeLauncher] Dashboard fallback already installed for "
+                    + activity.getClass().getName());
+            return;
+        }
+        sDirectDashboardFallbackActive = false;
         try {
-            android.view.View decor = activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
-            if (decor == null) return;
-
-            // Build a dashboard UI programmatically
-            android.widget.LinearLayout dashboard = new android.widget.LinearLayout(activity);
-            dashboard.setOrientation(android.widget.LinearLayout.VERTICAL);
-            dashboard.setBackgroundColor(0xFFF5F5F5); // light gray bg
-
-            // === TOP BAR (McDonald's red) ===
-            android.widget.LinearLayout topBar = new android.widget.LinearLayout(activity);
-            topBar.setBackgroundColor(0xFFDA291C); // McDonald's red
-            topBar.setPadding(16, 24, 16, 24);
-            topBar.setGravity(android.view.Gravity.CENTER_VERTICAL);
-            android.widget.TextView title = new android.widget.TextView(activity);
-            title.setText("McDonald's");
-            title.setTextSize(22);
-            title.setTextColor(0xFFFFCC00); // gold
-            topBar.addView(title);
-            dashboard.addView(topBar);
-
-            // === WELCOME BANNER ===
-            android.widget.TextView welcome = new android.widget.TextView(activity);
-            welcome.setText("Good morning! Ready to order?");
-            welcome.setTextSize(16);
-            welcome.setTextColor(0xFF333333);
-            welcome.setPadding(16, 16, 16, 8);
-            dashboard.addView(welcome);
-
-            // === DEALS SECTION ===
-            android.widget.TextView dealsTitle = new android.widget.TextView(activity);
-            dealsTitle.setText("Today's Deals");
-            dealsTitle.setTextSize(18);
-            dealsTitle.setTextColor(0xFF292929);
-            dealsTitle.setPadding(16, 12, 16, 8);
-            dashboard.addView(dealsTitle);
-
-            // Deal cards
-            String[][] deals = {
-                {"Big Mac Combo", "$5.99", "Limited time offer"},
-                {"2 for $6 Mix & Match", "$6.00", "Choose any two"},
-                {"Free Medium Fries", "FREE", "With any purchase over $1"},
-                {"McFlurry OREO", "$3.49", "New flavor!"},
-            };
-            for (String[] deal : deals) {
-                android.widget.LinearLayout card = new android.widget.LinearLayout(activity);
-                card.setOrientation(android.widget.LinearLayout.VERTICAL);
-                card.setBackgroundColor(0xFFFFFFFF);
-                card.setPadding(16, 12, 16, 12);
-                android.widget.LinearLayout.LayoutParams cardLp = new android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
-                cardLp.setMargins(16, 4, 16, 4);
-                card.setLayoutParams(cardLp);
-
-                android.widget.TextView dealName = new android.widget.TextView(activity);
-                dealName.setText(deal[0]);
-                dealName.setTextSize(16);
-                dealName.setTextColor(0xFF292929);
-                card.addView(dealName);
-
-                android.widget.LinearLayout priceRow = new android.widget.LinearLayout(activity);
-                priceRow.setOrientation(android.widget.LinearLayout.HORIZONTAL);
-                android.widget.TextView price = new android.widget.TextView(activity);
-                price.setText(deal[1]);
-                price.setTextSize(14);
-                price.setTextColor(0xFFDA291C);
-                priceRow.addView(price);
-                android.widget.TextView desc = new android.widget.TextView(activity);
-                desc.setText("  " + deal[2]);
-                desc.setTextSize(12);
-                desc.setTextColor(0xFF666666);
-                priceRow.addView(desc);
-                card.addView(priceRow);
-
-                dashboard.addView(card);
+            if (shouldUseTextOnlyDashboardMenu(activity)) {
+                drawTextOnlyDashboardMenu();
+                markDashboardFallbackInstalled(activity);
+                return;
             }
-
-            // === BOTTOM NAV BAR ===
-            android.widget.LinearLayout bottomNav = new android.widget.LinearLayout(activity);
-            bottomNav.setBackgroundColor(0xFFFFFFFF);
-            bottomNav.setPadding(0, 8, 0, 8);
-            bottomNav.setGravity(android.view.Gravity.CENTER);
-            String[] tabs = {"Home", "Deals", "Order", "Rewards", "More"};
-            for (String tab : tabs) {
-                android.widget.TextView tabView = new android.widget.TextView(activity);
-                tabView.setText(tab);
-                tabView.setTextSize(11);
-                tabView.setTextColor(tab.equals("Home") ? 0xFFDA291C : 0xFF666666);
-                tabView.setGravity(android.view.Gravity.CENTER);
-                android.widget.LinearLayout.LayoutParams tabLp = new android.widget.LinearLayout.LayoutParams(
-                        0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
-                tabView.setLayoutParams(tabLp);
-                bottomNav.addView(tabView);
+            if (installDashboardViewFallback(activity)) {
+                markDashboardFallbackInstalled(activity);
+                startupLog("[WestlakeLauncher] Dashboard fallback UI populated in container");
+                return;
             }
-
-            // Set the dashboard as content, replacing the base_layout
-            android.view.Window win = activity.getWindow();
-            if (win != null) {
-                // Wrap in a FrameLayout with splash image background
-                android.widget.FrameLayout root = new android.widget.FrameLayout(activity);
-                root.addView(dashboard);
-                root.addView(bottomNav, new android.widget.FrameLayout.LayoutParams(
-                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.view.Gravity.BOTTOM));
-                win.setContentView(root);
-                System.err.println("[WestlakeLauncher] Dashboard UI populated with mock content");
+            if (activity == null || !OHBridge.isNativeAvailable()) {
+                return;
             }
+            long surf = OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
+            long canv = OHBridge.surfaceGetCanvas(surf);
+            long font = OHBridge.fontCreate();
+            long pen = OHBridge.penCreate();
+            long brush = OHBridge.brushCreate();
+
+            OHBridge.canvasDrawColor(canv, 0xFFF5F5F5);
+
+            OHBridge.fontSetSize(font, 30);
+            OHBridge.penSetColor(pen, 0xFFDA291C);
+            OHBridge.canvasDrawText(canv, "McDonald's", 36, 90, font, pen, brush);
+
+            OHBridge.fontSetSize(font, 18);
+            OHBridge.penSetColor(pen, 0xFF333333);
+            OHBridge.canvasDrawText(canv, "Dashboard fallback", 36, 130, font, pen, brush);
+
+            OHBridge.fontSetSize(font, 20);
+            OHBridge.penSetColor(pen, 0xFF111111);
+            OHBridge.canvasDrawText(canv, "Big Mac Combo        $5.99", 36, 220, font, pen, brush);
+            OHBridge.canvasDrawText(canv, "2 for $6 Mix & Match", 36, 275, font, pen, brush);
+            OHBridge.canvasDrawText(canv, "Free Medium Fries", 36, 330, font, pen, brush);
+            OHBridge.canvasDrawText(canv, "McFlurry OREO        $3.49", 36, 385, font, pen, brush);
+
+            OHBridge.fontSetSize(font, 16);
+            OHBridge.penSetColor(pen, 0xFF666666);
+            OHBridge.canvasDrawText(canv, "Home   Deals   Order   Rewards   More", 24, 730, font, pen, brush);
+
+            OHBridge.surfaceFlush(surf);
+            sDirectDashboardFallbackActive = true;
+            markDashboardFallbackInstalled(activity);
+            startupLog("[WestlakeLauncher] Dashboard fallback drawn via OHBridge");
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] populateDashboard error: " + t.getMessage());
+            sDirectDashboardFallbackActive = false;
+            try { nativePrintException(t); } catch (Throwable ignored) {}
+            startupLog("[WestlakeLauncher] populateDashboardFallback error", t);
         }
     }
 
     private static void renderLoop(Activity initialActivity, MiniActivityManager am) {
+        if (android.app.WestlakeActivityThread.pendingDashboardClass != null) {
+            String dashClass = android.app.WestlakeActivityThread.pendingDashboardClass;
+            android.app.WestlakeActivityThread.pendingDashboardClass = null;
+            startupLog("[WestlakeLauncher] Launching pending dashboard: " + dashClass);
+            startupLog("[WestlakeLauncher] renderLoop initial before dashboard="
+                    + (initialActivity != null ? initialActivity.getClass().getName() : "null"));
+            Activity dash = null;
+            try {
+                android.app.WestlakeActivityThread wat = android.app.WestlakeActivityThread.currentActivityThread();
+                Intent dashIntent = new Intent();
+                dashIntent.setComponent(new ComponentName("com.mcdonalds.app", dashClass));
+                dash = android.app.WestlakeActivityThread.launchActivity(
+                        wat, dashClass, "com.mcdonalds.app", dashIntent);
+            } catch (Throwable t) {
+                startupLog("[WestlakeLauncher] Dashboard launchActivity error", t);
+                logThrowableFrames("[WestlakeLauncher] Dashboard launchActivity", t, 12);
+            }
+            if (dash != null) {
+                try {
+                    Activity previous = initialActivity;
+                    initialActivity = dash;
+                    startupLog("[WestlakeLauncher] Dashboard active: " + dash.getClass().getName());
+                    Activity resumed = null;
+                    try { resumed = am.getResumedActivity(); } catch (Throwable ignored) {}
+                    startupLog("[WestlakeLauncher] Dashboard resumed after launch="
+                            + (resumed != null ? resumed.getClass().getName() : "null"));
+                    boolean fallbackAlreadyInstalled = false;
+                    try {
+                        fallbackAlreadyInstalled = isDashboardFallbackInstalled(dash);
+                    } catch (Throwable installedLookupError) {
+                        startupLog("[WestlakeLauncher] Dashboard fallback lookup error", installedLookupError);
+                        logThrowableFrames("[WestlakeLauncher] Dashboard fallback lookup",
+                                installedLookupError, 8);
+                    }
+                    if (!fallbackAlreadyInstalled) {
+                        try {
+                            populateDashboardFallback(dash);
+                        } catch (Throwable fallbackError) {
+                            startupLog("[WestlakeLauncher] Dashboard fallback install error", fallbackError);
+                            logThrowableFrames("[WestlakeLauncher] Dashboard fallback install",
+                                    fallbackError, 8);
+                        }
+                    } else {
+                        startupLog("[WestlakeLauncher] Dashboard fallback already present before render loop");
+                    }
+                    startupLog("[WestlakeLauncher] Dashboard fallback handoff ready");
+                    // Let the normal render loop drive the first dashboard frame.
+                    // The older eager render/demo path was crashing inside the
+                    // guest before the real view tree had stabilized.
+                    splashImageData = null;
+                    if (previous != null && previous != dash) {
+                        try {
+                            previous.onSurfaceDestroyed();
+                            startupLog("[WestlakeLauncher] Previous activity surface destroyed");
+                        } catch (Throwable previousDestroyError) {
+                            startupLog("[WestlakeLauncher] Previous surface destroy error",
+                                    previousDestroyError);
+                        }
+                    }
+                    startupLog("[WestlakeLauncher] Dashboard pre-first-frame direct="
+                            + sDirectDashboardFallbackActive);
+                    if (!sDirectDashboardFallbackActive) {
+                        try {
+                            dash.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
+                            dash.renderFrame();
+                            startupLog("[WestlakeLauncher] Dashboard first frame requested");
+                        } catch (Throwable frameError) {
+                            startupLog("[WestlakeLauncher] Dashboard first render error", frameError);
+                            logThrowableFrames("[WestlakeLauncher] Dashboard first render", frameError, 8);
+                        }
+                    } else {
+                        startupLog("[WestlakeLauncher] Dashboard frame is direct OHBridge fallback");
+                    }
+                } catch (Throwable t) {
+                    startupLog("[WestlakeLauncher] Dashboard handoff error", t);
+                    logThrowableFrames("[WestlakeLauncher] Dashboard handoff", t, 12);
+                }
+            }
+        }
+
+        if (sDirectDashboardFallbackActive) {
+            startupLog("[WestlakeLauncher] Direct dashboard fallback active");
+            while (true) {
+                try { Thread.sleep(1000); } catch (InterruptedException e) { break; }
+            }
+            return;
+        }
+
         // Check if Activity has our shim methods (onSurfaceCreated/renderFrame)
         boolean hasShimMethods = true;
         try { initialActivity.getClass().getMethod("onSurfaceCreated", long.class, int.class, int.class); }
         catch (NoSuchMethodException e) { hasShimMethods = false; }
+        if (initialActivity != null) {
+            startupLog("[WestlakeLauncher] renderLoop activity="
+                    + initialActivity.getClass().getName()
+                    + (hasShimMethods ? " shim=yes" : " shim=no"));
+        } else {
+            startupLog("[WestlakeLauncher] renderLoop activity=null");
+        }
+
+        if (initialActivity != null && hasShimMethods) {
+            try {
+                String initialName = initialActivity.getClass().getName();
+                if (initialName != null && initialName.toLowerCase().contains("dashboard")) {
+                    splashImageData = null;
+                }
+            } catch (Throwable ignored) {
+            }
+            try {
+                initialActivity.onSurfaceDestroyed();
+            } catch (Throwable ignored) {
+            }
+            try {
+                initialActivity.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
+                startupLog("[WestlakeLauncher] renderLoop surface primed");
+            } catch (Throwable surfaceError) {
+                startupLog("[WestlakeLauncher] renderLoop surface prime error", surfaceError);
+            }
+        }
 
         if (!hasShimMethods) {
-            System.err.println("[WestlakeLauncher] Framework Activity — OHBridge-only render loop");
+            startupLog("[WestlakeLauncher] Framework Activity — OHBridge-only render loop");
             // Simple keep-alive loop: the splash was already sent via OHBridge
             // Touch events can still be processed
             while (true) {
@@ -1232,29 +3704,21 @@ public class WestlakeLauncher {
 
         long frameCount = 0;
         int lastTouchSeq = -1;
+        int lastTextSize = -1;
+        int lastTextHash = 0;
 
         // Prefer WESTLAKE_TOUCH env var (set by Compose host)
         String envTouch = System.getenv("WESTLAKE_TOUCH");
-        java.io.File touchFile = null;
+        String touchPath = null;
         if (envTouch != null && !envTouch.isEmpty()) {
-            touchFile = new java.io.File(envTouch);
-            java.io.File parent = touchFile.getParentFile();
-            if (parent != null && !parent.exists()) parent.mkdirs();
-            System.err.println("[WestlakeLauncher] Touch file (env): " + envTouch);
+            touchPath = envTouch;
+            startupLog("[WestlakeLauncher] Touch file (env): " + envTouch);
         } else {
-            for (String p : TOUCH_PATHS_FALLBACK) {
-                java.io.File f = new java.io.File(p);
-                if (f.getParentFile() != null && f.getParentFile().exists()) {
-                    touchFile = f;
-                    System.err.println("[WestlakeLauncher] Touch file (fallback): " + p);
-                    break;
-                }
-            }
-            if (touchFile == null) {
-                touchFile = new java.io.File(TOUCH_PATHS_FALLBACK[0]);
-                System.err.println("[WestlakeLauncher] Touch file (default): " + TOUCH_PATHS_FALLBACK[0]);
-            }
+            touchPath = TOUCH_PATHS_FALLBACK[0];
+            startupLog("[WestlakeLauncher] Touch file (default): " + touchPath);
         }
+        String touchDir = parentPath(touchPath);
+        String textPath = joinPath(touchDir, "westlake_text.dat");
 
         // After splash: if we have real icons from app_process64, render them
         if (realIconsPng != null && com.ohos.shim.bridge.OHBridge.isNativeAvailable()) {
@@ -1264,194 +3728,23 @@ public class WestlakeLauncher {
                 long canv = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(surf);
                 com.ohos.shim.bridge.OHBridge.canvasDrawImage(canv, realIconsPng, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
                 com.ohos.shim.bridge.OHBridge.surfaceFlush(surf);
-                System.err.println("[WestlakeLauncher] Real icons frame rendered! (" + realIconsPng.length + " bytes)");
+                startupLog("[WestlakeLauncher] Real icons frame rendered! (" + realIconsPng.length + " bytes)");
             } catch (Throwable t) {
-                System.err.println("[WestlakeLauncher] Real icons render error: " + t);
+                startupLog("[WestlakeLauncher] Real icons render error", t);
             }
         }
 
-        // Show splash 3 seconds then navigate to dashboard
-        if (android.app.WestlakeActivityThread.pendingDashboardClass != null) {
-            try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
-        }
-        if (android.app.WestlakeActivityThread.pendingDashboardClass != null) {
-            String dashClass = android.app.WestlakeActivityThread.pendingDashboardClass;
-            android.app.WestlakeActivityThread.pendingDashboardClass = null;
-            System.err.println("[WestlakeLauncher] Launching pending dashboard: " + dashClass);
-            try {
-                android.app.WestlakeActivityThread wat = android.app.WestlakeActivityThread.currentActivityThread();
-                Intent dashIntent = new Intent();
-                dashIntent.setComponent(new ComponentName("com.mcdonalds.app", dashClass));
-                Activity dash = wat.performLaunchActivity(dashClass, "com.mcdonalds.app", dashIntent, null);
-                if (dash != null) {
-                    initialActivity = dash;
-                    System.err.println("[WestlakeLauncher] Dashboard active: " + dash.getClass().getName());
-                    // Clear splash overlay so real content is visible
-                    splashImageData = null;
-                    // On app_process64: render real drawables from the McD APK
-                    if (sRealContext != null) {
-                        try {
-                            android.content.Context ctx = (android.content.Context) sRealContext;
-                            android.content.res.Resources realRes = ctx.getResources();
-
-                            // Render a real screenshot by drawing real drawables to a bitmap
-                            android.graphics.Bitmap screenshot = android.graphics.Bitmap.createBitmap(
-                                SURFACE_WIDTH, SURFACE_HEIGHT, android.graphics.Bitmap.Config.ARGB_8888);
-                            android.graphics.Canvas c = new android.graphics.Canvas(screenshot);
-                            c.drawColor(0xFF27251F); // McD dark background
-
-                            // Draw toolbar background
-                            c.drawRect(0, 0, SURFACE_WIDTH, 56, newPaint(0xFF292929));
-
-                            // Load and draw real McD icons using the framework's Resources
-                            String[] drawableNames = {"archus", "ic_menu", "ic_notification_bell", "back_chevron",
-                                "ic_action_search", "ic_action_location", "close"};
-                            int x = 20, y = 80;
-                            android.graphics.Paint textPaint = newPaint(0xFFFFFFFF);
-                            textPaint.setTextSize(14);
-                            for (String name : drawableNames) {
-                                int id = realRes.getIdentifier(name, "drawable", "com.mcdonalds.app");
-                                if (id != 0) {
-                                    try {
-                                        android.graphics.drawable.Drawable d = ctx.getDrawable(id);
-                                        if (d != null) {
-                                            int dw = Math.max(d.getIntrinsicWidth(), 48);
-                                            int dh = Math.max(d.getIntrinsicHeight(), 48);
-                                            // Scale to 64x64
-                                            d.setBounds(x, y, x + 64, y + 64);
-                                            d.draw(c);
-                                            c.drawText(name, x + 72, y + 40, textPaint);
-                                            y += 80;
-                                        }
-                                    } catch (Throwable t) {
-                                        c.drawText(name + " (error)", x, y + 40, textPaint);
-                                        y += 80;
-                                    }
-                                }
-                            }
-
-                            // Title
-                            android.graphics.Paint titlePaint = newPaint(0xFFFFCC00);
-                            titlePaint.setTextSize(24);
-                            c.drawText("McDonald's Real Icons", 20, 40, titlePaint);
-
-                            // Compress and send through pipe
-                            java.io.ByteArrayOutputStream pngOut = new java.io.ByteArrayOutputStream();
-                            screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, pngOut);
-                            byte[] pngBytes = pngOut.toByteArray();
-                            System.err.println("[WestlakeLauncher] Real icons bitmap: " + pngBytes.length + " bytes");
-
-                            if (com.ohos.shim.bridge.OHBridge.isNativeAvailable()) {
-                                long surf = com.ohos.shim.bridge.OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
-                                long canv = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(surf);
-                                com.ohos.shim.bridge.OHBridge.canvasDrawImage(canv, pngBytes, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
-                                com.ohos.shim.bridge.OHBridge.surfaceFlush(surf);
-                                System.err.println("[WestlakeLauncher] Real icons frame sent!");
-                            }
-                            screenshot.recycle();
-                        } catch (Throwable re) {
-                            System.err.println("[WestlakeLauncher] Real icons error: " + re.getMessage());
-                            re.printStackTrace(System.err);
-                        }
-                    }
-
-                    // Skip demo screen — show real dashboard
-                    if (false) try {
-                        System.err.println("[WestlakeLauncher] Building rich demo with real decoded icons...");
-                        String resDir = System.getProperty("westlake.apk.resdir");
-                        if (resDir != null) {
-                            // Scan xxxhdpi drawable directory for WebP/PNG files
-                            java.io.File drawDir = new java.io.File(resDir, "res/drawable-xxxhdpi-v4");
-                            if (!drawDir.exists()) drawDir = new java.io.File(resDir, "res");
-                            java.io.File[] files = drawDir.listFiles();
-                            if (files != null) {
-                                // Build a scrollable icon grid
-                                android.widget.LinearLayout root = new android.widget.LinearLayout(dash);
-                                root.setOrientation(android.widget.LinearLayout.VERTICAL);
-                                root.setBackgroundColor(0xFF27251F);
-                                root.setPadding(10, 30, 10, 10);
-
-                                // Title
-                                android.widget.TextView title2 = new android.widget.TextView(dash);
-                                title2.setText("McDonald's Real Icons (" + files.length + " files)");
-                                title2.setTextColor(0xFFFFCC00);
-                                title2.setTextSize(18);
-                                title2.setGravity(android.view.Gravity.CENTER);
-                                root.addView(title2);
-
-                                // Grid of icons (6 per row)
-                                int col = 0;
-                                android.widget.LinearLayout row = null;
-                                int loaded = 0;
-                                int iconSize = 70;
-                                java.util.Arrays.sort(files);
-                                for (java.io.File f : files) {
-                                    String name = f.getName();
-                                    if (!name.endsWith(".webp") && !name.endsWith(".png")) continue;
-                                    if (name.startsWith("abc_") || name.contains("mtrl_")) continue; // skip Android system icons
-                                    if (loaded >= 42) break; // max 7 rows of 6
-
-                                    if (col % 6 == 0) {
-                                        row = new android.widget.LinearLayout(dash);
-                                        row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
-                                        row.setPadding(0, 5, 0, 5);
-                                        root.addView(row);
-                                    }
-
-                                    android.graphics.Bitmap icon = android.graphics.BitmapFactory.decodeFile(f.getAbsolutePath());
-                                    if (icon != null && icon.getWidth() > 0) {
-                                        android.widget.ImageView iv = new android.widget.ImageView(dash);
-                                        iv.setImageBitmap(icon);
-                                        android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(iconSize, iconSize);
-                                        lp.setMargins(3, 3, 3, 3);
-                                        iv.setLayoutParams(lp);
-                                        row.addView(iv);
-                                        loaded++;
-                                        col++;
-                                    }
-                                }
-                                System.err.println("[WestlakeLauncher] Loaded " + loaded + " McDonald's icons");
-
-                                // Status bar
-                                android.widget.TextView status2 = new android.widget.TextView(dash);
-                                status2.setText(loaded + " icons decoded (stb_image + libwebp)\n" +
-                                    files.length + " total drawable files\n" +
-                                    "Westlake Engine on Pixel 7 Pro");
-                                status2.setTextColor(0xFF80FF80);
-                                status2.setTextSize(11);
-                                status2.setPadding(10, 15, 10, 10);
-                                root.addView(status2);
-
-                                // Use this as the content view
-                                dash.setContentView(root);
-                                dash.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                                dash.renderFrame();
-                                System.err.println("[WestlakeLauncher] Rich demo screen rendered!");
-                            }
-                        }
-                    } catch (Throwable re) {
-                        System.err.println("[WestlakeLauncher] Rich demo error: " + re.getMessage());
-                    }
-                    // Render the dashboard's actual view tree (from setPageLayout)
-                    try {
-                        dash.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT);
-                        dash.renderFrame();
-                        System.err.println("[WestlakeLauncher] Dashboard view tree rendered!");
-                    } catch (Throwable re) {
-                        System.err.println("[WestlakeLauncher] Dashboard render error: " + re.getMessage());
-                    }
-                }
-            } catch (Throwable t) {
-                System.err.println("[WestlakeLauncher] Dashboard launch error: " + t.getMessage());
-            }
-        }
-
-        boolean needsRender = false;
+        boolean needsRender = (initialActivity != null);
         long downTime = 0;
         int lastTouchY = 0;
         int scrollOffset = 0;
         int totalDragDistance = 0;
         android.view.View lastDecorView = null;
+
+        Activity current = initialActivity; // prefer WAT-created activity
+        if (current == null) current = am.getResumedActivity();
+        startupLog("[WestlakeLauncher] renderLoop current="
+                + (current != null ? current.getClass().getName() : "null"));
 
         while (true) {
             try {
@@ -1459,172 +3752,160 @@ public class WestlakeLauncher {
             } catch (InterruptedException e) {
                 break;
             }
-
-            Activity current = initialActivity; // prefer WAT-created activity
-            if (current == null) current = am.getResumedActivity();
             if (current == null) {
-                System.err.println("[WestlakeLauncher] No resumed activity, exiting");
+                startupLog("[WestlakeLauncher] No resumed activity, exiting");
                 break;
             }
 
             // Check for text input from host (long-press dialog)
-            java.io.File textFile = new java.io.File(touchFile.getParent(), "westlake_text.dat");
-            if (textFile.exists() && textFile.length() > 0) {
+            byte[] textBuf = canOpenFile(textPath) ? tryReadFileBytes(textPath) : null;
+            if (textBuf != null && textBuf.length > 0) {
                 try {
-                    byte[] textBuf = new byte[(int) textFile.length()];
-                    java.io.FileInputStream tis = new java.io.FileInputStream(textFile);
-                    tis.read(textBuf);
-                    tis.close();
-                    textFile.delete();
-                    String inputText = new String(textBuf, "UTF-8").trim();
-                    if (inputText.length() > 0) {
-                        android.view.View decor = null;
-                        try { decor = current.getWindow().getDecorView(); } catch (Exception e5) {}
-                        if (decor != null) {
-                            android.widget.EditText et = findEditText(decor);
-                            if (et != null) {
-                                et.setText(inputText);
-                                System.err.println("[WestlakeLauncher] Text input: '" + inputText + "' -> " + et);
-                                needsRender = true;
-                            } else {
-                                System.err.println("[WestlakeLauncher] Text input: no EditText found");
+                    int textHash = java.util.Arrays.hashCode(textBuf);
+                    if (textBuf.length != lastTextSize || textHash != lastTextHash) {
+                        lastTextSize = textBuf.length;
+                        lastTextHash = textHash;
+                        String inputText = new String(textBuf, "UTF-8").trim();
+                        if (inputText.length() > 0) {
+                            android.view.View decor = null;
+                            try { decor = current.getWindow().getDecorView(); } catch (Exception e5) {}
+                            if (decor != null) {
+                                android.widget.EditText et = findEditText(decor);
+                                if (et != null) {
+                                    et.setText(inputText);
+                                    startupLog("[WestlakeLauncher] Text input: '" + inputText + "' -> " + et);
+                                    needsRender = true;
+                                } else {
+                                    startupLog("[WestlakeLauncher] Text input: no EditText found");
+                                }
                             }
                         }
                     }
                 } catch (Exception e5) {
-                    System.err.println("[WestlakeLauncher] Text input error: " + e5);
+                    startupLog("[WestlakeLauncher] Text input error: " + e5);
                 }
+            } else {
+                lastTextSize = -1;
+                lastTextHash = 0;
             }
 
             // Check for touch events
-            if (touchFile.exists() && touchFile.length() == 16) {
+            byte[] buf = canOpenFile(touchPath) ? tryReadFileBytes(touchPath) : null;
+            if (buf != null && buf.length >= 16) {
                 try {
-                    java.io.FileInputStream fis = new java.io.FileInputStream(touchFile);
-                    byte[] buf = new byte[16];
-                    int n = fis.read(buf);
-                    fis.close();
-                    if (n == 16) {
-                        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(buf);
-                        bb.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-                        int action = bb.getInt();
-                        int x = bb.getInt();
-                        int y = bb.getInt();
-                        int seq = bb.getInt();
+                    java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(buf, 0, 16);
+                    bb.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                    int action = bb.getInt();
+                    int x = bb.getInt();
+                    int y = bb.getInt();
+                    int seq = bb.getInt();
 
-                        if (seq != lastTouchSeq) {
-                            lastTouchSeq = seq;
+                    if (seq != lastTouchSeq) {
+                        lastTouchSeq = seq;
 
-                            long now = System.currentTimeMillis();
-                            if (action == 0) {
-                                downTime = now;
-                                lastTouchY = y;
-                                totalDragDistance = 0;
-                                System.err.println("[WestlakeLauncher] Touch DOWN at (" + x + "," + y + ")");
-                                current.dispatchTouchEvent(
-                                    android.view.MotionEvent.obtain(downTime, now, 0, (float)x, (float)y, 0));
-                                needsRender = true;
-                            } else if (action == 2) {
-                                if (downTime == 0) downTime = now;
-                                int deltaY = lastTouchY - y;
-                                lastTouchY = y;
-                                totalDragDistance += Math.abs(deltaY);
+                        long now = System.currentTimeMillis();
+                        if (action == 0) {
+                            downTime = now;
+                            lastTouchY = y;
+                            totalDragDistance = 0;
+                            startupLog("[WestlakeLauncher] Touch DOWN at (" + x + "," + y + ")");
+                            current.dispatchTouchEvent(
+                                android.view.MotionEvent.obtain(downTime, now, 0, (float)x, (float)y, 0));
+                            needsRender = true;
+                        } else if (action == 2) {
+                            if (downTime == 0) downTime = now;
+                            int deltaY = lastTouchY - y;
+                            lastTouchY = y;
+                            totalDragDistance += Math.abs(deltaY);
 
+                            android.view.View decor = null;
+                            try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
+                            if (decor != null) {
+                                int maxScroll = SURFACE_HEIGHT * 2;
+                                scrollOffset += deltaY;
+                                if (scrollOffset < 0) scrollOffset = 0;
+                                if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+                                decor.scrollTo(0, scrollOffset);
+                            }
+
+                            current.dispatchTouchEvent(
+                                android.view.MotionEvent.obtain(downTime, now, 2, (float)x, (float)y, 0));
+                            needsRender = true;
+                        } else if (action == 1) {
+                            if (downTime == 0) downTime = now;
+                            startupLog("[WestlakeLauncher] Touch UP at (" + x + "," + y + ")");
+                            current.dispatchTouchEvent(
+                                android.view.MotionEvent.obtain(downTime, now, 1, (float)x, (float)y, 0));
+                            needsRender = true;
+
+                            if (totalDragDistance < 20) {
                                 android.view.View decor = null;
                                 try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
                                 if (decor != null) {
-                                    int maxScroll = SURFACE_HEIGHT * 2;
-                                    scrollOffset += deltaY;
-                                    if (scrollOffset < 0) scrollOffset = 0;
-                                    if (scrollOffset > maxScroll) scrollOffset = maxScroll;
-                                    decor.scrollTo(0, scrollOffset);
-                                }
-
-                                current.dispatchTouchEvent(
-                                    android.view.MotionEvent.obtain(downTime, now, 2, (float)x, (float)y, 0));
-                                needsRender = true;
-                            } else if (action == 1) {
-                                if (downTime == 0) downTime = now;
-                                System.err.println("[WestlakeLauncher] Touch UP at (" + x + "," + y + ")");
-                                current.dispatchTouchEvent(
-                                    android.view.MotionEvent.obtain(downTime, now, 1, (float)x, (float)y, 0));
-                                needsRender = true;
-
-                                if (totalDragDistance < 20) {
-                                    android.view.View decor = null;
-                                    try { decor = current.getWindow().getDecorView(); } catch (Exception e3) {}
-                                    if (decor != null) {
-                                        android.view.View target = findViewAt(decor, x, y + scrollOffset);
-                                        if (target != null) {
-                                            android.view.ViewParent parent = target.getParent();
-                                            while (parent != null) {
-                                                if (parent instanceof android.widget.ListView) {
-                                                    android.widget.ListView lv = (android.widget.ListView) parent;
-                                                    int pos = lv.getPositionForView(target);
-                                                    if (pos >= 0) {
-                                                        System.err.println("[WestlakeLauncher] ListView item " + pos + " clicked");
-                                                        lv.performItemClick(target, pos, pos);
-                                                    }
-                                                    break;
+                                    android.view.View target = findViewAt(decor, x, y + scrollOffset);
+                                    if (target != null) {
+                                        android.view.ViewParent parent = target.getParent();
+                                        while (parent != null) {
+                                            if (parent instanceof android.widget.ListView) {
+                                                android.widget.ListView lv = (android.widget.ListView) parent;
+                                                int pos = lv.getPositionForView(target);
+                                                if (pos >= 0) {
+                                                    startupLog("[WestlakeLauncher] ListView item " + pos + " clicked");
+                                                    lv.performItemClick(target, pos, pos);
                                                 }
-                                                if (parent instanceof android.view.View) {
-                                                    parent = ((android.view.View) parent).getParent();
-                                                } else {
-                                                    break;
-                                                }
+                                                break;
                                             }
-                                            target.performClick();
+                                            if (parent instanceof android.view.View) {
+                                                parent = ((android.view.View) parent).getParent();
+                                            } else {
+                                                break;
+                                            }
                                         }
+                                        target.performClick();
                                     }
                                 }
-                                android.view.View newDecor = null;
-                                try { newDecor = current.getWindow().getDecorView(); } catch (Exception e4) {}
-                                if (newDecor != null && newDecor != lastDecorView) {
-                                    newDecor.scrollTo(0, 0);
-                                    scrollOffset = 0;
-                                    lastDecorView = newDecor;
-                                }
-                                downTime = 0;
                             }
-
-                                            if (needsRender) {
-                                Activity next = am.getResumedActivity();
-                                if (next != null) {
-                                    if (next != current) {
-                                        try { next.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT); } catch (Exception e2) {}
-                                        System.err.println("[WestlakeLauncher] Navigated to " + next.getClass().getSimpleName());
-                                    }
-                                    try { next.renderFrame(); } catch (Exception e2) {
-                                        if (frameCount < 5) System.err.println("[WestlakeLauncher] renderFrame error: " + e2);
-                                    }
-                                }
-                                needsRender = false;
+                            android.view.View newDecor = null;
+                            try { newDecor = current.getWindow().getDecorView(); } catch (Exception e4) {}
+                            if (newDecor != null && newDecor != lastDecorView) {
+                                newDecor.scrollTo(0, 0);
+                                scrollOffset = 0;
+                                lastDecorView = newDecor;
                             }
+                            downTime = 0;
                         }
                     }
                 } catch (Exception e) {
-                    if (frameCount < 10) System.err.println("[WestlakeLauncher] Touch error: " + e);
+                    startupLog("[WestlakeLauncher] touch read error: " + e);
                 }
             }
 
-            // Detect activity change (finish/navigate) and force re-render
-            Activity nowResumed = am.getResumedActivity();
-            if (nowResumed != null && nowResumed != current) {
-                try { nowResumed.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT); } catch (Exception e6) {}
-                needsRender = true;
-            }
-
-            // Render if needed (text input, activity change, or other non-touch triggers)
             if (needsRender) {
-                Activity next = am.getResumedActivity();
+                Activity next = current;
+                Activity resumed = null;
+                try { resumed = am.getResumedActivity(); } catch (Throwable ignored) {}
+                if (resumed != null) {
+                    next = resumed;
+                }
                 if (next != null) {
-                    try { next.renderFrame(); } catch (Exception e2) {}
+                    if (next != current) {
+                        try { next.onSurfaceCreated(0L, SURFACE_WIDTH, SURFACE_HEIGHT); } catch (Exception e2) {}
+                        startupLog("[WestlakeLauncher] Navigated to " + next.getClass().getSimpleName());
+                        current = next;
+                    }
+                    try { current.renderFrame(); } catch (Exception e2) {
+                        if (frameCount < 5) startupLog("[WestlakeLauncher] renderFrame error", e2);
+                        if (frameCount < 2) {
+                            logThrowableFrames("[WestlakeLauncher] renderFrame", e2, 12);
+                        }
+                    }
                 }
                 needsRender = false;
             }
 
             frameCount++;
         }
-        System.err.println("[WestlakeLauncher] Render loop ended after " + frameCount + " frames");
+        startupLog("[WestlakeLauncher] Render loop ended");
     }
 
     /** Find the deepest view containing the given point (absolute coords) */
@@ -1664,7 +3945,7 @@ public class WestlakeLauncher {
         // Find the 5 LinearLayout sections by traversing the tree
         java.util.List<android.widget.LinearLayout> sections = new java.util.ArrayList<>();
         findLinearLayouts(root, sections);
-        System.err.println("[WestlakeLauncher] Found " + sections.size() + " sections to fill");
+        startupLog("[WestlakeLauncher] Found " + sections.size() + " sections to fill");
 
         // Fix layout params: sections should wrap_content, not fill parent
         for (android.widget.LinearLayout s : sections) {
@@ -1917,19 +4198,18 @@ public class WestlakeLauncher {
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
             bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, out);
             byte[] png = out.toByteArray();
-            System.err.println("[WestlakeLauncher] Real icons: " + png.length + " bytes, " + found + " icons");
+            startupLog("[WestlakeLauncher] Real icons: " + png.length + " bytes, " + found + " icons");
 
             if (com.ohos.shim.bridge.OHBridge.isNativeAvailable()) {
                 long surf = com.ohos.shim.bridge.OHBridge.surfaceCreate(0, SURFACE_WIDTH, SURFACE_HEIGHT);
                 long canv = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(surf);
                 com.ohos.shim.bridge.OHBridge.canvasDrawImage(canv, png, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
                 com.ohos.shim.bridge.OHBridge.surfaceFlush(surf);
-                System.err.println("[WestlakeLauncher] Real icons frame sent!");
+                startupLog("[WestlakeLauncher] Real icons frame sent!");
             }
             bmp.recycle();
         } catch (Throwable t) {
-            System.err.println("[WestlakeLauncher] renderRealIconsScreen error: " + t);
-            t.printStackTrace(System.err);
+            startupLog("[WestlakeLauncher] renderRealIconsScreen error", t);
         }
     }
 

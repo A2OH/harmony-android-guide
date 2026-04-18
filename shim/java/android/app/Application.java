@@ -43,7 +43,24 @@ public class Application extends Context {
     public void onTrimMemory(int level) {}
 
     @Override
-    public String getPackageName() { return mPackageName; }
+    public String getPackageName() {
+        if (mPackageName != null && !mPackageName.isEmpty()) {
+            return mPackageName;
+        }
+        String currentPkg = android.app.MiniServer.currentPackageName();
+        if (currentPkg != null && !currentPkg.isEmpty()) {
+            return currentPkg;
+        }
+        String propPkg = System.getProperty("westlake.apk.package");
+        if (propPkg != null && !propPkg.isEmpty()) {
+            return propPkg;
+        }
+        try {
+            return super.getPackageName();
+        } catch (Throwable ignored) {
+            return "";
+        }
+    }
 
     @Override
     public Context getApplicationContext() { return this; }
@@ -63,11 +80,18 @@ public class Application extends Context {
         return mComponentManager;
     }
     public Object componentManager() { return b(); }
+    private java.util.List<ActivityLifecycleCallbacks> ensureCallbacks() {
+        if (mCallbacks == null) {
+            mCallbacks = new java.util.ArrayList<>();
+        }
+        return mCallbacks;
+    }
+
     public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks cb) {
-        if (cb != null) mCallbacks.add(cb);
+        if (cb != null) ensureCallbacks().add(cb);
     }
     public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks cb) {
-        mCallbacks.remove(cb);
+        if (mCallbacks != null) mCallbacks.remove(cb);
     }
     public void registerActivityLifecycleCallbacks(Object p0) {}
     public void registerOnProvideAssistDataListener(Object p0) {}

@@ -1,6 +1,9 @@
 package android.app;
 
 import android.content.Intent;
+import android.util.Log;
+
+import com.westlake.engine.WestlakeLauncher;
 
 /**
  * AppComponentFactory -- controls instantiation of manifest elements.
@@ -17,6 +20,7 @@ import android.content.Intent;
  * in AndroidManifest.xml via android:appComponentFactory="...".
  */
 public class AppComponentFactory {
+    private static final String TAG = "AppComponentFactory";
 
     public AppComponentFactory() {}
 
@@ -30,17 +34,12 @@ public class AppComponentFactory {
      */
     public Activity instantiateActivity(ClassLoader cl, String className, Intent intent)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        try {
-            return (Activity) cl.loadClass(className).getDeclaredConstructor().newInstance();
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new InstantiationException(className + ": " + cause);
-        } catch (NoSuchMethodException e) {
-            // No zero-arg constructor via getDeclaredConstructor, fall back to newInstance
-            return (Activity) cl.loadClass(className).newInstance();
+        Class<?> raw = cl.loadClass(className);
+        Object activityInstance = tryAllocateActivityInstance(raw, className);
+        if (activityInstance != null) {
+            return Activity.class.cast(activityInstance);
         }
+        throw new InstantiationException(className + ": activity ctor path disabled");
     }
 
     /**
@@ -52,16 +51,12 @@ public class AppComponentFactory {
      */
     public Application instantiateApplication(ClassLoader cl, String className)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        try {
-            return (Application) cl.loadClass(className).getDeclaredConstructor().newInstance();
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new InstantiationException(className + ": " + cause);
-        } catch (NoSuchMethodException e) {
-            return (Application) cl.loadClass(className).newInstance();
+        Class<?> raw = cl.loadClass(className);
+        Object appInstance = tryAllocateComponentInstance(raw, className, "Application");
+        if (appInstance != null) {
+            return Application.class.cast(appInstance);
         }
+        return instantiate(raw, className, Application.class);
     }
 
     /**
@@ -74,16 +69,7 @@ public class AppComponentFactory {
      */
     public Service instantiateService(ClassLoader cl, String className, Intent intent)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        try {
-            return (Service) cl.loadClass(className).getDeclaredConstructor().newInstance();
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new InstantiationException(className + ": " + cause);
-        } catch (NoSuchMethodException e) {
-            return (Service) cl.loadClass(className).newInstance();
-        }
+        return instantiate(cl.loadClass(className), className, Service.class);
     }
 
     /**
@@ -97,17 +83,7 @@ public class AppComponentFactory {
     public android.content.BroadcastReceiver instantiateReceiver(
             ClassLoader cl, String className, Intent intent)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        try {
-            return (android.content.BroadcastReceiver)
-                    cl.loadClass(className).getDeclaredConstructor().newInstance();
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new InstantiationException(className + ": " + cause);
-        } catch (NoSuchMethodException e) {
-            return (android.content.BroadcastReceiver) cl.loadClass(className).newInstance();
-        }
+        return instantiate(cl.loadClass(className), className, android.content.BroadcastReceiver.class);
     }
 
     /**
@@ -120,17 +96,85 @@ public class AppComponentFactory {
     public android.content.ContentProvider instantiateProvider(
             ClassLoader cl, String className)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        return instantiate(cl.loadClass(className), className, android.content.ContentProvider.class);
+    }
+
+    private <T> T instantiate(Class<?> raw, String className, Class<T> type)
+            throws InstantiationException, IllegalAccessException {
         try {
-            return (android.content.ContentProvider)
-                    cl.loadClass(className).getDeclaredConstructor().newInstance();
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new InstantiationException(className + ": " + cause);
-        } catch (NoSuchMethodException e) {
-            return (android.content.ContentProvider) cl.loadClass(className).newInstance();
+            java.lang.reflect.Constructor<?> ctor = raw.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            return type.cast(ctor.newInstance());
+        } catch (InstantiationException e) {
+            Object unsafeInstance = tryAllocateInstance(raw);
+            if (unsafeInstance != null) {
+                return type.cast(unsafeInstance);
+            }
+            throw e;
+        } catch (IllegalAccessException e) {
+            Object unsafeInstance = tryAllocateInstance(raw);
+            if (unsafeInstance != null) {
+                return type.cast(unsafeInstance);
+            }
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Error e) {
+            throw e;
+        } catch (Throwable t) {
+            Object unsafeInstance = tryAllocateInstance(raw);
+            if (unsafeInstance != null) {
+                return type.cast(unsafeInstance);
+            }
+            InstantiationException wrapped = new InstantiationException(className + ": " + t);
+            wrapped.initCause(t);
+            throw wrapped;
         }
+    }
+
+    static Object tryAllocateInstance(Class<?> raw) {
+        if (raw == null) {
+            return null;
+        }
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            Object unsafe = field.get(null);
+            return unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, raw);
+        } catch (Throwable ignored) {
+            try {
+                Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
+                java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
+                field.setAccessible(true);
+                Object unsafe = field.get(null);
+                return unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, raw);
+            } catch (Throwable ignoredToo) {
+                return null;
+            }
+        }
+    }
+
+    private static Object tryAllocateComponentInstance(
+            Class<?> raw, String className, String componentKind) {
+        Object nativeInstance = WestlakeLauncher.tryAllocInstance(raw);
+        if (nativeInstance != null) {
+            Log.i(TAG, "instantiate" + componentKind + " via nativeAllocInstance: " + className);
+            return nativeInstance;
+        }
+
+        Object unsafeInstance = tryAllocateInstance(raw);
+        if (unsafeInstance != null) {
+            Log.w(TAG, "instantiate" + componentKind + " via Java Unsafe fallback: " + className);
+            return unsafeInstance;
+        }
+
+        Log.w(TAG, "instantiate" + componentKind + " allocation failed: " + className);
+        return null;
+    }
+
+    private static Object tryAllocateActivityInstance(Class<?> raw, String className) {
+        return tryAllocateComponentInstance(raw, className, "Activity");
     }
 
     /** Default factory instance. Used when no custom factory is configured. */

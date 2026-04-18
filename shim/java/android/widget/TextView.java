@@ -7892,6 +7892,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
 
     @Override
     protected void onDraw(Canvas canvas) {
+        if (canvas == null) return;
         restartMarqueeIfNeeded();
 
         // Draw the background for this view
@@ -7925,43 +7926,43 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             // IMPORTANT: The coordinates computed are also used in invalidateDrawable()
             // Make sure to update invalidateDrawable() when changing this code.
             if (dr.mShowing[Drawables.LEFT] != null) {
-                canvas.save();
-                canvas.translate(scrollX + mPaddingLeft + leftOffset,
+                final int saveCount = Canvas.safeSave(canvas);
+                Canvas.safeTranslate(canvas, scrollX + mPaddingLeft + leftOffset,
                         scrollY + compoundPaddingTop + (vspace - dr.mDrawableHeightLeft) / 2);
                 dr.mShowing[Drawables.LEFT].draw(canvas);
-                canvas.restore();
+                Canvas.safeRestoreToCount(canvas, saveCount);
             }
 
             // IMPORTANT: The coordinates computed are also used in invalidateDrawable()
             // Make sure to update invalidateDrawable() when changing this code.
             if (dr.mShowing[Drawables.RIGHT] != null) {
-                canvas.save();
-                canvas.translate(scrollX + right - left - mPaddingRight
+                final int saveCount = Canvas.safeSave(canvas);
+                Canvas.safeTranslate(canvas, scrollX + right - left - mPaddingRight
                         - dr.mDrawableSizeRight - rightOffset,
                          scrollY + compoundPaddingTop + (vspace - dr.mDrawableHeightRight) / 2);
                 dr.mShowing[Drawables.RIGHT].draw(canvas);
-                canvas.restore();
+                Canvas.safeRestoreToCount(canvas, saveCount);
             }
 
             // IMPORTANT: The coordinates computed are also used in invalidateDrawable()
             // Make sure to update invalidateDrawable() when changing this code.
             if (dr.mShowing[Drawables.TOP] != null) {
-                canvas.save();
-                canvas.translate(scrollX + compoundPaddingLeft
+                final int saveCount = Canvas.safeSave(canvas);
+                Canvas.safeTranslate(canvas, scrollX + compoundPaddingLeft
                         + (hspace - dr.mDrawableWidthTop) / 2, scrollY + mPaddingTop);
                 dr.mShowing[Drawables.TOP].draw(canvas);
-                canvas.restore();
+                Canvas.safeRestoreToCount(canvas, saveCount);
             }
 
             // IMPORTANT: The coordinates computed are also used in invalidateDrawable()
             // Make sure to update invalidateDrawable() when changing this code.
             if (dr.mShowing[Drawables.BOTTOM] != null) {
-                canvas.save();
-                canvas.translate(scrollX + compoundPaddingLeft
+                final int saveCount = Canvas.safeSave(canvas);
+                Canvas.safeTranslate(canvas, scrollX + compoundPaddingLeft
                         + (hspace - dr.mDrawableWidthBottom) / 2,
                          scrollY + bottom - top - mPaddingBottom - dr.mDrawableSizeBottom);
                 dr.mShowing[Drawables.BOTTOM].draw(canvas);
-                canvas.restore();
+                Canvas.safeRestoreToCount(canvas, saveCount);
             }
         }
 
@@ -7984,7 +7985,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         mTextPaint.setColor(color);
         mTextPaint.drawableState = getDrawableState();
 
-        canvas.save();
+        final int saveCount = Canvas.safeSave(canvas);
         /*  Would be faster if we didn't have to do this. Can we chop the
             (displayable) text so that we don't need to do this ever?
         */
@@ -8009,7 +8010,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             clipBottom += Math.max(0, mShadowDy + mShadowRadius);
         }
 
-        canvas.clipRect(clipLeft, clipTop, clipRight, clipBottom);
+        Canvas.safeClipRect(canvas, clipLeft, clipTop, clipRight, clipBottom);
 
         int voffsetText = 0;
         int voffsetCursor = 0;
@@ -8020,7 +8021,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             voffsetText = getVerticalOffset(false);
             voffsetCursor = getVerticalOffset(true);
         }
-        canvas.translate(compoundPaddingLeft, extendedPaddingTop + voffsetText);
+        Canvas.safeTranslate(canvas, compoundPaddingLeft, extendedPaddingTop + voffsetText);
 
         final int layoutDirection = getLayoutDirection();
         final int absoluteGravity = Gravity.getAbsoluteGravity(mGravity, layoutDirection);
@@ -8030,12 +8031,12 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                 final int width = mRight - mLeft;
                 final int padding = getCompoundPaddingLeft() + getCompoundPaddingRight();
                 final float dx = mLayout.getLineRight(0) - (width - padding);
-                canvas.translate(layout.getParagraphDirection(0) * dx, 0.0f);
+                Canvas.safeTranslate(canvas, layout.getParagraphDirection(0) * dx, 0.0f);
             }
 
             if (mMarquee != null && mMarquee.isRunning()) {
                 final float dx = -mMarquee.getScroll();
-                canvas.translate(layout.getParagraphDirection(0) * dx, 0.0f);
+                Canvas.safeTranslate(canvas, layout.getParagraphDirection(0) * dx, 0.0f);
             }
         }
 
@@ -8050,11 +8051,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
 
         if (mMarquee != null && mMarquee.shouldDrawGhost()) {
             final float dx = mMarquee.getGhostOffset();
-            canvas.translate(layout.getParagraphDirection(0) * dx, 0.0f);
+            Canvas.safeTranslate(canvas, layout.getParagraphDirection(0) * dx, 0.0f);
             layout.draw(canvas, highlight, mHighlightPaint, cursorOffsetVertical);
         }
 
-        canvas.restore();
+        Canvas.safeRestoreToCount(canvas, saveCount);
     }
 
     @Override
@@ -11629,12 +11630,16 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             }
             if (mTextId != Resources.ID_NULL) {
                 try {
-                    structure.setTextIdEntry(getResources().getResourceEntryName(mTextId));
+                    Resources res = getResources();
+                    if (res != null) {
+                        structure.setTextIdEntry(res.getResourceEntryName(mTextId));
+                    }
                 } catch (Resources.NotFoundException e) {
                     if (android.view.autofill.Helper.sVerbose) {
                         Log.v(LOG_TAG, "onProvideAutofillStructure(): cannot set name for text id "
                                 + mTextId + ": " + e.getMessage());
                     }
+                } catch (Throwable ignored) {
                 }
             }
         }
@@ -11777,12 +11782,16 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         }
         if (mHintId != Resources.ID_NULL) {
             try {
-                structure.setHintIdEntry(getResources().getResourceEntryName(mHintId));
+                Resources res = getResources();
+                if (res != null) {
+                    structure.setHintIdEntry(res.getResourceEntryName(mHintId));
+                }
             } catch (Resources.NotFoundException e) {
                 if (android.view.autofill.Helper.sVerbose) {
                     Log.v(LOG_TAG, "onProvideAutofillStructure(): cannot set name for hint id "
                             + mHintId + ": " + e.getMessage());
                 }
+            } catch (Throwable ignored) {
             }
         }
         structure.setHint(getHint());

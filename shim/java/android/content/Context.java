@@ -17,6 +17,7 @@ import java.util.concurrent.Executor;
 public class Context {
     // Real Android context for resource loading (set when running on app_process64)
     private static Object sRealContext;
+    protected Context mBase;
     public static void setRealContext(Object ctx) { sRealContext = ctx; }
     public static Object getRealContext() { return sRealContext; }
 
@@ -105,8 +106,8 @@ public class Context {
 
     public Context() {}
 
-    public Context getBaseContext() { return this; }
-    public void attachBaseContext(Context base) { /* no-op in base Context */ }
+    public Context getBaseContext() { return mBase != null ? mBase : this; }
+    public void attachBaseContext(Context base) { mBase = base; }
 
     public boolean bindIsolatedService(Intent p0, int p1, String p2, Executor p3, ServiceConnection p4) { return false; }
     public boolean bindService(Intent p0, ServiceConnection p1, int p2) {
@@ -180,7 +181,6 @@ public class Context {
     public ClassLoader getClassLoader() { return getClass().getClassLoader(); }
     public File getCodeCacheDir() { return new File(ensureBaseDir(), "code_cache"); }
     public ContentResolver getContentResolver() {
-        System.out.println("[Context] getContentResolver() called");
         return new ContentResolver(this);
     }
     public File getDataDir() { return ensureBaseDir(); }
@@ -206,24 +206,28 @@ public class Context {
         return mPackageManager;
     }
     public String getPackageName() {
-        if (android.app.HostBridge.hasHost()) {
-            String hostPkg = android.app.HostBridge.getHostPackageName();
-            if (hostPkg != null) return hostPkg;
-        }
-        // Fallback: try MiniServer's package name (set during WestlakeLauncher init)
         try {
-            android.app.MiniServer server = android.app.MiniServer.get();
+            android.app.MiniServer server = android.app.MiniServer.peek();
             if (server != null) {
-                android.app.Application app = server.getApplication();
-                if (app != null) {
-                    String pkg = System.getProperty("westlake.apk.package");
-                    if (pkg != null && !pkg.isEmpty()) return pkg;
-                }
+                String pkg = server.getPackageName();
+                if (pkg != null && !pkg.isEmpty()) return pkg;
             }
-        } catch (Exception e) { /* ignore */ }
-        // Last resort: check system property directly
-        String pkg = System.getProperty("westlake.apk.package");
-        if (pkg != null && !pkg.isEmpty()) return pkg;
+        } catch (Throwable ignored) {}
+        try {
+            String pkg = android.app.MiniServer.currentPackageName();
+            if (pkg != null && !pkg.isEmpty()) return pkg;
+        } catch (Throwable ignored) {}
+        try {
+            String pkg = System.getProperty("westlake.apk.package");
+            if (pkg != null && !pkg.isEmpty()) return pkg;
+        } catch (Throwable ignored) {}
+        try {
+            if (android.app.HostBridge.hasHost()) {
+                String hostPkg = android.app.HostBridge.getHostPackageName();
+                if (hostPkg != null && !hostPkg.isEmpty()) return hostPkg;
+            }
+        } catch (Throwable ignored) {
+        }
         return "";
     }
     public String getPackageResourcePath() { return null; }
@@ -263,15 +267,15 @@ public class Context {
         return SharedPreferencesImpl.getInstance(p0);
     }
     public Object getSystemService(String p0) {
+        if (LAYOUT_INFLATER_SERVICE.equals(p0)) {
+            return new android.view.LayoutInflater(this);
+        }
         // Try host's real system services first (provides real WindowManager, LayoutInflater, etc.)
         if (android.app.HostBridge.hasHost()) {
             Object hostService = android.app.HostBridge.getHostSystemService(p0);
             if (hostService != null) return hostService;
         }
         Object svc = android.app.SystemServiceRegistry.getService(p0);
-        if (svc == null && p0 != null) {
-            System.out.println("[Context] getSystemService(\"" + p0 + "\") = null (not registered)");
-        }
         return svc;
     }
     @SuppressWarnings("unchecked")
@@ -358,7 +362,7 @@ public class Context {
     public android.graphics.drawable.Drawable getDrawable(int id) {
         // Try real Android context first (app_process64 mode)
         Object realCtx = com.westlake.engine.WestlakeLauncher.sRealContext;
-        if (realCtx != null) {
+        if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed() && realCtx != null) {
             try {
                 java.lang.reflect.Method m = realCtx.getClass().getMethod("getDrawable", int.class);
                 Object d = m.invoke(realCtx, id);

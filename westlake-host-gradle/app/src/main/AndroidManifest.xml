@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_APP_SPECIFIC_LOCALES" />
     <application
         android:requestLegacyExternalStorage="true"
         android:extractNativeLibs="true"
@@ -21,6 +22,7 @@
         <activity android:name=".WestlakeMcdActivity"
             android:exported="true"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+            <activity android:name=".McdInProcessActivity" android:exported="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
     </application>
     <instrumentation
         android:name=".WestlakeBridgeInstrumentation"

@@ -37,10 +37,14 @@ class WestlakeBridgeInstrumentation : Instrumentation() {
         super.onStart()
         Log.i(TAG, "onStart — we're in a properly registered process!")
 
-        // Run on main thread (Activity needs main Looper)
-        runOnMainSync {
+        // Launch MCD on main thread and block this thread to keep process alive
+        val latch = java.util.concurrent.CountDownLatch(1)
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
             doLaunchMcd()
+            // Don't count down — keep the latch waiting forever
         }
+        // Block the instrumentation thread so the process stays alive
+        try { latch.await() } catch (_: InterruptedException) {}
     }
 
     private fun doLaunchMcd() {
@@ -162,45 +166,13 @@ class WestlakeBridgeInstrumentation : Instrumentation() {
             // Apply theme
             if (actInfo.theme != 0) activity.setTheme(actInfo.theme)
 
-            // Launch our WestlakeMcdActivity (in our package, so it shows on screen)
-            // It will use MCD's resources to inflate the real MCD layout
-            Log.i(TAG, "Launching WestlakeMcdActivity...")
-            val launchIntent = Intent(ctx, WestlakeMcdActivity::class.java)
+            // Launch McdInProcessActivity which loads MCD resources in-process
+            // It stays on screen — we DON'T call finish() so the process keeps running
+            Log.i(TAG, "Launching McdInProcessActivity...")
+            val launchIntent = Intent(ctx, McdInProcessActivity::class.java)
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            val launched = startActivitySync(launchIntent)
-            Log.i(TAG, "Activity on screen: ${launched?.javaClass?.simpleName}")
-
-            // Give it time to render
-            Thread.sleep(5000)
-
-            if (activity != null) {
-                // Wait for it to render
-                Thread.sleep(3000)
-
-                // Check what's on screen
-                val window = activity.window
-                if (window != null) {
-                    val decorView = window.decorView
-                    Log.i(TAG, "DecorView: ${decorView.javaClass.simpleName}")
-                    val content = decorView.findViewById<ViewGroup>(android.R.id.content)
-                    if (content != null) {
-                        Log.i(TAG, "Content children: ${content.childCount}")
-                        if (content.childCount > 0) {
-                            Log.i(TAG, "ROOT VIEW: ${content.getChildAt(0).javaClass.name}")
-                            dumpViewTree(content.getChildAt(0), 0)
-                        }
-                    }
-                }
-
-                // Take screenshot of the real MCD UI
-                Log.i(TAG, "MCD Activity is running with REAL framework!")
-            }
-
-            // Send result
-            val result = Bundle()
-            result.putString("status", "SUCCESS")
-            result.putString("activity", activity?.javaClass?.name ?: "null")
-            finish(Activity.RESULT_OK, result)
+            ctx.startActivity(launchIntent)
+            Log.i(TAG, "Activity launched — process stays alive via latch")
 
         } catch (e: Throwable) {
             Log.e(TAG, "Error: ${e.message}", e)

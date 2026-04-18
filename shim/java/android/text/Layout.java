@@ -314,6 +314,7 @@ public abstract class Layout {
      */
     public void draw(Canvas canvas, Path highlight, Paint highlightPaint,
             int cursorOffsetVertical) {
+        if (canvas == null) return;
         final long lineRange = getLineRangeForDraw(canvas);
         int firstLine = TextUtils.unpackRangeStartFromLong(lineRange);
         int lastLine = TextUtils.unpackRangeEndFromLong(lineRange);
@@ -565,7 +566,7 @@ public abstract class Layout {
             Directions directions = getLineDirections(lineNum);
             if (directions == DIRS_ALL_LEFT_TO_RIGHT && !mSpannedText && !hasTab && !justify) {
                 // XXX: assumes there's nothing additional to be done
-                canvas.drawText(buf, start, end, x, lbaseline, paint);
+                Canvas.safeDrawText(canvas, buf, start, end, x, lbaseline, paint);
             } else {
                 tl.set(paint, buf, start, end, dir, directions, hasTab, tabStops,
                         getEllipsisStart(lineNum),

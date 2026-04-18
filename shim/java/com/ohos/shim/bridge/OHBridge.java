@@ -35,63 +35,139 @@ import java.util.Set;
 public class OHBridge {
 
     private static boolean nativeAvailable;
+    private static boolean nativeProbeAttempted;
+    private static boolean nativeLoadAttempted;
+    private static boolean subprocessMode;
 
-    static {
-        System.out.println("[OHBridge] Static init starting...");
-        boolean isSubprocess = System.getProperty("westlake.apk.package") != null;
-        // In subprocess, JNI stubs are registered by ART during InitNativeMethods()
-        // (LoadNativeLibrary("libohbridge.so") triggers JNI_OnLoad_ohbridge in the static binary)
-        // So we skip Java-side loadLibrary and check if natives are already available.
-        if (isSubprocess) {
+    private static void initLog(String message) {
+        // Avoid stdio during bridge initialization. Charset/PrintStream startup is
+        // still unstable on the Westlake ART path and logging here can abort boot.
+    }
+
+    private static boolean probeLinkedBridge() {
+        if (nativeAvailable) {
+            return true;
+        }
+        if (nativeProbeAttempted) {
+            return false;
+        }
+        nativeProbeAttempted = true;
+        try {
+            getSDKVersion();
+            nativeAvailable = true;
+            return true;
+        } catch (Throwable ignored) {
+        }
+        try {
+            getDeviceBrand();
+            nativeAvailable = true;
+            return true;
+        } catch (Throwable ignored) {
+        }
+        try {
+            long bitmap = bitmapCreate(1, 1, 0);
+            if (bitmap != 0) {
+                try {
+                    bitmapDestroy(bitmap);
+                } catch (Throwable ignored) {
+                }
+            }
+            nativeAvailable = true;
+            return true;
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    private static void ensureNativeRegistration() {
+        if (nativeAvailable) {
+            return;
+        }
+        if (nativeLoadAttempted && !subprocessMode) {
+            return;
+        }
+        nativeLoadAttempted = true;
+        String[] libs = {"oh_bridge", "westlake_natives"};
+        for (String lib : libs) {
             try {
-                // Test if a known native method is already registered
-                surfaceCreate(0, 1, 1);
+                System.loadLibrary(lib);
                 nativeAvailable = true;
-                System.out.println("[OHBridge] Subprocess: JNI stubs already registered by ART init");
-            } catch (UnsatisfiedLinkError e) {
-                System.out.println("[OHBridge] Subprocess: JNI stubs NOT registered: " + e.getMessage());
-            } catch (Throwable t) {
-                // surfaceCreate may throw other errors (null pointer etc.) — that means it IS linked
-                nativeAvailable = true;
-                System.out.println("[OHBridge] Subprocess: JNI stubs registered (surfaceCreate threw: " + t + ")");
+                return;
+            } catch (Throwable ignored) {
             }
         }
-        // Try loading native library — even in subprocess mode (app_process64 doesn't have static JNI)
         String[] paths = {"/data/local/tmp/westlake/liboh_bridge.so",
                           "/data/local/tmp/westlake/libohbridge_sub.so",
                           "/data/local/tmp/westlake/libwestlake_natives.so"};
         for (String path : paths) {
             try {
-                boolean exists = new java.io.File(path).exists();
-                System.out.println("[OHBridge] Try " + path + " exists=" + exists);
-                if (exists) {
+                System.load(path);
+                nativeAvailable = true;
+                return;
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
+    static {
+        initLog("Static init starting...");
+        boolean isSubprocess = false;
+        try {
+            isSubprocess = System.getProperty("westlake.apk.package") != null
+                    || System.getProperty("westlake.apk.path") != null
+                    || System.getenv("WESTLAKE_APK_PACKAGE") != null
+                    || System.getenv("WESTLAKE_APK_PATH") != null
+                    || System.getenv("WESTLAKE_APK_RESDIR") != null;
+        } catch (Throwable ignored) {
+        }
+        subprocessMode = isSubprocess;
+        if (isSubprocess) {
+            // In the standalone ART subprocess, bridge methods are not available
+            // until Runtime.nativeLoad/System.loadLibrary registers them.
+            // Marking the bridge "available" here makes isNativeAvailable() lie
+            // and leaves later calls like surfaceCreate() unresolved.
+            ensureNativeRegistration();
+            if (!nativeAvailable) {
+                nativeAvailable = probeLinkedBridge();
+            }
+        } else {
+            String[] paths = {"/data/local/tmp/westlake/liboh_bridge.so",
+                              "/data/local/tmp/westlake/libohbridge_sub.so",
+                              "/data/local/tmp/westlake/libwestlake_natives.so"};
+            for (String path : paths) {
+                try {
                     System.load(path);
                     nativeAvailable = true;
-                    System.out.println("[OHBridge] System.load OK: " + path);
+                    initLog("System.load OK: " + path);
                     break;
+                } catch (Throwable t) {
+                    initLog("System.load FAIL");
                 }
-            } catch (Throwable t) {
-                System.out.println("[OHBridge] System.load FAIL: " + t);
+            }
+            if (!nativeAvailable) {
+                String[] libs = {"westlake_natives", "oh_bridge"};
+                for (String lib : libs) {
+                    try {
+                        initLog("Try loadLibrary(" + lib + ")");
+                        System.loadLibrary(lib);
+                        nativeAvailable = true;
+                        initLog("loadLibrary OK: " + lib);
+                        break;
+                    } catch (Throwable t) {
+                        initLog("loadLibrary FAIL");
+                    }
+                }
             }
         }
         if (!nativeAvailable) {
-            String[] libs = {"westlake_natives", "oh_bridge"};
-            for (String lib : libs) {
-                try {
-                    System.out.println("[OHBridge] Try loadLibrary(" + lib + ")");
-                    System.loadLibrary(lib); nativeAvailable = true;
-                    System.out.println("[OHBridge] loadLibrary OK: " + lib);
-                    break;
-                } catch (Throwable t) {
-                    System.out.println("[OHBridge] loadLibrary FAIL: " + t);
-                }
-            }
+            probeLinkedBridge();
         }
-        System.out.println("[OHBridge] Static init done, nativeAvailable=" + nativeAvailable);
+        initLog("Static init done, nativeAvailable=" + nativeAvailable);
     }
 
     public static boolean isNativeAvailable() {
-        return nativeAvailable;
+        ensureNativeRegistration();
+        return nativeAvailable || probeLinkedBridge();
     }
 
     // ── Image decoding (stb_image) ──────────────────────────────

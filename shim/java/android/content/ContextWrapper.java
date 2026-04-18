@@ -15,9 +15,9 @@ import android.view.Display;
 import java.io.File;
 
 public class ContextWrapper extends Context {
-    public ContextWrapper(Context p0) {}
+    public ContextWrapper(Context p0) { attachBaseContext(p0); }
 
-    public void attachBaseContext(Context p0) {}
+    public void attachBaseContext(Context p0) { super.attachBaseContext(p0); }
     public boolean bindService(Intent p0, ServiceConnection p1, int p2) { return super.bindService(p0, p1, p2); }
     public int checkCallingOrSelfPermission(String p0) { return 0; }
     public int checkCallingOrSelfUriPermission(Uri p0, int p1) { return 0; }
@@ -47,7 +47,7 @@ public class ContextWrapper extends Context {
     public Context getApplicationContext() { return super.getApplicationContext(); }
     public ApplicationInfo getApplicationInfo() { return super.getApplicationInfo(); }
     public AssetManager getAssets() { return super.getAssets(); }
-    public Context getBaseContext() { return this; }
+    public Context getBaseContext() { return super.getBaseContext(); }
     public File getCacheDir() { return null; }
     public ClassLoader getClassLoader() { return null; }
     public File getCodeCacheDir() { return null; }

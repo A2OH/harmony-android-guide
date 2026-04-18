@@ -16,6 +16,10 @@ public class Providers {
         providerList = ProviderList.newList(new Provider("Westlake", 1.0, "Stub provider") {
             {
                 put("SecureRandom.SHA1PRNG", "sun.security.provider.SecureRandom");
+                put("MessageDigest.SHA-1", "sun.security.provider.SHA");
+                put("MessageDigest.SHA-256", "sun.security.provider.SHA2$SHA256");
+                put("MessageDigest.SHA-512", "sun.security.provider.SHA5$SHA512");
+                put("MessageDigest.MD5", "sun.security.provider.MD5");
             }
         });
     }

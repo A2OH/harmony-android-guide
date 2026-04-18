@@ -31,7 +31,7 @@ public class Build {
     public static final String TAGS = "release-keys";
     public static final String USER = "westlake";
     public static final String SERIAL = "unknown";
-    public static final long TIME = System.currentTimeMillis();
+    public static final long TIME = 0L;
 
     public static class VERSION {
         public static final String RELEASE = safeGetString("getOSVersion");

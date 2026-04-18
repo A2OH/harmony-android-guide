@@ -1,5 +1,10 @@
 package androidx.fragment.app;
 
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +13,7 @@ import java.util.List;
  * transactions and back-stack operations.
  */
 public class FragmentManager {
+    private static final String TAG = "WestlakeFragmentMgr";
 
     final List<Fragment> mAdded = new ArrayList<>();
     private final List<BackStackRecord> mBackStack = new ArrayList<>();
@@ -76,6 +82,9 @@ public class FragmentManager {
     public Fragment findFragmentById(int id) {
         for (int i = mAdded.size() - 1; i >= 0; i--) {
             Fragment f = mAdded.get(i);
+            if (f == null) {
+                continue;
+            }
             if (f.getId() == id) return f;
         }
         return null;
@@ -85,6 +94,9 @@ public class FragmentManager {
         if (tag == null) return null;
         for (int i = mAdded.size() - 1; i >= 0; i--) {
             Fragment f = mAdded.get(i);
+            if (f == null) {
+                continue;
+            }
             if (tag.equals(f.getTag())) return f;
         }
         return null;
@@ -211,23 +223,108 @@ public class FragmentManager {
 
     // ── Internal fragment management ──
 
+    private ViewGroup resolveContainer(int containerId) {
+        if (mHost == null || containerId == 0) {
+            return null;
+        }
+        try {
+            View container = mHost.findViewById(containerId);
+            if (container instanceof ViewGroup) {
+                return (ViewGroup) container;
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private LayoutInflater resolveInflater(Fragment f) {
+        if (f == null) {
+            return mHost != null ? mHost.getLayoutInflater() : null;
+        }
+        try {
+            LayoutInflater inflater = f.onGetLayoutInflater(null);
+            if (inflater != null) {
+                return inflater;
+            }
+        } catch (Throwable ignored) {
+        }
+        return mHost != null ? mHost.getLayoutInflater() : null;
+    }
+
     void addFragmentInternal(Fragment f, String tag, int containerId) {
+        if (mHost == null) {
+            throw new IllegalStateException("FragmentManager.addFragmentInternal host=null for " + f);
+        }
         f.mTag = tag;
         f.mContainerId = containerId;
         f.mActivity = mHost;
+        f.mHost = mHost;
         f.mFragmentManager = this;
         f.mAdded = true;
         mAdded.add(f);
-        // Drive lifecycle
-        f.performAttach(mHost);
-        f.performCreate(null);
-        f.performCreateView(null, null, null);
-        f.performActivityCreated(null);
-        f.performStart();
-        f.performResume();
+        ViewGroup container = resolveContainer(containerId);
+        try {
+            Log.i(TAG, "addFragmentInternal before performAttach fragment=" + f
+                    + " host=" + mHost + " containerId=0x" + Integer.toHexString(containerId));
+            f.performAttach(mHost);
+            Log.i(TAG, "addFragmentInternal after performAttach fragment=" + f);
+        } catch (Throwable t) {
+            throw new RuntimeException("FragmentManager.addFragmentInternal:performAttach " + f, t);
+        }
+        LayoutInflater inflater;
+        try {
+            Log.i(TAG, "addFragmentInternal before resolveInflater fragment=" + f);
+            inflater = resolveInflater(f);
+            Log.i(TAG, "addFragmentInternal after resolveInflater fragment=" + f
+                    + " inflater=" + inflater);
+        } catch (Throwable t) {
+            throw new RuntimeException("FragmentManager.addFragmentInternal:resolveInflater " + f, t);
+        }
+        try {
+            Log.i(TAG, "addFragmentInternal before performCreate fragment=" + f);
+            f.performCreate(null);
+            Log.i(TAG, "addFragmentInternal after performCreate fragment=" + f);
+        } catch (Throwable t) {
+            throw new RuntimeException("FragmentManager.addFragmentInternal:performCreate " + f, t);
+        }
+        try {
+            Log.i(TAG, "addFragmentInternal before performCreateView fragment=" + f
+                    + " container=" + container);
+            f.performCreateView(inflater, container, null);
+            Log.i(TAG, "addFragmentInternal after performCreateView fragment=" + f
+                    + " view=" + f.mView);
+        } catch (Throwable t) {
+            throw new RuntimeException("FragmentManager.addFragmentInternal:performCreateView " + f, t);
+        }
+        if (container != null && f.mView != null) {
+            try {
+                if (f.mView.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) f.mView.getParent()).removeView(f.mView);
+                }
+                container.addView(f.mView);
+                Log.i(TAG, "addFragmentInternal attached view fragment=" + f
+                        + " childCount=" + container.getChildCount());
+            } catch (Throwable t) {
+                throw new RuntimeException("FragmentManager.addFragmentInternal:addView " + f, t);
+            }
+        }
+        try {
+            f.performActivityCreated(null);
+            f.performStart();
+            f.performResume();
+            Log.i(TAG, "addFragmentInternal resumed fragment=" + f);
+        } catch (Throwable t) {
+            throw new RuntimeException("FragmentManager.addFragmentInternal:lifecycleResume " + f, t);
+        }
     }
 
     void removeFragmentInternal(Fragment f) {
+        if (f != null && f.mView != null && f.mView.getParent() instanceof ViewGroup) {
+            try {
+                ((ViewGroup) f.mView.getParent()).removeView(f.mView);
+            } catch (Throwable ignored) {
+            }
+        }
         f.performPause();
         f.performStop();
         f.performDestroyView();
@@ -249,6 +346,9 @@ public class FragmentManager {
         List<Fragment> removed = new ArrayList<>();
         for (int i = mAdded.size() - 1; i >= 0; i--) {
             Fragment f = mAdded.get(i);
+            if (f == null) {
+                continue;
+            }
             if (f.mContainerId == containerId) {
                 removed.add(f);
                 removeFragmentInternal(f);

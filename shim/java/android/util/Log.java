@@ -13,6 +13,8 @@ public final class Log {
     public static final int ASSERT = 7;
 
     private static Object bridge; // lazy-checked
+    private static java.lang.reflect.Method westlakeNativeLog;
+    private static boolean westlakeNativeLogResolved;
 
     private Log() {}
 
@@ -41,23 +43,56 @@ public final class Log {
                 c.getMethod("logError", String.class, String.class).invoke(null, tag, msg);
         } catch (Throwable t) {
             bridge = null;
-            String line = level + "/" + tag + ": " + msg;
-            if ("W".equals(level) || "E".equals(level) || "A".equals(level)) {
-                System.err.println(line);
-            } else {
-                System.out.println(line);
-            }
         }
+    }
+
+    private static boolean shouldFallbackToWestlake(String tag) {
+        if (tag == null || tag.isEmpty()) {
+            return false;
+        }
+        return tag.startsWith("Westlake")
+                || "AppComponentFactory".equals(tag)
+                || "ComponentActivity".equals(tag)
+                || "SavedStateRegistry".equals(tag);
+    }
+
+    private static void westlakeLog(String line) {
+        if (!shouldFallbackToWestlake(extractTag(line))) {
+            return;
+        }
+        try {
+            if (!westlakeNativeLogResolved) {
+                westlakeNativeLogResolved = true;
+                Class<?> launcher = Class.forName("com.westlake.engine.WestlakeLauncher");
+                westlakeNativeLog = launcher.getDeclaredMethod("nativeLog", String.class);
+                westlakeNativeLog.setAccessible(true);
+            }
+            if (westlakeNativeLog != null) {
+                westlakeNativeLog.invoke(null, "[shim-log] " + line);
+            }
+        } catch (Throwable ignored) {
+            westlakeNativeLog = null;
+        }
+    }
+
+    private static String extractTag(String line) {
+        if (line == null) {
+            return null;
+        }
+        int slash = line.indexOf('/');
+        int colon = line.indexOf(':');
+        if (slash < 0 || colon <= slash + 1) {
+            return null;
+        }
+        return line.substring(slash + 1, colon).trim();
     }
 
     private static int log(String level, String tag, String msg) {
         String line = level + "/" + tag + ": " + msg;
         if (tryBridge()) {
             nativeLog(level, tag, msg);
-        } else if ("W".equals(level) || "E".equals(level) || "A".equals(level)) {
-            System.err.println(line);
         } else {
-            System.out.println(line);
+            westlakeLog(line);
         }
         return line.length();
     }
@@ -79,11 +114,35 @@ public final class Log {
 
     public static String getStackTraceString(Throwable tr) {
         if (tr == null) return "";
-        java.io.StringWriter sw = new java.io.StringWriter();
-        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-        tr.printStackTrace(pw);
-        pw.flush();
-        return sw.toString();
+        StringBuilder sb = new StringBuilder();
+        Throwable cur = tr;
+        for (int depth = 0; cur != null && depth < 4; depth++) {
+            if (depth > 0) {
+                sb.append(" <- ");
+            }
+            try {
+                sb.append(cur.getClass().getName());
+            } catch (Throwable ignored) {
+                sb.append("java.lang.Throwable");
+            }
+            try {
+                String msg = cur.getMessage();
+                if (msg != null && !msg.isEmpty()) {
+                    sb.append(": ").append(msg);
+                }
+            } catch (Throwable ignored) {
+            }
+            try {
+                Throwable next = cur.getCause();
+                if (next == cur) {
+                    break;
+                }
+                cur = next;
+            } catch (Throwable ignored) {
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     public static boolean isLoggable(String tag, int level) {

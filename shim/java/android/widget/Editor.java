@@ -1926,6 +1926,7 @@ public class Editor {
 
     void onDraw(Canvas canvas, Layout layout, Path highlight, Paint highlightPaint,
             int cursorOffsetVertical) {
+        if (canvas == null || layout == null) return;
         final int selectionStart = mTextView.getSelectionStart();
         final int selectionEnd = mTextView.getSelectionEnd();
 

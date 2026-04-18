@@ -28,6 +28,7 @@ import java.util.zip.ZipFile;
  * 4. Returns an ApkInfo with all metadata needed to launch the app
  */
 public class ApkLoader {
+    private static native byte[] nativeReadFileBytes(String path);
 
     /**
      * Load and parse an APK file.
@@ -38,9 +39,6 @@ public class ApkLoader {
      */
     public static ApkInfo load(String apkPath) throws IOException {
         File apkFile = new File(apkPath);
-        if (!apkFile.exists()) {
-            throw new IOException("APK not found: " + apkPath);
-        }
 
         ApkInfo info = new ApkInfo();
 
@@ -248,41 +246,29 @@ public class ApkLoader {
      * Load APK info from pre-extracted files (no ZipFile needed).
      * The host app extracts resources.arsc + res/ layouts before spawning dalvikvm.
      */
-    public static ApkInfo loadFromExtracted(String resDir, String packageName) throws IOException {
+    public static ApkInfo loadFromExtracted(String resDir, String packageName,
+            String activityName) throws IOException {
         ApkInfo info = new ApkInfo();
         info.packageName = packageName;
         info.extractDir = resDir;
 
         // Parse resources.arsc (skip for large files — interpreter too slow)
-        File resFile = new File(resDir, "resources.arsc");
-        if (resFile.exists()) {
-            long resSize = resFile.length();
-            if (false && resSize > 500000) {
-                // DISABLED: with speed boot image, resource parsing completes fast enough
-                System.out.println("[ApkLoader] Skipping resources.arsc (" + (resSize/1024) + "KB) — disabled");
-            } else {
-                try {
-                    java.io.FileInputStream fis = new java.io.FileInputStream(resFile);
-                    byte[] data = new byte[(int) resFile.length()];
-                    fis.read(data);
-                    fis.close();
-                    info.resourceTable = android.content.res.ResourceTableParser.parseToTable(data);
-                    System.out.println("[ApkLoader] Parsed resources.arsc from extracted dir");
-                } catch (Exception e) {
-                    System.out.println("[ApkLoader] resources.arsc parse error: " + e);
-                }
+        try {
+            byte[] data = nativeReadFileBytes(resDir + "/resources.arsc");
+            if (data != null && data.length > 0) {
+                // Resource bytes are present, but defer parsing to avoid heavy startup work.
             }
+        } catch (Exception e) {
+            // Ignore missing or unreadable resource table during early bootstrap.
         }
 
         // Set res dir for layout inflation
         info.assetDir = resDir;
         info.resDir = resDir;
 
-        // Try to find launcher activity from the activity name property
-        String activity = System.getProperty("westlake.apk.activity");
-        if (activity != null && !activity.isEmpty()) {
-            info.launcherActivity = activity;
-            info.activities.add(activity);
+        if (activityName != null && !activityName.isEmpty()) {
+            info.launcherActivity = activityName;
+            info.activities.add(activityName);
         }
 
         return info;

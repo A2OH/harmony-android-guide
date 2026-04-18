@@ -40,7 +40,17 @@ public class ShimCompat {
      */
     public static void setPackageName(Application app, String pkg) {
         try {
-            Method m = app.getClass().getMethod("setPackageName", String.class);
+            Method m = null;
+            for (Class<?> c = app.getClass(); c != null; c = c.getSuperclass()) {
+                try {
+                    m = c.getDeclaredMethod("setPackageName", String.class);
+                    break;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+            if (m == null) {
+                throw new NoSuchMethodException("setPackageName");
+            }
             m.setAccessible(true);
             m.invoke(app, pkg);
         } catch (Exception e) {
@@ -172,7 +182,7 @@ public class ShimCompat {
     }
 
     private static void log(String msg) {
-        // Use System.out since android.util.Log may be the real one
-        System.out.println("W/ShimCompat: " + msg);
+        // Avoid stdio during early Westlake bootstrap. Reflection failures here are
+        // expected on some paths and logging them through PrintStream can crash boot.
     }
 }
