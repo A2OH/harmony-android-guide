@@ -657,7 +657,7 @@ public class WestlakeActivityThread {
             }
             if (controller != null) {
                 invokeNoArgIfPresent(controller, "c", "performAttach");
-                enableNamedSavedStateHandles(chooseClassLoader(componentActivityClass), activity);
+                enableNamedSavedStateHandles(chooseClassLoader(controller.getClass()), activity);
             }
         } catch (Throwable t) {
             WestlakeLauncher.dumpThrowable(
@@ -944,7 +944,7 @@ public class WestlakeActivityThread {
                     + describeObject(savedStateController)
                     + " readback=" + describeObject(savedStateReadback));
             invokeNoArgIfPresent(savedStateReadback, "c", "performAttach");
-            enableNamedSavedStateHandles(loader, activity);
+            enableNamedSavedStateHandles(chooseClassLoader(savedStateReadback.getClass()), activity);
             log("I", "AndroidX saved-state attach invoked for "
                     + componentActivityClass.getName());
             return true;
@@ -964,45 +964,86 @@ public class WestlakeActivityThread {
     }
 
     private Object newSavedStateRegistryController(ClassLoader loader, Activity activity) {
-        try {
-            Class<?> appControllerClass =
-                    loadNamedClassChildFirst(loader,
-                            "androidx.savedstate.SavedStateRegistryController");
-            Class<?> appOwnerClass =
-                    loadNamedClassChildFirst(loader,
-                            "androidx.savedstate.SavedStateRegistryOwner");
-            Log.i(TAG, "savedState app classes controller="
-                    + describeClass(appControllerClass)
-                    + " owner=" + describeClass(appOwnerClass)
-                    + " activity=" + describeObject(activity));
-            if (appControllerClass != null
-                    && appOwnerClass != null
-                    && appOwnerClass.isInstance(activity)) {
-                Object appController = buildSavedStateRegistryController(
-                        appControllerClass,
-                        appOwnerClass,
-                        activity,
-                        "[WestlakeActivityThread] app SavedStateRegistryController");
-                if (appController != null) {
-                    return appController;
-                }
-            }
-
-            Class<?> controllerClass =
-                    loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryController");
-            Class<?> ownerClass =
-                    loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryOwner");
-            Object controller = buildSavedStateRegistryController(
-                    controllerClass,
-                    ownerClass,
+        ClassLoader activityLoader = activity != null ? chooseClassLoader(activity.getClass()) : loader;
+        Object controller = tryBuildSavedStateRegistryController(
+                activityLoader,
+                activity,
+                true,
+                "app");
+        if (controller != null) {
+            return controller;
+        }
+        if (loader != activityLoader) {
+            controller = tryBuildSavedStateRegistryController(
+                    loader,
                     activity,
-                    "[WestlakeActivityThread] SavedStateRegistryController");
+                    true,
+                    "owner-child-first");
             if (controller != null) {
                 return controller;
             }
+        }
+        controller = tryBuildSavedStateRegistryController(
+                loader,
+                activity,
+                false,
+                "owner");
+        if (controller != null) {
+            return controller;
+        }
+        if (loader != activityLoader) {
+            controller = tryBuildSavedStateRegistryController(
+                    activityLoader,
+                    activity,
+                    false,
+                    "app-parent-first");
+            if (controller != null) {
+                return controller;
+            }
+        }
+        if (activity instanceof androidx.savedstate.SavedStateRegistryOwner) {
+            Log.i(TAG, "savedState shim-direct activityClass="
+                    + describeClass(activity.getClass())
+                    + " ownerMatch=true");
+            return androidx.savedstate.SavedStateRegistryController.create(
+                    (androidx.savedstate.SavedStateRegistryOwner) activity);
+        }
+        return null;
+    }
+
+    private Object tryBuildSavedStateRegistryController(ClassLoader loader,
+                                                        Activity activity,
+                                                        boolean childFirst,
+                                                        String label) {
+        if (loader == null || activity == null) {
             return null;
+        }
+        try {
+            Class<?> controllerClass = childFirst
+                    ? loadNamedClassChildFirst(loader,
+                            "androidx.savedstate.SavedStateRegistryController")
+                    : loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryController");
+            Class<?> ownerClass = childFirst
+                    ? loadNamedClassChildFirst(loader,
+                            "androidx.savedstate.SavedStateRegistryOwner")
+                    : loadNamedClass(loader, "androidx.savedstate.SavedStateRegistryOwner");
+            boolean ownerMatch = ownerClass != null && ownerClass.isInstance(activity);
+            Log.i(TAG, "savedState " + label
+                    + " controller=" + describeClass(controllerClass)
+                    + " owner=" + describeClass(ownerClass)
+                    + " activityClass=" + describeClass(activity.getClass())
+                    + " ownerMatch=" + ownerMatch);
+            if (!ownerMatch) {
+                return null;
+            }
+            return buildSavedStateRegistryController(
+                    controllerClass,
+                    ownerClass,
+                    activity,
+                    "[WestlakeActivityThread] " + label + " SavedStateRegistryController");
         } catch (Throwable t) {
-            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] SavedStateRegistryController init", t);
+            WestlakeLauncher.dumpThrowable(
+                    "[WestlakeActivityThread] " + label + " SavedStateRegistryController init", t);
             return null;
         }
     }
