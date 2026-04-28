@@ -67,6 +67,7 @@ public class WestlakeLauncher {
     private static boolean sNativeAppendFileLineUnavailable;
     private static boolean sNativeAllocUnavailable;
     private static boolean sNativePrimeLaunchConfigUnavailable;
+    private static boolean sStandardStreamsInstalled;
     private static boolean sBackendModeResolved;
     private static boolean sControlAndroidBackendCached;
     private static String sResolvedBackendMode;
@@ -305,6 +306,98 @@ public class WestlakeLauncher {
 
     private static void startupLog(String message, Throwable t) {
         startupLog(message + ": " + throwableTag(t));
+    }
+
+    private static void installSafeStandardStreams() {
+        if (sStandardStreamsInstalled) {
+            return;
+        }
+        sStandardStreamsInstalled = true;
+        try {
+            System.setOut(new SafeAsciiPrintStream(java.io.FileDescriptor.out));
+            System.setErr(new SafeAsciiPrintStream(java.io.FileDescriptor.err));
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static final class SafeAsciiPrintStream extends java.io.PrintStream {
+        private final java.io.OutputStream mOut;
+
+        SafeAsciiPrintStream(java.io.FileDescriptor fd) {
+            super(new java.io.ByteArrayOutputStream(), true);
+            java.io.OutputStream out = null;
+            try {
+                out = new java.io.FileOutputStream(fd);
+            } catch (Throwable ignored) {
+            }
+            mOut = out;
+        }
+
+        @Override public void write(int b) {
+            try {
+                if (mOut != null) {
+                    mOut.write(b);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        @Override public void write(byte[] buf, int off, int len) {
+            try {
+                if (mOut != null && buf != null && off >= 0 && len > 0
+                        && off + len <= buf.length) {
+                    mOut.write(buf, off, len);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        @Override public void flush() {
+            try {
+                if (mOut != null) {
+                    mOut.flush();
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        @Override public void close() {
+            flush();
+        }
+
+        private void writeAscii(String value) {
+            String s = value == null ? "null" : value;
+            byte[] bytes = new byte[s.length()];
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                bytes[i] = (byte) (c <= 0x7f ? c : '?');
+            }
+            write(bytes, 0, bytes.length);
+        }
+
+        private void newline() {
+            write('\n');
+        }
+
+        @Override public void print(boolean b) { writeAscii(String.valueOf(b)); }
+        @Override public void print(char c) { writeAscii(String.valueOf(c)); }
+        @Override public void print(int i) { writeAscii(String.valueOf(i)); }
+        @Override public void print(long l) { writeAscii(String.valueOf(l)); }
+        @Override public void print(float f) { writeAscii(String.valueOf(f)); }
+        @Override public void print(double d) { writeAscii(String.valueOf(d)); }
+        @Override public void print(char[] s) { writeAscii(s == null ? null : new String(s)); }
+        @Override public void print(String s) { writeAscii(s); }
+        @Override public void print(Object obj) { writeAscii(String.valueOf(obj)); }
+        @Override public void println() { newline(); }
+        @Override public void println(boolean x) { print(x); newline(); }
+        @Override public void println(char x) { print(x); newline(); }
+        @Override public void println(int x) { print(x); newline(); }
+        @Override public void println(long x) { print(x); newline(); }
+        @Override public void println(float x) { print(x); newline(); }
+        @Override public void println(double x) { print(x); newline(); }
+        @Override public void println(char[] x) { print(x); newline(); }
+        @Override public void println(String x) { print(x); newline(); }
+        @Override public void println(Object x) { print(x); newline(); }
     }
 
     private static void startupLogLabelValue(String label, String value) {
@@ -2567,6 +2660,8 @@ public class WestlakeLauncher {
     }
 
     private static void mainImpl(String[] args) {
+        installSafeStandardStreams();
+
         // Skip the reflective hidden-API exemption path on the standalone guest.
         // On the current imageless bootstrap, even building the String[] argument
         // for setHiddenApiExemptions can trip cross-loader ArrayStore issues before

@@ -65,9 +65,6 @@ public class ResourceTableParser {
             resources.loadResourceTable(table);
         }
 
-        // Also push every parsed entry into the registry
-        String[] globalPool = table.getGlobalStringPool();
-
         // Walk all possible resource IDs that the table knows about.
         // ResourceTable exposes getString / getInteger; we probe the
         // ID space by iterating the names map (every entry that was

@@ -390,8 +390,6 @@ public class Context {
             if (table != null) {
                 String filePath = table.getString(id);
                 if (filePath == null) filePath = table.getEntryFilePath(id);
-                String name = table.getResourceName(id);
-                System.err.println("[Context] getDrawable(0x" + Integer.toHexString(id) + ") name=" + name + " path=" + filePath);
                 if (filePath != null) {
                     String resDir = System.getProperty("westlake.apk.resdir");
                     if (resDir != null) {
@@ -401,12 +399,9 @@ public class Context {
                                 try {
                                     android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(f.getAbsolutePath());
                                     if (bmp != null) {
-                                        System.err.println("[Context] getDrawable(0x" + Integer.toHexString(id) + ") → " + filePath + " " + bmp.getWidth() + "x" + bmp.getHeight());
                                         return new android.graphics.drawable.BitmapDrawable(res, bmp);
                                     }
                                 } catch (Throwable t) { /* fall through */ }
-                            } else {
-                                System.err.println("[Context] getDrawable(0x" + Integer.toHexString(id) + ") → " + filePath + " (non-image, skipped)");
                             }
                         }
                     }

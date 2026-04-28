@@ -3,7 +3,7 @@
 ## Supervisor Update: 2026-04-28
 
 The active bridge between controlled apps and a real McDonald's-class APK is
-now PF-466, `com.westlake.mcdprofile`, documented in
+now PF-466, the controlled mock app `com.westlake.mcdprofile`, documented in
 `docs/engine/OHOS-MCD-PROFILE-INTEGRATION.md`. It is accepted on a real Android
 phone through Westlake `dalvikvm` with compiled XML inflation, Material-shaped
 tags present in the APK, host/OHBridge JSON/image/REST, SharedPreferences,
@@ -13,13 +13,14 @@ also launches the McD-profile Activity through `WestlakeActivityThread` and
 `onCreate`, inflates a 25-view guest tree with 10 Material-shaped views, binds
 the XML `ListView`, and drives its adapter through position `4`.
 
-This supersedes older MockDonalds-only status as the current practical OHOS
-port target. It still does not mean arbitrary real APKs are ready: generic
-real-APK Activity construction still has to be generalized beyond this
-controlled app, and runtime object-array correctness, upstream Material
-compatibility, generic View rendering/input, standalone
-`resources.arsc` table parsing, production networking, and OHOS host adapter
-parity remain open.
+This is not the real McDonald's APK. It supersedes older MockDonalds-only
+status as the current practical OHOS port target because it is a richer
+controlled mock boundary test. It still does not mean arbitrary real APKs are
+ready: generic real-APK Activity construction still has to be generalized
+beyond this controlled app, and runtime object-array correctness, libcore
+charset/encoding, upstream Material compatibility, generic View
+rendering/input, arbitrary stock-APK `resources.arsc` tables, production
+networking, and OHOS host adapter parity remain open.
 
 ## Latest Milestone: Compressed APK on OHOS ARM32 QEMU
 

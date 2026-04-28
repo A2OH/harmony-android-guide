@@ -75,24 +75,32 @@ McDonald's-class stock APK are documented in
 - `PF-464` preferences/cache/file/database storage
 - `PF-465` service probes for text input, connectivity, locale/time, and
   accessibility-shaped metadata
-- `PF-466` McDonald's preflight controlled app profile before returning to the
-  stock APK path: Android phone accepted on `cfb7c9e3` for
+- `PF-466` McDonald's preflight controlled mock app profile before returning
+  to the stock APK path: Android phone accepted on `cfb7c9e3` for
   `com.westlake.mcdprofile`, built from `test-apps/10-mcd-profile/` and run
   with `scripts/run-mcd-profile.sh`. The accepted proof covers app-owned
   Application, generic `WestlakeActivityThread` launch through
   `AppComponentFactory`, attach/lifecycle, compiled XML resource loading before
-  `onCreate`, Material-shaped tag traversal and ID binding, guest `ListView`
-  adapter row binding through position `4`,
+  `onCreate`, `resources.arsc` table parsing for this APK, Material-shaped tag
+  traversal and ID binding, guest `ListView` adapter row binding through
+  position `4`, XML measure/layout probe,
   SharedPreferences cart state, host/OHBridge live JSON and one bounded image,
-  REST bridge v2 POST/HEAD/non-2xx status probes, full-phone `1080x2280`
-  `DLST`, and strict touch navigation. It is the current OHOS controlled
-  profile target, not a stock McDonald's APK compatibility claim.
+  REST bridge v2 POST with payload, HEAD, and non-2xx status probes,
+  full-phone `1080x2280` `DLST`, and strict touch navigation. Current accepted
+  hashes: `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`,
+  `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`,
+  `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`.
+  It is the current OHOS controlled mock profile target, not the real
+  McDonald's app and not a stock McDonald's APK compatibility claim.
 - `PF-467` generic real-APK Activity construction: accepted for the
   McD-profile controlled app through the WAT/AppComponentFactory path; still
   open for arbitrary stock McDonald's activities and for removing remaining
   app-specific launch allowances
 - `PF-468` standalone runtime object-array correctness: close the DEX
-  object-array/new-array boundary exposed by profile-item `String[]` models
+  object-array/new-array boundary exposed by profile-item `String[]` models.
+  PF-466's `resources.arsc` `ArrayStoreException` is closed by keeping parsed
+  string pools as `Object[]`, but that does not prove arbitrary app `String[]`
+  allocation/assignment correctness
 - `PF-469` McD-class generic Material XML and theming: move from the accepted
   McD-profile tag/bind slice to upstream-compatible Material tag inflation,
   ID assignment, themes/styles, Coordinator/AppBar behavior, ripple, and
@@ -102,11 +110,17 @@ McDonald's-class stock APK are documented in
   draw, hit testing, scrolling, adapter/list rendering, and invalidation
 - `PF-471` production-grade portable networking/images: replace synthetic REST
   matrix coverage and one capped image proof with real multi-method execution,
-  large-body streaming, redirects, timeout/error parity, and multi-image
-  transport
+  large-body streaming, redirects, timeout/error parity, direct libcore
+  networking parity, and multi-image transport
 - `PF-472` OHOS McD-profile adapter parity: implement the same guest-facing
   surface/input/storage/network contracts in an OHOS Ability/XComponent host
   and rerun PF-466 there
+- `PF-473` standalone libcore charset/encoding correctness: fix
+  `Charset.forName`, `String.getBytes("UTF-8")`, and default `PrintStream`
+  encoding in the Westlake guest runtime. PF-466 now avoids this with a local
+  UTF-8 encoder and an ASCII-safe stdio wrapper, and
+  `scripts/run-mcd-profile.sh` rejects `NPE-SYNC`, but stock APKs still require
+  normal libcore charset behavior.
 
 ## 2026-04-25 Roadmap Corrections
 

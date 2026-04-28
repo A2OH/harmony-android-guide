@@ -397,7 +397,7 @@ require_marker "^MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK " "GENERIC_ACTIVITY_FAC
 require_marker "^MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK " "WAT_ACTIVITY_LAUNCH_OK"
 require_marker "^MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK " "WAT_ACTIVITY_ONCREATE_OK"
 require_marker "^MCD_PROFILE_WAT_ACTIVITY_RESUME_OK " "WAT_ACTIVITY_RESUME_OK"
-require_marker "^MCD_PROFILE_XML_RESOURCE_WIRE_OK .*layoutBytes=[1-9][0-9]*" "XML_RESOURCE_WIRE_OK"
+require_marker "^MCD_PROFILE_XML_RESOURCE_WIRE_OK .*table=true .*layoutBytes=[1-9][0-9]*" "XML_RESOURCE_WIRE_OK table"
 require_marker "^MCD_PROFILE_XML_TAG_OK tag=TextInputLayout " "XML TextInputLayout"
 require_marker "^MCD_PROFILE_XML_TAG_OK tag=MaterialCardView " "XML MaterialCardView"
 require_marker "^MCD_PROFILE_XML_TAG_OK tag=ListView " "XML ListView"
@@ -444,6 +444,8 @@ if grep -qE "^MCD_PROFILE_CONTROLLED_" "$MARKERS_PATH"; then
     missing=1
 fi
 reject_log_marker "APK load error|FATAL EXCEPTION|SIGBUS|SIGILL" "fatal runtime/log error"
+reject_log_marker "standalone ResourceTable parse failed" "standalone ResourceTable parse failure"
+reject_log_marker "NPE-SYNC" "standalone synchronized null/NPE"
 
 if ! python3 - "$PNG_PATH" "$VISUAL_PATH" <<'PY'
 import sys

@@ -4,9 +4,10 @@ Last updated: 2026-04-28
 
 ## Purpose
 
-`com.westlake.mcdprofile` is the current controlled McDonald's-shaped Westlake
-port target. It exists to close stock-app boundaries under a known API surface
-before returning to the real McDonald's APK.
+`com.westlake.mcdprofile` is the current controlled mock McD-profile Westlake
+port target. It is not the real McDonald's app. It exists to close stock-app
+boundaries under a known API surface before returning to the real McDonald's
+APK.
 
 The app is intentionally self-contained:
 
@@ -20,9 +21,9 @@ The app is intentionally self-contained:
 - host/OHBridge live JSON, image, POST, HEAD, and non-2xx REST traffic;
 - full-phone `DLST` rendering and strict touch input.
 
-It is not a stock APK compatibility claim. It is the first McD-class app that
-should be ported to OHOS because every southbound contract is known and can be
-implemented one by one.
+It is not a stock APK compatibility claim. It is the first controlled
+McD-class mock app that should be ported to OHOS because every southbound
+contract is known and can be implemented one by one.
 
 ## Accepted Android Phone Proof
 
@@ -37,9 +38,9 @@ Accepted device: `cfb7c9e3`.
 Accepted hashes:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be`
-- `westlake-host.apk=0d0f689b35dd8c7be45567fefd533ce9b12df2f08d4cf849bb128823599e83e4`
-- `westlake-mcd-profile-debug.apk=f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e`
+- `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`
+- `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`
+- `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`
 
 Accepted artifacts:
 
@@ -48,7 +49,7 @@ Accepted artifacts:
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.trace`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.png`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.visual`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21_3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3/`
 
 Key accepted launch and XML markers:
 
@@ -56,13 +57,15 @@ Key accepted launch and XML markers:
 - `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK class=com.westlake.mcdprofile.McdProfileActivity`
-- `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=false apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
+- `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=true apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
 - `MCD_PROFILE_XML_TAG_OK` for `TextInputLayout`, `TextInputEditText`,
   `ChipGroup`, `Chip`, `MaterialCardView`, `ImageView`, `MaterialButton`,
   `BottomNavigationView`, and `ListView`
 - `MCD_PROFILE_XML_BIND_OK list=true ... materialViews=10`
 - `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`
+- `MCD_PROFILE_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`
 - `MCD_PROFILE_XML_INFLATE_OK ... views=25 materialViews=10 source=compiled_apk_xml`
+- `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`
 
 ## Call Path
 
@@ -130,8 +133,8 @@ the host-side plumbing.
 
 ## Acceptance Markers
 
-The OHOS port should pass the same marker set before it is treated as a real
-PF-466 parity proof:
+The OHOS port should pass the same marker set before it is treated as a
+PF-466 parity proof for the controlled mock app:
 
 - `MCD_PROFILE_APP_ON_CREATE_OK`
 - `MCD_PROFILE_ACTIVITY_ON_CREATE_OK`
@@ -139,7 +142,7 @@ PF-466 parity proof:
 - `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK`
 - `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK`
 - `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK`
-- `MCD_PROFILE_XML_RESOURCE_WIRE_OK layoutBytes=[nonzero]`
+- `MCD_PROFILE_XML_RESOURCE_WIRE_OK table=true layoutBytes=[nonzero]`
 - `MCD_PROFILE_XML_TAG_OK tag=TextInputLayout`
 - `MCD_PROFILE_XML_TAG_OK tag=MaterialCardView`
 - `MCD_PROFILE_XML_TAG_OK tag=ListView`
@@ -172,8 +175,9 @@ visible in the screenshot.
 
 The Android-phone runner now rejects any `MCD_PROFILE_XML_TAG_WARN` marker and
 any `MCD_PROFILE_CONTROLLED_*` launch marker for this controlled McD-profile
-slice. OHOS parity should keep that stricter gate. This does not claim full
-upstream Google Material Components XML support; it proves the controlled
+slice. It also rejects `NPE-SYNC`. OHOS parity should keep those stricter
+gates. This does not claim full upstream Google Material Components XML
+support or real McDonald's APK support; it proves the controlled mock
 McD-profile tags are wired through Westlake's XML inflation path and the app
 launches through the generic WAT/AppComponentFactory path.
 
@@ -184,11 +188,14 @@ PF-466 is useful because it exposes the next real gaps:
 - Activity launch is accepted for the McD-profile controlled app through the
   WAT/AppComponentFactory path, but stock McDonald's still needs this generalized
   across arbitrary activities without package-specific allowances.
-- `resources.arsc` parsing is still incomplete for this APK. The accepted run
-  registers layout XML bytes from extracted `res/layout` entries, while the
-  table load marker remains false.
-- The runtime still has an object-array/new-array correctness boundary. The
-  profile app avoids `String[]` item arrays and uses scalar row fields.
+- `resources.arsc` parsing is now accepted for this controlled mock APK, but
+  it is not yet proven across arbitrary stock APK resource tables.
+- The runtime still has an object-array/new-array correctness boundary beyond
+  the fixed resource-table string-pool case. The profile app avoids `String[]`
+  item arrays and uses scalar row fields.
+- Libcore charset/encoding remains incomplete. PF-466 avoids the current
+  `Charset.forName("UTF-8")` failure with a local UTF-8 encoder and an
+  ASCII-safe stdio wrapper, but stock APKs need normal charset behavior.
 - Material XML is not upstream-complete. Full Material Components AAR
   compatibility, themes, Coordinator/AppBar behaviors, ripple, animation, and
   generic Material rendering remain open.
@@ -202,15 +209,18 @@ PF-466 is useful because it exposes the next real gaps:
 
 ## Next Closure Order
 
-1. Port PF-466 unchanged to OHOS and require the same marker/visual gates.
+1. Port PF-466 unchanged to OHOS as the controlled mock app and require the
+   same marker/visual gates.
 2. Generalize the accepted McD-profile WAT/AppComponentFactory launch slice to
    arbitrary stock McDonald's activities.
-3. Fix standalone `resources.arsc` table parsing for the McD-profile APK.
+3. Generalize `resources.arsc` table parsing beyond the controlled mock APK.
 4. Fix the object-array/new-array runtime boundary and restore array-backed
    menu models.
-5. Move McD-profile rendering from the direct frame writer to generic inflated
+5. Fix libcore charset/encoding behavior instead of relying on PF-466 local
+   workarounds.
+6. Move McD-profile rendering from the direct frame writer to generic inflated
    View draw/hit/scroll/adapter paths.
-6. Expand networking/images to streamed multi-image transport and real REST
+7. Expand networking/images to streamed multi-image transport and real REST
    matrix execution.
-7. Swap controlled McD-profile API calls for real stock McDonald's API-surface
+8. Swap controlled McD-profile API calls for real stock McDonald's API-surface
    shims until the stock APK can run without app code changes.

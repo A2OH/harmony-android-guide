@@ -17,14 +17,15 @@ Required outcome:
 - app-owned AndroidX/AppCompat running on that substrate
 - only then real McDonald's UI
 
-## Today Delivery Goal: Controlled McD Profile Boundary
+## Today Delivery Goal: Controlled Mock McD Profile Boundary
 
 For 2026-04-28, the active delivery target is now PF-466: a controlled
-McDonald's-shaped profile APK that exercises the next set of stock-app
-boundaries before returning to the real McDonald's APK. This is the current
-best OHOS port target because it is self-contained, has a known app/API
-surface, and runs through the same Westlake guest runtime path that the stock
-APK must eventually use.
+mock McD-profile APK that exercises the next set of stock-app boundaries
+before returning to the real McDonald's APK. This is not the real McDonald's
+app and is not a stock APK compatibility claim. It is the current best OHOS
+port target because it is self-contained, has a known app/API surface, and
+runs through the same Westlake guest runtime path that the stock APK must
+eventually use.
 
 PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
 `com.westlake.mcdprofile`, built from `test-apps/10-mcd-profile/` and run with
@@ -35,16 +36,19 @@ PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
   shim `Activity.attach(...)`, and `onCreate`/`onStart`/`onResume` dispatch
   inside Westlake, with the older controlled allocator rejected by the runner;
 - compiled APK XML resource loading and inflation from
-  `activity_mcd_profile.xml` into a guest `LinearLayout` root;
+  `resources.arsc` and `activity_mcd_profile.xml` into a guest
+  `LinearLayout` root;
 - McD-profile XML tag traversal and ID binding for the app's Material-shaped
   tags, `ImageView`, `ListView`, cart `TextView`, checkout `MaterialButton`,
   and `BottomNavigationView`, with no `XML_TAG_WARN` markers;
 - guest `ListView` adapter row binding through position `4`;
+- XML layout measurement/layout probe at `480x1013` before direct-frame
+  rendering;
 - SharedPreferences-backed cart state;
 - live JSON fetch through the portable host/OHBridge HTTP bridge;
 - one bounded live image fetch through the same bridge;
-- REST bridge v2 POST, HEAD, and non-2xx status coverage through the
-  supervisor proxy;
+- REST bridge v2 POST with a real payload, HEAD, and non-2xx status coverage
+  through the supervisor proxy;
 - full-phone `1080x2280` `DLST` frames and strict touch-file input for
   category, row select, cart add, checkout, Deals navigation, and Menu
   navigation.
@@ -52,14 +56,14 @@ PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
 Accepted PF-466 hashes:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be`
-- `westlake-host.apk=0d0f689b35dd8c7be45567fefd533ce9b12df2f08d4cf849bb128823599e83e4`
-- `westlake-mcd-profile-debug.apk=f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e`
+- `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`
+- `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`
+- `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`
 
 Accepted PF-466 artifacts:
 
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.*`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21_3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3/`
 
 Key accepted PF-466 markers:
 
@@ -67,29 +71,35 @@ Key accepted PF-466 markers:
 - `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK class=com.westlake.mcdprofile.McdProfileActivity`
-- `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=false apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
+- `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=true apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
 - `MCD_PROFILE_XML_BIND_OK list=true ... materialViews=10`
 - `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`
+- `MCD_PROFILE_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`
 - `MCD_PROFILE_XML_INFLATE_OK ... views=25 materialViews=10 source=compiled_apk_xml`
+- `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`
 
-PF-466 does not close stock McDonald's APK readiness. The gap list that must
-be closed next is:
+PF-466 does not close stock McDonald's APK readiness. It is our controlled
+mock app boundary test. The gap list that must be closed next is:
 
 - generalize the accepted McD-profile WAT/AppComponentFactory launch slice to
   arbitrary stock McDonald's activities and remove the remaining app-specific
   launch allowances;
-- fix standalone `resources.arsc` table parsing for this APK; the accepted
-  run wires layout bytes from extracted `res/layout` files, while table parse
-  is still false;
 - fix the standalone runtime object-array/new-array boundary that forced the
-  profile app away from `String[]` item models;
+  profile app away from `String[]` item models; the PF-466 resource-table
+  `String[]` failure is closed by storing parsed pools as `Object[]`, but the
+  broader DEX/runtime array boundary is not proven closed;
+- fix standalone libcore charset/encoding correctness. PF-466 avoids the
+  current `Charset.forName("UTF-8")` failure with a local UTF-8 encoder and an
+  ASCII-safe stdio wrapper, and the runner rejects `NPE-SYNC`, but stock APKs
+  still need normal `Charset`/`String.getBytes(...)` behavior;
 - make Material XML inflation generic enough for upstream Google Material
   Components tags, IDs, theming, Coordinator/AppBar behaviors, ripple, and
   animation;
 - replace the McD-specific direct `DLST` frame writer and coordinate router
   with generic View draw, hit testing, scrolling, and adapter rendering;
-- expand image/network transport from one capped image proof to multi-image,
-  large-body, streamed responses and real multi-method REST matrix execution;
+- expand image/network transport from one capped image proof and proxy-backed
+  POST/HEAD/status probes to multi-image, large-body, streamed responses,
+  redirects, timeouts, and direct libcore networking parity;
 - implement the same host/OHBridge southbound contracts in the OHOS host:
   Ability/XComponent surface, input file or callback bridge, app data
   directory, HTTP bridge, and `DLST` replay.

@@ -66,8 +66,8 @@ public class ResourceTable {
     private final Map<Integer, Integer> mEntryValues = sGlobalEntryValues;
 
     /** Global string pool (all string values). */
-    private String[] mGlobalStringPool;
-    private String[] mPrevStringPool; // saved base pool during split parsing
+    private Object[] mGlobalStringPool;
+    private Object[] mPrevStringPool; // saved base pool during split parsing
 
     /**
      * Parse a resources.arsc byte array.
@@ -204,7 +204,7 @@ public class ResourceTable {
             mFilePathCache = new java.util.HashMap<>();
             // Index all res/ paths in the global string pool
             for (int i = 0; i < mGlobalStringPool.length; i++) {
-                String s = mGlobalStringPool[i];
+                String s = stringAt(mGlobalStringPool, i);
                 if (s != null && s.startsWith("res/") && s.endsWith(".xml")) {
                     mFilePathCache.put(i, s);
                 }
@@ -216,7 +216,7 @@ public class ResourceTable {
         if (mEntryValues != null) {
             Integer stringIdx = mEntryValues.get(resId);
             if (stringIdx != null && mGlobalStringPool != null && stringIdx >= 0 && stringIdx < mGlobalStringPool.length) {
-                String path = mGlobalStringPool[stringIdx];
+                String path = stringAt(mGlobalStringPool, stringIdx);
                 if (path != null && path.startsWith("res/")) return path;
             }
         }
@@ -338,14 +338,21 @@ public class ResourceTable {
      * Get the global string pool (all string values from the resources.arsc).
      */
     public String[] getGlobalStringPool() {
-        return mGlobalStringPool;
+        if (mGlobalStringPool == null) {
+            return null;
+        }
+        String[] copy = new String[mGlobalStringPool.length];
+        for (int i = 0; i < mGlobalStringPool.length; i++) {
+            copy[i] = stringAt(mGlobalStringPool, i);
+        }
+        return copy;
     }
 
     // -----------------------------------------------------------------------
     // String pool parsing (supports UTF-8 and UTF-16)
     // -----------------------------------------------------------------------
 
-    private String[] parseStringPool(ByteBuffer buf, int chunkStart, int headerSize, int chunkSize) {
+    private Object[] parseStringPool(ByteBuffer buf, int chunkStart, int headerSize, int chunkSize) {
         // StringPool header (after chunk header which is 8 bytes):
         // stringCount(4), styleCount(4), flags(4), stringsStart(4), stylesStart(4)
         int stringCount = buf.getInt();
@@ -371,7 +378,7 @@ public class ResourceTable {
         // Actually, stringsStart is an offset from the start of the chunk header
         int dataStart = chunkStart + stringsStart;
 
-        String[] pool = new String[stringCount];
+        Object[] pool = new Object[stringCount];
         for (int i = 0; i < stringCount; i++) {
             int pos = dataStart + offsets[i];
             if (pos < 0 || pos >= buf.limit()) {
@@ -473,6 +480,14 @@ public class ResourceTable {
         return new String(chars);
     }
 
+    private static String stringAt(Object[] pool, int index) {
+        if (pool == null || index < 0 || index >= pool.length) {
+            return null;
+        }
+        Object value = pool[index];
+        return value instanceof String ? (String) value : null;
+    }
+
     // -----------------------------------------------------------------------
     // Package parsing
     // -----------------------------------------------------------------------
@@ -499,8 +514,8 @@ public class ResourceTable {
 
         // Parse type string pool and key string pool
         // They are at known offsets from the start of the package chunk
-        String[] typeStringPool = null;
-        String[] keyStringPool = null;
+        Object[] typeStringPool = null;
+        Object[] keyStringPool = null;
 
         // The typeStrings and keyStrings offsets are relative to the package chunk start
         int typeStringsPos = chunkStart + typeStringsOffset;
@@ -589,7 +604,7 @@ public class ResourceTable {
 
     private void parseType(ByteBuffer buf, byte[] data, int chunkStart, int headerSize,
                            int chunkSize, int packageId,
-                           String[] typeStringPool, String[] keyStringPool) {
+                           Object[] typeStringPool, Object[] keyStringPool) {
         // ResTable_type header (after chunk header 8 bytes):
         // id(1), res0(1), res1(2), entryCount(4), entriesStart(4), config(variable)
         int typeId = buf.get() & 0xFF;   // 1-based
@@ -633,7 +648,7 @@ public class ResourceTable {
         // Get the type name from the type string pool (typeId is 1-based)
         String typeName = null;
         if (typeStringPool != null && typeId >= 1 && typeId <= typeStringPool.length) {
-            typeName = typeStringPool[typeId - 1];
+            typeName = stringAt(typeStringPool, typeId - 1);
         }
 
         for (int i = 0; i < entryCount; i++) {
@@ -663,20 +678,12 @@ public class ResourceTable {
             // Store the resource name
             String keyName = null;
             if (keyStringPool != null && keyIndex >= 0 && keyIndex < keyStringPool.length) {
-                keyName = keyStringPool[keyIndex];
+                keyName = stringAt(keyStringPool, keyIndex);
             }
             if (typeName != null && keyName != null) {
                 if (!mNames.containsKey(resId)) {
                     mNames.put(resId, typeName + "/" + keyName);
                 }
-            }
-
-            // Debug: log type 8 (drawable) entries
-            if (typeId == 8 && i < 5) {
-                System.err.println("[RT] typeId=8 entry=" + i + " resId=0x" + Integer.toHexString(resId) + " name=" + keyName + " flags=0x" + Integer.toHexString(entryFlags));
-            }
-            if (typeId == 8 && (i == 0x0108 || i == 0x00fd)) {
-                System.err.println("[RT] FOUND typeId=8 entry=0x" + Integer.toHexString(i) + " resId=0x" + Integer.toHexString(resId) + " name=" + keyName);
             }
 
             // If FLAG_COMPLEX (bag/map entry), skip it — we only handle simple values
@@ -693,20 +700,13 @@ public class ResourceTable {
             int dataType = buf.get() & 0xFF;
             int valueData = buf.getInt();
 
-            // Only store if default config, or if no value stored yet (first-wins).
-            // This ensures unqualified (default) resources take priority.
-            if (resId == 0x7f080108) {
-                System.err.println("[RT] 0x7f080108: dataType=" + dataType + " valueData=" + valueData + " poolLen=" + (mGlobalStringPool != null ? mGlobalStringPool.length : -1) + " inStrings=" + mStrings.containsKey(resId));
-            }
             switch (dataType) {
                 case TYPE_STRING:
                     if (mGlobalStringPool != null && valueData >= 0
                             && valueData < mGlobalStringPool.length) {
+                        String stringValue = stringAt(mGlobalStringPool, valueData);
                         if (!mStrings.containsKey(resId)) {
-                            mStrings.put(resId, mGlobalStringPool[valueData]);
-                            if (resId == 0x7f080108) {
-                                System.err.println("[RT] STORED 0x7f080108 = " + mGlobalStringPool[valueData]);
-                            }
+                            mStrings.put(resId, stringValue);
                         }
                         if (!mEntryValues.containsKey(resId)) {
                             mEntryValues.put(resId, valueData);

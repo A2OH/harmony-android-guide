@@ -274,13 +274,17 @@ public final class McdProfileActivity extends Activity {
     }
 
     private void probeXmlLayout(View root) {
+        String stage = "begin";
         try {
             int wSpec = View.MeasureSpec.makeMeasureSpec(480, View.MeasureSpec.EXACTLY);
             int hSpec = View.MeasureSpec.makeMeasureSpec(1013, View.MeasureSpec.EXACTLY);
+            stage = "measure";
             root.measure(wSpec, hSpec);
+            stage = "layout";
             root.layout(0, 0, 480, 1013);
             if (adapter != null && menuList != null) {
                 for (int i = 0; i < 5 && i < adapter.getCount(); i++) {
+                    stage = "adapter_" + i;
                     adapter.getView(i, null, menuList);
                 }
             }
@@ -289,7 +293,25 @@ public final class McdProfileActivity extends Activity {
                             + "x" + root.getMeasuredHeight());
         } catch (Throwable t) {
             McdProfileLog.mark("XML_LAYOUT_PROBE_WARN",
-                    "err=" + McdProfileLog.token(t.getClass().getName()));
+                    "stage=" + McdProfileLog.token(stage)
+                            + " err=" + McdProfileLog.token(t.getClass().getName())
+                            + " msg=" + McdProfileLog.token(t.getMessage()));
+            logProbeFrames("XML_LAYOUT_PROBE_FRAME", t);
+        }
+    }
+
+    private void logProbeFrames(String prefix, Throwable t) {
+        try {
+            StackTraceElement[] frames = t.getStackTrace();
+            for (int i = 0; i < 8 && i < frames.length; i++) {
+                StackTraceElement frame = frames[i];
+                McdProfileLog.mark(prefix,
+                        "i=" + i
+                                + " at=" + McdProfileLog.token(frame.getClassName()
+                                        + "." + frame.getMethodName()
+                                        + ":" + frame.getLineNumber()));
+            }
+        } catch (Throwable ignored) {
         }
     }
 
@@ -843,11 +865,39 @@ public final class McdProfileActivity extends Activity {
     }
 
     private byte[] utf8(String value) {
-        try {
-            return value.getBytes("UTF-8");
-        } catch (Throwable ignored) {
+        if (value == null || value.length() == 0) {
             return new byte[0];
         }
+        byte[] out = new byte[value.length() * 4];
+        int offset = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c < 0x80) {
+                out[offset++] = (byte) c;
+            } else if (c < 0x800) {
+                out[offset++] = (byte) (0xc0 | (c >> 6));
+                out[offset++] = (byte) (0x80 | (c & 0x3f));
+            } else if (c >= 0xd800 && c <= 0xdbff && i + 1 < value.length()) {
+                char low = value.charAt(i + 1);
+                if (low >= 0xdc00 && low <= 0xdfff) {
+                    int codePoint = 0x10000 + (((c - 0xd800) << 10) | (low - 0xdc00));
+                    out[offset++] = (byte) (0xf0 | (codePoint >> 18));
+                    out[offset++] = (byte) (0x80 | ((codePoint >> 12) & 0x3f));
+                    out[offset++] = (byte) (0x80 | ((codePoint >> 6) & 0x3f));
+                    out[offset++] = (byte) (0x80 | (codePoint & 0x3f));
+                    i++;
+                } else {
+                    out[offset++] = '?';
+                }
+            } else {
+                out[offset++] = (byte) (0xe0 | (c >> 12));
+                out[offset++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+                out[offset++] = (byte) (0x80 | (c & 0x3f));
+            }
+        }
+        byte[] exact = new byte[offset];
+        System.arraycopy(out, 0, exact, 0, offset);
+        return exact;
     }
 
     private int hashBytes(byte[] bytes) {

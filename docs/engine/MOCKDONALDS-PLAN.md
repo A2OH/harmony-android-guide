@@ -3,24 +3,29 @@
 ## 2026-04-28 Supervisor Update
 
 MockDonalds is no longer the only McDonald's-shaped integration proof. The
-current delivery target is PF-466, `com.westlake.mcdprofile`, documented in
-`docs/engine/OHOS-MCD-PROFILE-INTEGRATION.md`.
+current delivery target is PF-466, the controlled mock app
+`com.westlake.mcdprofile`, documented in
+`docs/engine/OHOS-MCD-PROFILE-INTEGRATION.md`. This is not the real
+McDonald's APK.
 
 PF-466 has passed on the connected Android phone through Westlake `dalvikvm`
-with compiled XML resource loading and McD-profile Material tags present,
-SharedPreferences cart state, live host/OHBridge JSON/image/REST, full-phone
-`DLST`, and strict touch navigation. The latest accepted run launches through
-`WestlakeActivityThread` and `AppComponentFactory`, wires layout bytes before
-`onCreate`, inflates a 25-view guest tree with 10 Material-shaped views, binds
-the XML `ListView`, and exercises adapter row binding through position `4`.
-Treat PF-466 as the immediate OHOS port target and the older MockDonalds plan
-below as historical background plus a headless/API regression ladder.
+with compiled XML resource loading, `resources.arsc` table parsing for the
+controlled mock APK, McD-profile Material tags present, SharedPreferences cart
+state, live host/OHBridge JSON/image/REST, full-phone `DLST`, and strict touch
+navigation. The latest accepted run launches through `WestlakeActivityThread`
+and `AppComponentFactory`, wires resources before `onCreate`, inflates a
+25-view guest tree with 10 Material-shaped views, binds the XML `ListView`,
+probes layout measurement, and exercises adapter row binding through position
+`4`. Treat PF-466 as the immediate OHOS port target for the controlled mock
+app and the older MockDonalds plan below as historical background plus a
+headless/API regression ladder.
 
 Remaining gaps before a stock McDonald's APK are generalizing the accepted
 WAT/AppComponentFactory launch slice beyond this controlled app, object-array
-runtime correctness, standalone `resources.arsc` table parsing, upstream
-Material XML/theming, generic View draw/hit/scroll, streamed multi-image
-networking, and OHOS adapter parity for the PF-466 contracts.
+runtime correctness beyond the fixed resource-table parser case, libcore
+charset/encoding, upstream Material XML/theming, generic View draw/hit/scroll,
+streamed multi-image networking/direct libcore networking parity, and OHOS
+adapter parity for the PF-466 contracts.
 
 ## Goal
 
