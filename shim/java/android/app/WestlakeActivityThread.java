@@ -584,6 +584,9 @@ public class WestlakeActivityThread {
         if ("com.westlake.materialxmlprobe".equals(packageName)) {
             return true;
         }
+        if ("com.westlake.mcdprofile".equals(packageName)) {
+            return true;
+        }
         if (className != null && className.startsWith("com.westlake.cutoffcanary.")) {
             return true;
         }
@@ -594,6 +597,9 @@ public class WestlakeActivityThread {
             return true;
         }
         if (className != null && className.startsWith("com.westlake.materialxmlprobe.")) {
+            return true;
+        }
+        if (className != null && className.startsWith("com.westlake.mcdprofile.")) {
             return true;
         }
         try {
@@ -611,12 +617,16 @@ public class WestlakeActivityThread {
                 if ("com.westlake.materialxmlprobe".equals(component.getPackageName())) {
                     return true;
                 }
+                if ("com.westlake.mcdprofile".equals(component.getPackageName())) {
+                    return true;
+                }
                 String componentClass = component.getClassName();
                 return componentClass != null
                         && (componentClass.startsWith("com.westlake.cutoffcanary.")
                                 || componentClass.startsWith("com.westlake.showcase.")
                                 || componentClass.startsWith("com.westlake.yelplive.")
-                                || componentClass.startsWith("com.westlake.materialxmlprobe."));
+                                || componentClass.startsWith("com.westlake.materialxmlprobe.")
+                                || componentClass.startsWith("com.westlake.mcdprofile."));
             }
         } catch (Throwable ignored) {
         }
@@ -626,6 +636,18 @@ public class WestlakeActivityThread {
     private static boolean isMcdonaldsPackageOrClass(String value) {
         return "com.mcdonalds.app".equals(value)
                 || (value != null && value.startsWith("com.mcdonalds."));
+    }
+
+    private static String markerToken(String value) {
+        if (value == null || value.length() == 0) {
+            return "null";
+        }
+        StringBuilder out = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            out.append((ch > ' ' && ch < 127) ? ch : '_');
+        }
+        return out.toString();
     }
 
     private static boolean shouldBootstrapMcdonaldsDataSource(String packageName,
@@ -1124,6 +1146,13 @@ public class WestlakeActivityThread {
                 WestlakeLauncher.trace("[WestlakeActivityThread] step8 onCreate done");
                 log("I", "  onCreate complete for " + className);
                 android.util.Log.i("WestlakeStep", "performLaunchActivity onCreate done " + className);
+                if ("com.westlake.mcdprofile".equals(packageName)
+                        || (className != null
+                                && className.startsWith("com.westlake.mcdprofile."))) {
+                    WestlakeLauncher.appendCutoffCanaryMarker(
+                            "MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK class="
+                                    + markerToken(className));
+                }
             }
         } catch (Throwable e) {
             WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] step8 onCreate failed", e);

@@ -9,18 +9,18 @@ current delivery target is PF-466, `com.westlake.mcdprofile`, documented in
 PF-466 has passed on the connected Android phone through Westlake `dalvikvm`
 with compiled XML resource loading and McD-profile Material tags present,
 SharedPreferences cart state, live host/OHBridge JSON/image/REST, full-phone
-`DLST`, and strict touch navigation. The latest accepted run wires layout bytes
-before `onCreate`, inflates a 25-view guest tree with 10 Material-shaped views,
-binds the XML `ListView`, and exercises adapter row binding through position
-`4`.
+`DLST`, and strict touch navigation. The latest accepted run launches through
+`WestlakeActivityThread` and `AppComponentFactory`, wires layout bytes before
+`onCreate`, inflates a 25-view guest tree with 10 Material-shaped views, binds
+the XML `ListView`, and exercises adapter row binding through position `4`.
 Treat PF-466 as the immediate OHOS port target and the older MockDonalds plan
 below as historical background plus a headless/API regression ladder.
 
-Remaining gaps before a stock McDonald's APK are generic real-APK Activity
-construction, object-array runtime correctness, standalone `resources.arsc`
-table parsing, upstream Material XML/theming, generic View draw/hit/scroll,
-streamed multi-image networking, and OHOS adapter parity for the PF-466
-contracts.
+Remaining gaps before a stock McDonald's APK are generalizing the accepted
+WAT/AppComponentFactory launch slice beyond this controlled app, object-array
+runtime correctness, standalone `resources.arsc` table parsing, upstream
+Material XML/theming, generic View draw/hit/scroll, streamed multi-image
+networking, and OHOS adapter parity for the PF-466 contracts.
 
 ## Goal
 

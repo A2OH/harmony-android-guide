@@ -3492,8 +3492,7 @@ public class WestlakeLauncher {
                     }
 
                     if (!isRealFrameworkFallbackAllowed()
-                            && ("com.westlake.materialyelp".equals(targetPackageName)
-                                    || "com.westlake.mcdprofile".equals(targetPackageName))
+                            && "com.westlake.materialyelp".equals(targetPackageName)
                             && appClass != null && appClass.length() > 0) {
                         try {
                             startupLog("PF463 controlled Application create begin");
@@ -3510,7 +3509,8 @@ public class WestlakeLauncher {
                     }
 
                     if (!isRealFrameworkFallbackAllowed()
-                            && "com.westlake.mcdprofile".equals(targetPackageName)) {
+                            && "com.westlake.mcdprofile".equals(targetPackageName)
+                            && allowMcdProfileControlledFallback()) {
                         launchedActivity = launchMcdProfileControlledActivity(
                                 targetPackageName, targetActivity,
                                 resolvedActivityClass, activityClassLoader);
@@ -3521,6 +3521,7 @@ public class WestlakeLauncher {
                             || "com.mcdonalds.app".equals(targetPackageName)
                             || "com.westlake.showcase".equals(targetPackageName)
                             || "com.westlake.yelplive".equals(targetPackageName)
+                            || "com.westlake.mcdprofile".equals(targetPackageName)
                             || "com.westlake.materialxmlprobe".equals(targetPackageName);
 		                if (preferWat) {
 		                    // Use WestlakeActivityThread for Hilt apps — proper AOSP lifecycle with DI injection
@@ -3664,6 +3665,8 @@ public class WestlakeLauncher {
                         if ("com.westlake.mcdprofile".equals(launchPkg2) && result2[0] != null) {
                             startupLog("PF465 mcd profile WAT resume call");
                             wat.performResumeActivity(result2[0]);
+                            appendCutoffCanaryMarker("MCD_PROFILE_WAT_ACTIVITY_RESUME_OK class="
+                                    + safeMarkerToken(result2[0].getClass().getName()));
                             startupLog("PF465 mcd profile WAT resume returned");
                         }
                         if ("com.westlake.materialxmlprobe".equals(launchPkg2) && result2[0] != null) {
@@ -3674,6 +3677,11 @@ public class WestlakeLauncher {
                         startupLog("PF301 strict launcher post-WAT begin");
                         if (result2[0] != null) {
                             startupLog("PF301 strict launcher post-WAT result nonnull");
+                            if ("com.westlake.mcdprofile".equals(launchPkg2)) {
+                                appendCutoffCanaryMarker(
+                                        "MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK class="
+                                                + safeMarkerToken(result2[0].getClass().getName()));
+                            }
                             launchedActivity = result2[0];
                             startupLog("PF301 strict launcher post-WAT launchedActivity set");
                         } else {
@@ -6823,6 +6831,14 @@ public class WestlakeLauncher {
         OHBridge.surfaceFlush(surf);
         sDirectDashboardFallbackActive = true;
         startupLog("[WestlakeLauncher] Text-only dashboard menu drawn via OHBridge");
+    }
+
+    private static boolean allowMcdProfileControlledFallback() {
+        String prop = System.getProperty("westlake.mcdprofile.controlled_fallback");
+        if (prop == null || prop.length() == 0) {
+            prop = System.getenv("WESTLAKE_MCD_PROFILE_CONTROLLED_FALLBACK");
+        }
+        return "1".equals(prop) || "true".equalsIgnoreCase(prop);
     }
 
     private static Activity launchMcdProfileControlledActivity(String packageName,

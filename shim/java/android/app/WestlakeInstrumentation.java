@@ -318,6 +318,12 @@ public class WestlakeInstrumentation extends Instrumentation {
                 if (activity == null) {
                     throw new InstantiationException("Factory returned null for " + className);
                 }
+                if (isMcdProfileClassName(className)) {
+                    WestlakeLauncher.appendCutoffCanaryMarker(
+                            "MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK class="
+                                    + markerToken(className)
+                                    + " factory=" + (customFactory ? "custom" : "default"));
+                }
                 if (intent != null) {
                     try {
                         activity.setIntent(intent);
@@ -405,6 +411,22 @@ public class WestlakeInstrumentation extends Instrumentation {
         WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity done: "
                 + (activity != null ? activity.getClass().getName() : "null"));
         return activity;
+    }
+
+    private static boolean isMcdProfileClassName(String className) {
+        return className != null && className.startsWith("com.westlake.mcdprofile.");
+    }
+
+    private static String markerToken(String value) {
+        if (value == null || value.length() == 0) {
+            return "null";
+        }
+        StringBuilder out = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            out.append((ch > ' ' && ch < 127) ? ch : '_');
+        }
+        return out.toString();
     }
 
     private Activity allocateActivity(Class<?> clazz, String className, Throwable cause)

@@ -31,8 +31,9 @@ PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
 `scripts/run-mcd-profile.sh`. The accepted run proves:
 
 - app-owned `Application.onCreate()`;
-- controlled no-constructor Activity allocation, shim `Activity.attach(...)`,
-  and `onCreate`/`onStart`/`onResume` dispatch inside Westlake;
+- generic `WestlakeActivityThread` launch through `AppComponentFactory`,
+  shim `Activity.attach(...)`, and `onCreate`/`onStart`/`onResume` dispatch
+  inside Westlake, with the older controlled allocator rejected by the runner;
 - compiled APK XML resource loading and inflation from
   `activity_mcd_profile.xml` into a guest `LinearLayout` root;
 - McD-profile XML tag traversal and ID binding for the app's Material-shaped
@@ -51,17 +52,21 @@ PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
 Accepted PF-466 hashes:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=9712b9ecc771e569064c778bf9d92a4738fa6fd33ba13585ed22dfa6647bedfa`
-- `westlake-host.apk=23176e814fd2f384cf5fdc9d8f4a82b9748310f3e58363cbad94684586e979f1`
+- `aosp-shim.dex=8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be`
+- `westlake-host.apk=0d0f689b35dd8c7be45567fefd533ce9b12df2f08d4cf849bb128823599e83e4`
 - `westlake-mcd-profile-debug.apk=f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e`
 
 Accepted PF-466 artifacts:
 
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.*`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/9712b9ecc771e569064c778bf9d92a4738fa6fd33ba13585ed22dfa6647bedfa_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
 
-Key accepted PF-466 XML markers:
+Key accepted PF-466 markers:
 
+- `MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK class=com.westlake.mcdprofile.McdProfileActivity factory=default`
+- `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK class=com.westlake.mcdprofile.McdProfileActivity`
+- `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK class=com.westlake.mcdprofile.McdProfileActivity`
+- `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=false apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
 - `MCD_PROFILE_XML_BIND_OK list=true ... materialViews=10`
 - `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`
@@ -70,8 +75,9 @@ Key accepted PF-466 XML markers:
 PF-466 does not close stock McDonald's APK readiness. The gap list that must
 be closed next is:
 
-- replace the controlled McD-profile Activity allocation path with generic
-  safe real-APK Activity construction;
+- generalize the accepted McD-profile WAT/AppComponentFactory launch slice to
+  arbitrary stock McDonald's activities and remove the remaining app-specific
+  launch allowances;
 - fix standalone `resources.arsc` table parsing for this APK; the accepted
   run wires layout bytes from extracted `res/layout` files, while table parse
   is still false;

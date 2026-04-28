@@ -79,16 +79,18 @@ McDonald's-class stock APK are documented in
   stock APK path: Android phone accepted on `cfb7c9e3` for
   `com.westlake.mcdprofile`, built from `test-apps/10-mcd-profile/` and run
   with `scripts/run-mcd-profile.sh`. The accepted proof covers app-owned
-  Application, controlled Activity allocation/attach/lifecycle, compiled XML
-  resource loading before `onCreate`, Material-shaped tag traversal and ID
-  binding, guest `ListView` adapter row binding through position `4`,
+  Application, generic `WestlakeActivityThread` launch through
+  `AppComponentFactory`, attach/lifecycle, compiled XML resource loading before
+  `onCreate`, Material-shaped tag traversal and ID binding, guest `ListView`
+  adapter row binding through position `4`,
   SharedPreferences cart state, host/OHBridge live JSON and one bounded image,
   REST bridge v2 POST/HEAD/non-2xx status probes, full-phone `1080x2280`
   `DLST`, and strict touch navigation. It is the current OHOS controlled
   profile target, not a stock McDonald's APK compatibility claim.
-- `PF-467` generic real-APK Activity construction: replace the McD-profile
-  no-constructor allocation workaround with a stable constructor/factory path
-  usable by arbitrary real APK activities
+- `PF-467` generic real-APK Activity construction: accepted for the
+  McD-profile controlled app through the WAT/AppComponentFactory path; still
+  open for arbitrary stock McDonald's activities and for removing remaining
+  app-specific launch allowances
 - `PF-468` standalone runtime object-array correctness: close the DEX
   object-array/new-array boundary exposed by profile-item `String[]` models
 - `PF-469` McD-class generic Material XML and theming: move from the accepted

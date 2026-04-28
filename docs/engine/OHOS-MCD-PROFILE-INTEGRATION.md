@@ -12,6 +12,7 @@ The app is intentionally self-contained:
 
 - compiled APK XML: `activity_mcd_profile.xml`;
 - app-owned `Application` and `Activity` classes;
+- generic `WestlakeActivityThread` launch through `AppComponentFactory`;
 - Material-style XML tags in the APK source, accepted through the current
   McD-profile XML traversal and ID-binding slice;
 - direct-rendered five-row menu state plus guest `ListView` adapter binding;
@@ -36,8 +37,8 @@ Accepted device: `cfb7c9e3`.
 Accepted hashes:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=9712b9ecc771e569064c778bf9d92a4738fa6fd33ba13585ed22dfa6647bedfa`
-- `westlake-host.apk=23176e814fd2f384cf5fdc9d8f4a82b9748310f3e58363cbad94684586e979f1`
+- `aosp-shim.dex=8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be`
+- `westlake-host.apk=0d0f689b35dd8c7be45567fefd533ce9b12df2f08d4cf849bb128823599e83e4`
 - `westlake-mcd-profile-debug.apk=f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e`
 
 Accepted artifacts:
@@ -47,10 +48,14 @@ Accepted artifacts:
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.trace`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.png`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.visual`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/9712b9ecc771e569064c778bf9d92a4738fa6fd33ba13585ed22dfa6647bedfa_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/8efeef5e8926901f301a24aee9050ce6a758a238d45a14a860664b2333eed2be_f41fd4d2fd06a9d486b8f78f19e161b7a7b1b3f21acde12547574864b279ba8e/`
 
-Key accepted XML markers:
+Key accepted launch and XML markers:
 
+- `MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK class=com.westlake.mcdprofile.McdProfileActivity factory=default`
+- `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK class=com.westlake.mcdprofile.McdProfileActivity`
+- `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK class=com.westlake.mcdprofile.McdProfileActivity`
+- `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK class=com.westlake.mcdprofile.McdProfileActivity`
 - `MCD_PROFILE_XML_RESOURCE_WIRE_OK engine=true table=false apk=true resDir=true arsc=2528 layouts=1 layoutBytes=4112`
 - `MCD_PROFILE_XML_TAG_OK` for `TextInputLayout`, `TextInputEditText`,
   `ChipGroup`, `Chip`, `MaterialCardView`, `ImageView`, `MaterialButton`,
@@ -72,7 +77,8 @@ WestlakeActivity
   -> WestlakeVM stages target APK and aosp-shim.dex into the host private VM dir
   -> WestlakeVM starts /data/local/tmp/westlake/dalvikvm as a subprocess
   -> dalvikvm loads aosp-shim.dex + target APK classes
-  -> WestlakeLauncher creates McdProfileApp and controlled McdProfileActivity
+  -> WestlakeActivityThread creates McdProfileApp and McdProfileActivity
+     through AppComponentFactory
   -> WestlakeLauncher wires extracted res/layout XML bytes before onCreate
   -> Activity.westlakeAttach / westlakePerformCreate / Start / Resume
   -> McdProfileActivity inflates compiled APK XML and binds Material-shaped/ListView tags
@@ -129,6 +135,10 @@ PF-466 parity proof:
 
 - `MCD_PROFILE_APP_ON_CREATE_OK`
 - `MCD_PROFILE_ACTIVITY_ON_CREATE_OK`
+- `MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK`
+- `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK`
+- `MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK`
+- `MCD_PROFILE_WAT_ACTIVITY_RESUME_OK`
 - `MCD_PROFILE_XML_RESOURCE_WIRE_OK layoutBytes=[nonzero]`
 - `MCD_PROFILE_XML_TAG_OK tag=TextInputLayout`
 - `MCD_PROFILE_XML_TAG_OK tag=MaterialCardView`
@@ -160,20 +170,20 @@ The visual gate should remain strict: nonblank full-phone output, red McD
 header, yellow accents, menu rows, cart bar, and bottom navigation must be
 visible in the screenshot.
 
-The Android-phone runner now rejects any `MCD_PROFILE_XML_TAG_WARN` marker for
-this controlled McD-profile XML slice. OHOS parity should keep that stricter
-gate. This does not claim full upstream Google Material Components XML support;
-it proves the controlled McD-profile tags are wired through Westlake's XML
-inflation path.
+The Android-phone runner now rejects any `MCD_PROFILE_XML_TAG_WARN` marker and
+any `MCD_PROFILE_CONTROLLED_*` launch marker for this controlled McD-profile
+slice. OHOS parity should keep that stricter gate. This does not claim full
+upstream Google Material Components XML support; it proves the controlled
+McD-profile tags are wired through Westlake's XML inflation path and the app
+launches through the generic WAT/AppComponentFactory path.
 
 ## Known Gaps Before Stock McDonald's
 
 PF-466 is useful because it exposes the next real gaps:
 
-- Activity launch is still controlled. The current path allocates
-  `McdProfileActivity` without relying on the generic real-APK constructor and
-  then calls shim lifecycle methods. Stock McDonald's needs a generic
-  factory/constructor/lifecycle path.
+- Activity launch is accepted for the McD-profile controlled app through the
+  WAT/AppComponentFactory path, but stock McDonald's still needs this generalized
+  across arbitrary activities without package-specific allowances.
 - `resources.arsc` parsing is still incomplete for this APK. The accepted run
   registers layout XML bytes from extracted `res/layout` entries, while the
   table load marker remains false.
@@ -193,8 +203,8 @@ PF-466 is useful because it exposes the next real gaps:
 ## Next Closure Order
 
 1. Port PF-466 unchanged to OHOS and require the same marker/visual gates.
-2. Replace the McD-profile Activity allocation workaround with generic
-   real-APK Activity construction.
+2. Generalize the accepted McD-profile WAT/AppComponentFactory launch slice to
+   arbitrary stock McDonald's activities.
 3. Fix standalone `resources.arsc` table parsing for the McD-profile APK.
 4. Fix the object-array/new-array runtime boundary and restore array-backed
    menu models.

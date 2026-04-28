@@ -393,6 +393,10 @@ reject_log_marker() {
 
 require_marker "^MCD_PROFILE_APP_ON_CREATE_OK " "APP_ON_CREATE"
 require_marker "^MCD_PROFILE_ACTIVITY_ON_CREATE_OK " "ACTIVITY_ON_CREATE"
+require_marker "^MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK " "GENERIC_ACTIVITY_FACTORY_OK"
+require_marker "^MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK " "WAT_ACTIVITY_LAUNCH_OK"
+require_marker "^MCD_PROFILE_WAT_ACTIVITY_ONCREATE_OK " "WAT_ACTIVITY_ONCREATE_OK"
+require_marker "^MCD_PROFILE_WAT_ACTIVITY_RESUME_OK " "WAT_ACTIVITY_RESUME_OK"
 require_marker "^MCD_PROFILE_XML_RESOURCE_WIRE_OK .*layoutBytes=[1-9][0-9]*" "XML_RESOURCE_WIRE_OK"
 require_marker "^MCD_PROFILE_XML_TAG_OK tag=TextInputLayout " "XML TextInputLayout"
 require_marker "^MCD_PROFILE_XML_TAG_OK tag=MaterialCardView " "XML MaterialCardView"
@@ -432,6 +436,11 @@ fi
 if grep -qE "^MCD_PROFILE_XML_TAG_WARN " "$MARKERS_PATH"; then
     echo "ERROR: McD-profile XML warning marker present" >&2
     grep -E "^MCD_PROFILE_XML_TAG_WARN " "$MARKERS_PATH" >&2 || true
+    missing=1
+fi
+if grep -qE "^MCD_PROFILE_CONTROLLED_" "$MARKERS_PATH"; then
+    echo "ERROR: McD-profile controlled-launch marker present; expected generic WAT launch" >&2
+    grep -E "^MCD_PROFILE_CONTROLLED_" "$MARKERS_PATH" >&2 || true
     missing=1
 fi
 reject_log_marker "APK load error|FATAL EXCEPTION|SIGBUS|SIGILL" "fatal runtime/log error"
