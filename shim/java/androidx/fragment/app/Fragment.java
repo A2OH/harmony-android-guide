@@ -15,9 +15,12 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStore;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.lifecycle.ViewTreeLifecycleOwner;
+import androidx.lifecycle.ViewTreeViewModelStoreOwner;
 import androidx.savedstate.SavedStateRegistry;
 import androidx.savedstate.SavedStateRegistryController;
 import androidx.savedstate.SavedStateRegistryOwner;
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
 
 /**
  * AndroidX Fragment stub. Standalone class (does not extend android.app.Fragment)
@@ -392,6 +395,9 @@ public class Fragment implements LifecycleOwner, ViewModelStoreOwner, SavedState
                            Bundle savedInstanceState) {
         mView = onCreateView(inflater, container, savedInstanceState);
         if (mView != null) {
+            ViewTreeLifecycleOwner.set(mView, this);
+            ViewTreeViewModelStoreOwner.set(mView, this);
+            ViewTreeSavedStateRegistryOwner.set(mView, this);
             onViewCreated(mView, savedInstanceState);
         }
     }

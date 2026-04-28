@@ -5365,6 +5365,33 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         }
     }
 
+    public void installStandaloneChild(View child) {
+        if (child == null) {
+            return;
+        }
+        if (mChildren == null || mChildren.length == 0) {
+            mChildren = new View[ARRAY_INITIAL_CAPACITY];
+        }
+        for (int i = 0; i < mChildrenCount; i++) {
+            View existing = mChildren[i];
+            if (existing != null) {
+                existing.mParent = null;
+                mChildren[i] = null;
+            }
+        }
+        mChildrenCount = 0;
+        if (child.mContext == null && mContext != null) {
+            child.mContext = mContext;
+        }
+        mChildren[0] = child;
+        mChildrenCount = 1;
+        child.mParent = this;
+        requestLayout();
+        invalidate();
+        child.requestLayout();
+        child.invalidate();
+    }
+
     // This method also sets the child's mParent to null
     private void removeFromArray(int index) {
         final View[] children = mChildren;
@@ -8249,6 +8276,9 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
         /** @hide */
         void encode(@NonNull ViewHierarchyEncoder encoder) {
+            if (encoder == null) {
+                return;
+            }
             encoder.beginObject(this);
             encodeProperties(encoder);
             encoder.endObject();
@@ -8757,6 +8787,9 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         /** @hide */
         @Override
         protected void encodeProperties(@NonNull ViewHierarchyEncoder encoder) {
+            if (encoder == null) {
+                return;
+            }
             super.encodeProperties(encoder);
             encoder.addProperty("leftMargin", leftMargin);
             encoder.addProperty("topMargin", topMargin);

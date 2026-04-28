@@ -28,6 +28,32 @@ public class Activity extends Context implements android.view.Window.Callback {
         mWindow.setCallback(this);
     }
 
+    final void attach(Context baseContext, Application application, Intent intent,
+            ComponentName component, android.view.Window window,
+            Instrumentation instrumentation) {
+        if (baseContext != null) {
+            attachBaseContext(baseContext);
+        }
+        mApplication = application;
+        mIntent = intent != null ? intent : new Intent();
+        mComponent = component;
+        mFinished = false;
+        mDestroyed = false;
+        mStarted = false;
+        mResumed = false;
+
+        android.view.Window attachedWindow = window != null ? window : mWindow;
+        if (attachedWindow == null) {
+            attachedWindow = new android.view.Window(this);
+        }
+        try {
+            attachedWindow.adoptContext(this);
+        } catch (Throwable ignored) {
+        }
+        attachedWindow.setCallback(this);
+        mWindow = attachedWindow;
+    }
+
     public void registerActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
         Application app = getApplication();
         if (app != null) app.registerActivityLifecycleCallbacks(callback);
@@ -94,6 +120,20 @@ public class Activity extends Context implements android.view.Window.Callback {
     public CharSequence getTitle() { return mTitle; }
     public void setTitle(int resId) { setTitle(getResources() != null ? getResources().getString(resId) : ""); }
     public void setTitle(CharSequence title) { mTitle = title != null ? title.toString() : null; }
+    public android.view.View getCurrentFocus() {
+        if (mWindow == null) {
+            return null;
+        }
+        android.view.View decor = mWindow.peekDecorView();
+        if (decor == null) {
+            decor = mWindow.getDecorView();
+        }
+        if (decor == null) {
+            return null;
+        }
+        android.view.View focused = decor.findFocus();
+        return focused != null ? focused : decor;
+    }
 
     public void finish() {
         if (mFinished) return;
@@ -264,11 +304,44 @@ public class Activity extends Context implements android.view.Window.Callback {
     private long mSurfaceCtx;
     private int mSurfaceWidth;
     private int mSurfaceHeight;
+    private int mRenderDebugCount;
+    private static final boolean PF301_STRICT_SKIP_SURFACE_CREATE = false;
+    private static final boolean PF301_STRICT_SWALLOW_SURFACE_CREATE_THROW = true;
 
     public void onSurfaceCreated(long xcomponentHandle, int width, int height) {
-        mSurfaceWidth = width;
-        mSurfaceHeight = height;
-        mSurfaceCtx = com.ohos.shim.bridge.OHBridge.surfaceCreate(xcomponentHandle, width, height);
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated entry");
+        try {
+            mSurfaceWidth = width;
+            mSurfaceHeight = height;
+            if (com.westlake.engine.WestlakeLauncher.isControlAndroidBackend()) {
+                com.westlake.engine.WestlakeLauncher.marker(
+                        "PF301 strict Activity onSurfaceCreated control-backend skip-surfaceCreate");
+                mSurfaceCtx = 0L;
+                return;
+            }
+            if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+                com.westlake.engine.WestlakeLauncher.marker(
+                        "PF301 strict Activity onSurfaceCreated standalone skip-surfaceCreate");
+                mSurfaceCtx = 0L;
+                return;
+            }
+            if (PF301_STRICT_SKIP_SURFACE_CREATE) {
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated skip-surfaceCreate");
+                mSurfaceCtx = 0L;
+                return;
+            }
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated pre-surfaceCreate");
+            mSurfaceCtx = com.ohos.shim.bridge.OHBridge.surfaceCreate(xcomponentHandle, width, height);
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated post-surfaceCreate");
+        } catch (Throwable throwable) {
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated caught Throwable");
+            if (PF301_STRICT_SWALLOW_SURFACE_CREATE_THROW) {
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Activity onSurfaceCreated swallowed Throwable");
+                mSurfaceCtx = 0L;
+                return;
+            }
+            throw throwable;
+        }
     }
 
     public void onSurfaceDestroyed() {
@@ -276,6 +349,19 @@ public class Activity extends Context implements android.view.Window.Callback {
             com.ohos.shim.bridge.OHBridge.surfaceDestroy(mSurfaceCtx);
             mSurfaceCtx = 0;
         }
+    }
+
+    public boolean adoptSurfaceFrom(Activity other) {
+        if (other == null || other == this || other.mSurfaceCtx == 0) {
+            return false;
+        }
+        mSurfaceCtx = other.mSurfaceCtx;
+        mSurfaceWidth = other.mSurfaceWidth;
+        mSurfaceHeight = other.mSurfaceHeight;
+        other.mSurfaceCtx = 0;
+        mLayoutDone = false;
+        mLastDecorView = null;
+        return true;
     }
 
     private boolean mLayoutDone = false;
@@ -286,9 +372,11 @@ public class Activity extends Context implements android.view.Window.Callback {
 
         android.view.View decorView = mWindow.getDecorView();
         if (decorView == null) return;
+        android.util.Log.i("WestlakeStep", "renderFrame begin " + getClass().getName());
 
         // Re-layout when content changed
         if (!mLayoutDone || decorView != mLastDecorView) {
+            android.util.Log.i("WestlakeStep", "renderFrame layout begin " + getClass().getName());
             try {
                 DefaultTheme.applyToViewTree(decorView);
             } catch (Throwable ignored) {
@@ -304,33 +392,114 @@ public class Activity extends Context implements android.view.Window.Callback {
             }
             mLayoutDone = true;
             mLastDecorView = decorView;
+            android.util.Log.i("WestlakeStep", "renderFrame layout done " + getClass().getName());
         }
 
+        android.util.Log.i("WestlakeStep", "renderFrame surfaceGetCanvas begin " + getClass().getName());
         long canvasHandle = com.ohos.shim.bridge.OHBridge.surfaceGetCanvas(mSurfaceCtx);
         if (canvasHandle == 0) return;
+        android.util.Log.i("WestlakeStep", "renderFrame surfaceGetCanvas done " + getClass().getName());
 
+        android.util.Log.i("WestlakeStep", "renderFrame canvas create " + getClass().getName());
         android.graphics.Canvas canvas = new android.graphics.Canvas(canvasHandle, mSurfaceWidth, mSurfaceHeight);
+        android.util.Log.i("WestlakeStep", "renderFrame drawColor " + getClass().getName());
         canvas.drawColor(DefaultTheme.COLOR_BG);
 
         // Draw splash background image if available (sent as OP_IMAGE for host decoding)
         byte[] splashImg = com.westlake.engine.WestlakeLauncher.splashImageData;
+        if (splashImg == null) {
+            splashImg = ensureStrictStandaloneSplashImage();
+        }
+        if (mRenderDebugCount < 3) {
+            int childCount = decorView instanceof android.view.ViewGroup
+                    ? ((android.view.ViewGroup) decorView).getChildCount()
+                    : -1;
+            android.util.Log.i("WestlakeRender", "frame=" + mRenderDebugCount
+                    + " activity=" + getClass().getName()
+                    + " decor=" + decorView.getClass().getName()
+                    + " childCount=" + childCount
+                    + " layoutDone=" + mLayoutDone
+                    + " splashBytes=" + (splashImg != null ? splashImg.length : 0));
+            dumpViewTree(decorView, "", 0);
+        }
         if (splashImg != null) {
+            android.util.Log.i("WestlakeStep", "renderFrame drawSplash " + getClass().getName());
             com.ohos.shim.bridge.OHBridge.canvasDrawImage(canvasHandle, splashImg, 0, 0, mSurfaceWidth, mSurfaceHeight);
         }
 
+        android.util.Log.i("WestlakeStep", "renderFrame scrollY " + getClass().getName());
         int scrollY = decorView.getScrollY();
         if (scrollY != 0) {
+            android.util.Log.i("WestlakeStep", "renderFrame scroll translate " + getClass().getName());
             canvas.save();
             canvas.translate(0, -scrollY);
         }
-        decorView.draw(canvas);
+        try {
+            android.util.Log.i("WestlakeStep", "renderFrame draw begin " + getClass().getName());
+            decorView.draw(canvas);
+            android.util.Log.i("WestlakeStep", "renderFrame draw done " + getClass().getName());
+        } catch (Throwable drawError) {
+            android.util.Log.e("Activity", "renderFrame draw failed for "
+                    + getClass().getName(), drawError);
+            try {
+                android.util.Log.e("Activity",
+                        "renderFrame draw root="
+                                + decorView.getClass().getName());
+                if (decorView instanceof android.view.ViewGroup) {
+                    android.view.ViewGroup vg = (android.view.ViewGroup) decorView;
+                    android.util.Log.e("Activity",
+                            "renderFrame draw root childCount=" + vg.getChildCount());
+                    for (int i = 0; i < vg.getChildCount() && i < 4; i++) {
+                        android.view.View child = vg.getChildAt(i);
+                        android.util.Log.e("Activity",
+                                "renderFrame draw child[" + i + "]="
+                                        + (child == null ? "null" : child.getClass().getName()));
+                    }
+                }
+                StackTraceElement[] stack = drawError.getStackTrace();
+                if (stack != null) {
+                    for (int i = 0; i < stack.length && i < 12; i++) {
+                        android.util.Log.e("Activity",
+                                "renderFrame draw at " + stack[i].toString());
+                    }
+                }
+                Throwable cause = drawError.getCause();
+                if (cause != null) {
+                    android.util.Log.e("Activity",
+                            "renderFrame draw cause " + cause.getClass().getName());
+                    StackTraceElement[] causeStack = cause.getStackTrace();
+                    if (causeStack != null) {
+                        for (int i = 0; i < causeStack.length && i < 12; i++) {
+                            android.util.Log.e("Activity",
+                                    "renderFrame draw cause at " + causeStack[i].toString());
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            com.westlake.engine.WestlakeLauncher.trace(
+                    "[Activity] renderFrame draw failed: "
+                            + drawError.getClass().getName());
+        }
         if (scrollY != 0) {
+            android.util.Log.i("WestlakeStep", "renderFrame scroll restore " + getClass().getName());
             canvas.restore();
         }
 
         // (test pattern removed — pipeline verified working)
 
-        com.ohos.shim.bridge.OHBridge.surfaceFlush(mSurfaceCtx);
+        try {
+            android.util.Log.i("WestlakeStep", "renderFrame flush begin " + getClass().getName());
+            com.ohos.shim.bridge.OHBridge.surfaceFlush(mSurfaceCtx);
+            android.util.Log.i("WestlakeStep", "renderFrame flush done " + getClass().getName());
+            mRenderDebugCount++;
+        } catch (Throwable flushError) {
+            android.util.Log.e("Activity", "renderFrame surfaceFlush failed for "
+                    + getClass().getName(), flushError);
+            com.westlake.engine.WestlakeLauncher.trace(
+                    "[Activity] renderFrame surfaceFlush failed: "
+                            + flushError.getClass().getName());
+        }
     }
 
     /** Force re-layout on next renderFrame */
@@ -365,7 +534,7 @@ public class Activity extends Context implements android.view.Window.Callback {
         String name = v.getClass().getSimpleName();
         int id = v.getId();
         String idStr = (id != android.view.View.NO_ID) ? "0x" + Integer.toHexString(id) : "-";
-        System.out.println("[ViewTree] " + indent + name + "(id=" + idStr
+        android.util.Log.i("WestlakeTree", indent + name + "(id=" + idStr
             + ") bounds=[" + v.getLeft() + "," + v.getTop() + "," + v.getRight() + "," + v.getBottom()
             + "] measured=" + v.getMeasuredWidth() + "x" + v.getMeasuredHeight()
             + " vis=" + v.getVisibility());
@@ -375,6 +544,69 @@ public class Activity extends Context implements android.view.Window.Callback {
                 dumpViewTree(vg.getChildAt(i), indent + "  ", depth + 1);
             }
         }
+    }
+
+    private byte[] ensureStrictStandaloneSplashImage() {
+        byte[] cached = com.westlake.engine.WestlakeLauncher.splashImageData;
+        if (cached != null) {
+            return cached;
+        }
+        String resDir = null;
+        try {
+            resDir = java.lang.System.getProperty("westlake.apk.resdir");
+        } catch (Throwable ignored) {
+        }
+        if (resDir == null || resDir.length() == 0) {
+            return null;
+        }
+        String[] tryPaths = {
+            "res/drawable/splash_screen.webp",
+            "res/drawable-xxhdpi-v4/splash_screen.webp",
+            "res/drawable-xhdpi-v4/splash_screen.webp",
+            "res/drawable/splash_screen.png"
+        };
+        for (String relative : tryPaths) {
+            byte[] data = tryReadStandaloneBytes(new java.io.File(resDir, relative));
+            if (data != null && data.length > 0) {
+                com.westlake.engine.WestlakeLauncher.splashImageData = data;
+                android.util.Log.i("WestlakeRender", "loaded splash asset " + relative
+                        + " bytes=" + data.length);
+                return data;
+            }
+        }
+        android.util.Log.i("WestlakeRender", "no strict splash asset under " + resDir);
+        return null;
+    }
+
+    private byte[] tryReadStandaloneBytes(java.io.File file) {
+        if (file == null || !file.isFile()) {
+            return null;
+        }
+        java.io.FileInputStream in = null;
+        try {
+            in = new java.io.FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            int offset = 0;
+            while (offset < data.length) {
+                int read = in.read(data, offset, data.length - offset);
+                if (read <= 0) {
+                    break;
+                }
+                offset += read;
+            }
+            if (offset == data.length) {
+                return data;
+            }
+        } catch (Throwable ignored) {
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -598,9 +830,27 @@ public class Activity extends Context implements android.view.Window.Callback {
     public void onWindowFocusChanged(Object p0) {}
     public void openContextMenu(Object p0) {}
     public void openOptionsMenu() {}
+    public void overridePendingTransition(int enterAnim, int exitAnim) {}
     public void overridePendingTransition(Object p0, Object p1) {}
     public void postponeEnterTransition() {}
-    public void recreate() {}
+    public void recreate() {
+        try {
+            WestlakeActivityThread thread = WestlakeActivityThread.currentActivityThread();
+            if (thread != null && thread.findRecord(this) != null) {
+                thread.recreateActivity(this);
+                return;
+            }
+        } catch (Throwable t) {
+            android.util.Log.w("Activity", "WAT recreate probe failed: "
+                    + t.getClass().getSimpleName() + ": " + t.getMessage());
+        }
+        try {
+            MiniServer.get().getActivityManager().recreateActivity(this);
+        } catch (Throwable t) {
+            android.util.Log.w("Activity", "recreate failed: "
+                    + t.getClass().getSimpleName() + ": " + t.getMessage());
+        }
+    }
     public void registerActivityLifecycleCallbacks(Object p0) {}
     public void registerForContextMenu(Object p0) {}
     public boolean releaseInstance() { return false; }
@@ -630,11 +880,20 @@ public class Activity extends Context implements android.view.Window.Callback {
     public void setActionBar(Object p0) {}
     public void setContentTransitionManager(Object p0) {}
     public void setContentView(android.view.View view) {
+        if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            android.util.Log.i("Activity", "setContentView(view="
+                    + (view == null ? "null" : view.getClass().getName()) + ")");
+        }
         if (mWindow != null) mWindow.setContentView(view);
-        mLayoutDone = false; // force re-layout
+        invalidateLayout();
     }
     public void setContentView(int layoutResID) {
+        if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            android.util.Log.i("Activity", "setContentView(resId=0x"
+                    + Integer.toHexString(layoutResID) + ")");
+        }
         if (mWindow != null) mWindow.setContentView(layoutResID);
+        invalidateLayout();
     }
     public void setContentView(Object p0) {
         if (p0 instanceof android.view.View) setContentView((android.view.View) p0);
@@ -642,7 +901,12 @@ public class Activity extends Context implements android.view.Window.Callback {
     }
     public void setContentView(Object p0, Object p1) {
         if (p0 instanceof android.view.View) {
+            if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+                android.util.Log.i("Activity", "setContentView(view,params="
+                        + p0.getClass().getName() + ")");
+            }
             if (mWindow != null) mWindow.setContentView((android.view.View) p0, p1);
+            invalidateLayout();
         }
     }
     public void setDefaultKeyMode(Object p0) {}

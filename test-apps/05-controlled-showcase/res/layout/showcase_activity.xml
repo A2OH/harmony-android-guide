@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/noice_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/noice_bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/noice_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="86dp"
+        android:background="@color/noice_surface"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/space_l"
+        android:paddingTop="@dimen/space_m"
+        android:paddingRight="@dimen/space_l"
+        android:paddingBottom="@dimen/space_s">
+
+        <TextView
+            android:id="@+id/noice_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/noice_title"
+            android:textColor="@color/noice_ink"
+            android:textSize="23sp" />
+
+        <TextView
+            android:id="@+id/noice_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/noice_subtitle"
+            android:textColor="@color/noice_muted"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/network_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Offline local fixture"
+            android:textColor="@color/noice_primary_dark"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/main_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/content_column"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/space_l"
+            android:paddingTop="@dimen/space_m"
+            android:paddingRight="@dimen/space_l"
+            android:paddingBottom="@dimen/space_l">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/playback_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:padding="@dimen/space_m">
+
+                <LinearLayout
+                    android:id="@+id/playback_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/active_preset"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/unsaved_preset"
+                        android:textColor="@color/noice_ink"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/playback_state"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Paused - 4 active layers - 18 min"
+                        android:textColor="@color/noice_muted"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:id="@+id/playback_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="@dimen/space_s">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/play_toggle"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_weight="1"
+                            android:text="Play" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/stop_button"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:text="Stop" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/main_volume_button"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:text="Vol 70%" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/preset_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/space_m">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/random_preset_button"
+                    android:layout_width="@dimen/icon_box"
+                    android:layout_height="@dimen/icon_box"
+                    android:contentDescription="@string/random_preset" />
+
+                <Button
+                    android:id="@+id/focus_preset"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/button_h"
+                    android:layout_marginLeft="@dimen/space_s"
+                    android:layout_weight="1"
+                    android:text="Focus" />
+
+                <Button
+                    android:id="@+id/rain_preset"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/button_h"
+                    android:layout_marginLeft="@dimen/space_s"
+                    android:layout_weight="1"
+                    android:text="Rain" />
+
+                <Button
+                    android:id="@+id/night_preset"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/button_h"
+                    android:layout_marginLeft="@dimen/space_s"
+                    android:layout_weight="1"
+                    android:text="Night" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/library_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="LIBRARY"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <com.github.ashutoshgngwr.noice.widget.SwipeRefreshLayout
+                android:id="@+id/library_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface">
+
+                <LinearLayout
+                    android:id="@+id/library_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/group_rain"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/noice_surface_alt"
+                        android:paddingLeft="@dimen/space_m"
+                        android:paddingTop="@dimen/space_s"
+                        android:paddingRight="@dimen/space_m"
+                        android:paddingBottom="@dimen/space_s"
+                        android:text="RAIN AND WATER"
+                        android:textColor="@color/noice_primary_dark" />
+
+                    <LinearLayout
+                        android:id="@+id/sound_rain_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_s">
+
+                        <com.caverock.androidsvg.SVGImageView
+                            android:id="@+id/sound_rain_icon"
+                            android:layout_width="@dimen/icon_box"
+                            android:layout_height="@dimen/icon_box"
+                            android:background="@color/noice_surface_alt"
+                            android:contentDescription="Rain icon" />
+
+                        <LinearLayout
+                            android:id="@+id/sound_rain_controls"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/rain_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Heavy rain"
+                                android:textColor="@color/noice_ink" />
+
+                            <com.google.android.material.slider.Slider
+                                android:id="@+id/rain_slider"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="100"
+                                android:progress="70" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <Button
+                                    android:id="@+id/rain_info"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Info" />
+
+                                <Button
+                                    android:id="@+id/rain_download"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="@dimen/space_s"
+                                    android:layout_weight="1"
+                                    android:text="Ready" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/group_places"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/noice_surface_alt"
+                        android:paddingLeft="@dimen/space_m"
+                        android:paddingTop="@dimen/space_s"
+                        android:paddingRight="@dimen/space_m"
+                        android:paddingBottom="@dimen/space_s"
+                        android:text="PLACES AND FOCUS"
+                        android:textColor="@color/noice_primary_dark" />
+
+                    <LinearLayout
+                        android:id="@+id/sound_cafe_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_s">
+
+                        <ImageView
+                            android:id="@+id/sound_cafe_icon"
+                            android:layout_width="@dimen/icon_box"
+                            android:layout_height="@dimen/icon_box"
+                            android:background="@color/noice_surface_alt"
+                            android:contentDescription="Cafe icon" />
+
+                        <LinearLayout
+                            android:id="@+id/sound_cafe_controls"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/cafe_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Cafe chatter"
+                                android:textColor="@color/noice_ink" />
+
+                            <SeekBar
+                                android:id="@+id/cafe_slider"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="100"
+                                android:progress="34" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/sound_noise_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_s">
+
+                        <ImageView
+                            android:id="@+id/sound_noise_icon"
+                            android:layout_width="@dimen/icon_box"
+                            android:layout_height="@dimen/icon_box"
+                            android:background="@color/noice_surface_alt"
+                            android:contentDescription="Noise icon" />
+
+                        <LinearLayout
+                            android:id="@+id/sound_noise_controls"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/noise_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Brown noise"
+                                android:textColor="@color/noice_ink" />
+
+                            <ProgressBar
+                                android:id="@+id/noise_progress"
+                                style="@android:style/Widget.ProgressBar.Horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:max="100"
+                                android:progress="45" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.github.ashutoshgngwr.noice.widget.SwipeRefreshLayout>
+
+            <TextView
+                android:id="@+id/presets_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="PRESETS"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/preset_recycler_probe"
+                android:layout_width="match_parent"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:id="@+id/presets_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/preset_focus_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_s">
+
+                    <CheckBox
+                        android:id="@+id/preset_focus_play"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+
+                    <TextView
+                        android:id="@+id/preset_focus_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/space_m"
+                        android:layout_weight="1"
+                        android:text="Deep focus"
+                        android:textColor="@color/noice_ink" />
+
+                    <Button
+                        android:id="@+id/preset_focus_menu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Menu" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/preset_sleep_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_s">
+
+                    <CheckBox
+                        android:id="@+id/preset_sleep_play"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/preset_sleep_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/space_m"
+                        android:layout_weight="1"
+                        android:text="Sleep rain"
+                        android:textColor="@color/noice_ink" />
+
+                    <Button
+                        android:id="@+id/preset_sleep_menu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Menu" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/timer_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="SLEEP TIMER"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/timer_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:orientation="vertical"
+                android:padding="@dimen/space_m">
+
+                <com.github.ashutoshgngwr.noice.widget.CountdownTextView
+                    android:id="@+id/countdown_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="00:51:00"
+                    android:textColor="@color/noice_ink"
+                    android:textSize="20sp" />
+
+                <com.github.ashutoshgngwr.noice.widget.DurationPicker
+                    android:id="@+id/duration_picker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/space_s">
+
+                    <Button
+                        android:id="@+id/timer_15"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_h"
+                        android:layout_weight="1"
+                        android:text="15m" />
+
+                    <Button
+                        android:id="@+id/timer_30"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_h"
+                        android:layout_marginLeft="@dimen/space_s"
+                        android:layout_weight="1"
+                        android:text="30m" />
+
+                    <Button
+                        android:id="@+id/timer_60"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_h"
+                        android:layout_marginLeft="@dimen/space_s"
+                        android:layout_weight="1"
+                        android:text="60m" />
+                </com.github.ashutoshgngwr.noice.widget.DurationPicker>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/random_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="RANDOM PRESET"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/random_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_s">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag_rain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="rain" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag_focus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_s"
+                    android:text="focus" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag_sleep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_s"
+                    android:text="sleep" />
+            </com.google.android.flexbox.FlexboxLayout>
+
+            <TextView
+                android:id="@+id/venue_feed_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="LOCAL DISCOVERY"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/venue_feed_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:orientation="vertical"
+                android:padding="@dimen/space_s">
+
+                <LinearLayout
+                    android:id="@+id/venue_feed_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/venue_remote_image"
+                        android:layout_width="96dp"
+                        android:layout_height="72dp"
+                        android:background="@color/noice_surface_alt"
+                        android:contentDescription="Remote venue image" />
+
+                    <LinearLayout
+                        android:id="@+id/venue_feed_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/space_m"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/venue_feed_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Tap Load venues"
+                            android:textColor="@color/noice_ink"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/venue_feed_rating"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="4.6 - 98 reviews - Local"
+                            android:textColor="@color/noice_primary_dark"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/venue_feed_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Network not loaded"
+                            android:textColor="@color/noice_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <HorizontalScrollView
+                    android:id="@+id/venue_filter_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/space_s">
+
+                    <LinearLayout
+                        android:id="@+id/venue_filter_row"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/load_venues_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/button_h"
+                            android:text="Load venues" />
+
+                        <Button
+                            android:id="@+id/next_venue_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:text="Next" />
+
+                        <Button
+                            android:id="@+id/review_venue_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:text="Review" />
+
+                        <CheckBox
+                            android:id="@+id/venue_wifi_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/button_h"
+                            android:layout_marginLeft="@dimen/space_s"
+                            android:checked="true"
+                            android:text="Wi-Fi" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/dialog_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_l"
+                android:text="SAVE PRESET DIALOG"
+                android:textColor="@color/noice_primary_dark"
+                android:textSize="14sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/preset_name_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/noice_surface"
+                android:orientation="vertical"
+                android:padding="@dimen/space_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/preset_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search_hint"
+                    android:text="Deep focus" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_nav_h"
+        android:background="@color/noice_surface">
+
+        <LinearLayout
+            android:id="@+id/bottom_nav_items"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/nav_library"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/library"
+                android:textColor="@color/noice_primary_dark" />
+
+            <TextView
+                android:id="@+id/nav_presets"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/presets"
+                android:textColor="@color/noice_muted" />
+
+            <TextView
+                android:id="@+id/nav_timer"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/timer"
+                android:textColor="@color/noice_muted" />
+
+            <TextView
+                android:id="@+id/nav_account"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/account"
+                android:textColor="@color/noice_muted" />
+        </LinearLayout>
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+</LinearLayout>

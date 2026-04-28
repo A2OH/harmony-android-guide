@@ -79,6 +79,10 @@ class WestlakeActivity : ComponentActivity() {
     /** Run an APK in the dalvikvm subprocess via WestlakeLauncher */
     fun launchVmApk(packageName: String, activityName: String, displayName: String) {
         val config = ApkVmConfig(packageName = packageName, activityName = activityName, displayName = displayName)
+        launchVmApk(config)
+    }
+
+    fun launchVmApk(config: ApkVmConfig) {
         setContent { WestlakeVMApkScreen(config) }
     }
 
@@ -293,7 +297,32 @@ class WestlakeActivity : ComponentActivity() {
             val pkg = parts[0]; val act = parts[1]; val name = parts.getOrElse(2) { pkg }
             Log.i(TAG, "Launching VM APK: $pkg/$act ($name)")
             val config = ApkVmConfig(packageName = pkg, activityName = act, displayName = name)
-            setContent { WestlakeVMApkScreen(config) }
+            launchVmApk(config)
+            return
+        }
+        if (className.startsWith("VM_APK_CONTROL:") || className.startsWith("VM_APK_TARGET:")) {
+            val isControl = className.startsWith("VM_APK_CONTROL:")
+            val prefix = if (isControl) "VM_APK_CONTROL:" else "VM_APK_TARGET:"
+            val parts = className.removePrefix(prefix).split(":")
+            val pkg = parts[0]
+            val act = parts[1]
+            val name = parts.getOrElse(2) { pkg }
+            val stage = parts.getOrElse(3) { "L1" }
+            val backendMode = if (isControl) {
+                BackendMode.CONTROL_ANDROID_BACKEND
+            } else {
+                BackendMode.TARGET_OHOS_BACKEND
+            }
+            Log.i(TAG, "Launching VM APK $backendMode: $pkg/$act ($name) stage=$stage")
+            launchVmApk(
+                ApkVmConfig(
+                    packageName = pkg,
+                    activityName = act,
+                    displayName = name,
+                    backendMode = backendMode,
+                    extraVmProperties = mapOf("westlake.canary.stage" to stage),
+                )
+            )
             return
         }
         if (className == "SHIM_CANVAS") { Log.i(TAG, "Launching ShimCanvas screen"); setContent { ShimCanvasScreen() }; return }
@@ -569,6 +598,12 @@ fun WestlakeHome() {
             AppInfo("Counter (VM)", "Simple Counter APK in ART11 subprocess", Color(0xFF9C27B0), "VM_APK:me.tsukanov.counter:me.tsukanov.counter.ui.MainActivity:Simple Counter", null, ""),
             AppInfo("Tip Calculator (VM)", "Full app in ART11 subprocess", Color(0xFFFF9800), "WESTLAKE_VM_TIP", null, ""),
             AppInfo("TODO List (VM)", "Multi-Activity app with ListView", Color(0xFF2196F3), "WESTLAKE_VM_TODO", null, ""),
+            AppInfo("Canary L1 (Control)", "Westlake ART + Android backend baseline", Color(0xFF00ACC1), "VM_APK_CONTROL:com.westlake.cutoffcanary:com.westlake.cutoffcanary.StageActivity:Cutoff Canary L1 (Control):L1", null, ""),
+            AppInfo("Canary L2 (Control)", "Adds XML resource/layout inflation on control backend", Color(0xFF00838F), "VM_APK_CONTROL:com.westlake.cutoffcanary:com.westlake.cutoffcanary.StageActivity:Cutoff Canary L2 (Control):L2", null, ""),
+            AppInfo("Canary L1 (Target)", "Same runtime on target OHOS backend", Color(0xFFF9A825), "VM_APK_TARGET:com.westlake.cutoffcanary:com.westlake.cutoffcanary.StageActivity:Cutoff Canary L1 (Target):L1", null, ""),
+            AppInfo("Canary L2 (Target)", "Adds XML resource/layout inflation on target backend", Color(0xFFF57F17), "VM_APK_TARGET:com.westlake.cutoffcanary:com.westlake.cutoffcanary.StageActivity:Cutoff Canary L2 (Target):L2", null, ""),
+            AppInfo("Yelp Live (VM)", "Separate live-data APK via host network bridge", Color(0xFFD32323), "VM_APK:com.westlake.yelplive:com.westlake.yelplive.YelpLiveActivity:Westlake Yelp Live", null, ""),
+            AppInfo("Material Yelp (VM)", "Material component API canary via Westlake", Color(0xFFD32323), "VM_APK:com.westlake.materialyelp:com.westlake.materialyelp.MaterialYelpActivity:Westlake Material Yelp", null, ""),
             AppInfo("McDonald's (REAL)", "Real SplashActivity via DexClassLoader", Color(0xFFDA291C), "WESTLAKE_MCD_REAL", null, ""),
             AppInfo("McDonald's (ART)", "In-process Westlake ART v114 engine", Color(0xFFDA291C), "WESTLAKE_ART_MCD", null, ""),
             AppInfo("McDonald's (VM)", "Subprocess ART11 pipe+SurfaceView", Color(0xFFDA291C), "WESTLAKE_VM_MCD", null, ""),

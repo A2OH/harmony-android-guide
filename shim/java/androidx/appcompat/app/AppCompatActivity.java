@@ -2,9 +2,9 @@ package androidx.appcompat.app;
 
 import android.os.Bundle;
 import android.view.View;
-import androidx.activity.ComponentActivity;
+import androidx.fragment.app.FragmentActivity;
 
-public class AppCompatActivity extends ComponentActivity {
+public class AppCompatActivity extends FragmentActivity {
     public AppCompatActivity() { super(); }
 
     @Override protected void onCreate(Bundle savedInstanceState) {

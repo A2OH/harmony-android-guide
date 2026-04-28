@@ -4,6 +4,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.westlake.engine.WestlakeLauncher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,19 @@ public class FragmentManager {
     // ── Transaction ──
 
     public FragmentTransaction beginTransaction() {
-        return new FragmentTransactionImpl(this);
+        FragmentTransaction tx = new FragmentTransactionImpl(this);
+        note("FragmentManager beginTransaction managerId=" + System.identityHashCode(this)
+                + " host=" + (mHost != null)
+                + " txId=" + System.identityHashCode(tx)
+                + " txClass=" + tx.getClass().getName());
+        return tx;
+    }
+
+    private static void note(String marker) {
+        try {
+            WestlakeLauncher.noteMarker("CV " + marker);
+        } catch (Throwable ignored) {
+        }
     }
 
     // ── Lookup ──
@@ -91,15 +104,55 @@ public class FragmentManager {
     }
 
     public Fragment findFragmentByTag(String tag) {
-        if (tag == null) return null;
-        for (int i = mAdded.size() - 1; i >= 0; i--) {
-            Fragment f = mAdded.get(i);
+        note("FragmentManager findFragmentByTag enter");
+        if (tag == null) {
+            note("FragmentManager findFragmentByTag null tag");
+            return null;
+        }
+        List<Fragment> added = mAdded;
+        note("FragmentManager findFragmentByTag before size");
+        int count = added != null ? added.size() : -1;
+        note("FragmentManager findFragmentByTag size=" + count);
+        for (int i = count - 1; i >= 0; i--) {
+            note("FragmentManager findFragmentByTag before get i=" + i);
+            Fragment f = added.get(i);
+            note("FragmentManager findFragmentByTag after get null=" + (f == null));
             if (f == null) {
                 continue;
             }
-            if (tag.equals(f.getTag())) return f;
+            note("FragmentManager findFragmentByTag before compare");
+            if (sameTag(tag, f.mTag)) {
+                note("FragmentManager findFragmentByTag matched");
+                return f;
+            }
         }
+        note("FragmentManager findFragmentByTag missing");
         return null;
+    }
+
+    private static boolean sameTag(String requested, String existing) {
+        note("FragmentManager sameTag enter");
+        if (requested == existing) {
+            note("FragmentManager sameTag identity");
+            return true;
+        }
+        if (requested == null || existing == null) {
+            note("FragmentManager sameTag null");
+            return false;
+        }
+        int length = requested.length();
+        if (length != existing.length()) {
+            note("FragmentManager sameTag length mismatch");
+            return false;
+        }
+        for (int i = 0; i < length; i++) {
+            if (requested.charAt(i) != existing.charAt(i)) {
+                note("FragmentManager sameTag char mismatch");
+                return false;
+            }
+        }
+        note("FragmentManager sameTag content");
+        return true;
     }
 
     public List<Fragment> getFragments() {
@@ -252,7 +305,12 @@ public class FragmentManager {
     }
 
     void addFragmentInternal(Fragment f, String tag, int containerId) {
+        note("FragmentManager addFragmentInternal enter managerId=" + System.identityHashCode(this)
+                + " fragment=" + (f != null)
+                + " tag=" + tag
+                + " containerId=0x" + Integer.toHexString(containerId));
         if (mHost == null) {
+            note("FragmentManager addFragmentInternal host null");
             throw new IllegalStateException("FragmentManager.addFragmentInternal host=null for " + f);
         }
         f.mTag = tag;
@@ -264,56 +322,94 @@ public class FragmentManager {
         mAdded.add(f);
         ViewGroup container = resolveContainer(containerId);
         try {
+            note("FragmentManager addFragmentInternal before performAttach");
             Log.i(TAG, "addFragmentInternal before performAttach fragment=" + f
                     + " host=" + mHost + " containerId=0x" + Integer.toHexString(containerId));
             f.performAttach(mHost);
+            note("FragmentManager addFragmentInternal after performAttach");
             Log.i(TAG, "addFragmentInternal after performAttach fragment=" + f);
         } catch (Throwable t) {
+            note("FragmentManager addFragmentInternal performAttach err "
+                    + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:performAttach " + f, t);
         }
         LayoutInflater inflater;
         try {
+            note("FragmentManager addFragmentInternal before resolveInflater");
             Log.i(TAG, "addFragmentInternal before resolveInflater fragment=" + f);
             inflater = resolveInflater(f);
+            note("FragmentManager addFragmentInternal after resolveInflater inflater="
+                    + (inflater != null));
             Log.i(TAG, "addFragmentInternal after resolveInflater fragment=" + f
                     + " inflater=" + inflater);
         } catch (Throwable t) {
+            note("FragmentManager addFragmentInternal resolveInflater err "
+                    + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:resolveInflater " + f, t);
         }
         try {
+            note("FragmentManager addFragmentInternal before performCreate");
             Log.i(TAG, "addFragmentInternal before performCreate fragment=" + f);
             f.performCreate(null);
+            note("FragmentManager addFragmentInternal after performCreate");
             Log.i(TAG, "addFragmentInternal after performCreate fragment=" + f);
         } catch (Throwable t) {
+            note("FragmentManager addFragmentInternal performCreate err "
+                    + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:performCreate " + f, t);
         }
         try {
+            note("FragmentManager addFragmentInternal before performCreateView container="
+                    + (container != null));
             Log.i(TAG, "addFragmentInternal before performCreateView fragment=" + f
                     + " container=" + container);
             f.performCreateView(inflater, container, null);
+            note("FragmentManager addFragmentInternal after performCreateView view="
+                    + (f.mView != null));
             Log.i(TAG, "addFragmentInternal after performCreateView fragment=" + f
                     + " view=" + f.mView);
         } catch (Throwable t) {
+            note("FragmentManager addFragmentInternal performCreateView err "
+                    + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:performCreateView " + f, t);
         }
         if (container != null && f.mView != null) {
             try {
+                note("FragmentManager addFragmentInternal before addView");
                 if (f.mView.getParent() instanceof ViewGroup) {
                     ((ViewGroup) f.mView.getParent()).removeView(f.mView);
                 }
                 container.addView(f.mView);
+                note("FragmentManager addFragmentInternal after addView childCount="
+                        + container.getChildCount());
                 Log.i(TAG, "addFragmentInternal attached view fragment=" + f
                         + " childCount=" + container.getChildCount());
             } catch (Throwable t) {
-                throw new RuntimeException("FragmentManager.addFragmentInternal:addView " + f, t);
+                note("FragmentManager addFragmentInternal addView err "
+                        + t.getClass().getName());
+                try {
+                    container.installStandaloneChild(f.mView);
+                    note("FragmentManager addFragmentInternal standalone child fallback childCount="
+                            + container.getChildCount());
+                    Log.i(TAG, "addFragmentInternal attached view via standalone fallback fragment=" + f
+                            + " childCount=" + container.getChildCount());
+                } catch (Throwable fallback) {
+                    note("FragmentManager addFragmentInternal standalone child fallback err "
+                            + fallback.getClass().getName());
+                    throw new RuntimeException("FragmentManager.addFragmentInternal:addView " + f, t);
+                }
             }
         }
         try {
+            note("FragmentManager addFragmentInternal before lifecycleResume");
             f.performActivityCreated(null);
             f.performStart();
             f.performResume();
+            note("FragmentManager addFragmentInternal after lifecycleResume");
             Log.i(TAG, "addFragmentInternal resumed fragment=" + f);
         } catch (Throwable t) {
+            note("FragmentManager addFragmentInternal lifecycleResume err "
+                    + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:lifecycleResume " + f, t);
         }
     }

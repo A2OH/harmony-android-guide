@@ -28,7 +28,6 @@ import java.util.zip.ZipFile;
  * 4. Returns an ApkInfo with all metadata needed to launch the app
  */
 public class ApkLoader {
-    private static native byte[] nativeReadFileBytes(String path);
 
     /**
      * Load and parse an APK file.
@@ -230,6 +229,15 @@ public class ApkLoader {
         return baos.toByteArray();
     }
 
+    private static byte[] readFileBytes(File file) throws IOException {
+        if (file == null) {
+            throw new IOException("File is null");
+        }
+        try (InputStream in = new java.io.FileInputStream(file)) {
+            return readAllBytes(in);
+        }
+    }
+
     /**
      * Build a classpath string from extracted DEX paths (colon-separated).
      */
@@ -248,29 +256,52 @@ public class ApkLoader {
      */
     public static ApkInfo loadFromExtracted(String resDir, String packageName,
             String activityName) throws IOException {
+        if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            com.westlake.engine.WestlakeLauncher.strictTrace("PF202 ApkLoader enter");
+        }
         ApkInfo info = new ApkInfo();
         info.packageName = packageName;
         info.extractDir = resDir;
+        if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            com.westlake.engine.WestlakeLauncher.strictTrace("PF202 ApkLoader info seeded");
+        }
 
-        // Parse resources.arsc (skip for large files — interpreter too slow)
-        try {
-            byte[] data = nativeReadFileBytes(resDir + "/resources.arsc");
-            if (data != null && data.length > 0) {
-                // Resource bytes are present, but defer parsing to avoid heavy startup work.
+        // Parse resources.arsc (skip entirely on strict standalone bootstrap —
+        // the first native read here is still enough to derail PF-202 before UI
+        // launch. The host pre-extracted path can be revisited once the guest
+        // survives past core bootstrap and first activity startup.)
+        if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            try {
+                byte[] data = readFileBytes(new File(resDir, "resources.arsc"));
+                if (data != null && data.length > 0) {
+                    ResourceTable resTable = new ResourceTable();
+                    resTable.parse(data);
+                    info.resourceTable = resTable;
+                }
+            } catch (Throwable e) {
+                // Ignore missing or unreadable resource table during early bootstrap.
             }
-        } catch (Exception e) {
-            // Ignore missing or unreadable resource table during early bootstrap.
         }
 
         // Set res dir for layout inflation
         info.assetDir = resDir;
         info.resDir = resDir;
+        if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            com.westlake.engine.WestlakeLauncher.strictTrace("PF202 ApkLoader res dirs ready");
+        }
 
-        if (activityName != null && !activityName.isEmpty()) {
+        if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()
+                && activityName != null && !activityName.isEmpty()) {
             info.launcherActivity = activityName;
             info.activities.add(activityName);
         }
+        if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            com.westlake.engine.WestlakeLauncher.strictTrace("PF202 ApkLoader activity seeded");
+        }
 
+        if (!com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            com.westlake.engine.WestlakeLauncher.strictTrace("PF202 ApkLoader return");
+        }
         return info;
     }
 }

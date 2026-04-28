@@ -15,10 +15,38 @@ public final class Log {
     private static Object bridge; // lazy-checked
     private static java.lang.reflect.Method westlakeNativeLog;
     private static boolean westlakeNativeLogResolved;
+    private static boolean sControlBackendResolved;
+    private static boolean sControlBackendCached;
 
     private Log() {}
 
+    private static boolean isControlAndroidBackend() {
+        if (sControlBackendResolved) {
+            return sControlBackendCached;
+        }
+        boolean result = false;
+        try {
+            result = com.westlake.engine.WestlakeLauncher.isControlAndroidBackend();
+        } catch (Throwable ignored) {
+            result = false;
+        }
+        sControlBackendCached = result;
+        sControlBackendResolved = true;
+        return result;
+    }
+
+    private static boolean isStrictStandaloneBackend() {
+        try {
+            return !com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     private static boolean tryBridge() {
+        if (isControlAndroidBackend() || isStrictStandaloneBackend()) {
+            return false;
+        }
         if (bridge != null) return true;
         try {
             Class<?> c = Class.forName("com.ohos.shim.bridge.OHBridge");
@@ -50,14 +78,28 @@ public final class Log {
         if (tag == null || tag.isEmpty()) {
             return false;
         }
-        return tag.startsWith("Westlake")
-                || "AppComponentFactory".equals(tag)
-                || "ComponentActivity".equals(tag)
-                || "SavedStateRegistry".equals(tag);
+        try {
+            if (isControlAndroidBackend()) {
+                return "Westlake".equals(tag)
+                        || "WestlakeVM".equals(tag)
+                        || "WestlakeLauncher".equals(tag)
+                        || "Canary".equals(tag)
+                        || "CutoffCanary".equals(tag)
+                        || "MiniActivityManager".equals(tag)
+                        || "StageActivity".equals(tag);
+            }
+            return safeStartsWith(tag, "Westlake")
+                    || "MiniActivityManager".equals(tag)
+                    || "AppComponentFactory".equals(tag)
+                    || "ComponentActivity".equals(tag)
+                    || "SavedStateRegistry".equals(tag);
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
-    private static void westlakeLog(String line) {
-        if (!shouldFallbackToWestlake(extractTag(line))) {
+    private static void westlakeLog(String tag, String line) {
+        if (!shouldFallbackToWestlake(tag)) {
             return;
         }
         try {
@@ -75,24 +117,39 @@ public final class Log {
         }
     }
 
-    private static String extractTag(String line) {
-        if (line == null) {
-            return null;
+    private static boolean safeStartsWith(String value, String prefix) {
+        if (value == null || prefix == null) {
+            return false;
         }
-        int slash = line.indexOf('/');
-        int colon = line.indexOf(':');
-        if (slash < 0 || colon <= slash + 1) {
-            return null;
+        try {
+            return value.startsWith(prefix);
+        } catch (Throwable ignored) {
+            return false;
         }
-        return line.substring(slash + 1, colon).trim();
     }
 
     private static int log(String level, String tag, String msg) {
-        String line = level + "/" + tag + ": " + msg;
-        if (tryBridge()) {
-            nativeLog(level, tag, msg);
-        } else {
-            westlakeLog(line);
+        String safeLevel = level == null ? "I" : level;
+        String safeTag = tag == null ? "null" : tag;
+        String safeMsg = msg == null ? "null" : msg;
+        String line;
+        try {
+            line = safeLevel + "/" + safeTag + ": " + safeMsg;
+        } catch (Throwable ignored) {
+            line = "I/Log: <format-failed>";
+        }
+        try {
+            if (isControlAndroidBackend()) {
+                westlakeLog(safeTag, line);
+                return line.length();
+            }
+            if (tryBridge()) {
+                nativeLog(safeLevel, safeTag, safeMsg);
+            } else {
+                westlakeLog(safeTag, line);
+            }
+        } catch (Throwable ignored) {
+            return 0;
         }
         return line.length();
     }

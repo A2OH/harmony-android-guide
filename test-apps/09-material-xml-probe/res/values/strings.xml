@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Westlake Material XML Probe</string>
+    <string name="probe_title">Material XML probe</string>
+    <string name="probe_input_text">compiled XML TextInputEditText</string>
+    <string name="probe_card_text">MaterialCardView from XML</string>
+    <string name="probe_chip_one">chip one</string>
+    <string name="probe_chip_two">chip two</string>
+    <string name="probe_button_text">material XML button</string>
+    <string name="probe_bottom_nav_text">bottom navigation XML shim</string>
+</resources>

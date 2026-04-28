@@ -34,6 +34,14 @@ public class Handler {
         if (callback instanceof Callback) mCallback = (Callback) callback;
     }
 
+    public static Handler createAsync(Looper looper) {
+        return new Handler(looper);
+    }
+
+    public static Handler createAsync(Looper looper, Callback callback) {
+        return new Handler(looper, callback);
+    }
+
     public Looper getLooper() { return mLooper; }
 
     public void dispatchMessage(Message msg) {

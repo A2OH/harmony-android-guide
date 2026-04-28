@@ -36,14 +36,25 @@ public class Path {
     // ── Constructors ─────────────────────────────────────────────────────────
 
     public Path() {
-        nativeHandle = OHBridge.pathCreate();
+        nativeHandle = createNativePathIfAvailable();
     }
 
     public Path(Path src) {
-        nativeHandle = OHBridge.pathCreate();
+        nativeHandle = createNativePathIfAvailable();
         if (src != null) {
             this.fillType = src.fillType;
             this.empty    = src.empty;
+        }
+    }
+
+    private static long createNativePathIfAvailable() {
+        try {
+            if (!OHBridge.strictGuestPing()) {
+                return 0;
+            }
+            return OHBridge.pathCreate();
+        } catch (Throwable ignored) {
+            return 0;
         }
     }
 

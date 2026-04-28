@@ -89,8 +89,8 @@ public class LayoutInflater {
         sTagClassMap.put("LinearLayout", "android.widget.LinearLayout");
         sTagClassMap.put("RelativeLayout", "android.widget.RelativeLayout");
         sTagClassMap.put("FrameLayout", "android.widget.FrameLayout");
-        sTagClassMap.put("ScrollView", "android.widget.ScrollView");
-        sTagClassMap.put("HorizontalScrollView", "android.widget.ScrollView");
+        sTagClassMap.put("ScrollView", "android.widget.FrameLayout");
+        sTagClassMap.put("HorizontalScrollView", "android.widget.FrameLayout");
         sTagClassMap.put("TextView", "android.widget.TextView");
         sTagClassMap.put("Button", "android.widget.Button");
         sTagClassMap.put("EditText", "android.widget.EditText");
@@ -137,7 +137,7 @@ public class LayoutInflater {
         sFqnClassMap.put("androidx.recyclerview.widget.RecyclerView", "android.widget.FrameLayout");
         sFqnClassMap.put("androidx.cardview.widget.CardView", "android.widget.FrameLayout");
         sFqnClassMap.put("androidx.swiperefreshlayout.widget.SwipeRefreshLayout", "android.widget.FrameLayout");
-        sFqnClassMap.put("androidx.core.widget.NestedScrollView", "android.widget.ScrollView");
+        sFqnClassMap.put("androidx.core.widget.NestedScrollView", "android.widget.FrameLayout");
         sFqnClassMap.put("androidx.appcompat.widget.Toolbar", "android.widget.FrameLayout");
         sFqnClassMap.put("androidx.appcompat.widget.AppCompatTextView", "android.widget.TextView");
         sFqnClassMap.put("androidx.appcompat.widget.AppCompatButton", "android.widget.Button");
@@ -145,19 +145,28 @@ public class LayoutInflater {
         sFqnClassMap.put("androidx.appcompat.widget.AppCompatImageView", "android.widget.ImageView");
         sFqnClassMap.put("androidx.appcompat.widget.AppCompatCheckBox", "android.widget.CheckBox");
         sFqnClassMap.put("androidx.appcompat.widget.LinearLayoutCompat", "android.widget.LinearLayout");
-        sFqnClassMap.put("com.google.android.material.appbar.AppBarLayout", "android.widget.LinearLayout");
-        sFqnClassMap.put("com.google.android.material.appbar.CollapsingToolbarLayout", "android.widget.FrameLayout");
+        sFqnClassMap.put("com.google.android.material.appbar.AppBarLayout", "com.google.android.material.appbar.AppBarLayout");
+        sFqnClassMap.put("com.google.android.material.appbar.CollapsingToolbarLayout", "com.google.android.material.appbar.CollapsingToolbarLayout");
         sFqnClassMap.put("com.google.android.material.appbar.MaterialToolbar", "android.widget.FrameLayout");
         sFqnClassMap.put("com.google.android.material.bottomnavigation.BottomNavigationView", "com.google.android.material.bottomnavigation.BottomNavigationView");
-        sFqnClassMap.put("com.google.android.material.floatingactionbutton.FloatingActionButton", "android.widget.ImageView");
+        sFqnClassMap.put("com.google.android.material.floatingactionbutton.FloatingActionButton", "com.google.android.material.floatingactionbutton.FloatingActionButton");
         sFqnClassMap.put("com.airbnb.lottie.LottieAnimationView", "com.airbnb.lottie.LottieAnimationView");
-        sFqnClassMap.put("com.google.android.material.textfield.TextInputLayout", "android.widget.LinearLayout");
-        sFqnClassMap.put("com.google.android.material.textfield.TextInputEditText", "android.widget.EditText");
-        sFqnClassMap.put("com.google.android.material.button.MaterialButton", "android.widget.Button");
-        sFqnClassMap.put("com.google.android.material.card.MaterialCardView", "android.widget.FrameLayout");
+        sFqnClassMap.put("com.google.android.material.textfield.TextInputLayout", "com.google.android.material.textfield.TextInputLayout");
+        sFqnClassMap.put("com.google.android.material.textfield.TextInputEditText", "com.google.android.material.textfield.TextInputEditText");
+        sFqnClassMap.put("com.google.android.material.button.MaterialButton", "com.google.android.material.button.MaterialButton");
+        sFqnClassMap.put("com.google.android.material.card.MaterialCardView", "com.google.android.material.card.MaterialCardView");
         sFqnClassMap.put("com.google.android.material.tabs.TabLayout", "android.widget.FrameLayout");
+        sFqnClassMap.put("com.google.android.material.chip.ChipGroup", "com.google.android.material.chip.ChipGroup");
+        sFqnClassMap.put("com.google.android.material.chip.Chip", "com.google.android.material.chip.Chip");
+        sFqnClassMap.put("com.google.android.material.slider.Slider", "com.google.android.material.slider.Slider");
+        sFqnClassMap.put("com.google.android.material.progressindicator.CircularProgressIndicator", "android.widget.ProgressBar");
+        sFqnClassMap.put("com.google.android.flexbox.FlexboxLayout", "android.widget.LinearLayout");
+        sFqnClassMap.put("com.caverock.androidsvg.SVGImageView", "android.widget.ImageView");
+        sFqnClassMap.put("com.github.ashutoshgngwr.noice.widget.SwipeRefreshLayout", "android.widget.FrameLayout");
+        sFqnClassMap.put("com.github.ashutoshgngwr.noice.widget.CountdownTextView", "android.widget.TextView");
+        sFqnClassMap.put("com.github.ashutoshgngwr.noice.widget.DurationPicker", "android.widget.LinearLayout");
         // Old support library names
-        sFqnClassMap.put("android.support.v4.widget.NestedScrollView", "android.widget.ScrollView");
+        sFqnClassMap.put("android.support.v4.widget.NestedScrollView", "android.widget.FrameLayout");
         sFqnClassMap.put("android.support.v4.widget.SwipeRefreshLayout", "android.widget.FrameLayout");
         sFqnClassMap.put("android.support.v4.widget.DrawerLayout", "android.support.v4.widget.DrawerLayout");
         sFqnClassMap.put("android.support.v7.widget.RecyclerView", "android.widget.FrameLayout");
@@ -167,6 +176,43 @@ public class LayoutInflater {
         sFqnClassMap.put("android.support.design.widget.AppBarLayout", "android.widget.LinearLayout");
         sFqnClassMap.put("android.support.design.widget.FloatingActionButton", "android.widget.ImageView");
         sFqnClassMap.put("android.support.design.widget.TabLayout", "android.widget.FrameLayout");
+    }
+
+    private static void diag(String message) {
+        try {
+            android.util.Log.i("LayoutInflater", message);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static String simpleNameOf(String name) {
+        if (name == null) return "null";
+        int start = 0;
+        for (int i = 0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+            if (ch == '.' || ch == '$') {
+                start = i + 1;
+            }
+        }
+        return name.substring(start);
+    }
+
+    private static String classNameOf(Object object) {
+        if (object == null) return "null";
+        try {
+            Class cls = object instanceof Class ? (Class) object : object.getClass();
+            return cls != null ? cls.getName() : "null";
+        } catch (Throwable ignored) {
+            return "unknown";
+        }
+    }
+
+    private static String simpleClassNameOf(Object object) {
+        return simpleNameOf(classNameOf(object));
+    }
+
+    private static String throwableName(Throwable t) {
+        return t != null ? simpleClassNameOf(t.getClass()) : "Throwable";
     }
 
     /**
@@ -210,12 +256,12 @@ public class LayoutInflater {
         View view = tryInstantiate(fullName);
         if (view != null) {
             if (fullName.contains("McDToolBar")) {
-                System.err.println("[LayoutInflater] McDToolBarView instantiated OK: " + view.getClass().getName());
+                diag("[LayoutInflater] McDToolBarView instantiated OK: " + view.getClass().getName());
             }
             return view;
         }
         if (fullName.contains("McDToolBar")) {
-            System.err.println("[LayoutInflater] McDToolBarView tryInstantiate returned null!");
+            diag("[LayoutInflater] McDToolBarView tryInstantiate returned null!");
         }
 
         // For short names, also try android.view.* prefix
@@ -227,7 +273,7 @@ public class LayoutInflater {
         // For fully-qualified names that failed and aren't in the FQN map,
         // try to guess a suitable ViewGroup/View approximation from the short name
         if (tagName.contains(".")) {
-            String shortName = tagName.substring(tagName.lastIndexOf('.') + 1);
+            String shortName = simpleNameOf(tagName);
             // Try to find the superclass and use it as fallback
             try {
                 Class<?> cls = Class.forName(fullName);
@@ -236,7 +282,7 @@ public class LayoutInflater {
                 while (sc != null && sc != Object.class && sc != View.class) {
                     view = tryInstantiate(sc.getName());
                     if (view != null) {
-                        System.err.println("[LayoutInflater] " + tagName + " -> fallback to " + sc.getSimpleName());
+                        diag("[LayoutInflater] " + tagName + " -> fallback to " + simpleNameOf(sc.getName()));
                         return view;
                     }
                     sc = sc.getSuperclass();
@@ -308,9 +354,9 @@ public class LayoutInflater {
                         if (className.contains("mcdonalds") || className.contains("material") || className.contains("McDToolBar") || className.contains("constraint") || className.contains("Constraint")) {
                             Throwable c1 = e1.getCause() != null ? e1.getCause() : e1;
                             Throwable c2 = e2.getCause() != null ? e2.getCause() : e2;
-                            System.err.println("[LayoutInflater] tryInstantiate FAILED: " + className
-                                + "\n  ctx: " + c1.getClass().getSimpleName() + ": " + c1.getMessage()
-                                + "\n  ctx+attr: " + c2.getClass().getSimpleName() + ": " + c2.getMessage());
+                            diag("[LayoutInflater] tryInstantiate FAILED: " + className
+                                + "\n  ctx: " + throwableName(c1) + ": " + c1.getMessage()
+                                + "\n  ctx+attr: " + throwableName(c2) + ": " + c2.getMessage());
                         }
                         return null;
                     }
@@ -318,7 +364,7 @@ public class LayoutInflater {
             }
         } catch (Throwable e) {
             if (className.contains("McDToolBar")) {
-                System.err.println("[LayoutInflater] tryInstantiate ClassNotFound: " + className + ": " + e);
+                diag("[LayoutInflater] tryInstantiate ClassNotFound: " + className + ": " + e);
             }
             return null;
         }
@@ -458,7 +504,6 @@ public class LayoutInflater {
     private View buildMcdFragmentHomeDashboard() {
         android.widget.ScrollView scroll = new android.widget.ScrollView(mContext);
         scroll.setId(MCD_ID_NESTED_SCROLL_VIEW);
-        scroll.setBackgroundColor(getColorCompat(MCD_COLOR_GREY_BG, 0xFFF5F5F5));
         scroll.setFillViewport(true);
 
         LinearLayout parent = new LinearLayout(mContext);
@@ -518,13 +563,13 @@ public class LayoutInflater {
                     java.lang.reflect.Method inflateMethod = realInflater.getClass().getMethod("inflate", int.class, ViewGroup.class, boolean.class);
                     view = (View) inflateMethod.invoke(realInflater, resource, null, false);
                     if (view != null) {
-                        System.err.println("[LayoutInflater] Real inflate OK: 0x" + Integer.toHexString(resource) + " → " + view.getClass().getSimpleName());
+                        diag("[LayoutInflater] Real inflate OK: 0x" + Integer.toHexString(resource) + " -> " + classNameOf(view));
                         if (attachToRoot && root != null) { root.addView(view); return root; }
                         return view;
                     }
                 }
             } catch (Throwable t) {
-                System.err.println("[LayoutInflater] Real inflate failed: " + t.getMessage());
+                diag("[LayoutInflater] Real inflate failed: " + t.getMessage());
             }
         }
 
@@ -546,7 +591,7 @@ public class LayoutInflater {
                     android.util.Log.w("LayoutInflater",
                             "Registered layout factory failed for 0x"
                                     + Integer.toHexString(resource) + ": "
-                                    + t.getClass().getSimpleName() + ": " + t.getMessage());
+                                    + throwableName(t) + ": " + t.getMessage());
                 } catch (Throwable ignored) {
                 }
             }
@@ -554,6 +599,13 @@ public class LayoutInflater {
 
         View knownMcdLayout = maybeBuildKnownMcdLayout(resource);
         if (knownMcdLayout != null) {
+            if (resource == MCD_LAYOUT_FRAGMENT_HOME_DASHBOARD) {
+                try {
+                    diag("[LayoutInflater] fragment_home_dashboard build OK: "
+                            + classNameOf(knownMcdLayout));
+                } catch (Throwable ignored) {
+                }
+            }
             if (attachToRoot && root != null) {
                 addCompatChild(root, knownMcdLayout);
                 return root;
@@ -564,7 +616,7 @@ public class LayoutInflater {
         // Strategies 2-4: obtain binary AXML bytes, then inflate via XmlPullParser
         byte[] axmlData = null;
         try {
-            System.err.println("[LayoutInflater] inflate(0x" + Integer.toHexString(resource) + ")");
+            diag("[LayoutInflater] inflate(0x" + Integer.toHexString(resource) + ")");
         } catch (Throwable ignored) {
         }
 
@@ -575,14 +627,14 @@ public class LayoutInflater {
                 if (res != null) {
                     axmlData = res.getLayoutBytes(resource);
                     if (axmlData != null) {
-                        System.err.println("[LayoutInflater] Strategy 2: getLayoutBytes OK (" + axmlData.length + " bytes)");
+                        diag("[LayoutInflater] Strategy 2: getLayoutBytes OK (" + axmlData.length + " bytes)");
                     }
                 }
             } catch (Throwable t) {
                 try {
                     android.util.Log.w("LayoutInflater", "Strategy 2 failed for 0x"
                             + Integer.toHexString(resource) + ": "
-                            + t.getClass().getSimpleName() + ": " + t.getMessage());
+                            + throwableName(t) + ": " + t.getMessage());
                 } catch (Throwable ignored) {
                 }
             }
@@ -600,7 +652,7 @@ public class LayoutInflater {
                             // Keep resource-table diagnostics from aborting shim-only inflates.
                             String dbgStr = table.getString(resource);
                             String dbgName = table.getResourceName(resource);
-                            System.err.println("[LayoutInflater] Strategy 3: table=true"
+                            diag("[LayoutInflater] Strategy 3: table=true"
                                     + " layoutFile=" + layoutFile
                                     + " str=" + dbgStr + " name=" + dbgName
                                     + " entries=" + table.getStringCount());
@@ -609,18 +661,18 @@ public class LayoutInflater {
                         if (layoutFile != null) {
                             axmlData = loadLayoutXml(layoutFile);
                             if (axmlData != null) {
-                                System.err.println("[LayoutInflater] Strategy 3: OK (" + axmlData.length + " bytes)");
+                                diag("[LayoutInflater] Strategy 3: OK (" + axmlData.length + " bytes)");
                             }
                         }
                     } else {
-                        System.err.println("[LayoutInflater] Strategy 3: no ResourceTable");
+                        diag("[LayoutInflater] Strategy 3: no ResourceTable");
                     }
                 }
             } catch (Throwable t) {
                 try {
                     android.util.Log.w("LayoutInflater", "Strategy 3 failed for 0x"
                             + Integer.toHexString(resource) + ": "
-                            + t.getClass().getSimpleName() + ": " + t.getMessage());
+                            + throwableName(t) + ": " + t.getMessage());
                 } catch (Throwable ignored) {
                 }
             }
@@ -645,9 +697,9 @@ public class LayoutInflater {
                                     axmlData = new byte[(int) f.length()];
                                     fis.read(axmlData);
                                     fis.close();
-                                    System.err.println("[LayoutInflater] Strategy 3.5: loaded " + filePath + " (" + axmlData.length + " bytes)");
+                                    diag("[LayoutInflater] Strategy 3.5: loaded " + filePath + " (" + axmlData.length + " bytes)");
                                 } catch (Exception e) {
-                                    System.err.println("[LayoutInflater] Strategy 3.5: read failed: " + e.getMessage());
+                                    diag("[LayoutInflater] Strategy 3.5: read failed: " + e.getMessage());
                                 }
                             }
                         }
@@ -657,7 +709,7 @@ public class LayoutInflater {
                 try {
                     android.util.Log.w("LayoutInflater", "Strategy 3.5 failed for 0x"
                             + Integer.toHexString(resource) + ": "
-                            + t.getClass().getSimpleName() + ": " + t.getMessage());
+                            + throwableName(t) + ": " + t.getMessage());
                 } catch (Throwable ignored) {
                 }
             }
@@ -670,17 +722,17 @@ public class LayoutInflater {
                 if (res != null) {
                     String apkPath = null;
                     try { apkPath = (String) res.getClass().getMethod("getApkPath").invoke(res); } catch (Exception e) {}
-                    System.err.println("[LayoutInflater] Strategy 4: apkPath=" + apkPath);
+                    diag("[LayoutInflater] Strategy 4: apkPath=" + apkPath);
                     axmlData = ApkResourceLoader.loadLayout(res, resource);
                     if (axmlData != null) {
-                        System.err.println("[LayoutInflater] Strategy 4: OK (" + axmlData.length + " bytes)");
+                        diag("[LayoutInflater] Strategy 4: OK (" + axmlData.length + " bytes)");
                     }
                 }
             } catch (Throwable t) {
                 try {
                     android.util.Log.w("LayoutInflater", "Strategy 4 failed for 0x"
                             + Integer.toHexString(resource) + ": "
-                            + t.getClass().getSimpleName() + ": " + t.getMessage());
+                            + throwableName(t) + ": " + t.getMessage());
                 } catch (Throwable ignored) {
                 }
             }
@@ -690,22 +742,37 @@ public class LayoutInflater {
         if (axmlData != null && axmlData.length > 0) {
             try {
                 BinaryXmlParser parser = new BinaryXmlParser(axmlData);
+                try {
+                    com.westlake.engine.WestlakeLauncher.marker(
+                            "LAYOUT_INFLATER_AXML_PARSER_OK resource=0x"
+                                    + Integer.toHexString(resource)
+                                    + " events=" + parser.getEventCount()
+                                    + " strings=" + parser.getStringPool().length);
+                } catch (Throwable ignored) {
+                }
                 view = inflate(parser, root, attachToRoot);
                 // inflate(XmlPullParser,...) already handles attachToRoot,
                 // so return the result directly
                 if (view != null) {
-                    System.err.println("[LayoutInflater] Inflated 0x"
+                    diag("[LayoutInflater] Inflated 0x"
                             + Integer.toHexString(resource)
-                            + " -> " + describeViewTree(view, 0));
+                            + " -> " + classNameOf(view));
                     return view;
                 }
             } catch (Throwable e) {
-                System.err.println("[LayoutInflater] AXML parse failed for 0x"
-                        + Integer.toHexString(resource) + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
-                e.printStackTrace(System.out);
+                try {
+                    com.westlake.engine.WestlakeLauncher.marker(
+                            "LAYOUT_INFLATER_AXML_PARSE_ERROR resource=0x"
+                                    + Integer.toHexString(resource)
+                                    + " err=" + e.getClass().getName()
+                                    + ":" + e.getMessage());
+                } catch (Throwable ignored) {
+                }
+                diag("[LayoutInflater] AXML parse failed for 0x"
+                        + Integer.toHexString(resource) + ": " + throwableName(e) + ": " + e.getMessage());
             }
             if (view == null) {
-                System.err.println("[LayoutInflater] inflate(parser) returned null for 0x" + Integer.toHexString(resource));
+                diag("[LayoutInflater] inflate(parser) returned null for 0x" + Integer.toHexString(resource));
             }
         }
 
@@ -734,7 +801,7 @@ public class LayoutInflater {
             android.widget.TextView status = new android.widget.TextView(mContext);
             String pkg = System.getProperty("westlake.apk.package", "");
             String act = System.getProperty("westlake.apk.activity", "");
-            if (act.contains(".")) act = act.substring(act.lastIndexOf('.') + 1);
+            if (act.contains(".")) act = simpleNameOf(act);
             status.setText(pkg + "\n" + act + "\nLayout: 0x" + Integer.toHexString(resource));
             status.setTextSize(12);
             status.setTextColor(0xFF666666);
@@ -751,11 +818,11 @@ public class LayoutInflater {
                 return root;
             } catch (Throwable addRootError) {
                 String detail = "[LayoutInflater] final attach failed: root="
-                        + root.getClass().getSimpleName() + " child="
-                        + view.getClass().getSimpleName() + " err="
-                        + addRootError.getClass().getSimpleName() + ": "
+                        + simpleClassNameOf(root) + " child="
+                        + simpleClassNameOf(view) + " err="
+                        + throwableName(addRootError) + ": "
                         + addRootError.getMessage();
-                System.err.println(detail);
+                diag(detail);
                 try {
                     android.util.Log.w("LayoutInflater", detail);
                 } catch (Throwable ignored) {
@@ -807,6 +874,7 @@ public class LayoutInflater {
                 inflateChildren(parser, root);
             } else {
                 rootView = createViewFromTag(tagName);
+                markInflateTag("ROOT", tagName, parser.getDepth());
                 if (rootView == null) {
                     rootView = new FrameLayout(mContext);
                 }
@@ -828,7 +896,7 @@ public class LayoutInflater {
                     try {
                         inflateChildren(parser, (ViewGroup) rootView);
                     } catch (Throwable childEx) {
-                        System.err.println("[LayoutInflater] inflateChildren error: " + childEx.getClass().getSimpleName() + ": " + childEx.getMessage());
+                        diag("[LayoutInflater] inflateChildren error: " + throwableName(childEx) + ": " + childEx.getMessage());
                     }
                 } else {
                     // Skip to matching END_TAG
@@ -847,12 +915,12 @@ public class LayoutInflater {
                             result = root;
                         } catch (Throwable addRootError) {
                             String detail = "[LayoutInflater] root addView failed: root="
-                                    + root.getClass().getSimpleName() + " child="
-                                    + rootView.getClass().getSimpleName() + " params="
-                                    + (params != null ? params.getClass().getSimpleName() : "null")
-                                    + " err=" + addRootError.getClass().getSimpleName() + ": "
+                                    + simpleClassNameOf(root) + " child="
+                                    + simpleClassNameOf(rootView) + " params="
+                                    + (params != null ? simpleClassNameOf(params) : "null")
+                                    + " err=" + throwableName(addRootError) + ": "
                                     + addRootError.getMessage();
-                            System.err.println(detail);
+                            diag(detail);
                             try {
                                 android.util.Log.w("LayoutInflater", detail);
                             } catch (Throwable ignored) {
@@ -862,11 +930,11 @@ public class LayoutInflater {
                                 result = root;
                             } catch (Throwable fallbackAddError) {
                                 String fallbackDetail = "[LayoutInflater] root fallback addView failed: root="
-                                        + root.getClass().getSimpleName() + " child="
-                                        + rootView.getClass().getSimpleName() + " err="
-                                        + fallbackAddError.getClass().getSimpleName() + ": "
+                                        + simpleClassNameOf(root) + " child="
+                                        + simpleClassNameOf(rootView) + " err="
+                                        + throwableName(fallbackAddError) + ": "
                                         + fallbackAddError.getMessage();
-                                System.err.println(fallbackDetail);
+                                diag(fallbackDetail);
                                 try {
                                     android.util.Log.w("LayoutInflater", fallbackDetail);
                                 } catch (Throwable ignored) {
@@ -885,7 +953,22 @@ public class LayoutInflater {
                 }
             }
         } catch (Throwable e) {
-            System.err.println("[LayoutInflater] inflate(parser) error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            try {
+                com.westlake.engine.WestlakeLauncher.marker(
+                        "LAYOUT_INFLATER_XML_INFLATE_ERROR err="
+                                + e.getClass().getName() + ":" + e.getMessage());
+                StackTraceElement[] frames = e.getStackTrace();
+                int max = frames != null && frames.length < 8 ? frames.length : 8;
+                for (int i = 0; i < max; i++) {
+                    StackTraceElement frame = frames[i];
+                    com.westlake.engine.WestlakeLauncher.marker(
+                            "LAYOUT_INFLATER_XML_FRAME " + i + " "
+                                    + frame.getClassName() + "." + frame.getMethodName()
+                                    + ":" + frame.getLineNumber());
+                }
+            } catch (Throwable ignored) {
+            }
+            diag("[LayoutInflater] inflate(parser) error: " + throwableName(e) + ": " + e.getMessage());
         }
         return result;
     }
@@ -910,7 +993,8 @@ public class LayoutInflater {
             }
 
             String tagName = parser.getName();
-            System.err.println("[LayoutInflater] child tag: <" + tagName + "> in " + parent.getClass().getSimpleName() + " (depth=" + parser.getDepth() + ")");
+            markInflateTag("CHILD", tagName, parser.getDepth());
+            diag("[LayoutInflater] child tag: <" + tagName + "> in " + simpleClassNameOf(parent) + " (depth=" + parser.getDepth() + ")");
 
             // Handle <include> tag
             if ("include".equals(tagName)) {
@@ -959,12 +1043,12 @@ public class LayoutInflater {
                 }
             } catch (Throwable addViewError) {
                 String detail = "[LayoutInflater] addView failed: tag=<" + tagName + "> parent="
-                        + parent.getClass().getSimpleName() + " child="
-                        + child.getClass().getSimpleName() + " params="
-                        + (params != null ? params.getClass().getSimpleName() : "null")
-                        + " err=" + addViewError.getClass().getSimpleName() + ": "
+                        + simpleClassNameOf(parent) + " child="
+                        + simpleClassNameOf(child) + " params="
+                        + (params != null ? simpleClassNameOf(params) : "null")
+                        + " err=" + throwableName(addViewError) + ": "
                         + addViewError.getMessage();
-                System.err.println(detail);
+                diag(detail);
                 try {
                     android.util.Log.w("LayoutInflater", detail);
                 } catch (Throwable ignored) {
@@ -973,6 +1057,21 @@ public class LayoutInflater {
                 // parent tree alive even if one child cannot attach correctly.
                 continue;
             }
+        }
+    }
+
+    private static int sInflateTagMarkerCount;
+
+    private static void markInflateTag(String phase, String tagName, int depth) {
+        if (sInflateTagMarkerCount >= 240) {
+            return;
+        }
+        sInflateTagMarkerCount++;
+        try {
+            com.westlake.engine.WestlakeLauncher.marker(
+                    "LAYOUT_INFLATER_TAG " + sInflateTagMarkerCount
+                            + " " + phase + " depth=" + depth + " tag=" + tagName);
+        } catch (Throwable ignored) {
         }
     }
 
@@ -999,7 +1098,7 @@ public class LayoutInflater {
             }
         }
 
-        System.err.println("[LayoutInflater] <fragment> class=" + fragmentClass + " id=0x" + Integer.toHexString(viewId));
+        diag("[LayoutInflater] <fragment> class=" + fragmentClass + " id=0x" + Integer.toHexString(viewId));
 
         // Create a FrameLayout container for the fragment
         android.widget.FrameLayout container = new android.widget.FrameLayout(mContext);
@@ -1019,21 +1118,21 @@ public class LayoutInflater {
                         f.mActivity = (androidx.fragment.app.FragmentActivity) mContext;
                     }
                     try { f.onCreate(null); } catch (Throwable t) {
-                        System.err.println("[LayoutInflater] Fragment.onCreate: " + t.getMessage());
+                        diag("[LayoutInflater] Fragment.onCreate: " + t.getMessage());
                     }
                     try {
                         View fragView = f.onCreateView(this, container, null);
                         if (fragView != null) {
                             container.addView(fragView);
                             f.mView = fragView;
-                            System.err.println("[LayoutInflater] Fragment view: " + fragView.getClass().getSimpleName());
+                            diag("[LayoutInflater] Fragment view: " + classNameOf(fragView));
                         }
                     } catch (Throwable t) {
-                        System.err.println("[LayoutInflater] Fragment.onCreateView: " + t.getMessage());
+                        diag("[LayoutInflater] Fragment.onCreateView: " + t.getMessage());
                     }
                 }
             } catch (Throwable t) {
-                System.err.println("[LayoutInflater] Fragment error: " + t.getMessage());
+                diag("[LayoutInflater] Fragment error: " + t.getMessage());
             }
         }
 
@@ -1049,7 +1148,7 @@ public class LayoutInflater {
             for (int j = 0; j < bxp2.getAttributeCount(); j++) {
                 sb.append(" ").append(bxp2.getAttributeName(j)).append("=").append(bxp2.getAttributeValue(j));
             }
-            System.err.println(sb.toString());
+            diag(sb.toString());
         }
         // Look for android:layout attribute (layout resource reference)
         if (parser instanceof BinaryXmlParser) {
@@ -1061,7 +1160,7 @@ public class LayoutInflater {
                 try { nsRes = bxp.getAttributeNameResource(i); } catch (Throwable t) {}
                 if ("layout".equals(name) || nsRes == 0x010100f2) {
                     int resId = bxp.getAttributeResourceValue(i, 0);
-                    System.err.println("[LayoutInflater] <include> attr=" + name + " nsRes=0x" + Integer.toHexString(nsRes) + " layout=0x" + Integer.toHexString(resId));
+                    diag("[LayoutInflater] <include> attr=" + name + " nsRes=0x" + Integer.toHexString(nsRes) + " layout=0x" + Integer.toHexString(resId));
                     if (resId != 0) {
                         View included = inflate(resId, parent, false);
                         if (included != null) {
@@ -1140,7 +1239,7 @@ public class LayoutInflater {
                 if (tv != null) {
                     view.setTag(tv);
                     if (tv.startsWith("layout/")) {
-                        System.err.println("[LayoutInflater] DATA BINDING TAG (by name): " + tv + " on " + view.getClass().getSimpleName());
+                        diag("[LayoutInflater] DATA BINDING TAG (by name): " + tv + " on " + classNameOf(view));
                     }
                 }
             }
@@ -1159,7 +1258,7 @@ public class LayoutInflater {
                     if (tagStr != null) {
                         view.setTag(tagStr);
                         if (tagStr.startsWith("layout/")) {
-                            System.err.println("[LayoutInflater] DATA BINDING TAG: " + tagStr + " on " + view.getClass().getSimpleName());
+                            diag("[LayoutInflater] DATA BINDING TAG: " + tagStr + " on " + classNameOf(view));
                         }
                     }
                     break;
@@ -1169,7 +1268,7 @@ public class LayoutInflater {
                         String text = resolveStringAttr(bxp, i, res);
                         if (text != null) {
                             if (text.length() > 100) {
-                                System.err.println("[LayoutInflater] WARNING: huge text (" + text.length() + " chars): " + text.substring(0, 80) + "...");
+                                diag("[LayoutInflater] WARNING: huge text (" + text.length() + " chars): " + text.substring(0, 80) + "...");
                             }
                             ((TextView) view).setText(text);
                         }
@@ -1279,8 +1378,15 @@ public class LayoutInflater {
                 default:
                     // Fall back to name-based attribute matching
                     if (attrName != null) {
+                        String rawValue = null;
+                        if (attrType == 0x01 || attrType == 0x02 || attrType == 0x03) {
+                            try {
+                                rawValue = bxp.getAttributeValue(i);
+                            } catch (Throwable ignored) {
+                            }
+                        }
                         applyByName(view, attrName, attrType, attrData,
-                                bxp.getAttributeValue(i), res);
+                                rawValue, res);
                     }
                     break;
             }
@@ -1309,7 +1415,66 @@ public class LayoutInflater {
             if (type == 0x01 && data != 0) { // reference
                 ((android.widget.ImageView) view).setImageResource(data);
             }
+        } else if (("progress".equals(name) || "value".equals(name))
+                && view instanceof android.widget.ProgressBar) {
+            ((android.widget.ProgressBar) view).setProgress(resolveIntAttr(type, data, rawValue));
+        } else if ("max".equals(name) && view instanceof android.widget.ProgressBar) {
+            ((android.widget.ProgressBar) view).setMax(resolveIntAttr(type, data, rawValue));
+        } else if ("min".equals(name) && view instanceof android.widget.ProgressBar) {
+            ((android.widget.ProgressBar) view).setMin(resolveIntAttr(type, data, rawValue));
+        } else if ("checked".equals(name) && view instanceof android.widget.CompoundButton) {
+            ((android.widget.CompoundButton) view).setChecked(resolveBooleanAttr(type, data, rawValue));
+        } else if ("contentDescription".equals(name)) {
+            String text = rawValue;
+            if (type == 0x01 && res != null && data != 0) {
+                text = res.getString(data);
+            }
+            if (text != null) view.setContentDescription(text);
+        } else if ("paddingStart".equals(name) || "paddingLeft".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(px, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
+        } else if ("paddingEnd".equals(name) || "paddingRight".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), px, view.getPaddingBottom());
+        } else if ("paddingTop".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(view.getPaddingLeft(), px, view.getPaddingRight(), view.getPaddingBottom());
+        } else if ("paddingBottom".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), px);
+        } else if ("paddingHorizontal".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(px, view.getPaddingTop(), px, view.getPaddingBottom());
+        } else if ("paddingVertical".equals(name)) {
+            int px = resolveLayoutDimensionValue(type, data, res);
+            view.setPadding(view.getPaddingLeft(), px, view.getPaddingRight(), px);
         }
+    }
+
+    private int resolveIntAttr(int type, int data, String rawValue) {
+        if (type == 0x10 || type == 0x11 || type == 0x12) {
+            return data;
+        }
+        if (type == 0x04) {
+            return (int) Float.intBitsToFloat(data);
+        }
+        if (rawValue != null) {
+            try {
+                return (int) Float.parseFloat(rawValue);
+            } catch (Throwable ignored) {
+            }
+        }
+        return data;
+    }
+
+    private boolean resolveBooleanAttr(int type, int data, String rawValue) {
+        if (type == 0x12) {
+            return data != 0;
+        }
+        if (rawValue != null) {
+            return "true".equals(rawValue) || "1".equals(rawValue);
+        }
+        return data != 0;
     }
 
     /**
@@ -1422,7 +1587,7 @@ public class LayoutInflater {
                         String name = bxp.getAttributeName(i);
                         if (name != null && name.startsWith("layout_") && resId != ATTR_LAYOUT_WIDTH
                                 && resId != ATTR_LAYOUT_HEIGHT && resId != ATTR_LAYOUT_WEIGHT) {
-                            System.err.println("[LayoutInflater] unhandled attr: " + name + " resId=0x" + Integer.toHexString(resId) + " data=" + bxp.getAttributeValueData(i));
+                            diag("[LayoutInflater] unhandled attr: " + name + " resId=0x" + Integer.toHexString(resId) + " data=" + bxp.getAttributeValueData(i));
                         }
                     }
                 }
@@ -1550,13 +1715,13 @@ public class LayoutInflater {
                 if (info != null) resDir = info.resDir;
                 if (resDir == null) resDir = info != null ? info.extractDir : null;
 
-                System.err.println("[LayoutInflater] loadLayoutXml: resDir=" + resDir + " path=" + layoutPath);
+                diag("[LayoutInflater] loadLayoutXml: resDir=" + resDir + " path=" + layoutPath);
                 if (resDir != null) {
                     java.io.File xmlFile = new java.io.File(resDir, layoutPath);
-                    System.err.println("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
+                    diag("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
                     if (!xmlFile.exists()) {
                         xmlFile = new java.io.File(resDir, layoutPath.startsWith("res/") ? layoutPath.substring(4) : layoutPath);
-                        System.err.println("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
+                        diag("[LayoutInflater] loadLayoutXml: trying " + xmlFile.getAbsolutePath() + " exists=" + xmlFile.exists());
                     }
                     if (xmlFile.exists()) {
                         return readFile(xmlFile);
@@ -1593,7 +1758,7 @@ public class LayoutInflater {
         if (depth > 4) return "..."; // prevent infinite recursion
 
         StringBuilder sb = new StringBuilder();
-        sb.append(view.getClass().getSimpleName());
+        sb.append(simpleClassNameOf(view));
         int id = view.getId();
         if (id != 0 && id != View.NO_ID) {
             sb.append("(id=0x");

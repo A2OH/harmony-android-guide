@@ -1,5 +1,14 @@
 package dalvik.system;
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class BaseDexClassLoader extends ClassLoader {
     private final String dexPath;
@@ -68,7 +77,94 @@ public class BaseDexClassLoader extends ClassLoader {
         return parts.toArray(new String[0]);
     }
 
-    public java.util.Enumeration<java.net.URL> findResources(String p0) { return null; }
+    @Override
+    protected URL findResource(String name) {
+        Enumeration<URL> resources = findResources(name);
+        return resources.hasMoreElements() ? resources.nextElement() : null;
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) {
+        final boolean traceMainDispatcher =
+                "META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory".equals(name);
+        if (name == null || name.isEmpty()) {
+            return Collections.enumeration(Collections.<URL>emptyList());
+        }
+
+        List<URL> matches = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        List<File> containers = resourceContainers();
+        if (traceMainDispatcher) {
+            System.err.println("[BaseDexCL] findResources(" + name + ") dexPath=" + dexPath
+                    + " containers=" + containers);
+        }
+        for (File container : containers) {
+            URL url = findZipResource(container, name);
+            if (url == null) {
+                continue;
+            }
+            String key = url.toExternalForm();
+            if (seen.add(key)) {
+                matches.add(url);
+                if (traceMainDispatcher) {
+                    System.err.println("[BaseDexCL]   hit " + key);
+                }
+            }
+        }
+        if (traceMainDispatcher && matches.isEmpty()) {
+            System.err.println("[BaseDexCL]   no matches");
+        }
+        return Collections.enumeration(matches);
+    }
+
+    private List<File> resourceContainers() {
+        List<File> result = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        addZipPathList(result, seen, dexPath);
+        addZipPathList(result, seen, System.getProperty("java.class.path"));
+        addZipPath(result, seen, System.getProperty("westlake.apk.path"));
+        addZipPath(result, seen, System.getenv("WESTLAKE_APK_PATH"));
+        return result;
+    }
+
+    private static void addZipPathList(List<File> out, Set<String> seen, String pathList) {
+        if (pathList == null || pathList.isEmpty()) {
+            return;
+        }
+        for (String path : splitByChar(pathList, ':')) {
+            addZipPath(out, seen, path);
+        }
+    }
+
+    private static void addZipPath(List<File> out, Set<String> seen, String path) {
+        if (path == null || path.isEmpty()) {
+            return;
+        }
+        File file = new File(path);
+        if (!file.exists() || !file.isFile()) {
+            return;
+        }
+        String lower = file.getName().toLowerCase(java.util.Locale.ROOT);
+        if (!lower.endsWith(".apk") && !lower.endsWith(".jar") && !lower.endsWith(".zip")) {
+            return;
+        }
+        String fullPath = file.getAbsolutePath();
+        if (seen.add(fullPath)) {
+            out.add(file);
+        }
+    }
+
+    private static URL findZipResource(File container, String name) {
+        try (ZipFile zipFile = new ZipFile(container)) {
+            ZipEntry entry = zipFile.getEntry(name);
+            if (entry == null || entry.isDirectory()) {
+                return null;
+            }
+            return new URL("jar:" + container.toURI().toURL().toExternalForm() + "!/" + name);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
 
     @Override
     public String toString() {

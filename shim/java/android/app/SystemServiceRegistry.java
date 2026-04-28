@@ -26,6 +26,7 @@ public class SystemServiceRegistry {
     private static Object sLocationService;
     private static Object sPhoneService;
     private static Object sSensorService;
+    private static Object sInputMethodService;
 
     private static String[] sCustomNames = new String[4];
     private static Object[] sCustomServices = new Object[4];
@@ -110,6 +111,12 @@ public class SystemServiceRegistry {
         if ("sensor".equals(name)) {
             if (sSensorService == null) sSensorService = new android.hardware.SensorManager();
             return sSensorService;
+        }
+        if ("input_method".equals(name)) {
+            if (sInputMethodService == null) {
+                sInputMethodService = new android.view.inputmethod.InputMethodManager();
+            }
+            return sInputMethodService;
         }
 
         return null;

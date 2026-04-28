@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Westlake Showcase</string>
+    <string name="noice_title">Westlake Noice Lab</string>
+    <string name="noice_subtitle">Local sound library and mixer</string>
+    <string name="unsaved_preset">Unsaved preset</string>
+    <string name="playing">Playing</string>
+    <string name="paused">Paused</string>
+    <string name="search_hint">Search sounds or presets</string>
+    <string name="library">Library</string>
+    <string name="presets">Mixer</string>
+    <string name="timer">Timer</string>
+    <string name="account">Settings</string>
+    <string name="random_preset">Random preset</string>
+    <string name="save_preset">Save preset</string>
+    <string name="main_volume">Main volume</string>
+</resources>

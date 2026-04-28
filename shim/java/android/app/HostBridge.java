@@ -415,6 +415,7 @@ public class HostBridge {
             dst.packageName = getStringField(src, "packageName");
             dst.name = getStringField(src, "className"); // ApplicationInfo uses className
             if (dst.name == null) dst.name = getStringField(src, "name");
+            dst.appComponentFactory = getStringField(src, "appComponentFactory");
             dst.sourceDir = getStringField(src, "sourceDir");
             dst.dataDir = getStringField(src, "dataDir");
             dst.flags = getIntField(src, "flags");

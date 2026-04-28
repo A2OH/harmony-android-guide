@@ -40,32 +40,26 @@ public class MiniServer {
         try {
             SystemServiceRegistry.init();
         } catch (NoSuchMethodError | NoClassDefFoundError e) {
-            // On real Android, SystemServiceRegistry is already initialized
-            android.util.Log.w("MiniServer", "SystemServiceRegistry.init() skipped: " + e.getClass().getSimpleName());
+            // On real Android, SystemServiceRegistry is already initialized.
+            // Avoid eager logging here; standalone bootstrap still has fragile
+            // caller-sensitive paths before the server is fully constructed.
         }
     }
 
     /** Initialize the MiniServer singleton. Call once at engine startup. */
     public static MiniServer init(String packageName) {
-        android.util.Log.i("MiniServer", "init begin pkg=" + packageName);
         MiniServer instance = new MiniServer(packageName);
-        android.util.Log.i("MiniServer", "init constructed instance=" + instance);
         sInstance = instance;
-        android.util.Log.i("MiniServer", "init assigned singleton");
         instance.mApplication.onCreate();
-        android.util.Log.i("MiniServer", "init complete app=" + instance.mApplication
-                + " am=" + instance.mActivityManager + " pm=" + instance.mPackageManager);
         return instance;
     }
 
     /** Get the singleton instance. */
     public static MiniServer get() {
         if (sInstance == null) {
-            // Auto-init with default package for testing
-            android.util.Log.i("MiniServer", "get() missing singleton, auto-init");
+            // Auto-init with default package for testing.
             return init("com.example.app");
         }
-        android.util.Log.i("MiniServer", "get() returning existing singleton=" + sInstance);
         return sInstance;
     }
 

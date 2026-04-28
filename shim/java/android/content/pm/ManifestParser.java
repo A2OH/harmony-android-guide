@@ -30,11 +30,13 @@ public class ManifestParser {
 
     // android:name resource ID
     private static final int ATTR_NAME = 0x01010003;
+    private static final int ATTR_APP_COMPONENT_FACTORY = 0x0101057A;
 
     /** Result of parsing an AndroidManifest.xml */
     public static class ManifestInfo {
         public String packageName;
         public String applicationClass;
+        public String appComponentFactoryClass;
         public List<String> activities = new ArrayList<>();
         public List<String> providers = new ArrayList<>();
         public List<String> services = new ArrayList<>();
@@ -45,6 +47,9 @@ public class ManifestParser {
             sb.append("ManifestInfo{package=").append(packageName);
             if (applicationClass != null) {
                 sb.append(", application=").append(applicationClass);
+            }
+            if (appComponentFactoryClass != null) {
+                sb.append(", factory=").append(appComponentFactoryClass);
             }
             sb.append(", activities=").append(activities);
             sb.append(", providers=").append(providers);
@@ -266,7 +271,7 @@ public class ManifestParser {
             return;
         }
 
-        // For "application", extract android:name
+        // For "application", extract android:name and android:appComponentFactory.
         if ("application".equals(tagName)) {
             String name = findAttributeByResId(data, offset, attrCount, stringPool,
                     resourceIds, ATTR_NAME);
@@ -277,6 +282,15 @@ public class ManifestParser {
             }
             if (name != null) {
                 info.applicationClass = resolveClassName(name, info.packageName);
+            }
+            String factory = findAttributeByResId(data, offset, attrCount, stringPool,
+                    resourceIds, ATTR_APP_COMPONENT_FACTORY);
+            if (factory == null) {
+                factory = findAttributeByName(data, offset, attrCount, stringPool,
+                        "appComponentFactory", resourceIds, ATTR_APP_COMPONENT_FACTORY);
+            }
+            if (factory != null) {
+                info.appComponentFactoryClass = resolveClassName(factory, info.packageName);
             }
             return;
         }

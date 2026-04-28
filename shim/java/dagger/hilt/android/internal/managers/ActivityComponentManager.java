@@ -283,7 +283,103 @@ public final class ActivityComponentManager {
     /** Create a proxy implementing a single interface with stub returns */
     public static Object createInterfaceProxy(Class<?> iface) {
         try {
+            if ("com.mcdonalds.mcdcoreapp.helper.interfaces.LocalCacheManagerDataSource"
+                    .equals(iface.getName())) {
+                return createLocalCacheManagerDataSourceProxy(iface);
+            }
             return Proxy.newProxyInstance(iface.getClassLoader(), new Class<?>[]{ iface }, FIELD_STUB_HANDLER);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static Object createLocalCacheManagerDataSourceProxy(final Class<?> iface) {
+        try {
+            return Proxy.newProxyInstance(
+                    iface.getClassLoader(),
+                    new Class<?>[]{iface},
+                    new InvocationHandler() {
+                        private final java.util.Map<String, Object> cache = new java.util.HashMap<>();
+
+                        @Override
+                        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                            String name = method.getName();
+                            if ("toString".equals(name)) return "StubProxy[LocalCacheManagerDataSource]";
+                            if ("hashCode".equals(name)) return System.identityHashCode(proxy);
+                            if ("equals".equals(name)) return proxy == args[0];
+
+                            String key = (args != null && args.length > 0 && args[0] instanceof String)
+                                    ? (String) args[0] : null;
+                            if (key != null) {
+                                if ("remove".equals(name) || "b".equals(name) || "d".equals(name)
+                                        || "q".equals(name)) {
+                                    cache.remove(key);
+                                    return null;
+                                }
+                                if ("putString".equals(name) || "putBoolean".equals(name)
+                                        || "putBooleanWithExpiry".equals(name) || "putInt".equals(name)
+                                        || "putLong".equals(name) || "f".equals(name)
+                                        || "c".equals(name) || "g".equals(name) || "i".equals(name)
+                                        || "m".equals(name) || "p".equals(name)) {
+                                    if (args.length > 1) {
+                                        cache.put(key, args[1]);
+                                    }
+                                    return null;
+                                }
+                                if ("s".equals(name) || "o".equals(name)) {
+                                    Object cached = cache.get(key);
+                                    if (args.length > 1 && args[1] instanceof Class<?>) {
+                                        Class<?> requested = (Class<?>) args[1];
+                                        if (cached != null && requested.isInstance(cached)) {
+                                            return cached;
+                                        }
+                                        // McD immediately check-casts this value to the requested class.
+                                        return null;
+                                    }
+                                    return cached;
+                                }
+                                if ("e".equals(name)) {
+                                    return cache.get(key);
+                                }
+                                if ("getString".equals(name)) {
+                                    Object cached = cache.get(key);
+                                    return cached instanceof String ? cached
+                                            : (args.length > 1 ? args[1] : "");
+                                }
+                                if ("getBoolean".equals(name) || "getBooleanWithExpiry".equals(name)) {
+                                    Object cached = cache.get(key);
+                                    return cached instanceof Boolean ? cached
+                                            : (args.length > 1 ? args[1] : false);
+                                }
+                                if ("getInt".equals(name)) {
+                                    Object cached = cache.get(key);
+                                    return cached instanceof Integer ? cached
+                                            : (args.length > 1 ? args[1] : 0);
+                                }
+                                if ("getLong".equals(name)) {
+                                    Object cached = cache.get(key);
+                                    return cached instanceof Long ? cached
+                                            : (args.length > 1 ? args[1] : 0L);
+                                }
+                            }
+
+                            Class<?> rt = method.getReturnType();
+                            if (rt == void.class) return null;
+                            if (rt == boolean.class) return false;
+                            if (rt == int.class) return 0;
+                            if (rt == long.class) return 0L;
+                            if (rt == float.class) return 0f;
+                            if (rt == double.class) return 0.0;
+                            if (rt == String.class) return "";
+                            if (java.util.List.class.isAssignableFrom(rt)) return new java.util.ArrayList();
+                            if (java.util.Map.class.isAssignableFrom(rt)) return new java.util.HashMap();
+                            if (java.util.Set.class.isAssignableFrom(rt)) return new java.util.HashSet();
+                            if (rt == Object.class) return null;
+                            if (rt.isInterface()) return createInterfaceProxy(rt);
+                            try { return rt.getDeclaredConstructor().newInstance(); } catch (Throwable t) {}
+                            return null;
+                        }
+                    });
         } catch (Throwable t) {
             return null;
         }

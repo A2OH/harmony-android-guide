@@ -32,6 +32,7 @@ public class HeadlessTest {
     public static void main(String[] args) {
         System.out.println("═══ Android→OH Shim Headless Test ═══\n");
 
+        testStandaloneBootstrapSmoke();
         testLog();
         testDeviceInfo();
         testPreferences();
@@ -180,6 +181,45 @@ public class HeadlessTest {
 
     static void section(String name) {
         System.out.println("\n── " + name + " ──");
+    }
+
+    // ── Platform-first bootstrap smoke ──
+
+    static void testStandaloneBootstrapSmoke() {
+        section("Standalone Bootstrap Smoke");
+
+        try {
+            ThreadLocal<Object> tl = new ThreadLocal<Object>();
+            check("new ThreadLocal<>()", tl != null);
+            check("ThreadLocal.get()", tl.get() == null);
+        } catch (Throwable t) {
+            System.out.println("    ThreadLocal smoke threw: " + t);
+            check("new ThreadLocal<>()", false);
+            check("ThreadLocal.get()", false);
+        }
+
+        try {
+            java.util.Locale locale = java.util.Locale.getDefault();
+            check("Locale.getDefault()", locale != null);
+            String upper = "westlake".toUpperCase(java.util.Locale.US);
+            check("String.toUpperCase(Locale.US)", "WESTLAKE".equals(upper));
+        } catch (Throwable t) {
+            System.out.println("    Locale smoke threw: " + t);
+            check("Locale.getDefault()", false);
+            check("String.toUpperCase(Locale.US)", false);
+        }
+
+        try {
+            android.os.Looper main = android.os.Looper.getMainLooper();
+            if (main == null) {
+                android.os.Looper.prepareMainLooper();
+                main = android.os.Looper.getMainLooper();
+            }
+            check("Looper main available", main != null);
+        } catch (Throwable t) {
+            System.out.println("    Looper smoke threw: " + t);
+            check("Looper main available", false);
+        }
     }
 
     // ── Log ──

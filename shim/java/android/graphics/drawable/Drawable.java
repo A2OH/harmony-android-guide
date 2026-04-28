@@ -1740,4 +1740,3 @@ public abstract class Drawable {
         }
     }
 }
-

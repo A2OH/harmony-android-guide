@@ -56,7 +56,7 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
     private static final int TV_TYPE_INT_COLOR_RGB4  = 0x1f;
 
     // ---- Parsed data ----
-    private String[] mStringPool;
+    private Object[] mStringPool;
     private int[] mResourceIds;
 
     // ---- Event stream ----
@@ -129,7 +129,7 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
         }
 
         if (mStringPool == null) {
-            mStringPool = new String[0];
+            mStringPool = new Object[0];
         }
         if (mResourceIds == null) {
             mResourceIds = new int[0];
@@ -582,7 +582,7 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
     /**
      * Get the string pool parsed from this AXML.
      */
-    public String[] getStringPool() {
+    public Object[] getStringPool() {
         return mStringPool;
     }
 
@@ -611,7 +611,8 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
 
     private String poolString(int index) {
         if (index < 0 || mStringPool == null || index >= mStringPool.length) return null;
-        return mStringPool[index];
+        Object value = mStringPool[index];
+        return value != null ? value.toString() : null;
     }
 
     private int attrBase(int index) {
@@ -675,7 +676,7 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
 
     // ---- String pool parsing ----
 
-    private String[] parseStringPool(ByteBuffer buf, int chunkStart, int chunkSize) {
+    private Object[] parseStringPool(ByteBuffer buf, int chunkStart, int chunkSize) {
         // String pool header (after the 8-byte chunk header already read):
         // stringCount(4), styleCount(4), flags(4), stringsStart(4), stylesStart(4)
         int stringCount = buf.getInt();
@@ -699,7 +700,7 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
         // stringsStart is relative to the chunk start
         int dataStart = chunkStart + stringsStart;
 
-        String[] pool = new String[stringCount];
+        Object[] pool = new Object[stringCount];
         for (int i = 0; i < stringCount; i++) {
             int pos = dataStart + offsets[i];
             if (pos < 0 || pos >= buf.limit()) {
@@ -733,10 +734,51 @@ public class BinaryXmlParser implements XmlPullParser, XmlResourceParser, Attrib
         byte[] b = new byte[byteLen];
         buf.get(b);
         try {
-            return new String(b, "UTF-8");
+            return decodeUtf8(b);
         } catch (Exception e) {
             return "";
         }
+    }
+
+    private String decodeUtf8(byte[] data) {
+        char[] out = new char[data.length * 2];
+        int in = 0;
+        int outLen = 0;
+        while (in < data.length) {
+            int b0 = data[in] & 0xFF;
+            if (b0 < 0x80) {
+                out[outLen++] = (char) b0;
+                in++;
+                continue;
+            }
+            if ((b0 & 0xE0) == 0xC0 && in + 1 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x1F) << 6) | b1);
+                in += 2;
+                continue;
+            }
+            if ((b0 & 0xF0) == 0xE0 && in + 2 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x0F) << 12) | (b1 << 6) | b2);
+                in += 3;
+                continue;
+            }
+            if ((b0 & 0xF8) == 0xF0 && in + 3 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                int b3 = data[in + 3] & 0x3F;
+                int cp = ((b0 & 0x07) << 18) | (b1 << 12) | (b2 << 6) | b3;
+                cp -= 0x10000;
+                out[outLen++] = (char) (0xD800 | (cp >> 10));
+                out[outLen++] = (char) (0xDC00 | (cp & 0x3FF));
+                in += 4;
+                continue;
+            }
+            out[outLen++] = '\uFFFD';
+            in++;
+        }
+        return new String(out, 0, outLen);
     }
 
     private String readUtf16(ByteBuffer buf) {

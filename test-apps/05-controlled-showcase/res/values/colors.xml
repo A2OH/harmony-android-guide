@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="noice_bg">#f7f4ef</color>
+    <color name="noice_surface">#ffffff</color>
+    <color name="noice_surface_alt">#eceff1</color>
+    <color name="noice_primary">#2962a0</color>
+    <color name="noice_primary_dark">#174c7f</color>
+    <color name="noice_ink">#202124</color>
+    <color name="noice_muted">#5f6368</color>
+    <color name="noice_good">#4d7c59</color>
+    <color name="noice_warn">#9b5c1f</color>
+</resources>

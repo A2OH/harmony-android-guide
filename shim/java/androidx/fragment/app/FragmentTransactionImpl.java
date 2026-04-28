@@ -1,5 +1,7 @@
 package androidx.fragment.app;
 
+import com.westlake.engine.WestlakeLauncher;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,17 +22,27 @@ class FragmentTransactionImpl extends FragmentTransaction {
 
     @Override
     public FragmentTransaction add(int containerViewId, Fragment fragment) {
+        note("FragmentTransaction add2 enter txId=" + System.identityHashCode(this)
+                + " fragment=" + (fragment != null)
+                + " opsBefore=" + mOps.size());
         return add(containerViewId, fragment, null);
     }
 
     @Override
     public FragmentTransaction add(int containerViewId, Fragment fragment, String tag) {
+        note("FragmentTransaction add3 enter txId=" + System.identityHashCode(this)
+                + " txClass=" + getClass().getName()
+                + " fragment=" + (fragment != null)
+                + " tag=" + tag
+                + " opsBefore=" + mOps.size());
         Op op = new Op();
         op.cmd = OP_ADD;
         op.fragment = fragment;
         op.tag = tag;
         op.containerId = containerViewId;
         mOps.add(op);
+        note("FragmentTransaction add3 exit txId=" + System.identityHashCode(this)
+                + " opsAfter=" + mOps.size());
         return this;
     }
 
@@ -117,11 +129,30 @@ class FragmentTransactionImpl extends FragmentTransaction {
     @Override
     public boolean isEmpty() { return mOps.isEmpty(); }
 
+    private static void note(String marker) {
+        try {
+            WestlakeLauncher.noteMarker("CV " + marker);
+        } catch (Throwable ignored) {
+        }
+    }
+
     private int commitInternal(boolean allowStateLoss) {
-        if (mManager == null) return -1;
+        note("FragmentTransaction commit enter txId=" + System.identityHashCode(this)
+                + " txClass=" + getClass().getName()
+                + " manager=" + (mManager != null)
+                + " managerId=" + (mManager != null ? System.identityHashCode(mManager) : -1)
+                + " ops=" + (mOps != null ? mOps.size() : -1)
+                + " allowStateLoss=" + allowStateLoss);
+        if (mManager == null) {
+            note("FragmentTransaction commit manager null");
+            return -1;
+        }
 
         for (int i = 0; i < mOps.size(); i++) {
             Op op = mOps.get(i);
+            note("FragmentTransaction commit op index=" + i
+                    + " cmd=" + (op != null ? op.cmd : -1)
+                    + " fragment=" + (op != null && op.fragment != null));
             switch (op.cmd) {
                 case OP_ADD:
                     mManager.addFragmentInternal(op.fragment, op.tag, op.containerId);
@@ -150,11 +181,13 @@ class FragmentTransactionImpl extends FragmentTransaction {
                     break;
             }
         }
+        note("FragmentTransaction commit ops applied count=" + mOps.size());
 
         int backStackId = -1;
         if (mAddToBackStack) {
             backStackId = mManager.addBackStack(mName, new ArrayList<>(mOps));
         }
+        note("FragmentTransaction commit return backStackId=" + backStackId);
         return backStackId;
     }
 }

@@ -2090,6 +2090,9 @@ public class LinearLayout extends ViewGroup {
         @Override
         @UnsupportedAppUsage
         protected void encodeProperties(@NonNull ViewHierarchyEncoder encoder) {
+            if (encoder == null) {
+                return;
+            }
             super.encodeProperties(encoder);
 
             encoder.addProperty("layout:weight", weight);

@@ -66,6 +66,18 @@ public class Window {
         mDecorView = new android.widget.FrameLayout(p0);
     }
 
+    public void adoptContext(Context context) {
+        if (context != null) {
+            mContext = context;
+            if (mDecorView != null && mDecorView.mContext == null) {
+                mDecorView.mContext = context;
+            }
+            if (mContentView != null && mContentView.mContext == null) {
+                mContentView.mContext = context;
+            }
+        }
+    }
+
     public void addContentView(View p0, Object p1) {
         if (mDecorView instanceof ViewGroup) {
             ((ViewGroup) mDecorView).addView(p0);
@@ -76,11 +88,98 @@ public class Window {
     public void clearFlags(int p0) { mFlags &= ~p0; }
     public void closeAllPanels() {}
     public void closePanel(int p0) {}
-    public View getDecorView() { return mDecorView; }
+    public View getDecorView() {
+        final boolean strictStandalone = !com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (strictStandalone && mDecorView == null) {
+            if (mContext == null) {
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView context null");
+            }
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView alloc call");
+            Object rawDecor = com.westlake.engine.WestlakeLauncher.tryAllocInstance(android.widget.FrameLayout.class);
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView alloc returned");
+            if (rawDecor instanceof View) {
+                mDecorView = (View) rawDecor;
+                if (mContext != null && mDecorView.mContext == null) {
+                    mDecorView.mContext = mContext;
+                    com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView context seeded");
+                }
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView alloc usable");
+            } else {
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window getDecorView alloc unusable");
+            }
+        }
+        return mDecorView;
+    }
+
+    public boolean installMinimalStandaloneContent() {
+        final boolean strictStandalone = !com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (!strictStandalone) {
+            return false;
+        }
+        android.util.Log.i("Window", "strict installMinimalStandaloneContent begin");
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent begin");
+        View decor = getDecorView();
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent decor returned");
+        if (!(decor instanceof ViewGroup)) {
+            android.util.Log.i("Window", "strict installMinimalStandaloneContent decor unusable");
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent decor unusable");
+            return false;
+        }
+        int existingChildren = ((ViewGroup) decor).getChildCount();
+        android.util.Log.i("Window", "strict installMinimalStandaloneContent existingChildren="
+                + existingChildren);
+        if (existingChildren > 0) {
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent already positive");
+            return true;
+        }
+        if (mContext == null) {
+            android.util.Log.i("Window", "strict installMinimalStandaloneContent context null");
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent context null");
+            return false;
+        }
+        View content = null;
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent alloc call");
+        Object rawContent = com.westlake.engine.WestlakeLauncher.tryAllocInstance(android.widget.FrameLayout.class);
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent alloc returned");
+        if (rawContent instanceof View) {
+            content = (View) rawContent;
+            if (content.mContext == null) {
+                content.mContext = mContext;
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent context seeded");
+            }
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent alloc usable");
+        } else {
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent alloc unusable");
+        }
+        if (content == null) {
+            return false;
+        }
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent set call");
+        setContentView(content, null);
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent set returned");
+        View updatedDecor = getDecorView();
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent verify returned");
+        int newChildren = updatedDecor instanceof ViewGroup
+                ? ((ViewGroup) updatedDecor).getChildCount()
+                : -1;
+        android.util.Log.i("Window", "strict installMinimalStandaloneContent newChildren="
+                + newChildren);
+        if (newChildren > 0) {
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent verify positive");
+            return true;
+        }
+        com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window installContent verify nonpositive");
+        return false;
+    }
     public LayoutInflater getLayoutInflater() { return new LayoutInflater(mContext); }
 
     public <T extends View> T findViewById(int id) {
-        if (mDecorView != null) return mDecorView.findViewById(id);
+        if (mDecorView != null) {
+            T found = mDecorView.findViewById(id);
+            if (found != null) {
+                return found;
+            }
+        }
         return null;
     }
     public Object findViewById_legacy(int p0) {
@@ -201,6 +300,47 @@ public class Window {
         if (p0 == null) {
             return;
         }
+        final boolean strictStandalone = !com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (mContext != null && p0.mContext == null) {
+            p0.mContext = mContext;
+        }
+        if (mDecorView != null && mContext != null && mDecorView.mContext == null) {
+            mDecorView.mContext = mContext;
+        }
+        if (strictStandalone) {
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView entry");
+            try {
+                if (mDecorView instanceof ViewGroup && mDecorView != p0) {
+                    com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView childInstall call");
+                    ((ViewGroup) mDecorView).installStandaloneChild(p0);
+                    com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView childInstall returned");
+                } else {
+                    com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView replace decor call");
+                    mDecorView = p0;
+                    com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView replace decor returned");
+                }
+            } catch (Throwable ignored) {
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView childInstall threw");
+                mDecorView = p0;
+                com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView fallback direct");
+            }
+            try {
+                if (mContext instanceof android.app.Activity) {
+                    mDecorView.setTag(mContext);
+                    ((android.app.Activity) mContext).invalidateLayout();
+                }
+                com.westlake.engine.WestlakeLauncher.marker(
+                        "PF301 strict Window setContentView invalidate skipped");
+                int childCount = mDecorView instanceof ViewGroup
+                        ? ((ViewGroup) mDecorView).getChildCount()
+                        : -1;
+            } catch (Throwable ignored) {
+                com.westlake.engine.WestlakeLauncher.marker(
+                        "PF301 strict Window setContentView invalidate threw");
+            }
+            com.westlake.engine.WestlakeLauncher.marker("PF301 strict Window setContentView standalone end");
+            return;
+        }
         try {
             if (mDecorView instanceof ViewGroup && mDecorView != p0) {
                 ViewGroup decor = (ViewGroup) mDecorView;
@@ -271,6 +411,262 @@ public class Window {
         } catch (Throwable ignored) {
         }
         return 0;
+    }
+
+    private boolean matchesLayoutResource(int layoutResId, String name) {
+        if (layoutResId == 0 || name == null) {
+            return false;
+        }
+        int resolved = resolveResourceId("layout", name);
+        return resolved != 0 && resolved == layoutResId;
+    }
+
+    private boolean hasId(View root, int id) {
+        return root != null && id != 0 && root.findViewById(id) != null;
+    }
+
+    private boolean isStructuredPageLayout(int layoutResId) {
+        return matchesLayoutResource(layoutResId, "activity_base")
+                || matchesLayoutResource(layoutResId, "base_layout");
+    }
+
+    private boolean hasStructuredPageShell(View root) {
+        if (root == null) {
+            return false;
+        }
+        int pageRootId = resolveResourceId("id", "page_root");
+        int contentViewId = resolveResourceId("id", "content_view");
+        int pageContentId = resolveResourceId("id", "page_content");
+        int pageContentHolderId = resolveResourceId("id", "page_content_holder");
+        int toolbarId = resolveResourceId("id", "toolbar");
+        return hasId(root, pageRootId)
+                && hasId(root, contentViewId)
+                && hasId(root, pageContentId)
+                && hasId(root, pageContentHolderId)
+                && hasId(root, toolbarId);
+    }
+
+    private boolean isStructuredShellLookupId(int id) {
+        if (id == 0) {
+            return false;
+        }
+        String[] names = {
+                "page_root",
+                "content_view",
+                "page_content",
+                "page_content_holder",
+                "toolbar",
+                "mcdBackNavigationButton",
+                "basket_layout",
+                "toolbarRightButton",
+                "toolbarSearchIcon",
+                "basket_price",
+                "basket_error",
+                "toolbarTitleText",
+                "toolbarCenterImageIcon",
+                "back",
+                "close",
+                "toolbar_title"
+        };
+        for (int i = 0; i < names.length; i++) {
+            if (resolveResourceId("id", names[i]) == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int dp(int value) {
+        try {
+            float density = mContext != null
+                    ? mContext.getResources().getDisplayMetrics().density
+                    : 1.0f;
+            return Math.max(1, (int) (value * density + 0.5f));
+        } catch (Throwable ignored) {
+            return Math.max(1, value);
+        }
+    }
+
+    private void ensureToolbarAliasViews(View toolbarView) {
+        if (!(toolbarView instanceof ViewGroup) || mContext == null) {
+            return;
+        }
+        try {
+            ViewGroup toolbar = (ViewGroup) toolbarView;
+            int backId = resolveResourceId("id", "back");
+            int closeId = resolveResourceId("id", "close");
+            int titleId = resolveResourceId("id", "toolbar_title");
+            int centerIconId = resolveResourceId("id", "toolbarCenterImageIcon");
+
+            if (backId != 0 && toolbar.findViewById(backId) == null) {
+                android.widget.ImageView back = new android.widget.ImageView(mContext);
+                back.setId(backId);
+                back.setVisibility(View.GONE);
+                if (toolbar instanceof android.widget.RelativeLayout) {
+                    android.widget.RelativeLayout.LayoutParams lp =
+                            new android.widget.RelativeLayout.LayoutParams(dp(40), dp(40));
+                    lp.addRule(android.widget.RelativeLayout.ALIGN_PARENT_START);
+                    lp.addRule(android.widget.RelativeLayout.CENTER_VERTICAL);
+                    lp.leftMargin = dp(8);
+                    toolbar.addView(back, lp);
+                } else {
+                    toolbar.addView(back);
+                }
+            }
+
+            if (closeId != 0 && toolbar.findViewById(closeId) == null) {
+                android.widget.ImageView close = new android.widget.ImageView(mContext);
+                close.setId(closeId);
+                close.setVisibility(View.GONE);
+                if (toolbar instanceof android.widget.RelativeLayout) {
+                    android.widget.RelativeLayout.LayoutParams lp =
+                            new android.widget.RelativeLayout.LayoutParams(dp(40), dp(40));
+                    lp.addRule(android.widget.RelativeLayout.ALIGN_PARENT_END);
+                    lp.addRule(android.widget.RelativeLayout.CENTER_VERTICAL);
+                    lp.rightMargin = dp(8);
+                    toolbar.addView(close, lp);
+                } else {
+                    toolbar.addView(close);
+                }
+            }
+
+            if (titleId != 0 && toolbar.findViewById(titleId) == null) {
+                com.mcdonalds.mcduikit.widget.McDTextView title =
+                        new com.mcdonalds.mcduikit.widget.McDTextView(mContext);
+                title.setId(titleId);
+                title.setTextColor(0xFFFFFFFF);
+                title.setVisibility(View.GONE);
+                if (toolbar instanceof android.widget.RelativeLayout) {
+                    android.widget.RelativeLayout.LayoutParams lp =
+                            new android.widget.RelativeLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.addRule(android.widget.RelativeLayout.CENTER_IN_PARENT);
+                    toolbar.addView(title, lp);
+                } else {
+                    toolbar.addView(title);
+                }
+            }
+
+            if (centerIconId != 0 && toolbar.findViewById(centerIconId) == null) {
+                android.widget.ImageView centerIcon = new android.widget.ImageView(mContext);
+                centerIcon.setId(centerIconId);
+                centerIcon.setVisibility(View.GONE);
+                if (toolbar instanceof android.widget.RelativeLayout) {
+                    android.widget.RelativeLayout.LayoutParams lp =
+                            new android.widget.RelativeLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.addRule(android.widget.RelativeLayout.CENTER_IN_PARENT);
+                    toolbar.addView(centerIcon, lp);
+                } else {
+                    toolbar.addView(centerIcon);
+                }
+            }
+        } catch (Throwable t) {
+            android.util.Log.w("Window", "ensureToolbarAliasViews failed: "
+                    + t.getClass().getName() + ": " + t.getMessage());
+        }
+    }
+
+    private View buildStructuredPageShell() {
+        if (mContext == null) {
+            return null;
+        }
+
+        int pageRootId = resolveResourceId("id", "page_root");
+        int contentViewId = resolveResourceId("id", "content_view");
+        int pageContentId = resolveResourceId("id", "page_content");
+        int pageContentHolderId = resolveResourceId("id", "page_content_holder");
+        int toolbarId = resolveResourceId("id", "toolbar");
+
+        android.widget.LinearLayout pageRoot = new android.widget.LinearLayout(mContext);
+        pageRoot.setOrientation(android.widget.LinearLayout.VERTICAL);
+        if (pageRootId != 0) {
+            pageRoot.setId(pageRootId);
+        }
+        pageRoot.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        com.mcdonalds.mcduikit.widget.McDToolBarView toolbar =
+                new com.mcdonalds.mcduikit.widget.McDToolBarView(mContext);
+        if (toolbarId != 0) {
+            toolbar.setId(toolbarId);
+        }
+        pageRoot.addView(toolbar, new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        android.widget.FrameLayout contentView = new android.widget.FrameLayout(mContext);
+        if (contentViewId != 0) {
+            contentView.setId(contentViewId);
+        }
+        pageRoot.addView(contentView, new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1.0f));
+
+        android.widget.LinearLayout pageContent = new android.widget.LinearLayout(mContext);
+        pageContent.setOrientation(android.widget.LinearLayout.VERTICAL);
+        if (pageContentId != 0) {
+            pageContent.setId(pageContentId);
+        }
+        contentView.addView(pageContent, new android.widget.FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        android.widget.FrameLayout pageContentHolder = new android.widget.FrameLayout(mContext);
+        if (pageContentHolderId != 0) {
+            pageContentHolder.setId(pageContentHolderId);
+        }
+        pageContent.addView(pageContentHolder, new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        return pageRoot;
+    }
+
+    private void maybeInstallStructuredPageShellForLookup(int id) {
+        if (!isStructuredShellLookupId(id) || mContext == null) {
+            return;
+        }
+        try {
+            if (!hasStructuredPageShell(mDecorView)) {
+                View shell = buildStructuredPageShell();
+                if (shell != null) {
+                    setContentView(shell, null);
+                    android.util.Log.i("Window", "Installed structured page shell via findViewById for 0x"
+                            + Integer.toHexString(id));
+                }
+            }
+            int toolbarId = resolveResourceId("id", "toolbar");
+            ensureToolbarAliasViews(toolbarId != 0 ? mDecorView.findViewById(toolbarId) : null);
+        } catch (Throwable t) {
+            android.util.Log.w("Window", "maybeInstallStructuredPageShellForLookup failed: "
+                    + t.getClass().getName() + ": " + t.getMessage());
+        }
+    }
+
+    private void ensureStructuredPageShell(int layoutResId) {
+        if (!isStructuredPageLayout(layoutResId) || mContext == null) {
+            return;
+        }
+        try {
+            if (!hasStructuredPageShell(mDecorView)) {
+                View shell = buildStructuredPageShell();
+                if (shell != null) {
+                    setContentView(shell, null);
+                    android.util.Log.i("Window", "Installed structured page shell for 0x"
+                            + Integer.toHexString(layoutResId));
+                }
+            }
+            int toolbarId = resolveResourceId("id", "toolbar");
+            ensureToolbarAliasViews(toolbarId != 0 ? mDecorView.findViewById(toolbarId) : null);
+        } catch (Throwable t) {
+            android.util.Log.w("Window", "ensureStructuredPageShell failed: "
+                    + t.getClass().getName() + ": " + t.getMessage());
+        }
     }
 
     private void ensureMcdToolbarShell() {

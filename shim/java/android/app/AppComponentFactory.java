@@ -24,6 +24,20 @@ public class AppComponentFactory {
 
     public AppComponentFactory() {}
 
+    private static void maybeLogI(String message) {
+        if (!WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            return;
+        }
+        Log.i(TAG, message);
+    }
+
+    private static void maybeLogW(String message) {
+        if (!WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
+            return;
+        }
+        Log.w(TAG, message);
+    }
+
     /**
      * Create an Activity instance. Hilt overrides this to inject dependencies.
      *
@@ -34,10 +48,52 @@ public class AppComponentFactory {
      */
     public Activity instantiateActivity(ClassLoader cl, String className, Intent intent)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        Class<?> raw = cl.loadClass(className);
+        WestlakeLauncher.marker("PF301 strict factory entry");
+        Class<?> raw = null;
+        try {
+            raw = WestlakeLauncher.resolveAppClassChildFirstOrNull(className);
+        } catch (Throwable resolveChildFirstError) {}
+        if (raw == null && cl != null) {
+            try {
+                raw = WestlakeLauncher.resolveAppClassOrNull(className);
+            } catch (Throwable resolveError) {}
+        }
+        if (raw == null && cl != null) {
+            try {
+                raw = cl.loadClass(className);
+            } catch (Throwable loadError) {}
+        }
+        if (raw == null && cl != null) {
+            try {
+                raw = Class.forName(className, false, cl);
+            } catch (Throwable classForNameError) {}
+        }
+        WestlakeLauncher.marker("PF301 strict factory post-resolve branch");
+        if (raw == null) {
+            WestlakeLauncher.marker("PF301 strict factory raw class was null");
+            throw new InstantiationException(className + ": activity class unresolved");
+        }
+        WestlakeLauncher.marker("PF301 strict factory raw class was nonnull");
+        WestlakeLauncher.marker("PF301 strict factory ctor activity call");
+        try {
+            java.lang.reflect.Constructor<?> ctor = raw.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            Activity activity = Activity.class.cast(ctor.newInstance());
+            WestlakeLauncher.marker("PF301 strict factory ctor activity returned");
+            return activity;
+        } catch (Throwable ctorError) {
+            WestlakeLauncher.marker("PF301 strict factory ctor activity failed");
+            maybeLogW("instantiateActivity constructor failed for " + className + ": "
+                    + ctorError.getClass().getSimpleName() + ": " + ctorError.getMessage());
+        }
+        WestlakeLauncher.marker("PF301 strict factory allocate activity call");
         Object activityInstance = tryAllocateActivityInstance(raw, className);
+        WestlakeLauncher.marker("PF301 strict factory allocate activity returned");
         if (activityInstance != null) {
-            return Activity.class.cast(activityInstance);
+            WestlakeLauncher.marker("PF301 strict factory cast activity call");
+            Activity castActivity = (Activity) activityInstance;
+            WestlakeLauncher.marker("PF301 strict factory cast activity returned");
+            return castActivity;
         }
         throw new InstantiationException(className + ": activity ctor path disabled");
     }
@@ -51,12 +107,45 @@ public class AppComponentFactory {
      */
     public Application instantiateApplication(ClassLoader cl, String className)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        Class<?> raw = cl.loadClass(className);
+        WestlakeLauncher.marker("PF301 strict factory application entry");
+        Class<?> raw = null;
+        try {
+            raw = WestlakeLauncher.resolveAppClassChildFirstOrNull(className);
+        } catch (Throwable resolveChildFirstError) {}
+        if (raw == null && cl != null) {
+            try {
+                raw = WestlakeLauncher.resolveAppClassOrNull(className);
+            } catch (Throwable resolveError) {}
+        }
+        if (raw == null && cl != null) {
+            try {
+                raw = Class.forName(className, false, cl);
+            } catch (Throwable classForNameError) {}
+        }
+        if (raw == null && cl != null) {
+            raw = cl.loadClass(className);
+        }
+        if (raw == null) {
+            throw new InstantiationException(className + ": application class unresolved");
+        }
+        WestlakeLauncher.marker("PF301 strict factory application raw class nonnull");
+        try {
+            java.lang.reflect.Constructor<?> ctor = raw.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            WestlakeLauncher.marker("PF301 strict factory application ctor call");
+            Application app = Application.class.cast(ctor.newInstance());
+            WestlakeLauncher.marker("PF301 strict factory application ctor returned");
+            return app;
+        } catch (Throwable ctorError) {
+            WestlakeLauncher.marker("PF301 strict factory application ctor failed");
+            maybeLogW("instantiateApplication constructor failed for " + className + ": "
+                    + ctorError.getClass().getSimpleName() + ": " + ctorError.getMessage());
+        }
         Object appInstance = tryAllocateComponentInstance(raw, className, "Application");
         if (appInstance != null) {
             return Application.class.cast(appInstance);
         }
-        return instantiate(raw, className, Application.class);
+        throw new InstantiationException(className + ": application ctor path disabled");
     }
 
     /**
@@ -157,19 +246,23 @@ public class AppComponentFactory {
 
     private static Object tryAllocateComponentInstance(
             Class<?> raw, String className, String componentKind) {
+        WestlakeLauncher.marker("PF301 strict factory native alloc call");
         Object nativeInstance = WestlakeLauncher.tryAllocInstance(raw);
+        WestlakeLauncher.marker("PF301 strict factory native alloc returned");
         if (nativeInstance != null) {
-            Log.i(TAG, "instantiate" + componentKind + " via nativeAllocInstance: " + className);
+            WestlakeLauncher.marker("PF301 strict factory native alloc nonnull");
             return nativeInstance;
         }
 
+        WestlakeLauncher.marker("PF301 strict factory unsafe alloc call");
         Object unsafeInstance = tryAllocateInstance(raw);
+        WestlakeLauncher.marker("PF301 strict factory unsafe alloc returned");
         if (unsafeInstance != null) {
-            Log.w(TAG, "instantiate" + componentKind + " via Java Unsafe fallback: " + className);
+            WestlakeLauncher.marker("PF301 strict factory unsafe alloc nonnull");
             return unsafeInstance;
         }
 
-        Log.w(TAG, "instantiate" + componentKind + " allocation failed: " + className);
+        WestlakeLauncher.marker("PF301 strict factory allocation failed");
         return null;
     }
 

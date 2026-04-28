@@ -85,8 +85,8 @@ public class BinaryLayoutParser {
         VIEW_CLASS_MAP.put("ImageButton", "android.widget.ImageView"); // approximate
         VIEW_CLASS_MAP.put("CheckBox", "android.widget.CheckBox");
         VIEW_CLASS_MAP.put("ProgressBar", "android.widget.ProgressBar");
-        VIEW_CLASS_MAP.put("ScrollView", "android.widget.ScrollView");
-        VIEW_CLASS_MAP.put("HorizontalScrollView", "android.widget.ScrollView");
+        VIEW_CLASS_MAP.put("ScrollView", "android.widget.FrameLayout");
+        VIEW_CLASS_MAP.put("HorizontalScrollView", "android.widget.FrameLayout");
         VIEW_CLASS_MAP.put("ListView", "android.widget.ListView");
         VIEW_CLASS_MAP.put("RecyclerView", "android.widget.FrameLayout");
         VIEW_CLASS_MAP.put("WebView", "android.webkit.WebView");
@@ -105,20 +105,24 @@ public class BinaryLayoutParser {
         FQN_CLASS_MAP.put("androidx.viewpager2.widget.ViewPager2", "android.widget.FrameLayout");
         FQN_CLASS_MAP.put("androidx.recyclerview.widget.RecyclerView", "android.widget.FrameLayout");
         FQN_CLASS_MAP.put("androidx.cardview.widget.CardView", "android.widget.FrameLayout");
-        FQN_CLASS_MAP.put("androidx.core.widget.NestedScrollView", "android.widget.ScrollView");
+        FQN_CLASS_MAP.put("androidx.core.widget.NestedScrollView", "android.widget.FrameLayout");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.Toolbar", "android.widget.FrameLayout");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.AppCompatTextView", "android.widget.TextView");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.AppCompatButton", "android.widget.Button");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.AppCompatEditText", "android.widget.EditText");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.AppCompatImageView", "android.widget.ImageView");
         FQN_CLASS_MAP.put("androidx.appcompat.widget.LinearLayoutCompat", "android.widget.LinearLayout");
-        FQN_CLASS_MAP.put("com.google.android.material.appbar.AppBarLayout", "android.widget.LinearLayout");
+        FQN_CLASS_MAP.put("com.google.android.material.appbar.AppBarLayout", "com.google.android.material.appbar.AppBarLayout");
         FQN_CLASS_MAP.put("com.google.android.material.appbar.MaterialToolbar", "android.widget.FrameLayout");
-        FQN_CLASS_MAP.put("com.google.android.material.bottomnavigation.BottomNavigationView", "android.widget.FrameLayout");
-        FQN_CLASS_MAP.put("com.google.android.material.floatingactionbutton.FloatingActionButton", "android.widget.ImageView");
-        FQN_CLASS_MAP.put("com.google.android.material.textfield.TextInputLayout", "android.widget.LinearLayout");
-        FQN_CLASS_MAP.put("com.google.android.material.textfield.TextInputEditText", "android.widget.EditText");
-        FQN_CLASS_MAP.put("com.google.android.material.button.MaterialButton", "android.widget.Button");
+        FQN_CLASS_MAP.put("com.google.android.material.bottomnavigation.BottomNavigationView", "com.google.android.material.bottomnavigation.BottomNavigationView");
+        FQN_CLASS_MAP.put("com.google.android.material.floatingactionbutton.FloatingActionButton", "com.google.android.material.floatingactionbutton.FloatingActionButton");
+        FQN_CLASS_MAP.put("com.google.android.material.textfield.TextInputLayout", "com.google.android.material.textfield.TextInputLayout");
+        FQN_CLASS_MAP.put("com.google.android.material.textfield.TextInputEditText", "com.google.android.material.textfield.TextInputEditText");
+        FQN_CLASS_MAP.put("com.google.android.material.button.MaterialButton", "com.google.android.material.button.MaterialButton");
+        FQN_CLASS_MAP.put("com.google.android.material.card.MaterialCardView", "com.google.android.material.card.MaterialCardView");
+        FQN_CLASS_MAP.put("com.google.android.material.chip.ChipGroup", "com.google.android.material.chip.ChipGroup");
+        FQN_CLASS_MAP.put("com.google.android.material.chip.Chip", "com.google.android.material.chip.Chip");
+        FQN_CLASS_MAP.put("com.google.android.material.slider.Slider", "com.google.android.material.slider.Slider");
     }
 
     private String[] stringPool;
@@ -556,7 +560,48 @@ public class BinaryLayoutParser {
         if (byteLen < 0 || buf.remaining() < byteLen) return "";
         byte[] b = new byte[byteLen];
         buf.get(b);
-        try { return new String(b, "UTF-8"); } catch (Exception e) { return ""; }
+        try { return decodeUtf8(b); } catch (Exception e) { return ""; }
+    }
+
+    private String decodeUtf8(byte[] data) {
+        char[] out = new char[data.length * 2];
+        int in = 0;
+        int outLen = 0;
+        while (in < data.length) {
+            int b0 = data[in] & 0xFF;
+            if (b0 < 0x80) {
+                out[outLen++] = (char) b0;
+                in++;
+                continue;
+            }
+            if ((b0 & 0xE0) == 0xC0 && in + 1 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x1F) << 6) | b1);
+                in += 2;
+                continue;
+            }
+            if ((b0 & 0xF0) == 0xE0 && in + 2 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                out[outLen++] = (char) (((b0 & 0x0F) << 12) | (b1 << 6) | b2);
+                in += 3;
+                continue;
+            }
+            if ((b0 & 0xF8) == 0xF0 && in + 3 < data.length) {
+                int b1 = data[in + 1] & 0x3F;
+                int b2 = data[in + 2] & 0x3F;
+                int b3 = data[in + 3] & 0x3F;
+                int cp = ((b0 & 0x07) << 18) | (b1 << 12) | (b2 << 6) | b3;
+                cp -= 0x10000;
+                out[outLen++] = (char) (0xD800 | (cp >> 10));
+                out[outLen++] = (char) (0xDC00 | (cp & 0x3FF));
+                in += 4;
+                continue;
+            }
+            out[outLen++] = '\uFFFD';
+            in++;
+        }
+        return new String(out, 0, outLen);
     }
 
     private String readUtf16(ByteBuffer buf) {

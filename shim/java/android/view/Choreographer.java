@@ -102,36 +102,12 @@ public final class Choreographer {
     private static volatile long sFrameDelay = DEFAULT_FRAME_DELAY;
 
     // Thread local storage for the choreographer.
-    private static final ThreadLocal<Choreographer> sThreadInstance =
-            new ThreadLocal<Choreographer>() {
-        @Override
-        protected Choreographer initialValue() {
-            Looper looper = Looper.myLooper();
-            if (looper == null) {
-                throw new IllegalStateException("The current thread must have a looper!");
-            }
-            Choreographer choreographer = new Choreographer(looper, VSYNC_SOURCE_APP);
-            if (looper == Looper.getMainLooper()) {
-                mMainInstance = choreographer;
-            }
-            return choreographer;
-        }
-    };
+    private static ThreadLocal<Choreographer> sThreadInstance;
 
     private static volatile Choreographer mMainInstance;
 
     // Thread local storage for the SF choreographer.
-    private static final ThreadLocal<Choreographer> sSfThreadInstance =
-            new ThreadLocal<Choreographer>() {
-                @Override
-                protected Choreographer initialValue() {
-                    Looper looper = Looper.myLooper();
-                    if (looper == null) {
-                        throw new IllegalStateException("The current thread must have a looper!");
-                    }
-                    return new Choreographer(looper, VSYNC_SOURCE_SURFACE_FLINGER);
-                }
-            };
+    private static ThreadLocal<Choreographer> sSfThreadInstance;
 
     // Enable/disable vsync for animations and drawing.
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123769497)
@@ -277,6 +253,42 @@ public final class Choreographer {
         return di.getMode().getRefreshRate();
     }
 
+    private static ThreadLocal<Choreographer> threadInstance() {
+        if (sThreadInstance == null) {
+            sThreadInstance = new ThreadLocal<Choreographer>() {
+                @Override
+                protected Choreographer initialValue() {
+                    Looper looper = Looper.myLooper();
+                    if (looper == null) {
+                        throw new IllegalStateException("The current thread must have a looper!");
+                    }
+                    Choreographer choreographer = new Choreographer(looper, VSYNC_SOURCE_APP);
+                    if (looper == Looper.getMainLooper()) {
+                        mMainInstance = choreographer;
+                    }
+                    return choreographer;
+                }
+            };
+        }
+        return sThreadInstance;
+    }
+
+    private static ThreadLocal<Choreographer> sfThreadInstance() {
+        if (sSfThreadInstance == null) {
+            sSfThreadInstance = new ThreadLocal<Choreographer>() {
+                @Override
+                protected Choreographer initialValue() {
+                    Looper looper = Looper.myLooper();
+                    if (looper == null) {
+                        throw new IllegalStateException("The current thread must have a looper!");
+                    }
+                    return new Choreographer(looper, VSYNC_SOURCE_SURFACE_FLINGER);
+                }
+            };
+        }
+        return sSfThreadInstance;
+    }
+
     /**
      * Gets the choreographer for the calling thread.  Must be called from
      * a thread that already has a {@link android.os.Looper} associated with it.
@@ -285,7 +297,7 @@ public final class Choreographer {
      * @throws IllegalStateException if the thread does not have a looper.
      */
     public static Choreographer getInstance() {
-        return sThreadInstance.get();
+        return threadInstance().get();
     }
 
     /**
@@ -293,7 +305,7 @@ public final class Choreographer {
      */
     @UnsupportedAppUsage
     public static Choreographer getSfInstance() {
-        return sSfThreadInstance.get();
+        return sfThreadInstance().get();
     }
 
     /**
@@ -308,8 +320,8 @@ public final class Choreographer {
      * @hide
      */
     public static void releaseInstance() {
-        Choreographer old = sThreadInstance.get();
-        sThreadInstance.remove();
+        Choreographer old = threadInstance().get();
+        threadInstance().remove();
         old.dispose();
     }
 

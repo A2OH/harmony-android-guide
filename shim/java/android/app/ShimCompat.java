@@ -39,6 +39,16 @@ public class ShimCompat {
      * Call Application.setPackageName(pkg) if available (shim), otherwise no-op.
      */
     public static void setPackageName(Application app, String pkg) {
+        if (app == null) {
+            return;
+        }
+        try {
+            app.setPackageName(pkg);
+            return;
+        } catch (Throwable ignored) {
+            // Fall through to the reflective compatibility path only if the
+            // direct same-package shim call is unavailable.
+        }
         try {
             Method m = null;
             for (Class<?> c = app.getClass(); c != null; c = c.getSuperclass()) {
@@ -53,9 +63,8 @@ public class ShimCompat {
             }
             m.setAccessible(true);
             m.invoke(app, pkg);
-        } catch (Exception e) {
-            // On real Android, Application doesn't have setPackageName — ignore
-            log("setPackageName not available (real Android?): " + e.getClass().getSimpleName());
+        } catch (Throwable ignored) {
+            // On real Android, Application doesn't have setPackageName — ignore.
         }
     }
 
@@ -171,12 +180,37 @@ public class ShimCompat {
      * Walk the class hierarchy to find a declared field.
      */
     private static Field findField(Class<?> clazz, String name) {
+        Class<?> preferredOwner = knownActivityFieldOwner(name);
+        if (preferredOwner != null) {
+            try {
+                return preferredOwner.getDeclaredField(name);
+            } catch (NoSuchFieldException ignored) {
+            }
+        }
         while (clazz != null) {
             try {
                 return clazz.getDeclaredField(name);
             } catch (NoSuchFieldException e) {
                 clazz = clazz.getSuperclass();
             }
+        }
+        return null;
+    }
+
+    private static Class<?> knownActivityFieldOwner(String name) {
+        if (name == null) {
+            return null;
+        }
+        if ("mIntent".equals(name)
+                || "mComponent".equals(name)
+                || "mApplication".equals(name)
+                || "mFinished".equals(name)
+                || "mDestroyed".equals(name)
+                || "mStarted".equals(name)
+                || "mResumed".equals(name)
+                || "mWindow".equals(name)
+                || "mTitle".equals(name)) {
+            return Activity.class;
         }
         return null;
     }

@@ -28,27 +28,42 @@ public final class StateSet {
     public static final int VIEW_STATE_DRAG_CAN_ACCEPT = 8;
     public static final int VIEW_STATE_DRAG_HOVERED = 9;
 
-    private static final int[][] VIEW_STATE_SETS;
+    private static final int[][] VIEW_STATE_SETS = new int[1 << 10][];
     static {
-        VIEW_STATE_SETS = new int[1 << 10][];
-        for (int i = 0; i < VIEW_STATE_SETS.length; i++) {
-            int count = Integer.bitCount(i);
-            int[] stateSet = new int[count];
-            int idx = 0;
-            for (int bit = 0; bit < 10; bit++) {
-                if ((i & (1 << bit)) != 0) {
-                    stateSet[idx++] = bit;
-                }
-            }
-            VIEW_STATE_SETS[i] = stateSet;
-        }
+        VIEW_STATE_SETS[0] = WILD_CARD;
     }
 
     public static int[] get(int mask) {
         if (mask >= 0 && mask < VIEW_STATE_SETS.length) {
-            return VIEW_STATE_SETS[mask];
+            int[] cached = VIEW_STATE_SETS[mask];
+            if (cached != null) {
+                return cached;
+            }
+            int[] stateSet = buildStateSet(mask);
+            VIEW_STATE_SETS[mask] = stateSet;
+            return stateSet;
         }
         return NOTHING;
+    }
+
+    private static int[] buildStateSet(int mask) {
+        if (mask == 0) {
+            return WILD_CARD;
+        }
+        int count = 0;
+        for (int bit = 0; bit < 10; bit++) {
+            if ((mask & (1 << bit)) != 0) {
+                count++;
+            }
+        }
+        int[] stateSet = new int[count];
+        int idx = 0;
+        for (int bit = 0; bit < 10; bit++) {
+            if ((mask & (1 << bit)) != 0) {
+                stateSet[idx++] = bit;
+            }
+        }
+        return stateSet;
     }
 
     private StateSet() {}

@@ -7,6 +7,7 @@ public class ApplicationInfo {
 
     public String packageName;
     public String name;
+    public String appComponentFactory;
     public String sourceDir;
     public String dataDir;
     public int    flags;

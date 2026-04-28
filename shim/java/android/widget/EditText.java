@@ -72,19 +72,19 @@ import android.util.AttributeSet;
  */
 public class EditText extends TextView {
     public EditText(Context context) {
-        this(context, null);
+        super(context);
     }
 
     public EditText(Context context, AttributeSet attrs) {
-        this(context, attrs, com.android.internal.R.attr.editTextStyle);
+        super(context);
     }
 
     public EditText(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
+        super(context);
     }
 
     public EditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        super(context);
     }
 
     @Override
@@ -94,59 +94,54 @@ public class EditText extends TextView {
 
     @Override
     protected boolean getDefaultEditable() {
-        return true;
+        return false;
     }
 
     @Override
     protected MovementMethod getDefaultMovementMethod() {
-        return ArrowKeyMovementMethod.getInstance();
+        return null;
     }
 
     @Override
     public Editable getText() {
-        CharSequence text = super.getText();
-        // This can only happen during construction.
-        if (text == null) {
-            return null;
-        }
-        if (text instanceof Editable) {
-            return (Editable) super.getText();
-        }
-        super.setText(text, BufferType.EDITABLE);
-        return (Editable) super.getText();
+        return super.getEditableText();
     }
 
     @Override
     public void setText(CharSequence text, BufferType type) {
-        super.setText(text, BufferType.EDITABLE);
+        super.setText(text, type != null ? type : BufferType.NORMAL);
     }
 
     /**
      * Convenience for {@link Selection#setSelection(Spannable, int, int)}.
      */
     public void setSelection(int start, int stop) {
-        Selection.setSelection(getText(), start, stop);
+        Editable text = getText();
+        if (text != null) Selection.setSelection(text, start, stop);
     }
 
     /**
      * Convenience for {@link Selection#setSelection(Spannable, int)}.
      */
     public void setSelection(int index) {
-        Selection.setSelection(getText(), index);
+        Editable text = getText();
+        if (text != null) Selection.setSelection(text, index);
     }
 
     /**
      * Convenience for {@link Selection#selectAll}.
      */
     public void selectAll() {
-        Selection.selectAll(getText());
+        Editable text = getText();
+        if (text != null) Selection.selectAll(text);
     }
 
     /**
      * Convenience for {@link Selection#extendSelection}.
      */
     public void extendSelection(int index) {
-        Selection.extendSelection(getText(), index);
+        Editable text = getText();
+        if (text != null) Selection.extendSelection(text, index);
     }
 
     /**

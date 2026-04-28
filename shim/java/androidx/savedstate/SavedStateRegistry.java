@@ -6,6 +6,7 @@ import java.util.Map;
 
 public final class SavedStateRegistry {
     private final Map<String, SavedStateProvider> mProviders = new HashMap<>();
+    private Bundle mRestoredState;
     private boolean mRestored = false;
 
     public interface SavedStateProvider {
@@ -27,7 +28,12 @@ public final class SavedStateRegistry {
     public void e(String key) { unregisterSavedStateProvider(key); }
 
     public Bundle consumeRestoredStateForKey(String key) {
-        return null; // No saved state in our shim
+        if (mRestoredState == null || key == null) {
+            return null;
+        }
+        Bundle state = mRestoredState.getBundle(key);
+        mRestoredState.remove(key);
+        return state;
     }
     public Bundle a(String key) { return consumeRestoredStateForKey(key); }
 
@@ -41,7 +47,10 @@ public final class SavedStateRegistry {
 
     public boolean isRestored() { return mRestored; }
 
-    public void performRestore(Bundle savedState) { mRestored = true; }
+    public void performRestore(Bundle savedState) {
+        mRestored = true;
+        mRestoredState = savedState;
+    }
     public void performSave(Bundle outBundle) {
         for (Map.Entry<String, SavedStateProvider> e : mProviders.entrySet()) {
             Bundle b = e.getValue().saveState();

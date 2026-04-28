@@ -26,6 +26,11 @@ public class InputMethodManager {
         return true;
     }
 
+    public boolean hideSoftInputFromWindow(android.os.IBinder windowToken, int flags) {
+        active = false;
+        return true;
+    }
+
     public boolean hideSoftInputFromWindow(Object windowToken, int flags) {
         active = false;
         return true;

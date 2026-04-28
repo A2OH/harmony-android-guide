@@ -39,6 +39,7 @@ public class BinaryXmlParser {
     private static final int ATTR_VERSION_NAME  = 0x0101021C;
     private static final int ATTR_MIN_SDK       = 0x0101020C;
     private static final int ATTR_TARGET_SDK    = 0x01010270;
+    private static final int ATTR_APP_COMPONENT_FACTORY = 0x0101057A;
 
     // Well-known action/category strings
     private static final String ACTION_MAIN     = "android.intent.action.MAIN";
@@ -244,6 +245,13 @@ public class BinaryXmlParser {
         } else if ("application".equals(element) && "name".equals(attrName)) {
             if (rawValue != null) {
                 info.applicationClassName = resolveClassName(rawValue, info.packageName);
+            }
+        } else if ("application".equals(element)
+                && (resId == ATTR_APP_COMPONENT_FACTORY
+                        || "appComponentFactory".equals(attrName))) {
+            if (rawValue != null) {
+                info.appComponentFactoryClassName =
+                        resolveClassName(rawValue, info.packageName);
             }
         } else if ("uses-permission".equals(element) && "name".equals(attrName)) {
             if (rawValue != null && !info.permissions.contains(rawValue)) {

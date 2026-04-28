@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Westlake Cutoff Canary</string>
+    <string name="title_l1">Cutoff Canary L1</string>
+    <string name="title_l2">Cutoff Canary L2</string>
+    <string name="default_stage_label">Stage pending</string>
+    <string name="default_details">No details yet.</string>
+    <string name="action_button">Tap Canary</string>
+</resources>

@@ -33,39 +33,130 @@ import java.util.Set;
  * Produces liboh_bridge.so loaded at runtime.
  */
 public class OHBridge {
+    private static final String BACKEND_MODE_CONTROL_ANDROID = "control_android_backend";
 
+    public static boolean strictGuestFieldProbe = true;
     private static boolean nativeAvailable;
     private static boolean nativeProbeAttempted;
     private static boolean nativeLoadAttempted;
     private static boolean subprocessMode;
+    private static boolean sControlBackendResolved;
+    private static boolean sControlBackendCached;
+
+    private static void strictTrace(String message) {
+        if (message == null) {
+            return;
+        }
+        if (sControlBackendResolved && sControlBackendCached) {
+            return;
+        }
+        try {
+            com.westlake.engine.WestlakeLauncher.strictTrace(message);
+        } catch (Throwable ignored) {
+        }
+    }
 
     private static void initLog(String message) {
         // Avoid stdio during bridge initialization. Charset/PrintStream startup is
         // still unstable on the Westlake ART path and logging here can abort boot.
     }
 
-    private static boolean probeLinkedBridge() {
-        if (nativeAvailable) {
+    private static boolean trySystemLoad(String path) {
+        try {
+            System.load(path);
             return true;
-        }
-        if (nativeProbeAttempted) {
+        } catch (Throwable ignored) {
             return false;
+        }
+    }
+
+    private static boolean trySystemLoadLibrary(String lib) {
+        try {
+            System.loadLibrary(lib);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static boolean isControlAndroidBackend() {
+        if (sControlBackendResolved) {
+            return sControlBackendCached;
+        }
+        boolean result = false;
+        try {
+            if (com.westlake.engine.WestlakeLauncher.isControlAndroidBackend()) {
+                result = true;
+            }
+        } catch (Throwable ignored) {
+        }
+        if (!result) {
+            try {
+                String prop = System.getProperty("westlake.backend.mode");
+                result = BACKEND_MODE_CONTROL_ANDROID.equals(prop);
+            } catch (Throwable ignored) {
+                result = false;
+            }
+        }
+        sControlBackendCached = result;
+        sControlBackendResolved = true;
+        return result;
+    }
+
+    private static boolean probeLinkedBridge() {
+        strictTrace("PF301 strict OHBridge probe entry");
+        if (isControlAndroidBackend()) {
+            strictTrace("PF301 strict OHBridge probe control-backend skip");
+            return false;
+        }
+        if (nativeAvailable) {
+            strictTrace("PF301 strict OHBridge probe cached");
+            return true;
         }
         nativeProbeAttempted = true;
         try {
+            strictTrace("PF301 strict OHBridge probe surfaceCreate call");
+            long surface = surfaceCreate(0, 1, 1);
+            strictTrace("PF301 strict OHBridge probe surfaceCreate returned");
+            if (surface != 0) {
+                try {
+                    surfaceDestroy(surface);
+                } catch (Throwable ignored) {
+                }
+            }
+            nativeAvailable = true;
+            strictTrace("PF301 strict OHBridge probe surfaceCreate positive");
+            return true;
+        } catch (UnsatisfiedLinkError | NoSuchMethodError ignored) {
+            strictTrace("PF301 strict OHBridge probe surfaceCreate linkage");
+        } catch (Throwable ignored) {
+            // A non-linkage failure still proves the bridge symbols are present.
+            nativeAvailable = true;
+            strictTrace("PF301 strict OHBridge probe surfaceCreate throwable");
+            return true;
+        }
+        try {
+            strictTrace("PF301 strict OHBridge probe sdk call");
             getSDKVersion();
             nativeAvailable = true;
+            strictTrace("PF301 strict OHBridge probe sdk returned");
             return true;
         } catch (Throwable ignored) {
+            strictTrace("PF301 strict OHBridge probe sdk threw");
         }
         try {
+            strictTrace("PF301 strict OHBridge probe brand call");
             getDeviceBrand();
             nativeAvailable = true;
+            strictTrace("PF301 strict OHBridge probe brand returned");
             return true;
         } catch (Throwable ignored) {
+            strictTrace("PF301 strict OHBridge probe brand threw");
         }
         try {
+            strictTrace("PF301 strict OHBridge probe bitmap call");
             long bitmap = bitmapCreate(1, 1, 0);
+            strictTrace("PF301 strict OHBridge probe bitmap returned");
             if (bitmap != 0) {
                 try {
                     bitmapDestroy(bitmap);
@@ -73,101 +164,182 @@ public class OHBridge {
                 }
             }
             nativeAvailable = true;
+            strictTrace("PF301 strict OHBridge probe bitmap positive");
             return true;
         } catch (Throwable ignored) {
+            strictTrace("PF301 strict OHBridge probe bitmap threw");
         }
+        strictTrace("PF301 strict OHBridge probe false");
         return false;
     }
 
     private static void ensureNativeRegistration() {
-        if (nativeAvailable) {
+        strictTrace("PF301 strict OHBridge ensure entry");
+        if (isControlAndroidBackend()) {
+            strictTrace("PF301 strict OHBridge ensure control-backend skip");
             return;
         }
-        if (nativeLoadAttempted && !subprocessMode) {
+        if (nativeAvailable) {
+            strictTrace("PF301 strict OHBridge ensure cached");
             return;
         }
         nativeLoadAttempted = true;
-        String[] libs = {"oh_bridge", "westlake_natives"};
-        for (String lib : libs) {
-            try {
-                System.loadLibrary(lib);
-                nativeAvailable = true;
-                return;
-            } catch (Throwable ignored) {
-            }
+        trySystemLoad("/data/local/tmp/westlake/libc++_shared.so");
+        trySystemLoad("/data/local/tmp/westlake/libframework_stubs.so");
+        trySystemLoad("/data/local/tmp/westlake/libwestlake_art.so");
+        strictTrace("PF301 strict OHBridge ensure preload phase done");
+        boolean loadedAny = false;
+        if (trySystemLoad("/data/local/tmp/westlake/libwestlake_natives.so")) {
+            loadedAny = true;
         }
-        String[] paths = {"/data/local/tmp/westlake/liboh_bridge.so",
-                          "/data/local/tmp/westlake/libohbridge_sub.so",
-                          "/data/local/tmp/westlake/libwestlake_natives.so"};
-        for (String path : paths) {
-            try {
-                System.load(path);
-                nativeAvailable = true;
-                return;
-            } catch (Throwable ignored) {
-            }
+        if (trySystemLoad("/data/local/tmp/westlake/liboh_bridge.so")) {
+            loadedAny = true;
+        }
+        if (trySystemLoad("/data/local/tmp/westlake/libohbridge_sub.so")) {
+            loadedAny = true;
+        }
+        strictTrace("PF301 strict OHBridge ensure direct load phase done");
+        if (loadedAny && probeLinkedBridge()) {
+            strictTrace("PF301 strict OHBridge ensure direct load positive");
+            return;
+        }
+        if (trySystemLoadLibrary("westlake_natives")) {
+            loadedAny = true;
+        }
+        if (trySystemLoadLibrary("oh_bridge")) {
+            loadedAny = true;
+        }
+        strictTrace("PF301 strict OHBridge ensure library load phase done");
+        if (loadedAny) {
+            strictTrace("PF301 strict OHBridge ensure probe call");
+            probeLinkedBridge();
+            strictTrace("PF301 strict OHBridge ensure probe returned");
         }
     }
 
     static {
+        strictTrace("PF301 strict OHBridge clinit begin");
         initLog("Static init starting...");
+        strictTrace("PF301 strict OHBridge clinit after initLog");
         boolean isSubprocess = false;
         try {
-            isSubprocess = System.getProperty("westlake.apk.package") != null
-                    || System.getProperty("westlake.apk.path") != null
-                    || System.getenv("WESTLAKE_APK_PACKAGE") != null
-                    || System.getenv("WESTLAKE_APK_PATH") != null
-                    || System.getenv("WESTLAKE_APK_RESDIR") != null;
+            isSubprocess = !com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+            strictTrace("PF301 strict OHBridge clinit westlake policy returned");
         } catch (Throwable ignored) {
+            strictTrace("PF301 strict OHBridge clinit westlake policy threw");
+        }
+        boolean controlAndroidBackend = isControlAndroidBackend();
+        if (controlAndroidBackend) {
+            isSubprocess = true;
+            strictTrace("PF301 strict OHBridge clinit control-backend");
+        }
+        if (!isSubprocess) {
+            strictTrace("PF301 strict OHBridge clinit prop scan call");
+            try {
+                isSubprocess = System.getProperty("westlake.apk.package") != null
+                        || System.getProperty("westlake.apk.path") != null
+                        || System.getenv("WESTLAKE_APK_PACKAGE") != null
+                        || System.getenv("WESTLAKE_APK_PATH") != null
+                        || System.getenv("WESTLAKE_APK_RESDIR") != null;
+            } catch (Throwable ignored) {
+            }
+            strictTrace("PF301 strict OHBridge clinit prop scan returned");
+        } else {
+            strictTrace("PF301 strict OHBridge clinit prop scan skipped");
         }
         subprocessMode = isSubprocess;
+        strictTrace(controlAndroidBackend
+                ? "PF301 strict OHBridge clinit control-backend effective-subprocess"
+                : (isSubprocess
+                ? "PF301 strict OHBridge clinit subprocess"
+                : "PF301 strict OHBridge clinit host"));
         if (isSubprocess) {
-            // In the standalone ART subprocess, bridge methods are not available
-            // until Runtime.nativeLoad/System.loadLibrary registers them.
-            // Marking the bridge "available" here makes isNativeAvailable() lie
-            // and leaves later calls like surfaceCreate() unresolved.
-            ensureNativeRegistration();
-            if (!nativeAvailable) {
-                nativeAvailable = probeLinkedBridge();
-            }
+            // Keep strict guest clinit minimal; prove registration and native entry
+            // on explicit post-clinit calls instead of reopening this earlier seam.
+            strictTrace(controlAndroidBackend
+                    ? "PF301 strict OHBridge clinit control-backend defer registration"
+                    : "PF301 strict OHBridge clinit guest defer registration");
         } else {
-            String[] paths = {"/data/local/tmp/westlake/liboh_bridge.so",
-                              "/data/local/tmp/westlake/libohbridge_sub.so",
-                              "/data/local/tmp/westlake/libwestlake_natives.so"};
-            for (String path : paths) {
-                try {
-                    System.load(path);
-                    nativeAvailable = true;
-                    initLog("System.load OK: " + path);
-                    break;
-                } catch (Throwable t) {
-                    initLog("System.load FAIL");
-                }
+            if (trySystemLoad("/data/local/tmp/westlake/liboh_bridge.so")) {
+                nativeAvailable = true;
+                initLog("System.load OK: /data/local/tmp/westlake/liboh_bridge.so");
+            } else if (trySystemLoad("/data/local/tmp/westlake/libohbridge_sub.so")) {
+                nativeAvailable = true;
+                initLog("System.load OK: /data/local/tmp/westlake/libohbridge_sub.so");
+            } else if (trySystemLoad("/data/local/tmp/westlake/libwestlake_natives.so")) {
+                nativeAvailable = true;
+                initLog("System.load OK: /data/local/tmp/westlake/libwestlake_natives.so");
+            } else {
+                initLog("System.load FAIL");
             }
             if (!nativeAvailable) {
-                String[] libs = {"westlake_natives", "oh_bridge"};
-                for (String lib : libs) {
-                    try {
-                        initLog("Try loadLibrary(" + lib + ")");
-                        System.loadLibrary(lib);
+                initLog("Try loadLibrary(westlake_natives)");
+                if (trySystemLoadLibrary("westlake_natives")) {
+                    nativeAvailable = true;
+                    initLog("loadLibrary OK: westlake_natives");
+                } else {
+                    initLog("Try loadLibrary(oh_bridge)");
+                    if (trySystemLoadLibrary("oh_bridge")) {
                         nativeAvailable = true;
-                        initLog("loadLibrary OK: " + lib);
-                        break;
-                    } catch (Throwable t) {
+                        initLog("loadLibrary OK: oh_bridge");
+                    } else {
                         initLog("loadLibrary FAIL");
                     }
                 }
             }
         }
         if (!nativeAvailable) {
-            probeLinkedBridge();
+            if (isSubprocess) {
+                strictTrace("PF301 strict OHBridge clinit tail probe skipped");
+            } else {
+                strictTrace("PF301 strict OHBridge clinit tail probe call");
+                probeLinkedBridge();
+                strictTrace("PF301 strict OHBridge clinit tail probe returned");
+            }
         }
-        initLog("Static init done, nativeAvailable=" + nativeAvailable);
+        OHBridgeState.nativeAvailableSnapshot = nativeAvailable;
+        OHBridgeState.subprocessSnapshot = subprocessMode;
+        OHBridgeState.clinitCompleted = true;
+        strictTrace("PF301 strict OHBridge clinit state published");
+        strictTrace(nativeAvailable
+                ? "PF301 strict OHBridge clinit positive"
+                : "PF301 strict OHBridge clinit nonpositive");
+        initLog(null);
     }
 
     public static boolean isNativeAvailable() {
+        strictTrace("PF301 strict OHBridge available entry");
+        strictTrace("PF301 strict OHBridge available ensure call");
         ensureNativeRegistration();
-        return nativeAvailable || probeLinkedBridge();
+        strictTrace("PF301 strict OHBridge available ensure returned");
+        if (nativeAvailable) {
+            strictTrace("PF301 strict OHBridge available positive");
+            return true;
+        }
+        strictTrace("PF301 strict OHBridge available probe call");
+        boolean result = probeLinkedBridge();
+        strictTrace(result
+                ? "PF301 strict OHBridge available probe positive"
+                : "PF301 strict OHBridge available probe nonpositive");
+        return result;
+    }
+
+    public static boolean strictGuestPing() {
+        strictTrace("PF301 strict OHBridge ping entry");
+        strictTrace(nativeAvailable
+                ? "PF301 strict OHBridge ping native positive"
+                : "PF301 strict OHBridge ping native nonpositive");
+        strictTrace(subprocessMode
+                ? "PF301 strict OHBridge ping subprocess"
+                : "PF301 strict OHBridge ping host");
+        return nativeAvailable;
+    }
+
+    public static boolean strictGuestEnsureOnly() {
+        strictTrace("PF301 strict OHBridge ensureOnly entry");
+        ensureNativeRegistration();
+        strictTrace("PF301 strict OHBridge ensureOnly returned");
+        return nativeAvailable;
     }
 
     // ── Image decoding (stb_image) ──────────────────────────────

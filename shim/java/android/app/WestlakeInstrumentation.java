@@ -93,6 +93,76 @@ public class WestlakeInstrumentation extends Instrumentation {
         }
     }
 
+    private static boolean isMinimalSplashActivity(Activity activity) {
+        return activity != null && isMinimalSplashClassName(activity.getClass().getName());
+    }
+
+    private static boolean isMinimalSplashClassName(String className) {
+        if (className == null) {
+            return false;
+        }
+        final String suffix = "SplashActivity";
+        final int classLen = className.length();
+        final int suffixLen = suffix.length();
+        if (classLen < suffixLen) {
+            return false;
+        }
+        final int offset = classLen - suffixLen;
+        for (int i = 0; i < suffixLen; i++) {
+            if (className.charAt(offset + i) != suffix.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void finishMinimalSplashActivity(Activity activity, Intent intent) {
+        final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr minimal splash finish enter");
+            WestlakeLauncher.marker(
+                    "PF301 strict Instr minimal splash seedCtorBypassedHiltActivityState skipped");
+        } else {
+            seedCtorBypassedHiltActivityState(activity);
+        }
+        if (activity != null && intent != null) {
+            try {
+                if (strictStandalone) {
+                    WestlakeLauncher.marker("PF301 strict Instr minimal splash intent set call");
+                }
+                activity.setIntent(intent);
+                if (strictStandalone) {
+                    WestlakeLauncher.marker(
+                            "PF301 strict Instr minimal splash intent set returned");
+                }
+            } catch (Throwable t) {
+                if (strictStandalone) {
+                    WestlakeLauncher.marker(
+                            "PF301 strict Instr minimal splash intent set threw");
+                }
+                try {
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash intent field set call");
+                    }
+                    activity.mIntent = intent;
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash intent field set returned");
+                    }
+                } catch (Throwable ignored) {
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash intent field set threw");
+                    }
+                }
+            }
+        }
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr minimal splash finish done");
+        }
+    }
+
     /** Back-reference to the ActivityThread that owns us. */
     private final WestlakeActivityThread mThread;
 
@@ -148,11 +218,141 @@ public class WestlakeInstrumentation extends Instrumentation {
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
         Activity activity = null;
-        WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity begin: " + className);
 
-        // Try AppComponentFactory first (for Hilt / custom factory support)
-        AppComponentFactory factory = getFactory();
+        WestlakeLauncher.marker("PF301 strict Instr newActivity entry");
+        boolean minimalSplash = isMinimalSplashClassName(className);
+        WestlakeLauncher.marker("PF301 strict Instr newActivity classifier ready");
+        final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (!strictStandalone) {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity begin: " + className);
+        }
+        if (strictStandalone) {
+            WestlakeLauncher.marker(minimalSplash
+                    ? "PF301 strict Instr newActivity minimal splash"
+                    : "PF301 strict Instr newActivity non-splash");
+        }
+
+        // Keep splash on the narrowest possible path. The current regression is
+        // before onCreate(), inside newActivity(), and the real dashboard work is
+        // later. For splash, bypass custom AppComponentFactory/Hilt construction
+        // and allocate directly so we preserve the accepted minimal-splash model.
+        if (minimalSplash) {
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr minimal splash resolve call");
+            } else {
+                WestlakeLauncher.trace(
+                        "[WestlakeInstrumentation] newActivity minimal splash allocate: " + className);
+            }
+            Class<?> clazz = WestlakeLauncher.resolveAppClassOrNull(className);
+            if (strictStandalone) {
+                WestlakeLauncher.marker(clazz != null
+                        ? "PF301 strict Instr minimal splash resolve nonnull"
+                        : "PF301 strict Instr minimal splash resolve null");
+            }
+            if (clazz == null) {
+                try {
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash Class.forName call");
+                    }
+                    clazz = Class.forName(className, false, cl);
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash Class.forName returned");
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+            if (clazz == null) {
+                if (strictStandalone && cl == null) {
+                    WestlakeLauncher.marker(
+                            "PF301 strict Instr minimal splash null cl skip loadClass");
+                } else {
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash loadClass call");
+                    }
+                    clazz = cl.loadClass(className);
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict Instr minimal splash loadClass returned");
+                    }
+                }
+            }
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr minimal splash allocate call");
+            }
+            activity = allocateActivity(clazz, className, null);
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr minimal splash allocate returned");
+            }
+            finishMinimalSplashActivity(activity, intent);
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr minimal splash done");
+            } else {
+                WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity minimal splash done: "
+                        + (activity != null ? activity.getClass().getName() : "null"));
+            }
+            return activity;
+        }
+
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr default factory path begin");
+            try {
+                AppComponentFactory factory = getFactory();
+                if (factory == null) {
+                    factory = new AppComponentFactory();
+                }
+                boolean customFactory = factory.getClass() != AppComponentFactory.class;
+                WestlakeLauncher.marker(customFactory
+                        ? "PF301 strict Instr custom factory ready"
+                        : "PF301 strict Instr default factory ready");
+                activity = factory.instantiateActivity(cl, className, intent);
+                WestlakeLauncher.marker(activity != null
+                        ? (customFactory
+                                ? "PF301 strict Instr custom factory returned activity"
+                                : "PF301 strict Instr default factory returned activity")
+                        : (customFactory
+                                ? "PF301 strict Instr custom factory returned null"
+                                : "PF301 strict Instr default factory returned null"));
+                if (activity == null) {
+                    throw new InstantiationException("Factory returned null for " + className);
+                }
+                if (intent != null) {
+                    try {
+                        activity.setIntent(intent);
+                    } catch (Throwable ignored) {
+                        activity.mIntent = intent;
+                    }
+                }
+                WestlakeLauncher.marker("PF301 strict Instr default factory path returned");
+                if (customFactory) {
+                    WestlakeLauncher.marker("PF301 strict Instr custom factory path returned");
+                }
+                return activity;
+            } catch (ClassNotFoundException e) {
+                WestlakeLauncher.marker("PF301 strict Instr default factory class missing");
+                throw e;
+            } catch (Throwable t) {
+                WestlakeLauncher.marker("PF301 strict Instr default factory path failed");
+                InstantiationException wrapped =
+                        new InstantiationException("Failed to instantiate " + className
+                                + ": " + t);
+                wrapped.initCause(t);
+                throw wrapped;
+            }
+        }
+
+        // Try AppComponentFactory first (for Hilt / custom factory support).
+        // When the incoming ClassLoader is null, keep the default factory path
+        // instead of handing null into an app-specific factory implementation.
+        AppComponentFactory factory = cl != null ? getFactory() : new AppComponentFactory();
+        if (strictStandalone && cl == null) {
+            WestlakeLauncher.marker("PF301 strict Instr null classloader default factory");
+        }
         try {
+            log("D", "newActivity calling factory.instantiateActivity: " + className
+                    + " factory=" + factory.getClass().getName());
             activity = factory.instantiateActivity(cl, className, intent);
             if (activity != null) {
                 WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity factory OK: "
@@ -180,6 +380,10 @@ public class WestlakeInstrumentation extends Instrumentation {
                 }
             }
             if (clazz == null) {
+                if (cl == null) {
+                    throw new InstantiationException(
+                            "Failed to instantiate " + className + ": null classloader");
+                }
                 clazz = cl.loadClass(className);
             }
             WestlakeLauncher.trace("[WestlakeInstrumentation] newActivity fallback class: "
@@ -205,7 +409,14 @@ public class WestlakeInstrumentation extends Instrumentation {
 
     private Activity allocateActivity(Class<?> clazz, String className, Throwable cause)
             throws InstantiationException, IllegalAccessException {
+        final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr allocateActivity entry");
+        }
         if (clazz == null) {
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr allocateActivity class null");
+            }
             InstantiationException wrapped =
                     new InstantiationException("Failed to instantiate " + className + ": null class");
             if (cause != null) {
@@ -213,17 +424,40 @@ public class WestlakeInstrumentation extends Instrumentation {
             }
             throw wrapped;
         }
-        WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity start: "
-                + clazz.getName());
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr allocateActivity class nonnull");
+        } else {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity start: "
+                    + clazz.getName());
+        }
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr allocateActivity native alloc call");
+        }
         Object nativeInstance = WestlakeLauncher.tryAllocInstance(clazz);
+        if (strictStandalone) {
+            WestlakeLauncher.marker("PF301 strict Instr allocateActivity native alloc returned");
+        }
         if (nativeInstance instanceof Activity) {
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr allocateActivity native alloc cast success");
+                WestlakeLauncher.marker("PF301 strict Instr allocateActivity native alloc return");
+                return (Activity) nativeInstance;
+            }
             WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity native OK");
             log("W", "newActivity via nativeAllocInstance(): " + className);
             return (Activity) nativeInstance;
         }
+        if (strictStandalone) {
+            WestlakeLauncher.marker(nativeInstance != null
+                    ? "PF301 strict Instr allocateActivity native alloc cast null"
+                    : "PF301 strict Instr allocateActivity native alloc null");
+        }
         WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity native miss: "
                 + (nativeInstance != null ? nativeInstance.getClass().getName() : "null"));
         try {
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr allocateActivity sun Unsafe begin");
+            }
             WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity sun Unsafe begin");
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
@@ -231,6 +465,9 @@ public class WestlakeInstrumentation extends Instrumentation {
             Object unsafe = field.get(null);
             Activity activity = (Activity) unsafeClass.getMethod("allocateInstance", Class.class)
                     .invoke(unsafe, clazz);
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict Instr allocateActivity sun Unsafe returned");
+            }
             WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity sun Unsafe OK");
             log("W", "newActivity via Unsafe.allocateInstance(): " + className);
             return activity;
@@ -238,6 +475,9 @@ public class WestlakeInstrumentation extends Instrumentation {
             WestlakeLauncher.dumpThrowable(
                     "[WestlakeInstrumentation] allocateActivity sun Unsafe failed", ignored);
             try {
+                if (strictStandalone) {
+                    WestlakeLauncher.marker("PF301 strict Instr allocateActivity jdk Unsafe begin");
+                }
                 WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity jdk Unsafe begin");
                 Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
                 java.lang.reflect.Field field = unsafeClass.getDeclaredField("theUnsafe");
@@ -245,6 +485,9 @@ public class WestlakeInstrumentation extends Instrumentation {
                 Object unsafe = field.get(null);
                 Activity activity = (Activity) unsafeClass.getMethod("allocateInstance", Class.class)
                         .invoke(unsafe, clazz);
+                if (strictStandalone) {
+                    WestlakeLauncher.marker("PF301 strict Instr allocateActivity jdk Unsafe returned");
+                }
                 WestlakeLauncher.trace("[WestlakeInstrumentation] allocateActivity jdk Unsafe OK");
                 log("W", "newActivity via jdk Unsafe.allocateInstance(): " + className);
                 return activity;
@@ -276,34 +519,39 @@ public class WestlakeInstrumentation extends Instrumentation {
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
         WestlakeLauncher.trace("[WestlakeInstrumentation] callActivityOnCreate begin: "
                 + activity.getClass().getName());
-        try {
-            WestlakeLauncher.patchProblematicAppClasses(activity.getClass().getClassLoader());
-        } catch (Throwable t) {
-            log("W", "patchProblematicAppClasses failed: " + throwableSummary(t));
-        }
-        try {
-            dispatchLifecycleCallback("onActivityPreCreated", activity, icicle);
-        } catch (Throwable t) {
-            log("W", "onActivityPreCreated failed: " + throwableSummary(t));
-        }
-        try {
-            seedCtorBypassedHiltActivityState(activity);
-        } catch (Throwable t) {
-            log("W", "seedCtorBypassedHiltActivityState failed: " + throwableSummary(t));
-        }
-        try {
-            maybeInitHilt(activity);
-        } catch (Throwable t) {
-            log("W", "maybeInitHilt failed: " + throwableSummary(t));
-        }
-        // ComponentActivity already dispatches OnContextAvailableListeners inside
-        // its own onCreate() implementation. Firing the hook here as well can
-        // double-invoke obfuscated Hilt/setup callbacks and recurse badly.
-        if (!(activity instanceof androidx.activity.ComponentActivity)) {
+        boolean minimalSplash = isMinimalSplashActivity(activity);
+        if (!minimalSplash) {
             try {
-                maybeFireContextAvailable(activity);
+                WestlakeLauncher.patchProblematicAppClasses(activity.getClass().getClassLoader());
             } catch (Throwable t) {
-                log("W", "maybeFireContextAvailable failed: " + throwableSummary(t));
+                log("W", "patchProblematicAppClasses failed: " + throwableSummary(t));
+            }
+        }
+        if (!minimalSplash) {
+            try {
+                dispatchLifecycleCallback("onActivityPreCreated", activity, icicle);
+            } catch (Throwable t) {
+                log("W", "onActivityPreCreated failed: " + throwableSummary(t));
+            }
+            try {
+                seedCtorBypassedHiltActivityState(activity);
+            } catch (Throwable t) {
+                log("W", "seedCtorBypassedHiltActivityState failed: " + throwableSummary(t));
+            }
+            try {
+                maybeInitHilt(activity);
+            } catch (Throwable t) {
+                log("W", "maybeInitHilt failed: " + throwableSummary(t));
+            }
+            // ComponentActivity already dispatches OnContextAvailableListeners inside
+            // its own onCreate() implementation. Firing the hook here as well can
+            // double-invoke obfuscated Hilt/setup callbacks and recurse badly.
+            if (!(activity instanceof androidx.activity.ComponentActivity)) {
+                try {
+                    maybeFireContextAvailable(activity);
+                } catch (Throwable t) {
+                    log("W", "maybeFireContextAvailable failed: " + throwableSummary(t));
+                }
             }
         }
 
@@ -315,6 +563,12 @@ public class WestlakeInstrumentation extends Instrumentation {
         } catch (Throwable firstEx) {
             onCreateFailure = firstEx;
             log("W", "onCreate initial failure: " + throwableSummary(firstEx));
+        }
+
+        if (minimalSplash) {
+            WestlakeLauncher.trace("[WestlakeInstrumentation] callActivityOnCreate done: "
+                    + activity.getClass().getName());
+            return;
         }
 
         if (onCreateFailure != null) {

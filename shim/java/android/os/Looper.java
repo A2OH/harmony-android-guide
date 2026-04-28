@@ -28,13 +28,6 @@ public final class Looper {
         prepareMainLooper();
     }
 
-    private static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>() {
-        @Override
-        protected Looper initialValue() {
-            return new Looper(Thread.currentThread());
-        }
-    };
-
     private volatile Thread mThread;
     private final MessageQueue mQueue;
 

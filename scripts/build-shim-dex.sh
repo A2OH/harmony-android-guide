@@ -44,7 +44,7 @@ echo "Running dx..."
 CLASS_COUNT=$(find "$BUILD_DIR/classes" -name "*.class" | wc -l)
 echo "  $CLASS_COUNT class files"
 
-$DX --dex --output="$BUILD_DIR/aosp-shim.dex" "$BUILD_DIR/classes" 2>&1
+"$DX" --dex --output="$BUILD_DIR/aosp-shim.dex" "$BUILD_DIR/classes" 2>&1
 
 # Copy to output locations
 echo "Copying to output locations..."

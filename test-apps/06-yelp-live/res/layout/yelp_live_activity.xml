@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/yelp_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FBF8F3"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/yelp_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="24dp"
+        android:paddingTop="20dp"
+        android:paddingRight="24dp"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:id="@+id/yelp_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Westlake Yelp Live"
+            android:textColor="#D32323"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/yelp_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:text="No live data yet"
+            android:textColor="#5F6368"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/yelp_primary_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp">
+
+            <Button
+                android:id="@+id/yelp_load"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Live feed" />
+
+            <Button
+                android:id="@+id/yelp_next"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="Next" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/yelp_secondary_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="8dp">
+
+            <Button
+                android:id="@+id/yelp_search"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Search" />
+
+            <Button
+                android:id="@+id/yelp_details"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="Details" />
+
+            <Button
+                android:id="@+id/yelp_save"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="Save" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/yelp_filters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+            <Button
+                android:id="@+id/yelp_sort"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Top" />
+
+            <Button
+                android:id="@+id/yelp_open_now"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="Open" />
+
+            <Button
+                android:id="@+id/yelp_delivery"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="Delivery" />
+
+            <Button
+                android:id="@+id/yelp_price"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="$$" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/yelp_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="8dp">
+
+            <Button
+                android:id="@+id/yelp_pizza"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Pizza" />
+
+            <Button
+                android:id="@+id/yelp_asian"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="Asian" />
+
+            <Button
+                android:id="@+id/yelp_dinner"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="Dinner" />
+
+            <Button
+                android:id="@+id/yelp_dessert"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="6dp"
+                android:layout_weight="1"
+                android:text="Dessert" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/yelp_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp"
+            android:text="Tap Live feed"
+            android:textColor="#1F1F1F"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/yelp_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Live feed count: 0"
+            android:textColor="#3C4043"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/yelp_scroll_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+            <Button
+                android:id="@+id/yelp_scroll_up"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Up" />
+
+            <Button
+                android:id="@+id/yelp_scroll_down"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="Down" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/yelp_bottom_nav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp">
+
+            <Button
+                android:id="@+id/yelp_discover"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Discover" />
+
+            <Button
+                android:id="@+id/yelp_saved"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="Saved" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

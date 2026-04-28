@@ -177,15 +177,17 @@ public class Paint {
     public float measureText(String text) {
         if (text == null || text.length() == 0) return 0f;
         // Try native stb_truetype measurement via OHBridge
-        try {
-            long f = com.ohos.shim.bridge.OHBridge.fontCreate();
-            if (f != 0) {
-                com.ohos.shim.bridge.OHBridge.fontSetSize(f, textSize);
-                float w = com.ohos.shim.bridge.OHBridge.fontMeasureText(f, text);
-                com.ohos.shim.bridge.OHBridge.fontDestroy(f);
-                if (w > 0) return w;
-            }
-        } catch (Throwable t) { /* fall through */ }
+        if (canUseNativeFontBridge()) {
+            try {
+                long f = com.ohos.shim.bridge.OHBridge.fontCreate();
+                if (f != 0) {
+                    com.ohos.shim.bridge.OHBridge.fontSetSize(f, textSize);
+                    float w = com.ohos.shim.bridge.OHBridge.fontMeasureText(f, text);
+                    com.ohos.shim.bridge.OHBridge.fontDestroy(f);
+                    if (w > 0) return w;
+                }
+            } catch (Throwable t) { /* fall through */ }
+        }
         // Try Java2D (host JVM only)
         try {
             Object obj = getAwtFontMetrics();
@@ -260,22 +262,24 @@ public class Paint {
     public FontMetrics getFontMetrics() {
         FontMetrics fm = new FontMetrics();
         /* Try native stb_truetype metrics via OHBridge */
-        try {
-            long f = com.ohos.shim.bridge.OHBridge.fontCreate();
-            if (f != 0) {
-                com.ohos.shim.bridge.OHBridge.fontSetSize(f, textSize);
-                float[] m = com.ohos.shim.bridge.OHBridge.fontGetMetrics(f);
-                com.ohos.shim.bridge.OHBridge.fontDestroy(f);
-                if (m != null && m.length >= 3) {
-                    fm.ascent  = m[0];
-                    fm.descent = m[1];
-                    fm.leading = m[2];
-                    fm.top     = fm.ascent - 2;
-                    fm.bottom  = fm.descent + 1;
-                    return fm;
+        if (canUseNativeFontBridge()) {
+            try {
+                long f = com.ohos.shim.bridge.OHBridge.fontCreate();
+                if (f != 0) {
+                    com.ohos.shim.bridge.OHBridge.fontSetSize(f, textSize);
+                    float[] m = com.ohos.shim.bridge.OHBridge.fontGetMetrics(f);
+                    com.ohos.shim.bridge.OHBridge.fontDestroy(f);
+                    if (m != null && m.length >= 3) {
+                        fm.ascent  = m[0];
+                        fm.descent = m[1];
+                        fm.leading = m[2];
+                        fm.top     = fm.ascent - 2;
+                        fm.bottom  = fm.descent + 1;
+                        return fm;
+                    }
                 }
-            }
-        } catch (Throwable t) { /* fall through */ }
+            } catch (Throwable t) { /* fall through */ }
+        }
         /* Try Java2D (host JVM only) */
         try {
             Object obj = getAwtFontMetrics();
@@ -295,6 +299,14 @@ public class Paint {
         fm.bottom  =  textSize * 0.28f;
         fm.leading = 0;
         return fm;
+    }
+
+    private static boolean canUseNativeFontBridge() {
+        try {
+            return com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public float getFontMetrics(FontMetrics metrics) {

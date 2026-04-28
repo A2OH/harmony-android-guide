@@ -100,7 +100,10 @@ public final class ApplicationComponentManager  {
                     java.util.List<Class<?>> ifaces = new java.util.ArrayList<>();
                     // Scan for the Application injector by convention
                     String[] candidates = {
+                        "com.mcdonalds.mcdcoreapp.common.di.DataSourceModuleProvider",
                         "com.mcdonalds.app.application.McDMarketApplication_GeneratedInjector",
+                        "com.mcdonalds.mcdcoreapp.common.activity.SplashActivity_GeneratedInjector",
+                        "com.mcdonalds.mcdcoreapp.common.activity.BaseActivity_GeneratedInjector",
                         "dagger.hilt.android.internal.managers.ActivityComponentManager$ActivityComponentBuilderEntryPoint",
                     };
                     for (String c : candidates) {

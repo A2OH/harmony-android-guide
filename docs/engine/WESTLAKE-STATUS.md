@@ -1,7 +1,394 @@
 # Westlake Engine — Status Report
 
-**Date:** 2026-03-25
-**Status:** Jetpack Compose + real APK resource loading + multi-app platform on Huawei Mate 20 Pro
+**Date:** 2026-04-27
+**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, and PF-457 Material XML/generic-hit slice accepted on phone; PF-456 REST matrix and OHOS adapters remain open
+
+## Current Supervisor Status (2026-04-27)
+
+PF-451, the same-day controlled local Android showcase target, has an
+accepted phone proof from 2026-04-26 on `cfb7c9e3`. The delivered APK is a
+self-contained Noice-style local ambient mixer with a Yelp-like Discover venue panel,
+`com.westlake.showcase`, built from `test-apps/05-controlled-showcase/` and run
+through `scripts/run-controlled-showcase.sh`. The accepted run proves real APK
+XML bytes are wired into the standalone guest, `showcase_activity.xml` is
+inflated from compiled AXML into the guest View tree, IDs/widgets bind, layout
+probes complete, a visible direct frame is rendered from the XML tree, and real
+phone touch packets drive guest app navigation/actions including venue load,
+next venue, review, and export.
+
+OHOS integration is now tracked in
+`docs/engine/OHOS-CONTROLLED-SHOWCASE-INTEGRATION.md`. Supervisor judgement:
+the controlled showcase is the right first OHOS port target because its APK,
+API surface, resources, inputs, and network behavior are owned by Westlake. It
+is not a generic stock Android app compatibility claim. The first OHOS proof
+should use an OHOS Ability/XComponent host, DLST replay for the visible frame,
+XComponent input callbacks, and the selected portable host/OHBridge HTTP
+bridge from PF-452.
+
+PF-452 is now accepted on the Android phone host path. The controlled showcase
+fetches venue JSON and image bytes through the portable host/OHBridge bridge and
+records `SHOWCASE_NETWORK_HOST_BRIDGE_OK`; the accepted bridge-required run has
+no `SHOWCASE_NETWORK_NATIVE_GAP_OK` fallback marker. The remaining network work
+for the OHOS goal is to implement the same bridge adapter in the OHOS host.
+
+PF-453 is now accepted on the Android phone host path as a separate live-data
+Yelp-like APK, not an added page inside the Noice showcase. The delivered APK is
+`com.westlake.yelplive`, built from `test-apps/06-yelp-live/` and run through
+`scripts/run-yelp-live.sh`. The accepted run proves WAT-owned Application and
+Activity lifecycle for the separate app, compiled XML resource inflation and ID
+binding, live HTTPS JSON from `dummyjson.com`, live thumbnail bytes from
+`picsum.photos`, guest app logic
+using the portable host/OHBridge bridge, direct `DLST` rendering, and real
+phone touch packets driving category selection, filters, scroll, Details, Save,
+Saved, and Search app actions.
+The app is Yelp-like, but it does not call the official Yelp API; it uses
+DummyJSON for a public no-key live list and Picsum remote thumbnails as the
+portable network/image proof. The accepted screen is now list-first,
+Material-styled, and scrollable: elevated search, selected filter/category
+chips, card rows, active bottom navigation, and five restaurant rows are
+visible after a swipe. Every visible row has a live thumbnail, row body taps
+open details, Save/Saved works, and the screenshot gate requires a visible
+high-entropy photo region so a block-only card cannot satisfy PF-453.
+
+PF-453 latest evidence:
+
+- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
+- `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+- `westlake-yelp-live-debug.apk=ad17d0a0adab5edacd017fc845a42b79629c9731a9ed5866fe03d30bcc08fcf1`
+- Screenshot/log/markers/trace:
+  `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
+- Stable accepted copy:
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164_ad17d0a0adab5edacd017fc845a42b79629c9731a9ed5866fe03d30bcc08fcf1/`
+- Visual gate:
+  `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.visual`
+  (`1080x2280`, `distinct_colors=5593`, `top_red_samples=3033`,
+  `bottom_nav_light_samples=5199`, `bottom_nav_red_samples=26`,
+  `photo_distinct_colors=11441`, `photo_colored_samples=17221`,
+  `photo_natural_samples=5053`)
+- Host log includes `Surface buffer 1080x2280 for com.westlake.yelplive`.
+- Full-resolution marker:
+  `YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280 navTop=824`.
+- Accepted live markers include `YELP_APP_ON_CREATE_OK`,
+  `YELP_ACTIVITY_ON_CREATE_OK`, `YELP_XML_RESOURCE_WIRE_OK`,
+  `YELP_XML_INFLATE_OK`, `YELP_XML_BIND_OK`,
+  `YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
+  `YELP_UI_BUILD_OK`,
+  `YELP_NETWORK_BRIDGE_OK`, `YELP_LIVE_JSON_OK status=200 bytes=1627 places=8
+  transport=host_bridge`, `YELP_LIVE_IMAGE_OK status=200 bytes=1820
+  bitmap=96x64 transport=host_bridge`, `YELP_LIVE_ROW_IMAGE_OK index=5`,
+  `YELP_CARD_OK`, `YELP_CATEGORY_SELECT_OK`, `YELP_FILTER_TOGGLE_OK`,
+  `YELP_LIST_SCROLL_OK`, `YELP_NEXT_PLACE_OK`,
+  `YELP_DETAILS_OPEN_OK`, `YELP_SAVE_PLACE_OK`, `YELP_NAV_SAVED_OK`,
+  `YELP_NAV_SEARCH_OK`, `YELP_DIRECT_FRAME_OK`, and
+  `YELP_FULL_RES_FRAME_OK`.
+
+PF-455 is accepted for the XML-backed Yelp slice, with an explicit remaining
+rendering caveat. The app now inflates `yelp_live_activity.xml` from compiled
+APK layout bytes and binds the expected guest View IDs before the live-data
+flows run. The visible Yelp surface remains the controlled direct `DLST`
+renderer, so PF-455 does not yet prove a generic Android `draw()` renderer over
+the whole inflated tree.
+
+PF-456 implementation status: the Android host bridge now exposes a v2 request
+shape for method, headers JSON, request body, max-byte cap, timeout,
+redirect-follow flag, response headers, non-2xx bodies, truncation, and
+structured errors. The accepted apps still exercise GET JSON/images. A REST
+matrix probe and the OHOS adapter are required before PF-456 can close.
+
+PF-457 now has a separate accepted Material XML probe,
+`com.westlake.materialxmlprobe`, built from
+`test-apps/09-material-xml-probe/` and run with
+`scripts/run-material-xml-probe.sh`.
+
+PF-457 evidence:
+
+- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
+- `aosp-shim.dex=bf33aba0a8923e8b7d2cb006ee98042bb217021236a7cfe185a004f0e269716a`
+- `westlake-material-xml-probe-debug.apk=ded93614084cdd28a46bcbcbd7eb8cba78504c3c228e0f95835a6ebf42a6e6c9`
+- Screenshot/log/markers/trace:
+  `/mnt/c/Users/dspfa/TempWestlake/material_xml_probe_target.*`
+- Accepted markers include `MATERIAL_XML_APP_OK`,
+  `MATERIAL_XML_INFLATE_BEGIN`, `MATERIAL_XML_TAG_OK` for
+  `TextInputLayout`, `TextInputEditText`, `MaterialCardView`, `ChipGroup`,
+  `Chip`, `Slider`, `MaterialButton`, and `BottomNavigationView`,
+  `MATERIAL_XML_TREE_OK materialViews=9`,
+  `MATERIAL_GENERIC_BUTTON_BOUNDS left=0 top=708 right=480 bottom=836`,
+  `MATERIAL_GENERIC_RENDER_OK`, `MATERIAL_GENERIC_TOUCH_OK direct=true`, and
+  `MATERIAL_GENERIC_HIT_OK`.
+
+PF-457 caveat: this is compiled Material XML inflation plus direct DLST tree
+serialization and generic `findViewAt/performClick` for the probe. It still
+does not claim full upstream Material Components AAR compatibility, Material
+theming, Coordinator/AppBar behavior, ripple/animation, or generic Android
+rendering for arbitrary APKs.
+
+Harness note: the latest 2026-04-27 Yelp rerun used
+`SUPERVISOR_HTTP_PROXY=1` because the phone had no active default network. The
+app still fetched through the Westlake host/OHBridge bridge; the Android host
+routed outbound HTTP through ADB reverse. The runner now fails before app launch
+when the phone has no default network unless explicit proxy mode is enabled, and
+successful runs copy artifacts into a hash-stamped accepted directory.
+
+PF-454 is now accepted on the Android phone host path as a separate Material
+Components API canary, `com.westlake.materialyelp`, built from
+`test-apps/07-material-yelp/` and run through `scripts/run-material-yelp.sh`.
+This is not a claim of full upstream Google Material Components AAR
+compatibility. It proves a first Westlake-owned Material namespace slice:
+guest code directly instantiates `com.google.android.material.*` classes
+including `MaterialCardView`, `MaterialButton`, `ChipGroup`, `Chip`,
+`TextInputLayout`, `TextInputEditText`, `Slider`, `BottomNavigationView`, and
+`FloatingActionButton`; the custom `Application` and `Activity` lifecycle
+markers are app-owned; the Material view tree is counted; direct `DLST`
+rendering produces a visible Chinese Yelp-like Material screen with UTF-8 text
+and host-bridge network image tiles; the host preserves the 480x800 guest frame
+aspect ratio instead of vertically stretching text; and strict phone touch
+packets drive filters, row selection, Save/Saved, and Search. The latest run
+used `SUPERVISOR_HTTP_PROXY=1` because the phone DNS resolver could not resolve
+`dummyjson.com`; the guest app still fetched bytes through the Westlake
+host/OHBridge bridge, with the Android host routed through ADB reverse.
+
+PF-454 evidence:
+
+- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
+- `aosp-shim.dex=20fc0c98f9a9371f12deae0d347a01a033e41629a5797aee1cf70d5c39245726`
+- `westlake-material-yelp-debug.apk=e586d7afd7df1a2a8c418fb18de952c032dd44c456a3bbf952799c363711ba66`
+- `westlake-host app-debug.apk=bc9268855a05d5cda61490fdbf02a297e77bde844e82ef1b279e159304dcaac8`
+- Screenshot/log/markers/trace:
+  `/mnt/c/Users/dspfa/TempWestlake/material_yelp_target.*`
+- Stable accepted copy:
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/material_yelp/20fc0c98f9a9371f12deae0d347a01a033e41629a5797aee1cf70d5c39245726_e586d7afd7df1a2a8c418fb18de952c032dd44c456a3bbf952799c363711ba66/`
+- Visual gate:
+  `/mnt/c/Users/dspfa/TempWestlake/material_yelp_target.visual`
+  (`1080x2280`, `content_scale=2.2500`, `content_offset=0.0,240.0`,
+  `distinct_colors=313`, `top_red_samples=3812`,
+  `bottom_nav_light_samples=7194`, `bottom_nav_red_samples=23`,
+  `card_light_samples=19872`, `photo_distinct_colors=28`,
+  `photo_colored_samples=564`)
+- Host log includes `Surface buffer 1080x1800 for com.westlake.materialyelp`.
+- Accepted Material markers include `MATERIAL_APP_ON_CREATE_OK`,
+  `MATERIAL_ACTIVITY_ON_CREATE_OK`, `MATERIAL_CLASS_SURFACE_OK count=9`,
+  `MATERIAL_UI_BUILD_OK`, `MATERIAL_LANGUAGE_OK locale=zh-Hans`,
+  `MATERIAL_NETWORK_BRIDGE_OK`, `MATERIAL_ROW_IMAGE_OK index=0`,
+  `MATERIAL_IMAGE_BRIDGE_OK count=4 transport=host_bridge`,
+  `MATERIAL_DIRECT_FRAME_OK images=4`, `MATERIAL_TOUCH_POLL_READY`,
+  `MATERIAL_TOUCH_POLL_OK`,
+  `MATERIAL_FILTER_TOGGLE_OK`, `MATERIAL_SELECT_PLACE_OK`,
+  `MATERIAL_SAVE_PLACE_OK`, `MATERIAL_NAV_SAVED_OK`, and
+	  `MATERIAL_NAV_SEARCH_OK`.
+
+Current contract workstreams after the PF-455/PF-457 phone runs:
+
+- `PF-455`: accepted for XML inflation/binding/layout proof plus live Yelp
+  flows on a full-phone `1080x2280` host surface; open for fully generic
+  View-tree rendering.
+- `PF-456`: bridge v2 implemented; open for REST matrix acceptance and OHOS
+  adapter.
+- `PF-457`: accepted for Material XML inflation and probe hit routing; open for
+  upstream MDC compatibility, theming/behaviors, ripple/animation, and broad
+  generic rendering/hit testing.
+
+Accepted PF-451 markers include `SHOWCASE_XML_INFLATE_OK root=android.widget.LinearLayout views=89 texts=49`,
+`SHOWCASE_XML_BIND_OK`, `SHOWCASE_XML_LAYOUT_PROBE_OK`,
+`SHOWCASE_XML_API_SURFACE_OK`, `SHOWCASE_UI_BUILD_OK`,
+`SHOWCASE_XML_TREE_RENDER_OK`, `SHOWCASE_DIRECT_FRAME_OK`,
+`SHOWCASE_TOUCH_POLL_OK`, `SHOWCASE_NAV_MIXER_OK`, `SHOWCASE_NAV_TIMER_OK`,
+`SHOWCASE_NAV_SETTINGS_OK`, `SHOWCASE_ADD_LAYER_OK`, `SHOWCASE_TIMER_SET_OK`,
+`SHOWCASE_NETWORK_HOST_BRIDGE_OK`, `SHOWCASE_NETWORK_JSON_OK status=200 bytes=417 venues=3 transport=host_bridge`,
+`SHOWCASE_NETWORK_IMAGE_OK status=200 bytes=8090 bitmap=100x100 transport=host_bridge`, `SHOWCASE_YELP_CARD_OK`,
+`SHOWCASE_VENUE_NEXT_OK`, `SHOWCASE_VENUE_REVIEW_OK`, and
+`SHOWCASE_EXPORT_BUNDLE_OK`.
+
+PF-451 evidence:
+
+- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
+- `aosp-shim.dex=b498750dce8e022c3e0a30c402ef652ec396d8b04cc2dc66e295ec6ddfbe3854`
+- `westlake-showcase-debug.apk=bcd8d63eb2af3d2342110a5df97afd581cc3154d96d96c3de34306597ba5064d`
+- Screenshot/log/markers/trace:
+  `/mnt/c/Users/dspfa/TempWestlake/controlled_showcase_target.*`
+- Visual gate:
+  `/mnt/c/Users/dspfa/TempWestlake/controlled_showcase_target.visual`
+  (`1080x2280`, `distinct_colors=2527`, `settings_nav_teal_samples=744`)
+- The accepted phone screenshot shows the Noice-style app after real
+  navigation on the Settings page, with a Yelp-like Discover card for
+  `Rain Room`, 4.5 stars, 85 reviews, host-bridge network status, active bottom
+  navigation, offline/export buttons, and host/OHBridge network markers.
+
+This is a valid same-day showcase delivery, but not yet a generic Android app
+runtime completion claim. Current gaps exposed by the Noice-style XML proof:
+
+- `resources.arsc` table parsing still logs `ArrayStoreException`; the layout
+  bytes are currently registered directly for the showcase.
+- Dynamic app state now updates through controlled page/action handlers, but
+  broader arbitrary widget mutation remains a follow-up runtime proof.
+- Strict subprocess input now polls the host touch file and drives the showcase;
+  the remaining gap is that hit routing is still showcase-specific, not generic
+  Android View hit testing.
+- The passing PF-451 render path uses a showcase-specific direct `DLST` frame
+  writer in `WestlakeLauncher`; generic `Activity.renderFrame`/View-tree
+  rendering through `OHBridge.surfaceCreate` remains open under PF-302.
+- Live Java/libcore networking is still not accepted. The accepted network
+  plane is now the constrained host/OHBridge HTTP adapter, which returns venue
+  JSON and image bytes to guest app logic without using the embedded fixture.
+  The exposed libcore pieces, including `java.net.URL`/URL parsing support,
+  `libcore.io.Linux.android_getaddrinfo`, and related socket/unsafe
+  initialization, remain a later compatibility track for broader stock APK
+  support.
+
+Phone validation on `cfb7c9e3` now has target `L4WATRECREATE`,
+`L4WATFACTORY`, `L4WATAPPFACTORY`, and `L4WATAPPREFLECT` passing with
+app-owned markers and WAT-owned lifecycle trace markers. The WAT path now runs
+pre-`onCreate` saved-state readiness through the public
+`SavedStateRegistryOwner` contract on both initial launch and relaunch; the old
+`CV WAT canary precreate savedstate skipped` quarantine is absent from the
+accepted trace. WAT attach for the cutoff canary now routes through the shim
+`Activity.attach(...)` method instead of direct field assignment in
+`WestlakeActivityThread`; the accepted log includes
+`PF301 strict WAT attachActivity shim attach begin` and
+`PF301 strict WAT attachActivity shim attach done`. Strict WAT Activity
+construction now enters and returns through the default
+`AppComponentFactory.instantiateActivity(...)` path on both initial launch and
+relaunch, with `PF301 strict Instr default factory path returned` in the raw
+log. The new `L4WATFACTORY` gate also parses the canary manifest
+`android:appComponentFactory`, installs the custom factory into WAT, and routes
+both initial launch and recreate through
+`CanaryAppComponentFactory.instantiateActivity(...)`. The new
+`L4WATAPPFACTORY` gate skips launcher-created `CanaryApp`, forces WAT
+pre-Activity `makeApplication()`, enters/returns the controlled canary
+`CanaryAppComponentFactory.instantiateApplication(...)` path, calls
+`Application.onCreate()`, and only then instantiates the Activity through the
+custom factory. The new `L4WATAPPREFLECT` gate then proves the same ordering
+through the base `AppComponentFactory.instantiateApplication(...)` reflective
+constructor path: the accepted log has `PF301 strict factory application ctor
+call` and `PF301 strict factory application ctor returned`, and the app marker
+`CANARY_L4APPREFLECT_CANARY_APP_CTOR_OK` proves the constructor ran.
+`target L4WATAPPFACTORY`, `target L4WATFACTORY`, `target L4WATRECREATE`,
+`target L4RECREATE`, `target L4STATE`, `target L4`, `target L3LOOKUP`, and
+`target L3IFACE` still pass as regression gates under the same runtime payload.
+The latest accepted proof pair is:
+
+- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
+- `aosp-shim.dex=35a7e5693f1b65a94a756cbf8e646b61f7cb8228f9f959dc30405ff6d0260a5d`
+- `cutoff-canary-debug.apk=cb167f3033c14ea3c2eecb40cff784319d5a5657d85f060c0b15905b8e1c4147`
+
+The canary runner now verifies that installed APK hash before accepting a run;
+it auto-installs the local APK when stale and fails closed if the phone hash
+still differs.
+
+Hash-stamped evidence bundle:
+`/mnt/c/Users/dspfa/TempWestlake/accepted/35a7e5693f1b65a94a756cbf8e646b61f7cb8228f9f959dc30405ff6d0260a5d`.
+
+`L3LOOKUP` proves `FragmentManager.findFragmentById(...)`,
+`getFragments()`, and `findFragmentByTag(...)` across app-dex to shim-dex after
+`commitNow()`. The last blocker was not fragment lookup itself: ART class
+linking reached `AssignVTableIndexes()` and branched through the unresolved
+`BitVector::ClearAllBits()` sentinel. The accepted runtime makes the helper
+available from `bit_vector.h` with explicit word stores.
+
+`L3IFACE` now adds a focused app-dex interface dispatch proof:
+`java.util.List<Fragment>.get(0)` on the list returned by shim
+`FragmentManager.getFragments()` returns the committed Fragment under the same
+runtime hash pair.
+
+`L4` proves the next AndroidX boundary: `ComponentActivity` and committed
+Fragment owners both expose `SavedStateRegistry`, registered saved-state
+providers can be read back, and `ViewModelProvider` retains the same ViewModel
+instance through `ViewModelStore` for both Activity and Fragment owners.
+Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4.*`.
+
+`L4STATE` extends that boundary below true Activity recreation. It proves
+`SavedStateRegistry` save/restore/one-shot consume, public `SavedStateHandle`
+`contains`/`get`/`keys`/`set`, `CreationExtras` delivery through the two-argument
+`ViewModelProvider.Factory.create(...)`, and Activity/Fragment
+`ViewTreeLifecycleOwner`, `ViewTreeViewModelStoreOwner`, and
+`ViewTreeSavedStateRegistryOwner` propagation. Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4state.*`.
+
+`L4RECREATE` extends that state proof through a real `Activity.recreate()` call
+on the accepted cutoff path. It proves app-owned save-state, pause, stop,
+destroy, a fresh Activity instance, restored direct state, restored
+`SavedStateRegistry` provider state, and resumed recreated Activity markers.
+Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4recreate.*`.
+
+`L4WATRECREATE` moves that recreate proof onto `WestlakeActivityThread` for the
+cutoff canary. It proves a WAT-owned launch/recreate sequence with saved state,
+pause, stop, destroy, relaunch, restore, resume, a fresh Activity instance, and
+restored `SavedStateRegistry` state. The accepted trace includes
+`CV canary WAT launch begin`, `CV WAT precreate savedstate returned`,
+`CV WAT recreate begin`, and `CV WAT recreate end`. Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4watrecreate.*`.
+
+`L4WATFACTORY` adds manifest factory selection to that WAT path. It proves
+manifest `android:appComponentFactory` discovery for the cutoff canary, factory
+installation through `WestlakeActivityThread`, custom factory construction, and
+two custom `instantiateActivity(...)` calls across launch and recreate. The
+accepted trace includes `CV canary WAT factory manifest parsed
+com.westlake.cutoffcanary.CanaryAppComponentFactory` and
+`CV canary WAT factory set done`; app markers include
+`CANARY_L4FACTORY_CTOR_OK`, two
+`CANARY_L4FACTORY_INSTANTIATE_ACTIVITY_OK`, and two
+`CANARY_L4FACTORY_ACTIVITY_RETURNED_OK`. Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4watfactory.*`.
+
+`L4WATAPPFACTORY` adds controlled Application factory construction to the WAT
+path. It proves the launcher-created canary Application is skipped,
+`WestlakeActivityThread` calls `makeApplication()` before Activity
+instantiation, the custom canary factory enters and returns
+`instantiateApplication(...)`, and WAT then calls `Application.onCreate()`. The
+accepted trace includes
+`CV canary application manual skipped app factory`,
+`CV WAT app factory preactivity makeApplication begin`,
+`CV WAT instantiateApplication returned com.westlake.cutoffcanary.CanaryApp`,
+`CV WAT application onCreate returned`, and
+`CV WAT app factory preactivity makeApplication returned`; app markers include
+`CANARY_L4APPFACTORY_INSTANTIATE_APPLICATION_OK`,
+`CANARY_L4APPFACTORY_DIRECT_CANARY_APP_OK`, and
+`CANARY_L4APPFACTORY_APPLICATION_RETURNED_OK` before
+`CANARY_L4FACTORY_INSTANTIATE_ACTIVITY_OK`. Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4watappfactory.*`.
+
+`L4WATAPPREFLECT` adds the reflective constructor proof above
+`L4WATAPPFACTORY`. It routes the canary factory through
+`super.instantiateApplication(...)`, avoids the previously crashing raw
+`cl.loadClass(...)` first step by using the same safe class resolution strategy
+as Activity construction, and proves the Application constructor ran before
+returning. App markers include `CANARY_L4APPREFLECT_SUPER_CALL`,
+`CANARY_L4APPREFLECT_CANARY_APP_CTOR_OK`,
+`CANARY_L4APPREFLECT_SUPER_RETURNED`, and
+`CANARY_L4APPREFLECT_APPLICATION_RETURNED_OK`; the raw log includes
+`PF301 strict factory application ctor call` and
+`PF301 strict factory application ctor returned`. Artifacts:
+`/mnt/c/Users/dspfa/TempWestlake/cutoff_canary_target_l4watappreflect.*`.
+
+This is a lifecycle convergence gate, not final generic McDonald's readiness:
+the accepted WAT canary path now uses shim-owned `Activity.attach(...)` and
+precreate named saved-state is no longer skipped. It also uses a default
+`AppComponentFactory.instantiateActivity(...)` path rather than the prior
+strict constructor bypass, and the controlled canary now proves custom/manifest
+`instantiateActivity(...)` plus controlled custom `instantiateApplication(...)`
+selection with pre-Activity Application ordering. `L4WATAPPREFLECT` proves the
+base reflective Application constructor path for the controlled canary. It is
+still cutoff-scoped, though: Hilt-generated real APK factory behavior, generic
+real-APK Application-before-Activity ordering, and generic real APK
+factory/lifecycle convergence remain open.
+The previous canary-specific `DataSourceHelper` skip is now a package/class
+guard that only attempts the McDonald's bootstrap for McDonald's launches.
+
+The phone sync path now runs
+`scripts/check-westlake-runtime-symbols.sh` before pushing `dalvikvm`; the gate
+passes for the accepted runtime and blocks unexpected strong unresolved helper
+symbols. The latest cleanup build also removes/quarantines the live `PFCUT`
+invoke/link/type probe output: accepted `target L4WATAPPREFLECT`,
+`target L4WATAPPFACTORY`, `target L4WATFACTORY`, `target L4WATRECREATE`,
+`target L4RECREATE`, `target L4STATE`, `target L4`, `target L3LOOKUP`, and
+`target L3IFACE` artifacts scan clean for
+`PFCUT` and `DEBUG: Thread`. The
+`FragmentManager.mAdded` concrete `ArrayList` typing workaround is removed in
+the accepted shim; remaining runtime debt is broader generic interface-dispatch
+coverage beyond this fragment collection slice, making WAT lifecycle/factory
+selection generic for real APK launch, proving Hilt-safe real APK Application
+construction, and self-contained runtime packaging.
 
 ---
 
@@ -155,20 +542,35 @@ APK ZIP → res/layout/counter.xml → AXML parser → View tree → display
 
 | Gap | What's needed | Effort |
 |-----|--------------|--------|
+| Generic WAT lifecycle | Broaden accepted WAT launch/recreate beyond cutoff canary to real APK lifecycle semantics | High |
+| AppComponentFactory/Hilt | Broaden accepted canary custom activity/application factory paths to Hilt-safe real APK factories and AOSP-correct ordering | High |
+| Self-contained runtime | Package dalvikvm, shim dex, libs, APKs, and bootstrap without Android host staging | High |
+| OHOS backend closure | Services/package/window/input/storage/permissions mapped below Android semantics | High |
 | Full AXML → View inflation | Handle all View types + all attributes | 2 weeks |
 | Resource ID resolver | Map R.string.xxx int IDs to values at runtime | 1 week |
 | Multi-Activity | Read AndroidManifest, manage Activity stack | 2 weeks |
-| Fragments | FragmentManager for real apps | 2 weeks |
+| Fragments | Broaden from cutoff FragmentManager proof to real app fragment state/back stack | 2 weeks |
 | RecyclerView | Most production lists use this | 1 week |
 | Runtime permissions | requestPermissions flow | 1 week |
 
 ### OHOS Port Path
 
 To run on OpenHarmony:
-1. Replace `ComponentActivity` → custom Activity with shim lifecycle
-2. Replace Compose's Canvas backend → ArkUI/Skia rendering
-3. Keep all app code + shim layer unchanged
-4. Bridge ~25 Canvas/Paint/Path functions to OHOS native APIs
+1. Package `dalvikvm`, `aosp-shim.dex`, the controlled showcase APK, extracted
+   resources, and launch properties into an OHOS app-owned runtime directory.
+2. Start Westlake from an OHOS Stage Ability/XComponent host instead of the
+   Android phone host Activity.
+3. Replay the current DLST frame stream into the XComponent first, then promote
+   to the generic `OHBridge.surfaceCreate`/View draw path after visible OHOS
+   proof is stable.
+4. Route XComponent touch/key callbacks into the Westlake input protocol, then
+   replace the file protocol with a direct native event queue.
+5. Implement the PF-452 host/OHBridge HTTP adapter so the venue JSON/image path
+   records `SHOWCASE_NETWORK_HOST_BRIDGE_OK` without
+   `SHOWCASE_NETWORK_NATIVE_GAP_OK`.
+
+Detailed API mapping and acceptance gates:
+`docs/engine/OHOS-CONTROLLED-SHOWCASE-INTEGRATION.md`.
 
 ---
 

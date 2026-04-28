@@ -2326,28 +2326,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * be extended in the future to hold our own class with more than just
      * a Rect. :)
      */
-    static final ThreadLocal<Rect> sThreadLocal = new ThreadLocal<Rect>() {
-        private final Rect mRect = new Rect();
-
-        @Override
-        public Rect get() {
-            return mRect;
-        }
-
-        @Override
-        public void set(Rect value) {
-            if (value == null) {
-                mRect.setEmpty();
-            } else {
-                mRect.set(value);
-            }
-        }
-
-        @Override
-        protected Rect initialValue() {
-            return mRect;
-        }
-    };
+    static ThreadLocal<Rect> sThreadLocal;
 
     /**
      * Map used to store views' tags.
@@ -5238,7 +5217,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             InputEventConsistencyVerifier.isInstrumentationEnabled() ?
                     new InputEventConsistencyVerifier(this, 0) : null;
 
-    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+    private static AtomicInteger sNextGeneratedId;
 
     private int[] mTempNestedScrollConsumed;
 
@@ -11241,7 +11220,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
     private boolean fitSystemWindowsInt(Rect insets) {
         if ((mViewFlags & FITS_SYSTEM_WINDOWS) == FITS_SYSTEM_WINDOWS) {
-            Rect localInsets = sThreadLocal.get();
+            Rect localInsets = threadLocalRect().get();
             boolean res = computeFitSystemWindows(insets, localInsets);
             applyInsets(localInsets);
             return res;
@@ -11304,7 +11283,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private WindowInsets onApplyFrameworkOptionalFitSystemWindows(WindowInsets insets) {
-        Rect localInsets = sThreadLocal.get();
+        Rect localInsets = threadLocalRect().get();
         WindowInsets result = computeSystemWindowInsets(insets, localInsets);
         applyInsets(localInsets);
         return result;
@@ -20278,10 +20257,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             // left / right or right / left depending on the resolved layout direction.
             // If start / end padding are not defined, use the left / right ones.
             if (mBackground != null && (!mLeftPaddingDefined || !mRightPaddingDefined)) {
-                Rect padding = sThreadLocal.get();
+                Rect padding = threadLocalRect().get();
                 if (padding == null) {
                     padding = new Rect();
-                    sThreadLocal.set(padding);
+                    threadLocalRect().set(padding);
                 }
                 mBackground.getPadding(padding);
                 if (!mLeftPaddingDefined) {
@@ -23741,11 +23720,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             // installation for otherwise-valid views like ScrollView.
             Rect padding;
             try {
-                padding = sThreadLocal.get();
+                padding = threadLocalRect().get();
                 if (padding == null) {
                     padding = new Rect();
                     try {
-                        sThreadLocal.set(padding);
+                        threadLocalRect().set(padding);
                     } catch (Throwable ignored) {
                     }
                 }
@@ -27753,6 +27732,41 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         return (mPrivateFlags2 & PFLAG2_TEXT_ALIGNMENT_RESOLVED) == PFLAG2_TEXT_ALIGNMENT_RESOLVED;
     }
 
+    private static ThreadLocal<Rect> threadLocalRect() {
+        if (sThreadLocal == null) {
+            sThreadLocal = new ThreadLocal<Rect>() {
+                private final Rect mRect = new Rect();
+
+                @Override
+                public Rect get() {
+                    return mRect;
+                }
+
+                @Override
+                public void set(Rect value) {
+                    if (value == null) {
+                        mRect.setEmpty();
+                    } else {
+                        mRect.set(value);
+                    }
+                }
+
+                @Override
+                protected Rect initialValue() {
+                    return mRect;
+                }
+            };
+        }
+        return sThreadLocal;
+    }
+
+    private static AtomicInteger nextGeneratedIdCounter() {
+        if (sNextGeneratedId == null) {
+            sNextGeneratedId = new AtomicInteger(1);
+        }
+        return sNextGeneratedId;
+    }
+
     /**
      * Generate a value suitable for use in {@link #setId(int)}.
      * This value will not collide with ID values generated at build time by aapt for R.id.
@@ -27760,12 +27774,13 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @return a generated ID value
      */
     public static int generateViewId() {
+        AtomicInteger counter = nextGeneratedIdCounter();
         for (;;) {
-            final int result = sNextGeneratedId.get();
+            final int result = counter.get();
             // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
             int newValue = result + 1;
             if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
-            if (sNextGeneratedId.compareAndSet(result, newValue)) {
+            if (counter.compareAndSet(result, newValue)) {
                 return result;
             }
         }
@@ -30009,6 +30024,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
     /** {@hide} */
     public void encode(@NonNull ViewHierarchyEncoder stream) {
+        if (stream == null) {
+            return;
+        }
         stream.beginObject(this);
         encodeProperties(stream);
         stream.endObject();
@@ -30017,6 +30035,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     /** {@hide} */
     @CallSuper
     protected void encodeProperties(@NonNull ViewHierarchyEncoder stream) {
+        if (stream == null) {
+            return;
+        }
         Object resolveId = ViewDebug.resolveId(getContext(), mID);
         if (resolveId instanceof String) {
             stream.addProperty("id", (String) resolveId);

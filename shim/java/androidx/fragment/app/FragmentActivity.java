@@ -1,12 +1,13 @@
 package androidx.fragment.app;
 
 import android.os.Bundle;
+import androidx.activity.ComponentActivity;
 
 /**
  * AndroidX FragmentActivity stub. Extends android.app.Activity and provides
  * getSupportFragmentManager() for Jetpack fragment navigation.
  */
-public class FragmentActivity extends android.app.Activity {
+public class FragmentActivity extends ComponentActivity {
 
     private FragmentManager mSupportFragmentManager;
 
