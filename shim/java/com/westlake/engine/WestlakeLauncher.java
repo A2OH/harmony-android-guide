@@ -7047,8 +7047,44 @@ public class WestlakeLauncher {
         return showcaseInvoke(activity, "openPlace4");
     }
 
+    private static boolean writeYelpLiveGenericXmlFrame(Activity activity, String reason) {
+        try {
+            android.view.View decor = activity != null && activity.getWindow() != null
+                    ? activity.getWindow().getDecorView() : null;
+            if (decor == null) {
+                appendCutoffCanaryMarker("YELP_GENERIC_VIEW_DRAW_FAIL reason="
+                        + reason + " err=no_decor");
+                return false;
+            }
+            java.io.ByteArrayOutputStream ops = new java.io.ByteArrayOutputStream(16384);
+            ShowcaseTreeStats stats = new ShowcaseTreeStats();
+            renderShowcaseView(ops, decor, 0, 0, 0, stats, YELP_SURFACE_HEIGHT);
+            byte[] data = ops.toByteArray();
+            java.io.OutputStream out = System.out;
+            writeIntLe(out, 0x444C5354);
+            writeIntLe(out, data.length);
+            out.write(data);
+            out.flush();
+            appendCutoffCanaryMarker("YELP_GENERIC_VIEW_DRAW_OK reason=" + reason
+                    + " bytes=" + intAscii(data.length)
+                    + " views=" + intAscii(stats.views)
+                    + " texts=" + intAscii(stats.texts)
+                    + " buttons=" + intAscii(stats.buttons)
+                    + " height=" + intAscii(YELP_SURFACE_HEIGHT)
+                    + " source=inflated_xml");
+            return true;
+        } catch (Throwable t) {
+            startupLog("[WestlakeLauncher] Yelp live generic XML frame error", t);
+            logThrowableFrames("[WestlakeLauncher] Yelp live generic XML frame", t, 12);
+            appendCutoffCanaryMarker("YELP_GENERIC_VIEW_DRAW_FAIL err="
+                    + t.getClass().getName());
+            return false;
+        }
+    }
+
     private static void writeYelpLiveDirectFrame(Activity activity, String reason) {
         try {
+            writeYelpLiveGenericXmlFrame(activity, reason);
             java.io.ByteArrayOutputStream ops = new java.io.ByteArrayOutputStream(12288);
             showcaseColor(ops, 0xfffbf8f3);
 
@@ -8468,6 +8504,14 @@ public class WestlakeLauncher {
     }
 
     private static void layoutShowcaseDecor(Activity activity) {
+        layoutDecorForHeight(activity, SURFACE_HEIGHT, "Showcase direct");
+    }
+
+    private static void layoutYelpLiveDecor(Activity activity) {
+        layoutDecorForHeight(activity, YELP_SURFACE_HEIGHT, "Yelp live generic");
+    }
+
+    private static void layoutDecorForHeight(Activity activity, int height, String label) {
         if (activity == null || activity.getWindow() == null) {
             return;
         }
@@ -8479,11 +8523,11 @@ public class WestlakeLauncher {
             int wSpec = android.view.View.MeasureSpec.makeMeasureSpec(
                     SURFACE_WIDTH, android.view.View.MeasureSpec.EXACTLY);
             int hSpec = android.view.View.MeasureSpec.makeMeasureSpec(
-                    SURFACE_HEIGHT, android.view.View.MeasureSpec.EXACTLY);
+                    height, android.view.View.MeasureSpec.EXACTLY);
             decor.measure(wSpec, hSpec);
-            decor.layout(0, 0, SURFACE_WIDTH, SURFACE_HEIGHT);
+            decor.layout(0, 0, SURFACE_WIDTH, height);
         } catch (Throwable t) {
-            startupLog("[WestlakeLauncher] Showcase direct layout error", t);
+            startupLog("[WestlakeLauncher] " + label + " layout error", t);
         }
     }
 
@@ -8726,6 +8770,12 @@ public class WestlakeLauncher {
     private static void renderShowcaseView(java.io.OutputStream out, android.view.View view,
             int offsetX, int offsetY, int depth, ShowcaseTreeStats stats)
             throws java.io.IOException {
+        renderShowcaseView(out, view, offsetX, offsetY, depth, stats, SURFACE_HEIGHT);
+    }
+
+    private static void renderShowcaseView(java.io.OutputStream out, android.view.View view,
+            int offsetX, int offsetY, int depth, ShowcaseTreeStats stats, int clipHeight)
+            throws java.io.IOException {
         if (view == null || depth > 16 || view.getVisibility() == android.view.View.GONE) {
             return;
         }
@@ -8741,7 +8791,7 @@ public class WestlakeLauncher {
         if (bottom <= top) {
             bottom = top + Math.max(view.getMeasuredHeight(), 1);
         }
-        if (bottom < 0 || top > SURFACE_HEIGHT || right < 0 || left > SURFACE_WIDTH) {
+        if (bottom < 0 || top > clipHeight || right < 0 || left > SURFACE_WIDTH) {
             return;
         }
 
@@ -8754,7 +8804,7 @@ public class WestlakeLauncher {
         boolean isBottomNav = view.getClass().getName().indexOf("BottomNavigationView") >= 0;
 
         if (depth == 0) {
-            showcaseRect(out, 0, 0, SURFACE_WIDTH, SURFACE_HEIGHT, 0xfff7f4ef);
+            showcaseRect(out, 0, 0, SURFACE_WIDTH, clipHeight, 0xfff7f4ef);
         } else if (isBottomNav) {
             showcaseRect(out, left, top, right, bottom, 0xffffffff);
         } else if (isButton) {
@@ -8805,7 +8855,7 @@ public class WestlakeLauncher {
             int count = group.getChildCount();
             for (int i = 0; i < count; i++) {
                 renderShowcaseView(out, group.getChildAt(i),
-                        childOffsetX, childOffsetY, depth + 1, stats);
+                        childOffsetX, childOffsetY, depth + 1, stats, clipHeight);
             }
         }
     }

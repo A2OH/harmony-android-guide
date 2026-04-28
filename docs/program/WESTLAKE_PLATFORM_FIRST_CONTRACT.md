@@ -84,12 +84,14 @@ Supervisor update, 2026-04-27:
   `YELP_XML_RESOURCE_WIRE_OK`, `YELP_XML_INFLATE_OK views=29 texts=21`,
   `YELP_XML_BIND_OK buttons=5`,
   `YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
+  `YELP_GENERIC_VIEW_DRAW_OK views=30 texts=21 buttons=17 height=1013`,
   `YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280`,
   `YELP_NETWORK_BRIDGE_OK`, `YELP_LIVE_JSON_OK`, `YELP_LIVE_ROW_IMAGE_OK`,
   `YELP_LIST_SCROLL_OK`, `YELP_DETAILS_OPEN_OK`, `YELP_SAVE_PLACE_OK`, and
-  `YELP_NAV_SEARCH_OK`. Remaining PF-455 gap: the visible Yelp frame is still
-  the controlled direct `DLST` renderer, not a fully generic Android `draw()`
-  pass over every inflated widget.
+  `YELP_NAV_SEARCH_OK`. PF-459 is now accepted for a first generic
+  inflated-View DLST draw slice. Remaining PF-455/PF-459 gap: the visible Yelp
+  frame is still the controlled direct `DLST` renderer, not a full-fidelity
+  generic Android `draw()` pass over every inflated widget.
 - PF-456 is now accepted on the Android phone for the bridge v2 REST matrix:
   the guest calls a v2 HTTP bridge shape with method, headers JSON, request
   body, max-byte cap, timeout, redirect policy, response headers, non-2xx
@@ -135,11 +137,11 @@ Accepted PF-451 hashes:
 
 Accepted PF-453 hashes:
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+- `aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1`
 - `westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda`
 - Artifacts: `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - Stable accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
 - Screenshot acceptance: `yelp_live_target.png` shows the Yelp-like live app
   after accepted network and navigation actions, with a red Yelp-style header,
   loaded live list data, five host-rendered remote thumbnails after scroll,
@@ -248,7 +250,8 @@ New contract workstreams added on 2026-04-27:
   state is driven from that tree, and the same phone interactions still pass on
   a 1K-class render surface. Programmatic fallback may stay as a diagnostic, but
   it cannot satisfy this workstream. Status: XML inflation/binding and live
-  flows are now phone-accepted; generic View-tree rendering remains open.
+  flows are now phone-accepted; PF-459 accepts a first generic inflated-View
+  DLST draw slice, while full-fidelity generic View-tree rendering remains open.
 - `PF-456` portable REST networking completeness. The Westlake app-facing
   network surface must support the controlled app's real API demands through a
   stable guest-to-host contract on Android and OHOS: HTTPS, headers, methods,
@@ -439,14 +442,11 @@ Current accepted recovery branch shows:
   `onResume` now write durable app-owned markers in both backend modes
 
 Current active blockers:
-- turn the accepted canary surface into one controlled local Android showcase
-  app with visible phone UI and input evidence. Hilt/GMS/stock APK complexity is
-  not required for this same-day delivery target.
-- promote the Yelp-like app into the PF-455 XML-backed path so the visible Yelp
-  proof is inflated from compiled APK XML and resources, not only programmatic
-  construction plus an app-specific direct frame writer, and keep the visible
-  proof at a 1K-class phone render buffer instead of the old low-resolution
-  guest buffer.
+- carry the accepted controlled showcase and Yelp live apps to OHOS host
+  adapters with the same DLST, input, file, marker, and network contracts.
+- move beyond the accepted PF-459 generic draw slice so the visible Yelp proof
+  can be rendered by the generic inflated View path, not the app-specific direct
+  frame writer, while preserving the 1K-class phone render buffer.
 - carry PF-456 portable REST networking to OHOS adapter parity. Android phone
   now accepts HTTP verbs, headers, status/errors, JSON bodies, images, timeout,
   redirect, truncation, and failure handling through the guest-facing bridge
@@ -490,8 +490,9 @@ So the current execution order is:
    `WestlakeActivityThread`
 6. package the showcase plus runtime as a self-contained Westlake bundle
 7. promote the Yelp-like app through PF-455 XML inflation, PF-456 portable REST
-   networking, and PF-457 Material/generic UI expansion until the same app can
-   serve as the OHOS validation target
+   networking, PF-459 generic inflated-View drawing, and PF-457
+   Material/generic UI expansion until the same app can serve as the OHOS
+   validation target
 8. move that bundle to the OHOS backend and replace remaining Android-host
    staging assumptions
 9. after the controlled app is repeatable, broaden Hilt/real-APK lifecycle gates

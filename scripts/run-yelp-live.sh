@@ -469,6 +469,7 @@ require_marker "^YELP_XML_LAYOUT_PROBE_OK " "YELP_XML_LAYOUT_PROBE_OK"
 require_marker "^YELP_UI_BUILD_OK " "YELP_UI_BUILD_OK"
 require_marker "^YELP_DIRECT_FRAME_OK " "YELP_DIRECT_FRAME_OK"
 require_marker "^YELP_FULL_RES_FRAME_OK .* target=1080x2280" "YELP_FULL_RES_FRAME_OK target=1080x2280"
+require_marker "^YELP_GENERIC_VIEW_DRAW_OK .*height=1013 .*source=inflated_xml" "YELP_GENERIC_VIEW_DRAW_OK"
 require_log_marker "Surface buffer 1080x2280 for $YELP_PKG" "full phone Yelp surface buffer"
 if grep -qE "^YELP_XML_BIND_GAP " "$MARKERS_PATH"; then
     echo "ERROR: forbidden Yelp marker present: YELP_XML_BIND_GAP" >&2
@@ -512,6 +513,11 @@ fi
 if grep -qE "^YELP_REST_MATRIX_FAIL " "$MARKERS_PATH"; then
     echo "ERROR: Yelp REST matrix marker failed" >&2
     grep -E "^YELP_REST_MATRIX_FAIL " "$MARKERS_PATH" >&2 || true
+    missing=1
+fi
+if grep -qE "^YELP_GENERIC_VIEW_DRAW_FAIL " "$MARKERS_PATH"; then
+    echo "ERROR: Yelp generic view draw marker failed" >&2
+    grep -E "^YELP_GENERIC_VIEW_DRAW_FAIL " "$MARKERS_PATH" >&2 || true
     missing=1
 fi
 if grep -qE "^YELP_DIRECT_FRAME_FAIL " "$MARKERS_PATH"; then

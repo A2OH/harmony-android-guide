@@ -1,7 +1,7 @@
 # Westlake Engine — Status Report
 
 **Date:** 2026-04-27
-**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 REST matrix, and PF-457 Material XML/generic-hit slice accepted on phone; OHOS adapters and generic UI expansion remain open
+**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 REST matrix, PF-457 Material XML/generic-hit slice, and PF-459 generic inflated-View draw slice accepted on phone; OHOS adapters and generic UI expansion remain open
 
 ## Current Supervisor Status (2026-04-27)
 
@@ -53,12 +53,12 @@ high-entropy photo region so a block-only card cannot satisfy PF-453.
 PF-453 latest evidence:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+- `aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1`
 - `westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda`
 - Screenshot/log/markers/trace:
   `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - Stable accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
 - Visual gate:
   `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.visual`
   (`1080x2280`, `distinct_colors=5593`, `top_red_samples=3033`,
@@ -72,7 +72,7 @@ PF-453 latest evidence:
   `YELP_ACTIVITY_ON_CREATE_OK`, `YELP_XML_RESOURCE_WIRE_OK`,
   `YELP_XML_INFLATE_OK`, `YELP_XML_BIND_OK`,
   `YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
-  `YELP_UI_BUILD_OK`,
+  `YELP_UI_BUILD_OK`, `YELP_GENERIC_VIEW_DRAW_OK`,
   `YELP_NETWORK_BRIDGE_OK`, `YELP_LIVE_JSON_OK status=200 bytes=1627 places=8
   transport=host_bridge`, `YELP_LIVE_IMAGE_OK status=200 bytes=1820
   bitmap=96x64 transport=host_bridge`, `YELP_LIVE_ROW_IMAGE_OK index=5`,
@@ -82,12 +82,14 @@ PF-453 latest evidence:
   `YELP_NAV_SEARCH_OK`, `YELP_DIRECT_FRAME_OK`, and
   `YELP_FULL_RES_FRAME_OK`.
 
-PF-455 is accepted for the XML-backed Yelp slice, with an explicit remaining
-rendering caveat. The app now inflates `yelp_live_activity.xml` from compiled
-APK layout bytes and binds the expected guest View IDs before the live-data
-flows run. The visible Yelp surface remains the controlled direct `DLST`
-renderer, so PF-455 does not yet prove a generic Android `draw()` renderer over
-the whole inflated tree.
+PF-455 is accepted for the XML-backed Yelp slice, and PF-459 is now accepted
+for a first generic inflated-View draw slice. The app inflates
+`yelp_live_activity.xml` from compiled APK layout bytes, binds the expected
+guest View IDs, and the launcher serializes the inflated tree into a DLST frame
+with `YELP_GENERIC_VIEW_DRAW_OK views=30 texts=21 buttons=17 height=1013`.
+The polished visible Yelp surface remains the controlled direct `DLST`
+renderer, so the remaining rendering gap is full-fidelity generic View drawing
+replacing the Yelp-specific frame writer.
 
 PF-456 implementation status: the Android host bridge now exposes and accepts a
 v2 request shape for method, headers JSON, request body, max-byte cap, timeout,
@@ -178,11 +180,12 @@ PF-454 evidence:
   `MATERIAL_SAVE_PLACE_OK`, `MATERIAL_NAV_SAVED_OK`, and
 	  `MATERIAL_NAV_SEARCH_OK`.
 
-Current contract workstreams after the PF-455/PF-457 phone runs:
+Current contract workstreams after the PF-456/PF-459 phone runs:
 
 - `PF-455`: accepted for XML inflation/binding/layout proof plus live Yelp
-  flows on a full-phone `1080x2280` host surface; open for fully generic
-  View-tree rendering.
+  flows on a full-phone `1080x2280` host surface.
+- `PF-459`: accepted for a generic inflated-View DLST draw slice over the Yelp
+  XML tree; open for full-fidelity replacement of the Yelp-specific renderer.
 - `PF-456`: Android phone REST matrix accepted through the bridge v2 contract;
   open for OHOS adapter parity.
 - `PF-457`: accepted for Material XML inflation and probe hit routing; open for

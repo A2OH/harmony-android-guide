@@ -100,14 +100,14 @@ Current accepted separate Yelp live phone proof on `cfb7c9e3`:
 - guest shim: `aosp-shim.dex`
 - guest APK: `westlake-yelp-live-debug.apk`
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+- `aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1`
 - `westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda`
 - app package: `com.westlake.yelplive`
 - app source: `test-apps/06-yelp-live/`
 - run script: `scripts/run-yelp-live.sh`
 - artifacts: `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - stable accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
 - host render buffer: full phone `1080x2280` for the Yelp-like proof, logged as
   `Surface buffer 1080x2280 for com.westlake.yelplive`
 - logical guest frame: `480x1013`, accepted by

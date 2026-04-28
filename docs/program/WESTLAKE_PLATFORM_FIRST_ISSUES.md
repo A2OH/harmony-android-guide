@@ -29,9 +29,9 @@ Primary issue families:
 - `PF-455` XML-backed Yelp app path: Android phone proof accepted for compiled
   Yelp APK layout-byte registration, XML inflation, ID binding, layout probe,
   live data, and touch flows on a full-phone `1080x2280` host surface with
-  logical `480x1013` guest coordinates; remaining gap is
-  fully generic View-tree rendering rather than the controlled direct `DLST`
-  frame writer
+  logical `480x1013` guest coordinates; PF-459 now accepts a first generic
+  inflated-View DLST draw slice, while full-fidelity replacement of the
+  controlled direct `DLST` frame writer remains open
 - `PF-456` portable REST networking completeness: Android host bridge v2 is
   accepted on phone for methods, headers, bodies, status/error handling,
   redirects, timeouts, payload caps, and truncation through the Yelp REST
@@ -52,7 +52,8 @@ McDonald's-class stock APK are documented in
 
 - `PF-458` REST matrix probe: Android phone accepted for methods, headers,
   body upload, redirects, timeouts, truncation, and non-2xx bodies
-- `PF-459` generic inflated View draw path for the Yelp XML tree
+- `PF-459` generic inflated View draw path for the Yelp XML tree: Android
+  phone accepted for the first DLST serialization slice
 - `PF-460` generic View hit testing and scroll containers
 - `PF-461` adapter/list virtualization and image rebinding
 - `PF-462` upstream-compatible Material shim expansion
@@ -253,9 +254,11 @@ McDonald's-specific work is treated as forward progress:
   image tiles, and direct Material-styled DLST rendering, but it is still a
   controlled component shim plus app-specific hit routing, not a generic
   upstream MDC renderer or generic Android View hit-test claim.
-- `PF-455` / `PF-456` / `PF-457`: the next frontier is now narrower and more
-  specific. PF-455 has phone evidence for XML-backed Yelp layout inflation and
-  binding, but visible rendering still uses the controlled direct `DLST` path.
+- `PF-455` / `PF-456` / `PF-457` / `PF-459`: the next frontier is now narrower
+  and more specific. PF-455 has phone evidence for XML-backed Yelp layout
+  inflation and binding, and PF-459 now proves a generic inflated-View DLST
+  serialization slice, but visible polished rendering still uses the controlled
+  direct `DLST` path.
   PF-456 now has Android phone evidence for the bridge v2 REST matrix, but
   still needs the OHOS adapter. PF-457 has a Material XML probe with generic
   `findViewAt/performClick` into the APK listener, but not upstream MDC
@@ -464,7 +467,7 @@ Accepted PF-451 evidence from `cfb7c9e3`:
   - reject network failure markers and fatal runtime log markers
 - Done When:
   - Android phone: done with
-    `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+    `aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1`
     and
     `westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda`
   - the accepted host log includes `Surface buffer 1080x2280 for
@@ -527,13 +530,14 @@ Accepted PF-451 evidence from `cfb7c9e3`:
 - Layer: XML-backed Yelp app path
 - Depends On: PF-302, PF-453, PF-454, PF-801
 - Status: Android phone XML inflation/binding slice accepted on 2026-04-27;
-  generic View-tree rendering remains open
+  PF-459 first generic draw slice is accepted; full-fidelity generic View-tree
+  rendering remains open
 - Problem:
-  - The accepted Yelp and Material Yelp proofs build their visible UI
-    programmatically and render through app-specific direct `DLST` writers. That
-    validates guest logic, networking, direct drawing, and touch routing, but it
-    does not prove that a Yelp-like APK can be driven from compiled XML
-    resources like a normal Android app.
+  - The accepted Yelp path now proves compiled XML inflation and a first
+    generic draw serialization slice, but the polished visible UI still depends
+    on an app-specific direct `DLST` writer. That validates guest logic,
+    networking, direct drawing, and touch routing, but full-fidelity generic
+    Android View drawing remains open.
 - Scope:
   - create or refactor the Yelp-like app so its primary screen is declared in
     compiled XML layout resources
@@ -562,18 +566,19 @@ Accepted PF-451 evidence from `cfb7c9e3`:
   - reject programmatic-only UI construction as the acceptance path
 - Done When:
   - Accepted slice: `scripts/run-yelp-live.sh` on `cfb7c9e3` passes with
-    `aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164`
+    `aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1`
     and
     `westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda`.
   - Accepted markers prove `YELP_XML_RESOURCE_WIRE_OK`,
     `YELP_XML_INFLATE_OK views=29 texts=21`, `YELP_XML_BIND_OK buttons=5`,
     `YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
+    `YELP_GENERIC_VIEW_DRAW_OK views=30 texts=21 buttons=17 height=1013`,
     `YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280 navTop=824`,
     live REST/image traffic,
     list scroll, details, save, saved navigation, and search.
-  - Remaining open closure: the visible phone frame still uses the controlled
-    direct `DLST` renderer; a fully generic Android View-tree renderer over the
-    inflated Yelp widgets is not yet accepted.
+  - Remaining open closure: the visible polished phone frame still uses the
+    controlled direct `DLST` renderer; full-fidelity generic Android View-tree
+    rendering over the inflated Yelp widgets is not yet accepted.
   - the same app remains a viable OHOS target because the host-facing seams are
     DLST/display, input, storage/logging, and PF-456 networking.
 

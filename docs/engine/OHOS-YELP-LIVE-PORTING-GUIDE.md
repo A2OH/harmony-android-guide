@@ -22,13 +22,13 @@ Accepted Android phone proof:
 - runtime dir: `/data/local/tmp/westlake`
 - artifacts: `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1_24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda/`
 
 Accepted hashes:
 
 ```text
 dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e
-aosp-shim.dex=0a30612bb9aaf7f644309950e280905839cdd7c94cf4fd16050b8826237c9164
+aosp-shim.dex=7f52c37ac29502b57f36a692d9c835e535ec8cfd7f64cb45e2f31f9c659828d1
 westlake-yelp-live-debug.apk=24d1444b5ebf2319722c7168b4a849b7f022cc869b1708734695e381c44abfda
 ```
 
@@ -41,6 +41,7 @@ YELP_XML_BIND_OK title=true status=true card=true list=true buttons=5
 YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013 bounds=0,0,480,1013
 YELP_UI_BUILD_OK surface=xml tabs=4 network=host_bridge views=29 texts=21
 YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280 navTop=824
+YELP_GENERIC_VIEW_DRAW_OK reason=initial bytes=1173 views=30 texts=21 buttons=17 height=1013 source=inflated_xml
 YELP_NETWORK_BRIDGE_OK
 YELP_LIVE_JSON_OK
 YELP_LIVE_IMAGE_OK
@@ -201,13 +202,15 @@ Accepted:
 - compiled XML resource wiring
 - XML inflation into shim views
 - ID binding and layout probing
+- generic inflated-View DLST serialization slice over the Yelp XML tree
 - full phone-height DLST rendering
 - touch-driven app state
 - live host-bridge JSON and images
 
 Not accepted yet:
 
-- generic `View.draw(Canvas)` over the inflated tree
+- full-fidelity generic `View.draw(Canvas)` replacement for the visible Yelp
+  frame
 - upstream Material Components AAR compatibility
 - Material theming and shape/ripple/animation fidelity
 - `CoordinatorLayout` / AppBar / nested scroll behavior
@@ -233,10 +236,13 @@ marker before moving to the next.
    - McDonald's relevance: menu/config/auth bootstrap APIs.
 
 2. Generic widget render slice
-   - Render the inflated `yelp_live_activity.xml` tree through shim View
-     measurement, layout, text, image, and background drawing instead of a
-     Yelp-specific frame writer.
+   - Android phone status: accepted first slice for serializing the inflated
+     `yelp_live_activity.xml` tree into DLST with `30` views, `21` text
+     widgets, `17` buttons, and logical height `1013`.
    - Required marker: `YELP_GENERIC_VIEW_DRAW_OK`.
+   - Remaining work: make this the full-fidelity visible renderer, including
+     image/background fidelity and replacement of the Yelp-specific frame
+     writer.
    - McDonald's relevance: stock layouts must paint without per-app renderers.
 
 3. Generic hit testing and scroll containers
