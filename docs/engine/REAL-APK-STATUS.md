@@ -7,20 +7,24 @@ now PF-466, the controlled mock app `com.westlake.mcdprofile`, documented in
 `docs/engine/OHOS-MCD-PROFILE-INTEGRATION.md`. It is accepted on a real Android
 phone through Westlake `dalvikvm` with compiled XML inflation, Material-shaped
 tags present in the APK, host/OHBridge JSON/image/REST, SharedPreferences,
-full-phone `DLST`, and strict touch interaction. The latest accepted phone run
-also launches the McD-profile Activity through `WestlakeActivityThread` and
+guest `String.getBytes("UTF-8")`, full-phone `DLST` before checkout, and
+strict touch interaction markers. The latest accepted phone run also launches
+the McD-profile Activity through `WestlakeActivityThread` and
 `AppComponentFactory`, wires the McD-profile XML resource bytes before
 `onCreate`, inflates a 25-view guest tree with 10 Material-shaped views, binds
-the XML `ListView`, and drives its adapter through position `4`.
+the XML `ListView`, drives its adapter through position `4`, and accepts
+checkout plus Deals/Menu navigation markers.
 
 This is not the real McDonald's APK. It supersedes older MockDonalds-only
 status as the current practical OHOS port target because it is a richer
 controlled mock boundary test. It still does not mean arbitrary real APKs are
 ready: generic real-APK Activity construction still has to be generalized
 beyond this controlled app, and runtime object-array correctness, libcore
-charset/encoding, upstream Material compatibility, generic View
-rendering/input, arbitrary stock-APK `resources.arsc` tables, production
-networking, and OHOS host adapter parity remain open.
+charset/provider/default-encoding coverage beyond the accepted UTF-8 payload
+slice, upstream Material compatibility, generic View rendering/input, PF-474
+post-checkout direct-frame SIGBUS root-cause, arbitrary stock-APK
+`resources.arsc` tables, production networking, and OHOS host adapter parity
+remain open.
 
 ## Latest Milestone: Compressed APK on OHOS ARM32 QEMU
 

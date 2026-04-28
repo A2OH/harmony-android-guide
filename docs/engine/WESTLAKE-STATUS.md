@@ -1,7 +1,7 @@
 # Westlake Engine — Status Report
 
 **Date:** 2026-04-28
-**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 live GET plus REST marker contract, PF-457 Material XML/generic-hit slice, PF-459 generic inflated-View draw slice, PF-460 generic XML hit/scroll probes, PF-461 adapter/list slice, and PF-466 controlled mock McD profile accepted on phone with `resources.arsc` table parsing; OHOS adapters, libcore charset/networking parity, generic UI expansion, and generic stock-McDonald's launch remain open
+**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 live GET plus REST marker contract, PF-457 Material XML/generic-hit slice, PF-459 generic inflated-View draw slice, PF-460 generic XML hit/scroll probes, PF-461 adapter/list slice, and PF-466 controlled mock McD profile accepted on phone with `resources.arsc` table parsing and app `String.getBytes("UTF-8")`; OHOS adapters, broader libcore/networking parity, generic UI expansion, post-checkout renderer stress, and generic stock-McDonald's launch remain open
 
 ## Current Supervisor Status (2026-04-28)
 
@@ -20,24 +20,28 @@ before `onCreate`, `resources.arsc` table parsing, inflation from
 `activity_mcd_profile.xml` into a 25-view guest tree with 10 Material-shaped
 views, XML measure/layout at `480x1013`, `ListView` adapter binding through
 position `4`, SharedPreferences cart state, host/OHBridge live JSON, one
-bounded host/OHBridge image, REST bridge v2 POST with payload, HEAD, and
-non-2xx status coverage, full-phone `1080x2280` `DLST`, and strict touch
-actions for category, row select, cart add, checkout, Deals navigation, and
-Menu navigation. The latest accepted run has no `XML_TAG_WARN`, no
-`MCD_PROFILE_CONTROLLED_*`, and no `NPE-SYNC` markers for the McD-profile XML
-slice; the visible five-row menu is still the controlled direct renderer over
-app state.
+bounded host/OHBridge image, app `String.getBytes("UTF-8")` for the REST
+payload, REST bridge v2 POST with payload, HEAD, and non-2xx status coverage,
+full-phone `1080x2280` `DLST` before checkout, and strict touch actions for
+category, row select, cart add, checkout, Deals navigation, and Menu
+navigation. The latest accepted run has no `XML_TAG_WARN`, no
+`MCD_PROFILE_CONTROLLED_*`, no `NPE-SYNC`, and no charset alias
+`ArrayStoreException` markers for the McD-profile XML slice; the visible
+five-row menu is still the controlled direct renderer over app state.
+Post-checkout direct-frame emission is intentionally suppressed after the
+accepted checkout/nav markers because PF-474, the repeated-cart/post-checkout
+`SIGBUS BUS_ADRALN` stress gap, is not root-fixed yet.
 
 PF-466 evidence:
 
-- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`
-- `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`
-- `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`
+- `dalvikvm=2dd479e0c7f98e8fd3c4c09b539bfe30fe1c39b119d36e034af68c6bcaada6cf`
+- `aosp-shim.dex=5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896`
+- `westlake-host.apk=e3b497bb5df1d71a519c61a6ef177afb25f7198009353bf975a2c4d92a85a3eb`
+- `westlake-mcd-profile-debug.apk=50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933`
 - Screenshot/log/markers/trace:
   `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.*`
 - Stable accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21_3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896_50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933/`
 - Key launch/XML markers:
   `MCD_PROFILE_GENERIC_ACTIVITY_FACTORY_OK ... factory=default`,
   `MCD_PROFILE_WAT_ACTIVITY_LAUNCH_OK`,
@@ -48,7 +52,13 @@ PF-466 evidence:
   `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`, and
   `MCD_PROFILE_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
   `MCD_PROFILE_XML_INFLATE_OK ... views=25 materialViews=10 source=compiled_apk_xml`, and
-  `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`
+  `MCD_PROFILE_CHARSET_UTF8_OK bytes=24`,
+  `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`,
+  `MCD_PROFILE_REST_HEAD_OK status=200 bytes=0`,
+  `MCD_PROFILE_REST_MATRIX_OK post=200 head=200 status=418 transport=host_bridge`,
+  `MCD_PROFILE_CHECKOUT_OK count=1 totalCents=529 storage=true`,
+  `MCD_PROFILE_NAV_DEALS_OK network=1`, and
+  `MCD_PROFILE_NAV_MENU_OK tab=menu`
 
 This controlled mock app is the right next OHOS port target because it is
 self-contained and the southbound contracts are explicit:
@@ -61,10 +71,11 @@ Supervisor judgement: we are on the right architecture track for the Westlake
 goal, but not yet close enough to claim stock McDonald's readiness. The next
 hard gaps are generalizing the accepted WAT/AppComponentFactory launch slice to
 arbitrary stock McDonald's activities, runtime object-array correctness beyond
-the fixed resource-table parser case, libcore charset/encoding correctness,
-upstream Material XML/theming, generic View draw/hit/scroll, streamed
-multi-image networking/direct libcore networking parity, and OHOS host parity
-for the same PF-466 contract.
+the fixed resource-table parser case, broader libcore charset/provider/default
+encoding correctness beyond the accepted UTF-8 payload slice, upstream Material
+XML/theming, generic View draw/hit/scroll, PF-474 post-checkout direct-frame
+SIGBUS root-cause, streamed multi-image networking/direct libcore networking
+parity, and OHOS host parity for the same PF-466 contract.
 
 ## Previous Supervisor Status (2026-04-27)
 

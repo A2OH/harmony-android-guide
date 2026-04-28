@@ -11,21 +11,25 @@ McDonald's APK.
 PF-466 has passed on the connected Android phone through Westlake `dalvikvm`
 with compiled XML resource loading, `resources.arsc` table parsing for the
 controlled mock APK, McD-profile Material tags present, SharedPreferences cart
-state, live host/OHBridge JSON/image/REST, full-phone `DLST`, and strict touch
-navigation. The latest accepted run launches through `WestlakeActivityThread`
-and `AppComponentFactory`, wires resources before `onCreate`, inflates a
-25-view guest tree with 10 Material-shaped views, binds the XML `ListView`,
-probes layout measurement, and exercises adapter row binding through position
-`4`. Treat PF-466 as the immediate OHOS port target for the controlled mock
-app and the older MockDonalds plan below as historical background plus a
-headless/API regression ladder.
+state, live host/OHBridge JSON/image/REST, guest
+`String.getBytes("UTF-8")`, full-phone `DLST` before checkout, and strict touch
+navigation markers. The latest accepted run launches through
+`WestlakeActivityThread` and `AppComponentFactory`, wires resources before
+`onCreate`, inflates a 25-view guest tree with 10 Material-shaped views, binds
+the XML `ListView`, probes layout measurement, exercises adapter row binding
+through position `4`, and accepts checkout plus Deals/Menu navigation markers.
+Treat PF-466 as the immediate OHOS port target for the controlled mock app and
+the older MockDonalds plan below as historical background plus a headless/API
+regression ladder.
 
 Remaining gaps before a stock McDonald's APK are generalizing the accepted
 WAT/AppComponentFactory launch slice beyond this controlled app, object-array
-runtime correctness beyond the fixed resource-table parser case, libcore
-charset/encoding, upstream Material XML/theming, generic View draw/hit/scroll,
-streamed multi-image networking/direct libcore networking parity, and OHOS
-adapter parity for the PF-466 contracts.
+runtime correctness beyond the fixed resource-table parser case, broader
+libcore charset/provider/default encoding beyond the accepted UTF-8 payload
+slice, upstream Material XML/theming, generic View draw/hit/scroll, PF-474
+post-checkout direct-frame SIGBUS root-cause, streamed multi-image
+networking/direct libcore networking parity, and OHOS adapter parity for the
+PF-466 contracts.
 
 ## Goal
 

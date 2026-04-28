@@ -5,7 +5,8 @@
 
 set -euo pipefail
 
-BIN="${1:-/home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm}"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BIN="${1:-$REPO_ROOT/ohos-deploy/arm64-a15/dalvikvm}"
 NM="${NM:-nm}"
 
 if [ ! -f "$BIN" ]; then

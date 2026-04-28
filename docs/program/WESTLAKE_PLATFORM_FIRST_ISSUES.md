@@ -85,11 +85,13 @@ McDonald's-class stock APK are documented in
   traversal and ID binding, guest `ListView` adapter row binding through
   position `4`, XML measure/layout probe,
   SharedPreferences cart state, host/OHBridge live JSON and one bounded image,
-  REST bridge v2 POST with payload, HEAD, and non-2xx status probes,
-  full-phone `1080x2280` `DLST`, and strict touch navigation. Current accepted
-  hashes: `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`,
-  `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`,
-  `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`.
+  guest `String.getBytes("UTF-8")` for a REST payload, REST bridge v2 POST
+  with payload, HEAD, and non-2xx status probes, full-phone `1080x2280` `DLST`
+  before checkout, and strict touch navigation. Current accepted hashes:
+  `dalvikvm=2dd479e0c7f98e8fd3c4c09b539bfe30fe1c39b119d36e034af68c6bcaada6cf`,
+  `aosp-shim.dex=5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896`,
+  `westlake-host.apk=e3b497bb5df1d71a519c61a6ef177afb25f7198009353bf975a2c4d92a85a3eb`,
+  `westlake-mcd-profile-debug.apk=50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933`.
   It is the current OHOS controlled mock profile target, not the real
   McDonald's app and not a stock McDonald's APK compatibility claim.
 - `PF-467` generic real-APK Activity construction: accepted for the
@@ -117,10 +119,17 @@ McDonald's-class stock APK are documented in
   and rerun PF-466 there
 - `PF-473` standalone libcore charset/encoding correctness: fix
   `Charset.forName`, `String.getBytes("UTF-8")`, and default `PrintStream`
-  encoding in the Westlake guest runtime. PF-466 now avoids this with a local
-  UTF-8 encoder and an ASCII-safe stdio wrapper, and
-  `scripts/run-mcd-profile.sh` rejects `NPE-SYNC`, but stock APKs still require
-  normal libcore charset behavior.
+  encoding in the Westlake guest runtime. PF-466 now accepts standard app
+  `String.getBytes("UTF-8")` and the runner rejects both `NPE-SYNC` and the
+  charset alias `String[]` `ArrayStoreException`; startup stdio remains on the
+  ASCII-safe wrapper and broader charset/provider/default-encoding coverage is
+  still required for stock APKs.
+- `PF-474` post-checkout direct-frame renderer/runtime stress: the PF-466
+  app-owned checkout, Deals, and Menu navigation markers are accepted, but an
+  earlier repeated-cart/post-checkout direct render hit `SIGBUS BUS_ADRALN`
+  with fault address `0xfffffffffffffb17`. The accepted run suppresses
+  post-checkout direct-frame emission instead of claiming that generic renderer
+  or runtime stress path is fixed.
 
 ## 2026-04-25 Roadmap Corrections
 

@@ -19,7 +19,7 @@ ADB_PORT="${ADB_PORT:-5037}"
 ADB_SERIAL="${ADB_SERIAL:-cfb7c9e3}"
 ADB_TIMEOUT="${ADB_TIMEOUT:-30}"
 PHONE_DIR="${PHONE_DIR:-/data/local/tmp/westlake}"
-DALVIKVM_SRC="${DALVIKVM_SRC:-/home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm}"
+DALVIKVM_SRC="${DALVIKVM_SRC:-$REPO_ROOT/ohos-deploy/arm64-a15/dalvikvm}"
 AOSP_SHIM_SRC="${AOSP_SHIM_SRC:-$REPO_ROOT/aosp-shim.dex}"
 HOST_APK_SRC="${HOST_APK_SRC:-$REPO_ROOT/westlake-host-gradle/app/build/outputs/apk/debug/app-debug.apk}"
 MCD_APK_SRC="${MCD_APK_SRC:-$REPO_ROOT/test-apps/10-mcd-profile/build/dist/westlake-mcd-profile-debug.apk}"
@@ -329,8 +329,6 @@ PY
     sleep 1
     frame_tap 120 404
     sleep 1
-    frame_tap 120 846
-    sleep 1
     frame_tap 374 846
     sleep 1
     frame_tap 420 960
@@ -409,6 +407,7 @@ require_marker "^MCD_PROFILE_STORAGE_PREFS_OK " "STORAGE_PREFS_OK"
 require_marker "^MCD_PROFILE_LIVE_JSON_OK .*transport=host_bridge" "LIVE_JSON_OK"
 require_marker "^MCD_PROFILE_ROW_IMAGE_OK .*index=0 .*transport=host_bridge" "ROW_IMAGE_OK index=0"
 require_marker "^MCD_PROFILE_IMAGE_BRIDGE_OK .*transport=host_bridge" "IMAGE_BRIDGE_OK"
+require_marker "^MCD_PROFILE_CHARSET_UTF8_OK bytes=[1-9][0-9]*" "CHARSET_UTF8_OK"
 require_marker "^MCD_PROFILE_REST_POST_OK .*protocol=2" "REST_POST_OK"
 require_marker "^MCD_PROFILE_REST_HEAD_OK " "REST_HEAD_OK"
 require_marker "^MCD_PROFILE_REST_MATRIX_OK " "REST_MATRIX_OK"
@@ -446,6 +445,7 @@ fi
 reject_log_marker "APK load error|FATAL EXCEPTION|SIGBUS|SIGILL" "fatal runtime/log error"
 reject_log_marker "standalone ResourceTable parse failed" "standalone ResourceTable parse failure"
 reject_log_marker "NPE-SYNC" "standalone synchronized null/NPE"
+reject_log_marker "ArrayStoreException: java.lang.String cannot be stored in an array of type java.lang.String\\[\\]" "standalone charset alias array-store failure"
 
 if ! python3 - "$PNG_PATH" "$VISUAL_PATH" <<'PY'
 import sys

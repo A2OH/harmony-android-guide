@@ -47,23 +47,25 @@ PF-466 is accepted on the connected phone `cfb7c9e3`. The delivered APK is
 - SharedPreferences-backed cart state;
 - live JSON fetch through the portable host/OHBridge HTTP bridge;
 - one bounded live image fetch through the same bridge;
+- guest libcore `String.getBytes("UTF-8")` through the Westlake runtime for
+  a REST payload;
 - REST bridge v2 POST with a real payload, HEAD, and non-2xx status coverage
   through the supervisor proxy;
-- full-phone `1080x2280` `DLST` frames and strict touch-file input for
-  category, row select, cart add, checkout, Deals navigation, and Menu
-  navigation.
+- full-phone `1080x2280` `DLST` frames for launch/network/menu/cart states and
+  strict touch-file input through category, row select, cart add, checkout,
+  Deals navigation, and Menu navigation markers.
 
 Accepted PF-466 hashes:
 
-- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`
-- `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`
-- `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`
+- `dalvikvm=2dd479e0c7f98e8fd3c4c09b539bfe30fe1c39b119d36e034af68c6bcaada6cf`
+- `aosp-shim.dex=5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896`
+- `westlake-host.apk=e3b497bb5df1d71a519c61a6ef177afb25f7198009353bf975a2c4d92a85a3eb`
+- `westlake-mcd-profile-debug.apk=50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933`
 
 Accepted PF-466 artifacts:
 
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.*`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21_3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896_50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933/`
 
 Key accepted PF-466 markers:
 
@@ -76,7 +78,13 @@ Key accepted PF-466 markers:
 - `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`
 - `MCD_PROFILE_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`
 - `MCD_PROFILE_XML_INFLATE_OK ... views=25 materialViews=10 source=compiled_apk_xml`
+- `MCD_PROFILE_CHARSET_UTF8_OK bytes=24`
 - `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`
+- `MCD_PROFILE_REST_HEAD_OK status=200 bytes=0`
+- `MCD_PROFILE_REST_MATRIX_OK post=200 head=200 status=418 transport=host_bridge`
+- `MCD_PROFILE_CHECKOUT_OK count=1 totalCents=529 storage=true`
+- `MCD_PROFILE_NAV_DEALS_OK network=1`
+- `MCD_PROFILE_NAV_MENU_OK tab=menu`
 
 PF-466 does not close stock McDonald's APK readiness. It is our controlled
 mock app boundary test. The gap list that must be closed next is:
@@ -88,15 +96,20 @@ mock app boundary test. The gap list that must be closed next is:
   profile app away from `String[]` item models; the PF-466 resource-table
   `String[]` failure is closed by storing parsed pools as `Object[]`, but the
   broader DEX/runtime array boundary is not proven closed;
-- fix standalone libcore charset/encoding correctness. PF-466 avoids the
-  current `Charset.forName("UTF-8")` failure with a local UTF-8 encoder and an
-  ASCII-safe stdio wrapper, and the runner rejects `NPE-SYNC`, but stock APKs
-  still need normal `Charset`/`String.getBytes(...)` behavior;
+- broaden standalone libcore charset/encoding correctness. PF-466 now accepts
+  normal app `String.getBytes("UTF-8")`; startup stdio still uses the
+  ASCII-safe wrapper and broader `Charset` provider/default-encoding behavior
+  must be proven before a stock APK claim;
 - make Material XML inflation generic enough for upstream Google Material
   Components tags, IDs, theming, Coordinator/AppBar behaviors, ripple, and
   animation;
 - replace the McD-specific direct `DLST` frame writer and coordinate router
   with generic View draw, hit testing, scrolling, and adapter rendering;
+- root-cause PF-474, the post-checkout/repeated-cart direct-frame SIGBUS
+  (`BUS_ADRALN`, observed fault address `0xfffffffffffffb17`). The accepted
+  PF-466 run proves the app-owned checkout/nav markers but suppresses
+  post-checkout direct-frame emission instead of claiming that renderer/runtime
+  stress path is fixed;
 - expand image/network transport from one capped image proof and proxy-backed
   POST/HEAD/status probes to multi-image, large-body, streamed responses,
   redirects, timeouts, and direct libcore networking parity;

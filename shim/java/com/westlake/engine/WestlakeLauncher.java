@@ -313,9 +313,27 @@ public class WestlakeLauncher {
             return;
         }
         sStandardStreamsInstalled = true;
+        primeCharsetState();
         try {
             System.setOut(new SafeAsciiPrintStream(java.io.FileDescriptor.out));
             System.setErr(new SafeAsciiPrintStream(java.io.FileDescriptor.err));
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void primeCharsetState() {
+        try {
+            Class<?> charset = Class.forName("java.nio.charset.Charset");
+            java.lang.reflect.Field cache2 = charset.getDeclaredField("cache2");
+            cache2.setAccessible(true);
+            if (cache2.get(null) == null) {
+                cache2.set(null, new java.util.HashMap());
+            }
+            java.lang.reflect.Field gate = charset.getDeclaredField("gate");
+            gate.setAccessible(true);
+            if (gate.get(null) == null) {
+                gate.set(null, new java.lang.ThreadLocal());
+            }
         } catch (Throwable ignored) {
         }
     }
@@ -8524,6 +8542,9 @@ public class WestlakeLauncher {
             }
             if (showcaseBool(activity, "renderDirty", false)) {
                 showcaseInvoke(activity, "consumeRenderDirty");
+                if (showcaseBool(activity, "checkedOut", false)) {
+                    continue;
+                }
                 writeMcdProfileDirectFrame(activity, "state_dirty");
                 continue;
             }
@@ -8557,6 +8578,10 @@ public class WestlakeLauncher {
                     + " x=" + x + " y=" + y + " downX=" + downX + " downY=" + downY
                     + " direct=" + handled);
             if (handled) {
+                if (showcaseBool(activity, "checkedOut", false)) {
+                    showcaseInvoke(activity, "consumeRenderDirty");
+                    continue;
+                }
                 writeMcdProfileDirectFrame(activity, "touch_up");
             }
         }
@@ -8897,7 +8922,7 @@ public class WestlakeLauncher {
             String selectedPrice = showcaseString(activity, "selectedPrice", "$5.99");
             String heroTitle = showcaseString(activity, "heroTitle", "Today only");
             String heroSubtitle = showcaseString(activity, "heroSubtitle", "Live menu");
-            String action = showcaseString(activity, "lastAction", "Ready");
+            String action = checkedOut ? "Checkout" : showcaseString(activity, "lastAction", "Ready");
             String feed = showcaseString(activity, "feedStatus", "Waiting for live menu");
             String restStatus = showcaseString(activity, "restStatus", "REST pending");
             String row1Name = showcaseString(activity, "row1Name", "Westlake Burger");
@@ -8949,7 +8974,7 @@ public class WestlakeLauncher {
             mcdMenuRow(ops, 4, row5Name, row5Meta, row5Price, row5Hash, row5Bytes,
                     714, selectedIndex == menuOffset + 4);
             mcdCartBar(ops, selectedName, selectedMeta, selectedPrice, cartCount,
-                    cartTotal, checkedOut, storage, restStatus, action, 810);
+                    cartTotal, false, storage, restStatus, action, 810);
             mcdBottomNav(ops, activeTab);
 
             byte[] data = ops.toByteArray();

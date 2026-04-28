@@ -19,7 +19,9 @@ The app is intentionally self-contained:
 - direct-rendered five-row menu state plus guest `ListView` adapter binding;
 - SharedPreferences cart state;
 - host/OHBridge live JSON, image, POST, HEAD, and non-2xx REST traffic;
-- full-phone `DLST` rendering and strict touch input.
+- guest `String.getBytes("UTF-8")` for the REST payload;
+- full-phone `DLST` rendering before checkout and strict touch input through
+  checkout/navigation markers.
 
 It is not a stock APK compatibility claim. It is the first controlled
 McD-class mock app that should be ported to OHOS because every southbound
@@ -37,10 +39,10 @@ Accepted device: `cfb7c9e3`.
 
 Accepted hashes:
 
-- `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21`
-- `westlake-host.apk=b1e3e45d201d7ddf333bfa8e9d27c9588e5f02ca9070862876e7daf536d1e594`
-- `westlake-mcd-profile-debug.apk=3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3`
+- `dalvikvm=2dd479e0c7f98e8fd3c4c09b539bfe30fe1c39b119d36e034af68c6bcaada6cf`
+- `aosp-shim.dex=5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896`
+- `westlake-host.apk=e3b497bb5df1d71a519c61a6ef177afb25f7198009353bf975a2c4d92a85a3eb`
+- `westlake-mcd-profile-debug.apk=50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933`
 
 Accepted artifacts:
 
@@ -49,7 +51,7 @@ Accepted artifacts:
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.trace`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.png`
 - `/mnt/c/Users/dspfa/TempWestlake/mcd_profile_target.visual`
-- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/7ec1a0e797b1c2459da46a827aad59eac8d418efff49e51d349f1e09b9647e21_3c622253ab4a5fcea1ba0d3904103ac506df8b648ab10cfa1e59d74eb4987eb3/`
+- `/mnt/c/Users/dspfa/TempWestlake/accepted/mcd_profile/5f14bf74ba30adecc73c99f7a1ac06ca992b1dc86b49616632702313d152f896_50477eccecc86fa5ecd8144d26b3930ec60d68c3b952708d66aba934ea448933/`
 
 Key accepted launch and XML markers:
 
@@ -65,7 +67,13 @@ Key accepted launch and XML markers:
 - `MCD_PROFILE_ADAPTER_GET_VIEW_OK position=4`
 - `MCD_PROFILE_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`
 - `MCD_PROFILE_XML_INFLATE_OK ... views=25 materialViews=10 source=compiled_apk_xml`
+- `MCD_PROFILE_CHARSET_UTF8_OK bytes=24`
 - `MCD_PROFILE_REST_POST_OK status=200 bytes=100 protocol=2 transport=host_bridge`
+- `MCD_PROFILE_REST_HEAD_OK status=200 bytes=0`
+- `MCD_PROFILE_REST_MATRIX_OK post=200 head=200 status=418 transport=host_bridge`
+- `MCD_PROFILE_CHECKOUT_OK count=1 totalCents=529 storage=true`
+- `MCD_PROFILE_NAV_DEALS_OK network=1`
+- `MCD_PROFILE_NAV_MENU_OK tab=menu`
 
 ## Call Path
 
@@ -85,6 +93,7 @@ WestlakeActivity
   -> WestlakeLauncher wires extracted res/layout XML bytes before onCreate
   -> Activity.westlakeAttach / westlakePerformCreate / Start / Resume
   -> McdProfileActivity inflates compiled APK XML and binds Material-shaped/ListView tags
+  -> McdProfileActivity uses guest String.getBytes("UTF-8") for REST payload bytes
   -> WestlakeLauncher writes DLST display-list frames to stdout
   -> WestlakeVM replays DLST into the host SurfaceView buffer
 ```
@@ -127,9 +136,17 @@ the host-side plumbing.
 | `SurfaceView` buffer receives `DLST` replay | XComponent/native surface receives `DLST` replay |
 | host touch listener writes `westlake_touch.dat` | XComponent input callback writes the same 16-byte touch packet, or provides an equivalent bridge with the same guest-visible format |
 | app private VM dir stores staged APK/DEX/logs | OHOS app data directory with the same file layout expected by `WestlakeVM`/launcher |
-| `/data/local/tmp/westlake/dalvikvm` subprocess | packaged or deployed Westlake `dalvikvm` binary for OHOS |
+| `/data/local/tmp/westlake/dalvikvm` subprocess | packaged or deployed Westlake `dalvikvm` binary for OHOS; the repo default runtime source is `ohos-deploy/arm64-a15/dalvikvm` |
 | Android host HTTP bridge / ADB reverse proxy | OHOS host HTTP bridge with the same request/response schema |
 | logcat plus copied marker files | OHOS hilog/filesystem marker collection with the same marker gates |
+
+Runtime rebuild note: the accepted `dalvikvm` includes the
+`NativeConverter.charsetForName` alias-array fix from the ARM64 bionic runtime
+source. If the runtime is rebuilt for OHOS, keep the same behavior: do not pass
+a native-created `String[]` alias array into the `CharsetICU` constructor;
+construct with null aliases, then install aliases through a plain
+`java.util.HashSet`. The McD-profile runner fails closed on the previous
+`ArrayStoreException` and requires `MCD_PROFILE_CHARSET_UTF8_OK`.
 
 ## Acceptance Markers
 
@@ -154,6 +171,7 @@ PF-466 parity proof for the controlled mock app:
 - `MCD_PROFILE_LIVE_JSON_OK transport=host_bridge`
 - `MCD_PROFILE_ROW_IMAGE_OK index=0 transport=host_bridge`
 - `MCD_PROFILE_IMAGE_BRIDGE_OK transport=host_bridge`
+- `MCD_PROFILE_CHARSET_UTF8_OK bytes=[nonzero]`
 - `MCD_PROFILE_REST_POST_OK protocol=2`
 - `MCD_PROFILE_REST_HEAD_OK`
 - `MCD_PROFILE_REST_MATRIX_OK`
@@ -175,11 +193,12 @@ visible in the screenshot.
 
 The Android-phone runner now rejects any `MCD_PROFILE_XML_TAG_WARN` marker and
 any `MCD_PROFILE_CONTROLLED_*` launch marker for this controlled McD-profile
-slice. It also rejects `NPE-SYNC`. OHOS parity should keep those stricter
-gates. This does not claim full upstream Google Material Components XML
-support or real McDonald's APK support; it proves the controlled mock
-McD-profile tags are wired through Westlake's XML inflation path and the app
-launches through the generic WAT/AppComponentFactory path.
+slice. It also rejects `NPE-SYNC` and the charset alias `String[]`
+`ArrayStoreException`. OHOS parity should keep those stricter gates. This does
+not claim full upstream Google Material Components XML support or real
+McDonald's APK support; it proves the controlled mock McD-profile tags are
+wired through Westlake's XML inflation path and the app launches through the
+generic WAT/AppComponentFactory path.
 
 ## Known Gaps Before Stock McDonald's
 
@@ -193,9 +212,11 @@ PF-466 is useful because it exposes the next real gaps:
 - The runtime still has an object-array/new-array correctness boundary beyond
   the fixed resource-table string-pool case. The profile app avoids `String[]`
   item arrays and uses scalar row fields.
-- Libcore charset/encoding remains incomplete. PF-466 avoids the current
-  `Charset.forName("UTF-8")` failure with a local UTF-8 encoder and an
-  ASCII-safe stdio wrapper, but stock APKs need normal charset behavior.
+- Libcore charset/encoding remains incomplete beyond the accepted PF-466 UTF-8
+  payload slice. The mock app now uses standard app
+  `String.getBytes("UTF-8")`, but startup stdio is still intentionally kept on
+  the ASCII-safe wrapper and broader charset/provider/default-encoding behavior
+  is not yet a stock APK claim.
 - Material XML is not upstream-complete. Full Material Components AAR
   compatibility, themes, Coordinator/AppBar behaviors, ripple, animation, and
   generic Material rendering remain open.
@@ -203,6 +224,11 @@ PF-466 is useful because it exposes the next real gaps:
   from a McD-specific `DLST` writer and coordinate router in
   `WestlakeLauncher`, not a full generic Android `View.draw()` and hit-test
   pipeline.
+- PF-474 remains open: an earlier repeated-cart/post-checkout direct-frame path
+  hit `SIGBUS BUS_ADRALN` at fault address `0xfffffffffffffb17`. The accepted
+  run proves checkout and navigation markers, but suppresses post-checkout
+  direct-frame emission rather than claiming this renderer/runtime stress path
+  is fixed.
 - Networking proves the portable bridge shape, not full libcore networking.
   Real multi-method matrix execution, large streamed images, redirects,
   timeout parity, and many concurrent image requests remain open.
@@ -216,11 +242,13 @@ PF-466 is useful because it exposes the next real gaps:
 3. Generalize `resources.arsc` table parsing beyond the controlled mock APK.
 4. Fix the object-array/new-array runtime boundary and restore array-backed
    menu models.
-5. Fix libcore charset/encoding behavior instead of relying on PF-466 local
-   workarounds.
+5. Broaden libcore charset/provider/default-encoding behavior beyond the
+   accepted PF-466 `String.getBytes("UTF-8")` payload slice.
 6. Move McD-profile rendering from the direct frame writer to generic inflated
    View draw/hit/scroll/adapter paths.
-7. Expand networking/images to streamed multi-image transport and real REST
+7. Root-cause PF-474 so post-checkout and repeated-cart frame emission can stay
+   enabled under stress.
+8. Expand networking/images to streamed multi-image transport and real REST
    matrix execution.
-8. Swap controlled McD-profile API calls for real stock McDonald's API-surface
+9. Swap controlled McD-profile API calls for real stock McDonald's API-surface
    shims until the stock APK can run without app code changes.

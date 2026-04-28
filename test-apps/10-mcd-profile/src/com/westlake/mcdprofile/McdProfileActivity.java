@@ -435,9 +435,10 @@ public final class McdProfileActivity extends Activity {
         String base = "http://127.0.0.1:8767/rest";
         try {
             String headers = "{\"X-Westlake-Probe\":\"mcd-profile\",\"Content-Type\":\"application/json\"}";
+            byte[] body = "{\"cart\":\"combo\",\"qty\":2}".getBytes("UTF-8");
+            McdProfileLog.mark("CHARSET_UTF8_OK", "bytes=" + body.length);
             WestlakeLauncher.BridgeHttpResponse post = WestlakeLauncher.bridgeHttpRequest(
-                    base + "/echo", "POST", headers,
-                    utf8("{\"cart\":\"combo\",\"qty\":2}"), 4096, 6000, true);
+                    base + "/echo", "POST", headers, body, 4096, 6000, true);
             if (post == null || post.status != 200 || asciiString(post.body).indexOf("POST") < 0) {
                 throw new java.io.IOException("post failed");
             }
@@ -862,42 +863,6 @@ public final class McdProfileActivity extends Activity {
             chars[i] = (char) (b < 128 ? b : '_');
         }
         return new String(chars);
-    }
-
-    private byte[] utf8(String value) {
-        if (value == null || value.length() == 0) {
-            return new byte[0];
-        }
-        byte[] out = new byte[value.length() * 4];
-        int offset = 0;
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c < 0x80) {
-                out[offset++] = (byte) c;
-            } else if (c < 0x800) {
-                out[offset++] = (byte) (0xc0 | (c >> 6));
-                out[offset++] = (byte) (0x80 | (c & 0x3f));
-            } else if (c >= 0xd800 && c <= 0xdbff && i + 1 < value.length()) {
-                char low = value.charAt(i + 1);
-                if (low >= 0xdc00 && low <= 0xdfff) {
-                    int codePoint = 0x10000 + (((c - 0xd800) << 10) | (low - 0xdc00));
-                    out[offset++] = (byte) (0xf0 | (codePoint >> 18));
-                    out[offset++] = (byte) (0x80 | ((codePoint >> 12) & 0x3f));
-                    out[offset++] = (byte) (0x80 | ((codePoint >> 6) & 0x3f));
-                    out[offset++] = (byte) (0x80 | (codePoint & 0x3f));
-                    i++;
-                } else {
-                    out[offset++] = '?';
-                }
-            } else {
-                out[offset++] = (byte) (0xe0 | (c >> 12));
-                out[offset++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-                out[offset++] = (byte) (0x80 | (c & 0x3f));
-            }
-        }
-        byte[] exact = new byte[offset];
-        System.arraycopy(out, 0, exact, 0, offset);
-        return exact;
     }
 
     private int hashBytes(byte[] bytes) {
