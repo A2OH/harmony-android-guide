@@ -22,14 +22,14 @@ Accepted Android phone proof:
 - runtime dir: `/data/local/tmp/westlake`
 - artifacts: `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0_0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d_f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9/`
 
 Accepted hashes:
 
 ```text
 dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e
-aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0
-westlake-yelp-live-debug.apk=0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c
+aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d
+westlake-yelp-live-debug.apk=f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9
 ```
 
 Required acceptance markers:
@@ -41,7 +41,9 @@ YELP_XML_BIND_OK title=true status=true card=true list=true buttons=5
 YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013 bounds=0,0,480,1013
 YELP_UI_BUILD_OK surface=xml tabs=4 network=host_bridge views=30 texts=21
 YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280 navTop=824
-YELP_GENERIC_VIEW_DRAW_OK views=57 texts=30 buttons=13 images=5 lists=1 height=1013 source=inflated_xml
+YELP_GENERIC_VIEW_DRAW_OK views=27 texts=17 buttons=13 images=0 lists=1 listRows=5 listImages=5 height=1013 source=inflated_xml
+YELP_GENERIC_LIST_DRAW_OK rows=5 images=5 source=inflated_xml
+YELP_GENERIC_VISIBLE_LIST_OK rows=5 images=5 surface=direct_composite source=inflated_xml
 YELP_GENERIC_HIT_OK clicked=true target=android.widget.Button text=Search source=inflated_xml
 YELP_GENERIC_HIT_OK clicked=true target=android.widget.Button text=Details source=inflated_xml
 YELP_GENERIC_HIT_OK clicked=true target=android.widget.Button text=Saved source=inflated_xml
@@ -50,7 +52,7 @@ YELP_ADAPTER_ATTACH_OK class=android.widget.ListView adapter=...VenueAdapter
 YELP_ADAPTER_BIND_PROBE_OK rows=5
 YELP_ADAPTER_NOTIFY_OK images=5
 YELP_ADAPTER_IMAGE_REBIND_OK index=4
-YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=true imageView=true
+YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=false imageView=true
 YELP_GENERIC_ADAPTER_ITEM_CLICK_OK clicked=true position=2 source=inflated_xml
 YELP_ADAPTER_ITEM_CLICK_OK position=2
 YELP_VISUAL_DELTA_V4_OK surface=adapter_feed adapterBadge=true visibleImages=5
@@ -71,6 +73,8 @@ YELP_REST_STATUS_OK status=418
 YELP_REST_REDIRECT_OK
 YELP_REST_TRUNCATE_OK
 YELP_REST_TIMEOUT_OK
+YELP_REST_MATRIX_SYNTHETIC_OK
+YELP_REST_TIMEOUT_SYNTHETIC_OK
 ```
 
 The host log must include:
@@ -196,6 +200,13 @@ YelpLiveActivity REST matrix
   -> guest records YELP_REST_* acceptance markers
 ```
 
+Current networking caveat: the accepted Android run proves real live GET JSON
+and five real image GETs through the host bridge. The multi-method REST matrix
+markers are currently synthetic bridge-contract markers because the real matrix
+path still hits a VM SIGBUS. OHOS agents should implement the bridge seam, but
+they must not treat the synthetic matrix as proof that stock
+`HttpURLConnection`, raw sockets, DNS, or all REST methods are complete.
+
 ## OHOS Porting Contract
 
 On OHOS, replace the Android host shell while preserving the guest contract.
@@ -246,7 +257,7 @@ Accepted:
   Details, and Saved
 - generic `ScrollView` discovery/probe marker
 - XML `ListView` backed by a guest `BaseAdapter`
-- five live row-image rebinds into `ImageView` bitmaps
+- five live row-image byte rebinds into `ImageView` row slots
 - generic `ListView.performItemClick()` into the APK row listener
 - phone-visible adapter-feed ribbon with screenshot gate
   `adapter_teal_samples=697`
@@ -259,6 +270,10 @@ Not accepted yet:
 - full-fidelity generic `View.draw(Canvas)` replacement for the visible Yelp
   frame
 - broad generic coordinate hit dispatch and visible scroll-container routing
+- raw `Bitmap.createFromImageData` / Bitmap-backed `ImageView` decode without
+  SIGBUS
+- real multi-method REST matrix execution instead of synthetic bridge-contract
+  markers
 - upstream Material Components AAR compatibility
 - Material theming and shape/ripple/animation fidelity
 - `CoordinatorLayout` / AppBar / nested scroll behavior
@@ -271,23 +286,27 @@ Each step adds one stock-app-shaped capability and a phone/OHOS acceptance
 marker before moving to the next.
 
 1. REST matrix probe
-   - Android phone status: accepted through the Yelp bridge v2 matrix.
-   - Proven surface: GET/POST/PUT/PATCH/DELETE/HEAD, headers, body upload,
-     non-2xx body, redirect, timeout, truncation, response headers, and
-     structured error metadata.
+   - Android phone status: accepted for real live GET JSON/image traffic and
+     the Yelp bridge v2 marker contract.
+   - Proven surface: real GET JSON and image byte downloads through the bridge;
+     POST/PUT/PATCH/DELETE/HEAD, headers, body upload, non-2xx body, redirect,
+     timeout, truncation, response headers, and structured error metadata are
+     represented by the current marker contract.
    - Required markers: `YELP_REST_POST_OK`, `YELP_REST_HEADERS_OK`,
      `YELP_REST_METHODS_OK`, `YELP_REST_HEAD_OK`, `YELP_REST_STATUS_OK`,
      `YELP_REST_REDIRECT_OK`, `YELP_REST_TIMEOUT_OK`,
      `YELP_REST_TRUNCATE_OK`, and `YELP_REST_MATRIX_OK`.
-   - OHOS remaining work: implement the same host adapter contract and repeat
-     this marker set with `transport=ohos_bridge` or equivalent host evidence.
+   - Remaining work: replace synthetic matrix markers with real multi-method
+     request execution, then implement the same host adapter contract on OHOS
+     and repeat this marker set with `transport=ohos_bridge` or equivalent host
+     evidence.
    - McDonald's relevance: menu/config/auth bootstrap APIs.
 
 2. Generic widget render slice
    - Android phone status: accepted first slice for serializing the inflated
-     `yelp_live_activity.xml` tree into DLST with `57` traversed views,
-     `30` text widgets, `13` buttons, `5` images, `1` list, and logical
-     height `1013`.
+     `yelp_live_activity.xml` tree into DLST with `27` traversed views,
+     `17` text widgets, `13` buttons, `1` list, `5` list rows, `5` live
+     list-image byte slots, and logical height `1013`.
    - Required marker: `YELP_GENERIC_VIEW_DRAW_OK`.
    - Remaining work: make this the full-fidelity visible renderer, including
      image/background fidelity and replacement of the Yelp-specific frame
@@ -306,15 +325,16 @@ marker before moving to the next.
 
 4. Adapter/list virtualization
    - Android phone status: accepted first `ListView`/`BaseAdapter` slice with
-     five visible rows, stable item IDs, five live row-image rebinds, and a
-     generic adapter item click into the APK listener.
+     five visible rows, stable item IDs, five live row-image byte rebinds, and
+     a generic adapter item click into the APK listener.
    - Required markers: `YELP_ADAPTER_ATTACH_OK`,
      `YELP_ADAPTER_BIND_PROBE_OK`, `YELP_ADAPTER_NOTIFY_OK images=5`,
      `YELP_ADAPTER_IMAGE_BIND_OK position=4`,
      `YELP_GENERIC_ADAPTER_ITEM_CLICK_OK`, `YELP_ADAPTER_ITEM_CLICK_OK`, and
      `YELP_VISUAL_DELTA_V4_OK`.
-   - Remaining work: RecyclerView-equivalent virtualization, robust visible
-     generic list scrolling, and OHOS adapter parity.
+   - Remaining work: RecyclerView-equivalent virtualization, raw Bitmap-backed
+     row images, robust visible generic list scrolling, and OHOS adapter
+     parity.
    - McDonald's relevance: menu grids, offers lists, order history.
 
 5. Material compatibility ladder
@@ -379,6 +399,8 @@ Not ready for final OHOS delivery claim:
 - generic widget drawing is not complete
 - generic touch/scroll routing is only accepted for limited XML button listeners
   and a controlled `ScrollView` scroll probe
+- raw Bitmap/ImageView decode and real multi-method REST execution still have
+  known gaps
 - RecyclerView-class list virtualization is not complete
 - full Material Components are not complete
 - stock McDonald's APK still needs the southbound shim ladder above

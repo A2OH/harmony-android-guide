@@ -1,7 +1,7 @@
 # Westlake Engine — Status Report
 
 **Date:** 2026-04-27
-**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 REST matrix, PF-457 Material XML/generic-hit slice, PF-459 generic inflated-View draw slice, PF-460 generic XML hit/scroll probes, and PF-461 adapter/list slice accepted on phone; OHOS adapters and generic UI expansion remain open
+**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 live GET plus REST marker contract, PF-457 Material XML/generic-hit slice, PF-459 generic inflated-View draw slice, PF-460 generic XML hit/scroll probes, and PF-461 adapter/list slice accepted on phone; OHOS adapters, real multi-method REST execution, and generic UI expansion remain open
 
 ## Current Supervisor Status (2026-04-27)
 
@@ -53,19 +53,19 @@ high-entropy photo region so a block-only card cannot satisfy PF-453.
 PF-453 latest evidence:
 
 - `dalvikvm=58ea9cb7470e0f5990f3b90b353e46c0041ddc503c7173c8417a24e82a7d1a3e`
-- `aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0`
-- `westlake-yelp-live-debug.apk=0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c`
+- `aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d`
+- `westlake-yelp-live-debug.apk=f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9`
 - Screenshot/log/markers/trace:
   `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.*`
 - Stable accepted copy:
-  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0_0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c/`
+  `/mnt/c/Users/dspfa/TempWestlake/accepted/yelp_live/eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d_f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9/`
 - Visual gate:
   `/mnt/c/Users/dspfa/TempWestlake/yelp_live_target.visual`
-  (`1080x2280`, `distinct_colors=4929`, `top_red_samples=3033`,
+  (`1080x2280`, `distinct_colors=1383`, `top_red_samples=3033`,
   `bottom_nav_light_samples=5199`, `bottom_nav_red_samples=26`,
   `adapter_teal_samples=697`,
-  `photo_distinct_colors=9837`, `photo_colored_samples=21517`,
-  `photo_natural_samples=5069`)
+  `photo_distinct_colors=568`, `photo_colored_samples=18740`,
+  `photo_natural_samples=85`)
 - Host log includes `Surface buffer 1080x2280 for com.westlake.yelplive`.
 - Full-resolution marker:
   `YELP_FULL_RES_FRAME_OK logical=480x1013 target=1080x2280 navTop=824`.
@@ -80,7 +80,7 @@ PF-453 latest evidence:
   `YELP_GENERIC_ADAPTER_ITEM_CLICK_OK position=2`,
   `YELP_ADAPTER_ITEM_CLICK_OK position=2`,
   `YELP_VISUAL_DELTA_V4_OK surface=adapter_feed`,
-  `YELP_NETWORK_BRIDGE_OK`, `YELP_LIVE_JSON_OK status=200 bytes=1627 places=8
+  `YELP_NETWORK_BRIDGE_OK`, `YELP_LIVE_JSON_OK status=200 bytes=1605 places=8
   transport=host_bridge`, `YELP_LIVE_IMAGE_OK`,
   `YELP_LIVE_ROW_IMAGE_OK index=4`,
   `YELP_CARD_OK`, `YELP_CATEGORY_SELECT_OK`, `YELP_FILTER_TOGGLE_OK`,
@@ -95,20 +95,31 @@ button hits plus ScrollView discovery, and PF-461 is accepted for the first
 adapter/list slice. The app inflates `yelp_live_activity.xml` from compiled APK
 layout bytes, binds the expected guest View IDs plus a real `ListView`, and the
 launcher serializes the inflated tree into a DLST frame with
-`YELP_GENERIC_VIEW_DRAW_OK views=57 texts=30 buttons=13 images=5 lists=1
-height=1013`. The direct renderer now also paints an explicit XML
+`YELP_GENERIC_VIEW_DRAW_OK views=27 texts=17 buttons=13 images=0 lists=1
+listRows=5 listImages=5 height=1013`, plus
+`YELP_GENERIC_LIST_DRAW_OK rows=5 images=5` and
+`YELP_GENERIC_VISIBLE_LIST_OK rows=5 images=5`. The direct renderer now also
+paints an explicit XML
 ListView/BaseAdapter adapter-feed ribbon, and the visual gate rejects screenshots
 without that teal region. The polished visible Yelp surface remains the
 controlled direct `DLST` renderer, so the remaining rendering gap is
 full-fidelity generic View drawing replacing the Yelp-specific frame writer.
+The accepted generic list proof is still controlled: it overlays Yelp row state
+for the visible list proof, and raw Bitmap-backed `ImageView` decode remains a
+SIGBUS gap.
 
-PF-456 implementation status: the Android host bridge now exposes and accepts a
-v2 request shape for method, headers JSON, request body, max-byte cap, timeout,
+PF-456 implementation status: the Android host bridge now exposes a v2 request
+shape for method, headers JSON, request body, max-byte cap, timeout,
 redirect-follow flag, response headers, non-2xx bodies, truncation, and
-structured errors. The latest Yelp run records `YELP_REST_MATRIX_OK` plus
-POST, headers, PUT/PATCH/DELETE, HEAD, non-2xx status, redirect, truncation,
-and timeout markers. Remaining PF-456 closure is the OHOS adapter repeating
-the same guest-facing bridge contract, not more Android phone GET proof.
+structured errors. The latest Yelp run proves real live GET JSON/image traffic
+through the bridge and records `YELP_REST_MATRIX_OK` plus POST, headers,
+PUT/PATCH/DELETE, HEAD, non-2xx status, redirect, truncation, and timeout
+marker-contract coverage. Caveat: the multi-method REST matrix markers are
+currently synthetic (`YELP_REST_MATRIX_SYNTHETIC_OK`,
+`YELP_REST_TIMEOUT_SYNTHETIC_OK`) because the real matrix path still hits a VM
+SIGBUS. Remaining PF-456 closure is real matrix execution and the OHOS adapter
+repeating the same guest-facing bridge contract, not more Android phone GET
+proof.
 
 PF-457 now has a separate accepted Material XML probe,
 `com.westlake.materialxmlprobe`, built from
@@ -201,10 +212,11 @@ Current contract workstreams after the PF-461 phone run:
   ScrollView discovery; open for broad coordinate hit dispatch and visible
   scroll routing.
 - `PF-461`: accepted for XML `ListView`/`BaseAdapter` row binding, five image
-  rebinds, and generic adapter item click; open for RecyclerView-class
-  virtualization and OHOS parity.
-- `PF-456`: Android phone REST matrix accepted through the bridge v2 contract;
-  open for OHOS adapter parity.
+  byte rebinds, and generic adapter item click; open for RecyclerView-class
+  virtualization, raw Bitmap/ImageView decode, and OHOS parity.
+- `PF-456`: Android phone live GET path and REST marker contract accepted
+  through bridge v2; open for real multi-method matrix execution and OHOS
+  adapter parity.
 - `PF-457`: accepted for Material XML inflation and probe hit routing; open for
   upstream MDC compatibility, theming/behaviors, ripple/animation, and broad
   generic rendering/hit testing.

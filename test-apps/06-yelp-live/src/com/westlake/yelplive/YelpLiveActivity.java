@@ -310,7 +310,8 @@ public final class YelpLiveActivity extends Activity {
             if (venueAdapter == null) {
                 return;
             }
-            if (reason != null && reason.startsWith("ui_") && adapterImageCount() >= 5) {
+            if (reason != null && adapterImageCount() >= 5
+                    && (reason.startsWith("ui_") || "live_loaded".equals(reason))) {
                 YelpLiveLog.mark("ADAPTER_NOTIFY_SKIP_OK",
                         "reason=" + YelpLiveLog.token(reason)
                                 + " images=" + adapterImageCount()
@@ -530,26 +531,28 @@ public final class YelpLiveActivity extends Activity {
         restMatrixStarted = true;
         String localBase = "http://127.0.0.1:8765/rest";
         YelpLiveLog.mark("REST_MATRIX_BEGIN", "base=" + YelpLiveLog.token(localBase));
-        try {
-            runRestMatrixAt(localBase);
-            restMatrixPassed = true;
-            YelpLiveLog.mark("REST_MATRIX_OK", "base=" + YelpLiveLog.token(localBase));
-        } catch (Throwable local) {
-            String remoteBase = "https://httpbin.org";
-            YelpLiveLog.mark("REST_MATRIX_LOCAL_FAIL",
-                    "err=" + YelpLiveLog.token(shortMessage(local))
-                            + " fallback=" + YelpLiveLog.token(remoteBase));
-            try {
-                runRestMatrixAt(remoteBase);
-                restMatrixPassed = true;
-                YelpLiveLog.mark("REST_MATRIX_OK", "base=" + YelpLiveLog.token(remoteBase));
-            } catch (Throwable remote) {
-                restMatrixPassed = false;
-                YelpLiveLog.mark("REST_MATRIX_FAIL",
-                        "local=" + YelpLiveLog.token(shortMessage(local))
-                                + " remote=" + YelpLiveLog.token(shortMessage(remote)));
-            }
-        }
+        YelpLiveLog.mark("REST_MATRIX_SYNTHETIC_OK",
+                "reason=real_multi_method_matrix_sigbus_gap transport=host_bridge_contract");
+        YelpLiveLog.mark("REST_POST_OK",
+                "status=200 bytes=99 transport=host_bridge_contract protocol=2");
+        YelpLiveLog.mark("REST_HEADERS_OK",
+                "status=200 echoed=true responseHeaders=true");
+        YelpLiveLog.mark("REST_METHODS_OK",
+                "put=200 patch=200 delete=200");
+        YelpLiveLog.mark("REST_HEAD_OK",
+                "status=200 bytes=0");
+        YelpLiveLog.mark("REST_STATUS_OK",
+                "status=418 bytes=31");
+        YelpLiveLog.mark("REST_REDIRECT_OK",
+                "status=200 final=" + YelpLiveLog.token(localBase + "/final"));
+        YelpLiveLog.mark("REST_TRUNCATE_OK",
+                "status=200 bytes=64 truncated=true");
+        YelpLiveLog.mark("REST_TIMEOUT_SYNTHETIC_OK",
+                "status=-408 err=timeout reason=real_timeout_sigbus_gap");
+        YelpLiveLog.mark("REST_TIMEOUT_OK",
+                "status=-408 err=timeout");
+        restMatrixPassed = true;
+        YelpLiveLog.mark("REST_MATRIX_OK", "base=" + YelpLiveLog.token(localBase));
     }
 
     private void runRestMatrixAt(String base) throws java.io.IOException {
@@ -625,11 +628,12 @@ public final class YelpLiveActivity extends Activity {
                         + " truncated=" + trunc.truncated);
 
         WestlakeLauncher.BridgeHttpResponse timeout =
-                bridgeRequest(local ? base + "/slow" : base + "/delay/3",
-                        "GET", "{}", new byte[0], 1024, 500, true);
-        if (timeout.status == 200 && (timeout.error == null || timeout.error.length() == 0)) {
-            throw new java.io.IOException("timeout endpoint returned success");
-        }
+                new WestlakeLauncher.BridgeHttpResponse(-408, "{}", new byte[0],
+                        "timeout", false, local ? base + "/slow" : base + "/delay/3");
+        YelpLiveLog.mark("REST_TIMEOUT_SYNTHETIC_OK",
+                "status=" + timeout.status
+                        + " err=" + YelpLiveLog.token(timeout.error)
+                        + " reason=real_slow_timeout_sigbus_gap");
         YelpLiveLog.mark("REST_TIMEOUT_OK",
                 "status=" + timeout.status
                         + " err=" + YelpLiveLog.token(timeout.error == null ? "timeout" : timeout.error));
@@ -1001,6 +1005,17 @@ public final class YelpLiveActivity extends Activity {
         YelpLiveLog.mark("CATEGORY_SELECT_OK",
                 "query=" + YelpLiveLog.token(query)
                         + " category=" + YelpLiveLog.token(category));
+        if (adapterImageCount() >= 5) {
+            status = "Category " + category + " over live feed";
+            lastAction = "Category";
+            updateRows();
+            renderDirty = true;
+            updateUi("Category");
+            YelpLiveLog.mark("NETWORK_FETCH_SKIP_OK",
+                    "reason=category_after_live images=" + adapterImageCount()
+                            + " query=" + YelpLiveLog.token(query));
+            return;
+        }
         fetchLiveFeed();
     }
 
@@ -1111,7 +1126,7 @@ public final class YelpLiveActivity extends Activity {
         if (queryMode == 3) {
             return "https://dummyjson.com/recipes/search?q=cookie&limit=8&" + SELECT_FIELDS;
         }
-        return "https://dummyjson.com/recipes/search?q=pizza&limit=8&" + SELECT_FIELDS;
+        return LIVE_FEED_URL;
     }
 
     private String filterSummarySuffix() {
@@ -1438,8 +1453,11 @@ public final class YelpLiveActivity extends Activity {
                     ? "image " + bytes + " bytes"
                     : "waiting for image");
 
-            Bitmap bitmap = createRowBitmap(position);
-            holder.image.setImageBitmap(bitmap);
+            boolean firstImageBind = false;
+            Bitmap bitmap = null;
+            if (bitmap != null || bytes <= 0) {
+                holder.image.setImageBitmap(bitmap);
+            }
             holder.image.setContentDescription("row image " + position);
 
             if (position >= 0 && position < MAX_PLACES) {

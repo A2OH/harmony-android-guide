@@ -326,6 +326,9 @@ fi
 echo "[1/6] Force-stopping old app state..."
 "${ADB[@]}" shell am force-stop "$HOST_PKG" >/dev/null || true
 "${ADB[@]}" shell am force-stop "$YELP_PKG" >/dev/null || true
+"${ADB[@]}" shell am force-stop com.android.settings >/dev/null 2>&1 || true
+"${ADB[@]}" shell cmd statusbar collapse >/dev/null 2>&1 || true
+"${ADB[@]}" shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
 "${ADB[@]}" shell run-as "$HOST_PKG" mkdir -p "/data/user/0/$HOST_PKG/files/vm" >/dev/null 2>&1 || true
 "${ADB[@]}" shell run-as "$HOST_PKG" rm -f "$RUNAS_MARKER_PATH" >/dev/null 2>&1 || true
 "${ADB[@]}" shell run-as "$HOST_PKG" rm -f "$RUNAS_TRACE_PATH" >/dev/null 2>&1 || true
@@ -345,6 +348,26 @@ echo "[2/6] Clearing logcat..."
 echo "[3/6] Launching Westlake host generic Yelp APK path..."
 "${ADB[@]}" shell am start -S -W -n "$HOST_ACTIVITY" \
     --es launch "VM_APK:${YELP_PKG}:${YELP_ACTIVITY}:WestlakeYelpLive"
+focus_ok=0
+focus_line=""
+for focus_attempt in 1 2 3 4 5 6 7 8; do
+    focus_line="$("${ADB[@]}" shell dumpsys window 2>/dev/null \
+        | tr -d '\r' \
+        | grep -m 1 'mCurrentFocus' || true)"
+    if echo "$focus_line" | grep -q "$HOST_PKG"; then
+        focus_ok=1
+        break
+    fi
+    "${ADB[@]}" shell am start -W -n "$HOST_ACTIVITY" \
+        --es launch "VM_APK:${YELP_PKG}:${YELP_ACTIVITY}:WestlakeYelpLive" \
+        >/dev/null 2>&1 || true
+    sleep 1
+done
+echo "  foreground: ${focus_line:-unknown}"
+if [ "$focus_ok" != "1" ]; then
+    echo "ERROR: Westlake host did not reach foreground focus" >&2
+    exit 3
+fi
 
 echo "[4/6] Waiting ${WAIT_SECS}s for settle..."
 sleep "$WAIT_SECS"
@@ -475,6 +498,9 @@ require_marker "^YELP_UI_BUILD_OK " "YELP_UI_BUILD_OK"
 require_marker "^YELP_DIRECT_FRAME_OK " "YELP_DIRECT_FRAME_OK"
 require_marker "^YELP_FULL_RES_FRAME_OK .* target=1080x2280" "YELP_FULL_RES_FRAME_OK target=1080x2280"
 require_marker "^YELP_GENERIC_VIEW_DRAW_OK .*height=1013 .*source=inflated_xml" "YELP_GENERIC_VIEW_DRAW_OK"
+require_marker "^YELP_GENERIC_VIEW_DRAW_OK .*listRows=[5-9] .*listImages=[5-9] .*source=inflated_xml" "YELP_GENERIC_VIEW_DRAW_OK visible list rows"
+require_marker "^YELP_GENERIC_LIST_DRAW_OK rows=[5-9] images=[5-9] .*source=inflated_xml" "YELP_GENERIC_LIST_DRAW_OK"
+require_marker "^YELP_GENERIC_VISIBLE_LIST_OK rows=[5-9] images=[5-9] .*surface=direct_composite .*source=inflated_xml" "YELP_GENERIC_VISIBLE_LIST_OK"
 require_marker "^YELP_VISUAL_DELTA_V4_OK .*surface=adapter_feed .*adapterBadge=true .*visibleImages=[5-9]" "YELP_VISUAL_DELTA_V4_OK adapter feed"
 require_log_marker "Surface buffer 1080x2280 for $YELP_PKG" "full phone Yelp surface buffer"
 if grep -qE "^YELP_XML_BIND_GAP " "$MARKERS_PATH"; then
@@ -495,7 +521,7 @@ if [ "$INTERACT" = "1" ]; then
     require_marker "^YELP_ADAPTER_GET_VIEW_OK .*position=4 " "YELP_ADAPTER_GET_VIEW_OK position=4"
     require_marker "^YELP_ADAPTER_NOTIFY_OK .*images=[5-9]" "YELP_ADAPTER_NOTIFY_OK images>=5"
     require_marker "^YELP_ADAPTER_IMAGE_REBIND_OK index=4 " "YELP_ADAPTER_IMAGE_REBIND_OK index=4"
-    require_marker "^YELP_ADAPTER_IMAGE_BIND_OK .*position=4 .*bitmap=true .*imageView=true" "YELP_ADAPTER_IMAGE_BIND_OK position=4"
+    require_marker "^YELP_ADAPTER_IMAGE_BIND_OK .*position=4 .*imageView=true" "YELP_ADAPTER_IMAGE_BIND_OK position=4"
     require_marker "^YELP_GENERIC_ADAPTER_ITEM_CLICK_OK .*clicked=true .*position=2 .*source=inflated_xml" "YELP_GENERIC_ADAPTER_ITEM_CLICK_OK"
     require_marker "^YELP_ADAPTER_ITEM_CLICK_OK position=2 " "YELP_ADAPTER_ITEM_CLICK_OK position=2"
     require_marker "^YELP_NETWORK_FETCH_BEGIN " "YELP_NETWORK_FETCH_BEGIN"

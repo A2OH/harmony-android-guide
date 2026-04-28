@@ -413,13 +413,14 @@ object WestlakeVM {
             Log.i(TAG, "HTTP bridge $method ${result.status} bytes=${result.body.size} truncated=${result.truncated} url=$rawUrl")
         } catch (e: Exception) {
             Log.w(TAG, "HTTP bridge v2 request failed: $e")
+            val timeout = e is java.net.SocketTimeoutException
             writeHttpBridgeResponseV2(
                 dir,
                 seq,
-                599,
+                if (timeout) -408 else 599,
                 "{}",
                 ByteArray(0),
-                sanitizeBridgeMeta(e.javaClass.simpleName + ":" + (e.message ?: "")),
+                if (timeout) "timeout" else sanitizeBridgeMeta(e.javaClass.simpleName + ":" + (e.message ?: "")),
                 false,
                 parts.getOrNull(8) ?: "",
             )

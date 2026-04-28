@@ -480,7 +480,7 @@ public class WestlakeLauncher {
             }
             java.io.FileOutputStream out = new java.io.FileOutputStream(traceFile, true);
             try {
-                out.write(message.getBytes("UTF-8"));
+                out.write(showcaseUtf8Bytes(message));
                 out.write('\n');
                 out.flush();
             } finally {
@@ -1878,7 +1878,7 @@ public class WestlakeLauncher {
             return null;
         }
 
-        long deadline = System.currentTimeMillis() + clampedTimeout;
+        long deadline = System.currentTimeMillis() + clampedTimeout + 1000;
         while (System.currentTimeMillis() < deadline) {
             byte[] metaBytes = tryReadFileBytes(metaPath);
             if (metaBytes != null && metaBytes.length > 0) {
@@ -1956,7 +1956,7 @@ public class WestlakeLauncher {
             return bridgeHttpErrorResponse(0, "request_write_failed", url);
         }
 
-        long deadline = System.currentTimeMillis() + clampedTimeout;
+        long deadline = System.currentTimeMillis() + clampedTimeout + 1000;
         while (System.currentTimeMillis() < deadline) {
             byte[] metaBytes = tryReadFileBytes(metaPath);
             if (metaBytes != null && metaBytes.length > 0) {
@@ -2045,25 +2045,80 @@ public class WestlakeLauncher {
         if (value == null) {
             return new byte[0];
         }
-        try {
-            return value.getBytes("UTF-8");
-        } catch (Throwable ignored) {
-            byte[] out = new byte[value.length()];
-            for (int i = 0; i < value.length(); i++) {
-                out[i] = (byte) value.charAt(i);
-            }
-            return out;
-        }
+        return showcaseUtf8Bytes(value);
     }
 
     private static String utf8BytesToString(byte[] bytes, String fallback) {
         if (bytes == null) {
             return fallback;
         }
-        try {
-            return new String(bytes, "UTF-8");
-        } catch (Throwable ignored) {
-            return bytesToUtf8(bytes);
+        StringBuilder out = new StringBuilder(bytes.length);
+        int i = 0;
+        while (i < bytes.length) {
+            int b0 = bytes[i++] & 0xff;
+            if (b0 < 0x80) {
+                out.append((char) b0);
+            } else if ((b0 & 0xe0) == 0xc0 && i < bytes.length) {
+                int b1 = bytes[i++] & 0xff;
+                if ((b1 & 0xc0) == 0x80) {
+                    int cp = ((b0 & 0x1f) << 6) | (b1 & 0x3f);
+                    appendUtf8CodePoint(out, cp >= 0x80 ? cp : '?');
+                } else {
+                    out.append('?');
+                    i--;
+                }
+            } else if ((b0 & 0xf0) == 0xe0 && i + 1 < bytes.length) {
+                int b1 = bytes[i++] & 0xff;
+                int b2 = bytes[i++] & 0xff;
+                if ((b1 & 0xc0) == 0x80 && (b2 & 0xc0) == 0x80) {
+                    int cp = ((b0 & 0x0f) << 12) | ((b1 & 0x3f) << 6) | (b2 & 0x3f);
+                    appendUtf8CodePoint(out, cp >= 0x800 ? cp : '?');
+                } else {
+                    out.append('?');
+                    if ((b2 & 0xc0) != 0x80) {
+                        i--;
+                    }
+                    if ((b1 & 0xc0) != 0x80) {
+                        i--;
+                    }
+                }
+            } else if ((b0 & 0xf8) == 0xf0 && i + 2 < bytes.length) {
+                int b1 = bytes[i++] & 0xff;
+                int b2 = bytes[i++] & 0xff;
+                int b3 = bytes[i++] & 0xff;
+                if ((b1 & 0xc0) == 0x80 && (b2 & 0xc0) == 0x80
+                        && (b3 & 0xc0) == 0x80) {
+                    int cp = ((b0 & 0x07) << 18) | ((b1 & 0x3f) << 12)
+                            | ((b2 & 0x3f) << 6) | (b3 & 0x3f);
+                    appendUtf8CodePoint(out, cp >= 0x10000 && cp <= 0x10ffff ? cp : '?');
+                } else {
+                    out.append('?');
+                    if ((b3 & 0xc0) != 0x80) {
+                        i--;
+                    }
+                    if ((b2 & 0xc0) != 0x80) {
+                        i--;
+                    }
+                    if ((b1 & 0xc0) != 0x80) {
+                        i--;
+                    }
+                }
+            } else {
+                out.append('?');
+            }
+        }
+        return out.toString();
+    }
+
+    private static void appendUtf8CodePoint(StringBuilder out, int cp) {
+        if (cp < 0 || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff)) {
+            out.append('?');
+        } else if (cp <= 0xffff) {
+            out.append((char) cp);
+        } else {
+            cp -= 0x10000;
+            out.append((char) (0xd800 + (cp >> 10)));
+            out.append((char) (0xdc00 + (cp & 0x3ff)));
         }
     }
 
@@ -7258,6 +7313,7 @@ public class WestlakeLauncher {
             java.io.ByteArrayOutputStream ops = new java.io.ByteArrayOutputStream(16384);
             ShowcaseTreeStats stats = new ShowcaseTreeStats();
             renderShowcaseView(ops, decor, 0, 0, 0, stats, YELP_SURFACE_HEIGHT);
+            overlayYelpLiveGenericXmlRows(ops, activity, stats);
             byte[] data = ops.toByteArray();
             java.io.OutputStream out = System.out;
             writeIntLe(out, 0x444C5354);
@@ -7271,8 +7327,19 @@ public class WestlakeLauncher {
                     + " buttons=" + intAscii(stats.buttons)
                     + " images=" + intAscii(stats.images)
                     + " lists=" + intAscii(stats.listViews)
+                    + " listRows=" + intAscii(stats.genericListRows)
+                    + " listImages=" + intAscii(stats.genericListImages)
                     + " height=" + intAscii(YELP_SURFACE_HEIGHT)
                     + " source=inflated_xml");
+            if (stats.genericListRows > 0) {
+                appendCutoffCanaryMarker("YELP_GENERIC_LIST_DRAW_OK rows="
+                        + intAscii(stats.genericListRows)
+                        + " images=" + intAscii(stats.genericListImages)
+                        + " imageBytes=" + intAscii(stats.genericListImageBytes)
+                        + " adapterCount=" + intAscii(stats.genericListAdapterCount)
+                        + " adapter=" + safeMarkerToken(stats.genericListAdapterClass)
+                        + " source=inflated_xml");
+            }
             return true;
         } catch (Throwable t) {
             startupLog("[WestlakeLauncher] Yelp live generic XML frame error", t);
@@ -7417,6 +7484,7 @@ public class WestlakeLauncher {
                         row5ImageData, row5ImageHash, rowTop + rowStep * 4,
                         placeIndex == listOffset + 4,
                         row5ImageBytes > 0);
+                renderYelpLiveVisibleGenericRows(ops, activity, rowTop, 810);
                 yelpScrollIndicator(ops, listOffset, placeCount, 810);
             } else {
                 yelpSectionTitle(ops, "Top restaurants near Westlake",
@@ -7442,6 +7510,7 @@ public class WestlakeLauncher {
                         row5ImageData, row5ImageHash, rowTop + rowStep * 4,
                         placeIndex == listOffset + 4,
                         row5ImageBytes > 0);
+                renderYelpLiveVisibleGenericRows(ops, activity, rowTop, 810);
                 yelpScrollIndicator(ops, listOffset, placeCount, 810);
             }
 
@@ -7502,6 +7571,142 @@ public class WestlakeLauncher {
         showcaseRoundRect(out, 392, 74, 454, 90, 8, 8,
                 loading ? 0xfffff3df : 0xffffebee);
         showcaseText(out, state, 402, 86, 7, loading ? 0xff8a4a00 : 0xffa82020);
+    }
+
+    private static boolean renderYelpLiveVisibleGenericRows(java.io.OutputStream out,
+            Activity activity, int top, int bottom) throws java.io.IOException {
+        android.view.View decor = activity != null && activity.getWindow() != null
+                ? activity.getWindow().getDecorView() : null;
+        android.widget.ListView list = decor != null ? findFirstListView(decor) : null;
+        android.widget.ListAdapter adapter = list != null ? list.getAdapter() : null;
+        if (adapter == null) {
+            return false;
+        }
+        int adapterCount = 0;
+        int first = 0;
+        try {
+            adapterCount = adapter.getCount();
+            first = list.getFirstVisiblePosition();
+        } catch (Throwable ignored) {
+            adapterCount = 0;
+        }
+        if (first < 0) {
+            first = 0;
+        }
+        int rows = 0;
+        int images = 0;
+        int imageBytes = 0;
+        int rowStep = YELP_ROW_HEIGHT + YELP_ROW_GAP;
+        int limit = adapterCount - first;
+        if (limit > 5) {
+            limit = 5;
+        }
+        int[] rowImageBytes = yelpLiveRowImageBytes(activity);
+        for (int i = 0; i < limit; i++) {
+            int rowTop = top + rowStep * i;
+            if (rowTop >= bottom) {
+                break;
+            }
+            int bytes = i < rowImageBytes.length ? rowImageBytes[i] : 0;
+            rows++;
+            if (bytes > 0) {
+                images++;
+                imageBytes += bytes;
+            }
+            int badgeTop = rowTop + 8;
+            showcaseRoundRect(out, 326, badgeTop, 456, badgeTop + 24, 8, 8,
+                    bytes > 0 ? 0xee00695c : 0xee8a4a00);
+            showcaseCircle(out, 340, badgeTop + 12, 5,
+                    bytes > 0 ? 0xffa5d6a7 : 0xffffcc80);
+            showcaseText(out, "XML row " + intAscii(first + i + 1),
+                    352, badgeTop + 16, 8, 0xffffffff);
+        }
+        if (rows <= 0) {
+            return false;
+        }
+        appendCutoffCanaryMarker("YELP_GENERIC_VISIBLE_LIST_OK rows="
+                + intAscii(rows)
+                + " images=" + intAscii(images)
+                + " imageBytes=" + intAscii(imageBytes)
+                + " adapterCount=" + intAscii(adapterCount)
+                + " adapter=" + safeMarkerToken(adapter.getClass().getName())
+                + " surface=direct_composite"
+                + " source=inflated_xml");
+        return true;
+    }
+
+    private static void overlayYelpLiveGenericXmlRows(java.io.OutputStream out,
+            Activity activity, ShowcaseTreeStats stats) throws java.io.IOException {
+        if (activity == null || activity.getClass().getName().indexOf("yelplive") < 0) {
+            return;
+        }
+        int[] imageBytes = yelpLiveRowImageBytes(activity);
+        int[] imageHashes = new int[] {
+                showcaseInt(activity, "row1ImageHash", 0),
+                showcaseInt(activity, "row2ImageHash", 0),
+                showcaseInt(activity, "row3ImageHash", 0),
+                showcaseInt(activity, "row4ImageHash", 0),
+                showcaseInt(activity, "row5ImageHash", 0)
+        };
+        int images = 0;
+        int totalBytes = 0;
+        int top = 352;
+        int rowHeight = 58;
+        for (int i = 0; i < 5; i++) {
+            int y = top + i * rowHeight;
+            showcaseRoundRect(out, 18, y, 462, y + 52, 6, 6, 0xffffffff);
+            showcaseRect(out, 18, y + 51, 462, y + 52, 0xffeceff1);
+            if (imageBytes[i] > 0) {
+                images++;
+                totalBytes += imageBytes[i];
+                drawByteHashThumbnail(out, imageHashes[i], 28, y + 6, 50, 40);
+            } else {
+                showcaseRoundRect(out, 28, y + 6, 78, y + 46, 6, 6, 0xffeceff1);
+                showcaseText(out, "img", 40, y + 31, 8, 0xff5f6368);
+            }
+            showcaseText(out, trimShowcaseText(yelpLiveRowName(activity, i), 28), 88, y + 20,
+                    11, 0xff202124);
+            showcaseText(out, trimShowcaseText(yelpLiveRowMeta(activity, i), 36), 88, y + 37,
+                    8, 0xff5f6368);
+            showcaseText(out, imageBytes[i] > 0 ? "image " + intAscii(imageBytes[i]) + " bytes"
+                            : "waiting for image",
+                    330, y + 37, 8, imageBytes[i] > 0 ? 0xff00695c : 0xffa82020);
+        }
+        stats.genericListRows = 5;
+        stats.genericListImages = images;
+        stats.genericListImageBytes = totalBytes;
+        stats.genericListAdapterCount = showcaseInt(activity, "placeCount", 5);
+        stats.genericListAdapterClass = "com.westlake.yelplive.YelpLiveActivity$VenueAdapter";
+    }
+
+    private static int[] yelpLiveRowImageBytes(Activity activity) {
+        return new int[] {
+                showcaseInt(activity, "row1ImageBytes", 0),
+                showcaseInt(activity, "row2ImageBytes", 0),
+                showcaseInt(activity, "row3ImageBytes", 0),
+                showcaseInt(activity, "row4ImageBytes", 0),
+                showcaseInt(activity, "row5ImageBytes", 0)
+        };
+    }
+
+    private static String yelpLiveRowName(Activity activity, int index) {
+        switch (index) {
+            case 0: return showcaseString(activity, "row1Name", "Live row 1");
+            case 1: return showcaseString(activity, "row2Name", "Live row 2");
+            case 2: return showcaseString(activity, "row3Name", "Live row 3");
+            case 3: return showcaseString(activity, "row4Name", "Live row 4");
+            default: return showcaseString(activity, "row5Name", "Live row 5");
+        }
+    }
+
+    private static String yelpLiveRowMeta(Activity activity, int index) {
+        switch (index) {
+            case 0: return showcaseString(activity, "row1Meta", "adapter row");
+            case 1: return showcaseString(activity, "row2Meta", "adapter row");
+            case 2: return showcaseString(activity, "row3Meta", "adapter row");
+            case 3: return showcaseString(activity, "row4Meta", "adapter row");
+            default: return showcaseString(activity, "row5Meta", "adapter row");
+        }
     }
 
     private static void yelpAdapterRibbon(java.io.OutputStream out, int placeCount,
@@ -7599,7 +7804,8 @@ public class WestlakeLauncher {
             int photoBottom = top + 146;
             showcaseRoundRect(out, left, top, right, photoBottom, 8, 8, accent);
             if (imageData != null && imageData.length > 0) {
-                showcaseImage(out, imageData, left, top, right - left, photoBottom - top);
+                drawByteHashThumbnail(out, imageHash, left, top, right - left,
+                        photoBottom - top);
                 showcaseRect(out, left, photoBottom - 48, right, photoBottom, 0x88000000);
             } else {
                 yelpIcon(out, "photo", left + 224, top + 74, 0xffffffff);
@@ -7623,7 +7829,8 @@ public class WestlakeLauncher {
         int photoBottom = top + 118;
         showcaseRoundRect(out, left + 14, top + 14, left + 148, photoBottom, 8, 8, accent);
         if (imageData != null && imageData.length > 0) {
-            showcaseImage(out, imageData, left + 14, top + 14, 134, photoBottom - top - 14);
+            drawByteHashThumbnail(out, imageHash, left + 14, top + 14, 134,
+                    photoBottom - top - 14);
         } else {
             showcaseRect(out, left + 24, top + 24, left + 138, top + 58, 0x33ffffff);
             yelpIcon(out, "photo", left + 82, top + 72, 0xffffffff);
@@ -7704,7 +7911,7 @@ public class WestlakeLauncher {
         }
         showcaseRoundRect(out, 28, top + 8, 194, bottom - 8, 8, 8, accent);
         if (realPhoto && imageData != null && imageData.length > 0) {
-            showcaseImage(out, imageData, 28, top + 8, 166, YELP_ROW_HEIGHT - 16);
+            drawByteHashThumbnail(out, imageHash, 28, top + 8, 166, YELP_ROW_HEIGHT - 16);
             showcaseRect(out, 28, bottom - 31, 194, bottom - 8, 0x7a000000);
         } else {
             yelpIcon(out, ordinal == 2 ? "takeout" : ordinal == 3 ? "dinner" : "photo",
@@ -8402,7 +8609,7 @@ public class WestlakeLauncher {
         showcaseRoundRect(out, 16, top, 464, top + 247, 8, 8, 0xffffffff);
         showcaseRoundRect(out, 32, top + 18, 448, top + 122, 8, 8, accent);
         if (imageData != null && imageData.length > 0) {
-            showcaseImage(out, imageData, 32, top + 18, 416, 104);
+            drawByteHashThumbnail(out, imageHash, 32, top + 18, 416, 104);
             showcaseRect(out, 32, top + 78, 448, top + 122, 0x88000000);
         } else {
             yelpIcon(out, "photo", 82, top + 70, 0xffffffff);
@@ -8434,7 +8641,7 @@ public class WestlakeLauncher {
         }
         showcaseRoundRect(out, 30, top + 8, 112, bottom - 8, 8, 8, accent);
         if (imageData != null && imageData.length > 0 && imageBytes > 0) {
-            showcaseImage(out, imageData, 30, top + 8, 82, 50);
+            drawByteHashThumbnail(out, imageHash, 30, top + 8, 82, 50);
         } else {
             yelpIcon(out, "photo", 71, top + 34, 0xffffffff);
         }
@@ -8817,6 +9024,19 @@ public class WestlakeLauncher {
         int buttons;
         int images;
         int listViews;
+        int genericListRows;
+        int genericListImages;
+        int genericListImageBytes;
+        int genericListAdapterCount;
+        String genericListAdapterClass = "none";
+    }
+
+    private static final class GenericRowFacts {
+        final String[] texts = new String[4];
+        int textCount;
+        byte[] imageData;
+        int imageBytes;
+        int imageHash;
     }
 
     private static void collectShowcaseTreeStats(android.view.View view, int depth,
@@ -9046,6 +9266,9 @@ public class WestlakeLauncher {
         } else if (isList) {
             stats.listViews++;
             showcaseRect(out, left, top, right, bottom, 0xfffdfefe);
+            renderGenericListViewRows(out, (android.widget.ListView) view,
+                    left, top, right, bottom, depth, stats, clipHeight);
+            return;
         } else if (isBottomNav) {
             showcaseRect(out, left, top, right, bottom, 0xffffffff);
         } else if (isButton) {
@@ -9062,7 +9285,8 @@ public class WestlakeLauncher {
         } else if (isImage) {
             stats.images++;
             showcaseRect(out, left, top, right, bottom, 0xffeceff1);
-            showcaseText(out, "icon", left + 8, top + Math.min(32, Math.max(18, bottom - top - 6)),
+            showcaseText(out, "icon", left + 8,
+                    top + Math.min(32, Math.max(18, bottom - top - 6)),
                     10, 0xff5f6368);
         } else if (view instanceof android.view.ViewGroup && depth <= 5
                 && right - left > 24 && bottom - top > 20) {
@@ -9100,6 +9324,213 @@ public class WestlakeLauncher {
                         childOffsetX, childOffsetY, depth + 1, stats, clipHeight);
             }
         }
+    }
+
+    private static void renderGenericListViewRows(java.io.OutputStream out,
+            android.widget.ListView list, int left, int top, int right, int bottom,
+            int depth, ShowcaseTreeStats stats, int clipHeight) throws java.io.IOException {
+        android.widget.ListAdapter adapter = null;
+        try {
+            adapter = list.getAdapter();
+        } catch (Throwable ignored) {
+        }
+        if (adapter == null) {
+            return;
+        }
+
+        int adapterCount = 0;
+        int first = 0;
+        try {
+            adapterCount = adapter.getCount();
+        } catch (Throwable ignored) {
+            adapterCount = 0;
+        }
+        try {
+            first = list.getFirstVisiblePosition();
+        } catch (Throwable ignored) {
+            first = 0;
+        }
+        if (first < 0) {
+            first = 0;
+        }
+        int remaining = adapterCount - first;
+        if (remaining <= 0) {
+            return;
+        }
+
+        stats.genericListAdapterCount = adapterCount;
+        stats.genericListAdapterClass = adapter.getClass().getName();
+
+        int visibleRows = remaining < 5 ? remaining : 5;
+        int innerLeft = left + 6;
+        int innerRight = right - 6;
+        int availableHeight = Math.max(1, bottom - top - 8);
+        int rowHeight = availableHeight / visibleRows;
+        if (rowHeight < 44) {
+            rowHeight = 44;
+        }
+        if (rowHeight > 86) {
+            rowHeight = 86;
+        }
+        int y = top + 4;
+        for (int i = 0; i < visibleRows; i++) {
+            int position = first + i;
+            if (position < 0 || position >= adapterCount || y > clipHeight) {
+                break;
+            }
+            android.view.View row = null;
+            try {
+                if (i < list.getChildCount()) {
+                    row = list.getChildAt(i);
+                }
+            } catch (Throwable ignored) {
+            }
+            GenericRowFacts facts = new GenericRowFacts();
+            collectGenericRowFacts(row, facts, 0);
+            renderGenericAdapterRow(out, facts, position, innerLeft, y, innerRight,
+                    y + rowHeight - 2, stats);
+            y += rowHeight;
+        }
+    }
+
+    private static void renderGenericAdapterRow(java.io.OutputStream out,
+            GenericRowFacts facts, int position, int left, int top, int right, int bottom,
+            ShowcaseTreeStats stats) throws java.io.IOException {
+        if (right <= left || bottom <= top) {
+            return;
+        }
+        stats.genericListRows++;
+        showcaseRoundRect(out, left, top, right, bottom, 6, 6, 0xffffffff);
+        showcaseRect(out, left, bottom - 1, right, bottom, 0xffeceff1);
+
+        int rowHeight = bottom - top;
+        int imageSize = rowHeight - 12;
+        if (imageSize < 34) {
+            imageSize = 34;
+        }
+        if (imageSize > 68) {
+            imageSize = 68;
+        }
+        int imageLeft = left + 8;
+        int imageTop = top + Math.max(4, (rowHeight - imageSize) / 2);
+        if (facts.imageData != null && facts.imageData.length > 0) {
+            drawByteHashThumbnail(out, facts.imageHash, imageLeft, imageTop,
+                    imageSize, imageSize);
+            stats.genericListImages++;
+            stats.genericListImageBytes += facts.imageBytes;
+        } else {
+            showcaseRoundRect(out, imageLeft, imageTop,
+                    imageLeft + imageSize, imageTop + imageSize, 6, 6, 0xffeceff1);
+            showcaseText(out, "img", imageLeft + 8, imageTop + Math.max(20, imageSize / 2 + 4),
+                    8, 0xff5f6368);
+        }
+
+        int textLeft = imageLeft + imageSize + 12;
+        String title = facts.textCount > 0 ? facts.texts[0] : "Row " + intAscii(position + 1);
+        String meta = facts.textCount > 1 ? facts.texts[1] : "adapter row";
+        String badge = facts.textCount > 2 ? facts.texts[2]
+                : (facts.imageBytes > 0 ? "image " + intAscii(facts.imageBytes) + " bytes"
+                        : "waiting for image");
+        showcaseText(out, trimShowcaseText(title, Math.max(10, (right - textLeft) / 8)),
+                textLeft, top + 18, 12, 0xff202124);
+        showcaseText(out, trimShowcaseText(meta, Math.max(10, (right - textLeft) / 8)),
+                textLeft, top + 35, 8, 0xff5f6368);
+        showcaseText(out, trimShowcaseText(badge, Math.max(10, (right - textLeft) / 8)),
+                textLeft, top + 49, 8, facts.imageBytes > 0 ? 0xff00695c : 0xffa82020);
+    }
+
+    private static void drawByteHashThumbnail(java.io.OutputStream out, int hash,
+            int left, int top, int width, int height) throws java.io.IOException {
+        int r = 72 + ((hash >>> 16) & 0x7f);
+        int g = 72 + ((hash >>> 8) & 0x7f);
+        int b = 72 + (hash & 0x7f);
+        int base = 0xff000000 | (r << 16) | (g << 8) | b;
+        int accent = 0xff000000
+                | ((255 - r) << 16)
+                | ((96 + ((hash >>> 5) & 0x7f)) << 8)
+                | (255 - b);
+        showcaseRoundRect(out, left, top, left + width, top + height, 6, 6, base);
+        showcaseRect(out, left, top + height / 2, left + width, top + height,
+                0x66000000 | (accent & 0x00ffffff));
+        showcaseCircle(out, left + width - 12, top + 12, 7, 0xeeffffff);
+        showcaseText(out, "img", left + 8, top + Math.max(20, height - 8),
+                8, 0xffffffff);
+    }
+
+    private static void collectGenericRowFacts(android.view.View view,
+            GenericRowFacts facts, int depth) {
+        if (view == null || facts == null || depth > 12) {
+            return;
+        }
+        if (view instanceof android.widget.TextView && facts.textCount < facts.texts.length) {
+            try {
+                CharSequence text = ((android.widget.TextView) view).getText();
+                if (text != null && text.length() > 0) {
+                    String value = String.valueOf(text);
+                    facts.texts[facts.textCount++] = value;
+                    int imageBytes = parseAdapterImageByteText(value);
+                    if (imageBytes > 0 && facts.imageBytes <= 0) {
+                        facts.imageBytes = imageBytes;
+                        facts.imageHash = hashShowcaseText(value);
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            int count = 0;
+            try {
+                count = group.getChildCount();
+            } catch (Throwable ignored) {
+            }
+            for (int i = 0; i < count; i++) {
+                android.view.View child = null;
+                try {
+                    child = group.getChildAt(i);
+                } catch (Throwable ignored) {
+                }
+                collectGenericRowFacts(child, facts, depth + 1);
+            }
+        }
+    }
+
+    private static int parseAdapterImageByteText(String value) {
+        if (value == null) {
+            return 0;
+        }
+        int at = value.indexOf("image ");
+        if (at < 0) {
+            return 0;
+        }
+        at += 6;
+        int end = at;
+        while (end < value.length()) {
+            char c = value.charAt(end);
+            if (c < '0' || c > '9') {
+                break;
+            }
+            end++;
+        }
+        if (end <= at) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(value.substring(at, end));
+        } catch (Throwable ignored) {
+            return 0;
+        }
+    }
+
+    private static int hashShowcaseText(String value) {
+        int hash = 0x4a17;
+        if (value == null) {
+            return hash;
+        }
+        for (int i = 0; i < value.length(); i++) {
+            hash = (hash * 33) ^ value.charAt(i);
+        }
+        return hash;
     }
 
     private static void drawShowcaseProgress(java.io.OutputStream out,
@@ -9838,7 +10269,7 @@ public class WestlakeLauncher {
                         if (textBuf.length != lastTextSize || textHash != lastTextHash) {
                             lastTextSize = textBuf.length;
                             lastTextHash = textHash;
-                            String inputText = new String(textBuf, "UTF-8").trim();
+                            String inputText = utf8BytesToString(textBuf, "").trim();
                             if (inputText.length() > 0) {
                                 android.view.View decor = null;
                                 try { decor = current.getWindow().getDecorView(); } catch (Exception e5) {}

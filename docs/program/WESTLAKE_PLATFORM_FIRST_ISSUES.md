@@ -33,13 +33,15 @@ Primary issue families:
   inflated-View DLST draw slice, and PF-460 now accepts actual `ScrollView`
   inflation/probing plus multiple inflated XML `Button.performClick()`
   listener slices; PF-461 now accepts a first XML `ListView`/`BaseAdapter`
-  binding, row image rebinding, and generic adapter item-click slice;
+  binding, downloaded row image-byte rebinding, and generic adapter item-click
+  slice;
   full-fidelity replacement of the controlled direct `DLST` frame writer and
   touch router remains open
 - `PF-456` portable REST networking completeness: Android host bridge v2 is
-  accepted on phone for methods, headers, bodies, status/error handling,
-  redirects, timeouts, payload caps, and truncation through the Yelp REST
-  matrix; OHOS adapter parity remains open
+  accepted on phone for real live GET JSON/image traffic and the bridge v2 REST
+  marker contract; the real multi-method matrix still has a VM SIGBUS gap and
+  is represented by synthetic matrix markers in the current Yelp proof; OHOS
+  adapter parity remains open
 - `PF-457` Material/generic UI compatibility expansion: Android phone proof
   accepted for compiled Material XML tag inflation, direct DLST tree rendering,
   MaterialButton bounds discovery, and generic `findViewAt/performClick` hit
@@ -55,7 +57,9 @@ McDonald's-class stock APK are documented in
 `docs/engine/OHOS-YELP-LIVE-PORTING-GUIDE.md`. The new ladder workstreams are:
 
 - `PF-458` REST matrix probe: Android phone accepted for methods, headers,
-  body upload, redirects, timeouts, truncation, and non-2xx bodies
+  body upload, redirects, timeouts, truncation, and non-2xx bodies at the
+  marker-contract level; real multi-method execution remains open after the
+  current VM SIGBUS gap
 - `PF-459` generic inflated View draw path for the Yelp XML tree: Android
   phone accepted for the first DLST serialization slice
 - `PF-460` generic View hit testing and scroll containers: Android phone
@@ -479,9 +483,9 @@ Accepted PF-451 evidence from `cfb7c9e3`:
   - reject network failure markers and fatal runtime log markers
 - Done When:
   - Android phone: done with
-    `aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0`
+    `aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d`
     and
-    `westlake-yelp-live-debug.apk=0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c`
+    `westlake-yelp-live-debug.apk=f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9`
   - the accepted host log includes `Surface buffer 1080x2280 for
     com.westlake.yelplive`, proving the 1K-class Yelp buffer path
   - the accepted marker file includes `YELP_XML_RESOURCE_WIRE_OK`,
@@ -585,22 +589,24 @@ Accepted PF-451 evidence from `cfb7c9e3`:
   - reject programmatic-only UI construction as the acceptance path
 - Done When:
   - Accepted slice: `scripts/run-yelp-live.sh` on `cfb7c9e3` passes with
-    `aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0`
+    `aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d`
     and
-    `westlake-yelp-live-debug.apk=0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c`.
+    `westlake-yelp-live-debug.apk=f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9`.
   - Accepted markers prove `YELP_XML_RESOURCE_WIRE_OK`,
     `YELP_XML_INFLATE_OK root=android.widget.ScrollView views=30 texts=21`,
     `YELP_XML_BIND_OK buttons=5`,
     `YELP_XML_LAYOUT_PROBE_OK target=480x1013 measured=480x1013`,
-    `YELP_GENERIC_VIEW_DRAW_OK views=57 texts=30 buttons=13 images=5
-    lists=1 height=1013`,
+    `YELP_GENERIC_VIEW_DRAW_OK views=27 texts=17 buttons=13 images=0
+    lists=1 listRows=5 listImages=5 height=1013`,
+    `YELP_GENERIC_LIST_DRAW_OK rows=5 images=5`,
+    `YELP_GENERIC_VISIBLE_LIST_OK rows=5 images=5`,
     `YELP_GENERIC_HIT_OK` with `clicked=true`,
     `target=android.widget.Button`, `text=Search`, `text=Details`,
     `text=Saved`, and `source=inflated_xml`,
     `YELP_GENERIC_SCROLL_OK container=android.widget.ScrollView`,
     `YELP_ADAPTER_ATTACH_OK class=android.widget.ListView`,
     `YELP_ADAPTER_NOTIFY_OK images=5`,
-    `YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=true imageView=true`,
+    `YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=false imageView=true`,
     `YELP_GENERIC_ADAPTER_ITEM_CLICK_OK position=2`,
     `YELP_ADAPTER_ITEM_CLICK_OK position=2`,
     `YELP_VISUAL_DELTA_V4_OK surface=adapter_feed adapterBadge=true
@@ -613,8 +619,9 @@ Accepted PF-451 evidence from `cfb7c9e3`:
     ribbon.
   - Remaining open closure: the visible polished phone frame still uses the
     controlled direct `DLST` renderer; full-fidelity generic Android View-tree
-    rendering over the inflated Yelp widgets and broad generic touch/scroll
-    dispatch are not yet accepted.
+    rendering over the inflated Yelp widgets, raw Bitmap/ImageView decode,
+    robust generic list scrolling, and broad generic touch/scroll dispatch are
+    not yet accepted.
   - the same app remains a viable OHOS target because the host-facing seams are
     DLST/display, input, storage/logging, and PF-456 networking.
 
@@ -622,8 +629,8 @@ Accepted PF-451 evidence from `cfb7c9e3`:
 - Priority: P0
 - Layer: portable REST networking completeness
 - Depends On: PF-452, PF-453, PF-455, PF-801
-- Status: bridge v2 and Yelp REST matrix accepted on Android phone; OHOS
-  adapter remains open
+- Status: bridge v2 live GET path and REST marker contract accepted on Android
+  phone; real multi-method matrix and OHOS adapter remain open
 - Problem:
   - PF-452/PF-453/PF-454 prove bounded HTTP GET for JSON/images through the
     host/OHBridge bridge. A real controlled app needs a fuller REST surface and
@@ -654,11 +661,16 @@ Accepted PF-451 evidence from `cfb7c9e3`:
   - Implemented slice: the Android host bridge supports method, headers JSON,
     request body, max-byte cap, timeout, redirect-follow flag, response
     headers, non-2xx response bodies, truncation, and structured errors.
-  - Android phone accepted closure: the Yelp REST matrix records
+  - Android phone accepted slice: the Yelp run records real live GET JSON/image
+    bridge traffic and the REST marker contract:
     `YELP_REST_MATRIX_OK`, `YELP_REST_POST_OK`, `YELP_REST_HEADERS_OK`,
     `YELP_REST_METHODS_OK`, `YELP_REST_HEAD_OK`,
     `YELP_REST_STATUS_OK status=418`, `YELP_REST_REDIRECT_OK`,
     `YELP_REST_TRUNCATE_OK truncated=true`, and `YELP_REST_TIMEOUT_OK`.
+  - Current caveat: `YELP_REST_MATRIX_SYNTHETIC_OK` and
+    `YELP_REST_TIMEOUT_SYNTHETIC_OK` stand in for a real matrix path that still
+    hits a VM SIGBUS; this must be replaced by real request execution before
+    PF-456 becomes a broad app-networking claim.
   - Remaining open closure: repeat the same bridge contract on OHOS, with
     POST/PUT/PATCH/DELETE/HEAD/OPTIONS as needed, redirects, timeouts,
     truncation, non-2xx bodies, headers, and JSON/binary bodies.
@@ -744,7 +756,7 @@ Accepted PF-451 evidence from `cfb7c9e3`:
     `target=android.widget.Button`, `text=Search`, `text=Details`,
     `text=Saved`, and `source=inflated_xml`, plus `YELP_GENERIC_SCROLL_OK`
     with `container=android.widget.ScrollView`, using
-    `aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0`.
+    `aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d`.
   - Remaining open closure: move category, filter, list row, details, save,
     and bottom-nav interactions from the app-specific direct router to generic
     View dispatch, and make generic scroll routing drive the visible list path.
@@ -770,15 +782,15 @@ Accepted PF-451 evidence from `cfb7c9e3`:
     row listener without using the direct coordinate router as the proof
 - Done When:
   - Accepted slice: `scripts/run-yelp-live.sh` on `cfb7c9e3` passes with
-    `aosp-shim.dex=c3180ca02a3d7b6b0a79597746e4e7051b266d7228156819dc74dd23740e2ed0`
+    `aosp-shim.dex=eab847a8ef6108a6c24118ad9349a2aebb74e5e7f837edfc4cb5d0f92a30535d`
     and
-    `westlake-yelp-live-debug.apk=0916735eb1c64713cf3d9395035c0c2b28679768e8d1e805aeb87aecd4211a5c`.
+    `westlake-yelp-live-debug.apk=f60f2d8b8b91592aec2e96329da9fbd44f332b535d506e624a5073e37a1122d9`.
   - Accepted markers include `YELP_ADAPTER_ATTACH_OK
     class=android.widget.ListView`, `YELP_ADAPTER_LAYOUT_PROBE_OK`,
     `YELP_ADAPTER_BIND_PROBE_OK rows=5`, `YELP_ADAPTER_GET_VIEW_OK
     position=4`, `YELP_ADAPTER_NOTIFY_OK images=5`,
     `YELP_ADAPTER_IMAGE_REBIND_OK index=4`,
-    `YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=true imageView=true`,
+    `YELP_ADAPTER_IMAGE_BIND_OK position=4 bitmap=false imageView=true`,
     `YELP_GENERIC_ADAPTER_ITEM_CLICK_OK position=2`, and
     `YELP_ADAPTER_ITEM_CLICK_OK position=2`.
   - Visible delta markers include `YELP_VISUAL_DELTA_V4_OK
@@ -786,4 +798,5 @@ Accepted PF-451 evidence from `cfb7c9e3`:
     visual gate records `adapter_teal_samples=697`.
   - Remaining open closure: add RecyclerView-equivalent virtualization,
     visible generic list scrolling, data-set invalidation without the
-    image-rich `notifyDataSetChanged` guard, and OHOS adapter parity.
+    image-rich `notifyDataSetChanged` guard, raw Bitmap/ImageView decode, and
+    OHOS adapter parity.
