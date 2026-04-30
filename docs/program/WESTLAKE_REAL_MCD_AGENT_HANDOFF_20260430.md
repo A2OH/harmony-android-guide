@@ -93,17 +93,17 @@ open.
 Latest accepted real-McD proof:
 
 - artifact dir:
-  `/home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/`
+  `/home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_092445_portable_tz_ohos_symbol_gate/`
 - latest pointer:
   `/home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/latest_patchsystem_a15_arm64.txt`
-- host launch result: `Status: ok`, cold start, `TotalTime: 1047`
+- host launch result: `Status: ok`, cold start, `TotalTime: 1057`
 - screenshot: valid `1080x2280` PNG
 - focused proof grep contains only:
   `Strict dashboard frame reason=dashboard-renderLoop root=android.widget.LinearLayout bytes=776 views=29 texts=14 buttons=6 images=1`
 
 Accepted hashes:
 
-- `dalvikvm=1c136763c746f8e16e06451779b6e201621eeb0ca10ccd59a6d01a53f19fd9a3`
+- `dalvikvm=b337d96877ef42732f7db50ad9d98751f6d65c84f2ce6c88ae94d2a5af014869`
 - `aosp-shim.dex=2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd`
 - `westlake-host.apk=d9e505b30962bf7b837a544aa8d5826a2af37ec0ef1431d976b2f5d0fc13a213`
 - phone `core-oj.jar=e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2`
@@ -112,7 +112,7 @@ Accepted hashes:
 
 Artifact hashes:
 
-- `logcat_tail.log=db1147148f40ff203180cd708adc7a8cf934d8b37f3a759c2ef135702af0aa5b`
+- `logcat_tail.log=d372be078d3bde7d5e0553d24cdefe828035f73f2c291f6856e7d35121a0a6fe`
 - `screen.png=b43af4421a83177b465b7b5f78a03f24548cf4fed1fea0593d6bd360cba9c9c2`
 
 Focused gate is clean for:
@@ -137,6 +137,18 @@ symbols were unresolved. This has been closed.
 
 In `/home/dspfac/art-latest`:
 
+- `patches/runtime/runtime.cc` now routes `TimeZone.getDefault()` through a
+  portable resolver using `WESTLAKE_TIMEZONE_ID`/`TZ` and libc offset data,
+  instead of the old hard-coded/noisy `PFCUT-TZ` UTC object path.
+- `patches/runtime/entrypoints/quick/quick_trampoline_entrypoints.cc` is now
+  repo-backed and compiled by all current Makefiles so the quick timezone
+  bridge is durable for bionic and OHOS builds. Timezone diagnostics are gated
+  behind `WESTLAKE_TRACE_TZ`; the latest phone proof has `tz markers: 0`.
+- `Makefile.ohos-arm64` now links `framework_native_stubs.o`, and
+  `stubs/thread_cpu_stub.cc` covers the OHOS libc++ `std::__h` mangled
+  file-descriptor helper signatures plus the static `_DYNAMIC` placeholder.
+  Full OHOS `link-runtime` now builds `dalvikvm=c5bd8135af2cfd86d052b96d4438a565bc73f80625fd10e25f3305540dc491de`
+  and passes `scripts/check-westlake-runtime-symbols.sh`.
 - `patches/runtime/var_handles.cc` now carries the zero-mask
   `FieldVarHandle`/`StaticFieldVarHandle` fallback fix.
 - `Makefile`, `Makefile.bionic-arm64`, and `Makefile.ohos-arm64` exclude the
@@ -267,12 +279,12 @@ Unacceptable:
 
 ### 2. PF-499: Remove Or Productize PFCUT Paths
 
-The focused fatal/UOE gate is clean, but broader logs still contain known
+The focused fatal/UOE gate is clean. The latest proof also productizes and
+quarantines the former timezone PFCUT path. Broader logs still contain known
 cutouts:
 
 - ICU `ULocale`;
 - currency;
-- timezone;
 - atomics/Unsafe forced paths;
 - proxy repair;
 - McD logging/perf no-ops.
@@ -304,12 +316,11 @@ Current OHOS status:
 
 - A15 quick entrypoint assembly slice compiles;
 - `thread_cpu_stub.cc` support object compiles;
-- full OHOS static runtime link/run is not accepted.
+- full OHOS static runtime link and symbol gate now pass;
+- OHOS hosted runtime execution is not accepted yet.
 
 Next OHOS gate should be:
 
-- full `Makefile.ohos-arm64 link-runtime`;
-- symbol equivalent check;
 - run under an OHOS Ability/XComponent host or nearest available OHOS runner;
 - prove same guest-facing contracts used by Android phone proof.
 
@@ -366,4 +377,3 @@ claude --dangerously-skip-permissions
 Use it only as a sidecar reviewer or pair-programming helper, and close the
 process. Previous process pressure was high, so do not spawn Claude while a
 build, push, or phone proof session is still open.
-

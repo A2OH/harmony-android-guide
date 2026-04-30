@@ -1,0 +1,3 @@
+d9e505b30962bf7b837a544aa8d5826a2af37ec0ef1431d976b2f5d0fc13a213  /home/dspfac/android-to-openharmony-migration/westlake-host-gradle/app/build/outputs/apk/debug/app-debug.apk
+2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd  /home/dspfac/android-to-openharmony-migration/aosp-shim.dex
+b337d96877ef42732f7db50ad9d98751f6d65c84f2ce6c88ae94d2a5af014869  /home/dspfac/android-to-openharmony-migration/ohos-deploy/arm64-a15/dalvikvm

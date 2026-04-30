@@ -1,0 +1,1 @@
+04-30 05:25:12.781 31370 31416 I WestlakeVM: VM: [WestlakeLauncher] Strict dashboard frame reason=dashboard-renderLoop root=android.widget.LinearLayout bytes=776 views=29 texts=14 buttons=6 images=1

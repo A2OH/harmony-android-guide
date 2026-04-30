@@ -1,1 +1,1 @@
-/home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64
+/home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_092445_portable_tz_ohos_symbol_gate

@@ -1,0 +1,5 @@
+b337d96877ef42732f7db50ad9d98751f6d65c84f2ce6c88ae94d2a5af014869  /data/local/tmp/westlake/dalvikvm
+2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd  /data/local/tmp/westlake/aosp-shim.dex
+e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2  /data/local/tmp/westlake/core-oj.jar
+017aae7e18a501836b11bbb663bd3d4d26f2686820ea3309197998b1c09b35d7  /data/local/tmp/westlake/core-libart.jar
+25015e123850920b90c8f9b0f9a75204781f44d71d5f66643a977e4d07f66f8c  /data/local/tmp/westlake/core-icu4j.jar

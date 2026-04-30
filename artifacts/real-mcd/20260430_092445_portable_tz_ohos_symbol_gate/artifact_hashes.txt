@@ -1,0 +1,2 @@
+d372be078d3bde7d5e0553d24cdefe828035f73f2c291f6856e7d35121a0a6fe  /home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_092445_portable_tz_ohos_symbol_gate/logcat_tail.log
+b43af4421a83177b465b7b5f78a03f24548cf4fed1fea0593d6bd360cba9c9c2  /home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_092445_portable_tz_ohos_symbol_gate/screen.png

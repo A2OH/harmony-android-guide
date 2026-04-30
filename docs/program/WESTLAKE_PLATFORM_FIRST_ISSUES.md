@@ -455,13 +455,29 @@ McDonald's-class stock APK are documented in
   `Makefile.ohos-arm64 asm metrics-stubs` also compiles the corresponding A15
   quick-entrypoint and `thread_cpu_stub.cc` slice, but a full OHOS
   `dalvikvm` link/run remains a separate gate.
-- `PF-499` real McDonald's PFCUT diagnostic/fallback cleanup: open. The 01:15
-  proof is clean for fatal/UOE/class-loader/native-link markers, but the
-  broader log still contains platform cutouts for ICU `ULocale`, currency,
-  timezone, atomics/Unsafe, proxy repair, and McD logging/perf no-ops. These
-  are useful frontier markers but not production runtime behavior. Convert
-  each one into a generic portable implementation or a documented service
-  bridge, then remove noisy diagnostics from accepted proof windows.
+- `PF-499` real McDonald's PFCUT diagnostic/fallback cleanup: partially
+  advanced. The 09:24 proof
+  `artifacts/real-mcd/20260430_092445_portable_tz_ohos_symbol_gate/` is clean for
+  fatal/UOE/class-loader/native-link markers and has no `PFCUT-TZ` or
+  `WESTLAKE-TZ` markers. `TimeZone.getDefault()` now uses a repo-backed
+  portable runtime bridge that honors `WESTLAKE_TIMEZONE_ID`/`TZ`, computes the
+  current raw offset from libc, and gates diagnostics behind
+  `WESTLAKE_TRACE_TZ`; the quick trampoline copy is compiled from
+  `patches/runtime/entrypoints/quick/quick_trampoline_entrypoints.cc` in both
+  bionic and OHOS Makefiles. Remaining broad-log cutouts are ICU `ULocale`,
+  currency, atomics/Unsafe, proxy/interface repair, and McD logging/perf
+  no-ops. Convert each one into a generic portable implementation or a
+  documented service bridge, then remove noisy diagnostics from accepted proof
+  windows.
+- `PF-500` OHOS ARM64 runtime linkage gate: accepted for full static link and
+  strong-symbol cleanliness, not yet for OHOS hosted execution. `make -f
+  Makefile.ohos-arm64 link-runtime -j4` now builds
+  `build-ohos-arm64/bin/dalvikvm` with hash
+  `c5bd8135af2cfd86d052b96d4438a565bc73f80625fd10e25f3305540dc491de`.
+  `scripts/check-westlake-runtime-symbols.sh` passes, leaving only weak
+  runtime hooks in `llvm-nm -u`. Remaining acceptance requires launching this
+  runtime under an OHOS Ability/XComponent or equivalent runner and proving the
+  same guest-facing contracts used by the Android phone proof.
 
 ## 2026-04-25 Roadmap Corrections
 
