@@ -1,6 +1,6 @@
 # Westlake Platform-First Issue Map
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 This file mirrors the active platform-first issue structure used for execution.
 
@@ -217,6 +217,251 @@ McDonald's-class stock APK are documented in
   missing dependency should be seeded through Hilt/app component state,
   activity fields, Application singletons, or a broader service/bootstrap
   contract, without adding a McDonald's-only runtime shortcut.
+- `PF-480` real McDonald's standalone `core-oj.jar` runtime frontier: open.
+  The 2026-04-29 14:25 phone proof advances beyond the earlier
+  `RestaurantModuleInteractor` branch and exposes generic standalone libcore
+  gaps under the real APK. Phone-proven artifacts are
+  `dalvikvm=d7bb5761ea16d56ff41ce49a6499627748054d3af8413bb44e1615ec9dd2f8d2`,
+  `core-oj.jar=8c344b1ac41bdbb4403763a5b061a8313056a010752835273cf90d79dd561d44`,
+  and
+  `aosp-shim.dex=9d7ffa3a60c37b21fc1bed01f1cb9f52de8e720b4c454d9d096eb255ef5c5bf4`.
+  This proof clears the Realm `UnixFileSystem.list(File)` SIGBUS,
+  `AtomicInteger.getAndIncrement`, `AtomicReference.getAndSet`,
+  `Unsafe.getUnsafe`, and `AtomicLong.compareAndSet` blockers and reaches
+  SplashActivity construction, AndroidX ActivityResult registration, Hilt
+  listener setup, and NewRelic trace construction. The local pending
+  `core-oj.jar=4b152c62e7746ca93df19c6e25fe744c86fe29b1dbff45d9fc24a9675d855c45`
+  adds `System.getProperty` null-protection but is not phone-proven yet.
+  Durable closure requires source-level libcore/runtime fixes, not only
+  binary DEX patches.
+- `PF-481` real McDonald's observability/no-op shim return contracts: open.
+  The current fatal path includes
+  `com.newrelic.agent.android.tracing.Trace.<init>()` calling
+  `java.util.Random.nextLong()` on a null receiver after the Westlake NewRelic
+  cutout returns null for `Util.getRandom()`. No-oping third-party telemetry
+  must preserve non-null return contracts for methods that callers
+  immediately dereference. Source candidate:
+  `/home/dspfac/art-latest/patches/runtime/interpreter/interpreter_common.cc`
+  now excludes `com.newrelic.agent.android.util.Util.getRandom()` from the
+  blanket NewRelic no-op path. The built but not phone-accepted candidate
+  runtime is
+  `/home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm`
+  (`b193e5f3ff3ba564f58319fe3b81cca3ead7c605450e7c05e68e06d14d7151cd`,
+  symbol gate passed). Do not replace accepted phone runtime
+  `d7bb5761...` with this candidate until it passes a real-McD phone proof.
+- `PF-482` real McDonald's evidence replay hygiene: open. `core-oj.jar` is now
+  a required runtime artifact. `scripts/deploy-real-mcd-windows.ps1` and
+  `scripts/sync-westlake-phone-runtime.sh` must push and hash
+  `core-oj.jar` alongside `dalvikvm` and `aosp-shim.dex`; future proof logs
+  are invalid without all three hashes.
+- `PF-483` real McDonald's Westlake-rendered dashboard fallback frame:
+  Android phone proof accepted as a boundary, not as stock UI compatibility.
+  The latest 2026-04-29 18:52 run launches the stock McDonald's APK through
+  Westlake, reaches real `SplashActivity`, launches real
+  `HomeDashboardActivity`, completes `HomeDashboardActivity.onCreate`, and
+  emits a visible full-height dashboard frame through the Westlake guest
+  subprocess. Accepted artifacts are
+  `artifacts/real-mcd/20260429_185146/logcat_tail_20260429_185146.log`
+  and
+  `artifacts/real-mcd/20260429_185146/real_mcd_screen_20260429_185146.png`.
+  Deployed hashes:
+  `dalvikvm=0b7acbe35837c357ded4e3413f3c64057efd256b9e31854221112b346f14b17f`,
+  `core-oj.jar=e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2`,
+  and
+  `aosp-shim.dex=2284d0f553ffb9eae3e1f7cc4d1afccf3fcb0875876ddedae3bec3cc9d76d1e1`.
+  The proof logs `Strict dashboard frame reason=dashboard-first
+  root=android.widget.LinearLayout bytes=776 views=29 texts=14 buttons=6
+  images=1`, followed by a touch-driven dashboard render-loop frame, and the
+  screenshot is a valid `1080x2280` phone frame. Current gap: visible content
+  is a Westlake-generated dashboard scaffold installed into the real McDonald's
+  activity/container path, not real production dashboard content.
+- `PF-484` real McDonald's touch-to-state proof on Westlake dashboard
+  fallback: Android phone proof accepted for the fallback route only. ADB tap
+  reaches the host touch file, the Westlake guest consumes `Touch DOWN/UP`,
+  routes the dashboard fallback button zone, mutates fallback state, and emits
+  a new DLST frame. The latest 18:52 run logs `Dashboard fallback direct touch
+  routed` followed by `Strict dashboard frame reason=dashboard-renderLoop`.
+  Current gap: this uses McD-dashboard direct coordinate routing; generic View
+  hit testing, scroll routing, adapter dispatch, and invalidation must replace
+  it before stock UI compatibility can be claimed.
+- `PF-485` `dalvik.system.VMRuntime.getSdkVersion()` standalone API gap:
+  watchlist. The 15:50 proof logged
+  `NoSuchMethodError: No InvokeType(0) method getSdkVersion()I in class
+  Ldalvik/system/VMRuntime;`, but the 18:52 proof no longer shows this marker
+  in the captured window and `HomeDashboardActivity.onCreate` completes. Keep
+  this as a regression probe rather than the current top blocker.
+- `PF-486` real McDonald's portable network availability shim: Android phone
+  proof accepted for the current `ConnectivityManager` availability/type path.
+  The 18:42 proof died with native `SIGBUS` inside
+  `com.ohos.shim.bridge.OHBridge.isNetworkAvailable()` from
+  `ConnectivityManager.getActiveNetworkInfo()`. `ConnectivityManager` now
+  routes `getActiveNetworkInfo()`, `getActiveNetwork()`,
+  `isDefaultNetworkActive()`, and `getNetworkInfo(int)` through
+  `android.net.NetworkBridge`, which provides a Java fallback and a portable
+  OH-style network type. The 18:52 proof has no `SIGBUS` or `Fatal signal`.
+  Remaining networking work is production HTTP/socket parity and OHOS adapter
+  implementation, not this availability gate.
+- `PF-487` real McDonald's Application/libcore clean initialization: open.
+  The latest 22:08 proof survives Activity launch and closes two generic
+  runtime blockers in this stream: `MethodHandles.lookup()` now reports real
+  callers for core concurrency clinit, and `DexPathList.findLibrary()` no
+  longer crashes on a null native-library path array. Full split/native payload
+  staging now resolves `realm-jni` to
+  `/data/local/tmp/westlake/app_lib/librealm-jni.so` and calls
+  `Runtime_nativeLoad` with that real path. The remaining clean-init gap is now
+  libcore/framework behavior after native load: `PersistenceManager` still
+  tolerates initialization failures. The 23:29 proof closes the immediate
+  `CodingErrorAction.REPORT` null-action crash and reaches dashboard again, but
+  `McDMarketApplication.onCreate` still logs `Config failed to download` and
+  Realm still logs missing/unclean native initialization. Close this only after
+  charset/provider/default-encoding coverage, Realm/ReLinker initialization,
+  and clean `McDMarketApplication.onCreate`.
+- `PF-488` stock APK native library staging contract: accepted for current
+  phone proof, regression-watch. Host now copies installed sibling
+  `split_*.apk` payloads, extracts `lib/arm64-v8a/*.so` into
+  `/data/local/tmp/westlake/app_lib`, passes that directory as
+  `java.library.path`, `app.native.lib.dir`, `westlake.native.lib.dir`, and
+  `WESTLAKE_NATIVE_LIB_DIR`, and the runtime has a guarded
+  `DexPathList.findLibrary()` fallback over those paths. The 22:08 proof shows
+  `realm-jni` resolving to the extracted split library. Remaining work is
+  OHOS-side split/native packaging semantics, not Android phone proof.
+- `PF-489` MethodHandles caller-sensitive runtime correctness: accepted for
+  the current real-McD concurrency bootstrap window. Runtime now handles
+  `MethodHandles.lookup()` at the interpreter call site using the caller
+  shadow frame, and the 22:08 proof has no `illegal lookupClass` markers.
+  Keep as a regression probe until broader caller-sensitive methods are covered
+  without Westlake-specific shortcuts.
+- `PF-490` real McDonald's portable NIO filesystem boundary: accepted for the
+  current real-McD proof, regression-watch. The 23:29 phone proof closes the
+  `File.toPath()` null `FileSystems.getDefault()` blocker, wires a portable
+  default `LinuxFileSystem(/data/local/tmp/westlake)` object, and handles
+  `UnixNativeDispatcher.stat/lstat/access` for `UnixPath` directly so APK ZIP
+  access no longer enters the bad `NativeBuffer`/`stat0` SIGBUS path. Accepted
+  artifact:
+  `artifacts/real-mcd/20260429_232926_viewmodel_helper/logcat_tail.log`.
+  Deployed runtime:
+  `dalvikvm=1011e6072a0a289deda47a379e028382e224adf7d4c6fb5f2f2af5d3daa8c467`.
+  OHOS port gap: map these operations onto OHOS file/stat/open/dir APIs behind
+  the same guest-facing NIO contract rather than depending on Android ART.
+- `PF-491` real McDonald's charset action bootstrap: accepted for the current
+  path, broader charset provider work still open under `PF-473`. The previous
+  `CharsetEncoder.onMalformedInput/onUnmappableCharacter` `IllegalArgumentException:
+  Null action` is closed by substituting a valid
+  `java.nio.charset.CodingErrorAction.REPORT` object when the boot static is
+  null. The 23:29 proof reaches dashboard after these calls. Remaining work is
+  full charset/provider/default-encoding parity, not only this action object.
+- `PF-492` real McDonald's AndroidX Lifecycle KClass/ViewModel bridge:
+  accepted as a boundary, not as final generic AndroidX support. The 23:29
+  proof closes the previous SIGBUS at
+  `androidx.lifecycle.viewmodel.ViewModelProviderImpl_androidKt.a(factory,
+  KClass, CreationExtras)` by delegating to
+  `Factory.create(Class, CreationExtras)` and logs delegation through AndroidX,
+  Hilt retained component, and Hilt view model factory paths. Remaining gap:
+  one default-factory branch still throws the unsupported
+  `Factory.create(String, CreationExtras)` path and Westlake allocates the
+  requested ViewModel without constructor as a boundary probe. Final closure
+  requires a generic AndroidX-compatible factory/state path.
+- `PF-493` real McDonald's Realm/ReLinker/native initialization: open and now
+  the top runtime/app-init frontier. The 23:29 proof attempts
+  `Runtime_nativeLoad path=/data/local/tmp/westlake/app_lib/librealm-jni.so`,
+  but later `PersistenceManager` tolerates
+  `MissingLibraryException: Could not find 'librealm-jni.so'` and app code
+  logs `Call Realm.init(Context) before creating a RealmConfiguration`. Close
+  this by making split native-library discovery, ReLinker extraction metadata,
+  native-load lifetime, and Realm initialization coherent in the portable guest
+  contract. The 23:37 proof closes the split metadata part: shim
+  `ApplicationInfo` now exposes staged `splitSourceDirs`, and ReLinker moves
+  from `only found: []` to loading
+  `/data/local/tmp/westlake/app_lib/librealm-jni.so.10.19.0`. The new blocker
+  inside PF-493 is dynamic native-loader compatibility:
+  `UnsatisfiedLinkError: libdl.a is a stub --- use libdl.so instead`.
+  Accepted artifact:
+  `artifacts/real-mcd/20260429_233724_split_metadata/logcat_tail.log`.
+  Deployed hashes:
+  `dalvikvm=1011e6072a0a289deda47a379e028382e224adf7d4c6fb5f2f2af5d3daa8c467`,
+  `aosp-shim.dex=9d29d310c5d1928f27a2940c75f1a9ae824cc99582969ee6e2c281944c2c527e`,
+  `westlake-host.apk=3ceef0010d6533a9cdaf2842dab58f311ad2fbe99305ab8afb074e0d0bfe2f19`.
+- `PF-494` stock APK dynamic native-library loading contract: open. Real APK
+  shared libraries such as Realm depend on Android system loader libraries
+  (`libdl.so`, `libandroid.so`, `liblog.so`, etc.). The current Westlake
+  `dalvikvm` is a static target whose `Runtime.nativeLoad` path reaches a
+  `libdl.a` stub error when loading Realm. Final closure requires an
+  OHOS-portable native-loader abstraction or a clearly-scoped temporary Realm
+  JNI boundary; silently pretending arbitrary native APK libraries loaded is
+  not accepted as stock APK compatibility. Diagnostic note: the existing
+  Android `link-dynamic` target builds
+  `dalvikvm-dynamic=32c027a0643ad4e8b303ea8c876cfac2ab6dc4c631cb8b741e3ef98e33c9225f`,
+  but the 23:42 phone run
+  `artifacts/real-mcd/20260429_234224_dynamic_native_loader/logcat_tail.log`
+  aborts before app code with a `java.lang.String` class mismatch and
+  `SIGABRT`. It is rejected as a drop-in runtime. The accepted phone runtime
+  was restored to static
+  `dalvikvm=1011e6072a0a289deda47a379e028382e224adf7d4c6fb5f2f2af5d3daa8c467`.
+- `PF-495` strict-subprocess southbound framework services: open, with
+  accepted telephony/location slices. In strict Westlake subprocess mode,
+  `OHBridge` logs `guest defer registration`, so Java framework service APIs
+  must not blindly call unregistered `OHBridge.*` natives. The phone proof
+  `artifacts/real-mcd/20260429_235855_java_telephony/` closes the
+  `OHBridge.telephonyGetNetworkOperatorName` stale native SIGBUS by returning
+  portable Java defaults from `TelephonyManager`. The proof
+  `artifacts/real-mcd/20260430_000242_location_java_surface/` closes the same
+  pattern for `LocationManager.locationIsEnabled/locationGetLast` with bounded
+  Java defaults. Next slices: audit wifi/network/audio/media/clipboard/vibrator
+  and decide per API whether to use Java defaults or an explicitly registered
+  host/OHOS bridge.
+- `PF-496` non-Android Java SE dependency removal from shims: open,
+  accepted for the current `java.lang.management` miss. The diagnostic proof
+  `artifacts/real-mcd/20260430_000854_boot_ncdfe_descriptor_rebuilt/`
+  identified the render-loop boot-class-loader miss as
+  `Ljava/lang/management/ManagementFactory;`. The accepted proof
+  `artifacts/real-mcd/20260430_001605_clean_ncdfe_logging/` removes that
+  dependency from `android.os.Process` and `android.os.SystemClock`; the
+  dashboard render loop pumps messages and emits a dashboard frame without the
+  prior `NoClassDefFoundError`. The accepted runtime
+  `fbce9ed66b5e023f749c6f83cf8df2b48abe97c5e91fdf2acc96675db8ba5f05`
+  has temporary boot-miss descriptor logging disabled again. Continue scanning
+  shims for Java SE APIs that Android/OHOS should not require, including
+  repeated diagnostic misses such as `java.awt.Font`.
+- `PF-497` Java concurrency VarHandle compatibility: accepted for the current
+  stock McDonald's `FutureTask`/Rx scheduler blocker. Diagnostic proof
+  `artifacts/real-mcd/20260430_003153_varhandle_mode_probe/` identified a
+  zero `accessModesBitMask` on `java.lang.invoke.FieldVarHandle` for
+  `FutureTask.runner`, causing `compareAndSet` to throw
+  `UnsupportedOperationException`. The accepted clean proof
+  `artifacts/real-mcd/20260430_003805_clean_varhandle_futuretask/` uses
+  `dalvikvm=77389791ad497b68efe7357c96f7c2ec84522fb6daff3ba82b56e584714984db`
+  and shows dashboard render-loop survival with no `pending UOE`,
+  `ThreadGroup.uncaughtException`, `PFCUT-UOE-THROW`, VarHandle diagnostic
+  marker, `DoCall-TRACE`, or `NoClassDefFoundError`. The implementation is a
+  guarded runtime fallback for zero-mask `FieldVarHandle` and
+  `StaticFieldVarHandle` modes derived from the native `ArtField` and variable
+  type, preserving read-only final-field behavior. Continue with broader
+  VarHandle tests for array, byte-buffer, numeric, bitwise, and wrong-method
+  type behavior before claiming full Java 9+ VarHandle parity.
+- `PF-498` real McDonald's source-built ARM64 runtime reproducibility and
+  symbol gate: accepted for the current Android phone proof, OHOS full-runtime
+  proof still open. The VarHandle fix is now durable in the
+  `/home/dspfac/art-latest` patch build path. Clean bionic rebuild reports
+  `runtime 230 / 230`, restores real A15 ARM64
+  `thread_arm64.cc` and `entrypoints_init_arm64.cc`, assembles A15
+  `quick_entrypoints_arm64.S` with A15 include precedence, and keeps A11 JNI
+  assembly isolated for the current portable CFI gap. The previous deploy
+  blocker from strong unresolved symbols is closed:
+  `scripts/check-westlake-runtime-symbols.sh` passes on
+  `dalvikvm=1c136763c746f8e16e06451779b6e201621eeb0ca10ccd59a6d01a53f19fd9a3`,
+  with only weak loader/HWASAN hooks left in `nm -u`. Phone proof:
+  `artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/`; focused
+  grep contains only `Strict dashboard frame reason=dashboard-renderLoop`.
+  `Makefile.ohos-arm64 asm metrics-stubs` also compiles the corresponding A15
+  quick-entrypoint and `thread_cpu_stub.cc` slice, but a full OHOS
+  `dalvikvm` link/run remains a separate gate.
+- `PF-499` real McDonald's PFCUT diagnostic/fallback cleanup: open. The 01:15
+  proof is clean for fatal/UOE/class-loader/native-link markers, but the
+  broader log still contains platform cutouts for ICU `ULocale`, currency,
+  timezone, atomics/Unsafe, proxy repair, and McD logging/perf no-ops. These
+  are useful frontier markers but not production runtime behavior. Convert
+  each one into a generic portable implementation or a documented service
+  bridge, then remove noisy diagnostics from accepted proof windows.
 
 ## 2026-04-25 Roadmap Corrections
 

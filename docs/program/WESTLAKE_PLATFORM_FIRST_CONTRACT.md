@@ -1,6 +1,6 @@
 # Westlake Platform-First Contract
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 This document is the repo-pushed version of the active Westlake delivery
 contract.
@@ -25,7 +25,395 @@ only as a shell for Activity/Surface/input ownership; the guest APK is launched
 as a separate Westlake `dalvikvm` subprocess. The target/OHOS path must not
 fall back to `app_process64`, `dalvikvm64`, or the phone framework runtime.
 
-Latest verified real McDonald's progress on 2026-04-29:
+Latest verified real McDonald's progress on 2026-04-30:
+
+Newest real-McD source-built runtime proof, phone-proven at 01:15:
+
+- Phone-proven artifacts:
+  `dalvikvm=1c136763c746f8e16e06451779b6e201621eeb0ca10ccd59a6d01a53f19fd9a3`,
+  `aosp-shim.dex=2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd`,
+  `westlake-host.apk=d9e505b30962bf7b837a544aa8d5826a2af37ec0ef1431d976b2f5d0fc13a213`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/screen.png`
+  (`1080x2280`).
+- This proof is from the durable `/home/dspfac/art-latest` patch build path,
+  not from hand-edited AOSP state. The clean bionic build reports
+  `runtime 230 / 230`, including real A15 ARM64
+  `thread_arm64.cc` and `entrypoints_init_arm64.cc`.
+- The ARM64 build is now architecturally aligned for this runtime slice:
+  A15 quick entrypoints assemble with A15 include precedence, A11 JNI
+  entrypoints remain isolated for the current portable CFI gap, and
+  `thread_cpu_stub.cc` is built as its own support object. The same assembly
+  and support-stub slice also compiles under `Makefile.ohos-arm64`; that is a
+  build-slice sanity check, not a full OHOS runtime proof.
+- The deployed runtime passes `scripts/check-westlake-runtime-symbols.sh`.
+  Strong unresolved symbols from the previous rejected deploy candidate are
+  closed, including ART ARM64 entrypoint/thread CPU symbols, WebP, Android
+  cmsg send, log error write, and A11 instrumentation quick-entrypoint
+  leftovers.
+- The accepted focused phone grep contains only the dashboard render-loop
+  frame and no `pending UOE`, `ThreadGroup.uncaughtException`,
+  VarHandle diagnostic marker, `NoClassDefFoundError`,
+  `UnsatisfiedLinkError`, JNI fatal marker, or fatal signal.
+- Acceptance boundary: this strengthens the runtime delivery baseline and
+  OHOS portability track. It still does not prove production McDonald's UI,
+  real dashboard data, real Realm/native persistence, or removal of existing
+  `PFCUT` fallback/diagnostic paths.
+
+Previous real-McD Java concurrency proof, phone-proven at 00:38:
+
+- Phone-proven artifacts:
+  `dalvikvm=77389791ad497b68efe7357c96f7c2ec84522fb6daff3ba82b56e584714984db`,
+  `aosp-shim.dex=2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd`,
+  `westlake-host.apk=d9e505b30962bf7b837a544aa8d5826a2af37ec0ef1431d976b2f5d0fc13a213`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260430_003805_clean_varhandle_futuretask/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260430_003805_clean_varhandle_futuretask/screen.png`.
+- The background `FutureTask`/Rx scheduler
+  `UnsupportedOperationException` is closed. The root cause was a
+  `java.lang.invoke.FieldVarHandle` with `accessModesBitMask=0x0` rejecting
+  `compareAndSet` for `FutureTask.runner` before reaching the already-present
+  native field CAS path.
+- The runtime now derives a guarded zero-mask field VarHandle fallback from
+  the native `ArtField` and variable type for `FieldVarHandle` and
+  `StaticFieldVarHandle`, while preserving read-only final-field behavior.
+  This is a generic Java concurrency substrate fix used by `FutureTask`,
+  `ScheduledThreadPoolExecutor`, and `ConcurrentLinkedQueue`.
+- The accepted clean proof has no `pending UOE`,
+  `ThreadGroup.uncaughtException`, `PFCUT-UOE-THROW`, VarHandle diagnostic
+  marker, `DoCall-TRACE`, or `NoClassDefFoundError`; the only focused marker
+  left is the dashboard render-loop frame.
+
+Previous real-McD render-loop/service proof, phone-proven at 00:16:
+
+- Phone-proven artifacts:
+  `dalvikvm=fbce9ed66b5e023f749c6f83cf8df2b48abe97c5e91fdf2acc96675db8ba5f05`,
+  `aosp-shim.dex=2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd`,
+  `westlake-host.apk=d9e505b30962bf7b837a544aa8d5826a2af37ec0ef1431d976b2f5d0fc13a213`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260430_001605_clean_ncdfe_logging/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260430_001605_clean_ncdfe_logging/screen.png`.
+- The render-loop `NoClassDefFoundError` exposed after the telephony/location
+  fixes is closed. A temporary descriptor probe identified
+  `Ljava/lang/management/ManagementFactory;`; the root cause was Westlake shim
+  code in `android.os.Process` and `android.os.SystemClock` calling a Java SE
+  management API that Android/OHOS should not require. Those calls now use
+  `/proc/self/stat`, `System.nanoTime()`, and portable fallbacks.
+- The temporary descriptor probe is disabled again in the accepted clean
+  runtime so expected boot-loader misses do not bury future startup evidence.
+- The proof reaches the real McDonald's dashboard activity, pumps render-loop
+  messages, consumes a touch marker, and emits a dashboard render-loop frame
+  without the prior `ManagementFactory` boot-class-loader miss.
+- The current accepted service-surface work also includes:
+  `20260429_235855_java_telephony` for Java `TelephonyManager` defaults and
+  `20260430_000242_location_java_surface` for Java `LocationManager` defaults.
+  This establishes the rule that guest framework services must not depend on
+  unregistered `OHBridge` native calls when strict subprocess mode logs
+  `guest defer registration`.
+
+Newest real-McD native boundary proof, phone-proven at 23:50:
+
+- Proof artifact:
+  `artifacts/real-mcd/20260429_235043_realm_native_boundary/logcat_tail.log`.
+- Realm now moves past the immediate `libdl.a is a stub` crash only by a
+  deliberate boundary probe: `Runtime.nativeLoad` reports success for
+  `librealm-jni`, and `io.realm.*` native methods default their return values
+  at the interpreter boundary.
+- This is useful for exploring the next Java/framework/rendering boundaries,
+  but it is explicitly not PF-494 closure and not stock native-library
+  compatibility. Realm persistence, real native handles, schema/query behavior,
+  and full APK `.so` loading remain open.
+- The over-broad McD analytics class-load fallback was also removed in
+  `artifacts/real-mcd/20260429_235317_analytics_class_load/`, allowing the
+  real `McDTagManagerWrapper` class to load and eliminating the earlier
+  `IMcDAnalytics.trackDataWithKey` null path.
+
+Current supervisor order from these proofs:
+
+1. keep the source-built `art-latest` bionic/OHOS ARM64 Makefiles as the
+   accepted runtime delivery path. No phone proof is accepted if
+   `scripts/check-westlake-runtime-symbols.sh` fails or if the runtime hash
+   cannot be reproduced from that patch system;
+2. keep Java concurrency and framework service surfaces generic; do not patch
+   McDonald's call sites when the blocker is a platform primitive such as
+   VarHandle, FutureTask, or a framework service API;
+3. keep the Java framework service surfaces portable and direct by default;
+   add host/OHOS service bridges only where a real guest-facing API needs live
+   data;
+4. remove temporary diagnostic noise after each proof so log windows preserve
+   early startup evidence;
+5. replace the Realm boundary probe with either a real portable native loader
+   contract or a deliberate Java storage/Realm compatibility layer;
+6. continue through the remaining AndroidX/ViewModel, AppCompat, config, and
+   real dashboard fragment/data gaps without calling fallback dashboard frames
+   production UI.
+
+Previous verified real McDonald's progress on 2026-04-29:
+
+Newest real-McD native/split metadata proof, phone-proven at 23:37:
+
+- Phone-proven artifacts:
+  `dalvikvm=1011e6072a0a289deda47a379e028382e224adf7d4c6fb5f2f2af5d3daa8c467`,
+  `aosp-shim.dex=9d29d310c5d1928f27a2940c75f1a9ae824cc99582969ee6e2c281944c2c527e`,
+  `westlake-host.apk=3ceef0010d6533a9cdaf2842dab58f311ad2fbe99305ab8afb074e0d0bfe2f19`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_233724_split_metadata/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260429_233724_split_metadata/screen.png`.
+- The guest no longer depends on a live Android host `PackageManager` for
+  split APK metadata. The host passes staged split paths as
+  `westlake.apk.splitSourceDirs`, and the shim `ApplicationInfo` exposes them
+  inside the Westlake subprocess.
+- This advances Realm/ReLinker from `Could not find 'librealm-jni.so' ...
+  only found: []` to a real native-load attempt for the versioned copied
+  library:
+  `Runtime_nativeLoad path=/data/local/tmp/westlake/app_lib/librealm-jni.so.10.19.0`.
+- The new top blocker is no longer split metadata; it is native loader/linker
+  compatibility for stock APK shared libraries:
+  `UnsatisfiedLinkError: libdl.a is a stub --- use libdl.so instead`.
+- Dashboard evidence remains alive after this change:
+  `Dashboard active` and strict dashboard frames are still emitted.
+
+Current supervisor order from this proof:
+
+1. decide and implement the correct native-library contract: dynamic APK
+   native loading through an OHOS-portable loader abstraction, or an explicit
+   temporary Realm JNI boundary if the next milestone prioritizes UI/data
+   exploration before full native library support;
+2. keep the split metadata path as the accepted portable baseline for
+   `ApplicationInfo.sourceDir`, `splitSourceDirs`, and `nativeLibraryDir`;
+3. rerun the real-McD proof after native-loader changes and require Realm to
+   move past `libdl.a` before claiming PF-493 progress;
+4. continue cleaning Application config/network bootstrap and AndroidX
+   factory/state behavior after Realm native init moves forward.
+
+Newest real-McD dashboard/runtime/render proof, phone-proven at 23:29:
+
+- The stock APK remains staged as
+  `/data/local/tmp/westlake/com_mcdonalds_app.apk` and launched with
+  `launch=WESTLAKE_ART_MCD`.
+- Phone-proven artifacts:
+  `dalvikvm=1011e6072a0a289deda47a379e028382e224adf7d4c6fb5f2f2af5d3daa8c467`,
+  `aosp-shim.dex=d82381f6e44c5d0d1ba2169df63ab790b026064296b849013d18be3e66574744`,
+  `westlake-host.apk=421d8e71a533360a59e6213275188342f883afccd56cb277885b083b33fe3e6b`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_232926_viewmodel_helper/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260429_232926_viewmodel_helper/screen.png`.
+- The previous `File.toPath()` / default filesystem blocker is closed by a
+  portable `FileSystems.getDefault()` fallback for the Westlake guest.
+- The previous null `CodingErrorAction.REPORT` charset blocker is closed for
+  the current path by substituting the boot action object when encoder/decoder
+  policy setup sees a null static.
+- The previous `UnixNativeDispatcher.stat0`/`NativeBuffer` SIGBUS is closed
+  for APK ZIP access by handling `UnixPath` stat/lstat/access directly in the
+  interpreter boundary.
+- The previous AndroidX Lifecycle
+  `ViewModelProviderImpl_androidKt.a(factory, KClass, extras)` SIGBUS is
+  closed. The helper now delegates to `Factory.create(Class, CreationExtras)`
+  and the proof logs successful delegation through AndroidX, Hilt retained
+  component, and Hilt view model factory paths.
+- The host receives real-McD dashboard DLST frames from the Westlake guest
+  subprocess again:
+  `Dashboard active: com.mcdonalds.homedashboard.activity.HomeDashboardActivity`
+  and `Strict dashboard frame reason=dashboard-first
+  root=android.widget.LinearLayout bytes=776 views=29 texts=14 buttons=6
+  images=1`, followed by a render-loop frame.
+- No `SIGBUS`, `SIGSEGV`, `SIGABRT`, or `Fatal signal` marker appears in the
+  accepted McDonald's proof window.
+
+Acceptance boundary: this is still a real stock-APK Splash/HomeDashboard
+lifecycle and visible Westlake render proof, not production McDonald's UI
+compatibility. The visible dashboard remains generated fallback content inside
+the real dashboard activity/container.
+
+Current supervisor order from this proof:
+
+1. close Realm/ReLinker/native init coherently. The proof attempts
+   `Runtime_nativeLoad path=/data/local/tmp/westlake/app_lib/librealm-jni.so`,
+   but later still logs `MissingLibraryException` for `librealm-jni.so` and
+   `Call Realm.init(Context) before creating a RealmConfiguration`;
+2. clean `McDMarketApplication.onCreate`, which still logs
+   `Config failed to download`;
+3. replace the AndroidX default-factory fallback that allocates a ViewModel
+   without constructor with a generic AndroidX-compatible factory/state path;
+4. replace the generated dashboard fallback with real APK-driven
+   `HomeDashboardFragment`/data-binding content;
+5. remove McD-specific dashboard touch/render routing by fixing generic View
+   hit testing, scrolling, invalidation, adapter dispatch, and Material/AppCompat
+   rendering;
+6. keep every accepted step phone-proven with hashes and a screenshot/log
+   artifact before calling it contract progress.
+
+Previous real-McD dashboard/runtime/render proof, phone-proven at 22:08:
+
+- The stock APK remains staged as
+  `/data/local/tmp/westlake/com_mcdonalds_app.apk` and launched with
+  `launch=WESTLAKE_ART_MCD`.
+- Phone-proven artifacts:
+  `dalvikvm=d9e5d37256fd52284234fd8621129f19985c7c12b754023f74b97b4c69f44a3b`,
+  `aosp-shim.dex=40766a520d19e2a403383d971bf4717793115b8a459c5bd7bcb0db03ad844a65`,
+  `westlake-host.apk=d1f07ca75d025b2650f449c626b29268c054b1aade391bc412f1cfd6da1c8f0d`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_220819_split_native/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260429_220819_split_native/screen.png`
+  (`1080x2280`).
+- The real APK reaches real `SplashActivity`, launches real
+  `com.mcdonalds.homedashboard.activity.HomeDashboardActivity`, and
+  `HomeDashboardActivity.onCreate` completes under Westlake.
+- The previous `MethodHandles.lookup()` caller identity blocker is closed for
+  the current concurrency initialization window. The proof logs real callers
+  for `FutureTask`, `ConcurrentLinkedQueue`, `AtomicBoolean`, and
+  `ForkJoinPool`, and no longer logs `illegal lookupClass`.
+- The previous boot `DexPathList.findLibrary()` null-array crash is closed.
+  Host now copies installed sibling split APKs, extracts/passes app native
+  libraries, and runtime lookup reports
+  `DexPathList.findLibrary realm-jni ->
+  /data/local/tmp/westlake/app_lib/librealm-jni.so`, followed by
+  `Runtime_nativeLoad path=/data/local/tmp/westlake/app_lib/librealm-jni.so`.
+- The host receives dashboard DLST frames from the Westlake guest subprocess:
+  `Strict dashboard frame reason=dashboard-first root=android.widget.LinearLayout
+  bytes=776 views=29 texts=14 buttons=6 images=1`, followed by a
+  dashboard render-loop frame through the host `DisplayListFrameView`.
+- The screenshot shows a full-height McDonald's dashboard frame instead of a
+  black or splash-only surface.
+
+Acceptance boundary: this is a real stock-APK Splash/HomeDashboard lifecycle
+and visible Westlake render proof. It is still not stock McDonald's production
+UI compatibility. The current visible menu is generated fallback content
+installed into the real dashboard container; real fragment content,
+production app data, Material/AppCompat fidelity, and generic hit/scroll
+dispatch remain open contract work.
+
+Current supervisor order from this proof:
+
+1. close the libcore charset/provider/default-encoding gap exposed after real
+   Realm native load by `PersistenceManager` class initialization
+   (`NullPointerException: charset`);
+2. clean `McDMarketApplication.onCreate` rather than relying on Activity
+   survival after the Application failure;
+3. replace the generated dashboard fallback with real APK-driven
+   `HomeDashboardFragment`/data-binding content;
+4. remove McD-specific dashboard touch routing by fixing generic View hit
+   testing, scrolling, invalidation, and adapter dispatch;
+5. expand generic Material/AppCompat XML/theme/rendering until the dashboard
+   frame is produced by app-owned UI, not launcher scaffolding;
+6. rerun the same real-McD phone proof after each change and keep artifact/hash
+   discipline for `dalvikvm`, `core-oj.jar`, `aosp-shim.dex`, and screenshots.
+
+Previous real-McD dashboard/runtime/render proof, phone-proven at 22:03:
+
+- Phone-proven artifacts:
+  `dalvikvm=d9e5d37256fd52284234fd8621129f19985c7c12b754023f74b97b4c69f44a3b`,
+  `aosp-shim.dex=40766a520d19e2a403383d971bf4717793115b8a459c5bd7bcb0db03ad844a65`,
+  `westlake-host.apk=0945cd73041a8522e411c934f5d9d63ab81d714fda25999018fb39f43a2b0cc1`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_220309_native_lib/logcat_tail.log`
+  and
+  `artifacts/real-mcd/20260429_220309_native_lib/screen.png`.
+- This proof closed the `DexPathList.findLibrary()` null-array crash and
+  exposed the need for full split/native payload staging.
+
+Previous real-McD dashboard/runtime/render proof, phone-proven at 18:52:
+
+- Phone-proven artifacts:
+  `dalvikvm=0b7acbe35837c357ded4e3413f3c64057efd256b9e31854221112b346f14b17f`,
+  `core-oj.jar=e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2`,
+  `aosp-shim.dex=2284d0f553ffb9eae3e1f7cc4d1afccf3fcb0875876ddedae3bec3cc9d76d1e1`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_185146/logcat_tail_20260429_185146.log`
+  and
+  `artifacts/real-mcd/20260429_185146/real_mcd_screen_20260429_185146.png`.
+- This proof closed the earlier `OHBridge.isNetworkAvailable()` native SIGBUS
+  for the captured path by routing `ConnectivityManager` through
+  `NetworkBridge`.
+
+Previous real-McD dashboard/render/input proof, phone-proven at 15:50:
+
+- The stock APK remains staged as
+  `/data/local/tmp/westlake/com_mcdonalds_app.apk` and launched with
+  `launch=WESTLAKE_ART_MCD`.
+- Phone-proven artifacts:
+  `dalvikvm=a1d54866a5b1e70ede0a0919ccaeca63b0a3deeae4972ab23d54e31412089bd8`,
+  `core-oj.jar=e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2`,
+  `aosp-shim.dex=f62561aa3dbec74269b98d9aa46ba1925dc204148d6ee9d875d77d818d243282`,
+  `westlake-host.apk=63dda5e62c61387004df15e7fb0f4a2ff43bbd3f3e3b7536c53eacbc495094bb`.
+- Proof artifacts:
+  `artifacts/real-mcd/20260429_155050/real_mcd_touch_routed_20260429_155050.log`
+  and
+  `artifacts/real-mcd/20260429_155050/real_mcd_touch_routed_20260429_155050.png`.
+- The real APK reaches `SplashActivity`, launches real
+  `com.mcdonalds.homedashboard.activity.HomeDashboardActivity`, wires app APK
+  resources, enters dashboard `onCreate`, and then installs a
+  Westlake-rendered dashboard fallback after the current dashboard runtime gap.
+- The host receives dashboard DLST frames with
+  `bytes=1736 views=48 texts=30 buttons=8 images=3`.
+- ADB touch is proven through Westlake into guest state:
+  the captured screenshot shows `2 items in bag | Added Big Mac Combo` after
+  touch-driven frames.
+
+Acceptance boundary: this is a real stock-APK lifecycle/resource/render/input
+frontier, not stock McDonald's UI compatibility. The visible UI is still a
+Westlake fallback scaffold and the current touch proof uses dashboard-specific
+coordinate routing. Generic layout, hit testing, Material rendering, and real
+fragment lifecycle remain contract work.
+
+Next supervisor order from that previous proof, partly superseded by the 18:52
+run:
+
+1. add/phone-prove `dalvik.system.VMRuntime.getSdkVersion()I` if it returns;
+   the 18:52 proof no longer shows this blocker in the captured window;
+2. remove the McD-specific dashboard input router by fixing generic View hit
+   testing and invalidation;
+3. replace strict-mode fragment lifecycle skips with generic AndroidX
+   FragmentManager/Fragment attach;
+4. render the real dashboard XML/View tree through generic Material/AppCompat
+   support;
+5. rerun this same real-McD phone proof after each change and keep the
+   artifact/hash discipline.
+
+Newest real-McD runtime frontier, phone-proven at 14:25:
+
+- `core-oj.jar` is now a required Westlake guest runtime artifact, not an
+  optional deploy side file. Every real-McD replay must push/hash `dalvikvm`,
+  `core-oj.jar`, and `aosp-shim.dex`.
+- Phone-proven artifacts:
+  `dalvikvm=d7bb5761ea16d56ff41ce49a6499627748054d3af8413bb44e1615ec9dd2f8d2`,
+  `core-oj.jar=8c344b1ac41bdbb4403763a5b061a8313056a010752835273cf90d79dd561d44`,
+  `aosp-shim.dex=9d7ffa3a60c37b21fc1bed01f1cb9f52de8e720b4c454d9d096eb255ef5c5bf4`.
+- Latest phone-proven log:
+  `/mnt/c/Users/dspfa/TempWestlake/real_mcd/real_mcd_20260429_142531.log`.
+- Latest phone-proven screenshot:
+  `/mnt/c/Users/dspfa/TempWestlake/real_mcd/real_mcd_20260429_142531.png`
+  (`1080x2280`, mostly blank/black frame).
+- The run clears the previous Realm `UnixFileSystem.list(File)` SIGBUS,
+  `AtomicInteger.getAndIncrement`, `AtomicReference.getAndSet`,
+  `Unsafe.getUnsafe`, and `AtomicLong.compareAndSet` blockers.
+- The real APK now reaches SplashActivity construction, AndroidX
+  ActivityResult request-code generation, Hilt listener setup, and NewRelic
+  trace construction under Westlake.
+- Current hard blockers are generic standalone runtime/shim contracts:
+  `System.getProperty(...)` can still dereference null `System.props`, and the
+  NewRelic no-op cutout returns null for `Util.getRandom()`.
+- Local pending `core-oj.jar`
+  `4b152c62e7746ca93df19c6e25fe744c86fe29b1dbff45d9fc24a9675d855c45`
+  adds guarded `System.getProperty` null-protection, but is not phone-proven
+  yet because WSL/Windows ADB interop is currently failing with
+  `UtilAcceptVsock: accept4 failed 110`.
+- Local pending runtime candidate
+  `/home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm`
+  (`b193e5f3ff3ba564f58319fe3b81cca3ead7c605450e7c05e68e06d14d7151cd`,
+  symbol gate passed) lets `NewRelic Util.getRandom()` execute instead of
+  returning null. It is not accepted until it passes the same real-McD phone
+  proof.
+
+Earlier 13:08 dashboard-fragment branch, retained as lifecycle/rendering
+evidence:
 
 - `com.mcdonalds.app` is staged as
   `/data/local/tmp/westlake/com_mcdonalds_app.apk` and launched with
@@ -76,19 +464,25 @@ Rejected runtime candidate:
 
 Current supervisor order:
 
-1. close the `RestaurantModuleInteractor.s()` null dependency/state gap in
+1. phone-prove the pending `System.getProperty` core patch once ADB is
+   reachable again;
+2. fix the NewRelic `Util.getRandom()` cutout so no-op telemetry methods keep
+   their non-null return contracts;
+3. convert the guarded `core-oj.jar` byte patches into durable source-level
+   libcore/runtime fixes where possible;
+4. close the `RestaurantModuleInteractor.s()` null dependency/state gap in
    `HomeDashboardActivity.onCreate`;
-2. source-reproduce the accepted boot-owned Material class policy instead of
+5. source-reproduce the accepted boot-owned Material class policy instead of
    relying on the current one-byte runtime derivative;
-3. replace the strict-mode McD fragment lifecycle skips with a generic
+6. replace the strict-mode McD fragment lifecycle skips with a generic
    app-AndroidX compatible attach/transaction path;
-4. make the attached `HomeDashboardFragment` produce visible real dashboard
+7. make the attached `HomeDashboardFragment` produce visible real dashboard
    content through generic View rendering/layout;
-5. isolate and fix the next `SIGBUS` if the next real dashboard step exposes a
+8. isolate and fix the next `SIGBUS` if the next real dashboard step exposes a
    runtime dispatch fault;
-6. rerun the real McDonald's APK after each runtime/shim change and accept only
+9. rerun the real McDonald's APK after each runtime/shim change and accept only
    evidence that advances the real dashboard path;
-7. keep the southbound contracts portable for OHOS.
+10. keep the southbound contracts portable for OHOS.
 
 Primary live docs:
 

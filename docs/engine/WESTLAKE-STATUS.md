@@ -1,9 +1,55 @@
 # Westlake Engine — Status Report
 
-**Date:** 2026-04-29
-**Status:** Platform-first cutoff canary through target `L4WATAPPREFLECT` on phone; PF-451 controlled showcase, PF-452 host/OHBridge network proof, PF-453 separate Yelp live app, PF-454 Material Components canary, PF-455 XML-backed Yelp slice, PF-456 live GET plus REST marker contract, PF-457 Material XML/generic-hit slice, PF-459 generic inflated-View draw slice, PF-460 generic XML hit/scroll probes, PF-461 adapter/list slice, and PF-466/PF-474/PF-475 controlled mock McD profile accepted on phone. The real McDonald's APK now starts under Westlake, reaches `SplashActivity.onCreate`, enters `HomeDashboardActivity.onCreate`, clears the Material `BottomNavigationView` self-cast blocker with a boot-owned Material runtime policy proof, and programmatically attaches `HomeDashboardFragment` through `performCreate`, `performCreateView`, and `performActivityCreated`. Real visible dashboard paint is now blocked by app state/Hilt wiring (`RestaurantModuleInteractor.s()` null receiver) plus generic app-AndroidX lifecycle/rendering gaps. OHOS adapters, broader libcore/networking parity, generic UI expansion, and generic stock-McDonald's activity/rendering remain open.
+**Date:** 2026-04-30
+**Status:** Real McDonald's is again the active frontier. The latest accepted
+phone proof uses a source-built `art-latest` bionic ARM64 runtime,
+`dalvikvm=1c136763c746f8e16e06451779b6e201621eeb0ca10ccd59a6d01a53f19fd9a3`,
+with `aosp-shim.dex=2baa2ab7149285f283e2537d7c2dd939f1c30cb2ecd949e6fef34b5a6ecbb6cd`.
+The runtime clean-builds `230 / 230` runtime objects, restores real A15 ARM64
+thread/entrypoint sources, assembles A15 quick entrypoints, passes the runtime
+symbol gate, syncs to phone with matching hashes, and reaches a strict
+dashboard render-loop frame in
+`artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/`. This is a
+runtime/build and dashboard-survival proof, not production McDonald's UI. Realm
+native loading, real config/data bootstrap, app-owned dashboard rendering, OHOS
+full-runtime link/run, and remaining `PFCUT` fallback cleanup are still open.
 
-## Current Supervisor Status (2026-04-29)
+## Current Supervisor Status (2026-04-30)
+
+Current launch architecture remains the intended target architecture:
+`com.westlake.host` runs on the phone's normal ART only as the Android host
+shell, then starts Westlake's own `dalvikvm` as a subprocess for the guest APK.
+The guest renders `DLST` frames through stdout and receives input/network
+through host bridges. The target/OHOS path must never validate through
+`app_process64` or the phone framework runtime.
+
+Newest accepted phone proof:
+
+- artifact directory:
+  `artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/`
+- focused proof grep contains only
+  `Strict dashboard frame reason=dashboard-renderLoop`;
+- no `pending UOE`, `ThreadGroup.uncaughtException`, VarHandle diagnostic
+  marker, `NoClassDefFoundError`, `UnsatisfiedLinkError`, JNI fatal marker, or
+  fatal signal appears in the focused gate;
+- screenshot is a valid `1080x2280` PNG;
+- `scripts/check-westlake-runtime-symbols.sh` passes on the deployed runtime.
+
+Supervisor workstream order:
+
+1. keep `art-latest` source-built bionic/OHOS ARM64 Makefiles as the accepted
+   runtime delivery path and reject deploy candidates that fail the symbol
+   gate;
+2. close the stock APK dynamic native-library/Realm contract without pretending
+   arbitrary `.so` libraries loaded;
+3. turn remaining `PFCUT` ICU/timezone/currency, Unsafe/atomic, proxy, and McD
+   logging/perf cutouts into generic portable implementations or documented
+   service bridges;
+4. prove production config/data bootstrap instead of only Activity survival;
+5. replace Westlake dashboard fallback scaffolding with real app-owned
+   dashboard fragment/data/rendering.
+
+## Previous Supervisor Status (2026-04-29)
 
 Current launch architecture is still the intended target architecture:
 `com.westlake.host` runs on the phone's normal ART only as the Android host
@@ -19,7 +65,91 @@ The active stock-app proof is the real APK staged as
 `/data/local/tmp/westlake/com_mcdonalds_app.apk`, launched through
 `com.westlake.host/.WestlakeActivity` with `launch=WESTLAKE_ART_MCD`.
 
-Latest accepted stock McDonald's progress:
+Newest phone-proven dashboard/render/input frontier, 2026-04-29 15:50:
+
+- Deployed runtime artifacts:
+  `dalvikvm=a1d54866a5b1e70ede0a0919ccaeca63b0a3deeae4972ab23d54e31412089bd8`,
+  `core-oj.jar=e19236b056ec6257c751d070f758e682dc1c62ba0cb042fde93d3eec09d647c2`,
+  `aosp-shim.dex=f62561aa3dbec74269b98d9aa46ba1925dc204148d6ee9d875d77d818d243282`,
+  and host APK
+  `63dda5e62c61387004df15e7fb0f4a2ff43bbd3f3e3b7536c53eacbc495094bb`.
+- Proof artifacts are in
+  `artifacts/real-mcd/20260429_155050/`.
+- The real APK reaches `SplashActivity`, launches real
+  `HomeDashboardActivity`, wires APK resources, enters dashboard `onCreate`,
+  and installs a Westlake-rendered widget fallback after the current dashboard
+  core runtime gap.
+- The host receives nonblank dashboard DLST frames:
+  `Strict dashboard frame reason=dashboard-first bytes=1736 views=48 texts=30
+  buttons=8 images=3`.
+- The phone screenshot is a valid full-phone `1080x2280` capture and visibly
+  shows the McDonald's dashboard fallback.
+- ADB touch is now proven end to end through Westlake: a phone tap reaches the
+  guest touch file, mutates dashboard `TextView` state, emits a new DLST
+  frame, and the screenshot shows `2 items in bag | Added Big Mac Combo`.
+
+This is meaningful because it proves real-APK lifecycle/resource/render/input
+control under the Westlake guest process. It is not yet real McDonald's UI:
+the visible dashboard is still a Westlake fallback scaffold, and the current
+fallback uses McD-dashboard coordinate routing because generic hit testing is
+not complete.
+
+Current hard blockers after the 15:50 proof:
+
+- add `dalvik.system.VMRuntime.getSdkVersion()I` to the standalone runtime
+  surface;
+- replace strict-mode dashboard fragment skips with a generic app-AndroidX
+  FragmentManager/Fragment attach path;
+- make generic Material/AppCompat XML rendering cover the real dashboard view
+  tree;
+- replace the dashboard-specific input route with generic View hit testing and
+  invalidation;
+- keep every fix portable to OHOS host adapters and avoid phone ART fallback.
+
+Newest phone-proven real McDonald's frontier, 2026-04-29 14:25:
+
+- `core-oj.jar` is now a first-class guest runtime artifact. It must be pushed
+  and hashed with `dalvikvm` and `aosp-shim.dex` for every proof run.
+- The real APK clears the earlier basket-holder cast, `AnimationUtils`,
+  hidden store-search layout, account-profile interactor, Realm
+  `UnixFileSystem.list(File)`, `AtomicInteger.getAndIncrement`,
+  `AtomicReference.getAndSet`, `Unsafe.getUnsafe`, and
+  `AtomicLong.compareAndSet` blockers.
+- The guest reaches `SplashActivity` construction, AndroidX
+  ActivityResult registration, generated random request-code flow,
+  Hilt `Hilt_SplashActivity._initHiltInternal()`, and
+  `SplashActivity.<init>()` handler setup.
+- The latest phone-proven hard failure is no longer the
+  `AtomicLong.compareAndSet`/`Unsafe access denied` frontier. It is now a
+  standalone core/system gap plus an observability shim gap:
+  `System.getProperty(...)` can dereference a null `System.props` table, and
+  the NewRelic cutout returns null for `Util.getRandom()`, leading to
+  `Trace.<init>() -> Random.nextLong()` on a null receiver.
+- Local `core-oj.jar` hash
+  `4b152c62e7746ca93df19c6e25fe744c86fe29b1dbff45d9fc24a9675d855c45`
+  includes guarded `System.getProperty` null-protection, but this exact hash
+  is not phone-proven yet because WSL/Windows ADB interop started failing with
+  `UtilAcceptVsock: accept4 failed 110`.
+- Local runtime candidate
+  `/home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm`
+  (`b193e5f3ff3ba564f58319fe3b81cca3ead7c605450e7c05e68e06d14d7151cd`,
+  symbol gate passed) excludes `NewRelic Util.getRandom()` from the blanket
+  telemetry no-op path. It is not accepted until a real-McD phone proof
+  confirms it does not regress boot/Splash/Hilt progress.
+
+Phone-proven artifacts for the 14:25 run:
+
+- `dalvikvm=d7bb5761ea16d56ff41ce49a6499627748054d3af8413bb44e1615ec9dd2f8d2`
+- `core-oj.jar=8c344b1ac41bdbb4403763a5b061a8313056a010752835273cf90d79dd561d44`
+- `aosp-shim.dex=9d7ffa3a60c37b21fc1bed01f1cb9f52de8e720b4c454d9d096eb255ef5c5bf4`
+- log:
+  `/mnt/c/Users/dspfa/TempWestlake/real_mcd/real_mcd_20260429_142531.log`
+- screenshot:
+  `/mnt/c/Users/dspfa/TempWestlake/real_mcd/real_mcd_20260429_142531.png`
+  (`1080x2280`, mostly blank/black frame)
+
+Earlier dashboard-fragment proof from the prior runtime branch, retained as
+lifecycle/rendering evidence:
 
 - the APK is found, staged, and launched through Westlake `dalvikvm`, not the
   phone's framework ART;
@@ -66,7 +196,7 @@ Latest accepted stock McDonald's progress:
   `RestaurantModuleInteractor.s()`, indicating the next gap is app dependency
   injection/state seeding rather than Material class identity.
 
-Latest proof artifacts:
+Earlier 13:08 proof artifacts:
 
 - latest verified runtime deployed on phone:
   `d7bb5761ea16d56ff41ce49a6499627748054d3af8413bb44e1615ec9dd2f8d2`
@@ -90,30 +220,37 @@ Latest proof artifacts:
   regressed before Splash/Dashboard at app bootstrap and is not accepted.
 
 Supervisor judgement: this is meaningful runtime progress, but it is not close
-to stock McDonald's UI readiness. PF-476 has moved from Java proxy/Unsafe,
-ICU/timezone, Hilt entry startup, app-notification databinding, Material
-construction SIGBUS, Material class identity, FragmentManager `commitNow()`
-SIGBUS, and `performAttach()` SIGBUS into a dashboard-fragment-created-but-not-
-painted state with an app dependency NPE. Until the
-`RestaurantModuleInteractor` state gap and generic fragment/view rendering are
-closed, work on UI fidelity, Material behavior, network parity, and OHOS host
-parity cannot prove the real stock APK path.
+to stock McDonald's UI readiness. The current path is still the right
+architecture because the failures are exposed inside Westlake's standalone
+guest runtime, not hidden by phone ART. The gap has moved from app-specific
+dashboard lifecycle proof back into generic standalone core/libcore
+correctness: system properties, atomic/VarHandle fallbacks, file-system
+listing, reflection access, observability no-ops, and exception/SIGBUS
+unwinding must be made generic and reproducible before visible real UI can be
+trusted.
 
 Current supervisor workstream order:
 
-1. close the new `RestaurantModuleInteractor.s()` null dependency/state gap in
+1. phone-prove the pending `System.getProperty` null-protection in
+   `core-oj.jar=4b152c62...` once ADB is reachable again;
+2. fix the NewRelic `Util.getRandom()` cutout to return a harmless
+   `java.util.Random` or stop no-oping that method;
+3. keep converting the observed `core-oj.jar` byte patches into durable
+   source-level libcore/runtime fixes instead of leaving them as binary-only
+   edits;
+4. close the `RestaurantModuleInteractor.s()` null dependency/state gap in
    `HomeDashboardActivity.onCreate`;
-2. source-reproduce the accepted boot-owned Material policy instead of relying
+5. source-reproduce the accepted boot-owned Material policy instead of relying
    on the current one-byte runtime derivative;
-3. replace the current strict-mode McD fragment lifecycle skips with a generic
+6. replace the current strict-mode McD fragment lifecycle skips with a generic
    app-AndroidX compatible attach/transaction strategy;
-4. make the attached `HomeDashboardFragment` render visible real content
+7. make the attached `HomeDashboardFragment` render visible real content
    through generic inflated View draw/layout instead of a blank frame;
-5. repair any remaining runtime `SIGBUS` by finding the exact stale quick/JNI
+8. repair any remaining runtime `SIGBUS` by finding the exact stale quick/JNI
    or interpreter dispatch edge behind the next failing frame;
-6. rerun the real McDonald's APK after each runtime/shim change and keep the
+9. rerun the real McDonald's APK after each runtime/shim change and keep the
    dashboard-entry log markers plus screenshot hash as the acceptance signal;
-7. keep all runtime/libcore/databinding repairs portable enough for OHOS, not
+10. keep all runtime/libcore/databinding repairs portable enough for OHOS, not
    app-specific McDonald's stubs.
 
 PF-466 is now accepted on `cfb7c9e3` as the controlled mock McD-profile app

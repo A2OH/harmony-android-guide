@@ -1,0 +1,2 @@
+db1147148f40ff203180cd708adc7a8cf934d8b37f3a759c2ef135702af0aa5b  /home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/logcat_tail.log
+b43af4421a83177b465b7b5f78a03f24548cf4fed1fea0593d6bd360cba9c9c2  /home/dspfac/android-to-openharmony-migration/artifacts/real-mcd/20260430_011506_clean_patchsystem_a15_arm64/screen.png
