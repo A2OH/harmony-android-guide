@@ -698,6 +698,55 @@ Boot-class clinit ASE cascade in FAIL artifact (excerpt):
 - `/home/dspfac/art-latest/build-ohos-arm64/bin/dalvikvm` (sha256 `20acd7b1…`)
 - `/tmp/pf630_diff.txt` (full candidate diff, 5074 lines, generated for analysis only)
 
+### 13.8 PF-628 unsafe-opt-in probe (Agent C reframe empirically validated + 2 surprises)
+
+Artifact: `artifacts/real-mcd/20260503_155711_mcd_unsafe_pf628_observer_dispatch_probe_pre_pf630/`
+
+**Setup:** planted `/data/local/tmp/westlake/westlake_mcd_unsafe_observer_dispatch.txt` containing `1`, ran the bounded gate without disabling the bridge. Removed the probe file post-run.
+
+**Primary finding — Agent C's two-flag reframe is empirically confirmed.** The `MCD_PDP_OBSERVER_DISPATCH_GATE` reason text changed from `observer_dispatch_opt_in_required` to **`storage_sigbus_risk`**. This proves the gate predicate is `requested && observerAllowed && storageAllowed`: planting the observer flag flipped the first clause; the storage-allowed clause now blocks. To actually fire `q7(Boolean.TRUE)` and exercise the natural observer-dispatch path, BOTH flags must be planted:
+- `westlake_mcd_unsafe_observer_dispatch.txt`
+- `westlake_mcd_unsafe_storage_commit.txt`
+
+The second probe is what would empirically validate whether the dispatch path itself works — but it would also expose the PF-630 SIGBUS chain, so it requires a working PF-630 fix first.
+
+**Surprise #1 — strongest green proof of the session.** Despite the dispatch gate still blocking, the run achieved:
+
+| Marker | Original 17:57 baseline | This unsafe probe |
+|---|---|---|
+| `gate_status` | PASS | PASS |
+| `pdp_add_cart_gate_status` (sub-gate) | **FAIL** (always FAIL prior) | **PASS** ← first time |
+| `mcd_full_app_lifecycle_gate fragment_resumed` | 0 (PF-622 mislabel) | **12** ← first time > 0 |
+| `mcd_full_app_lifecycle_gate soft_resume_recovery` | 1 | 6 |
+| `mcd_full_app_cart_mutation_gate cartOrBagMutated` | 0 (failures) / partial (baseline) | **7** |
+| `pf621_final_acceptance_gate` sub-criteria all green | 7 of 8 | **8 of 8** |
+
+`MCD_PDP_CARTINFO_SET_BRIDGE applied=true` still fired (`beforeVmTotalBagCount=0 afterVmTotalBagCount=1`). The bridge wasn't disabled; both the bridge AND the cleaner lifecycle path coexisted. **Mechanism unknown without code-read** — the unsafe-observer-flag presence apparently changes launcher behavior elsewhere (perhaps it disables some defensive short-circuiting that masks the lifecycle progression). This is a real load-bearing observation worth investigating before declaring the unsafe path "merely an unsafe variant."
+
+**Surprise #2 — proof-checker coverage gap.** `PASS proof_unsafe_flags_off markers=0 flags=0` — the checker reports zero unsafe markers despite the deliberately planted flag. The checker doesn't appear to detect `westlake_mcd_unsafe_observer_dispatch.txt` (and presumably neither does it detect `westlake_mcd_unsafe_storage_commit.txt`). **A future accepted "clean" artifact could silently have unsafe flags planted and still pass `unsafeOff=1`** — the proof-system's `no_unsafe` guarantee is incomplete. This should be a blocker-level fix to `scripts/check-real-mcd-proof.sh`.
+
+**Implications for PF-628 acceptance criteria** (refines §13.2):
+
+- The original "remove the bridge → observer drives the cart" model is two layers off:
+  1. The observer dispatch is gated by two opt-in flags (`unsafe_observer_dispatch` AND `unsafe_storage_commit`), neither of which is planted in the bounded baseline.
+  2. The bridge satisfies the cart criterion via reflective `setCartInfo` regardless of dispatch state.
+- A meaningful PF-628 acceptance must require **at least one of**:
+  - `MCD_PDP_OBSERVER_DISPATCH ... invoked=true count >= 1` (real observer dispatch fired), AND no McD-specific bridge marker; **or**
+  - A new generic-lifecycle path that doesn't go through either the unsafe flags or the McD-specific bridge.
+- The proof-checker also needs to enforce `unsafe_flags_off` properly (Surprise #2) — otherwise the unsafe path could be silently accepted as the canonical green.
+
+**Probe cleanup verified:** `/data/local/tmp/westlake/westlake_mcd_unsafe_observer_dispatch.txt` removed post-run; `ls` confirms no such file.
+
+### 13.9 Updated artifacts table
+
+| Artifact | Result | Notable |
+|---|---|---|
+| `20260503_120432_mcd_pf630_candidate_bounded_regression` | FAIL | Boot-class ASE cascade from PF-625 widening |
+| `20260503_121537_mcd_baseline_post_pf630_rollback` | PASS | Confirms rollback restored baseline |
+| `20260503_122359_mcd_pf629_quantity_plus_cart2_gate` | FAIL | Short waits — PDP never loaded |
+| `20260503_154816_mcd_pf629_quantity_plus_cart2_bounded_waits` | FAIL | Bounded waits — PDP loaded, then PF-630 SIGBUS at 12th basket commit |
+| `20260503_155711_mcd_unsafe_pf628_observer_dispatch_probe_pre_pf630` | PASS — strongest of the session | Two-flag reframe confirmed; checker gap surfaced |
+
 **Next-agent prompt for PF-630 (replaces the §4 prompt):**
 ```
 PRECONDITION: art-latest at HEAD has the candidate uncommitted; the stale-entry
