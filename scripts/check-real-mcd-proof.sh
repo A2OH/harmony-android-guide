@@ -150,6 +150,7 @@ unsafe_name_count=0
 case "$artifact_base" in
     *no_unsafe*|*NO_UNSAFE*|*unsafe_off*|*UNSAFE_OFF*) unsafe_name_count=0 ;;
     *true_unsafe*|*TRUE_UNSAFE*|*unsafe_probe*|*UNSAFE_PROBE*|*unsafe_cart_commit*|*UNSAFE_CART_COMMIT*|*unsafe_model*|*UNSAFE_MODEL*|*unsafe_storage*|*UNSAFE_STORAGE*|*unsafe_observer*|*UNSAFE_OBSERVER*) unsafe_name_count=1 ;;
+    *unsafe*|*UNSAFE*) unsafe_name_count=1 ;;
 esac
 unsafe_probe=0
 if [ "$unsafe_marker_count" -gt 0 ] || [ "$unsafe_flag_count" -gt 0 ] || [ "$unsafe_name_count" -gt 0 ]; then
