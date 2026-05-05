@@ -347,3 +347,73 @@ So the writes that corrupt String[] backing arrays during boot-class clinit are 
 - Shim: `d31fa0809f163b720a59af48c6ce43fd5a60b516f0d1abd283084a61ee0b9551` (programmatic fallback + tolerant printStackTrace + extended recovery gate). Synced.
 - Backup of pre-PF-630 runtime `dalvikvm.pre-pf630-d7e10e47.bak` retained.
 - Noice + Westlake host installed. Both `pm clear`'d.
+
+---
+
+## Day-2 update part 3 (2026-05-04 PT) — D1 of the PF-noice 5-day cycle: ROOT CAUSE LOCALIZED
+
+Following the PF-noice plan at `WESTLAKE_PF_NOICE_PLAN_20260504.md`, dispatched a deep design agent to scope a 5-day delivery cycle, then executed D1 (instrumentation + trace capture). **D1 outcome: the cascade root cause is class-identity duplication, NOT the PFCut Unsafe-array bypass and NOT CHM ABASE/ASHIFT misalignment.** Both top hypotheses cleanly eliminated.
+
+### D1 instrumentation (committed in art-latest as `dd7eec1` on `origin/main`)
+
+Added per-Unsafe-array-write trace + CHM ABASE/ASHIFT verification log + JNI-callable trace start/stop hooks. Three files modified:
+- `patches/runtime/runtime.cc` — `g_pfcut_trace_active` flag + `PFCutTrace{Active|Start|Stop|Write}` + `PFCutTraceUnsafeArrayWrite` heavy-lifter (file scope, externable from Unsafe.cc TUs); CHM ABASE/ASHIFT verification next to existing log line
+- `patches/runtime/native/sun_misc_Unsafe.cc` — extern decls + trace hook in `PFCutUnsafe{Get|Set}ObjectArraySlot`
+- `patches/runtime/native/jdk_internal_misc_Unsafe.cc` — same shape, qualified as `::art::PFCutTrace*` because helpers live in anon namespace
+
+Build: clean. Runtime hash: `1a3ea15f6356051c618be42c8cc359de9f9c568e4d16ef6e5d77fdc8107546c2`.
+
+### D1 empirical findings
+
+Artifact: `artifacts/noice-1day/20260504_223752_noice_noice_pfcut_trace_d1/` — full trace pulled into `pfcut_trace.txt` (103 lines).
+
+| Hypothesis | Result | Evidence |
+|---|---|---|
+| **CHM ABASE/ASHIFT misalignment** | **REJECTED** | logcat: `[PFCUT-VERIFY] CHM ABASE=12 ASHIFT=2 kHeapReferenceSize=4 compressed=1 expected_abase=12 expected_ashift=2 match=1` |
+| **PFCut Unsafe-array bypass corruption** | **REJECTED** | `pfcut_trace.txt` shows 102 traced Unsafe-array writes, ZERO with `assignable=0`. All writes are well-typed (`ConcurrentHashMap$Node` into `ConcurrentHashMap$Node[]`, etc.). Bypass is operating correctly |
+| **Class identity duplication → aput-object IsAssignableFrom mismatch** | **STRONGLY IMPLICATED** | Every cascade-failing clinit is immediately preceded by `[PFCUT] System.arraycopy intrinsic` log lines; ASE message format ("X cannot be stored in array of type Y[]") matches ART's `aput-object` ASE; `PFCutArraycopyElementAssignable` (`interpreter_common.cc:1867`) ALREADY HAS a descriptor-fallback workaround with comment line 1889: "Westlake still has a few duplicate/incorrect component-class identities while bootstrapping app class loaders" — confirming the duplication issue exists, the runtime team already knows about it, and PFCut already worked around it for one path |
+
+### D2 fix design (concrete, ready to apply)
+
+The runtime's `aput-object` path uses `mirror::Class::IsAssignableFrom(Class*)` which compares Class identity. With class duplication, `String1->IsAssignableFrom(String2*)` returns false even though both have the same descriptor `Ljava/lang/String;`.
+
+**Fix:** extend the descriptor-fallback shape from `PFCutArraycopyElementAssignable` (`interpreter_common.cc:1892-1898`) into the runtime's `aput-object` / `mirror::ObjectArray::CheckAssignable` path. Two implementation candidates:
+
+1. **Direct:** modify `mirror::ObjectArray::CheckAssignable` (in art-latest/runtime/mirror/) to add the same `if (component_descriptor == element_descriptor) allow;` fallback PFCutArraycopy already has. Localized; preserves existing semantics for non-duplicated classes.
+
+2. **Indirect:** add a global `Runtime::PFCutClassDescriptorAssignable(dst_component, src_class)` helper called from CheckAssignable. Easier to test in isolation.
+
+D2 acceptance criteria (from PF-noice-002): bounded McD gate doesn't regress AND noice's MainActivity reaches `setContentView` without ASE.
+
+### What this means for the 5-day cycle
+
+- **D1 done in 1 session** (not the planned 1 day) — instrumentation, run, trace capture, root-cause localization all completed in roughly 1 hour.
+- **D2 is now scoped down significantly:** instead of "design a fix from scratch", D2 is "implement the descriptor-fallback in CheckAssignable and verify". Estimated ~2-4 hours of focused work.
+- **D3-D5 unchanged** — paint verification, soak, McD regression, audio gap stub.
+
+### Phone state at end of day-2 part 3
+
+- Runtime: `1a3ea15f6356051c618be42c8cc359de9f9c568e4d16ef6e5d77fdc8107546c2` (D1 instrumentation candidate). Trace flag is ON during boot; per-thread cap of 200 prevents unbounded log growth.
+- Shim: unchanged from part 2 (`d31fa0809f…`).
+- Trace artifact: `artifacts/noice-1day/20260504_223752_noice_noice_pfcut_trace_d1/pfcut_trace.txt` — 103 lines.
+- Rolled back to original runtime is NOT done — leaving D1 instrumentation in place for the next agent so D2 can rebuild/iterate without re-applying.
+
+### Next-session entry point for D2
+
+```
+1. cd /home/dspfac/art-latest
+   # Review D1 patch:
+   git log --oneline -3
+2. Read /home/dspfac/art-latest/patches/runtime/interpreter/interpreter_common.cc:1867-1898
+   to understand the descriptor-fallback model.
+3. Find ART's mirror::ObjectArray::CheckAssignable. Likely either:
+   - patches/runtime/mirror/object_array.cc (if patched)
+   - upstream art/runtime/mirror/object_array.cc (need to copy in for patching)
+4. Add a PFCutDescriptorAssignableFallback(dst_component, src_class) helper
+   modeled on PFCutArraycopyElementAssignable; call it from CheckAssignable
+   right before the throw.
+5. Rebuild via make -f Makefile.ohos-arm64 link-runtime; sync; pm clear;
+   re-run noice gate. Acceptance: ASE cascade in logcat goes from 6+ tolerated
+   clinits to 0; noice setContentView completes; views inflate.
+6. Run McD bounded gate as regression check (must still PASS).
+```
