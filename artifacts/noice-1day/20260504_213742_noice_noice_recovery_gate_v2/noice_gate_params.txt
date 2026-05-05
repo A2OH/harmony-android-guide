@@ -1,0 +1,8 @@
+package=com.github.ashutoshgngwr.noice
+package_tag=noice
+apk_name=noice.apk
+dex=noice_classes.dex
+gate_taps=none
+soak_seconds=300
+boot_wait=120
+ui_wait=60

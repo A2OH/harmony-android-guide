@@ -2282,7 +2282,15 @@ public class MiniActivityManager {
             while (root.getCause() != null) root = root.getCause();
             Log.e(TAG, "performCreate error: " + error[0].getClass().getSimpleName() + ": " + error[0].getMessage());
             Log.e(TAG, "performCreate ROOT: " + root.getClass().getName() + ": " + root.getMessage());
-            root.printStackTrace(System.err);
+            // PF-noice (2026-05-04): printStackTrace(System.err) internally
+            // exercises Charset/CoderResult; when those statics are null
+            // (boot-class ASE cascade), this NPEs and unwinds out of
+            // performCreate before the recovery branch below can fire.
+            try {
+                root.printStackTrace(System.err);
+            } catch (Throwable stackEx) {
+                Log.w(TAG, "performCreate ROOT printStackTrace failed: " + stackEx.getClass().getSimpleName());
+            }
         }
 
         // If onCreate NPE'd, try to manually set content view with the splash layout
@@ -2291,8 +2299,13 @@ public class MiniActivityManager {
         if (timeoutWithContent) {
             Log.d(TAG, "  performCreate timeout: content already installed for "
                     + r.component.getClassName() + "; skipping fallback setContentView");
-        } else if (createNPE || !done[0]) {
-            Log.d(TAG, "  tryRecoverContent: attempting manual setContentView for " + r.component.getClassName());
+        } else if (createNPE || !done[0] || error[0] != null) {
+            // PF-noice (2026-05-04): extended from `createNPE || !done[0]` so any
+            // exception during onCreate (ASE from boot-class clinit cascade,
+            // ISE from Hilt DI failure, etc.) triggers the recovery path that
+            // was previously gated only on NPE.
+            Log.d(TAG, "  tryRecoverContent: attempting manual setContentView for " + r.component.getClassName()
+                    + " (reason=" + (createNPE ? "NPE" : (!done[0] ? "timeout" : error[0].getClass().getSimpleName())) + ")");
             // Fill null interface fields with dynamic Proxies (surviving DI failure)
             fillNullFieldsWithProxies(r.activity);
             // Retry onCreate with non-null stub fields
@@ -2307,19 +2320,72 @@ public class MiniActivityManager {
                 return;
             }
             try {
-                // Try setContentView with the splash layout resource ID
-                // First try via getIdentifier, then hardcoded McDonald's splash ID
+                // Try setContentView with the splash layout resource ID. Try a
+                // sequence of common layout names so non-McD apps (e.g. noice)
+                // pick up their actual main layout. Fall back to the McDonald's
+                // splash ID as a generic last resort.
                 android.content.res.Resources res = r.activity.getResources();
                 int layoutId = 0;
                 if (res != null) {
-                    layoutId = res.getIdentifier("activity_splash_screen", "layout",
-                            r.component.getPackageName());
+                    String pkg = r.component.getPackageName();
+                    final String[] layoutCandidates = {
+                            "activity_splash_screen",
+                            "main_activity",
+                            "activity_main",
+                            "activity_home",
+                            "main",
+                    };
+                    for (String name : layoutCandidates) {
+                        int id = res.getIdentifier(name, "layout", pkg);
+                        if (id != 0) {
+                            layoutId = id;
+                            Log.d(TAG, "  tryRecoverContent: matched layout '" + name + "' -> 0x" + Integer.toHexString(id));
+                            break;
+                        }
+                    }
                 }
-                if (layoutId == 0) layoutId = 0x7f0e0530; // McDonald's splash layout
+                if (layoutId == 0) layoutId = 0x7f0e0530; // McDonald's splash layout fallback
                 r.activity.setContentView(layoutId);
                 Log.d(TAG, "  tryRecoverContent: setContentView(0x" + Integer.toHexString(layoutId) + ") OK");
             } catch (Throwable ex) {
-                Log.d(TAG, "  tryRecoverContent failed: " + ex.getMessage());
+                Log.d(TAG, "  tryRecoverContent setContentView failed: " + ex.getMessage());
+                // PF-noice (2026-05-04): when XML layout inflation fails due to
+                // boot-class cascade (Charset/CoderResult), fall back to a
+                // programmatic View tree that bypasses Resources entirely.
+                // This gives at least visible "the app reached resume" pixels.
+                try {
+                    android.widget.LinearLayout root = new android.widget.LinearLayout(r.activity);
+                    root.setOrientation(android.widget.LinearLayout.VERTICAL);
+                    root.setBackgroundColor(0xFF1A237E); // deep indigo so it's distinguishable
+                    android.widget.LinearLayout.LayoutParams lp =
+                            new android.widget.LinearLayout.LayoutParams(
+                                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT);
+                    root.setLayoutParams(lp);
+                    android.widget.TextView tv = new android.widget.TextView(r.activity);
+                    tv.setText(r.component.getClassName() + "\nWestlake guest dalvikvm\nresumed (programmatic fallback)");
+                    tv.setTextColor(0xFFFFFFFF);
+                    tv.setTextSize(18.0f);
+                    tv.setPadding(40, 80, 40, 40);
+                    root.addView(tv,
+                            new android.widget.LinearLayout.LayoutParams(
+                                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
+                    android.widget.TextView marker = new android.widget.TextView(r.activity);
+                    marker.setText("PF-noice programmatic fallback active");
+                    marker.setTextColor(0xFF80CBC4);
+                    marker.setTextSize(12.0f);
+                    marker.setPadding(40, 8, 40, 8);
+                    root.addView(marker,
+                            new android.widget.LinearLayout.LayoutParams(
+                                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
+                    r.activity.setContentView(root);
+                    Log.d(TAG, "  tryRecoverContent: programmatic LinearLayout fallback installed");
+                } catch (Throwable progEx) {
+                    Log.d(TAG, "  tryRecoverContent programmatic fallback failed: "
+                            + progEx.getClass().getSimpleName() + ": " + progEx.getMessage());
+                }
             }
             tryRecoverFragments(r.activity);
         }

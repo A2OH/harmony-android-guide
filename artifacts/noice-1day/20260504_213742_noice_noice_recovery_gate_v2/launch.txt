@@ -1,0 +1,8 @@
+Stopping: com.westlake.host
+Starting: Intent { cmp=com.westlake.host/.WestlakeActivity (has extras) }
+Status: ok
+LaunchState: COLD
+Activity: com.westlake.host/.WestlakeActivity
+TotalTime: 2856
+WaitTime: 2861
+Complete

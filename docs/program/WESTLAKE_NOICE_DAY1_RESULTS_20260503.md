@@ -284,3 +284,66 @@ The PF-630 fix unlocks the substrate. Noice still doesn't paint. Two surfaced is
 - McD bounded gate runs but trips on the now-isolated ASE cascade (separate workstream).
 
 ### Final status: PF-630 → CLOSED (substrate fix landed). New work: clinit-cascade mitigation.
+
+---
+
+## Day-2 update part 2 (2026-05-04 PT) — clinit-cascade mitigation attempted, deeper than the bypass
+
+After the PF-630 boot-aware fix landed, attempted to make noice paint by attacking the boot-class ArrayStoreException cascade that prevents `setContentView` and even programmatic View construction. **None of the attempts produced visible noice UI.** The cascade has a deeper root cause than the Unsafe-array bypass.
+
+### Iteration log
+
+**Iter 1 — extend `MiniActivityManager.performCreate` recovery gate to fire on any error[0], not just NPE.** `MiniActivityManager.java:2294`. Logic: `} else if (createNPE || !done[0] || error[0] != null) {`. Plus added a `layoutCandidates` array `["activity_splash_screen", "main_activity", "activity_main", "activity_home", "main"]` so non-McD apps can find their layout. **Result: my recovery branch never fired** in the artifact, despite the dex confirming the code is there.
+
+**Iter 2 — wrap `root.printStackTrace(System.err)` (`:2285`) in try/catch.** Discovered the recovery branch wasn't firing because `printStackTrace` internally calls `Charset.defaultCharset()` → `CoderResult.isOverflow()` → NPE (boot-class cascade), unwinding out of `performCreate` BEFORE the recovery branch could fire. **Result: recovery branch now fires** — `tryRecoverContent: attempting manual setContentView (reason=ArrayStoreException)` appears in artifact `20260504_213742_noice_noice_recovery_gate_v2/`. But `setContentView(layoutId)` itself ASEs (XML inflation triggers the same Charset cascade).
+
+**Iter 3 — programmatic LinearLayout fallback (no Resources, no XML).** Pure-Java `new LinearLayout(activity)` + `new TextView(activity)`. Hypothesis: bypass Resources entirely. **Result: programmatic fallback ALSO fails** with `NullPointerException: Attempt to invoke InvokeType(2) method 'void android.view.View.setId(int)' on a null object reference`. The `View` class itself has poisoned statics from the cascade — even `new View(context)` cannot complete construction.
+
+**Iter 4 — disable the PFCut Unsafe-array bypass entirely (gate never flips).** Hypothesis: the bypass is the cascade source. Modified `runtime.cc` to comment out `PFCutMarkAppClassLoaderSeen()` so `PFCutAppClassLoaderSeen()` always returns false → `PFCutObjectArrayIndexFromOffset` always returns false → no Unsafe-array writes use `SetWithoutChecks`. **Result: SAME cascade.** ICUBinary/CoderResult/Providers all still ASE-fail clinit. **Empirical proof: the bypass is NOT the root cause.** Restored the gate flip in commit `e426dfa` on art-latest.
+
+### Conclusion: cascade root cause is elsewhere
+
+The cascade survives:
+- The PF-630 boot-aware gate (which flips after PathClassLoader install)
+- Bypass disable (gate never flips, all Unsafe-array writes use stock `CasFieldObject`)
+
+So the writes that corrupt String[] backing arrays during boot-class clinit are happening through SOMETHING ELSE. Possible candidates (none verified this session):
+
+1. **The dalvikvm runtime's `[RT] Set ConcurrentHashMap ABASE=12 ASHIFT=2` early init** (logcat just before the cascade) — the runtime is patching `ConcurrentHashMap` static fields. If ABASE/ASHIFT values are wrong for this build, every subsequent CHM-backed structure (including those used by Charset/Provider) writes to misaligned slots.
+2. **Some other PFCut* mechanism** that writes wrong-typed values via a different code path.
+3. **A truly upstream JNI/runtime issue** unrelated to the bypass — maybe how `Class.forName` or `ClassLoader.loadClass` is implemented in the patched runtime.
+
+### Day-2 part-2 acceptance re-tally
+
+| Criterion | Day-2 part 1 | Day-2 part 2 |
+|---|---|---|
+| A1 APK loaded into Westlake guest dalvikvm | PASS | unchanged |
+| A2 MainActivity onResume inside guest | PASS | unchanged |
+| A3 ≥5 views inflated | INCONCLUSIVE | **FAIL** — no Views can construct (NPE on `setId`) |
+| A4 ≥1 tap routed | not exercised | not exercised |
+| A5 Audio gap characterized | PASS | unchanged |
+| A6 Screenshot proves UI rendered | FAIL (Hilt blocker) | **FAIL — fundamental: View construction NPEs** |
+| A7 5-min idle soak no SIGBUS | PASS | unchanged |
+
+### Net result of the noice 1-day proof
+
+| Win | Status |
+|---|---|
+| PF-630 SIGBUS at sentinel `0xfffffffffffffb17` | **ELIMINATED** — fix landed at art-latest commits `6a45e3a`, `e426dfa` |
+| noice MainActivity reaches `performResume DONE` in guest | **CONFIRMED** |
+| 5-min substrate stability soak | **PASS** — no fatal signals across 1.23 MB logcat |
+| `MiniActivityManager.performCreate` recovery branch | **GENERALIZED** to fire on any onCreate error (not just NPE), plus layout-name search and tolerant printStackTrace |
+| **noice's actual UI painted** | **NO** — boot-class clinit cascade prevents View construction independently of the bypass |
+
+### What "fix till noice ui shows up" would actually take (next-session prompt)
+
+1. **Identify the cascade root cause**. Hypothesis to test first: instrument `[RT] Set ConcurrentHashMap ABASE/ASHIFT` (where the runtime patches CHM statics). Verify ABASE=12 ASHIFT=2 are correct for this dalvikvm build's reference size. If wrong, every CHM-backed structure (most boot Maps) is misaligned. Test: hardcode `ABASE=16 ASHIFT=2` (assuming compressed refs but 16-byte first-element offset) or `ABASE=12 ASHIFT=2` based on what stock dalvikvm uses on aarch64. Probe location: search `ConcurrentHashMap ABASE` in `art-latest/patches/runtime/`.
+2. **If ABASE/ASHIFT is right**, fall back to deeper instrumentation: add a log to every Unsafe array-backed write that includes the array's component type and the value's type. Run noice. The ASE will appear in logcat with full context.
+3. **The clinit-cascade is independent of PF-630** and probably independent of any single subsystem; could be a 1-2 week investigation. Don't budget for "1-day noice paint" until this lands.
+
+### Phone state at end of day-2 part 2
+
+- Runtime: `fda3db92031c43752e54f5034ab6556a46aa7312d326634656720f32a9782508` (gate-restored). Synced.
+- Shim: `d31fa0809f163b720a59af48c6ce43fd5a60b516f0d1abd283084a61ee0b9551` (programmatic fallback + tolerant printStackTrace + extended recovery gate). Synced.
+- Backup of pre-PF-630 runtime `dalvikvm.pre-pf630-d7e10e47.bak` retained.
+- Noice + Westlake host installed. Both `pm clear`'d.
