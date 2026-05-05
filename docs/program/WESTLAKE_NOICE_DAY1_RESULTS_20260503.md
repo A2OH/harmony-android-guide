@@ -417,3 +417,73 @@ D2 acceptance criteria (from PF-noice-002): bounded McD gate doesn't regress AND
    clinits to 0; noice setContentView completes; views inflate.
 6. Run McD bounded gate as regression check (must still PASS).
 ```
+
+---
+
+## Day-2 update part 4 (2026-05-04 PT) — D2 of the PF-noice cycle: BOOT-CLASS ASE CASCADE ELIMINATED
+
+Following the §"Day-2 update part 3" D1 plan, executed D2 in 1 session:
+
+### What landed (art-latest commit `49d1f67` on `origin/main`)
+
+Fix to `mirror::ObjectArray::CheckAssignable` template (header-only) — generalizes the existing String-only descriptor fallback to any class. Lives at:
+- Live build path: `/home/dspfac/aosp-art-15/runtime/mirror/object_array-inl.h` (working tree edit; not pushed to upstream Google AOSP)
+- Durable record: `/home/dspfac/art-latest/patches/runtime/mirror/object_array-inl.h` (project-owned copy)
+
+Plus instrumentation in `patches/runtime/entrypoints/quick/quick_throw_entrypoints.cc` — `PFCUT-ASE-MATCH` log for any quick-path ASE that would have fired with descriptor-equal classes (post-fix count was 0, confirming the CheckAssignable fix prevents the ASEs from reaching the entrypoint).
+
+Build: clean. New runtime hash: `88e7679701b169118e469deef369f4a6d015e6c7f1697036d6d3cb8256c59b3a`.
+
+### Empirical D2 results
+
+Artifact: `artifacts/noice-1day/20260504_225818_noice_noice_pf_noice_002_v3_with_match/`
+
+| Marker | Pre-fix (D1) | Post-fix (D2) |
+|---|---|---|
+| `Tolerating clinit failure ... ArrayStoreException` count | 7+ | **0** |
+| `[PFCUT-ASE-MATCH]` count (quick-path matches) | n/a | 0 (cascade prevented at `CheckAssignable`) |
+| `Coroutine runtime seed failed: ArrayStoreException` | yes | **NO** — replaced by `Coroutine runtime seeded before Application.onCreate` |
+| `Application from manifest: NoiceApplication` | yes (despite cascade) | yes (cleanly) |
+| `[WestlakeLauncher] Application error (caught): ArrayStoreException` | yes | **NO** |
+
+The boot-class ASE cascade is GONE.
+
+### Day-2 part 4 acceptance re-tally
+
+| Criterion | Day-2 part 1 | Part 2 | Part 3 (D1) | **Part 4 (D2)** |
+|---|---|---|---|---|
+| **A1** APK loaded into Westlake guest | PASS | PASS | PASS | **PASS** |
+| **A2** MainActivity onResume in guest | PASS | PASS | PASS | partial — performResume not reached due to NoSuchAlgorithmException upstream |
+| **A3** ≥5 views inflated | INCONCLUSIVE | FAIL | INCONCLUSIVE | **FAIL — null findViewById from broken downstream init** |
+| **A5** Audio gap characterized | PASS | PASS | PASS | PASS |
+| **A6** Screenshot proves UI rendered | FAIL | FAIL | FAIL | **FAIL — SurfaceView still empty (downstream blockers)** |
+| **A7** 5-min idle soak no SIGBUS | PASS | PASS | PASS | not retested |
+
+### Remaining downstream blockers (NEW workstreams beyond PF-noice-002)
+
+With the cascade eliminated, the new failure modes are:
+
+1. **`performCreate failed: NoSuchAlgorithmException`** — security provider didn't register an algorithm (e.g. `MD5`, `SHA-256`, `AES`). This is a side-effect of class-identity duplication: the Provider class registers algorithms keyed by Class objects; queries with a different (duplicate) Class instance fail to find them. The CheckAssignable fix ALLOWS the registration to succeed, but the lookup table may use Class identity for keys.
+2. **`tryRecoverContent setContentView failed: View.setId on null`** — some `findViewById(...)` returned null mid-construction. Likely a layout XML inflation error swallowed silently.
+3. **`programmatic fallback failed: ContentFrameLayout.setAttachListener on null`** — same null-receiver pattern in AppCompat's recovery path.
+
+These are **NEW issues exposed by progressing past the cascade** — not part of PF-noice-002 scope. Each is a separate D3+ workstream:
+- **PF-noice-002a (NSAE)** — patch security Provider.getService to fall back to descriptor-equal class lookup
+- **PF-noice-002b (null views)** — diagnose which XML inflation step returns null
+
+### Phone state at end of day-2 part 4
+
+- Runtime: `88e7679701b169118e469deef369f4a6d015e6c7f1697036d6d3cb8256c59b3a` (PF-noice-002 fix)
+- Backup at `/home/dspfac/westlake-runtime-backups/dalvikvm.pre-pf630-d7e10e47.bak` retained
+- Trace artifact in `artifacts/noice-1day/20260504_225818_noice_noice_pf_noice_002_v3_with_match/`
+- Screenshot at `artifacts/noice-1day/_noice_post_pf_noice_002_screen.png` — same all-black SurfaceView (cascade fixed but downstream still blocks paint)
+
+### Net session result (across day-2 part 1-4)
+
+| Workstream | Status |
+|---|---|
+| **PF-630 substrate SIGBUS** | CLOSED (commit `6a45e3a` on art-latest) |
+| **PF-noice-001 cascade root cause** | LOCALIZED via D1 instrumentation (commit `dd7eec1`) |
+| **PF-noice-002 cascade fix** | LANDED (commit `49d1f67` on art-latest) |
+| **noice MainActivity reaches resume** | mostly there — performResume blocked by NoSuchAlgorithmException now |
+| **noice paints UI** | NOT YET — needs PF-noice-002a (NSAE fix) + PF-noice-002b (null views diagnosis) |
