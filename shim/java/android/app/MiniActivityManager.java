@@ -2304,6 +2304,22 @@ public class MiniActivityManager {
             // exception during onCreate (ASE from boot-class clinit cascade,
             // ISE from Hilt DI failure, etc.) triggers the recovery path that
             // was previously gated only on NPE.
+            // PF-noice-013 (2026-05-05): if the activity ALREADY has installed
+            // content (because the original onCreate threw AFTER setContentView
+            // completed — common with view-binding's bind() that throws on
+            // missing-required-view), DON'T overwrite it. The partially-inflated
+            // tree is more useful than our fallback. We still run
+            // fillNullFieldsWithProxies for downstream survivability.
+            if (hasInstalledWindowContent(r.activity)) {
+                Log.d(TAG, "  tryRecoverContent: SKIPPING setContentView for " + r.component.getClassName()
+                        + " — decor already has content (preserving noice's partial inflate)");
+                fillNullFieldsWithProxies(r.activity);
+                tryRecoverFragments(r.activity);
+                if (isFinishedOrDestroyed(r)) {
+                    return;
+                }
+                // Fall through to performStart/Resume below
+            } else {
             Log.d(TAG, "  tryRecoverContent: attempting manual setContentView for " + r.component.getClassName()
                     + " (reason=" + (createNPE ? "NPE" : (!done[0] ? "timeout" : error[0].getClass().getSimpleName())) + ")");
             // Fill null interface fields with dynamic Proxies (surviving DI failure)
@@ -2388,6 +2404,7 @@ public class MiniActivityManager {
                 }
             }
             tryRecoverFragments(r.activity);
+            }  // end PF-noice-013 else (no pre-installed content)
         }
         if (isFinishedOrDestroyed(r)) {
             return;
