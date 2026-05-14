@@ -149,6 +149,21 @@ public class MainActivity extends Activity {
             emit("OhosRedSquare.fb0 write FAILED at Fb0Presenter");
         }
 
+        // step 8: also dump the BGRA buffer to a regular file on /data
+        // so the driver-side `drm_present` aarch64 binary can consume it
+        // via stdin redirect (DRM/KMS direct scan-out path —
+        // PF-ohos-mvp-003 MVP-2). Decoupling pixel synthesis from the
+        // DRM master + ioctl plumbing keeps the macro-shim contract clean:
+        // Java-side stays at Posix.open/writeBytes (no ioctl/JNI shim).
+        emit("step 8: dump BGRA to /data/local/tmp/red_bgra.bin for drm_present");
+        boolean drmDumpOk = DrmPresenter.present(
+                canvas, "/data/local/tmp/red_bgra.bin", System.out);
+        if (drmDumpOk) {
+            emit("OhosRedSquare.drm bgra-dump OK");
+        } else {
+            emit("OhosRedSquare.drm bgra-dump FAILED at DrmPresenter");
+        }
+
         finish();
     }
 

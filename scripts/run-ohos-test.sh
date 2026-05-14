@@ -567,6 +567,170 @@ cmd_red_square() {
     fi
 }
 
+# ---------- subcommand: red-square-drm --------------------------------------
+# Two-stage driver:
+#   Stage A (dalvikvm side):  invoke MainActivity (same as `red-square`); it
+#                             runs RedView.onDraw -> SoftwareCanvas and dumps
+#                             a 720*1280*4 BGRA buffer to
+#                             /data/local/tmp/red_bgra.bin via DrmPresenter.
+#   Stage B (driver side):    push the aarch64 `drm_present` helper, stop
+#                             composer_host so DRM master is free, run
+#                             drm_present with the BGRA file piped to stdin
+#                             — it CREATE_DUMB / mmap / fill / ADDFB2 /
+#                             SETCRTC the DSI-1 panel for HOLD_SECS seconds.
+#
+# This is the >4-hour-budget-friendly variant: the kernel-side scan-out
+# pipeline is the proof-of-concept; phone-camera or hdmi-capture of the
+# panel during the hold window confirms visible red. See
+# artifacts/ohos-mvp/mvp2-red-square-drm/ for kernel-state evidence.
+#
+# After Stage B, composer_host respawns automatically (it's supervised by
+# hdf_devmgr), so no manual recovery is required in the common case.
+
+cmd_red_square_drm() {
+    local outdir="$ARTIFACT_ROOT/mvp2-red-square-drm/$TS"
+    mkdir -p "$outdir"
+    local hold_secs="${RED_SQUARE_DRM_HOLD_SECS:-12}"
+    log "${BOLD}== MVP-2 red-square-drm (PF-ohos-mvp-003) -> $outdir hold=${hold_secs}s ==${RESET}"
+
+    log "[A.1/6] gradle :red-square:assembleDebug + :launcher:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :red-square:assembleDebug :launcher:compileJava --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local app_classes="$GRADLE_DIR/red-square/build/intermediates/javac/debug/classes"
+    local launcher_classes="$GRADLE_DIR/launcher/build/classes/java/main"
+    local launcher_class="$launcher_classes/com/westlake/ohostests/launcher/OhosMvpLauncher.class"
+    if [ ! -d "$app_classes/com/westlake/ohostests/red" ] || [ ! -f "$launcher_class" ]; then
+        err "missing class output"
+        return 1
+    fi
+    local app_class_list=()
+    while IFS= read -r f; do app_class_list+=("$f")
+    done < <(find "$app_classes/com/westlake/ohostests/red" -name '*.class' | sort)
+    ok "gradle build complete (${#app_class_list[@]} app classes)"
+
+    log "[A.2/6] d8 --min-api 13 -> {RedSquare,OhosMvpLauncher}.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir/app" "$dexdir/launcher"
+    "$D8" --min-api 13 --output "$dexdir/app" "${app_class_list[@]}" \
+            > "$outdir/d8-app.log" 2>&1 || { err "d8 app failed"; return 1; }
+    "$D8" --min-api 13 --output "$dexdir/launcher" "$launcher_class" \
+            > "$outdir/d8-launcher.log" 2>&1 || { err "d8 launcher failed"; return 1; }
+    mv "$dexdir/app/classes.dex" "$dexdir/RedSquare.dex"
+    mv "$dexdir/launcher/classes.dex" "$dexdir/OhosMvpLauncher.dex"
+    rmdir "$dexdir/app" "$dexdir/launcher" 2>/dev/null || true
+    ok "dex emitted"
+
+    log "[A.3/6] push dex + drm_present"
+    hdc_shell "mkdir -p $BOARD_DIR $BOARD_DIR/bcp" >/dev/null 2>&1
+    hdc_send "$dexdir/RedSquare.dex"       "$BOARD_DIR/RedSquare.dex"       || return 1
+    hdc_send "$dexdir/OhosMvpLauncher.dex" "$BOARD_DIR/OhosMvpLauncher.dex" || return 1
+    local drm_present_host="$REPO_ROOT/artifacts/ohos-mvp/mvp2-red-square-drm/drm_present"
+    if [ ! -f "$drm_present_host" ]; then
+        err "drm_present helper missing at $drm_present_host"
+        err "  rebuild via: clang --target=aarch64-linux-ohos --sysroot=dalvik-port/ohos-sysroot ..."
+        return 1
+    fi
+    hdc_send "$drm_present_host" "/data/local/tmp/drm_present" || return 1
+    hdc_shell "chmod 0755 /data/local/tmp/drm_present" >/dev/null 2>&1
+    ok "binaries pushed"
+
+    log "[A.4/6] invoke dalvikvm + OhosMvpLauncher (dumps BGRA to /data/local/tmp/red_bgra.bin)"
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="$bcp:$BOARD_DIR/RedSquare.dex"
+    bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
+    cmd="$cmd rm -f /data/local/tmp/red_bgra.bin 2>/dev/null;"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
+    cmd="$cmd com.westlake.ohostests.red/.MainActivity"
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
+        warn "dalvikvm non-zero — continuing"
+    }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+
+    local marker_drm_dump="OhosRedSquare.drm bgra-dump OK"
+    if ! grep -qF "$marker_drm_dump" "$outdir/dalvikvm.stdout"; then
+        err "Java side did not emit '$marker_drm_dump' — Activity failed before reaching DrmPresenter"
+        echo "FAIL_NO_BGRA_DUMP" > "$outdir/result.txt"
+        return 1
+    fi
+    local bgra_size
+    bgra_size="$(hdc_shell "stat -c%s /data/local/tmp/red_bgra.bin 2>/dev/null" | tr -d '\r')"
+    if [ -z "$bgra_size" ] || [ "$bgra_size" -lt 3686400 ]; then
+        err "red_bgra.bin missing or short: got '$bgra_size' bytes (expected >=3686400)"
+        echo "FAIL_BGRA_FILE_BAD" > "$outdir/result.txt"
+        return 1
+    fi
+    ok "Stage A done — Java dumped $bgra_size bytes BGRA to /data/local/tmp/red_bgra.bin"
+
+    log "[B.5/6] Stage B: kill composer_host + run drm_present (panel scans red for ${hold_secs}s)"
+    log "  IMPORTANT: take a phone-camera photo of the panel during this window"
+    log "  capturing kernel state mid-flight as fallback evidence"
+
+    # Snapshot pre-state
+    hdc_shell "cat /sys/kernel/debug/dri/0/state" > "$outdir/drm-state-pre.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-pre.txt" 2>&1
+
+    # Fire-and-snapshot: kill composer_host, run drm_present in background,
+    # then sleep ~3s and capture mid-flight DRM state, then wait for hold to finish.
+    local stage_b_cmd
+    stage_b_cmd="kill -9 \$(pidof composer_host) 2>/dev/null;"
+    stage_b_cmd="$stage_b_cmd /data/local/tmp/drm_present $hold_secs"
+    stage_b_cmd="$stage_b_cmd < /data/local/tmp/red_bgra.bin"
+    stage_b_cmd="$stage_b_cmd > /data/local/tmp/drm_present.stdout"
+    stage_b_cmd="$stage_b_cmd 2> /data/local/tmp/drm_present.stderr"
+    stage_b_cmd="$stage_b_cmd &"
+    stage_b_cmd="$stage_b_cmd sleep 3;"
+    stage_b_cmd="$stage_b_cmd echo '=== mid-flight state ===';"
+    stage_b_cmd="$stage_b_cmd cat /sys/kernel/debug/dri/0/state;"
+    stage_b_cmd="$stage_b_cmd echo '=== mid-flight framebuffer ===';"
+    stage_b_cmd="$stage_b_cmd cat /sys/kernel/debug/dri/0/framebuffer;"
+    stage_b_cmd="$stage_b_cmd echo '=== mid-flight summary ===';"
+    stage_b_cmd="$stage_b_cmd cat /sys/kernel/debug/dri/0/summary;"
+    stage_b_cmd="$stage_b_cmd wait;"
+    stage_b_cmd="$stage_b_cmd echo '=== drm_present.stdout ===';"
+    stage_b_cmd="$stage_b_cmd cat /data/local/tmp/drm_present.stdout;"
+    stage_b_cmd="$stage_b_cmd echo '=== drm_present.stderr ===';"
+    stage_b_cmd="$stage_b_cmd cat /data/local/tmp/drm_present.stderr"
+    hdc_shell "$stage_b_cmd" > "$outdir/stage-b.log" 2>&1
+
+    # Post-state
+    hdc_shell "cat /sys/kernel/debug/dri/0/state" > "$outdir/drm-state-post.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-post.txt" 2>&1
+
+    log "[B.6/6] grep success markers"
+    local marker_scanout="DRM_SCANOUT_OK"
+    local marker_kernel_fb="allocated by = drm_present"
+    local have_scanout=0 have_kernel_fb=0
+    if grep -qF "$marker_scanout" "$outdir/stage-b.log"; then have_scanout=1; fi
+    if grep -qF "$marker_kernel_fb" "$outdir/stage-b.log"; then have_kernel_fb=1; fi
+    log "  DRM_SCANOUT_OK marker: $have_scanout"
+    log "  kernel-side fb allocated by drm_present: $have_kernel_fb"
+
+    if [ "$have_scanout" -eq 1 ] && [ "$have_kernel_fb" -eq 1 ]; then
+        ok "${GREEN}${BOLD}MVP-2 DRM SCAN-OUT PASS${RESET}: kernel confirms fb_id bound to DSI-1 CRTC for ${hold_secs}s"
+        log "  next step: phone-camera photo of DAYU200 DSI panel during the hold window,"
+        log "  save into $outdir/"
+        echo "DRM_SCANOUT_PASS" > "$outdir/result.txt"
+        return 0
+    elif [ "$have_scanout" -eq 1 ]; then
+        warn "stdout said DRM_SCANOUT_OK but kernel didn't show our fb — racy capture?"
+        echo "PARTIAL_DRM" > "$outdir/result.txt"
+        return 1
+    else
+        err "drm_present did not reach scan-out — see $outdir/stage-b.log"
+        echo "FAIL_DRM" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -579,6 +743,8 @@ Subcommands:
   hello               compile :hello, dex via d8, push, run, capture (#616)
   trivial-activity    build :trivial-activity APK, push, run, capture (#619)
   red-square          build :red-square APK, push, run, paint red on fb0 (PF-ohos-mvp-003)
+  red-square-drm      build :red-square, run Java side, then drm_present pipe
+                      → panel scans red via DRM/KMS (PF-ohos-mvp-003 MVP-2)
 
 Environment overrides:
   HDC=$HDC
@@ -600,6 +766,7 @@ main() {
         hello)              cmd_hello "$@" ;;
         trivial-activity)   cmd_trivial_activity "$@" ;;
         red-square)         cmd_red_square "$@" ;;
+        red-square-drm)     cmd_red_square_drm "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

@@ -3,3 +3,8 @@
 mvp0-hello/2*/
 mvp1-trivial/2*/
 mvp2-red-square/2*/
+mvp2-red-square-drm/2*/
+# helper binaries are aarch64 OHOS, rebuilt from sources in dalvik-port/compat/
+mvp2-red-square-drm/drm_probe
+mvp2-red-square-drm/drm_red
+mvp2-red-square-drm/drm_present

@@ -1,0 +1,10 @@
+Video Port0: DISABLED
+Video Port1: ACTIVE
+    Connector: DSI-1
+	bus_format[100a]: RGB888_1X24
+	overlay_mode[0] output_mode[0] color_space[0], eotf:0
+    Display mode: 720x1280p69
+	clk[75000] real_clk[75000] type[48] flag[a]
+	H: 720 760 770 810
+	V: 1280 1290 1326 1341
+Video Port2: DISABLED
