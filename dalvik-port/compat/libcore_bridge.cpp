@@ -1641,6 +1641,177 @@ static JNINativeMethod gDirectPrintStreamMethods[] = {
     { "nativeWriteByte", "(II)V",    (void*) DirectPrintStream_nativeWriteByte },
 };
 
+/* ----------------------------------------------------------------
+ * com.westlake.compat.UnixSocketBridge — generic AF_UNIX +
+ * memfd + SCM_RIGHTS surfaces for Phase 2 M6-OHOS-Step2 (the M6
+ * DRM daemon's Java client). See shim/java/com/westlake/compat/
+ * UnixSocketBridge.java for the contract.
+ *
+ * No per-app branches. Pure POSIX. Returns -errno on failure for
+ * fd-typed methods to keep the JNI ABI stable.
+ * ---------------------------------------------------------------- */
+
+#include <stddef.h>      /* offsetof */
+#include <sys/syscall.h>
+
+#ifndef MFD_CLOEXEC
+#define MFD_CLOEXEC 0x0001
+#endif
+
+#ifndef SYS_memfd_create
+#define SYS_memfd_create 279  /* aarch64 */
+#endif
+
+static jint JNICALL UnixSocketBridge_memfdCreate(
+        JNIEnv* env, jclass, jstring jname, jint flags) {
+    const char* name = jname ? env->GetStringUTFChars(jname, NULL) : "memfd";
+    int fd = (int) syscall(SYS_memfd_create, name ? name : "memfd",
+                           (unsigned int) flags);
+    int saved_errno = errno;
+    if (jname && name) env->ReleaseStringUTFChars(jname, name);
+    if (fd < 0) return (jint) -saved_errno;
+    return (jint) fd;
+}
+
+static jboolean JNICALL UnixSocketBridge_ftruncateRaw(
+        JNIEnv*, jclass, jint fd, jlong size) {
+    if (fd < 0) return JNI_FALSE;
+    int rc = ftruncate(fd, (off_t) size);
+    return rc == 0 ? JNI_TRUE : JNI_FALSE;
+}
+
+static jboolean JNICALL UnixSocketBridge_writeAllToFd(
+        JNIEnv* env, jclass, jint fd, jbyteArray data, jlong size) {
+    if (fd < 0 || data == NULL || size <= 0) return JNI_FALSE;
+    if ((jsize) (size / 1) > env->GetArrayLength(data)) return JNI_FALSE;
+    void* map = mmap(NULL, (size_t) size, PROT_READ | PROT_WRITE,
+                     MAP_SHARED, fd, 0);
+    if (map == MAP_FAILED) return JNI_FALSE;
+    jbyte* bytes = env->GetByteArrayElements(data, NULL);
+    if (!bytes) { munmap(map, (size_t) size); return JNI_FALSE; }
+    memcpy(map, bytes, (size_t) size);
+    env->ReleaseByteArrayElements(data, bytes, JNI_ABORT);
+    if (munmap(map, (size_t) size) != 0) return JNI_FALSE;
+    return JNI_TRUE;
+}
+
+static void JNICALL UnixSocketBridge_closeFd(JNIEnv*, jclass, jint fd) {
+    if (fd >= 0) close(fd);
+}
+
+static jint JNICALL UnixSocketBridge_socketUnixSeqpacket(JNIEnv*, jclass) {
+    int fd = socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC, 0);
+    if (fd < 0) return (jint) -errno;
+    return (jint) fd;
+}
+
+static jboolean JNICALL UnixSocketBridge_connectUnix(
+        JNIEnv* env, jclass, jint fd, jstring jpath) {
+    if (fd < 0 || jpath == NULL) return JNI_FALSE;
+    const char* path = env->GetStringUTFChars(jpath, NULL);
+    if (!path) return JNI_FALSE;
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    socklen_t alen;
+    size_t plen = strlen(path);
+    int rc;
+    if (path[0] == '@') {
+        /* Linux abstract namespace: leading NUL, name follows. */
+        if (plen > sizeof(addr.sun_path) - 1) {
+            env->ReleaseStringUTFChars(jpath, path);
+            return JNI_FALSE;
+        }
+        addr.sun_path[0] = '\0';
+        memcpy(addr.sun_path + 1, path + 1, plen - 1);
+        alen = (socklen_t)(offsetof(struct sockaddr_un, sun_path) + plen);
+        rc = connect(fd, (struct sockaddr*)&addr, alen);
+    } else {
+        if (plen + 1 > sizeof(addr.sun_path)) {
+            env->ReleaseStringUTFChars(jpath, path);
+            return JNI_FALSE;
+        }
+        memcpy(addr.sun_path, path, plen);
+        addr.sun_path[plen] = '\0';
+        alen = (socklen_t)(offsetof(struct sockaddr_un, sun_path) + plen + 1);
+        rc = connect(fd, (struct sockaddr*)&addr, alen);
+    }
+    env->ReleaseStringUTFChars(jpath, path);
+    return rc == 0 ? JNI_TRUE : JNI_FALSE;
+}
+
+static jint JNICALL UnixSocketBridge_sendFrameWithFd(
+        JNIEnv* env, jclass, jint sockFd, jbyteArray payload, jint frameFd) {
+    if (sockFd < 0 || payload == NULL) return (jint) -EINVAL;
+    jsize plen = env->GetArrayLength(payload);
+    jbyte* pbytes = env->GetByteArrayElements(payload, NULL);
+    if (!pbytes) return (jint) -ENOMEM;
+
+    char ctrl[CMSG_SPACE(sizeof(int))];
+    memset(ctrl, 0, sizeof(ctrl));
+    struct iovec iov;
+    iov.iov_base = pbytes;
+    iov.iov_len = (size_t) plen;
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = ctrl;
+    msg.msg_controllen = sizeof(ctrl);
+    struct cmsghdr* c = CMSG_FIRSTHDR(&msg);
+    c->cmsg_level = SOL_SOCKET;
+    c->cmsg_type = SCM_RIGHTS;
+    c->cmsg_len = CMSG_LEN(sizeof(int));
+    int fd_to_send = frameFd;
+    memcpy(CMSG_DATA(c), &fd_to_send, sizeof(int));
+    msg.msg_controllen = c->cmsg_len;
+
+    ssize_t n;
+    do {
+        n = sendmsg(sockFd, &msg, MSG_NOSIGNAL);
+    } while (n < 0 && errno == EINTR);
+    int saved_errno = errno;
+    env->ReleaseByteArrayElements(payload, pbytes, JNI_ABORT);
+    if (n < 0) return (jint) -saved_errno;
+    return (jint) n;
+}
+
+static jint JNICALL UnixSocketBridge_recvBytes(
+        JNIEnv* env, jclass, jint sockFd, jbyteArray buf) {
+    if (sockFd < 0 || buf == NULL) return (jint) -EINVAL;
+    jsize blen = env->GetArrayLength(buf);
+    jbyte* bytes = env->GetByteArrayElements(buf, NULL);
+    if (!bytes) return (jint) -ENOMEM;
+    ssize_t n;
+    do {
+        n = recv(sockFd, bytes, (size_t) blen, 0);
+    } while (n < 0 && errno == EINTR);
+    int saved_errno = errno;
+    /* Commit any data the kernel wrote even on partial-error paths. */
+    env->ReleaseByteArrayElements(buf, bytes, 0);
+    if (n < 0) return (jint) -saved_errno;
+    return (jint) n;
+}
+
+static JNINativeMethod gUnixSocketBridgeMethods[] = {
+    { "memfdCreate",          "(Ljava/lang/String;I)I",
+        (void*) UnixSocketBridge_memfdCreate },
+    { "ftruncateRaw",         "(IJ)Z",
+        (void*) UnixSocketBridge_ftruncateRaw },
+    { "writeAllToFd",         "(I[BJ)Z",
+        (void*) UnixSocketBridge_writeAllToFd },
+    { "closeFd",              "(I)V",
+        (void*) UnixSocketBridge_closeFd },
+    { "socketUnixSeqpacket",  "()I",
+        (void*) UnixSocketBridge_socketUnixSeqpacket },
+    { "connectUnix",          "(ILjava/lang/String;)Z",
+        (void*) UnixSocketBridge_connectUnix },
+    { "sendFrameWithFd",      "(I[BI)I",
+        (void*) UnixSocketBridge_sendFrameWithFd },
+    { "recvBytes",            "(I[B)I",
+        (void*) UnixSocketBridge_recvBytes },
+};
+
 extern "C" bool dvmRegisterOHBridge(JNIEnv* env);
 
 bool dvmRegisterLibcoreBridge(JNIEnv* env) {
@@ -1701,6 +1872,14 @@ bool dvmRegisterLibcoreBridge(JNIEnv* env) {
     registerClass(env, "java/io/DirectPrintStream",
                   gDirectPrintStreamMethods,
                   sizeof(gDirectPrintStreamMethods)/sizeof(gDirectPrintStreamMethods[0]));
+
+    /* UnixSocketBridge: AF_UNIX + memfd + SCM_RIGHTS for the M6 daemon
+     * client path (PF-ohos-m6-002). Gracefully skipped if the class
+     * isn't on the BCP (e.g. an older shim dex without it).
+     */
+    registerClass(env, "com/westlake/compat/UnixSocketBridge",
+                  gUnixSocketBridgeMethods,
+                  sizeof(gUnixSocketBridgeMethods)/sizeof(gUnixSocketBridgeMethods[0]));
 
     /* Inflater + Deflater (zlib) */
     registerClass(env, "java/util/zip/Inflater",

@@ -5,6 +5,7 @@
 //   :trivial-activity  — single-Activity APK with no resources (MVP-1, #619)
 //   :launcher          — OhosMvpLauncher (Activity-driver for MVP-1/2)
 //   :red-square        — MVP-2 visible-pixels APK (PF-ohos-mvp-003)
+//   :m6-test           — M6 DRM daemon Java client + driver (PF-ohos-m6-002)
 //
 // Mirrors multiproc-test-gradle/ layout; see /scripts/run-ohos-test.sh
 // for the driver that compiles + pushes + runs these artifacts on the
@@ -29,3 +30,4 @@ include(":hello")
 include(":trivial-activity")
 include(":launcher")
 include(":red-square")
+include(":m6-test")

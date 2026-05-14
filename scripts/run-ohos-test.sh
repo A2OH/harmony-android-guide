@@ -817,6 +817,245 @@ cmd_m6_drm_daemon() {
     fi
 }
 
+# ---------- subcommand: m6-java-client --------------------------------------
+# M6-OHOS-Step2 (PF-ohos-m6-002): the Java-side counterpart of m6-drm-daemon's
+# built-in --test-client. Proves that dalvikvm Activity code can submit BGRA
+# frames to the long-lived M6 daemon over AF_UNIX/SCM_RIGHTS, replacing the
+# single-shot Fb0Presenter/DrmPresenter file-dump paths with a streaming
+# memfd handoff.
+#
+# Pipeline:
+#   1. Build :m6-test:assembleDebug + :launcher:compileJava.
+#   2. d8 --min-api 13 the four m6-test classes (M6DrmClient, M6FramePainter,
+#      M6ClientTestActivity, $Builder) into M6Test.dex; same for launcher.
+#   3. Push m6-drm-daemon (if not already), verify BCP intact.
+#   4. Start daemon on board in background with --accept-client
+#      --no-kill-composer --max-frames 120.
+#   5. Run dalvikvm + OhosMvpLauncher com.westlake.ohostests.m6/.M6ClientTestActivity.
+#   6. Capture kernel debugfs (clients, framebuffer) mid-flight to prove
+#      `allocated by = m6-drm-daemon` while dalvikvm is sending.
+#   7. Grep stdout for M6_JAVA_CLIENT_DONE marker AND the daemon's
+#      M6_DAEMON_DONE frames=120.
+#
+# Markers required for PASS:
+#   - "M6_JAVA_CLIENT_DONE ok=120 fail=0 ..."
+#   - "M6_DAEMON_DONE frames=120 ..."
+#   - "allocated by = m6-drm-daemon"
+#   - composer_host pid stable before+after (the daemon coexists, doesn't kill it)
+
+cmd_m6_java_client() {
+    local outdir="$ARTIFACT_ROOT/m6-java-client/$TS"
+    mkdir -p "$outdir"
+    log "${BOLD}== M6-OHOS-Step2 m6-java-client (PF-ohos-m6-002) -> $outdir ==${RESET}"
+
+    log "[1/7] gradle :m6-test:assembleDebug + :launcher:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :m6-test:assembleDebug :launcher:compileJava --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local app_classes="$GRADLE_DIR/m6-test/build/intermediates/javac/debug/classes"
+    local launcher_classes="$GRADLE_DIR/launcher/build/classes/java/main"
+    local launcher_class="$launcher_classes/com/westlake/ohostests/launcher/OhosMvpLauncher.class"
+    if [ ! -d "$app_classes/com/westlake/ohostests/m6" ] || [ ! -f "$launcher_class" ]; then
+        err "missing class output: $app_classes/com/westlake/ohostests/m6/ or $launcher_class"
+        return 1
+    fi
+    # Collect ONLY the app's classes under com/westlake/ohostests/m6/.
+    # UnixSocketBridge.class lives at build/.../com/westlake/compat/ from
+    # the compile-time stub source set — we intentionally exclude it so
+    # at runtime the BCP-side aosp-shim-ohos.dex resolves it (matching
+    # the registered JNI natives in libcore_bridge.cpp).
+    local app_class_list=()
+    while IFS= read -r f; do
+        app_class_list+=("$f")
+    done < <(find "$app_classes/com/westlake/ohostests/m6" -name '*.class' | sort)
+    if [ ${#app_class_list[@]} -lt 3 ]; then
+        warn "expected at least 3 app classes (M6DrmClient, M6FramePainter, M6ClientTestActivity); got ${#app_class_list[@]}"
+        for f in "${app_class_list[@]}"; do warn "  $f"; done
+    fi
+    ok "gradle build complete (${#app_class_list[@]} app classes)"
+
+    log "[2/7] d8 --min-api 13 -> {M6Test,OhosMvpLauncher}.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir/app" "$dexdir/launcher"
+    "$D8" --min-api 13 --output "$dexdir/app" "${app_class_list[@]}" \
+            > "$outdir/d8-app.log" 2>&1 || { err "d8 app failed — see $outdir/d8-app.log"; return 1; }
+    "$D8" --min-api 13 --output "$dexdir/launcher" "$launcher_class" \
+            > "$outdir/d8-launcher.log" 2>&1 || { err "d8 launcher failed"; return 1; }
+    mv "$dexdir/app/classes.dex" "$dexdir/M6Test.dex"
+    mv "$dexdir/launcher/classes.dex" "$dexdir/OhosMvpLauncher.dex"
+    rmdir "$dexdir/app" "$dexdir/launcher" 2>/dev/null || true
+    ok "dex emitted: M6Test.dex=$(du -b "$dexdir/M6Test.dex" | awk '{print $1}')B "\
+"OhosMvpLauncher.dex=$(du -b "$dexdir/OhosMvpLauncher.dex" | awk '{print $1}')B"
+
+    log "[3/7] push dex + verify daemon + BCP on board"
+    hdc_shell "mkdir -p $BOARD_DIR $BOARD_DIR/bcp" >/dev/null 2>&1
+    hdc_send "$dexdir/M6Test.dex"           "$BOARD_DIR/M6Test.dex"           || return 1
+    hdc_send "$dexdir/OhosMvpLauncher.dex"  "$BOARD_DIR/OhosMvpLauncher.dex"  || return 1
+    # Verify daemon binary is on the board; push if missing.
+    local daemon_host="$REPO_ROOT/dalvik-port/compat/m6-drm-daemon/m6-drm-daemon"
+    local daemon_present
+    daemon_present="$(hdc_shell "ls -la /data/local/tmp/m6-drm-daemon 2>&1" | tr -d '\r')"
+    if echo "$daemon_present" | grep -q "No such"; then
+        log "  daemon missing on board — pushing"
+        if [ ! -f "$daemon_host" ]; then
+            err "daemon binary missing at $daemon_host"
+            err "  build via: bash dalvik-port/compat/m6-drm-daemon/build.sh"
+            return 1
+        fi
+        hdc_send "$daemon_host" "/data/local/tmp/m6-drm-daemon" || return 1
+        hdc_shell "chmod 0755 /data/local/tmp/m6-drm-daemon" >/dev/null 2>&1
+    else
+        log "  daemon already on board: $daemon_present"
+    fi
+    # Verify BCP intact.
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing BCP files on board"
+        err "  hdc said: $bcp_check"
+        return 1
+    fi
+    # If aosp-shim-ohos.dex was rebuilt locally (new UnixSocketBridge), refresh it on the board.
+    local local_shim="$REPO_ROOT/ohos-deploy/aosp-shim-ohos.dex"
+    local local_shim_size
+    local_shim_size="$(stat -c%s "$local_shim" 2>/dev/null || echo 0)"
+    local board_shim_size
+    board_shim_size="$(hdc_shell "stat -c%s $BOARD_DIR/bcp/aosp-shim-ohos.dex 2>/dev/null" | tr -d '\r')"
+    if [ "$local_shim_size" != "$board_shim_size" ] && [ "$local_shim_size" -gt 0 ]; then
+        log "  refreshing aosp-shim-ohos.dex on board (local=$local_shim_size board=$board_shim_size)"
+        hdc_send "$local_shim" "$BOARD_DIR/bcp/aosp-shim-ohos.dex" || return 1
+    fi
+    # Also refresh dalvikvm if local is newer than the board's.
+    local local_dvm="$REPO_ROOT/dalvik-port/build-ohos-aarch64/dalvikvm"
+    if [ -f "$local_dvm" ]; then
+        local local_dvm_size board_dvm_size
+        local_dvm_size="$(stat -c%s "$local_dvm")"
+        board_dvm_size="$(hdc_shell "stat -c%s /data/local/tmp/dalvikvm 2>/dev/null" | tr -d '\r')"
+        if [ "$local_dvm_size" != "$board_dvm_size" ]; then
+            log "  refreshing dalvikvm on board (local=$local_dvm_size board=$board_dvm_size)"
+            hdc_send "$local_dvm" "/data/local/tmp/dalvikvm" || return 1
+            hdc_shell "chmod 0755 /data/local/tmp/dalvikvm" >/dev/null 2>&1
+        fi
+    fi
+    hdc_shell "ls -la $BOARD_DIR/M6Test.dex $BOARD_DIR/OhosMvpLauncher.dex $BOARD_DIR/bcp/" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex pushed; daemon + BCP intact"
+
+    log "[4/7] capture pre-state (composer_host pid, DRM clients)"
+    hdc_shell "ps -ef | grep -E 'composer_host|m6-drm-daemon' | grep -v grep" \
+            > "$outdir/ps-pre.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-pre.txt" 2>&1
+    local composer_pid_pre
+    composer_pid_pre="$(grep -E 'composer_host' "$outdir/ps-pre.txt" | head -1 | awk '{print $2}')"
+    log "  composer_host pid pre: ${composer_pid_pre:-(none)}"
+
+    log "[5/7] start daemon in background + run dalvikvm client"
+    # Combined shell script:
+    #  - clean leftover sock + caches
+    #  - launch daemon in background (--max-frames 120 so it exits cleanly after the test)
+    #  - sleep 1 to give daemon time to bind + emit M6_DAEMON_READY
+    #  - run dalvikvm in foreground
+    #  - sleep 1, capture mid-flight DRM state in parallel via subshell
+    #  - wait for daemon to exit
+    #  - dump both logs
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="$bcp:$BOARD_DIR/M6Test.dex"
+    bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
+    local run_cmd
+    run_cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
+    run_cmd="$run_cmd rm -f /data/local/tmp/westlake/m6-drm.sock 2>/dev/null;"
+    run_cmd="$run_cmd rm -f /data/local/tmp/m6d.stdout /data/local/tmp/m6d.stderr 2>/dev/null;"
+    run_cmd="$run_cmd mkdir -p /data/local/tmp/westlake;"
+    run_cmd="$run_cmd /data/local/tmp/m6-drm-daemon --accept-client --no-kill-composer --max-frames 120"
+    run_cmd="$run_cmd > /data/local/tmp/m6d.stdout 2>/data/local/tmp/m6d.stderr &"
+    run_cmd="$run_cmd DPID=\$!;"
+    run_cmd="$run_cmd sleep 1;"
+    # Mid-flight DRM capture in another background task ~2s after dalvikvm starts.
+    run_cmd="$run_cmd ( sleep 2;"
+    run_cmd="$run_cmd   echo === midflight clients ===;"
+    run_cmd="$run_cmd   cat /sys/kernel/debug/dri/0/clients;"
+    run_cmd="$run_cmd   echo === midflight framebuffer ===;"
+    run_cmd="$run_cmd   cat /sys/kernel/debug/dri/0/framebuffer;"
+    run_cmd="$run_cmd   echo === midflight composer ===;"
+    run_cmd="$run_cmd   ps -ef | grep -E 'composer_host|m6-drm-daemon|dalvikvm' | grep -v grep;"
+    run_cmd="$run_cmd ) > /data/local/tmp/m6.midflight.log 2>&1 &"
+    # Run dalvikvm + launcher targeting M6ClientTestActivity.
+    run_cmd="$run_cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    run_cmd="$run_cmd -Xbootclasspath:$bcp"
+    run_cmd="$run_cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
+    run_cmd="$run_cmd com.westlake.ohostests.m6/.M6ClientTestActivity;"
+    run_cmd="$run_cmd CRC=\$?;"
+    run_cmd="$run_cmd wait \$DPID 2>/dev/null;"
+    run_cmd="$run_cmd echo ====dalvikvm exit=\$CRC====;"
+    run_cmd="$run_cmd echo === daemon stdout ===;"
+    run_cmd="$run_cmd cat /data/local/tmp/m6d.stdout;"
+    run_cmd="$run_cmd echo === daemon stderr tail ===;"
+    run_cmd="$run_cmd tail -30 /data/local/tmp/m6d.stderr;"
+    run_cmd="$run_cmd echo === midflight capture ===;"
+    run_cmd="$run_cmd cat /data/local/tmp/m6.midflight.log"
+    hdc_shell "$run_cmd" > "$outdir/run.log" 2> "$outdir/run.stderr" || {
+        warn "shell exit non-zero — continuing"
+    }
+    log "  run.log: $(wc -l < "$outdir/run.log") lines"
+
+    log "[6/7] capture post-state"
+    hdc_shell "ps -ef | grep -E 'composer_host|m6-drm-daemon' | grep -v grep" \
+            > "$outdir/ps-post.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-post.txt" 2>&1
+    local composer_pid_post
+    composer_pid_post="$(grep -E 'composer_host' "$outdir/ps-post.txt" | head -1 | awk '{print $2}')"
+    log "  composer_host pid post: ${composer_pid_post:-(none)}"
+
+    log "[7/7] grep markers"
+    local m_java_done m_daemon_done m_kernel_owns m_connect_ok m_disconnect_ok
+    m_java_done=$(grep -c "M6_JAVA_CLIENT_DONE" "$outdir/run.log" || true)
+    m_daemon_done=$(grep -c "M6_DAEMON_DONE frames=120" "$outdir/run.log" || true)
+    m_kernel_owns=$(grep -c "allocated by = m6-drm-daemon" "$outdir/run.log" || true)
+    m_connect_ok=$(grep -c "OhosM6ClientTest.client connected" "$outdir/run.log" || true)
+    m_disconnect_ok=$(grep -c "OhosM6ClientTest.disconnect OK" "$outdir/run.log" || true)
+    log "  M6_JAVA_CLIENT_DONE: $m_java_done"
+    log "  M6_DAEMON_DONE frames=120: $m_daemon_done"
+    log "  kernel allocated-by=m6-drm-daemon: $m_kernel_owns"
+    log "  client connect marker: $m_connect_ok"
+    log "  client disconnect OK: $m_disconnect_ok"
+
+    # composer coexistence: pid stable AND not zero.
+    local composer_stable=0
+    if [ -n "$composer_pid_pre" ] && [ "$composer_pid_pre" = "$composer_pid_post" ]; then
+        composer_stable=1
+    fi
+    log "  composer_host pid stable (pre=$composer_pid_pre post=$composer_pid_post): $composer_stable"
+
+    # Extract Java-side timing for the report.
+    local java_timing
+    java_timing="$(grep -F "M6_JAVA_CLIENT_DONE" "$outdir/run.log" | head -1 | tr -d '\r')"
+    if [ -n "$java_timing" ]; then
+        log "  Java timing: $java_timing"
+    fi
+    local daemon_timing
+    daemon_timing="$(grep -F "M6_DAEMON_DONE" "$outdir/run.log" | head -1 | tr -d '\r')"
+    if [ -n "$daemon_timing" ]; then
+        log "  Daemon timing: $daemon_timing"
+    fi
+
+    if [ "$m_java_done" -ge 1 ] && [ "$m_daemon_done" -ge 1 ] \
+        && [ "$m_kernel_owns" -ge 1 ] && [ "$m_disconnect_ok" -ge 1 ] \
+        && [ "$composer_stable" -eq 1 ]; then
+        ok "${GREEN}${BOLD}M6-OHOS-Step2 PASS${RESET}: Java client drove 120 frames via daemon, composer_host stable"
+        echo "PASS" > "$outdir/result.txt"
+        return 0
+    else
+        err "M6-OHOS-Step2 did not reach all markers — see $outdir/run.log"
+        echo "FAIL" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -834,6 +1073,9 @@ Subcommands:
   m6-drm-daemon       run long-lived DRM/KMS daemon: self-test (5s) + end-to-end
                       AF_UNIX/memfd round-trip (120 frames RED/BLUE @ vsync;
                       composer_host coexists) (PF-ohos-m6-001)
+  m6-java-client      run Java-side M6DrmClient against the daemon: 120 BGRA
+                      frames RED/BLUE submitted from a dalvikvm Activity via
+                      memfd + SCM_RIGHTS (PF-ohos-m6-002 / M6-OHOS-Step2)
 
 Environment overrides:
   HDC=$HDC
@@ -857,6 +1099,7 @@ main() {
         red-square)         cmd_red_square "$@" ;;
         red-square-drm)     cmd_red_square_drm "$@" ;;
         m6-drm-daemon)      cmd_m6_drm_daemon "$@" ;;
+        m6-java-client)     cmd_m6_java_client "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  M6-OHOS-Step2 client test (PF-ohos-m6-002).
+  No resources, no theme, no permissions. M6ClientTestActivity drives
+  M6DrmClient to submit ~120 BGRA frames to the m6-drm-daemon over
+  AF_UNIX + SCM_RIGHTS.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="OhosM6ClientTest"
+                 android:debuggable="true"
+                 android:hasCode="true">
+        <activity android:name=".M6ClientTestActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
