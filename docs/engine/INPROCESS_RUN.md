@@ -583,7 +583,7 @@ during validation:
 | 12 | InitializationProvider hosting | Open — #609 |
 | 13 | WindowInsets propagation | Open — #610 |
 | 14 | Memory hygiene + teardown | Open — #611 |
-| 15 | Multi-process apps (was "won't fix") | Reclassified — design doc `INPROCESS_MULTIPROCESS_DESIGN.md` shows it's doable; #612 |
+| 15 | Multi-process apps (was "won't fix") | ✅ **VALIDATED** — `MultiProcInProcessActivity` + 4-slot pool (`.MpServiceSlotN` declared with `android:process=":mp_procN"`) loads `multiproc-test-gradle/`'s 2-`:remote`-service synthetic test APK. PS shows 3 PIDs all under host UID; counter isolation proven per-tap (proc1 counter=3, proc2 counter=1 after 3+1 taps). |
 | 16 | Generic InProcessLauncher refactor | Open — #613 |
 
 ## Open items (historical detail below)

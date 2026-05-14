@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:label="MultiProcTest"
+        android:debuggable="true">
+        <activity android:name=".MainActivity" android:exported="true"
+                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service android:name=".CounterServiceProc1"
+                 android:exported="false"
+                 android:process=":proc1" />
+        <service android:name=".CounterServiceProc2"
+                 android:exported="false"
+                 android:process=":proc2" />
+    </application>
+</manifest>

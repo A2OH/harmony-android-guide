@@ -55,6 +55,14 @@
             <activity-alias android:name="com.mcdonalds.order.activity.OrderActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
             <activity-alias android:name="com.mcdonalds.deals.activity.DealsActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
             <activity-alias android:name="com.mcdonalds.app.welcome.WelcomeActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+
+            <!-- Multi-process test harness (PF-inproc-016 validation) -->
+            <activity android:name=".MultiProcInProcessActivity" android:exported="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+            <activity-alias android:name="com.westlake.multiproctest.MainActivity" android:targetActivity=".MultiProcInProcessActivity" android:exported="true" />
+            <service android:name=".MpServiceSlot1" android:exported="false" android:process=":mp_proc1" />
+            <service android:name=".MpServiceSlot2" android:exported="false" android:process=":mp_proc2" />
+            <service android:name=".MpServiceSlot3" android:exported="false" android:process=":mp_proc3" />
+            <service android:name=".MpServiceSlot4" android:exported="false" android:process=":mp_proc4" />
     </application>
     <instrumentation
         android:name=".WestlakeBridgeInstrumentation"
