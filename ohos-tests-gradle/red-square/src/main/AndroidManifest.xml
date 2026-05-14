@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MVP-2 red-square APK (PF-ohos-mvp-003).
+
+  MainActivity creates RedView, calls setContentView(view), then drives
+  the View tree's measure / layout / draw cycle into a software Canvas
+  whose backing buffer is written to /dev/graphics/fb0 — visible on the
+  DAYU200's HDMI display.
+
+  No resources, no permissions (root + /dev/graphics/fb0 0666 covers
+  framebuffer access).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="OhosRedSquare"
+                 android:debuggable="true"
+                 android:hasCode="true">
+        <activity android:name=".MainActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

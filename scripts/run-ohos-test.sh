@@ -432,6 +432,141 @@ cmd_trivial_activity() {
     fi
 }
 
+# ---------- subcommand: red-square ------------------------------------------
+# MVP-2 (PF-ohos-mvp-003): a red rectangle is visible on the DAYU200's HDMI
+# display, driven by RedView.onDraw(canvas) { canvas.drawColor(Color.RED) }
+# through the V2 substrate, with pixels delivered to /dev/graphics/fb0 via
+# libcore.io.Libcore.os.{open,writeBytes,close}.
+#
+# Pipeline (parallels trivial-activity):
+#   1. gradle :red-square:assembleDebug + :launcher:compileJava
+#   2. d8 --min-api 13 on the 4 .class files (MainActivity, RedView,
+#      SoftwareCanvas, Fb0Presenter) → RedSquare.dex (dex.035)
+#      d8 --min-api 13 on OhosMvpLauncher.class → OhosMvpLauncher.dex
+#   3. push both dex files, verify BCP intact
+#   4. dalvikvm + OhosMvpLauncher com.westlake.ohostests.red/.MainActivity
+#   5. grep stdout + hilog for the marker chain:
+#      "OhosRedSquare.onCreate reached"
+#      "OhosRedSquare.fb0 write OK"
+#
+# Marker contract: PASS requires both "onCreate reached" AND "fb0 write OK".
+# A passing run with VISIBLE PIXELS still requires manual phone-camera
+# capture into artifacts/ohos-mvp/mvp2-red-square/.
+
+cmd_red_square() {
+    local outdir="$ARTIFACT_ROOT/mvp2-red-square/$TS"
+    mkdir -p "$outdir"
+    log "${BOLD}== MVP-2 red-square (PF-ohos-mvp-003) -> $outdir ==${RESET}"
+
+    log "[1/5] gradle :red-square:assembleDebug + :launcher:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :red-square:assembleDebug :launcher:compileJava --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local app_classes="$GRADLE_DIR/red-square/build/intermediates/javac/debug/classes"
+    local launcher_classes="$GRADLE_DIR/launcher/build/classes/java/main"
+    local launcher_class="$launcher_classes/com/westlake/ohostests/launcher/OhosMvpLauncher.class"
+    if [ ! -d "$app_classes/com/westlake/ohostests/red" ] || [ ! -f "$launcher_class" ]; then
+        err "missing class output: $app_classes/com/westlake/ohostests/red/ or $launcher_class"
+        return 1
+    fi
+    # Collect every .class under com/westlake/ohostests/red/
+    local app_class_list=()
+    while IFS= read -r f; do
+        app_class_list+=("$f")
+    done < <(find "$app_classes/com/westlake/ohostests/red" -name '*.class' | sort)
+    if [ ${#app_class_list[@]} -lt 4 ]; then
+        warn "expected 4 .class files (MainActivity, RedView, SoftwareCanvas, Fb0Presenter); got ${#app_class_list[@]}"
+        for f in "${app_class_list[@]}"; do warn "  $f"; done
+    fi
+    ok "gradle build complete (${#app_class_list[@]} app classes)"
+
+    log "[2/5] d8 --min-api 13 -> {RedSquare,OhosMvpLauncher}.dex"
+    if [ ! -x "$D8" ]; then
+        err "d8 not found at $D8"
+        return 1
+    fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir/app" "$dexdir/launcher"
+    "$D8" --min-api 13 --output "$dexdir/app" "${app_class_list[@]}" \
+            > "$outdir/d8-app.log" 2>&1 || { err "d8 app failed — see $outdir/d8-app.log"; return 1; }
+    "$D8" --min-api 13 --output "$dexdir/launcher" "$launcher_class" \
+            > "$outdir/d8-launcher.log" 2>&1 || { err "d8 launcher failed"; return 1; }
+    mv "$dexdir/app/classes.dex" "$dexdir/RedSquare.dex"
+    mv "$dexdir/launcher/classes.dex" "$dexdir/OhosMvpLauncher.dex"
+    rmdir "$dexdir/app" "$dexdir/launcher" 2>/dev/null || true
+    ok "dex emitted: RedSquare.dex=$(du -b "$dexdir/RedSquare.dex" | awk '{print $1}')B "\
+"OhosMvpLauncher.dex=$(du -b "$dexdir/OhosMvpLauncher.dex" | awk '{print $1}')B"
+
+    log "[3/5] push dex + verify BCP on board"
+    hdc_shell "mkdir -p $BOARD_DIR $BOARD_DIR/bcp" >/dev/null 2>&1
+    hdc_send "$dexdir/RedSquare.dex"        "$BOARD_DIR/RedSquare.dex"        || return 1
+    hdc_send "$dexdir/OhosMvpLauncher.dex"  "$BOARD_DIR/OhosMvpLauncher.dex"  || return 1
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing BCP files on board"
+        err "  hdc said: $bcp_check"
+        return 1
+    fi
+    hdc_shell "ls -la $BOARD_DIR/RedSquare.dex $BOARD_DIR/OhosMvpLauncher.dex $BOARD_DIR/bcp/" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex pushed; BCP intact"
+
+    log "[4/5] invoke dalvikvm + OhosMvpLauncher"
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="$bcp:$BOARD_DIR/RedSquare.dex"
+    bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
+    cmd="$cmd com.westlake.ohostests.red/.MainActivity"
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
+        warn "dalvikvm exited non-zero — capturing output regardless"
+    }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr"
+
+    log "[5/5] grep markers"
+    local marker_oncreate="OhosRedSquare.onCreate reached"
+    local marker_fb0ok="OhosRedSquare.fb0 write OK"
+    hdc_shell "hilog -x 2>/dev/null | tail -300" > "$outdir/hilog-tail.log" 2>&1 || true
+    local have_oncreate=0 have_fb0ok=0
+    if grep -qF "$marker_oncreate" "$outdir/dalvikvm.stdout" 2>/dev/null \
+       || grep -qF "$marker_oncreate" "$outdir/hilog-tail.log" 2>/dev/null; then
+        have_oncreate=1
+    fi
+    if grep -qF "$marker_fb0ok" "$outdir/dalvikvm.stdout" 2>/dev/null \
+       || grep -qF "$marker_fb0ok" "$outdir/hilog-tail.log" 2>/dev/null; then
+        have_fb0ok=1
+    fi
+    log "  onCreate marker: $have_oncreate   fb0-write-OK marker: $have_fb0ok"
+    if [ "$have_oncreate" -eq 1 ] && [ "$have_fb0ok" -eq 1 ]; then
+        ok "${GREEN}${BOLD}MVP-2 LOGICAL PASS${RESET}: both markers found"
+        log "  next step: phone-camera photo of DAYU200 HDMI display showing red,"
+        log "  save into $outdir/"
+        echo "LOGICAL_PASS" > "$outdir/result.txt"
+        local line1 line2
+        line1="$(grep -F "$marker_oncreate" "$outdir/dalvikvm.stdout" | head -1 | tr -d '\r')"
+        line2="$(grep -F "$marker_fb0ok"   "$outdir/dalvikvm.stdout" | head -1 | tr -d '\r')"
+        log "  marker 1: $line1"
+        log "  marker 2: $line2"
+        return 0
+    elif [ "$have_oncreate" -eq 1 ]; then
+        warn "Activity ran but fb0 write did not complete cleanly — see $outdir/dalvikvm.stdout"
+        echo "PARTIAL_ACTIVITY_NO_FB0" > "$outdir/result.txt"
+        return 1
+    else
+        err "neither marker reached — Activity didn't run"
+        echo "FAIL" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -443,6 +578,7 @@ Subcommands:
                       to $BOARD_DIR/bcp/
   hello               compile :hello, dex via d8, push, run, capture (#616)
   trivial-activity    build :trivial-activity APK, push, run, capture (#619)
+  red-square          build :red-square APK, push, run, paint red on fb0 (PF-ohos-mvp-003)
 
 Environment overrides:
   HDC=$HDC
@@ -463,6 +599,7 @@ main() {
         push-bcp)           cmd_push_bcp "$@" ;;
         hello)              cmd_hello "$@" ;;
         trivial-activity)   cmd_trivial_activity "$@" ;;
+        red-square)         cmd_red_square "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

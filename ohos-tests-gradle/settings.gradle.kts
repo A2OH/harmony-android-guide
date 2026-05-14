@@ -3,6 +3,8 @@
 // Modules:
 //   :hello             — single-class Java for HelloOhos.dex (MVP-0, #616)
 //   :trivial-activity  — single-Activity APK with no resources (MVP-1, #619)
+//   :launcher          — OhosMvpLauncher (Activity-driver for MVP-1/2)
+//   :red-square        — MVP-2 visible-pixels APK (PF-ohos-mvp-003)
 //
 // Mirrors multiproc-test-gradle/ layout; see /scripts/run-ohos-test.sh
 // for the driver that compiles + pushes + runs these artifacts on the
@@ -26,3 +28,4 @@ rootProject.name = "OhosTests"
 include(":hello")
 include(":trivial-activity")
 include(":launcher")
+include(":red-square")

@@ -102,29 +102,58 @@ bash scripts/run-ohos-test.sh trivial-activity
 
 ---
 
-## Workstream C — MVP-2: Visible UI on OHOS display
+## Workstream C — MVP-2: Visible UI on OHOS display ⚠ LOGICAL PASS 2026-05-14
 
 **Goal:** paint a red square (or any visible content) on the DAYU200's display from a Westlake-hosted APK.
 
-### Open work
+**Result (2026-05-14):** LOGICAL PASS — `RedView.onDraw(canvas) { canvas.drawColor(Color.RED) }` runs through the V2 substrate, the full `View.draw(canvas)` chain executes, and 3.6 MB of red BGRA pixels reach `/dev/graphics/fb0` (verified via `dd` readback decoded as 720×1280 BGRA = uniform red 0xFFFF0000). **Visible-pixel proof deferred** — see "Architectural blocker" in `artifacts/ohos-mvp/mvp2-red-square/checkpoint.md`.
 
-8. **OHOS-MVP-008 — Port M6 surface daemon's consumer side to OHOS**
-   - Phase 1 M6 daemon writes frames to a `memfd` via DLST pipe
-   - Phase 2 consumer: OHOS XComponent / native window instead of Android SurfaceView
-   - Aligns with CR41 `M12` roadmap entry
+### Landed (post-MVP-1)
 
-9. **OHOS-MVP-009 — Trivial setContentView(View) drawing red**
-   - APK extends MVP-1's trivial activity
-   - View subclass with `onDraw(c) { c.drawColor(Color.RED) }`
-   - Verify pixels reach display
+8. **OHOS-MVP-008 — `:red-square` gradle module** ✅
+   - 4 files (~330 LOC): `MainActivity`, `RedView`, `SoftwareCanvas extends Canvas`, `Fb0Presenter`.
+   - **Macro-shim contract respected:** zero Unsafe/setAccessible, zero per-app branches in the shim, zero new methods on `WestlakeContextImpl`. Reflection only on public `libcore.io.Libcore.os` field and public `Os` interface methods.
 
-10. **OHOS-MVP-010 — Memory-mapped framebuffer route (fallback)**
-    - If OHOS XComponent integration is hard, fallback: write directly to `/dev/fb0` (we did this in Phase 1 OHOS full-integration work — see `project_full_ohos_integration.md`)
-    - Won't be production-grade but proves visual pipeline
+9. **OHOS-MVP-009 — V2 substrate `setContentView` / View tree / onDraw** ✅
+   - `setContentView(redView)` returns cleanly on OHOS aarch64.
+   - `View.measure(EXACTLY 720, EXACTLY 1280)` → measured=720x1280.
+   - `View.layout(0, 0, 720, 1280)` → laid out cleanly.
+   - `redView.draw(canvas)` invokes the full draw chain (background → onDraw → dispatchDraw → foreground); RedView's `onDraw` calls `canvas.drawColor(Color.RED)` which our `SoftwareCanvas` records as the background fill.
 
-**Success criterion:** screenshot of DAYU200 display showing red square rendered from APK via Westlake.
+10. **OHOS-MVP-010 — `/dev/graphics/fb0` write via `libcore.io.Os`** ✅ (logical)
+    - Discovery: dalvik-port's `compat/libcore_bridge.cpp` registers `Posix.open`, `Posix.writeBytes`, `Posix.close` as JNI natives (see lines 1098-1107 of that file). No new natives needed.
+    - `Fb0Presenter` opens `/dev/graphics/fb0` via `Libcore.os.open(..., O_WRONLY=1, 0)`, then streams the SoftwareCanvas's recorded ops row by row as BGRA8888 (rk3568 panel byte order; verified via `od -tx1 -N 16 /dev/graphics/fb0` shows `00 00 ff ff` repeating).
+    - Streaming representation avoids the 3.6 MB int[] allocation that triggered a heap-mark GC segfault in earlier iterations.
 
-**Estimated effort:** 2-3 days after MVP-1.
+### Open / deferred
+
+11. **OHOS-MVP-013 — Architectural: fb0 → DSI scan-out path** ⛔ BLOCKER for visible-pixel
+    - On rk3568 DAYU200 OHOS 7.0, `/dev/graphics/fb0` is a `rockchipdrmfb` *fbdev compat node*. `composer_host` opens it (per `/proc/<pid>/fd`) but the panel scan-out is driven via DRM/KMS dmabuf paths through `render_service` + `composer_host`, NOT via fbdev. `dd if=/dev/graphics/fb0` after our write shows red, but the DSI panel does not display it.
+    - Confirmed: DRM CRTC state (`/sys/kernel/debug/dri/0/state`) shows `video_port1` enabled with DSI-1 connector but ALL planes have `crtc=(null) fb=0` — no framebuffer is currently being scanned out at all. `snapshot_display` fails to produce a snapshot.
+    - Killing render_service+composer_host via `service_control stop` works, but then `dalvikvm` fails with new SIGSEGV pattern (`java.lang.reflect.Method.getParameterCount` missing). Compositor presence is required for our Activity startup yet ALSO blocks the fb0 path.
+    - Two paths forward, both >3 hours:
+      - **DRM/KMS direct** (1-3 days): native helper that grabs DRM master, allocates a dumb BO, modeset DSI-1 to it.
+      - **XComponent** (3-5 days): host an OHOS HAP with `<XComponent>` element, drive `OH_NativeWindow` from Java via Westlake JNI bridge.
+
+**Success criterion:** ⚠ LOGICAL PASS achieved; visible-pixel proof requires OHOS-MVP-013.
+
+**Actual effort:** ~3 hours after MVP-1 (gates 2+3-logical landed).
+
+### Reproducer
+
+```bash
+cd /home/dspfac/android-to-openharmony-migration
+bash scripts/run-ohos-test.sh red-square
+# Look for: "MVP-2 LOGICAL PASS: both markers found"
+
+# Then verify pixels on fb0:
+HDC=/mnt/c/Users/dspfa/Dev/ohos-tools/hdc.exe
+$HDC -t dd011a414436314130101250040eac00 shell \
+    "od -An -tx1 -N 16 /dev/graphics/fb0"
+# Expected: "00 00 ff ff" repeating (BGRA red).
+```
+
+See `artifacts/ohos-mvp/mvp2-red-square/checkpoint.md` for full state, blocker analysis, and follow-up options.
 
 ---
 
