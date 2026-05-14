@@ -1,0 +1,5 @@
+# Each timestamped run dir is local evidence — not for upstream.
+# Keep only the README + board-preflight.log + slot stubs.
+mvp0-hello/2*/
+mvp1-trivial/2*/
+mvp2-red-square/2*/

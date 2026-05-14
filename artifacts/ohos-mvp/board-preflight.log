@@ -1,0 +1,54 @@
+================================================================================
+OHOS board pre-flight findings (captured 2026-05-14)
+Target: rk3568 dev board
+================================================================================
+
+[hdc target serial]
+dd011a414436314130101250040eac00
+
+[kernel]
+Linux 6.6.101 SMP aarch64 Toybox (Apr 4 2026 build)
+
+[OS]
+OpenHarmony 7.0.0.18 Beta1
+API level 24
+
+[CPU]
+4 x ARM Cortex-A55 (aarch64)
+
+[storage]
+/data    19 GB free
+/system  857 MB free
+
+[binder devices]
+/dev/binder      present
+/dev/hwbinder    present
+/dev/vndbinder   present
+
+[hilog]
+/system/bin/hilog  present and executable
+
+[existing dalvikvm]
+aarch64 binary already staged on board.
+  dalvikvm --help   works (prints usage)
+  dalvikvm <main>   SIGSEGVs during VM init
+                    -> tracked as A2OH/westlake #614 (separate agent)
+
+[harness state at handoff]
+  scripts/run-ohos-test.sh status         -> WORKS (this script reports the
+                                             board snapshot above)
+  scripts/run-ohos-test.sh push-bcp       -> WORKS (sources from ohos-deploy/)
+  scripts/run-ohos-test.sh hello          -> WORKS up to dalvikvm invocation;
+                                             marker capture BLOCKED on #614
+  scripts/run-ohos-test.sh trivial-activity
+                                          -> WORKS up to dalvikvm invocation;
+                                             marker capture BLOCKED on #614
+                                             (and full Activity path is M8)
+
+[next blockers in priority order]
+  1. #614  dalvikvm SIGSEGV at VM init   (different agent)
+  2. M8-Step1 ohos: WestlakeLauncher OHOS bring-up for trivial Activity
+  3. MVP-2 (red-square): needs the Phase 2 surface daemon equivalent for
+     OHOS, currently scoped in CR41 Phase 2 roadmap
+
+================================================================================

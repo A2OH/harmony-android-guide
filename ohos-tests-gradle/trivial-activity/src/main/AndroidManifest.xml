@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MVP-1 trivial Activity APK (#619).
+  No resources, no theme override (uses platform default), no permissions.
+  MainActivity logs a marker via android.util.Log then immediately
+  finishes — the driver script greps the marker out of hilog.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="OhosTrivialActivity"
+                 android:debuggable="true"
+                 android:hasCode="true">
+        <activity android:name=".MainActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
