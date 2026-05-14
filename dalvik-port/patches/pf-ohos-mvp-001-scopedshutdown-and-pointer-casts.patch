@@ -1,0 +1,86 @@
+diff --git a/vm/CheckJni.cpp b/vm/CheckJni.cpp
+index 4b0c627..04d0fb9 100644
+--- a/vm/CheckJni.cpp
++++ b/vm/CheckJni.cpp
+@@ -1550,7 +1550,7 @@ static jfieldID Check_GetStaticFieldID(JNIEnv* env, jclass clazz,
+         CHECK_JNI_ENTRY(kFlag_Default, "Ecf" _type, env, clazz, fieldID, value); \
+         sc.checkStaticFieldID(clazz, fieldID); \
+         /* "value" arg only used when type == ref */ \
+-        sc.checkFieldTypeForSet((jobject)(u4)value, fieldID, _ftype, true); \
++        sc.checkFieldTypeForSet((jobject)(uintptr_t)value, fieldID, _ftype, true); \
+         baseEnv(env)->SetStatic##_jname##Field(env, clazz, fieldID, value); \
+         CHECK_JNI_EXIT_VOID(); \
+     } \
+@@ -1558,7 +1558,7 @@ static jfieldID Check_GetStaticFieldID(JNIEnv* env, jclass clazz,
+         CHECK_JNI_ENTRY(kFlag_Default, "ELf" _type, env, obj, fieldID, value); \
+         sc.checkInstanceFieldID(obj, fieldID); \
+         /* "value" arg only used when type == ref */ \
+-        sc.checkFieldTypeForSet((jobject)(u4) value, fieldID, _ftype, false); \
++        sc.checkFieldTypeForSet((jobject)(uintptr_t) value, fieldID, _ftype, false); \
+         baseEnv(env)->Set##_jname##Field(env, obj, fieldID, value); \
+         CHECK_JNI_EXIT_VOID(); \
+     }
+diff --git a/vm/Init.cpp b/vm/Init.cpp
+index eaef0b9..371f498 100644
+--- a/vm/Init.cpp
++++ b/vm/Init.cpp
+@@ -1365,7 +1365,14 @@ public:
+ 
+     ~ScopedShutdown() {
+         if (armed_) {
+-            dvmShutdown();
++            // PF-ohos-mvp-001 / issue #614: calling dvmShutdown() on a
++            // half-initialized VM SIGSEGVs and masks the real init error.
++            // Skip the cleanup and let JNI_CreateJavaVM surface the error
++            // string via ALOGW. The VM is about to be torn down by exit()
++            // anyway, so freeing partial subsystem state is moot.
++            fprintf(stderr, "[ScopedShutdown] dvmStartup failed; skipping "
++                    "dvmShutdown() to surface real error (issue #614)\n");
++            fflush(stderr);
+         }
+     }
+ 
+diff --git a/vm/Thread.cpp b/vm/Thread.cpp
+index eea3970..f64e601 100644
+--- a/vm/Thread.cpp
++++ b/vm/Thread.cpp
+@@ -1358,7 +1358,7 @@ bool dvmCreateInterpThread(Object* threadObj, int reqStackSize)
+      * As soon as "VMThread.vmData" is assigned, other threads can start
+      * making calls into us (e.g. setPriority).
+      */
+-    dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)newThread);
++    dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)(uintptr_t)newThread);
+     dvmSetFieldObject(threadObj, gDvm.offJavaLangThread_vmThread, vmThreadObj);
+ 
+     /*
+@@ -1927,7 +1927,7 @@ bool dvmAttachCurrentThread(const JavaVMAttachArgs* pArgs, bool isDaemon)
+      * tracked allocation table, so it can't move around on us.
+      */
+     self->threadObj = threadObj;
+-    dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)self);
++    dvmSetFieldInt(vmThreadObj, gDvm.offJavaLangVMThread_vmData, (u4)(uintptr_t)self);
+ 
+     /*
+      * Create a string for the thread name.
+diff --git a/vm/oo/Class.cpp b/vm/oo/Class.cpp
+index c3e7670..fdc864a 100644
+--- a/vm/oo/Class.cpp
++++ b/vm/oo/Class.cpp
+@@ -4679,7 +4679,7 @@ static int dumpClass(void* vclazz, void* varg)
+ {
+     const ClassObject* clazz = (const ClassObject*) vclazz;
+     const ClassObject* super;
+-    int flags = (int) varg;
++    int flags = (int)(uintptr_t) varg;
+     char* desc;
+     int i;
+ 
+@@ -4708,7 +4708,7 @@ static int dumpClass(void* vclazz, void* varg)
+     }
+ 
+     /* clazz->super briefly holds the superclass index during class prep */
+-    if ((u4)clazz->super > 0x10000 && (u4) clazz->super != (u4)-1)
++    if ((uintptr_t)clazz->super > 0x10000 && (uintptr_t) clazz->super != (uintptr_t)-1)
+         super = clazz->super;
+     else
+         super = NULL;

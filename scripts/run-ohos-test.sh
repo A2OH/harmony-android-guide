@@ -255,13 +255,21 @@ cmd_hello() {
     hdc_send "$dexdir/HelloOhos.dex" "$BOARD_DIR/HelloOhos.dex" || return 1
 
     log "[4/5] invoke dalvikvm"
-    # Mirror the legacy run.sh convention: classpath = HelloOhos.dex,
-    # main class = the fully qualified HelloOhos. The phone-side launcher
-    # is responsible for staging dalvikvm + libs; we just invoke it.
-    local cmd="cd $BOARD_DIR && ./dalvikvm -cp HelloOhos.dex com.westlake.ohostests.hello.HelloOhos arg1 arg2"
+    # #614 (PF-ohos-mvp-001): VM init needs an explicit bootclasspath
+    # (core-kitkat.jar) plus our DirectPrintStream jar to bypass the
+    # broken System.<clinit>/Libcore.os path. ANDROID_ROOT lets the VM
+    # locate dexopt at ${ANDROID_ROOT}/bin/dexopt. The user dex is
+    # appended to BCP because our minimal launcher.cpp doesn't wire up
+    # a PathClassLoader for -cp.
+    local bcp="/data/local/tmp/westlake/bcp/core-kitkat.jar"
+    bcp="${bcp}:/data/local/tmp/westlake/bcp/direct-print-stream.jar"
+    bcp="${bcp}:${BOARD_DIR}/HelloOhos.dex"
+    local cmd="ANDROID_ROOT=${BOARD_DIR} /data/local/tmp/dalvikvm"
+    cmd="$cmd -Xbootclasspath:${bcp}"
+    cmd="$cmd com.westlake.ohostests.hello.HelloOhos arg1 arg2"
     hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
         warn "dalvikvm exited non-zero — capturing output regardless"
-        warn "(expected until #614 SIGSEGV is fixed)"
+        warn "(expected if VM aborts after main returns)"
     }
     log "  stdout: $outdir/dalvikvm.stdout"
     log "  stderr: $outdir/dalvikvm.stderr"

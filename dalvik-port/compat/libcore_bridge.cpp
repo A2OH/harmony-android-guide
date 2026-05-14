@@ -1606,6 +1606,41 @@ static JNINativeMethod gThreadMethods[] = {
     { "sleep", "(J)V", (void*) Thread_sleep },
 };
 
+/* ── java.io.DirectPrintStream (#614) ──
+ * Bypass System.<clinit>/System.out which is broken because Libcore.os
+ * is null. dvmInitMain (Thread.cpp) creates DirectPrintStream(1)/(2)
+ * and assigns to System.out/err, then forces System status to
+ * CLASS_INITIALIZED. These natives write directly to fd via write(2). */
+static void DirectPrintStream_nativeWrite(JNIEnv* env, jclass, jint fd,
+        jbyteArray data, jint off, jint len) {
+    if (data == NULL || len <= 0) return;
+    jbyte* buf = env->GetByteArrayElements(data, NULL);
+    if (buf == NULL) return;
+    int remaining = len;
+    int offset = off;
+    while (remaining > 0) {
+        ssize_t n = write(fd, buf + offset, remaining);
+        if (n < 0) {
+            if (errno == EINTR) continue;
+            break;
+        }
+        offset += n;
+        remaining -= n;
+    }
+    env->ReleaseByteArrayElements(data, buf, JNI_ABORT);
+}
+
+static void DirectPrintStream_nativeWriteByte(JNIEnv*, jclass, jint fd, jint b) {
+    unsigned char ch = (unsigned char) b;
+    ssize_t r;
+    do { r = write(fd, &ch, 1); } while (r < 0 && errno == EINTR);
+}
+
+static JNINativeMethod gDirectPrintStreamMethods[] = {
+    { "nativeWrite",     "(I[BII)V", (void*) DirectPrintStream_nativeWrite },
+    { "nativeWriteByte", "(II)V",    (void*) DirectPrintStream_nativeWriteByte },
+};
+
 extern "C" bool dvmRegisterOHBridge(JNIEnv* env);
 
 bool dvmRegisterLibcoreBridge(JNIEnv* env) {
@@ -1661,6 +1696,11 @@ bool dvmRegisterLibcoreBridge(JNIEnv* env) {
     /* Thread.sleep */
     registerClass(env, "java/lang/Thread",
                   gThreadMethods, sizeof(gThreadMethods)/sizeof(gThreadMethods[0]));
+
+    /* DirectPrintStream native I/O (#614 — System.out/err bypass) */
+    registerClass(env, "java/io/DirectPrintStream",
+                  gDirectPrintStreamMethods,
+                  sizeof(gDirectPrintStreamMethods)/sizeof(gDirectPrintStreamMethods[0]));
 
     /* Inflater + Deflater (zlib) */
     registerClass(env, "java/util/zip/Inflater",
