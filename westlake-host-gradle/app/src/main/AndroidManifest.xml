@@ -5,6 +5,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.READ_APP_SPECIFIC_LOCALES" />
+    <!-- Union of noice + McD permissions so in-process apps don't SecurityException -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <application
         android:requestLegacyExternalStorage="true"
         android:extractNativeLibs="true"
@@ -24,6 +37,24 @@
             android:exported="true"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
             <activity android:name=".McdInProcessActivity" android:exported="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+            <activity android:name=".NoiceInProcessActivity" android:exported="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+            <activity-alias android:name="com.github.ashutoshgngwr.noice.activity.MainActivity" android:targetActivity=".NoiceInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.github.ashutoshgngwr.noice.activity.AppIntroActivity" android:targetActivity=".NoiceInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.github.ashutoshgngwr.noice.activity.SignInLinkHandlerActivity" android:targetActivity=".NoiceInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.github.ashutoshgngwr.noice.activity.SetAlarmHandlerActivity" android:targetActivity=".NoiceInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.github.ashutoshgngwr.noice.billing.StripeCheckoutSessionCallbackActivity" android:targetActivity=".NoiceInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.mcdcoreapp.common.activity.SplashActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.mcdcoreapp.common.activity.DeepLinkRouter" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.account.profile.presentation.ProfileActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.payments.ui.activity.PayPalActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.loyalty.dashboard.linkedPartnership.presentation.activity.PartnerLoginActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.homedashboard.activity.HomeDashboardActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.account.activity.LoginRegistrationActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.account.activity.SignInActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.account.activity.SignUpActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.order.activity.OrderActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.deals.activity.DealsActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
+            <activity-alias android:name="com.mcdonalds.app.welcome.WelcomeActivity" android:targetActivity=".McdInProcessActivity" android:exported="true" />
     </application>
     <instrumentation
         android:name=".WestlakeBridgeInstrumentation"

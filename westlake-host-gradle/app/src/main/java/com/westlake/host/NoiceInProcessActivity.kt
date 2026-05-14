@@ -13,27 +13,27 @@ import android.view.View
 import android.view.ViewGroup
 import java.io.File
 
-class McdInProcessActivity : Activity() {
-    private val TAG = "McdInProcess"
-    private val MCD_PKG = "com.mcdonalds.app"
-    private val MCD_MAIN_CLS = "com.mcdonalds.mcdcoreapp.common.activity.SplashActivity"
-    private val MCD_APP_CLS = "com.mcdonalds.app.application.McDMarketApplication"
-    private val DEFAULT_TARGET = MCD_MAIN_CLS
+class NoiceInProcessActivity : Activity() {
+    private val TAG = "NoiceInProcess"
+    private val NOICE_PKG = "com.github.ashutoshgngwr.noice"
+    private val NOICE_MAIN_CLS = "com.github.ashutoshgngwr.noice.activity.MainActivity"
+    private val NOICE_APP_CLS = "com.github.ashutoshgngwr.noice.NoiceApplication"
+    private val DEFAULT_TARGET = NOICE_MAIN_CLS
 
-    private var currentMcdActivity: Activity? = null
+    private var currentNoiceActivity: Activity? = null
     private var currentTarget: String? = null
 
     companion object {
-        const val EXTRA_TARGET_CLASS = "mcd_target_activity"
-        // Process-wide singleton mcd Application so we don't re-init on every activity launch
-        @Volatile private var mcdAppRef: Application? = null
-        @Volatile private var mcdCtxRef: Context? = null
+        const val EXTRA_TARGET_CLASS = "noice_target_activity"
+        // Process-wide singleton noice Application so we don't re-init on every activity launch
+        @Volatile private var noiceAppRef: Application? = null
+        @Volatile private var noiceCtxRef: Context? = null
     }
 
     private fun resolveTargetFromIntent(intent: Intent): String {
         val cnCls = intent.component?.className
         return intent.getStringExtra(EXTRA_TARGET_CLASS)
-            ?: cnCls?.takeIf { it.startsWith("com.mcdonalds.app.") }
+            ?: cnCls?.takeIf { it.startsWith("com.github.ashutoshgngwr.noice.") }
             ?: DEFAULT_TARGET
     }
 
@@ -47,7 +47,7 @@ class McdInProcessActivity : Activity() {
             try {
                 val onPause = Activity::class.java.getDeclaredMethod("onPause")
                 onPause.isAccessible = true
-                currentMcdActivity?.let { onPause.invoke(it) }
+                currentNoiceActivity?.let { onPause.invoke(it) }
             } catch (_: Throwable) {}
             launchTarget(newTarget)
         }
@@ -55,8 +55,8 @@ class McdInProcessActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        // Drive mcd activity lifecycle into resumed state so its UI actually composes/draws
-        currentMcdActivity?.let { driveLifecycleToResumed(it) }
+        // Drive noice activity lifecycle into resumed state so its UI actually composes/draws
+        currentNoiceActivity?.let { driveLifecycleToResumed(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,10 +64,10 @@ class McdInProcessActivity : Activity() {
         bypassHiddenApiRestrictions()
         installSwallowingUncaughtHandler()
         // Target class can come from (a) explicit extra, (b) activity-alias component name
-        // (when mcd's MainActivity does startActivity for AppIntroActivity etc., Android
-        // resolves the alias and getIntent().component.className equals the alias = mcd cls)
+        // (when noice's MainActivity does startActivity for AppIntroActivity etc., Android
+        // resolves the alias and getIntent().component.className equals the alias = noice cls)
         val targetCls = resolveTargetFromIntent(intent)
-        Log.i(TAG, "Starting in-process mcd; target=$targetCls (cnCls=${intent.component?.className})")
+        Log.i(TAG, "Starting in-process noice; target=$targetCls (cnCls=${intent.component?.className})")
         launchTarget(targetCls)
     }
 
@@ -82,25 +82,25 @@ class McdInProcessActivity : Activity() {
         setContentView(status)
 
         try {
-            val (mcdCtx, fullRes, themeId) = ensureMcdContext()
-            val mcdApp = ensureMcdApplication(mcdCtx)
+            val (noiceCtx, fullRes, themeId) = ensureNoiceContext()
+            val noiceApp = ensureNoiceApplication(noiceCtx)
 
             // Load target activity class
-            val mcdCl = mcdCtx.classLoader
-            val activityCls = mcdCl.loadClass(targetCls)
-            val mcdActivity = activityCls.newInstance() as Activity
+            val noiceCl = noiceCtx.classLoader
+            val activityCls = noiceCl.loadClass(targetCls)
+            val noiceActivity = activityCls.newInstance() as Activity
             Log.i(TAG, "Instantiated ${targetCls}")
 
-            attachAndCreate(mcdActivity, mcdCtx, mcdApp, fullRes, themeId, targetCls)
-            currentMcdActivity = mcdActivity
+            attachAndCreate(noiceActivity, noiceCtx, noiceApp, fullRes, themeId, targetCls)
+            currentNoiceActivity = noiceActivity
 
-            stealContentInto(mcdActivity, status, targetCls)
+            stealContentInto(noiceActivity, status, targetCls)
             // Drive lifecycle to RESUMED so views actually render (Compose / fragment / ViewModel
             // wiring depends on onStart + onResume; without these the view tree stays inert)
-            driveLifecycleToResumed(mcdActivity)
+            driveLifecycleToResumed(noiceActivity)
         } catch (e: Throwable) {
             val root = if (e is java.lang.reflect.InvocationTargetException) e.cause ?: e else e
-            Log.e(TAG, "mcd in-process FAIL: ${root.javaClass.name}: ${root.message}", root)
+            Log.e(TAG, "noice in-process FAIL: ${root.javaClass.name}: ${root.message}", root)
             val sw = java.io.StringWriter()
             root.printStackTrace(java.io.PrintWriter(sw))
             val stackText = sw.toString().lineSequence().take(25).joinToString("\n")
@@ -136,7 +136,7 @@ class McdInProcessActivity : Activity() {
 
     /**
      * Install a default uncaught-exception handler that logs but does NOT kill the process.
-     * mcd fires lots of background coroutine work (network, db, audio) that will throw under
+     * noice fires lots of background coroutine work (network, db, audio) that will throw under
      * our stub environment. We don't want any of those to take down the foreground UI.
      */
     private fun installSwallowingUncaughtHandler() {
@@ -158,16 +158,11 @@ class McdInProcessActivity : Activity() {
         }
     }
 
-    /**
-     * Replaces LocaleManager's binder service field with a dynamic Proxy that returns
-     * empty LocaleList for getApplicationLocales. Without this, AppCompatDelegate.Api33Impl
-     * throws SecurityException for READ_APP_SPECIFIC_LOCALES on apps we're hosting.
-     */
+    /** Replace LocaleManager.mService with a Proxy returning empty for getApplicationLocales. */
     private fun stubLocaleManager(ctx: Context) {
         try {
             val lm = ctx.getSystemService(Context.LOCALE_SERVICE)
-                ?: ctx.getSystemService("locale")
-                ?: return
+                ?: ctx.getSystemService("locale") ?: return
             val mServiceField = lm.javaClass.getDeclaredField("mService")
             mServiceField.isAccessible = true
             val original = mServiceField.get(lm)
@@ -210,36 +205,36 @@ class McdInProcessActivity : Activity() {
         }
     }
 
-    private fun ensureMcdContext(): Triple<Context, android.content.res.Resources, Int> {
-        val mcdCtx: Context = mcdCtxRef ?: run {
-            val ctx = createPackageContext(MCD_PKG,
+    private fun ensureNoiceContext(): Triple<Context, android.content.res.Resources, Int> {
+        val noiceCtx: Context = noiceCtxRef ?: run {
+            val ctx = createPackageContext(NOICE_PKG,
                 Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY)
             redirectDataDir(ctx)
-            mcdCtxRef = ctx
+            noiceCtxRef = ctx
             ctx
         }
-        val fullRes = packageManager.getResourcesForApplication(MCD_PKG)
-        val themeId = fullRes.getIdentifier("Theme.App", "style", MCD_PKG)
+        val fullRes = packageManager.getResourcesForApplication(NOICE_PKG)
+        val themeId = fullRes.getIdentifier("Theme.App", "style", NOICE_PKG)
             .takeIf { it != 0 }
-            ?: fullRes.getIdentifier("AppTheme", "style", MCD_PKG).takeIf { it != 0 }
+            ?: fullRes.getIdentifier("AppTheme", "style", NOICE_PKG).takeIf { it != 0 }
             ?: 0
         if (themeId != 0) theme.applyStyle(themeId, true)
-        return Triple(mcdCtx, fullRes, themeId)
+        return Triple(noiceCtx, fullRes, themeId)
     }
 
     /**
-     * Patch mcd's ApplicationInfo.dataDir + related fields to a host-writable scratch dir so
-     * shared_prefs / databases / cache writes succeed (host UID can't write mcd's data dir).
+     * Patch noice's ApplicationInfo.dataDir + related fields to a host-writable scratch dir so
+     * shared_prefs / databases / cache writes succeed (host UID can't write noice's data dir).
      */
-    private fun redirectDataDir(mcdCtx: Context) {
+    private fun redirectDataDir(noiceCtx: Context) {
         try {
-            val hostDataDir = File(filesDir.parentFile, "mcd_data").apply { mkdirs() }
+            val hostDataDir = File(filesDir.parentFile, "noice_data").apply { mkdirs() }
             for (sub in listOf("shared_prefs", "databases", "cache", "code_cache", "files", "no_backup", "app_textures")) {
                 File(hostDataDir, sub).apply { mkdirs() }
             }
             val absPath = hostDataDir.absolutePath
 
-            val ai = mcdCtx.applicationInfo
+            val ai = noiceCtx.applicationInfo
             ai.dataDir = absPath
             try {
                 val f = ApplicationInfo::class.java.getField("credentialProtectedDataDir")
@@ -255,7 +250,7 @@ class McdInProcessActivity : Activity() {
                 val ciCls = Class.forName("android.app.ContextImpl")
                 val mPi = ciCls.getDeclaredField("mPackageInfo")
                 mPi.isAccessible = true
-                val loadedApk = mPi.get(mcdCtx)
+                val loadedApk = mPi.get(noiceCtx)
                 if (loadedApk != null) {
                     val fileFields = listOf(
                         "mDataDirFile" to hostDataDir,
@@ -290,7 +285,7 @@ class McdInProcessActivity : Activity() {
                     try {
                         val f = ciCls.getDeclaredField(fname)
                         f.isAccessible = true
-                        f.set(mcdCtx, null)
+                        f.set(noiceCtx, null)
                     } catch (_: NoSuchFieldException) {}
                 }
             } catch (e: Throwable) {
@@ -299,31 +294,31 @@ class McdInProcessActivity : Activity() {
 
             // Self-verify
             try {
-                val obs = mcdCtx.dataDir.absolutePath
-                Log.i(TAG, "Post-patch mcdCtx.dataDir = $obs (expected $absPath)")
+                val obs = noiceCtx.dataDir.absolutePath
+                Log.i(TAG, "Post-patch noiceCtx.dataDir = $obs (expected $absPath)")
             } catch (_: Throwable) {}
             try {
-                val obsCache = mcdCtx.cacheDir.absolutePath
-                Log.i(TAG, "Post-patch mcdCtx.cacheDir = $obsCache")
+                val obsCache = noiceCtx.cacheDir.absolutePath
+                Log.i(TAG, "Post-patch noiceCtx.cacheDir = $obsCache")
             } catch (e: Throwable) {
-                Log.w(TAG, "mcdCtx.cacheDir read failed: ${e.javaClass.simpleName}: ${e.message}")
+                Log.w(TAG, "noiceCtx.cacheDir read failed: ${e.javaClass.simpleName}: ${e.message}")
             }
-            Log.i(TAG, "Redirected mcd dataDir → $absPath")
+            Log.i(TAG, "Redirected noice dataDir → $absPath")
         } catch (e: Throwable) {
             Log.w(TAG, "redirectDataDir failed: ${e.javaClass.simpleName}: ${e.message}")
         }
     }
 
-    private fun ensureMcdApplication(mcdCtx: Context): Application {
-        mcdAppRef?.let { return it }
-        val mcdCl = mcdCtx.classLoader
-        val appCls = mcdCl.loadClass(MCD_APP_CLS)
+    private fun ensureNoiceApplication(noiceCtx: Context): Application {
+        noiceAppRef?.let { return it }
+        val noiceCl = noiceCtx.classLoader
+        val appCls = noiceCl.loadClass(NOICE_APP_CLS)
         val app = appCls.newInstance() as Application
-        Log.i(TAG, "Instantiated mcd Application: ${app.javaClass.name}")
+        Log.i(TAG, "Instantiated noice Application: ${app.javaClass.name}")
         val attachBase = android.content.ContextWrapper::class.java
             .getDeclaredMethod("attachBaseContext", Context::class.java)
         attachBase.isAccessible = true
-        attachBase.invoke(app, McdSafeContext(mcdCtx, MCD_PKG))
+        attachBase.invoke(app, NoiceSafeContext(noiceCtx, NOICE_PKG))
 
         try {
             val ai0 = app.applicationInfo
@@ -335,12 +330,12 @@ class McdInProcessActivity : Activity() {
             val ciCls = Class.forName("android.app.ContextImpl")
             val mPi = ciCls.getDeclaredField("mPackageInfo")
             mPi.isAccessible = true
-            val loadedApk = mPi.get(mcdCtx)
+            val loadedApk = mPi.get(noiceCtx)
             if (loadedApk != null) {
                 val f = loadedApk.javaClass.getDeclaredField("mApplication")
                 f.isAccessible = true
                 f.set(loadedApk, app)
-                Log.i(TAG, "Wired LoadedApk.mApplication = mcdApp")
+                Log.i(TAG, "Wired LoadedApk.mApplication = noiceApp")
             }
         } catch (e: Throwable) {
             Log.w(TAG, "LoadedApk wire failed: ${e.javaClass.simpleName}: ${e.message}")
@@ -348,24 +343,24 @@ class McdInProcessActivity : Activity() {
 
         try {
             app.onCreate()
-            Log.i(TAG, "mcd Application.onCreate() OK")
+            Log.i(TAG, "noice Application.onCreate() OK")
         } catch (e: Throwable) {
             val r = if (e is java.lang.reflect.InvocationTargetException) e.cause ?: e else e
-            Log.w(TAG, "mcd Application.onCreate threw: ${r.javaClass.simpleName}: ${r.message}")
+            Log.w(TAG, "noice Application.onCreate threw: ${r.javaClass.simpleName}: ${r.message}")
         }
-        mcdAppRef = app
+        noiceAppRef = app
         return app
     }
 
     private fun attachAndCreate(
-        mcdActivity: Activity,
-        mcdCtx: Context,
-        mcdApp: Application,
+        noiceActivity: Activity,
+        noiceCtx: Context,
+        noiceApp: Application,
         fullRes: android.content.res.Resources,
         themeId: Int,
         targetCls: String,
     ) {
-        val inflateCtx = android.view.ContextThemeWrapper(mcdCtx, themeId)
+        val inflateCtx = android.view.ContextThemeWrapper(noiceCtx, themeId)
 
         val atClass = Class.forName("android.app.ActivityThread")
         val sCurrentAT = atClass.getDeclaredField("sCurrentActivityThread")
@@ -379,17 +374,17 @@ class McdInProcessActivity : Activity() {
         attachMethod.isAccessible = true
 
         val ai = ActivityInfo()
-        ai.packageName = MCD_PKG
+        ai.packageName = NOICE_PKG
         ai.name = targetCls
         try {
-            ai.javaClass.getField("applicationInfo").set(ai, mcdCtx.applicationInfo)
+            ai.javaClass.getField("applicationInfo").set(ai, noiceCtx.applicationInfo)
         } catch (_: Exception) {}
         if (themeId != 0) {
             try { ai.javaClass.getField("theme").setInt(ai, themeId) } catch (_: Exception) {}
         }
 
         val hostPkg = packageName
-        val safeInflateCtx = McdSafeContext(inflateCtx, MCD_PKG)
+        val safeInflateCtx = NoiceSafeContext(inflateCtx, NOICE_PKG)
         val attachCtx = object : android.content.ContextWrapper(safeInflateCtx) {
             override fun getPackageName(): String = hostPkg
             override fun getOpPackageName(): String = hostPkg
@@ -402,33 +397,33 @@ class McdInProcessActivity : Activity() {
         args[2] = Instrumentation()
         args[3] = android.os.Binder()
         args[4] = 0
-        args[5] = mcdApp
+        args[5] = noiceApp
         args[6] = intent
         args[7] = ai
         args[8] = targetCls
 
-        attachMethod.invoke(mcdActivity, *args)
-        Log.i(TAG, "Activity.attach() OK for $targetCls; window=${mcdActivity.window}")
+        attachMethod.invoke(noiceActivity, *args)
+        Log.i(TAG, "Activity.attach() OK for $targetCls; window=${noiceActivity.window}")
 
-        if (themeId != 0) mcdActivity.setTheme(themeId)
+        if (themeId != 0) noiceActivity.setTheme(themeId)
 
         try {
-            val ai2 = mcdActivity.applicationInfo
+            val ai2 = noiceActivity.applicationInfo
             ai2.packageName = hostPkg
         } catch (_: Exception) {}
 
         // Hook LocaleManager binder so getApplicationLocales returns empty instead of SecExc
-        stubLocaleManager(mcdCtx)
+        stubLocaleManager(noiceCtx)
 
         Log.i(TAG, "Calling $targetCls.onCreate()...")
         val oc = Activity::class.java.getDeclaredMethod("onCreate", Bundle::class.java)
         oc.isAccessible = true
-        oc.invoke(mcdActivity, null as Bundle?)
+        oc.invoke(noiceActivity, null as Bundle?)
         Log.i(TAG, "$targetCls.onCreate() returned!")
     }
 
-    private fun stealContentInto(mcdActivity: Activity, status: android.widget.TextView, targetCls: String) {
-        val nWin = mcdActivity.window
+    private fun stealContentInto(noiceActivity: Activity, status: android.widget.TextView, targetCls: String) {
+        val nWin = noiceActivity.window
         if (nWin == null) {
             status.text = "$targetCls attach OK but window is null"
             return
@@ -443,7 +438,7 @@ class McdInProcessActivity : Activity() {
                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT))
             setContentView(wrap)
-            // Force layout + draw: stolen view was attached to mcd's never-rendered window
+            // Force layout + draw: stolen view was attached to noice's never-rendered window
             wrap.post {
                 nView.requestLayout()
                 nView.invalidate()
@@ -459,18 +454,18 @@ class McdInProcessActivity : Activity() {
 }
 
 /**
- * Wraps a mcd Context to stub out cross-package operations that would otherwise
- * SecurityException-kill the host process: bindService to mcd's own services,
+ * Wraps a noice Context to stub out cross-package operations that would otherwise
+ * SecurityException-kill the host process: bindService to noice's own services,
  * startService likewise. Returns "service unavailable"-ish defaults so the calling
  * code (e.g. LibraryViewModel) can continue without binding actual audio playback.
  */
-private class McdSafeContext(base: Context, private val mcdPkg: String)
+private class NoiceSafeContext(base: Context, private val noicePkg: String)
     : android.content.ContextWrapper(base) {
-    private val LOG = "McdInProcess.Safe"
+    private val LOG = "NoiceInProcess.Safe"
 
     private fun shouldStub(intent: Intent): Boolean {
         val cn = intent.component
-        return cn != null && cn.packageName == mcdPkg
+        return cn != null && cn.packageName == noicePkg
     }
 
     override fun bindService(service: Intent, conn: android.content.ServiceConnection, flags: Int): Boolean {
