@@ -59,10 +59,35 @@ class McdInProcessActivity : Activity() {
         currentMcdActivity?.let { driveLifecycleToResumed(it) }
     }
 
+    override fun onPause()    { super.onPause();   forwardLifecycle("performPause") }
+    override fun onStop()     { super.onStop();    forwardLifecycle("performStop") }
+    override fun onDestroy()  {
+        if (isFinishing) forwardLifecycle("performDestroy")
+        super.onDestroy()
+    }
+
+    private fun forwardLifecycle(method: String, vararg args: Any?) {
+        val act = currentMcdActivity ?: return
+        try {
+            val m = Activity::class.java.declaredMethods.firstOrNull {
+                it.name == method && it.parameterCount == args.size
+            } ?: Activity::class.java.declaredMethods.firstOrNull {
+                it.name == method && it.parameterCount == 0
+            } ?: return
+            m.isAccessible = true
+            if (m.parameterCount == 0) m.invoke(act) else m.invoke(act, *args)
+            Log.i(TAG, "Forwarded $method to ${act.javaClass.simpleName}")
+        } catch (e: Throwable) {
+            val r = if (e is java.lang.reflect.InvocationTargetException) e.cause ?: e else e
+            Log.w(TAG, "forwardLifecycle($method) failed: ${r.javaClass.simpleName}: ${r.message?.take(120)}")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bypassHiddenApiRestrictions()
         installSwallowingUncaughtHandler()
+        installIntentRewriter(MCD_PKG, McdInProcessActivity::class.java.name, EXTRA_TARGET_CLASS)
         // Target class can come from (a) explicit extra, (b) activity-alias component name
         // (when mcd's MainActivity does startActivity for AppIntroActivity etc., Android
         // resolves the alias and getIntent().component.className equals the alias = mcd cls)
@@ -156,6 +181,82 @@ class McdInProcessActivity : Activity() {
         } catch (e: Throwable) {
             Log.w(TAG, "installSwallowingUncaughtHandler failed: ${e.javaClass.simpleName}: ${e.message}")
         }
+    }
+
+    /**
+     * Hook IActivityTaskManager binder so cross-package intents (component pkg == mcd's) get
+     * rewritten to com.westlake.host/.McdInProcessActivity with the target FQCN in an extra.
+     * Without this, McD's hardcoded setClassName("com.mcdonalds.app", "HomeDashboardActivity")
+     * SecurityException-kills us.
+     */
+    private fun installIntentRewriter(foreignPkg: String, proxyActivity: String, extraKey: String) {
+        try {
+            var singletonOwner: Class<*>
+            var singletonFieldName: String
+            try {
+                singletonOwner = Class.forName("android.app.ActivityTaskManager")
+                singletonFieldName = "IActivityTaskManagerSingleton"
+            } catch (_: ClassNotFoundException) {
+                singletonOwner = Class.forName("android.app.ActivityManager")
+                singletonFieldName = "IActivityManagerSingleton"
+            }
+            val singletonField = singletonOwner.getDeclaredField(singletonFieldName)
+            singletonField.isAccessible = true
+            val singleton = singletonField.get(null)
+            val singletonCls = Class.forName("android.util.Singleton")
+            val mInstanceField = singletonCls.getDeclaredField("mInstance")
+            mInstanceField.isAccessible = true
+            val original = mInstanceField.get(singleton)
+                ?: run {
+                    singletonOwner.getDeclaredMethod("getService").invoke(null)
+                    mInstanceField.get(singleton)
+                }
+                ?: return
+            val ifaceCls = original.javaClass.interfaces.firstOrNull {
+                it.name.endsWith(".IActivityTaskManager") || it.name.endsWith(".IActivityManager")
+            } ?: return
+            val hostPkg = packageName
+            val proxy = java.lang.reflect.Proxy.newProxyInstance(
+                ifaceCls.classLoader, arrayOf(ifaceCls)
+            ) { _, method, args ->
+                val effective: Array<Any?> = if (args == null) emptyArray() else args.copyOf()
+                if (method.name.startsWith("startActivity")) {
+                    for (i in effective.indices) {
+                        val a = effective[i]
+                        if (a is Intent) {
+                            effective[i] = rewriteIntent(a, foreignPkg, hostPkg, proxyActivity, extraKey)
+                        } else if (a is Array<*> && a.isArrayOf<Intent>()) {
+                            @Suppress("UNCHECKED_CAST")
+                            val arr = (a as Array<Intent>).copyOf()
+                            for (j in arr.indices) {
+                                arr[j] = rewriteIntent(arr[j], foreignPkg, hostPkg, proxyActivity, extraKey)
+                            }
+                            effective[i] = arr
+                        }
+                    }
+                }
+                try {
+                    method.invoke(original, *effective)
+                } catch (e: java.lang.reflect.InvocationTargetException) {
+                    throw e.cause ?: e
+                }
+            }
+            mInstanceField.set(singleton, proxy)
+            Log.i(TAG, "Installed intent rewriter on ${singletonOwner.simpleName}.$singletonFieldName")
+        } catch (e: Throwable) {
+            Log.w(TAG, "installIntentRewriter failed: ${e.javaClass.simpleName}: ${e.message}")
+        }
+    }
+
+    private fun rewriteIntent(intent: Intent, foreignPkg: String, hostPkg: String,
+                               proxyActivity: String, extraKey: String): Intent {
+        val cn = intent.component ?: return intent
+        if (cn.packageName != foreignPkg) return intent
+        val newIntent = Intent(intent)
+        newIntent.component = android.content.ComponentName(hostPkg, proxyActivity)
+        newIntent.putExtra(extraKey, cn.className)
+        Log.i(TAG, "Rewrote ${cn.flattenToShortString()} → ${newIntent.component?.flattenToShortString()}")
+        return newIntent
     }
 
     /**

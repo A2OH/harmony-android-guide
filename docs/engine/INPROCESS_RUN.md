@@ -565,9 +565,30 @@ during validation:
 
 ---
 
-## Open items
+## Status of open items (post `PF-inproc-002`/`004` landing)
 
-### 1. Cross-package intent rewriting (McD blocker)
+| # | Item | Status |
+|---|---|---|
+| 1 | Cross-package intent rewriting | ✅ **LANDED** — `installIntentRewriter()` via `IActivityTaskManager` Proxy hook. McD HomeDashboardActivity now navigates inside Westlake (verified `topResumedActivity=com.westlake.host/.McdInProcessActivity` after `Rewrote com.mcdonalds.app/HomeDashboardActivity → com.westlake.host/.McdInProcessActivity`). |
+| 2 | Service hosting (cross-pkg bind delegation) | Open — #599 |
+| 3 | Lifecycle down-drive | ✅ **LANDED** — `forwardLifecycle("performPause"/"performStop"/"performDestroy")`. Verified `Forwarded performPause to HomeDashboardActivity` on backgrounding. |
+| 4 | Process death + savedInstanceState | Open — #601 |
+| 5 | Runtime permission delegation | Open — #602 |
+| 6 | Content provider hosting | Open — #603 |
+| 7 | Native lib namespace isolation | Open — #604 |
+| 8 | Configuration change handling | Open — #605 |
+| 9 | Notification forwarding | Open — #606 |
+| 10 | Activity-result cross-pkg | Open — #607 |
+| 11 | Back-stack management | Open — #608 |
+| 12 | InitializationProvider hosting | Open — #609 |
+| 13 | WindowInsets propagation | Open — #610 |
+| 14 | Memory hygiene + teardown | Open — #611 |
+| 15 | Multi-process apps (was "won't fix") | Reclassified — design doc `INPROCESS_MULTIPROCESS_DESIGN.md` shows it's doable; #612 |
+| 16 | Generic InProcessLauncher refactor | Open — #613 |
+
+## Open items (historical detail below)
+
+### 1. Cross-package intent rewriting (McD blocker) — LANDED PF-inproc-002
 
 McD's SplashActivity creates intents with `setClassName("com.mcdonalds.app", ...)`
 literally. These bypass our manifest aliases (which only catch `com.westlake.host/`
