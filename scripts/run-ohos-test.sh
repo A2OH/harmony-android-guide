@@ -72,6 +72,27 @@ BCP_FILES=(
     "aosp-shim.dex"
 )
 
+# OHOS-specific BCP additions (MVP-1, #619). These are the OHOS-tailored
+# BCP slices that the standalone dalvikvm consumes on the rk3568 board:
+#   - aosp-shim-ohos.dex : NON-stripped version of the AOSP shim (4.9MB,
+#                          dex.035). Built by `dx --dex` against the full
+#                          shim/java source tree, WITHOUT applying
+#                          scripts/framework_duplicates.txt. The phone path
+#                          can keep the slimmed aosp-shim.dex because real
+#                          framework.jar fills in the gap; OHOS has no
+#                          framework.jar (the phone's framework.jar is dex.039,
+#                          unloadable by dalvik-kitkat), so the full shim has
+#                          to ship.
+#   - core-android-x86.jar : richer core library than core-kitkat.jar
+#                           (includes java.util.concurrent.* etc. needed for
+#                           android.content.Context.<clinit>). Already dex.035.
+#   - direct-print-stream.jar : MVP-0 stdout bypass (unchanged).
+BCP_FILES_OHOS=(
+    "aosp-shim-ohos.dex"
+    "core-android-x86.jar"
+    "direct-print-stream.jar"
+)
+
 # Android SDK / tooling
 ANDROID_SDK="${ANDROID_SDK:-/home/dspfac/android-sdk}"
 D8="${D8:-$ANDROID_SDK/build-tools/34.0.0/d8}"
@@ -185,18 +206,31 @@ cmd_push_bcp() {
     log "${BOLD}== push BCP files -> $BOARD_DIR/bcp/ ==${RESET}"
     local found=0 missing=0 path
     declare -a paths=()
+    # Phase 1 BCP (Android phone). Kept for traceability — these files are
+    # boot-ART images and won't be consumed by the OHOS dalvikvm path, but
+    # the harness pushes them so the board state matches the phone state.
     for f in "${BCP_FILES[@]}"; do
         if path="$(_find_bcp_file "$f")"; then
             paths+=("$path")
             log "  found: $path"
             found=$((found + 1))
         else
-            err "  missing: $f (searched: ${BCP_SOURCES[*]})"
+            warn "  missing (phase-1, optional on OHOS): $f"
+        fi
+    done
+    # Phase 2 OHOS BCP — REQUIRED for MVP-1.
+    for f in "${BCP_FILES_OHOS[@]}"; do
+        if path="$(_find_bcp_file "$f")"; then
+            paths+=("$path")
+            log "  found: $path"
+            found=$((found + 1))
+        else
+            err "  missing (OHOS, REQUIRED): $f"
             missing=$((missing + 1))
         fi
     done
     if [ "$missing" -gt 0 ]; then
-        err "$missing BCP file(s) missing — cannot continue"
+        err "$missing OHOS BCP file(s) missing — cannot continue"
         return 1
     fi
     hdc_shell "mkdir -p $BOARD_DIR/bcp" >/dev/null 2>&1
@@ -291,65 +325,110 @@ cmd_hello() {
 }
 
 # ---------- subcommand: trivial-activity ------------------------------------
-# Builds the :trivial-activity APK, pushes it, attempts to launch via
-# `aa start` (OHOS) or via dalvikvm-managed PathClassLoader bootstrap if
-# `aa` is unavailable, and greps hilog for the onCreate marker.
+# MVP-1 (#619): an Android Activity's onCreate() runs on the board.
 #
-# Note: the actual launch path under Westlake (PathClassLoader +
-# WestlakeLauncher) is still being wired up for the OHOS board (Phase 2
-# milestone M8). For now this subcommand only verifies the APK builds,
-# pushes, and surfaces hilog-grep wiring — it is fail-soft on launch
-# failure, like the `hello` subcommand.
+# Pipeline:
+#   1. gradle :trivial-activity:assembleDebug          (APK we won't actually use)
+#      gradle :launcher:compileJava                    (OhosMvpLauncher .class)
+#   2. d8 --min-api 13 on MainActivity.class           (-> TrivialActivity.dex, dex.035)
+#      d8 --min-api 13 on OhosMvpLauncher.class        (-> OhosMvpLauncher.dex, dex.035)
+#      (We bypass the gradle APK because AGP's d8 emits dex.037 which
+#      dalvik-kitkat refuses; --min-api 13 forces dex.035.)
+#   3. push both dex files + verify aosp-shim-ohos.dex on board
+#   4. run dalvikvm with the full BCP (core-android-x86 + direct-print-stream
+#      + aosp-shim-ohos + TrivialActivity + OhosMvpLauncher) and invoke
+#      OhosMvpLauncher with "<package>/.MainActivity".
+#   5. grep both dalvikvm.stdout and hilog for the marker.
+#
+# Marker: "OhosTrivialActivity.onCreate reached"
 
 cmd_trivial_activity() {
     local outdir="$ARTIFACT_ROOT/mvp1-trivial/$TS"
     mkdir -p "$outdir"
     log "${BOLD}== MVP-1 trivial-activity (#619) -> $outdir ==${RESET}"
 
-    log "[1/5] gradle :trivial-activity:assembleDebug"
-    if ! (cd "$GRADLE_DIR" && ./gradlew :trivial-activity:assembleDebug --no-daemon -q) \
+    log "[1/5] gradle :trivial-activity:assembleDebug + :launcher:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :trivial-activity:assembleDebug :launcher:compileJava --no-daemon -q) \
             > "$outdir/gradle.log" 2>&1; then
         err "gradle build failed — see $outdir/gradle.log"
         return 1
     fi
-    local apk="$GRADLE_DIR/trivial-activity/build/outputs/apk/debug/trivial-activity-debug.apk"
-    if [ ! -f "$apk" ]; then
-        err "APK not produced: $apk"
+    local activity_classes="$GRADLE_DIR/trivial-activity/build/intermediates/javac/debug/classes"
+    local launcher_classes="$GRADLE_DIR/launcher/build/classes/java/main"
+    local activity_class="$activity_classes/com/westlake/ohostests/trivial/MainActivity.class"
+    local launcher_class="$launcher_classes/com/westlake/ohostests/launcher/OhosMvpLauncher.class"
+    if [ ! -f "$activity_class" ] || [ ! -f "$launcher_class" ]; then
+        err "missing class files; activity=$activity_class launcher=$launcher_class"
         return 1
     fi
-    ok "APK built: $(du -b "$apk" | awk '{print $1}') bytes"
+    ok "gradle build complete"
 
-    log "[2/5] push -> $BOARD_DIR/OhosTrivialActivity.apk"
-    hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
-    hdc_send "$apk" "$BOARD_DIR/OhosTrivialActivity.apk" || return 1
+    log "[2/5] d8 --min-api 13 -> {TrivialActivity,OhosMvpLauncher}.dex"
+    if [ ! -x "$D8" ]; then
+        err "d8 not found at $D8 (set \$D8 or install build-tools/34.0.0)"
+        return 1
+    fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir/activity" "$dexdir/launcher"
+    "$D8" --min-api 13 --output "$dexdir/activity" "$activity_class" \
+            > "$outdir/d8-activity.log" 2>&1 || { err "d8 activity failed"; return 1; }
+    "$D8" --min-api 13 --output "$dexdir/launcher" "$launcher_class" \
+            > "$outdir/d8-launcher.log" 2>&1 || { err "d8 launcher failed"; return 1; }
+    mv "$dexdir/activity/classes.dex" "$dexdir/TrivialActivity.dex"
+    mv "$dexdir/launcher/classes.dex" "$dexdir/OhosMvpLauncher.dex"
+    rmdir "$dexdir/activity" "$dexdir/launcher" 2>/dev/null || true
+    ok "dex emitted: TrivialActivity.dex=$(du -b "$dexdir/TrivialActivity.dex" | awk '{print $1}')B "\
+"OhosMvpLauncher.dex=$(du -b "$dexdir/OhosMvpLauncher.dex" | awk '{print $1}')B"
 
-    log "[3/5] verify on-device"
-    hdc_shell "ls -la $BOARD_DIR/OhosTrivialActivity.apk" | tee "$outdir/on-device-ls.log"
+    log "[3/5] push dex + verify BCP on board"
+    hdc_shell "mkdir -p $BOARD_DIR $BOARD_DIR/bcp" >/dev/null 2>&1
+    hdc_send "$dexdir/TrivialActivity.dex"  "$BOARD_DIR/TrivialActivity.dex"  || return 1
+    hdc_send "$dexdir/OhosMvpLauncher.dex"  "$BOARD_DIR/OhosMvpLauncher.dex"  || return 1
+    # Verify required BCP pieces exist on the board (we don't push them
+    # every run — they're stable per board provisioning step).
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing BCP files on board (need aosp-shim-ohos.dex + core-android-x86.jar + direct-print-stream.jar in $BOARD_DIR/bcp/)"
+        err "  hdc said: $bcp_check"
+        return 1
+    fi
+    hdc_shell "ls -la $BOARD_DIR/TrivialActivity.dex $BOARD_DIR/OhosMvpLauncher.dex $BOARD_DIR/bcp/" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex pushed; BCP intact"
 
-    log "[4/5] attempt launch (best-effort; full path lands with M8)"
-    # Try the dalvikvm-direct PathClassLoader path first — matches what
-    # the Westlake launcher will eventually do. The dex name passed to
-    # dalvikvm is the APK itself (Dalvik happily reads classes.dex out
-    # of a ZIP).
-    local cmd="cd $BOARD_DIR && ./dalvikvm -cp OhosTrivialActivity.apk com.westlake.ohostests.trivial.MainActivity"
+    log "[4/5] invoke dalvikvm + OhosMvpLauncher"
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="$bcp:$BOARD_DIR/TrivialActivity.dex"
+    bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
+    cmd="$cmd com.westlake.ohostests.trivial/.MainActivity"
     hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
-        warn "dalvikvm launch returned non-zero — expected pre-#614"
+        warn "dalvikvm exited non-zero — capturing output regardless"
     }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr"
 
-    log "[5/5] grep hilog for marker"
+    log "[5/5] grep marker"
     local marker="OhosTrivialActivity.onCreate reached"
-    # hilog -x is a one-shot dump on OHOS (-x = exit when caught up).
     hdc_shell "hilog -x 2>/dev/null | tail -200" > "$outdir/hilog-tail.log" 2>&1 || true
     if grep -qF "$marker" "$outdir/dalvikvm.stdout" 2>/dev/null \
        || grep -qF "$marker" "$outdir/hilog-tail.log" 2>/dev/null; then
         ok "${GREEN}${BOLD}MVP-1 PASS${RESET}: marker found"
         echo "PASS" > "$outdir/result.txt"
+        local marker_line
+        marker_line="$(grep -F "$marker" "$outdir/dalvikvm.stdout" | head -1 | tr -d '\r')"
+        log "  marker line: $marker_line"
         return 0
     else
-        warn "marker NOT found — Activity launch path is M8-Step1 (#614 unblocks)"
-        warn "harness mechanics OK; see $outdir/ for evidence"
-        echo "BLOCKED_ON_614_OR_M8" > "$outdir/result.txt"
-        return 0
+        err "marker NOT found in stdout or hilog"
+        echo "FAIL" > "$outdir/result.txt"
+        return 1
     fi
 }
 

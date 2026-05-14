@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "OhosTests"
 include(":hello")
 include(":trivial-activity")
+include(":launcher")
