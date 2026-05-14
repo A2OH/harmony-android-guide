@@ -1,0 +1,7 @@
+[m6drm 14861030] SET_MASTER OK without killing composer_host (master was free)
+[m6drm 14861031] connector=159 encoder=158 crtc=92 mode=720x1280
+[m6drm 14861039] dumb[0] handle=1 pitch=2880 size=3686400 fb_id=160
+[m6drm 14861047] dumb[1] handle=2 pitch=2880 size=3686400 fb_id=163
+[m6drm 14861053] SETCRTC OK, scanning fb_id=160 (RED)
+[m6drm 14866064] VSYNC_STATS frames=346 intervals=256 avg_us=14482 min_us=14439 max_us=14526
+M6_SELF_TEST_OK frames=346 avg_us=14482 min_us=14439 max_us=14526 hz=69.05

@@ -731,6 +731,92 @@ cmd_red_square_drm() {
     fi
 }
 
+# ---------- subcommand: m6-drm-daemon ---------------------------------------
+# Long-lived DRM/KMS daemon port (Phase 2 M6 OHOS variant; PF-ohos-m6-001).
+# Runs the standalone self-test (page-flip at native vsync without a client)
+# AND an end-to-end AF_UNIX + memfd round-trip with the built-in test client
+# sending 120 frames (60 RED + 60 BLUE). Captures kernel DRM debugfs state
+# mid-flight to prove our daemon owns the scanout while composer_host stays
+# alive.
+cmd_m6_drm_daemon() {
+    local outdir="$ARTIFACT_ROOT/m6-drm-daemon/$TS"
+    mkdir -p "$outdir"
+    log "${BOLD}== M6 DRM daemon (PF-ohos-m6-001) -> $outdir ==${RESET}"
+
+    local daemon_host="$REPO_ROOT/dalvik-port/compat/m6-drm-daemon/m6-drm-daemon"
+    if [ ! -f "$daemon_host" ]; then
+        log "[1/5] cross-compiling daemon"
+        bash "$REPO_ROOT/dalvik-port/compat/m6-drm-daemon/build.sh" \
+                > "$outdir/build.log" 2>&1 || { err "build failed"; return 1; }
+    else
+        log "[1/5] daemon present at $daemon_host"
+    fi
+    if [ ! -f "$daemon_host" ]; then err "daemon binary missing"; return 1; fi
+
+    log "[2/5] push daemon to /data/local/tmp/m6-drm-daemon"
+    hdc_send "$daemon_host" "/data/local/tmp/m6-drm-daemon" || return 1
+    hdc_shell "chmod 0755 /data/local/tmp/m6-drm-daemon" >/dev/null 2>&1
+
+    log "[3/5] self-test (5 s, no kill composer_host)"
+    hdc_shell "/data/local/tmp/m6-drm-daemon --self-test 5 --no-kill-composer" \
+            > "$outdir/self-test.log" 2>&1
+    local st_ok
+    st_ok=$(grep -c "M6_SELF_TEST_OK" "$outdir/self-test.log" || true)
+    if [ "$st_ok" -ne 1 ]; then
+        err "self-test failed — see $outdir/self-test.log"
+        echo "FAIL_SELF_TEST" > "$outdir/result.txt"
+        return 1
+    fi
+    ok "self-test PASS: $(grep M6_SELF_TEST_OK "$outdir/self-test.log")"
+
+    log "[4/5] end-to-end (daemon + test-client, 120 frames)"
+    hdc_shell "rm -f /data/local/tmp/westlake/m6-drm.sock 2>/dev/null;
+        mkdir -p /data/local/tmp/westlake;
+        /data/local/tmp/m6-drm-daemon --accept-client --no-kill-composer --max-frames 120 > /data/local/tmp/m6d.stdout 2>/data/local/tmp/m6d.stderr &
+        DPID=\$!;
+        sleep 1;
+        /data/local/tmp/m6-drm-daemon --test-client --frames 120 --split 60 > /data/local/tmp/m6c.stdout 2>/data/local/tmp/m6c.stderr &
+        CPID=\$!;
+        sleep 1;
+        echo === midflight clients ===;
+        cat /sys/kernel/debug/dri/0/clients;
+        echo === midflight state ===;
+        cat /sys/kernel/debug/dri/0/state;
+        wait \$CPID;
+        sleep 1;
+        echo === daemon stdout ===;
+        cat /data/local/tmp/m6d.stdout;
+        echo === daemon stderr ===;
+        tail -25 /data/local/tmp/m6d.stderr;
+        echo === client stdout ===;
+        cat /data/local/tmp/m6c.stdout;
+        echo === post clients ===;
+        cat /sys/kernel/debug/dri/0/clients" \
+        > "$outdir/end-to-end.log" 2>&1
+
+    log "[5/5] grep markers"
+    local m_daemon_done m_client_ok m_kernel_owns
+    m_daemon_done=$(grep -c "M6_DAEMON_DONE frames=120" "$outdir/end-to-end.log" || true)
+    m_client_ok=$(grep -c "M6_TEST_CLIENT_DONE ok=120 fail=0" "$outdir/end-to-end.log" || true)
+    m_kernel_owns=$(grep -c "allocated by = m6-drm-daemon" "$outdir/end-to-end.log" || true)
+    log "  M6_DAEMON_DONE frames=120: $m_daemon_done"
+    log "  M6_TEST_CLIENT_DONE ok=120: $m_client_ok"
+    log "  kernel allocated-by=m6-drm-daemon: $m_kernel_owns"
+
+    if [ "$m_daemon_done" -ge 1 ] && [ "$m_client_ok" -ge 1 ] && [ "$m_kernel_owns" -ge 1 ]; then
+        local hz
+        hz=$(grep -oE 'hz=[0-9.]+' "$outdir/end-to-end.log" | head -1)
+        ok "${GREEN}${BOLD}M6 DRM daemon PASS${RESET}: 120 frames flipped, $hz, composer_host coexists"
+        cp "$daemon_host" "$outdir/m6-drm-daemon" 2>/dev/null || true
+        echo "M6_DAEMON_PASS" > "$outdir/result.txt"
+        return 0
+    else
+        err "M6 daemon did not reach all markers — see $outdir/end-to-end.log"
+        echo "FAIL_M6" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -745,6 +831,9 @@ Subcommands:
   red-square          build :red-square APK, push, run, paint red on fb0 (PF-ohos-mvp-003)
   red-square-drm      build :red-square, run Java side, then drm_present pipe
                       → panel scans red via DRM/KMS (PF-ohos-mvp-003 MVP-2)
+  m6-drm-daemon       run long-lived DRM/KMS daemon: self-test (5s) + end-to-end
+                      AF_UNIX/memfd round-trip (120 frames RED/BLUE @ vsync;
+                      composer_host coexists) (PF-ohos-m6-001)
 
 Environment overrides:
   HDC=$HDC
@@ -767,6 +856,7 @@ main() {
         trivial-activity)   cmd_trivial_activity "$@" ;;
         red-square)         cmd_red_square "$@" ;;
         red-square-drm)     cmd_red_square_drm "$@" ;;
+        m6-drm-daemon)      cmd_m6_drm_daemon "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"
