@@ -1,1 +1,1 @@
-/home/dspfac/android-to-openharmony-migration/artifacts/noice-1day/20260503_232600_noice_noice_first_boot_v2
+/home/dspfac/android-to-openharmony-migration/artifacts/noice-1day/20260506_234942_noice_noice_real_fw
