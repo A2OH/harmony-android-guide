@@ -100,6 +100,48 @@ public final class InProcessAppLauncher {
         int failed = 0;
         log("inproc-app-launcher-start");
 
+        // CR-Z Step 0: pre-init default TimeZone so j.util.Date <clinit> doesn't
+        // trip the libcore IoBridge.open NPE on this dalvik-kitkat BCP.
+        //
+        // Root cause discovery (CR-Y+1 → CR-Z, artifact 20260515_150349):
+        //   At onResume:458 noice raised
+        //     kotlin.UninitializedPropertyAccessException: lateinit property
+        //     subscriptionBillingProvider has not been initialized
+        //   Tracing the dalvikvm log backwards from there shows Hilt's inject
+        //   path (Lv3/e;->m()V) DID run inside the real androidx
+        //   ComponentActivity.onCreate -> OnContextAvailableListener
+        //   dispatch — but the Dagger provider chain triggered
+        //   `Ljava/util/Date;` <clinit>, which calls `new Date().getYear()`,
+        //   which calls TimeZone.getDefault(), which falls into
+        //   `IoUtils.readFileAsString("/etc/timezone")` → IoBridge.open →
+        //   `Libcore.os.open(...)` returns null on this VM/sysroot →
+        //   FileDescriptor.valid() NPE at line 394.
+        //   The NPE escapes the IOException catch in TimeZone.getDefault(),
+        //   propagates as ExceptionInInitializerError, and aborts every
+        //   downstream @Inject provider — leaving subscriptionBillingProvider
+        //   (and 4 other lateinit Hilt fields) null.
+        //
+        // Fix: install a non-null `defaultTimeZone` BEFORE Hilt's DI graph
+        // can trigger Date.<clinit>. `TimeZone.getTimeZone("UTC")` clones a
+        // static TimeZone.UTC (set in TimeZone.<clinit>) without touching
+        // Date; `TimeZone.setDefault(tz)` just stores it. Both safe at any
+        // point on the JVM, and idempotent once set.
+        //
+        // Generic, not per-app: ANY R8-shrunk AndroidX/Hilt/gson app hits
+        // the same chain (gson's sql adapter forces Date.<clinit> at module
+        // load time). UTC is a defensible default — the alternative,
+        // letting the VM read /etc/timezone, never worked on this BCP path.
+        // Macro-shim contract: no Unsafe, no setAccessible, no per-app
+        // branch. Only invokes public API on existing platform classes.
+        try {
+            java.util.TimeZone tz = java.util.TimeZone.getTimeZone("UTC");
+            java.util.TimeZone.setDefault(tz);
+            log("step 0: TimeZone.setDefault(UTC) installed (tz="
+                    + (tz == null ? "null" : tz.getID()) + ")");
+        } catch (Throwable t) {
+            log("step 0: TimeZone.setDefault threw (continuing): " + t);
+        }
+
         // Step 1: parse argv.
         // Accepted forms:
         //   <pkg>/<Activity> [holdSecs]
