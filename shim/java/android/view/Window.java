@@ -253,7 +253,40 @@ public class Window {
         }
     }
 
-    public View getDecorView() { return mDecorView; }
+    public View getDecorView() {
+        // CR-W: AppCompatDelegateImpl.ensureSubDecor() does
+        //   mWindow.findViewById(android.R.id.content)
+        // expecting a pre-existing ViewGroup (AOSP PhoneWindow installs one
+        // in its DecorView constructor). Without it, the smali's
+        // child-transfer + setId path is skipped, leaving the new
+        // ContentFrameLayout WITHOUT android.R.id.content, which then
+        // breaks the second findViewById(android.R.id.content) later in
+        // y(). Solution: lazily build a minimal DecorView (FrameLayout)
+        // containing a content FrameLayout with id=android.R.id.content
+        // when getDecorView is first read.
+        //
+        // CR36 documented why we couldn't eagerly construct this in the
+        // Window ctor (RenderNode.nCreate UnsatisfiedLinkError under the
+        // standalone substrate). Lazy + try/catch sidesteps that — the
+        // catch leaves mDecorView=null which is the pre-CR-W behaviour.
+        if (mDecorView == null) {
+            try {
+                android.widget.FrameLayout decor =
+                        new android.widget.FrameLayout(mContext);
+                android.widget.FrameLayout content =
+                        new android.widget.FrameLayout(mContext);
+                content.setId(0x1020002); // android.R.id.content
+                decor.addView(content, new android.widget.FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+                mDecorView = decor;
+            } catch (Throwable ignored) {
+                // RenderNode.nCreate may UnsatisfiedLinkError — leave null,
+                // matches pre-CR-W behaviour.
+            }
+        }
+        return mDecorView;
+    }
     public View peekDecorView() { return mDecorView; }
 
     public LayoutInflater getLayoutInflater() {
