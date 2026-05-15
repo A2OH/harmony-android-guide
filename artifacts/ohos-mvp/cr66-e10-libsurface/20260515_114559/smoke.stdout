@@ -1,0 +1,9 @@
+[surface-smoke] CR66-E10 standalone smoke starting
+[surface-smoke] P1 dlopen /system/lib/chipset-sdk-sp/libsurface.z.so
+[surface-smoke] P1 PASS: handle=0xc46172a5
+[surface-smoke] P2 dlsym CreateNativeWindowFromSurfaceId = 0xf624c7fd
+[surface-smoke] P2 CreateFromSurfaceId(id=0) rc=40001000 win=0
+[surface-smoke] P2 CreateFromSurfaceId(id=0x12345...) rc=40001000 win=0
+[surface-smoke] P3 dlsym CreateSurfaceAsConsumer = 0xf624710d
+[surface-smoke] DONE: composer_host alive throughout
+[surface-smoke] PASS-INFRA (load+resolve); SurfaceId path requires IPC-registered uniqueId in surfaceCache_

@@ -1,0 +1,7 @@
+=== PRE (captured before smoke run at 11:43) ===
+ 5955 ?        00:00:12 render_service
+23573 ?        00:00:00 composer_host
+
+=== POST (re-captured now) ===
+ 5955 ?        00:00:12 render_service
+23573 ?        00:00:00 composer_host

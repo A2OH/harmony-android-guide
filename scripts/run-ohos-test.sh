@@ -1874,12 +1874,30 @@ cmd_inproc_app() {
             app_class="${app_class:-com.github.ashutoshgngwr.noice.NoiceApplication}"
             outdir_subdir="cr60-e13-noice"
             ;;
+        mcd)
+            # CR65 (2026-05-15, agent 23): McDonalds market app via the
+            # noice-proven pipeline. Manifest values extracted from
+            # /tmp/cr40-mcd/mcd.apk via aapt2 dump xmltree (versionCode=6288,
+            # versionName=26.31.1, minSdk=28, compileSdk=35, package
+            # com.mcdonalds.app). The McD APK ships 33 classes*.dex files
+            # so the d8 redex stage will emit a multi-dex output set; the
+            # current pipeline only pushes the primary classes.dex
+            # (warns from existing apk-mode d8 multi-output branch). Stage
+            # A is the meaningful gate here for "primary dex visible";
+            # later stages may surface ClassNotFound from classes2.dex+
+            # which signals a future multi-dex-loader workstream rather
+            # than a strip/shim fix.
+            apk_path="${apk_path:-/tmp/cr40-mcd/mcd.apk}"
+            activity_spec="${activity_spec:-com.mcdonalds.app/com.mcdonalds.mcdcoreapp.common.activity.SplashActivity}"
+            app_class="${app_class:-com.mcdonalds.app.application.McDMarketApplication}"
+            outdir_subdir="cr65-e13-mcd"
+            ;;
         "")
             # E12 smoke path (default) — keep hello-color-apk routing.
             activity_spec="${activity_spec:-com.westlake.ohostests.helloc/.MainActivity}"
             ;;
         *)
-            err "unknown --apk alias '$apk_alias' (supported: noice)"
+            err "unknown --apk alias '$apk_alias' (supported: noice, mcd)"
             return 1 ;;
     esac
 

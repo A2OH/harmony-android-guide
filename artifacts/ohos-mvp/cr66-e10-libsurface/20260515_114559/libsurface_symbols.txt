@@ -1,0 +1,1005 @@
+0004e731 T ConvertColorSpaceTypeToNativeBufferColorSpace
+         U CountTrace
+0004b0b1 T CreateNativeWindowBufferFromNativeBuffer
+0004b011 T CreateNativeWindowBufferFromSurfaceBuffer
+0004ac99 T CreateNativeWindowFromSurface
+0004c7fd T CreateNativeWindowFromSurfaceId
+0004af29 T DestoryNativeWindow
+0004af29 T DestroyNativeWindowBuffer
+         U FinishTrace
+         U FreeBufferHandle
+0004c329 T GetBufferHandleFromNative
+0004b8e5 T GetLastFlushedBuffer
+0004cfd9 T GetLastFlushedBufferV2
+0004b20d T GetNativeObjectMagic
+         U GetOneCfgFile
+0004c775 T GetSurfaceId
+         U HiLogPrint
+         U IsTagEnabled
+0004aeb5 T NativeObjectReference
+0004af9d T NativeObjectUnreference
+0004baa5 T NativeWindowAttachBuffer
+0004bc91 T NativeWindowCancelBuffer
+0004e2f9 T NativeWindowCleanCache
+0004bb99 T NativeWindowDetachBuffer
+0004d199 T NativeWindowDisconnect
+0004b5cd T NativeWindowFlushBuffer
+0004cac9 T NativeWindowGetDefaultWidthAndHeight
+0004c9bd T NativeWindowGetTransformHint
+0004c229 T NativeWindowHandleOpt
+0004e3f1 T NativeWindowLockBuffer
+0004e79d T NativeWindowPreAllocBuffers
+0004ce21 T NativeWindowReadFromParcel
+0004b219 T NativeWindowRequestBuffer
+0004cc35 T NativeWindowSetBufferHold
+0004e66d T NativeWindowSetGameUpscaleProcessor
+0004c511 T NativeWindowSetMetaData
+0004c5fd T NativeWindowSetMetaDataSet
+0004cbb1 T NativeWindowSetRequestWidthAndHeight
+0004c3a5 T NativeWindowSetScalingMode
+0004c45d T NativeWindowSetScalingModeV2
+0004ca45 T NativeWindowSetTransformHint
+0004c6f1 T NativeWindowSetTunnelHandle
+0004e5a9 T NativeWindowUnlockAndFlushBuffer
+0004ccb5 T NativeWindowWriteToParcel
+000499db T OH_NativeBufferFromNativeWindowBuffer
+000496dd T OH_NativeBuffer_Alloc
+00049c85 T OH_NativeBuffer_FromNativeWindowBuffer
+000499cd T OH_NativeBuffer_GetBufferHandle
+00049d01 T OH_NativeBuffer_GetColorSpace
+0004988d T OH_NativeBuffer_GetConfig
+0004a0a5 T OH_NativeBuffer_GetMetadataValue
+0004988d T OH_NativeBuffer_GetNativeBufferConfig
+000499bd T OH_NativeBuffer_GetSeqNum
+0004a6dd T OH_NativeBuffer_IsSupported
+000498d1 T OH_NativeBuffer_Map
+0004a789 T OH_NativeBuffer_MapAndGetConfig
+00049b51 T OH_NativeBuffer_MapPlanes
+0004a3b1 T OH_NativeBuffer_MapWaitFence
+0004a56d T OH_NativeBuffer_ReadFromParcel
+00049859 T OH_NativeBuffer_Reference
+000499f1 T OH_NativeBuffer_SetColorSpace
+00049e1d T OH_NativeBuffer_SetMetadataValue
+00049951 T OH_NativeBuffer_Unmap
+00049873 T OH_NativeBuffer_Unreference
+0004a4bd T OH_NativeBuffer_WriteToParcel
+0004e2f9 W OH_NativeWindow_CleanCache
+0004ac99 W OH_NativeWindow_CreateNativeWindow
+0004b0b1 W OH_NativeWindow_CreateNativeWindowBufferFromNativeBuffer
+0004b011 W OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer
+0004c7fd W OH_NativeWindow_CreateNativeWindowFromSurfaceId
+0004af29 W OH_NativeWindow_DestroyNativeWindow
+0004af29 W OH_NativeWindow_DestroyNativeWindowBuffer
+0004c329 W OH_NativeWindow_GetBufferHandleFromNative
+0004d4f5 T OH_NativeWindow_GetColorSpace
+0004b8e5 W OH_NativeWindow_GetLastFlushedBuffer
+0004cfd9 W OH_NativeWindow_GetLastFlushedBufferV2
+0004de2d T OH_NativeWindow_GetMetadataValue
+0004b20d W OH_NativeWindow_GetNativeObjectMagic
+0004c775 W OH_NativeWindow_GetSurfaceId
+0004e3f1 W OH_NativeWindow_LockBuffer
+0004aeb5 W OH_NativeWindow_NativeObjectReference
+0004af9d W OH_NativeWindow_NativeObjectUnreference
+0004bc91 W OH_NativeWindow_NativeWindowAbortBuffer
+0004baa5 W OH_NativeWindow_NativeWindowAttachBuffer
+0004bb99 W OH_NativeWindow_NativeWindowDetachBuffer
+0004b5cd W OH_NativeWindow_NativeWindowFlushBuffer
+0004c229 W OH_NativeWindow_NativeWindowHandleOpt
+0004b219 W OH_NativeWindow_NativeWindowRequestBuffer
+0004c511 W OH_NativeWindow_NativeWindowSetMetaData
+0004c5fd W OH_NativeWindow_NativeWindowSetMetaDataSet
+0004c3a5 W OH_NativeWindow_NativeWindowSetScalingMode
+0004c45d W OH_NativeWindow_NativeWindowSetScalingModeV2
+0004c6f1 W OH_NativeWindow_NativeWindowSetTunnelHandle
+0004e79d W OH_NativeWindow_PreAllocBuffers
+0004ce21 W OH_NativeWindow_ReadFromParcel
+0004cc35 W OH_NativeWindow_SetBufferHold
+0004d21d T OH_NativeWindow_SetColorSpace
+0004d6cd T OH_NativeWindow_SetMetadataValue
+0004e5a9 W OH_NativeWindow_UnlockAndFlushBuffer
+0004ccb5 W OH_NativeWindow_WriteToParcel
+         U StartTrace
+0004b18d T IsNativeObjectAvailable(void*)
+00062c7c V guard variable for OHOS::ISurfaceApsPlugin::instanceMutex_
+00062c84 V guard variable for OHOS::ISurfaceApsPlugin::instance_
+00062b10 V guard variable for OHOS::BufferClientProducer::delegator_
+00062b20 V guard variable for OHOS::BufferClientProducer::DEFAULT_NAME
+00062b68 V guard variable for OHOS::CALLBACK_FUNC_CONFIGS
+00062bf0 V guard variable for OHOS::ProducerListenerProxy::delegator_
+00062b8c V guard variable for OHOS::SyncFenceTrackerManager::trackers_
+00062b58 V guard variable for OHOS::HebcWhiteList::GetInstance()::inst
+0004e901 T NativeWindow::NativeWindow()
+0004e901 T NativeWindow::NativeWindow()
+0004eaf1 T NativeWindow::~NativeWindow()
+0004e951 T NativeWindow::~NativeWindow()
+0004e951 T NativeWindow::~NativeWindow()
+0004eb51 T NativeWindowBuffer::NativeWindowBuffer()
+0004eb51 T NativeWindowBuffer::NativeWindowBuffer()
+0004eb3d T NativeWindowBuffer::~NativeWindowBuffer()
+0004eb05 T NativeWindowBuffer::~NativeWindowBuffer()
+0004eb05 T NativeWindowBuffer::~NativeWindowBuffer()
+         U HitraceMeterFmtScoped::HitraceMeterFmtScoped(unsigned long long, char const*, ...)
+0005b52f T OHOS::GetRealPid()
+         U OHOS::Parcelable::Parcelable()
+         U OHOS::PeerHolder::Remote()@1.0
+         U OHOS::PeerHolder::PeerHolder(OHOS::sptr<OHOS::IRemoteObject> const&)@1.0
+00046185 T OHOS::CloneBuffer(unsigned char*, unsigned char const*, unsigned int)
+000463c1 T OHOS::WriteToFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >, void*, unsigned int, int, int, int, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+00059d45 T OHOS::SurfaceUtils::GetSurface(unsigned long long)
+00059be9 T OHOS::SurfaceUtils::GetInstance()
+0005a289 T OHOS::SurfaceUtils::MatrixProduct(std::__h::array<float, 16u> const&, std::__h::array<float, 16u> const&)
+0005af45 T OHOS::SurfaceUtils::AddNativeWindow(unsigned long long, void*)
+0005adf9 T OHOS::SurfaceUtils::GetNativeWindow(unsigned long long)
+0005b0f5 T OHOS::SurfaceUtils::RemoveNativeWindow(unsigned long long)
+0005aded T OHOS::SurfaceUtils::ComputeBufferMatrix(float*, unsigned int, OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::GraphicTransformType&, OHOS::Rect const&)
+0005a561 T OHOS::SurfaceUtils::ComputeTransformMatrix(float*, unsigned int, OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::GraphicTransformType&, OHOS::Rect const&)
+0005a455 T OHOS::SurfaceUtils::ComputeTransformByMatrix(OHOS::GraphicTransformType&, std::__h::array<float, 16u>*)
+0005aa9d T OHOS::SurfaceUtils::ComputeTransformMatrixV2(float*, unsigned int, OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::GraphicTransformType&, OHOS::Rect const&)
+0005a851 T OHOS::SurfaceUtils::ComputeTransformByMatrixV2(OHOS::GraphicTransformType&, std::__h::array<float, 16u>*)
+00059f1d T OHOS::SurfaceUtils::Add(unsigned long long, OHOS::wptr<OHOS::Surface> const&)
+0005a0ed T OHOS::SurfaceUtils::Remove(unsigned long long)
+00059d31 T OHOS::SurfaceUtils::~SurfaceUtils()
+00059c51 T OHOS::SurfaceUtils::~SurfaceUtils()
+00059c51 T OHOS::SurfaceUtils::~SurfaceUtils()
+0005be5d T OHOS::HebcWhiteList::AcquireConfig(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+0005c1c5 T OHOS::HebcWhiteList::GetApplicationName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+0005be79 T OHOS::HebcWhiteList::GetConfigAbsolutePath()
+0005bd9d T OHOS::HebcWhiteList::Init()
+0005bd19 T OHOS::HebcWhiteList::Check(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0005c259 T OHOS::HebcWhiteList::ReadFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, unsigned int, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+0005bfb1 T OHOS::HebcWhiteList::ParseJson(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+         U OHOS::IPCObjectStub::SendRequest(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)@1.0
+         U OHOS::IPCObjectStub::OnRemoteDump(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)@1.0
+         U OHOS::IPCObjectStub::ProcessProto(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)@1.0
+         U OHOS::IPCObjectStub::GetCallingPid()@1.0
+         U OHOS::IPCObjectStub::OnLastStrongRef(void const*)@1.0
+         U OHOS::IPCObjectStub::OnRemoteRequest(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)@1.0
+         U OHOS::IPCObjectStub::OnFirstStrongRef(void const*)@1.0
+         U OHOS::IPCObjectStub::AddDeathRecipient(OHOS::sptr<OHOS::IRemoteObject::DeathRecipient> const&)@1.0
+         U OHOS::IPCObjectStub::GetObjectRefCount()@1.0
+         U OHOS::IPCObjectStub::RemoveDeathRecipient(OHOS::sptr<OHOS::IRemoteObject::DeathRecipient> const&)@1.0
+         U OHOS::IPCObjectStub::GetAndSaveDBinderData(int, unsigned int)@1.0
+         U OHOS::IPCObjectStub::DBinderClearServiceState(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)@1.0
+         U OHOS::IPCObjectStub::Dump(int, std::__h::vector<std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> >, std::__h::allocator<std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> > > > const&)@1.0
+         U OHOS::IPCObjectStub::IPCObjectStub(std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> >, bool)@1.0
+         U OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U OHOS::IRemoteObject::AsInterface()@1.0
+         U OHOS::IRemoteObject::GetInterfaceDescriptor()@1.0
+         U OHOS::MessageOption::SetFlags(int)@1.0
+         U OHOS::MessageOption::MessageOption(int, int)@1.0
+         U OHOS::MessageParcel::ReadRemoteObject()@1.0
+         U OHOS::MessageParcel::WriteRemoteObject(OHOS::sptr<OHOS::IRemoteObject> const&)@1.0
+         U OHOS::MessageParcel::ReadFileDescriptor()@1.0
+         U OHOS::MessageParcel::ReadInterfaceToken()@1.0
+         U OHOS::MessageParcel::WriteFileDescriptor(int)@1.0
+         U OHOS::MessageParcel::WriteInterfaceToken(std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> >)@1.0
+         U OHOS::MessageParcel::MessageParcel()@1.0
+         U OHOS::MessageParcel::~MessageParcel()@1.0
+00056579 T OHOS::SurfaceBuffer::Create()
+00049641 T OHOS::MetadataHelper::GetROIMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+00049621 T OHOS::MetadataHelper::SetROIMetadata(OHOS::sptr<OHOS::SurfaceBuffer>&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00049099 T OHOS::MetadataHelper::GetColorSpaceInfo(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceInfo&)
+000491d9 T OHOS::MetadataHelper::GetColorSpaceType(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType&)
+0004900d T OHOS::MetadataHelper::SetColorSpaceInfo(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceInfo const&)
+00049135 T OHOS::MetadataHelper::SetColorSpaceType(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType const&)
+00049325 T OHOS::MetadataHelper::GetHDRMetadataType(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_HDR_Metadata_Type&)
+00049299 T OHOS::MetadataHelper::SetHDRMetadataType(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_HDR_Metadata_Type const&)
+00049585 T OHOS::MetadataHelper::GetCropRectMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion&)
+00049455 T OHOS::MetadataHelper::GetHDRStaticMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::HDI::Display::Graphic::Common::V1_0::HdrStaticMetadata&)
+00049567 T OHOS::MetadataHelper::GetHDRStaticMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+000493c1 T OHOS::MetadataHelper::SetHDRStaticMetadata(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::HDI::Display::Graphic::Common::V1_0::HdrStaticMetadata const&)
+00049549 T OHOS::MetadataHelper::SetHDRStaticMetadata(OHOS::sptr<OHOS::SurfaceBuffer>&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+0004952b T OHOS::MetadataHelper::GetAIHDRVideoMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+0004950f T OHOS::MetadataHelper::GetHDRDynamicMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+00049699 T OHOS::MetadataHelper::GetSDRDynamicMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+000494f1 T OHOS::MetadataHelper::SetHDRDynamicMetadata(OHOS::sptr<OHOS::SurfaceBuffer>&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+0004967d T OHOS::MetadataHelper::GetAdaptiveFOVMetadata(OHOS::sptr<OHOS::SurfaceBuffer> const&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+0004965f T OHOS::MetadataHelper::SetAdaptiveFOVMetadata(OHOS::sptr<OHOS::SurfaceBuffer>&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00048ff1 T OHOS::MetadataHelper::ConvertColorSpaceInfoToType(OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceInfo const&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType&)
+00048fd9 T OHOS::MetadataHelper::ConvertColorSpaceTypeToInfo(OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType const&, OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceInfo&)
+         U OHOS::WeakRefCounter::DecWeakRefCount(void const*)
+         U OHOS::WeakRefCounter::IncWeakRefCount(void const*)
+         U OHOS::WeakRefCounter::AttemptIncStrongRef(void const*)
+         U OHOS::WeakRefCounter::GetRefPtr()
+00047b05 T OHOS::ConsumerSurface::GetUserData(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00048067 T OHOS::ConsumerSurface::SetMetaData(unsigned int, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> > const&)
+000478e5 T OHOS::ConsumerSurface::SetUserData(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00047759 T OHOS::ConsumerSurface::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00047771 T OHOS::ConsumerSurface::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int)
+00047789 T OHOS::ConsumerSurface::DetachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00048585 T OHOS::ConsumerSurface::GetAlphaType(OHOS::GraphicAlphaType&)
+00047853 T OHOS::ConsumerSurface::GetQueueSize()
+00047f61 T OHOS::ConsumerSurface::GoBackground()
+00047865 T OHOS::ConsumerSurface::SetQueueSize(unsigned int)
+00047ff9 T OHOS::ConsumerSurface::SetTransform(OHOS::GraphicTransformType)
+00047535 T OHOS::ConsumerSurface::AcquireBuffer(OHOS::IConsumerSurface::AcquireBufferReturnValue&, long long, bool)
+0004744d T OHOS::ConsumerSurface::AcquireBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, long long&, OHOS::Rect&)
+00047511 T OHOS::ConsumerSurface::AcquireBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, long long&, std::__h::vector<OHOS::Rect, std::__h::allocator<OHOS::Rect> >&, bool)
+00047571 T OHOS::ConsumerSurface::AcquireBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int&, long long&, OHOS::Rect&)
+00047559 T OHOS::ConsumerSurface::ReleaseBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence> const&)
+000475fd T OHOS::ConsumerSurface::ReleaseBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int)
+00048123 T OHOS::ConsumerSurface::SetBufferHold(bool)
+00048427 T OHOS::ConsumerSurface::GetGlobalAlpha(int&)
+00048053 T OHOS::ConsumerSurface::GetScalingMode(unsigned int, OHOS::ScalingMode&)
+00048087 T OHOS::ConsumerSurface::SetMetaDataSet(unsigned int, OHOS::GraphicHDRMetadataKey, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00048039 T OHOS::ConsumerSurface::SetScalingMode(OHOS::ScalingMode)
+0004801f T OHOS::ConsumerSurface::SetScalingMode(unsigned int, OHOS::ScalingMode)
+000478d1 T OHOS::ConsumerSurface::GetDefaultUsage()
+00047895 T OHOS::ConsumerSurface::GetDefaultWidth()
+0004850d T OHOS::ConsumerSurface::GetFrameGravity(int&)
+000478bd T OHOS::ConsumerSurface::SetDefaultUsage(unsigned long long)
+00048549 T OHOS::ConsumerSurface::SetMaxQueueSize(unsigned int)
+000480ef T OHOS::ConsumerSurface::SetTunnelHandle(OHOS::GraphicExtDataHandle const*)
+000478a9 T OHOS::ConsumerSurface::GetDefaultHeight()
+00048521 T OHOS::ConsumerSurface::GetFixedRotation(int&)
+00048571 T OHOS::ConsumerSurface::SetLppDrawSource(bool, bool)
+000481ed T OHOS::ConsumerSurface::SetTransformHint(OHOS::GraphicTransformType)
+000485bd T OHOS::ConsumerSurface::SetDropFrameLevel(int)
+00048599 T OHOS::ConsumerSurface::SetIsPriorityAlloc(bool)
+00047661 T OHOS::ConsumerSurface::AttachBufferToQueue(OHOS::sptr<OHOS::SurfaceBuffer>)
+0004812f T OHOS::ConsumerSurface::SetPresentTimestamp(unsigned int, OHOS::GraphicPresentTimestamp const&)
+00048449 T OHOS::ConsumerSurface::GetBufferCacheConfig(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::BufferRequestConfig&)
+00048209 T OHOS::ConsumerSurface::SetSurfaceSourceType(OHSurfaceSource)
+000476d9 T OHOS::ConsumerSurface::DetachBufferFromQueue(OHOS::sptr<OHOS::SurfaceBuffer>, bool)
+000484f9 T OHOS::ConsumerSurface::GetCycleBuffersNumber(unsigned int&)
+00048413 T OHOS::ConsumerSurface::IsSurfaceBufferInCache(unsigned int, bool&)
+00047845 T OHOS::ConsumerSurface::QueryIfBufferAvailable()
+00047b7d T OHOS::ConsumerSurface::RegisterReleaseListener(std::__h::function<OHOS::GSError (OHOS::sptr<OHOS::SurfaceBuffer>&)>)
+00048147 T OHOS::ConsumerSurface::ConsumerRequestCpuAccess(bool)
+00047b67 T OHOS::ConsumerSurface::RegisterConsumerListener(OHOS::IBufferConsumerListenerClazz*)
+00047b4f T OHOS::ConsumerSurface::RegisterConsumerListener(OHOS::sptr<OHOS::IBufferConsumerListener>&)
+000477a1 T OHOS::ConsumerSurface::RegisterSurfaceDelegator(OHOS::sptr<OHOS::IRemoteObject>)
+00047881 T OHOS::ConsumerSurface::SetDefaultWidthAndHeight(int, int)
+000482b9 T OHOS::ConsumerSurface::SetSurfaceAppFrameworkType(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+00047cf1 T OHOS::ConsumerSurface::UnregisterConsumerListener()
+00047831 T OHOS::ConsumerSurface::UnregisterSurfaceDelegator()
+00047f35 T OHOS::ConsumerSurface::ClearUserDataChangeListener()
+00048495 T OHOS::ConsumerSurface::GetBufferSupportFastCompose(bool&)
+00047c09 T OHOS::ConsumerSurface::RegisterDeleteBufferListener(std::__h::function<void (unsigned long long)>, bool)
+000483ed T OHOS::ConsumerSurface::GetSurfaceBufferTransformType(OHOS::sptr<OHOS::SurfaceBuffer>, OHOS::GraphicTransformType*)
+00047d05 T OHOS::ConsumerSurface::RegisterUserDataChangeListener(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::function<void (std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)>)
+00047e9d T OHOS::ConsumerSurface::UnRegisterUserDataChangeListener(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00047175 T OHOS::ConsumerSurface::Init()
+0004787d T OHOS::ConsumerSurface::GetName()
+00047291 T OHOS::ConsumerSurface::ConsumerSurface(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00047291 T OHOS::ConsumerSurface::ConsumerSurface(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00047415 T OHOS::ConsumerSurface::~ConsumerSurface()
+0004731d T OHOS::ConsumerSurface::~ConsumerSurface()
+0004731d T OHOS::ConsumerSurface::~ConsumerSurface()
+0004682d T OHOS::DumpToFileAsync(int, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >, OHOS::sptr<OHOS::SurfaceBuffer>&)
+00053635 T OHOS::ProducerSurface::CleanCache(bool)
+000538a1 T OHOS::ProducerSurface::Disconnect()
+0005144d T OHOS::ProducerSurface::FlushBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence> const&, OHOS::BufferFlushConfig&)
+000514d9 T OHOS::ProducerSurface::FlushBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence> const&, OHOS::BufferFlushConfigWithDamages&, bool)
+00051c0d T OHOS::ProducerSurface::FlushBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int, OHOS::BufferFlushConfig&)
+00052661 T OHOS::ProducerSurface::GetUserData(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00053a27 T OHOS::ProducerSurface::SetMetaData(unsigned int, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> > const&)
+00052525 T OHOS::ProducerSurface::SetUserData(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00051f89 T OHOS::ProducerSurface::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00051fa5 T OHOS::ProducerSurface::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int)
+00051b29 T OHOS::ProducerSurface::CancelBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00051ff9 T OHOS::ProducerSurface::DetachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+000516f1 T OHOS::ProducerSurface::FlushBuffers(std::__h::vector<OHOS::sptr<OHOS::SurfaceBuffer>, std::__h::allocator<OHOS::sptr<OHOS::SurfaceBuffer> > > const&, std::__h::vector<OHOS::sptr<OHOS::SyncFence>, std::__h::allocator<OHOS::sptr<OHOS::SyncFence> > > const&, std::__h::vector<OHOS::BufferFlushConfigWithDamages, std::__h::allocator<OHOS::BufferFlushConfigWithDamages> > const&)
+000521f9 T OHOS::ProducerSurface::GetQueueSize()
+000536cd T OHOS::ProducerSurface::GoBackground()
+00054dd7 T OHOS::ProducerSurface::SetAlphaType(OHOS::GraphicAlphaType)
+00052221 T OHOS::ProducerSurface::SetQueueSize(unsigned int)
+00053759 T OHOS::ProducerSurface::SetTransform(OHOS::GraphicTransformType)
+00050d59 T OHOS::ProducerSurface::RequestBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, OHOS::BufferRequestConfig&)
+00051aa1 T OHOS::ProducerSurface::RequestBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int&, OHOS::BufferRequestConfig&)
+00053a03 T OHOS::ProducerSurface::SetBufferHold(bool)
+00053afb T OHOS::ProducerSurface::SetBufferName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+00054d91 T OHOS::ProducerSurface::SetLppShareFd(int, bool)
+00051041 T OHOS::ProducerSurface::AddCacheLocked(OHOS::sptr<OHOS::SurfaceBuffer>&)
+000506e1 T OHOS::ProducerSurface::AddCacheLocked(OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&, OHOS::BufferRequestConfig&)
+0005346d T OHOS::ProducerSurface::CleanAllLocked(unsigned int*)
+00051185 T OHOS::ProducerSurface::RequestBuffers(std::__h::vector<OHOS::sptr<OHOS::SurfaceBuffer>, std::__h::allocator<OHOS::sptr<OHOS::SurfaceBuffer> > >&, std::__h::vector<OHOS::sptr<OHOS::SyncFence>, std::__h::allocator<OHOS::sptr<OHOS::SyncFence> > >&, OHOS::BufferRequestConfig&)
+0005413d T OHOS::ProducerSurface::SetGlobalAlpha(int)
+00053a47 T OHOS::ProducerSurface::SetMetaDataSet(unsigned int, OHOS::GraphicHDRMetadataKey, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+000539e9 T OHOS::ProducerSurface::SetScalingMode(OHOS::ScalingMode)
+000539d1 T OHOS::ProducerSurface::SetScalingMode(unsigned int, OHOS::ScalingMode)
+0005396d T OHOS::ProducerSurface::ConnectStrictly()
+00052349 T OHOS::ProducerSurface::GetDefaultUsage()
+0005228d T OHOS::ProducerSurface::GetDefaultWidth()
+00053b3b T OHOS::ProducerSurface::GetRequestWidth()
+00053f97 T OHOS::ProducerSurface::GetWindowConfig()
+0005479d T OHOS::ProducerSurface::PreAllocBuffers(OHOS::BufferRequestConfig const&, unsigned int)
+00052333 T OHOS::ProducerSurface::SetDefaultUsage(unsigned long long)
+0005476d T OHOS::ProducerSurface::SetFrameGravity(int)
+00053a73 T OHOS::ProducerSurface::SetTunnelHandle(OHOS::GraphicExtDataHandle const*)
+00053b73 T OHOS::ProducerSurface::SetWindowConfig(OHOS::BufferRequestConfig const&)
+0005065d T OHOS::ProducerSurface::CleanCacheLocked(bool)
+0005229f T OHOS::ProducerSurface::GetDefaultHeight()
+00053b57 T OHOS::ProducerSurface::GetRequestHeight()
+00054785 T OHOS::ProducerSurface::SetFixedRotation(int)
+00050959 T OHOS::ProducerSurface::SetMetadataValue(OHOS::sptr<OHOS::SurfaceBuffer>&)
+000522cd T OHOS::ProducerSurface::SetTransformHint(OHOS::GraphicTransformType)
+00054def T OHOS::ProducerSurface::SetBufferTypeLeak(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+000541c9 T OHOS::ProducerSurface::UpdateCacheLocked(OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&, OHOS::BufferRequestConfig&)
+0005399f T OHOS::ProducerSurface::DisconnectStrictly()
+00051c79 T OHOS::ProducerSurface::AttachBufferToQueue(OHOS::sptr<OHOS::SurfaceBuffer>)
+0005036d T OHOS::ProducerSurface::GetProducerInitInfo(OHOS::ProducerInitInfo&)
+000503a1 T OHOS::ProducerSurface::RequestBufferLocked(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, OHOS::BufferRequestConfig&)
+0005453d T OHOS::ProducerSurface::AttachAndFlushBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence> const&, OHOS::BufferFlushConfig&, bool)
+00051a75 T OHOS::ProducerSurface::GetLastFlushedBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, float*, bool)
+00053a11 T OHOS::ProducerSurface::SetBufferReallocFlag(bool)
+0005235b T OHOS::ProducerSurface::SetSurfaceSourceType(OHSurfaceSource)
+00053f19 T OHOS::ProducerSurface::SetWindowConfigUsage(unsigned long long)
+00051e21 T OHOS::ProducerSurface::DetachBufferFromQueue(OHOS::sptr<OHOS::SurfaceBuffer>, bool)
+0005473d T OHOS::ProducerSurface::GetCycleBuffersNumber(unsigned int&)
+0005163d T OHOS::ProducerSurface::ReleasePreCacheBuffer(int)
+00050dd9 T OHOS::ProducerSurface::SetBufferConfigLocked(OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&, OHOS::BufferRequestConfig&)
+00054755 T OHOS::ProducerSurface::SetCycleBuffersNumber(unsigned int)
+00053efb T OHOS::ProducerSurface::SetWindowConfigFormat(int)
+00053edd T OHOS::ProducerSurface::SetWindowConfigStride(int)
+00052abd T OHOS::ProducerSurface::PropertyChangeCallback(OHOS::SurfaceProperty const&)
+00054311 T OHOS::ProducerSurface::RequestAndDetachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, OHOS::BufferRequestConfig&)
+00053f3d T OHOS::ProducerSurface::SetWindowConfigTimeout(int)
+00050e4d T OHOS::ProducerSurface::DeleteCacheBufferLocked(OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&, OHOS::BufferRequestConfig&)
+00052209 T OHOS::ProducerSurface::GetAvailableBufferCount(unsigned int&)
+0005292d T OHOS::ProducerSurface::RegisterReleaseListener(std::__h::function<OHOS::GSError (OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::sptr<OHOS::SyncFence> const&)>)
+000526ad T OHOS::ProducerSurface::RegisterReleaseListener(std::__h::function<OHOS::GSError (OHOS::sptr<OHOS::SurfaceBuffer>&)>)
+00052c69 T OHOS::ProducerSurface::RegisterReleaseListener(std::__h::function<OHOS::GSError (unsigned int, OHOS::sptr<OHOS::SyncFence> const&)>)
+00054dfd T OHOS::ProducerSurface::SetGameUpscaleProcessor(void (*)(int*, int*))
+000540e5 T OHOS::ProducerSurface::AcquireLastFlushedBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, float*, unsigned int, bool)
+00052015 T OHOS::ProducerSurface::RegisterSurfaceDelegator(OHOS::sptr<OHOS::IRemoteObject>)
+0005410d T OHOS::ProducerSurface::ReleaseLastFlushedBuffer(OHOS::sptr<OHOS::SurfaceBuffer>)
+00053b17 T OHOS::ProducerSurface::SetRequestWidthAndHeight(int, int)
+00053f79 T OHOS::ProducerSurface::SetWindowConfigTransform(OHOS::GraphicTransformType)
+00054881 T OHOS::ProducerSurface::ProducerSurfaceLockBuffer(OHOS::BufferRequestConfig&, Region, OHOS::sptr<OHOS::SurfaceBuffer>&)
+00053f5b T OHOS::ProducerSurface::SetWindowConfigColorGamut(OHOS::GraphicColorGamut)
+00053161 T OHOS::ProducerSurface::UnRegisterReleaseListener()
+00050311 T OHOS::ProducerSurface::ResetPropertyListenerInner(unsigned long long)
+00053fcd T OHOS::ProducerSurface::SetHdrWhitePointBrightness(float)
+00054059 T OHOS::ProducerSurface::SetSdrWhitePointBrightness(float)
+0005240d T OHOS::ProducerSurface::SetSurfaceAppFrameworkType(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+000533c9 T OHOS::ProducerSurface::ClearUserDataChangeListener()
+000541b1 T OHOS::ProducerSurface::SetRequestBufferNoblockMode(bool)
+00052add T OHOS::ProducerSurface::RegisterReleaseListenerBackup(std::__h::function<OHOS::GSError (OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::sptr<OHOS::SyncFence> const&)>)
+00053ba9 T OHOS::ProducerSurface::SetWindowConfigWidthAndHeight(int, int)
+00053aad T OHOS::ProducerSurface::SetWptrNativeWindowToPSurface(void*)
+00053221 T OHOS::ProducerSurface::RegisterUserDataChangeListener(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::function<void (std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)>)
+000531c1 T OHOS::ProducerSurface::UnRegisterReleaseListenerBackup()
+00053331 T OHOS::ProducerSurface::UnRegisterUserDataChangeListener(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+000547b5 T OHOS::ProducerSurface::ProducerSurfaceCancelBufferLocked(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00054b5d T OHOS::ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
+00052e8d T OHOS::ProducerSurface::OnBufferReleasedWithSequenceAndFence(unsigned int, OHOS::sptr<OHOS::SyncFence> const&)
+0004fcfd T OHOS::ProducerSurface::Init()
+00053809 T OHOS::ProducerSurface::Connect()
+00052239 T OHOS::ProducerSurface::GetName()
+000533f5 T OHOS::ProducerSurface::IsRemote()
+0004fd41 T OHOS::ProducerSurface::ProducerSurface(OHOS::sptr<OHOS::IBufferProducer>&)
+0004fd41 T OHOS::ProducerSurface::ProducerSurface(OHOS::sptr<OHOS::IBufferProducer>&)
+0005035b T OHOS::ProducerSurface::~ProducerSurface()
+000500e5 T OHOS::ProducerSurface::~ProducerSurface()
+000500e5 T OHOS::ProducerSurface::~ProducerSurface()
+0004558d T OHOS::ReadFlushConfig(OHOS::MessageParcel&, OHOS::BufferFlushConfigWithDamages&)
+00045b3d T OHOS::ReadHDRMetaData(OHOS::MessageParcel&, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> >&)
+0002a7c9 T OHOS::SurfaceDelegate::GetSurface()
+000596d1 T OHOS::SurfaceDelegate::CreateSurface(bool)
+000596d1 T OHOS::SurfaceDelegate::ReleaseSurface()
+000596d1 T OHOS::SurfaceDelegate::SetSurfaceSize(unsigned int, unsigned int)
+0002c9bd T OHOS::SurfaceDelegate::GetNativeWindow()
+0002cb3d T OHOS::SurfaceDelegate::AddSurfaceCallback(OHOS::sptr<OHOS::SurfaceDelegate::ISurfaceCallback> const&)
+0002cb3d T OHOS::SurfaceDelegate::RemoveSurfaceCallback(OHOS::sptr<OHOS::SurfaceDelegate::ISurfaceCallback> const&)
+000596d1 T OHOS::SurfaceDelegate::SetBounds(int, int, int, int)
+000596a1 T OHOS::SurfaceDelegate::SurfaceDelegate(int)
+000596a1 T OHOS::SurfaceDelegate::SurfaceDelegate(int)
+00048cb9 T OHOS::DelegatorAdapter::GetInstance()
+00048dcd T OHOS::DelegatorAdapter::RegisterFunction()
+00048d49 T OHOS::DelegatorAdapter::Init()
+00048d1d T OHOS::DelegatorAdapter::DelegatorAdapter()
+00048d1d T OHOS::DelegatorAdapter::DelegatorAdapter()
+00048f25 T OHOS::DelegatorAdapter::~DelegatorAdapter()
+00048f25 T OHOS::DelegatorAdapter::~DelegatorAdapter()
+00045471 T OHOS::GetBoolParameter(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0004710d T OHOS::IConsumerSurface::Create(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+         U OHOS::ReadBufferHandle(OHOS::MessageParcel&, std::__h::function<int (OHOS::MessageParcel&, std::__h::function<int (OHOS::Parcel&)>)>)
+00024dfd T OHOS::RsFrameReportExt::LoadSymbol(char const*)
+00024c19 T OHOS::RsFrameReportExt::GetInstance()
+00024d81 T OHOS::RsFrameReportExt::LoadLibrary()
+00024ed1 T OHOS::RsFrameReportExt::HandleSwapBuffer()
+00024c7d T OHOS::RsFrameReportExt::Init()
+00024e59 T OHOS::RsFrameReportExt::GetEnable()
+00024c61 T OHOS::RsFrameReportExt::RsFrameReportExt()
+00024c61 T OHOS::RsFrameReportExt::RsFrameReportExt()
+         U OHOS::SyncFenceTracker::TrackFence(OHOS::sptr<OHOS::SyncFence> const&, bool)
+         U OHOS::SyncFenceTracker::SyncFenceTracker(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+0004573d T OHOS::WriteFlushConfig(OHOS::MessageParcel&, OHOS::BufferFlushConfigWithDamages const&)
+00045cb5 T OHOS::WriteHDRMetaData(OHOS::MessageParcel&, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> > const&)
+00059835 T OHOS::FreeExtDataHandle(OHOS::GraphicExtDataHandle*)
+00062c64 V OHOS::ISurfaceApsPlugin::instanceMutex_
+00062cc0 V OHOS::ISurfaceApsPlugin::initInstanceFlag
+00062cc4 V OHOS::ISurfaceApsPlugin::handle_
+00062c80 V OHOS::ISurfaceApsPlugin::instance_
+00045ed5 T OHOS::ReadExtDataHandle(OHOS::MessageParcel&, OHOS::sptr<OHOS::SurfaceTunnelHandle>&)
+000454dd T OHOS::ReadRequestConfig(OHOS::MessageParcel&, OHOS::BufferRequestConfig&)
+00057801 T OHOS::SurfaceBufferImpl::FlushCache()
+00057cb3 T OHOS::SurfaceBufferImpl::GetVirAddr()
+000588a1 T OHOS::SurfaceBufferImpl::TryReclaim()
+00058b65 T OHOS::SurfaceBufferImpl::GetBufferId()
+00058451 T OHOS::SurfaceBufferImpl::GetMetadata(unsigned int, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+00058a5d T OHOS::SurfaceBufferImpl::IsReclaimed()
+00058271 T OHOS::SurfaceBufferImpl::SetMetadata(unsigned int, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&, bool)
+00062de0 V OHOS::SurfaceBufferImpl::resumeFunc_
+00057e35 T OHOS::SurfaceBufferImpl::SetExtraData(OHOS::sptr<OHOS::BufferExtraData>)
+00062ddc V OHOS::SurfaceBufferImpl::reclaimFunc_
+00057d35 T OHOS::SurfaceBufferImpl::GetPlanesInfo(void**)
+000578ed T OHOS::SurfaceBufferImpl::GetImageLayout(void*)
+0005873f T OHOS::SurfaceBufferImpl::GetCropMetadata(OHOS::Rect&)
+000579e1 T OHOS::SurfaceBufferImpl::InvalidateCache()
+00057e95 T OHOS::SurfaceBufferImpl::SetBufferHandle(BufferHandle*)
+00058719 T OHOS::SurfaceBufferImpl::SetCropMetadata(OHOS::Rect const&)
+0005860d T OHOS::SurfaceBufferImpl::EraseMetadataKey(unsigned int)
+0005851d T OHOS::SurfaceBufferImpl::ListMetadataKeys(std::__h::vector<unsigned int, std::__h::allocator<unsigned int> >&)
+0005757d T OHOS::SurfaceBufferImpl::CheckBufferConfig(int, int, int, unsigned long long)
+000568e9 T OHOS::SurfaceBufferImpl::InitMemMgrMembers()
+00058b7b T OHOS::SurfaceBufferImpl::SetFlushTimestamp(unsigned long long)
+00058981 T OHOS::SurfaceBufferImpl::TryResumeIfNeeded()
+00064dec V OHOS::SurfaceBufferImpl::initMemMgrSucceed_
+0005703f T OHOS::SurfaceBufferImpl::MetaDataCachedLocked(unsigned int, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00058a6d T OHOS::SurfaceBufferImpl::SetAndMergeSyncFence(OHOS::sptr<OHOS::SyncFence> const&)
+00058865 T OHOS::SurfaceBufferImpl::SetBufferDeletedFlag(OHOS::BufferDeletedFlag)
+00058061 T OHOS::SurfaceBufferImpl::WriteToMessageParcel(OHOS::MessageParcel&)
+000581b1 T OHOS::SurfaceBufferImpl::ReadFromMessageParcel(OHOS::MessageParcel&, std::__h::function<int (OHOS::MessageParcel&, std::__h::function<int (OHOS::Parcel&)>)>)
+00057b97 T OHOS::SurfaceBufferImpl::SetSurfaceBufferWidth(int)
+0005887d T OHOS::SurfaceBufferImpl::ClearBufferDeletedFlag(OHOS::BufferDeletedFlag)
+00056f21 T OHOS::SurfaceBufferImpl::FreeBufferHandleLocked()
+00056819 T OHOS::SurfaceBufferImpl::GenerateSequenceNumber(unsigned int&)
+000587bd T OHOS::SurfaceBufferImpl::SetBufferRequestConfig(OHOS::BufferRequestConfig const&)
+00057bb3 T OHOS::SurfaceBufferImpl::SetSurfaceBufferHeight(int)
+00062dd8 V OHOS::SurfaceBufferImpl::libMemMgrClientHandle_
+0005809d T OHOS::SurfaceBufferImpl::ReadBufferRequestConfig(OHOS::MessageParcel&)
+00057f8d T OHOS::SurfaceBufferImpl::WriteBufferRequestConfig(OHOS::MessageParcel&)
+00057b25 T OHOS::SurfaceBufferImpl::SetSurfaceBufferTransform(OHOS::GraphicTransformType const&)
+00057ae7 T OHOS::SurfaceBufferImpl::SetSurfaceBufferColorGamut(OHOS::GraphicColorGamut const&)
+00058811 T OHOS::SurfaceBufferImpl::GetConsumerAttachBufferFlag()
+000587f3 T OHOS::SurfaceBufferImpl::SetConsumerAttachBufferFlag(bool)
+0005882d T OHOS::SurfaceBufferImpl::SetSurfaceBufferScalingMode(OHOS::ScalingMode const&)
+0002cb3d T OHOS::SurfaceBufferImpl::SurfaceBufferToNativeBuffer()
+00058cc5 T OHOS::SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::__h::function<void (unsigned long long)>)
+00058d95 T OHOS::SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(OHOS::MessageParcel&)
+00059099 T OHOS::SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(OHOS::MessageParcel&, std::__h::function<int (OHOS::MessageParcel&, std::__h::function<int (OHOS::Parcel&)>)>)
+00058d55 T OHOS::SurfaceBufferImpl::UnRegisterBufferDestructorCallBack()
+0005760d T OHOS::SurfaceBufferImpl::Map()
+000570a5 T OHOS::SurfaceBufferImpl::Alloc(OHOS::BufferRequestConfig const&, OHOS::sptr<OHOS::SurfaceBuffer> const&)
+000576c9 T OHOS::SurfaceBufferImpl::Unmap()
+00062a94 V OHOS::SurfaceBufferImpl::ownPid_
+00056ac9 T OHOS::SurfaceBufferImpl::SurfaceBufferImpl(unsigned int)
+00056599 T OHOS::SurfaceBufferImpl::SurfaceBufferImpl()
+00056ac9 T OHOS::SurfaceBufferImpl::SurfaceBufferImpl(unsigned int)
+00056599 T OHOS::SurfaceBufferImpl::SurfaceBufferImpl()
+0005702d T OHOS::SurfaceBufferImpl::~SurfaceBufferImpl()
+00056cf5 T OHOS::SurfaceBufferImpl::~SurfaceBufferImpl()
+00056cf5 T OHOS::SurfaceBufferImpl::~SurfaceBufferImpl()
+         U OHOS::WriteBufferHandle(OHOS::MessageParcel&, BufferHandle const&)
+00059751 T OHOS::AllocExtDataHandle(unsigned int)
+         U OHOS::BrokerRegistration::Unregister(std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> > const&)@1.0
+         U OHOS::BrokerRegistration::NewInstance(std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> > const&, OHOS::sptr<OHOS::IRemoteObject> const&)@1.0
+         U OHOS::BrokerRegistration::Get()@1.0
+         U OHOS::BrokerRegistration::Register(std::__h::basic_string<char16_t, std::__h::char_traits<char16_t>, std::__h::allocator<char16_t> > const&, std::__h::function<OHOS::sptr<OHOS::IRemoteBroker> (OHOS::sptr<OHOS::IRemoteObject> const&)> const&, OHOS::BrokerDelegatorBase const*)@1.0
+00045d4d T OHOS::ReadHDRMetaDataSet(OHOS::MessageParcel&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&)
+00046081 T OHOS::WriteExtDataHandle(OHOS::MessageParcel&, OHOS::GraphicExtDataHandle const*)
+         U OHOS::AcquireFenceTracker::TrackFence(OHOS::sptr<OHOS::SyncFence> const&, bool)
+0002d311 T OHOS::BufferExtraDataImpl::WriteToParcel(OHOS::MessageParcel&)
+0002d011 T OHOS::BufferExtraDataImpl::ReadFromParcel(OHOS::MessageParcel&)
+0002d271 T OHOS::BufferExtraDataImpl::ExtraSet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, OHOS::BufferExtraDataImpl::ExtraDataType, std::__h::any const&)
+0002d801 T OHOS::BufferExtraDataImpl::ExtraSet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0002d795 T OHOS::BufferExtraDataImpl::ExtraSet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, double)
+0002d6d1 T OHOS::BufferExtraDataImpl::ExtraSet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, int)
+0002d729 T OHOS::BufferExtraDataImpl::ExtraSet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, long long)
+00045909 T OHOS::ReadVerifyAllocInfo(OHOS::MessageParcel&, std::__h::vector<OHOS::BufferVerifyAllocInfo, std::__h::allocator<OHOS::BufferVerifyAllocInfo> >&)
+00059aff T OHOS::SurfaceTunnelHandle::Different(OHOS::sptr<OHOS::SurfaceTunnelHandle> const&)
+00059ae5 T OHOS::SurfaceTunnelHandle::GetHandle()
+000599c9 T OHOS::SurfaceTunnelHandle::SetHandle(OHOS::GraphicExtDataHandle const*)
+00059891 T OHOS::SurfaceTunnelHandle::SurfaceTunnelHandle()
+00059891 T OHOS::SurfaceTunnelHandle::SurfaceTunnelHandle()
+000599b5 T OHOS::SurfaceTunnelHandle::~SurfaceTunnelHandle()
+000598fd T OHOS::SurfaceTunnelHandle::~SurfaceTunnelHandle()
+000598fd T OHOS::SurfaceTunnelHandle::~SurfaceTunnelHandle()
+0004541f T OHOS::WriteFileDescriptor(OHOS::MessageParcel&, int)
+00045e49 T OHOS::WriteHDRMetaDataSet(OHOS::MessageParcel&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00028b21 T OHOS::BufferClientProducer::CleanCache(bool, unsigned int*)
+0002925d T OHOS::BufferClientProducer::Disconnect(unsigned int*)
+00062ae4 V OHOS::BufferClientProducer::delegator_
+00025599 T OHOS::BufferClientProducer::CheckRetval(OHOS::MessageParcel&)
+0002661d T OHOS::BufferClientProducer::FlushBuffer(unsigned int, OHOS::sptr<OHOS::BufferExtraData>, OHOS::sptr<OHOS::SyncFence>, OHOS::BufferFlushConfigWithDamages&)
+000280b5 T OHOS::BufferClientProducer::GetUniqueId()
+00025491 T OHOS::BufferClientProducer::SendRequest(unsigned int, OHOS::MessageParcel&, OHOS::MessageParcel&, OHOS::MessageOption&)
+0002a041 T OHOS::BufferClientProducer::SetMetaData(unsigned int, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> > const&)
+00026e11 T OHOS::BufferClientProducer::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+00026e1d T OHOS::BufferClientProducer::AttachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int)
+00026445 T OHOS::BufferClientProducer::CancelBuffer(unsigned int, OHOS::sptr<OHOS::BufferExtraData>)
+00062b14 V OHOS::BufferClientProducer::DEFAULT_NAME
+00026e11 T OHOS::BufferClientProducer::DetachBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&)
+000267fd T OHOS::BufferClientProducer::FlushBuffers(std::__h::vector<unsigned int, std::__h::allocator<unsigned int> > const&, std::__h::vector<OHOS::sptr<OHOS::BufferExtraData>, std::__h::allocator<OHOS::sptr<OHOS::BufferExtraData> > > const&, std::__h::vector<OHOS::sptr<OHOS::SyncFence>, std::__h::allocator<OHOS::sptr<OHOS::SyncFence> > > const&, std::__h::vector<OHOS::BufferFlushConfigWithDamages, std::__h::allocator<OHOS::BufferFlushConfigWithDamages> > const&)
+00027af9 T OHOS::BufferClientProducer::GetQueueSize()
+0002a7d1 T OHOS::BufferClientProducer::GetTransform(OHOS::GraphicTransformType&)
+00028cfd T OHOS::BufferClientProducer::GoBackground()
+0002c7f5 T OHOS::BufferClientProducer::SetAlphaType(OHOS::GraphicAlphaType)
+00027c61 T OHOS::BufferClientProducer::SetQueueSize(unsigned int)
+00028ead T OHOS::BufferClientProducer::SetTransform(OHOS::GraphicTransformType)
+0002592f T OHOS::BufferClientProducer::RequestBuffer(OHOS::BufferRequestConfig const&, OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&)
+00029b0d T OHOS::BufferClientProducer::SetBufferHold(bool)
+00029e85 T OHOS::BufferClientProducer::SetBufferName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0002c615 T OHOS::BufferClientProducer::SetLppShareFd(int, bool)
+00025945 T OHOS::BufferClientProducer::RequestBuffers(OHOS::BufferRequestConfig const&, std::__h::vector<OHOS::sptr<OHOS::BufferExtraData>, std::__h::allocator<OHOS::sptr<OHOS::BufferExtraData> > >&, std::__h::vector<OHOS::IBufferProducer::RequestBufferReturnValue, std::__h::allocator<OHOS::IBufferProducer::RequestBufferReturnValue> >&)
+0002b7c1 T OHOS::BufferClientProducer::SetGlobalAlpha(int)
+0002a219 T OHOS::BufferClientProducer::SetMetaDataSet(unsigned int, OHOS::GraphicHDRMetadataKey, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> > const&)
+00029951 T OHOS::BufferClientProducer::SetScalingMode(OHOS::ScalingMode)
+00029781 T OHOS::BufferClientProducer::SetScalingMode(unsigned int, OHOS::ScalingMode)
+00029421 T OHOS::BufferClientProducer::ConnectStrictly()
+000289ad T OHOS::BufferClientProducer::GetDefaultUsage()
+00028519 T OHOS::BufferClientProducer::GetDefaultWidth()
+0002c485 T OHOS::BufferClientProducer::PreAllocBuffers(OHOS::BufferRequestConfig const&, unsigned int)
+000287e9 T OHOS::BufferClientProducer::SetDefaultUsage(unsigned long long)
+0002c10d T OHOS::BufferClientProducer::SetFrameGravity(int)
+0002a409 T OHOS::BufferClientProducer::SetTunnelHandle(OHOS::GraphicExtDataHandle const*)
+00028681 T OHOS::BufferClientProducer::GetDefaultHeight()
+0002a7c9 T OHOS::BufferClientProducer::GetNativeSurface()
+00026e11 T OHOS::BufferClientProducer::GetTransformHint(OHOS::GraphicTransformType&)
+000253c1 T OHOS::BufferClientProducer::MessageVariables(OHOS::MessageParcel&)
+0002c2c9 T OHOS::BufferClientProducer::SetFixedRotation(int)
+0002a991 T OHOS::BufferClientProducer::SetTransformHint(OHOS::GraphicTransformType, unsigned long long)
+000295d1 T OHOS::BufferClientProducer::DisconnectStrictly()
+00028259 T OHOS::BufferClientProducer::GetNameAndUniqueId(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&, unsigned long long&)
+00026a11 T OHOS::BufferClientProducer::AttachBufferToQueue(OHOS::sptr<OHOS::SurfaceBuffer>)
+0002a5e9 T OHOS::BufferClientProducer::GetPresentTimestamp(unsigned int, OHOS::GraphicPresentTimestampType, long long&)
+0002606d T OHOS::BufferClientProducer::GetProducerInitInfo(OHOS::ProducerInitInfo&)
+000255f1 T OHOS::BufferClientProducer::RequestBufferCommon(OHOS::BufferRequestConfig const&, OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&, unsigned int)
+0002bb4d T OHOS::BufferClientProducer::AttachAndFlushBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::BufferExtraData>&, OHOS::sptr<OHOS::SyncFence> const&, OHOS::BufferFlushConfigWithDamages&, bool)
+00026051 T OHOS::BufferClientProducer::GetLastFlushedBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, float*, bool)
+0002ad19 T OHOS::BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource&)
+00029cc9 T OHOS::BufferClientProducer::SetBufferReallocFlag(bool)
+0002ab5d T OHOS::BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource)
+00026c3d T OHOS::BufferClientProducer::DetachBufferFromQueue(OHOS::sptr<OHOS::SurfaceBuffer>)
+0002bd91 T OHOS::BufferClientProducer::GetCycleBuffersNumber(unsigned int&)
+0002bf51 T OHOS::BufferClientProducer::SetCycleBuffersNumber(unsigned int)
+0002bb39 T OHOS::BufferClientProducer::RequestAndDetachBuffer(OHOS::BufferRequestConfig const&, OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&)
+00027005 T OHOS::BufferClientProducer::RegisterReleaseListener(OHOS::sptr<OHOS::IProducerListener>, bool)
+0002b5ed T OHOS::BufferClientProducer::AcquireLastFlushedBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, float*, unsigned int, bool)
+000271f5 T OHOS::BufferClientProducer::RegisterPropertyListener(OHOS::sptr<OHOS::IProducerListener>, unsigned long long)
+0002b605 T OHOS::BufferClientProducer::ReleaseLastFlushedBuffer(unsigned int)
+00027799 T OHOS::BufferClientProducer::UnRegisterReleaseListener()
+00025d41 T OHOS::BufferClientProducer::GetLastFlushedBufferCommon(OHOS::sptr<OHOS::SurfaceBuffer>&, OHOS::sptr<OHOS::SyncFence>&, float*, unsigned int, bool, unsigned int)
+0002b095 T OHOS::BufferClientProducer::GetSurfaceAppFrameworkType(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+0002b275 T OHOS::BufferClientProducer::SetHdrWhitePointBrightness(float)
+0002b431 T OHOS::BufferClientProducer::SetSdrWhitePointBrightness(float)
+0002aed9 T OHOS::BufferClientProducer::SetSurfaceAppFrameworkType(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+000273e5 T OHOS::BufferClientProducer::UnRegisterPropertyListener(unsigned long long)
+0002b97d T OHOS::BufferClientProducer::SetRequestBufferNoblockMode(bool)
+000275a9 T OHOS::BufferClientProducer::RegisterReleaseListenerBackup(OHOS::sptr<OHOS::IProducerListener>)
+00027949 T OHOS::BufferClientProducer::UnRegisterReleaseListenerBackup()
+000290ad T OHOS::BufferClientProducer::Connect()
+00027e1d T OHOS::BufferClientProducer::GetName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+00025285 T OHOS::BufferClientProducer::BufferClientProducer(OHOS::sptr<OHOS::IRemoteObject> const&)
+00025219 T OHOS::BufferClientProducer::BufferClientProducer(OHOS::sptr<OHOS::IRemoteObject> const&)
+0002539d T OHOS::BufferClientProducer::~BufferClientProducer()
+0002532d T OHOS::BufferClientProducer::~BufferClientProducer()
+000252dd T OHOS::BufferClientProducer::~BufferClientProducer()
+00045a89 T OHOS::WriteVerifyAllocInfo(OHOS::MessageParcel&, std::__h::vector<OHOS::BufferVerifyAllocInfo, std::__h::allocator<OHOS::BufferVerifyAllocInfo> > const&)
+00062b5c V OHOS::CALLBACK_FUNC_CONFIGS
+00062bc4 V OHOS::ProducerListenerProxy::delegator_
+00045809 T OHOS::ReadSurfaceBufferImpl(OHOS::MessageParcel&, unsigned int&, OHOS::sptr<OHOS::SurfaceBuffer>&, std::__h::function<int (OHOS::MessageParcel&, std::__h::function<int (OHOS::Parcel&)>)>)
+000458cd T OHOS::WriteSurfaceBufferImpl(OHOS::MessageParcel&, unsigned int, OHOS::sptr<OHOS::SurfaceBuffer> const&)
+00062b78 V OHOS::SyncFenceTrackerManager::trackers_
+000489a1 T OHOS::ConsumerSurfaceDelegator::SetSurface(OHOS::sptr<OHOS::Surface>)
+00048be5 T OHOS::ConsumerSurfaceDelegator::QueueBuffer(OHOS::sptr<OHOS::SurfaceBuffer>&, int)
+00048b55 T OHOS::ConsumerSurfaceDelegator::DequeueBuffer(OHOS::BufferRequestConfig const&, OHOS::sptr<OHOS::BufferExtraData>&, OHOS::IBufferProducer::RequestBufferReturnValue&)
+00048765 T OHOS::ConsumerSurfaceDelegator::Create()
+00048a61 T OHOS::ConsumerSurfaceDelegator::SetClient(OHOS::sptr<OHOS::IRemoteObject>)
+00048781 T OHOS::ConsumerSurfaceDelegator::ConsumerSurfaceDelegator()
+00048781 T OHOS::ConsumerSurfaceDelegator::ConsumerSurfaceDelegator()
+0004898d T OHOS::ConsumerSurfaceDelegator::~ConsumerSurfaceDelegator()
+00048905 T OHOS::ConsumerSurfaceDelegator::~ConsumerSurfaceDelegator()
+00048905 T OHOS::ConsumerSurfaceDelegator::~ConsumerSurfaceDelegator()
+0005624d T OHOS::ProducerSurfaceDelegator::SetSurface(OHOS::sptr<OHOS::Surface>)
+00056465 T OHOS::ProducerSurfaceDelegator::ReleaseBuffer(OHOS::sptr<OHOS::SurfaceBuffer> const&, OHOS::sptr<OHOS::SyncFence> const&)
+00056121 T OHOS::ProducerSurfaceDelegator::Create()
+00056371 T OHOS::ProducerSurfaceDelegator::SetClient(OHOS::sptr<OHOS::IRemoteObject>)
+0005613d T OHOS::ProducerSurfaceDelegator::ProducerSurfaceDelegator()
+0005613d T OHOS::ProducerSurfaceDelegator::ProducerSurfaceDelegator()
+00056239 T OHOS::ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
+000561ad T OHOS::ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
+000561ad T OHOS::ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
+         U OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer::Get()
+0005ba11 T OHOS::Rosen::FrameReport::LoadSymbol(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0005b535 T OHOS::Rosen::FrameReport::GetInstance()
+0005b7ad T OHOS::Rosen::FrameReport::LoadLibrary()
+0005b645 T OHOS::Rosen::FrameReport::CloseLibrary()
+0005b8e9 T OHOS::Rosen::FrameReport::HasGameScene()
+0005b6a9 T OHOS::Rosen::FrameReport::SetGameScene(int, int)
+0005b787 T OHOS::Rosen::FrameReport::DeletePidInfo()
+0005bbfd T OHOS::Rosen::FrameReport::NotifyFrameInfo(int, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, long long, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, unsigned long long)
+0005b951 T OHOS::Rosen::FrameReport::SetQueueBufferTime(unsigned long long, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, long long)
+0005b76d T OHOS::Rosen::FrameReport::IsActiveGameWithPid(int)
+0005b9e1 T OHOS::Rosen::FrameReport::SetPendingBufferNum(unsigned long long, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, int)
+0005b937 T OHOS::Rosen::FrameReport::SetDequeueBufferTime(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, long long)
+0005b91d T OHOS::Rosen::FrameReport::SetLastSwapBufferTime(long long)
+0005b989 T OHOS::Rosen::FrameReport::SetAcquireBufferSysTime()
+0005b8f7 T OHOS::Rosen::FrameReport::IsActiveGameWithUniqueId(unsigned long long)
+0005ba6d T OHOS::Rosen::FrameReport::Report(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0005b599 T OHOS::Rosen::FrameReport::FrameReport()
+0005b599 T OHOS::Rosen::FrameReport::FrameReport()
+0005b5c9 T OHOS::Rosen::FrameReport::~FrameReport()
+0005b5c9 T OHOS::Rosen::FrameReport::~FrameReport()
+         U OHOS::Parcel::ReadDouble()
+         U OHOS::Parcel::ReadString(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&)
+         U OHOS::Parcel::ReadString()
+         U OHOS::Parcel::ReadUint32(unsigned int&)
+         U OHOS::Parcel::ReadUint32()
+         U OHOS::Parcel::ReadUint64(unsigned long long&)
+         U OHOS::Parcel::ReadUint64()
+         U OHOS::Parcel::WriteFloat(float)
+         U OHOS::Parcel::WriteInt32(int)
+         U OHOS::Parcel::WriteInt64(long long)
+         U OHOS::Parcel::WriteUint8(unsigned char)
+         U OHOS::Parcel::WriteDouble(double)
+         U OHOS::Parcel::WriteString(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+         U OHOS::Parcel::WriteUint32(unsigned int)
+         U OHOS::Parcel::WriteUint64(unsigned long long)
+         U OHOS::Parcel::ReadFloatVector(std::__h::vector<float, std::__h::allocator<float> >*)
+         U OHOS::Parcel::ReadUInt32Vector(std::__h::vector<unsigned int, std::__h::allocator<unsigned int> >*)
+         U OHOS::Parcel::WriteFloatVector(std::__h::vector<float, std::__h::allocator<float> > const&)
+         U OHOS::Parcel::WriteUInt32Vector(std::__h::vector<unsigned int, std::__h::allocator<unsigned int> > const&)
+         U OHOS::Parcel::ReadBool(bool&)
+         U OHOS::Parcel::ReadBool()
+         U OHOS::Parcel::ReadFloat(float&)
+         U OHOS::Parcel::ReadFloat()
+         U OHOS::Parcel::ReadInt32(int&)
+         U OHOS::Parcel::ReadInt32()
+         U OHOS::Parcel::ReadInt64()
+         U OHOS::Parcel::ReadUint8()
+         U OHOS::Parcel::WriteBool(bool)
+         U OHOS::system::GetParameter(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)@1.0
+         U OHOS::RefBase::CanPromote()
+         U OHOS::RefBase::DecStrongRef(void const*)
+         U OHOS::RefBase::IncStrongRef(void const*)
+         U OHOS::RefBase::CreateWeakRef(void*)
+         U OHOS::RefBase::OnLastWeakRef(void const*)
+         U OHOS::RefBase::RefPtrCallback()
+         U OHOS::RefBase::GetSptrRefCount()
+         U OHOS::RefBase::OnLastStrongRef(void const*)
+         U OHOS::RefBase::OnFirstStrongRef(void const*)
+         U OHOS::RefBase::OnAttemptPromoted(void const*)
+         U OHOS::RefBase::RefBase()
+         U OHOS::RefBase::~RefBase()
+0004710d T OHOS::Surface::CreateSurfaceAsConsumer(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)
+0004fc05 T OHOS::Surface::CreateSurfaceAsProducer(OHOS::sptr<OHOS::IBufferProducer>&)
+         U OHOS::SyncFence::MergeFence(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, OHOS::sptr<OHOS::SyncFence> const&, OHOS::sptr<OHOS::SyncFence> const&)
+         U OHOS::SyncFence::InvalidFence()
+         U OHOS::SyncFence::INVALID_FENCE
+         U OHOS::SyncFence::WriteToMessageParcel(OHOS::MessageParcel&)
+         U OHOS::SyncFence::ReadFromMessageParcel(OHOS::MessageParcel&, std::__h::function<int (OHOS::MessageParcel&, std::__h::function<int (OHOS::Parcel&)>)>)
+         U OHOS::SyncFence::Wait(unsigned int)
+         U OHOS::SyncFence::SyncFence(int)
+         U OHOS::IPCObjectStub::GetObjectType() const@1.0
+         U OHOS::IRemoteObject::Marshalling(OHOS::Parcel&) const@1.0
+         U OHOS::IRemoteObject::IsObjectDead() const@1.0
+         U OHOS::IRemoteObject::IsProxyObject() const@1.0
+         U OHOS::IRemoteObject::CheckObjectLegality() const@1.0
+00047427 T OHOS::ConsumerSurface::IsConsumer() const
+000480c7 T OHOS::ConsumerSurface::GetMetaData(unsigned int, std::__h::vector<OHOS::GraphicHDRMetaData, std::__h::allocator<OHOS::GraphicHDRMetaData> >&) const
+0004742b T OHOS::ConsumerSurface::GetProducer() const
+00047fcd T OHOS::ConsumerSurface::GetUniqueId() const
+00048011 T OHOS::ConsumerSurface::GetTransform() const
+000480db T OHOS::ConsumerSurface::GetMetaDataSet(unsigned int, OHOS::GraphicHDRMetadataKey&, std::__h::vector<unsigned char, std::__h::allocator<unsigned char> >&) const
+0004855d T OHOS::ConsumerSurface::GetMaxQueueSize(unsigned int&) const
+00048111 T OHOS::ConsumerSurface::GetTunnelHandle() const
+00048155 T OHOS::ConsumerSurface::GetTransformHint() const
+000480b3 T OHOS::ConsumerSurface::QueryMetaDataType(unsigned int, OHOS::HDRMetaDataType&) const
+00048535 T OHOS::ConsumerSurface::GetLastConsumeTime(long long&) const
+00048221 T OHOS::ConsumerSurface::GetSurfaceSourceType() const
+00047fed T OHOS::ConsumerSurface::DumpCurrentFrameLayer() const
+0004843b T OHOS::ConsumerSurface::GetAvailableBufferCount() const
+000483d1 T OHOS::ConsumerSurface::GetHdrWhitePointBrightness() const
+000483df T OHOS::ConsumerSurface::GetSdrWhitePointBrightness() const
+00048319 T OHOS::ConsumerSurface::GetSurfaceAppFrameworkType() const
+00048481 T OHOS::ConsumerSurface::GetFrontDesiredPresentTimeStamp(long long&, bool&) const
+0004846d T OHOS::ConsumerSurface::GetLastFlushedDesiredPresentTimeStamp(long long&) const
+00047fe1 T OHOS::ConsumerSurface::Dump(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&) const
+000485ad T OHOS::ConsumerSurface::IsCached(unsigned int) const
+0002c9bd T OHOS::ProducerSurface::IsConsumer() const
+00050383 T OHOS::ProducerSurface::GetProducer() const
+00053705 T OHOS::ProducerSurface::GetUniqueId() const
+00053771 T OHOS::ProducerSurface::GetTransform() const
+000522b1 T OHOS::ProducerSurface::GetTransformHint() const
+00053a8b T OHOS::ProducerSurface::GetPresentTimestamp(unsigned int, OHOS::GraphicPresentTimestampType, long long&) const
+00052375 T OHOS::ProducerSurface::GetSurfaceSourceType() const
+0005246d T OHOS::ProducerSurface::GetSurfaceAppFrameworkType() const
+00057c8b T OHOS::SurfaceBufferImpl::GetPhyAddr() const
+00057e6d T OHOS::SurfaceBufferImpl::GetExtraData() const
+00058b3d T OHOS::SurfaceBufferImpl::GetSyncFence() const
+00057acd T OHOS::SurfaceBufferImpl::GetBufferHandle() const
+00058891 T OHOS::SurfaceBufferImpl::IsBufferDeleted() const
+00058b95 T OHOS::SurfaceBufferImpl::CloneBufferHandle(BufferHandle const*) const
+00057cef T OHOS::SurfaceBufferImpl::GetFileDescriptor() const
+00058b6b T OHOS::SurfaceBufferImpl::GetFlushedTimestamp() const
+00058877 T OHOS::SurfaceBufferImpl::GetBufferDeletedFlag() const
+00057b63 T OHOS::SurfaceBufferImpl::GetSurfaceBufferWidth() const
+00058789 T OHOS::SurfaceBufferImpl::GetBufferRequestConfig() const
+00057b7d T OHOS::SurfaceBufferImpl::GetSurfaceBufferHeight() const
+00057b49 T OHOS::SurfaceBufferImpl::GetSurfaceBufferTransform() const
+00057b0b T OHOS::SurfaceBufferImpl::GetSurfaceBufferColorGamut() const
+0005884b T OHOS::SurfaceBufferImpl::GetSurfaceBufferScalingMode() const
+00056e35 T OHOS::SurfaceBufferImpl::NotifyBufferDestructorCallBack() const
+00057d13 T OHOS::SurfaceBufferImpl::GetSize() const
+00057c5f T OHOS::SurfaceBufferImpl::GetUsage() const
+00057bcf T OHOS::SurfaceBufferImpl::GetWidth() const
+00057c3b T OHOS::SurfaceBufferImpl::GetFormat() const
+00057bf3 T OHOS::SurfaceBufferImpl::GetHeight() const
+0005826d T OHOS::SurfaceBufferImpl::GetSeqNum() const
+00057c17 T OHOS::SurfaceBufferImpl::GetStride() const
+0002d65d T OHOS::BufferExtraDataImpl::ExtraGet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >&) const
+0002d5e9 T OHOS::BufferExtraDataImpl::ExtraGet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, double&) const
+0002d505 T OHOS::BufferExtraDataImpl::ExtraGet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, int&) const
+0002d575 T OHOS::BufferExtraDataImpl::ExtraGet(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, long long&) const
+         U OHOS::SyncFence::Dup() const
+         U OHOS::SyncFence::Get() const
+         U OHOS::SyncFence::IsValid() const
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::find(char, unsigned int) const
+0003cfc1 W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::str() const
+         U std::__h::__shared_weak_count::__get_deleter(std::type_info const&) const
+         U std::__h::locale::has_facet(std::__h::locale::id&) const
+         U std::__h::locale::use_facet(std::__h::locale::id&) const
+         U std::__h::ios_base::getloc() const
+         U std::__h::__call_once(unsigned long volatile&, void*, void (*)(void*))
+         U std::__h::__next_prime(unsigned int)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::erase(unsigned int, unsigned int)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::append(char const*)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::append(char const*, unsigned int)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::assign(char const*)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::assign(char const*, unsigned int)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::insert(unsigned int, char const*)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::resize(unsigned int, char)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::__grow_by(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::push_back(char)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::basic_string(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::basic_string(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, unsigned int, unsigned int, std::__h::allocator<char> const&)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::~basic_string()
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >::operator=(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0003b895 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::sync()
+0003b645 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::imbue(std::__h::locale const&)
+0003b6f1 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::setbuf(char*, int)
+0003b793 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::seekoff(long long, std::__h::ios_base::seekdir, unsigned int)
+0003b82f W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::seekpos(std::__h::fpos<__mbstate_t>, unsigned int)
+0003bbe9 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::overflow(int)
+0003bba5 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::pbackfail(int)
+0003b9f1 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::underflow()
+0003b431 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::basic_filebuf()
+0003b635 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::~basic_filebuf()
+0003b5d5 W std::__h::basic_filebuf<char, std::__h::char_traits<char> >::~basic_filebuf()
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::seekg(long long, std::__h::ios_base::seekdir)
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::tellg()
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::sentry::sentry(std::__h::basic_istream<char, std::__h::char_traits<char> >&, bool)
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::~basic_istream()
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::~basic_istream()
+         U std::__h::basic_istream<char, std::__h::char_traits<char> >::~basic_istream()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::flush()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::write(char const*, int)
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::sentry::sentry(std::__h::basic_ostream<char, std::__h::char_traits<char> >&)
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::sentry::~sentry()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::~basic_ostream()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::~basic_ostream()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::~basic_ostream()
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::operator<<(std::__h::basic_streambuf<char, std::__h::char_traits<char> >*)
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::operator<<(double)
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::operator<<(int)
+         U std::__h::basic_ostream<char, std::__h::char_traits<char> >::operator<<(long long)
+         U std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U std::__h::__thread_struct::__thread_struct()
+         U std::__h::__thread_struct::~__thread_struct()
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::sync()
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::imbue(std::__h::locale const&)
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::uflow()
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::setbuf(char*, int)
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::xsgetn(char*, int)
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::xsputn(char const*, int)
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::showmanyc()
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::basic_streambuf()
+         U std::__h::basic_streambuf<char, std::__h::char_traits<char> >::~basic_streambuf()
+0003d071 W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::str(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+0003c2bd W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::seekoff(long long, std::__h::ios_base::seekdir, unsigned int)
+0003c443 W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::overflow(int)
+0003c3ed W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::pbackfail(int)
+0003c3bf W std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >::underflow()
+         U std::__h::recursive_mutex::recursive_mutex()
+         U std::__h::recursive_mutex::~recursive_mutex()
+         U std::__h::condition_variable::notify_all()
+         U std::__h::condition_variable::wait(std::__h::unique_lock<std::__h::mutex>&)
+         U std::__h::condition_variable::~condition_variable()
+         U std::__h::__shared_mutex_base::lock_shared()
+         U std::__h::__shared_mutex_base::unlock_shared()
+         U std::__h::__shared_mutex_base::lock()
+         U std::__h::__shared_mutex_base::unlock()
+         U std::__h::__shared_mutex_base::__shared_mutex_base()
+         U std::__h::__shared_weak_count::__release_weak()
+         U std::__h::__shared_weak_count::~__shared_weak_count()
+         U std::__h::__thread_local_data()
+         U std::__h::__throw_system_error(int, char const*)
+         U std::__h::ctype<char>::id
+         U std::__h::mutex::lock()
+         U std::__h::mutex::unlock()
+         U std::__h::mutex::~mutex()
+         U std::__h::chrono::steady_clock::now()
+         U std::__h::locale::locale(std::__h::locale const&)
+         U std::__h::locale::~locale()
+         U std::__h::thread::hardware_concurrency()
+         U std::__h::thread::join()
+         U std::__h::thread::detach()
+         U std::__h::thread::~thread()
+         U std::__h::codecvt<char, char, __mbstate_t>::id
+         U std::__h::ios_base::init(void*)
+         U std::__h::ios_base::clear(unsigned int)
+000233d0 V std::__h::__any_imp::__unique_typeinfo<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > >::__id
+000233cc V std::__h::__any_imp::__unique_typeinfo<double>::__id
+000233c4 V std::__h::__any_imp::__unique_typeinfo<int>::__id
+000233c8 V std::__h::__any_imp::__unique_typeinfo<long long>::__id
+         U std::__h::basic_ios<char, std::__h::char_traits<char> >::~basic_ios()
+         U std::__h::to_string(float)
+         U std::__h::to_string(int)
+         U std::__h::to_string(unsigned int)
+         U std::__h::to_string(long long)
+         U std::__h::to_string(unsigned long long)
+         U std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > std::__h::operator+<char, std::__h::char_traits<char>, std::__h::allocator<char> >(char const*, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)
+         U std::nothrow
+0005e5f8 V construction vtable for OHOS::IPCObjectStub-in-OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+0005e6c0 V construction vtable for OHOS::IRemoteObject-in-OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+0005e7c4 V construction vtable for OHOS::IRemoteBroker-in-OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+0005e768 V construction vtable for OHOS::IBufferProducerToken-in-OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+0005e820 V construction vtable for OHOS::Parcelable-in-OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+0005e1b4 D construction vtable for OHOS::IRemoteProxy<OHOS::IBufferProducer>-in-OHOS::BufferClientProducer
+0005e484 D construction vtable for OHOS::IRemoteBroker-in-OHOS::BufferClientProducer
+0005e31c D construction vtable for OHOS::IBufferProducer-in-OHOS::BufferClientProducer
+00060844 V construction vtable for OHOS::IRemoteStub<OHOS::IProducerListener>-in-OHOS::BufferReleaseProducerListener
+0006093c V construction vtable for OHOS::IPCObjectStub-in-OHOS::BufferReleaseProducerListener
+00060a04 V construction vtable for OHOS::IRemoteObject-in-OHOS::BufferReleaseProducerListener
+0006074c V construction vtable for OHOS::ProducerListenerStub-in-OHOS::BufferReleaseProducerListener
+00060b78 V construction vtable for OHOS::Parcelable-in-OHOS::BufferReleaseProducerListener
+00060b1c V construction vtable for OHOS::IRemoteBroker-in-OHOS::BufferReleaseProducerListener
+00060aac V construction vtable for OHOS::IProducerListener-in-OHOS::BufferReleaseProducerListener
+000602a8 V construction vtable for OHOS::IRemoteStub<OHOS::IProducerListener>-in-OHOS::PropertyChangeProducerListener
+000603a0 V construction vtable for OHOS::IPCObjectStub-in-OHOS::PropertyChangeProducerListener
+00060468 V construction vtable for OHOS::IRemoteObject-in-OHOS::PropertyChangeProducerListener
+000601b0 V construction vtable for OHOS::ProducerListenerStub-in-OHOS::PropertyChangeProducerListener
+000605dc V construction vtable for OHOS::Parcelable-in-OHOS::PropertyChangeProducerListener
+00060580 V construction vtable for OHOS::IRemoteBroker-in-OHOS::PropertyChangeProducerListener
+00060510 V construction vtable for OHOS::IProducerListener-in-OHOS::PropertyChangeProducerListener
+0006104c V construction vtable for std::__h::basic_istream<char, std::__h::char_traits<char> >-in-std::__h::basic_ifstream<char, std::__h::char_traits<char> >
+0005fb7c V construction vtable for std::__h::basic_ostream<char, std::__h::char_traits<char> >-in-std::__h::basic_ofstream<char, std::__h::char_traits<char> >
+00060f94 V construction vtable for std::__h::basic_istream<char, std::__h::char_traits<char> >-in-std::__h::basic_stringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+00060f58 V construction vtable for std::__h::basic_iostream<char, std::__h::char_traits<char> >-in-std::__h::basic_stringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+00060fbc V construction vtable for std::__h::basic_ostream<char, std::__h::char_traits<char> >-in-std::__h::basic_stringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+0005e924 V construction vtable for std::__h::basic_ostream<char, std::__h::char_traits<char> >-in-std::__h::basic_ostringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+000610b4 D VTT for OHOS::BufferClientProducer
+00061114 V VTT for std::__h::basic_ifstream<char, std::__h::char_traits<char> >
+00061184 V VTT for std::__h::basic_ofstream<char, std::__h::char_traits<char> >
+00061194 V VTT for std::__h::basic_stringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+00061124 V VTT for std::__h::basic_ostringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+0005fe2c D vtable for NativeWindow
+0005fe54 D vtable for NativeWindowBuffer
+0005e514 V vtable for OHOS::IRemoteStub<OHOS::IBufferProducerToken>
+00060f0c D vtable for OHOS::SurfaceUtils
+0005e4e0 V vtable for OHOS::BrokerDelegator<OHOS::BufferClientProducer>
+00060bdc V vtable for OHOS::BrokerDelegator<OHOS::ProducerListenerProxy>
+0005fba4 D vtable for OHOS::ConsumerSurface
+0005fea0 D vtable for OHOS::ProducerSurface
+00060ebc V vtable for OHOS::SurfaceDelegate
+00060d24 D vtable for OHOS::SurfaceBufferImpl
+00060bec V vtable for OHOS::BrokerDelegatorBase
+0005e884 D vtable for OHOS::BufferExtraDataImpl
+00060ee4 D vtable for OHOS::SurfaceTunnelHandle
+0005e04c D vtable for OHOS::BufferClientProducer
+00060c20 V vtable for OHOS::ProducerListenerProxy
+0005fe04 D vtable for OHOS::ConsumerSurfaceDelegator
+00060cfc D vtable for OHOS::ProducerSurfaceDelegator
+00060640 V vtable for OHOS::BufferReleaseProducerListener
+000600a8 V vtable for OHOS::PropertyChangeProducerListener
+0005e4f0 V vtable for std::__h::__function::__func<OHOS::BrokerCreator<OHOS::BufferClientProducer>, std::__h::allocator<OHOS::BrokerCreator<OHOS::BufferClientProducer> >, OHOS::sptr<OHOS::IRemoteBroker> (OHOS::sptr<OHOS::IRemoteObject> const&)>
+00060bfc V vtable for std::__h::__function::__func<OHOS::BrokerCreator<OHOS::ProducerListenerProxy>, std::__h::allocator<OHOS::BrokerCreator<OHOS::ProducerListenerProxy> >, OHOS::sptr<OHOS::IRemoteBroker> (OHOS::sptr<OHOS::IRemoteObject> const&)>
+0005fe7c V vtable for std::__h::__function::__func<void (*)(NativeWindow*, std::__va_list), std::__h::allocator<void (*)(NativeWindow*, std::__va_list)>, void (NativeWindow*, std::__va_list)>
+00061074 V vtable for std::__h::basic_filebuf<char, std::__h::char_traits<char> >
+00061024 V vtable for std::__h::basic_ifstream<char, std::__h::char_traits<char> >
+0005fb54 V vtable for std::__h::basic_ofstream<char, std::__h::char_traits<char> >
+00060fe4 V vtable for std::__h::basic_stringbuf<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+00060f1c V vtable for std::__h::basic_stringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+0005e8fc V vtable for std::__h::basic_ostringstream<char, std::__h::char_traits<char>, std::__h::allocator<char> >
+00060e44 V vtable for std::__h::__shared_ptr_pointer<OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer*, std::__h::shared_ptr<OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer>::__shared_ptr_default_delete<OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer, OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer>, std::__h::allocator<OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer> >
+         U non-virtual thunk to std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U non-virtual thunk to std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U virtual thunk to OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U virtual thunk to OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+000253ab T virtual thunk to OHOS::BufferClientProducer::~BufferClientProducer()
+00025391 T virtual thunk to OHOS::BufferClientProducer::~BufferClientProducer()
+         U virtual thunk to std::__h::basic_istream<char, std::__h::char_traits<char> >::~basic_istream()
+         U virtual thunk to std::__h::basic_istream<char, std::__h::char_traits<char> >::~basic_istream()
+         U virtual thunk to std::__h::basic_ostream<char, std::__h::char_traits<char> >::~basic_ostream()
+         U virtual thunk to std::__h::basic_ostream<char, std::__h::char_traits<char> >::~basic_ostream()
+         U virtual thunk to std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U virtual thunk to std::__h::basic_iostream<char, std::__h::char_traits<char> >::~basic_iostream()
+         U virtual thunk to OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U virtual thunk to OHOS::IPCObjectStub::~IPCObjectStub()@1.0
+         U virtual thunk to OHOS::IPCObjectStub::OnFirstStrongRef(void const*)@1.0
+         U virtual thunk to OHOS::IRemoteObject::Marshalling(OHOS::Parcel&) const@1.0
+         U virtual thunk to OHOS::IPCObjectStub::OnLastStrongRef(void const*)@1.0
+00062b24 V OHOS::HebcWhiteList::GetInstance()::inst
+00062d84 V OHOS::SurfaceApsSdrUtils::GetOriginExternalLongSide()::externalLongSide
+00062d7c V OHOS::SurfaceApsSdrUtils::GetOriginInternalLongSide()::internalLongSide
+00062d80 V OHOS::SurfaceApsSdrUtils::GetOriginExternalShortSide()::externalShortSide
+00062d78 V OHOS::SurfaceApsSdrUtils::GetOriginInternalShortSide()::internalShortSide
+         U operator delete[](void*)
+         U operator delete(void*)
+         U operator new[](unsigned int)
+         U operator new(unsigned int)
+         U operator new(unsigned int, std::nothrow_t const&)
+         U __aeabi_unwind_cpp_pr0
+         U __aeabi_unwind_cpp_pr1
+         w __at_fini
+         U __cxa_atexit
+         w __cxa_finalize
+         U __cxa_guard_acquire
+         U __cxa_guard_release
+         U __cxa_pure_virtual
+         w __deregister_frame_info
+         U __dlsym_time64
+         U __errno_location
+         U __gettimeofday_time64
+         w __register_frame_info
+         U __stack_chk_fail
+         U __stack_chk_guard
+         U __ubsan_handle_add_overflow_minimal_abort
+         U __ubsan_handle_builtin_unreachable_minimal
+         U __ubsan_handle_load_invalid_value_minimal_abort
+         U __ubsan_handle_mul_overflow_minimal_abort
+         U __ubsan_handle_sub_overflow_minimal_abort
+00024adc T _fini
+00024ad0 T _init
+         U abort
+         U access
+         U atoi
+         U bcmp
+         U cJSON_Delete
+         U cJSON_GetObjectItem
+         U cJSON_IsString
+         U cJSON_Parse
+         U ceilf
+         U close
+         U dlclose
+         U dlerror
+         U dlopen
+         U dlsym
+         U dup
+         U fclose
+         U fcntl
+         U fflush
+         U fopen
+         U fread
+         U free
+         U fseeko
+         U ftello
+         U fwrite
+         U getpid
+         U getprocpid
+         U ioctl
+         U malloc
+         U memcmp
+         U memcpy
+         U memcpy_s
+         U memmove
+         U memset
+         U memset_s
+         U mmap
+         U munmap
+         U pthread_cond_clockwait
+         U pthread_create
+         U pthread_setspecific
+         U raise
+         U sprintf_s
+         U strcpy_s
+         U strerror
+         U strerror_r
+         U strlen
