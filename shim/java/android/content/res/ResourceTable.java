@@ -71,6 +71,92 @@ public class ResourceTable {
     private Object[] mGlobalStringPool;
     private Object[] mPrevStringPool; // saved base pool during split parsing
 
+    /** PF-arch-032: per-style attr → value map for FLAG_COMPLEX entries (themes). */
+    private java.util.Map<Integer, java.util.Map<Integer, String>> mBagEntries;
+    /** PF-arch-032: parent style of each bag entry (for attr inheritance). */
+    private java.util.Map<Integer, Integer> mBagParents;
+
+    /** PF-arch-032: get the attr→value map for a style, walking parents. */
+    public java.util.Map<Integer, String> getStyleAttrs(int styleId) {
+        java.util.HashMap<Integer, String> merged = new java.util.HashMap<Integer, String>();
+        int cur = styleId;
+        int hop = 0;
+        while (cur != 0 && hop < 32) {
+            if (mBagEntries != null) {
+                java.util.Map<Integer, String> bag = mBagEntries.get(cur);
+                if (bag != null) {
+                    /* Child overrides parent — only put if not already set. */
+                    for (java.util.Map.Entry<Integer, String> e : bag.entrySet()) {
+                        if (!merged.containsKey(e.getKey())) {
+                            merged.put(e.getKey(), e.getValue());
+                        }
+                    }
+                }
+            }
+            cur = mBagParents != null && mBagParents.containsKey(cur)
+                    ? mBagParents.get(cur) : 0;
+            hop++;
+        }
+        return merged;
+    }
+
+    /** PF-arch-032: stringify a typed value from arsc into a renderer-friendly form. */
+    private String formatTypedValue(int dataType, int data) {
+        switch (dataType) {
+            case 0x00: /* TYPE_NULL */
+                return null;
+            case 0x01: /* TYPE_REFERENCE */
+                return "@0x" + Integer.toHexString(data);
+            case 0x02: /* TYPE_ATTRIBUTE */
+                return "?0x" + Integer.toHexString(data);
+            case 0x03: /* TYPE_STRING */
+                if (mGlobalStringPool != null && data >= 0 && data < mGlobalStringPool.length) {
+                    return stringAt(mGlobalStringPool, data);
+                }
+                return null;
+            case 0x04: /* TYPE_FLOAT */
+                return Float.toString(Float.intBitsToFloat(data));
+            case 0x05: /* TYPE_DIMENSION */
+                return Integer.toString(data >>> 8);
+            case 0x10: /* TYPE_INT_DEC */
+            case 0x11: /* TYPE_INT_HEX */
+                return Integer.toString(data);
+            case 0x12: /* TYPE_INT_BOOLEAN */
+                return data != 0 ? "true" : "false";
+            case 0x1C: /* TYPE_INT_COLOR_ARGB8 */
+                return "#" + paddedHex8(data);
+            case 0x1D: /* TYPE_INT_COLOR_RGB8 */
+                return "#" + paddedHex8(0xFF000000 | data);
+            case 0x1E: /* TYPE_INT_COLOR_ARGB4 */
+                /* Expand 4-bit channels to 8-bit. */
+                int a4 = (data >>> 12) & 0xF;
+                int r4 = (data >>> 8) & 0xF;
+                int g4 = (data >>> 4) & 0xF;
+                int b4 = data & 0xF;
+                int argb = (a4 * 0x11 << 24) | (r4 * 0x11 << 16)
+                        | (g4 * 0x11 << 8) | (b4 * 0x11);
+                return "#" + paddedHex8(argb);
+            case 0x1F: /* TYPE_INT_COLOR_RGB4 */
+                int r4b = (data >>> 8) & 0xF;
+                int g4b = (data >>> 4) & 0xF;
+                int b4b = data & 0xF;
+                int rgb = 0xFF000000 | (r4b * 0x11 << 16)
+                        | (g4b * 0x11 << 8) | (b4b * 0x11);
+                return "#" + paddedHex8(rgb);
+            default:
+                return Integer.toString(data);
+        }
+    }
+
+    private static String paddedHex8(int v) {
+        String s = Integer.toHexString(v);
+        if (s.length() >= 8) return s.substring(s.length() - 8);
+        StringBuilder sb = new StringBuilder();
+        for (int i = s.length(); i < 8; i++) sb.append('0');
+        sb.append(s);
+        return sb.toString();
+    }
+
     /**
      * Parse a resources.arsc byte array.
      */
@@ -1297,10 +1383,40 @@ public class ResourceTable {
                 }
             }
 
-            // If FLAG_COMPLEX (bag/map entry), skip it — we only handle simple values
+            // PF-arch-032: parse FLAG_COMPLEX (bag/map) entries — needed for
+            // <style> resources whose items become a list of attr-value pairs.
+            // ResTable_map_entry: extends ResTable_entry with parent(4), count(4)
+            // followed by count ResTable_map { name: u32, value: Res_value (8 bytes) }
             if ((entryFlags & FLAG_COMPLEX) != 0) {
-                // ResTable_map_entry: extends ResTable_entry with parent(4), count(4)
-                // followed by count ResTable_map entries — skip all
+                if (buf.remaining() < 8) continue;
+                int parentRef = buf.getInt();
+                int bagCount = buf.getInt();
+                if (bagCount < 0 || bagCount > 100000) continue;
+                java.util.HashMap<Integer, String> bag =
+                        new java.util.HashMap<Integer, String>();
+                for (int b = 0; b < bagCount; b++) {
+                    if (buf.remaining() < 12) break;
+                    int mapName = buf.getInt();
+                    int mvSize = buf.getShort() & 0xFFFF;
+                    int mvRes0 = buf.get() & 0xFF;
+                    int mvType = buf.get() & 0xFF;
+                    int mvData = buf.getInt();
+                    String formatted = formatTypedValue(mvType, mvData);
+                    if (formatted != null) bag.put(mapName, formatted);
+                }
+                if (!bag.isEmpty()) {
+                    if (mBagEntries == null) {
+                        mBagEntries = new java.util.HashMap<Integer, java.util.Map<Integer, String>>();
+                    }
+                    mBagEntries.put(resId, bag);
+                    /* Also remember parent so callers can chain. */
+                    if (parentRef != 0) {
+                        if (mBagParents == null) {
+                            mBagParents = new java.util.HashMap<Integer, Integer>();
+                        }
+                        mBagParents.put(resId, parentRef);
+                    }
+                }
                 continue;
             }
 

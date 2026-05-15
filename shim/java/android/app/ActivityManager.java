@@ -412,4 +412,12 @@ public class ActivityManager {
 
     /** Returns the user ID of the current foreground user. */
     public static int getCurrentUser() { return 0; }
+
+    // -------------------------------------------------------------------------
+    // PendingIntentInfo (Android 16) -- AOSP @hide; stub for compile-time only.
+    // Stripped from aosp-shim.dex; framework.jar's real class wins at runtime.
+    // -------------------------------------------------------------------------
+    public static class PendingIntentInfo {
+        public PendingIntentInfo() {}
+    }
 }

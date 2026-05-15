@@ -252,7 +252,7 @@ public class PackageManager {
             fallback.name = component.getClassName();
             fallback.parentActivityName = null;
             fallback.metaData = null;
-            fallback.enabled = 1;
+            fallback.enabled = true;
             fallback.exported = true;
             return fallback;
         }
@@ -447,7 +447,7 @@ public class PackageManager {
         ActivityInfo info = new ActivityInfo();
         info.packageName = packageName;
         info.name = className;
-        info.enabled = 1;
+        info.enabled = true;
         info.exported = true;
         info.metaData = new android.os.Bundle();
         return info;
@@ -457,7 +457,7 @@ public class PackageManager {
         ServiceInfo info = new ServiceInfo();
         info.packageName = packageName;
         info.name = "androidx.appcompat.app.AppLocalesMetadataHolderService";
-        info.enabled = 1;
+        info.enabled = true;
         info.exported = false;
         info.metaData = new android.os.Bundle();
         info.metaData.putBoolean("autoStoreLocales", false);
@@ -505,5 +505,36 @@ public class PackageManager {
     public static class NameNotFoundException extends Exception {
         public NameNotFoundException() { super(); }
         public NameNotFoundException(String name) { super(name); }
+    }
+
+    // ── Nested callback types (M4-PRE5 stubs) ────────────────────────────
+    // Compile-time stubs for nested PackageManager interfaces/classes used
+    // in abstract method signatures.  framework.jar provides the real
+    // versions at runtime — these shim copies are stripped from
+    // aosp-shim.dex via framework_duplicates.txt entries for
+    //   android/content/pm/PackageManager$OnPermissionsChangedListener
+    //   android/content/pm/PackageManager$MoveCallback
+    //   android/content/pm/PackageManager$DexModuleRegisterCallback
+
+    public interface OnPermissionsChangedListener {
+        void onPermissionsChanged(int uid);
+    }
+
+    public static abstract class MoveCallback {
+        public void onCreated(int moveId, android.os.Bundle extras) {}
+        public void onStatusChanged(int moveId, int status, long estMillis) {}
+    }
+
+    public static abstract class DexModuleRegisterCallback {
+        public void onDexModuleRegistered(String dexModulePath, boolean success, String message) {}
+    }
+
+    /**
+     * Compile-time stub for {@link android.content.pm.PackageManager.Property}.
+     * The real class lives in framework.jar; this shim variant only needs
+     * to compile.  Referenced by IPackageManager.getPropertyAsUser.
+     */
+    public static final class Property {
+        public Property() {}
     }
 }

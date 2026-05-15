@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Westlake M4b -- compile-time stub for android.app.IAssistDataReceiver.
+// Real interface lives in framework.jar; this shim is stripped via
+// framework_duplicates.txt.
+
+package android.app;
+
+import android.os.IInterface;
+
+public interface IAssistDataReceiver extends IInterface {
+}

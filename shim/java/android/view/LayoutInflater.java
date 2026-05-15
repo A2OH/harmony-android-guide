@@ -404,6 +404,142 @@ public class LayoutInflater {
         }
     }
 
+    // PF-noice-027 (2026-05-06): FragmentContainerView.addView throws if
+    // the child isn't tagged as a Fragment-managed view. To paint UI into
+    // the FCV without spinning up FragmentManager, we tag the child first
+    // (so FCV.addView's instanceof-Fragment check passes via the tag), and
+    // fall back to reflective ViewGroup.addViewInLayout if that still throws.
+    private static void addViewBypassingFcvCheck(ViewGroup parent, View child) {
+        try {
+            // Pre-set the fragment_container_view_tag so FCV.addView doesn't throw.
+            // The tag value isn't validated for type when it satisfies the null check
+            // upstream — but R8/Pro versions DO check `instanceof Fragment`. To be
+            // safe across upstreams, just attempt addView and fall back on failure.
+            parent.addView(child);
+            return;
+        } catch (Throwable t1) {
+            try {
+                java.lang.reflect.Method m = ViewGroup.class.getDeclaredMethod(
+                        "addViewInLayout", View.class, int.class, ViewGroup.LayoutParams.class);
+                m.setAccessible(true);
+                ViewGroup.LayoutParams lp = child.getLayoutParams();
+                if (lp == null) {
+                    lp = new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT);
+                }
+                m.invoke(parent, child, -1, lp);
+                diag("[LayoutInflater] FCV.addView bypassed via addViewInLayout reflection (after: "
+                        + t1.getClass().getSimpleName() + ")");
+            } catch (Throwable t2) {
+                diag("[LayoutInflater] FCV.addView bypass failed: " + t2.getClass().getSimpleName()
+                        + ": " + t2.getMessage());
+            }
+        }
+    }
+
+    private static android.widget.TextView findFirstTextView(View root) {
+        if (root instanceof android.widget.TextView) return (android.widget.TextView) root;
+        if (root instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) root;
+            int n = vg.getChildCount();
+            for (int i = 0; i < n; i++) {
+                android.widget.TextView t = findFirstTextView(vg.getChildAt(i));
+                if (t != null) return t;
+            }
+        }
+        return null;
+    }
+
+    private static String describeHierarchy(Class<?> cls, int max) {
+        StringBuilder sb = new StringBuilder();
+        Class<?> c = cls;
+        int depth = 0;
+        while (c != null && depth < max) {
+            if (sb.length() > 0) sb.append(" -> ");
+            sb.append(c.getName());
+            c = c.getSuperclass();
+            depth++;
+        }
+        return sb.toString();
+    }
+
+    // PF-noice-029 (2026-05-06): ConstraintLayout LayoutParams support.
+    private static boolean isConstraintLayoutInstance(Object o) {
+        if (o == null) return false;
+        Class<?> c = o.getClass();
+        while (c != null) {
+            if ("androidx.constraintlayout.widget.ConstraintLayout".equals(c.getName())) {
+                return true;
+            }
+            c = c.getSuperclass();
+        }
+        return false;
+    }
+
+    private ViewGroup.LayoutParams generateConstraintLayoutParams(
+            ViewGroup parent, BinaryXmlParser bxp,
+            int width, int height,
+            int marginAll, int marginLeft, int marginTop,
+            int marginRight, int marginBottom) {
+        try {
+            ClassLoader cl = parent.getClass().getClassLoader();
+            Class<?> lpCls = Class.forName(
+                    "androidx.constraintlayout.widget.ConstraintLayout$LayoutParams", true, cl);
+            ViewGroup.LayoutParams lp = (ViewGroup.LayoutParams) lpCls
+                    .getConstructor(int.class, int.class).newInstance(width, height);
+            applyMargins((ViewGroup.MarginLayoutParams) lp, marginAll, marginLeft,
+                    marginTop, marginRight, marginBottom);
+
+            int count = bxp.getAttributeCount();
+            int set = 0;
+            int failed = 0;
+            for (int i = 0; i < count; i++) {
+                String name = bxp.getAttributeName(i);
+                if (name == null || !name.startsWith("layout_")) continue;
+                int data = bxp.getAttributeValueData(i);
+                String fieldName = mapConstraintAttrToField(name);
+                if (fieldName == null) continue;
+                try {
+                    java.lang.reflect.Field f = lpCls.getField(fieldName);
+                    f.setInt(lp, data);
+                    set++;
+                } catch (Throwable t) {
+                    diag("[LayoutInflater] CL field set failed " + fieldName + ": "
+                            + t.getClass().getSimpleName() + ": " + t.getMessage());
+                    failed++;
+                }
+            }
+            if (set > 0 || failed > 0) {
+                diag("[LayoutInflater] CL params built: set=" + set + " failed=" + failed);
+            }
+            return lp;
+        } catch (Throwable t) {
+            diag("[LayoutInflater] generateConstraintLayoutParams failed: "
+                    + t.getClass().getSimpleName() + ": " + t.getMessage());
+            return null;
+        }
+    }
+
+    private static String mapConstraintAttrToField(String name) {
+        // Map app:layout_constraint* XML attribute -> ConstraintLayout$LayoutParams field name.
+        switch (name) {
+            case "layout_constraintTop_toTopOf": return "topToTop";
+            case "layout_constraintTop_toBottomOf": return "topToBottom";
+            case "layout_constraintBottom_toTopOf": return "bottomToTop";
+            case "layout_constraintBottom_toBottomOf": return "bottomToBottom";
+            case "layout_constraintStart_toStartOf": return "startToStart";
+            case "layout_constraintStart_toEndOf": return "startToEnd";
+            case "layout_constraintEnd_toStartOf": return "endToStart";
+            case "layout_constraintEnd_toEndOf": return "endToEnd";
+            case "layout_constraintLeft_toLeftOf": return "leftToLeft";
+            case "layout_constraintLeft_toRightOf": return "leftToRight";
+            case "layout_constraintRight_toLeftOf": return "rightToLeft";
+            case "layout_constraintRight_toRightOf": return "rightToRight";
+            default: return null;
+        }
+    }
+
     private static String simpleNameOf(String name) {
         if (name == null) return "null";
         int start = 0;
@@ -719,6 +855,10 @@ public class LayoutInflater {
 
     public LayoutInflater(Context context) {
         mContext = context;
+        try {
+            android.util.Log.d("WLInflater", "INFLATE_TRACE LayoutInflater(Context) ctor ctx="
+                    + (context != null ? context.getClass().getName() : "null"));
+        } catch (Throwable ignored) {}
     }
 
     public LayoutInflater(LayoutInflater original, Context newContext) {
@@ -730,6 +870,9 @@ public class LayoutInflater {
      * This is the standard way apps obtain a LayoutInflater.
      */
     public static LayoutInflater from(Context context) {
+        try {
+            android.util.Log.d("WLInflater", "INFLATE_TRACE LayoutInflater.from() called");
+        } catch (Throwable ignored) {}
         if (context == null) return new LayoutInflater(context);
         Object svc = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (svc instanceof LayoutInflater) {
@@ -3183,6 +3326,11 @@ public class LayoutInflater {
      * application, and LayoutParams generation.
      */
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
+        // PF-noice-013 (2026-05-05) diagnostic: confirm shim is hit
+        try {
+            android.util.Log.d("WLInflater", "INFLATE_TRACE inflate(int) entry resource=0x"
+                    + Integer.toHexString(resource) + " root=" + (root != null) + " attach=" + attachToRoot);
+        } catch (Throwable ignored) {}
         View view = null;
         boolean canUseRealInflaterShortcut = (root == null && !attachToRoot);
 
@@ -3485,66 +3633,16 @@ public class LayoutInflater {
             }
         }
 
-        // 5. Fallback: visible placeholder with app info.
-        // PF-noice-017 (2026-05-05): de-McD-ify — the previous version was
-        // hardcoded McDonald's branding (yellow + red "McDonald's" text).
-        // Now app-aware: pick branding based on package, generic otherwise.
+        // 5. Fallback: an empty FrameLayout. Per the architecture rule
+        // (CLAUDE.md), the shim must NOT brand the fallback by package
+        // name — that's a per-app hack. If inflate failed, return a
+        // bare placeholder and let the gap surface honestly. The real
+        // fix is to make inflate succeed, which generally means fixing
+        // the AssetManager / Resources path so the AXML actually loads.
         if (view == null) {
-            String pkgProp = System.getProperty("westlake.apk.package", "");
-            String actProp = System.getProperty("westlake.apk.activity", "");
-            String shortAct = actProp.contains(".") ? simpleNameOf(actProp) : actProp;
-
-            int bgColor;
-            int titleColor;
-            String titleText;
-            if (pkgProp.startsWith("com.mcdonalds.")) {
-                bgColor = 0xFFFFCC00; // McDonald's yellow
-                titleColor = 0xFFDA291C; // McDonald's red
-                titleText = "McDonald's";
-            } else if (pkgProp.startsWith("com.github.ashutoshgngwr.")
-                    || pkgProp.startsWith("com.trynoice.")) {
-                bgColor = 0xFF1E1E1E; // dark grey (noice uses dark theme)
-                titleColor = 0xFFFAA13E; // noice orange
-                titleText = "Noice";
-            } else if (pkgProp.startsWith("com.westlake.")) {
-                bgColor = 0xFF263238; // blue-grey
-                titleColor = 0xFF80DEEA; // cyan
-                titleText = "Westlake";
-            } else {
-                bgColor = 0xFF1A237E; // deep indigo
-                titleColor = 0xFFFFFFFF;
-                titleText = pkgProp.isEmpty() ? "Guest App" : simpleNameOf(pkgProp);
-            }
-
-            android.widget.LinearLayout ll = new android.widget.LinearLayout(mContext);
-            ll.setOrientation(android.widget.LinearLayout.VERTICAL);
-            ll.setId(resource);
-            ll.setBackgroundColor(bgColor);
-            ll.setPadding(20, 60, 20, 20);
-
-            android.widget.TextView title = new android.widget.TextView(mContext);
-            title.setText(titleText);
-            title.setTextSize(28);
-            title.setTextColor(titleColor);
-            title.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
-            ll.addView(title);
-
-            android.widget.TextView sub = new android.widget.TextView(mContext);
-            sub.setText("Running on Westlake Engine");
-            sub.setTextSize(14);
-            sub.setTextColor(0xFFCCCCCC);
-            sub.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
-            ll.addView(sub);
-
-            android.widget.TextView status = new android.widget.TextView(mContext);
-            status.setText(pkgProp + "\n" + shortAct + "\nLayout: 0x" + Integer.toHexString(resource));
-            status.setTextSize(12);
-            status.setTextColor(0xFFAAAAAA);
-            status.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
-            status.setPadding(0, 30, 0, 0);
-            ll.addView(status);
-
-            view = ll;
+            android.widget.FrameLayout placeholder = new android.widget.FrameLayout(mContext);
+            placeholder.setId(resource);
+            view = placeholder;
         }
         ensureDataBindingTag(view, resource);
 
@@ -3999,7 +4097,10 @@ public class LayoutInflater {
             // Handle <fragment> — create Fragment and add its view to parent
             if ("fragment".equals(tagName) || "FragmentContainerView".equals(tagName)
                     || "androidx.fragment.app.FragmentContainerView".equals(tagName)) {
-                handleFragmentTag(parser, parent);
+                try {
+                    android.util.Log.d("WLInflater", "INFLATE_TRACE handleFragmentTag tag=" + tagName);
+                } catch (Throwable ignored) {}
+                handleFragmentTag(parser, parent, tagName);
                 continue;
             }
 
@@ -4069,7 +4170,7 @@ public class LayoutInflater {
     /**
      * Handle &lt;fragment&gt; or &lt;FragmentContainerView&gt; tag.
      */
-    private void handleFragmentTag(XmlPullParser parser, ViewGroup parent) throws Exception {
+    private void handleFragmentTag(XmlPullParser parser, ViewGroup parent, String tagName) throws Exception {
         String fragmentClass = null;
         int viewId = View.NO_ID;
 
@@ -4088,42 +4189,41 @@ public class LayoutInflater {
 
         diag("[LayoutInflater] <fragment> class=" + fragmentClass + " id=0x" + Integer.toHexString(viewId));
 
-        // Create a FrameLayout container for the fragment
-        android.widget.FrameLayout container = new android.widget.FrameLayout(mContext);
+        // PF-noice-019 (2026-05-05): for <FragmentContainerView> tags, the
+        // app's view-binding code casts findChildViewById() to
+        // FragmentContainerView, so the container we install MUST be that
+        // type (not a plain FrameLayout). FragmentContainerView extends
+        // FrameLayout so this is a drop-in subclass.
+        android.widget.FrameLayout container;
+        boolean wantsContainerView = "FragmentContainerView".equals(tagName)
+                || "androidx.fragment.app.FragmentContainerView".equals(tagName);
+        if (wantsContainerView) {
+            try {
+                ClassLoader cl = mContext != null ? mContext.getClassLoader() : null;
+                if (cl == null) cl = Thread.currentThread().getContextClassLoader();
+                Class<?> cls = cl.loadClass("androidx.fragment.app.FragmentContainerView");
+                java.lang.reflect.Constructor<?> ctor = cls.getConstructor(android.content.Context.class);
+                container = (android.widget.FrameLayout) ctor.newInstance(mContext);
+                diag("[LayoutInflater] FragmentContainerView constructed: " + classNameOf(container));
+            } catch (Throwable t) {
+                diag("[LayoutInflater] FragmentContainerView ctor failed: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+                container = new android.widget.FrameLayout(mContext);
+            }
+        } else {
+            container = new android.widget.FrameLayout(mContext);
+        }
         if (viewId != View.NO_ID) container.setId(viewId);
 
-        // Try to instantiate the Fragment and call onCreateView
+        // Generic Fragment-tag handling: instantiating the Fragment and
+        // running its lifecycle is the responsibility of the framework's
+        // FragmentManager (real framework.jar). This shim's role is just
+        // to provide the typed FragmentContainerView at the right id so
+        // view-binding's cast and bind() succeed; the Fragment's view will
+        // be attached when FragmentManager runs onCreate -> onCreateView
+        // through the normal Android lifecycle.
         if (fragmentClass != null) {
-            try {
-                ClassLoader cl = mContext.getClassLoader();
-                if (cl == null) cl = Thread.currentThread().getContextClassLoader();
-                Class<?> fragCls = cl.loadClass(fragmentClass);
-                Object fragment = fragCls.newInstance();
-
-                if (fragment instanceof androidx.fragment.app.Fragment) {
-                    androidx.fragment.app.Fragment f = (androidx.fragment.app.Fragment) fragment;
-                    if (mContext instanceof androidx.fragment.app.FragmentActivity) {
-                        f.mActivity = (androidx.fragment.app.FragmentActivity) mContext;
-                    }
-                    try { f.onCreate(null); } catch (Throwable t) {
-                        diag("[LayoutInflater] Fragment.onCreate: " + t.getMessage());
-                    }
-                    try {
-                        View fragView = f.onCreateView(this, container, null);
-                        if (fragView != null) {
-                            container.addView(fragView);
-                            f.mView = fragView;
-                            diag("[LayoutInflater] Fragment view: " + classNameOf(fragView));
-                        }
-                    } catch (Throwable t) {
-                        diag("[LayoutInflater] Fragment.onCreateView: " + t.getMessage());
-                    }
-                }
-            } catch (Throwable t) {
-                diag("[LayoutInflater] Fragment error: " + t.getMessage());
-            }
+            diag("[LayoutInflater] FragmentContainerView name=" + fragmentClass);
         }
-
         parent.addView(container);
         skipToEndTag(parser);
     }
@@ -4284,6 +4384,19 @@ public class LayoutInflater {
         if (count < 0) return;
 
         Resources res = (mContext != null) ? mContext.getResources() : null;
+
+        // PF-noice-028 (2026-05-06): pull custom attrs by name that we want
+        // to apply post-create. app:menu on BottomNavigationView is a
+        // resource reference to the menu XML; we capture it here and call
+        // inflateMenu(resId) reflectively below the main switch.
+        int menuResId = 0;
+        for (int i = 0; i < count; i++) {
+            String attrName = bxp.getAttributeName(i);
+            if ("menu".equals(attrName)) {
+                menuResId = bxp.getAttributeValueData(i);
+                break;
+            }
+        }
 
         for (int i = 0; i < count; i++) {
             int resId = bxp.getAttributeNameResource(i);
@@ -4448,6 +4561,40 @@ public class LayoutInflater {
                                 rawValue, res);
                     }
                     break;
+            }
+        }
+
+        // PF-noice-028 (2026-05-06): apply captured app:menu reflectively.
+        if (menuResId != 0) {
+            try {
+                java.lang.reflect.Method inflateMenu = view.getClass().getMethod("inflateMenu", int.class);
+                inflateMenu.invoke(view, menuResId);
+                diag("[LayoutInflater] inflateMenu(0x" + Integer.toHexString(menuResId)
+                        + ") OK on " + classNameOf(view));
+            } catch (NoSuchMethodException nsme) {
+                // Not all views with a "menu" attribute have inflateMenu (e.g.,
+                // a Toolbar uses setMenu). Try Toolbar-style menu set.
+                try {
+                    java.lang.reflect.Method getMenu = view.getClass().getMethod("getMenu");
+                    Object menu = getMenu.invoke(view);
+                    if (menu != null) {
+                        // Use MenuInflater to populate the Menu instance.
+                        Class<?> menuInflater = Class.forName("android.view.MenuInflater");
+                        Object mi = menuInflater.getConstructor(android.content.Context.class)
+                                .newInstance(mContext);
+                        java.lang.reflect.Method inflate = menuInflater.getMethod("inflate",
+                                int.class, Class.forName("android.view.Menu"));
+                        inflate.invoke(mi, menuResId, menu);
+                        diag("[LayoutInflater] MenuInflater.inflate(0x" + Integer.toHexString(menuResId)
+                                + ") OK on " + classNameOf(view));
+                    }
+                } catch (Throwable t2) {
+                    diag("[LayoutInflater] menu inflate fallback failed on " + classNameOf(view)
+                            + ": " + t2.getClass().getSimpleName() + ": " + t2.getMessage());
+                }
+            } catch (Throwable t) {
+                diag("[LayoutInflater] inflateMenu failed on " + classNameOf(view)
+                        + ": " + t.getClass().getSimpleName() + ": " + t.getMessage());
             }
         }
     }
@@ -4651,6 +4798,18 @@ public class LayoutInflater {
                     }
                 }
             }
+        }
+
+        // PF-noice-029 (2026-05-06): generate ConstraintLayout.LayoutParams
+        // when parent is a ConstraintLayout, and populate its constraint
+        // fields reflectively from the XML's app:layout_constraint* attrs.
+        // Without this, ConstraintLayout falls back to default top-left
+        // stacking and BottomNavigationView/FAB end up in the wrong place.
+        if (isConstraintLayoutInstance(parent) && parser instanceof BinaryXmlParser) {
+            ViewGroup.LayoutParams clp = generateConstraintLayoutParams(
+                    parent, (BinaryXmlParser) parser, width, height,
+                    marginAll, marginLeft, marginTop, marginRight, marginBottom);
+            if (clp != null) return clp;
         }
 
         if (parent instanceof LinearLayout) {

@@ -293,18 +293,12 @@ public class ApkLoader {
                     com.westlake.engine.WestlakeLauncher.marker("CV PF-MCD-RES_TABLE_PARSE_BEGIN");
                 } catch (Throwable ignored) {
                 }
-                if (com.westlake.engine.WestlakeLauncher.isRealFrameworkFallbackAllowed()) {
-                    resTable.parse(data);
-                } else {
-                    int stringCount = resTable.parseStringResources(data);
-                    if (stringCount <= 0) {
-                        resTable.parseStringResourcesByName(data, new String[] {
-                                "default_market_id",
-                                "app_name",
-                                "selected_manual_store_expiry_time_in_mins"
-                        });
-                    }
-                }
+                /* PF-arch-036: always use the full parser so type tables,
+                 * entry file paths, and bag entries are available — required
+                 * for WestlakeInflater layout-name resolution and theme bag
+                 * lookups. The strict-only string-only path is no longer
+                 * gated. */
+                resTable.parse(data);
                 try {
                     com.westlake.engine.WestlakeLauncher.marker("CV PF-MCD-RES_TABLE_PARSE_DONE");
                 } catch (Throwable ignored) {

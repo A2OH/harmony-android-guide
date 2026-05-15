@@ -220,4 +220,43 @@ public class NotificationManager {
     public void setInterruptionFilter(int interruptionFilter) {}
     public void setNotificationDelegate(Object delegate) {}
     public void setNotificationPolicy(Object policy) {}
+
+    // ------------------------------------------------------------------
+    // Compile-time stub for the nested Policy class.  M4e's
+    // INotificationManager / WestlakeNotificationManagerService AIDL surface
+    // references android.app.NotificationManager.Policy in three method
+    // signatures (getConsolidatedNotificationPolicy,
+    // getNotificationPolicy(String), setNotificationPolicy(String, Policy,
+    // boolean)).  This nested class supplies enough surface for javac to
+    // resolve those signatures.  At RUNTIME the duplicates list strips this
+    // outer NotificationManager (and therefore Policy) from aosp-shim.dex so
+    // framework.jar's real Policy wins.  See scripts/framework_duplicates.txt
+    // line "android/app/NotificationManager".
+    // ------------------------------------------------------------------
+    public static class Policy {
+        public int priorityCategories;
+        public int priorityCallSenders;
+        public int priorityMessageSenders;
+        public int suppressedVisualEffects;
+        public int state;
+        public int priorityConversationSenders;
+
+        public Policy() {}
+
+        public Policy(int priorityCategories,
+                int priorityCallSenders,
+                int priorityMessageSenders) {
+            this.priorityCategories = priorityCategories;
+            this.priorityCallSenders = priorityCallSenders;
+            this.priorityMessageSenders = priorityMessageSenders;
+        }
+
+        public Policy(int priorityCategories,
+                int priorityCallSenders,
+                int priorityMessageSenders,
+                int suppressedVisualEffects) {
+            this(priorityCategories, priorityCallSenders, priorityMessageSenders);
+            this.suppressedVisualEffects = suppressedVisualEffects;
+        }
+    }
 }

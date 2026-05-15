@@ -10,10 +10,6 @@ import java.util.List;
  * fragment list on commit.
  */
 public class FragmentTransactionImpl extends FragmentTransaction {
-    private static final int MCD_SIMPLE_PRODUCT_HOLDER_ID = 0x7f0b171c;
-    private static final String MCD_ORDER_PDP_FRAGMENT =
-            "com.mcdonalds.pdpredesign.presentation.ui.OrderPDPFragment";
-
     final FragmentManager mManager;
     final ArrayList<Op> mOps = new ArrayList<>();
     String mName;
@@ -62,15 +58,6 @@ public class FragmentTransactionImpl extends FragmentTransaction {
                 + " tag=" + tag
                 + " containerId=0x" + Integer.toHexString(containerViewId)
                 + " opsBefore=" + mOps.size());
-        proof("MCD_FRAGMENT_TX_REPLACE container=0x" + Integer.toHexString(containerViewId)
-                + " fragment=" + fragmentName(fragment)
-                + " tag=" + safeToken(tag));
-        if (isMcdPdpTarget(containerViewId, fragment)) {
-            proof("MCD_PDP_FRAGMENT_TX_REPLACE container=0x"
-                    + Integer.toHexString(containerViewId)
-                    + " fragment=" + fragmentName(fragment)
-                    + " tag=" + safeToken(tag));
-        }
         Op op = new Op();
         op.cmd = OP_REPLACE;
         op.fragment = fragment;
@@ -181,16 +168,6 @@ public class FragmentTransactionImpl extends FragmentTransaction {
                     List<Fragment> removed = mManager.removeFragmentsAtContainer(op.containerId);
                     op.removed = removed;
                     mManager.addFragmentInternal(op.fragment, op.tag, op.containerId);
-                    proof("MCD_FRAGMENT_TX_REPLACE_COMMITTED container=0x"
-                            + Integer.toHexString(op.containerId)
-                            + " fragment=" + fragmentName(op.fragment)
-                            + " removed=" + (removed != null ? removed.size() : 0));
-                    if (isMcdPdpTarget(op.containerId, op.fragment)) {
-                        proof("MCD_PDP_FRAGMENT_TX_COMMITTED container=0x"
-                                + Integer.toHexString(op.containerId)
-                                + " fragment=" + fragmentName(op.fragment)
-                                + " removed=" + (removed != null ? removed.size() : 0));
-                    }
                     break;
                 case OP_REMOVE:
                     mManager.removeFragmentInternal(op.fragment);
@@ -221,49 +198,4 @@ public class FragmentTransactionImpl extends FragmentTransaction {
         return backStackId;
     }
 
-    private static void proof(String marker) {
-        try {
-            WestlakeLauncher.marker(marker);
-            WestlakeLauncher.appendCutoffCanaryMarker(marker);
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private static String fragmentName(Fragment fragment) {
-        if (fragment == null) {
-            return "null";
-        }
-        try {
-            return safeToken(fragment.getClass().getName());
-        } catch (Throwable ignored) {
-            return "unknown";
-        }
-    }
-
-    private static boolean isMcdPdpTarget(int containerId, Fragment fragment) {
-        return containerId == MCD_SIMPLE_PRODUCT_HOLDER_ID || isMcdPdpFragment(fragment);
-    }
-
-    private static boolean isMcdPdpFragment(Fragment fragment) {
-        String name = fragmentName(fragment);
-        return MCD_ORDER_PDP_FRAGMENT.equals(name) || name.endsWith(".OrderPDPFragment");
-    }
-
-    private static String safeToken(String value) {
-        if (value == null || value.length() == 0) {
-            return "null";
-        }
-        StringBuilder sb = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
-                    || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_'
-                    || ch == '-' || ch == '$') {
-                sb.append(ch);
-            } else {
-                sb.append('_');
-            }
-        }
-        return sb.toString();
-    }
 }

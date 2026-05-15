@@ -176,4 +176,10 @@ public class ApplicationErrorReport {
 
         public RunningServiceInfo() {}
     }
+
+    /** Parcelable crash info passed by IActivityManager.handleApplicationCrash.
+     *  Stub for compile-time only; framework.jar provides the real class. */
+    public static class ParcelableCrashInfo {
+        public ParcelableCrashInfo() {}
+    }
 }

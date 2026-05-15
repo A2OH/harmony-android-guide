@@ -157,53 +157,156 @@ public class MiniActivityManager {
         return unsafeField.get(null);
     }
 
-    private Activity instantiateActivity(Class<?> cls, String className, Intent intent) throws Throwable {
-        Throwable firstError = null;
+    /* PF-arch-032: find <activity android:theme="@..."> matching className. */
+    private static int findActivityTheme(com.westlake.engine.WestlakeNode manifest, String className) {
+        if (manifest == null || className == null) return 0;
+        com.westlake.engine.WestlakeNode app = childByTag(manifest, "application");
+        if (app == null) return 0;
+        for (com.westlake.engine.WestlakeNode act : app.children) {
+            if (!"activity".equals(act.tag) && !"activity-alias".equals(act.tag)) continue;
+            String name = act.getAttr("name");
+            if (name == null) continue;
+            if (!name.equals(className) && !endsWithAfterDot(name, className)) continue;
+            String theme = act.getAttr("theme");
+            int tid = parseRefId(theme);
+            if (tid != 0) return tid;
+        }
+        return 0;
+    }
+
+    /* PF-arch-032: find <application android:theme="@...">. */
+    private static int findApplicationTheme(com.westlake.engine.WestlakeNode manifest) {
+        com.westlake.engine.WestlakeNode app = childByTag(manifest, "application");
+        if (app == null) return 0;
+        return parseRefId(app.getAttr("theme"));
+    }
+
+    private static com.westlake.engine.WestlakeNode childByTag(
+            com.westlake.engine.WestlakeNode parent, String tag) {
+        if (parent == null) return null;
+        for (com.westlake.engine.WestlakeNode c : parent.children) {
+            if (tag.equals(c.tag)) return c;
+        }
+        return null;
+    }
+
+    private static boolean endsWithAfterDot(String full, String tail) {
+        if (full == null || tail == null) return false;
+        return full.endsWith("." + tail) || tail.endsWith("." + full);
+    }
+
+    private static int parseRefId(String raw) {
+        if (raw == null || raw.isEmpty()) return 0;
+        String s = raw;
+        if (s.startsWith("@") || s.startsWith("?")) s = s.substring(1);
+        if (s.startsWith("0x") || s.startsWith("0X")) {
+            try { return (int) Long.parseLong(s.substring(2), 16); }
+            catch (NumberFormatException nfe) { return 0; }
+        }
+        try { return (int) Long.parseLong(s); }
+        catch (NumberFormatException nfe) { return 0; }
+    }
+
+    /* PF-arch-026: read entire file as bytes, max 4MB. */
+    private static byte[] readFileBytes(java.io.File f) {
+        if (f == null || !f.isFile()) return null;
         try {
-            if (CUTOFF_CANARY_ACTIVITY.equals(className)) {
-                com.westlake.engine.WestlakeLauncher.noteMarker(
-                        "CV instantiateActivity entry");
+            java.io.FileInputStream fis = new java.io.FileInputStream(f);
+            try {
+                long size = f.length();
+                if (size <= 0 || size > 4 * 1024 * 1024) return null;
+                byte[] buf = new byte[(int) size];
+                int off = 0;
+                while (off < buf.length) {
+                    int r = fis.read(buf, off, buf.length - off);
+                    if (r < 0) break;
+                    off += r;
+                }
+                return buf;
+            } finally {
+                try { fis.close(); } catch (java.io.IOException ignored) {}
             }
-            if (CUTOFF_CANARY_ACTIVITY.equals(className)) {
-                com.westlake.engine.WestlakeLauncher.noteMarker(
-                        "CV instantiateActivity before ctor lookup");
-            }
-            java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
-            if (CUTOFF_CANARY_ACTIVITY.equals(className)) {
-                com.westlake.engine.WestlakeLauncher.noteMarker(
-                        "CV instantiateActivity after ctor lookup");
-            }
-            ctor.setAccessible(true);
-            if (CUTOFF_CANARY_ACTIVITY.equals(className)) {
-                com.westlake.engine.WestlakeLauncher.noteMarker(
-                        "CV instantiateActivity before ctor new");
-            }
-            Activity activity = (Activity) ctor.newInstance();
-            if (CUTOFF_CANARY_ACTIVITY.equals(className)) {
-                com.westlake.engine.WestlakeLauncher.noteMarker(
-                        "CV instantiateActivity ctor ok");
-            }
-            return activity;
-        } catch (Throwable t) {
-            if (firstError == null) {
-                firstError = t;
+        } catch (java.io.IOException ioe) {
+            return null;
+        }
+    }
+
+    /* PF-arch-026: read extracted res/layout/<name>.xml bytes (binary AXML). */
+    private static byte[] tryReadAxml(String resDir, String layoutName) {
+        if (resDir == null || layoutName == null) return null;
+        String[] subdirs = {
+                "res/layout",
+                "res/layout-v21",
+                "res/layout-v23",
+                "res/layout-port",
+        };
+        for (String sub : subdirs) {
+            String path = resDir + "/" + sub + "/" + layoutName + ".xml";
+            java.io.File f = new java.io.File(path);
+            if (!f.isFile()) continue;
+            try {
+                java.io.FileInputStream fis = new java.io.FileInputStream(f);
+                try {
+                    long size = f.length();
+                    if (size <= 0 || size > 4 * 1024 * 1024) return null;
+                    byte[] buf = new byte[(int) size];
+                    int off = 0;
+                    while (off < buf.length) {
+                        int r = fis.read(buf, off, buf.length - off);
+                        if (r < 0) break;
+                        off += r;
+                    }
+                    return buf;
+                } finally {
+                    try { fis.close(); } catch (java.io.IOException ignored) {}
+                }
+            } catch (java.io.IOException ioe) {
+                /* try next */
             }
         }
+        return null;
+    }
 
+    private Activity instantiateActivity(Class<?> cls, String className, Intent intent) throws Throwable {
+        /* PF-arch-017: Activity ctors throw exceptions (e.g., Hilt/DI init failure)
+         * that ART's long-jump cannot deliver — Context vtable comes out NULL,
+         * crashing artContextCopyForLongJump. Use Unsafe.allocateInstance FIRST
+         * to bypass the ctor entirely. Activity fields start zero-initialized;
+         * framework re-populates them via attachBaseContext / setIntent /
+         * setApplication in startResolvedActivity. */
+        /* PF-arch-017: prefer sun.misc.Unsafe over jdk.internal.misc.Unsafe — the
+         * latter's allocateInstance native is unregistered in our ART, throws
+         * UnsatisfiedLinkError that ART's long-jump can't deliver (PF-arch-016
+         * aborts). sun.misc.Unsafe.allocateInstance works. */
         String[] unsafeClasses = {
-                "jdk.internal.misc.Unsafe",
-                "sun.misc.Unsafe"
+                "sun.misc.Unsafe",
+                "jdk.internal.misc.Unsafe"
         };
+        Throwable firstError = null;
         for (String unsafeName : unsafeClasses) {
             try {
                 Object unsafe = getUnsafeSingleton(unsafeName);
-                return (Activity) unsafe.getClass()
+                Activity activity = (Activity) unsafe.getClass()
                         .getMethod("allocateInstance", Class.class)
                         .invoke(unsafe, cls);
+                if (activity != null) {
+                    return activity;
+                }
             } catch (Throwable t) {
                 if (firstError == null) {
                     firstError = t;
                 }
+            }
+        }
+
+        // Fallback to ctor only if Unsafe.allocateInstance unavailable
+        try {
+            java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            return (Activity) ctor.newInstance();
+        } catch (Throwable t) {
+            if (firstError == null) {
+                firstError = t;
             }
         }
 
@@ -279,8 +382,12 @@ public class MiniActivityManager {
         }
         try {
             Object manager = null;
+            // V2-Step3 (CR28-builder, 2026-05-13): componentManager() / b() were
+            // Hilt-obfuscated accessors on the V1 Application shim; the V2
+            // Application is generic so we look them up reflectively only.
             try {
-                manager = app.componentManager();
+                java.lang.reflect.Method m = app.getClass().getMethod("componentManager");
+                manager = m.invoke(app);
             } catch (Throwable ignored) {
             }
             if (manager == null) {
@@ -1658,6 +1765,27 @@ public class MiniActivityManager {
         ShimCompat.setActivityField(activity, "mFinished", Boolean.FALSE);
         ShimCompat.setActivityField(activity, "mDestroyed", Boolean.FALSE);
 
+        // PF-noice-022 (2026-05-11): generic Hilt-graph injector.
+        //
+        // Pre-fill null DI fields on the activity BEFORE onCreate runs. Hilt's
+        // normal injection path is blocked in standalone Westlake (Application
+        // isn't `Hilt_*`, EntryPoints.get(app, ...) throws ISE). The injector
+        // below replaces obfuscated kotlin.Lazy fields (interfaces declaring
+        // `getValue():Object`) with proxies that return deep-stubbed instances,
+        // recursively fills Unsafe-allocated stubs' Context/Resources/Prefs
+        // slots from the Application object, and prevents the canonical NPE
+        // pattern (Lazy.getValue() → SettingsRepository.context.getString()).
+        // The fill is generic and best-effort: any field that can't be filled
+        // stays null, and the existing per-onCreate catch handles it.
+        if (!isCutoffCanaryComponent(component)) {
+            try {
+                fillNullFieldsWithProxies(activity);
+            } catch (Throwable t) {
+                Log.w(TAG, "  Pre-onCreate Hilt graph fill failed: "
+                        + t.getClass().getSimpleName() + ": " + t.getMessage());
+            }
+        }
+
         if (!isCutoffCanaryComponent(component)
                 && shouldRunLegacyMcdBootstrap(component, resolvedPackageName, resolvedClassName)) {
             Object singleton = ensureSingletonComponent();
@@ -2244,10 +2372,10 @@ public class MiniActivityManager {
         ocThread.setDaemon(true);
         ocThread.start();
         String componentName = r.component != null ? r.component.getClassName() : null;
-        boolean mcdNonSplash = componentName != null
-                && componentName.startsWith("com.mcdonalds.")
-                && !componentName.endsWith(".SplashActivity");
-        long createTimeoutMs = mcdNonSplash ? 15000L : 5000L;
+        // Generic timeout: 15s is appropriate for any non-trivial activity
+        // whose onCreate does view inflation + DI bootstrap (Hilt, Dagger,
+        // etc.). Per CLAUDE.md, no per-package branches.
+        long createTimeoutMs = 15000L;
         try { ocThread.join(createTimeoutMs); } catch (InterruptedException ie) {}
         // CRITICAL: Stop the thread if still running to prevent GC deadlock.
         // SplashActivity.onCreate may catch UUID errors and continue with DI code
@@ -2263,8 +2391,8 @@ public class MiniActivityManager {
                     Log.w(TAG, "  onCreate stack[" + i + "] " + stack[i]);
                 }
             }
-            if (mcdNonSplash && timeoutContentInstalled) {
-                Log.w(TAG, "performCreate leaving McD content onCreate thread alive for "
+            if (timeoutContentInstalled) {
+                Log.w(TAG, "performCreate leaving onCreate thread alive (content already installed) for "
                         + r.component.getClassName());
             } else {
                 try { ocThread.stop(); } catch (Throwable t) { /* ThreadDeath expected */ }
@@ -2322,24 +2450,58 @@ public class MiniActivityManager {
             } else {
             Log.d(TAG, "  tryRecoverContent: attempting manual setContentView for " + r.component.getClassName()
                     + " (reason=" + (createNPE ? "NPE" : (!done[0] ? "timeout" : error[0].getClass().getSimpleName())) + ")");
-            // Fill null interface fields with dynamic Proxies (surviving DI failure)
-            fillNullFieldsWithProxies(r.activity);
-            // Retry onCreate with non-null stub fields
-            try {
-                Log.d(TAG, "  Retrying onCreate with stub DI fields...");
-                r.activity.onCreate(null);
-                Log.d(TAG, "  Retry onCreate SUCCESS");
-            } catch (Throwable retryEx) {
-                Log.d(TAG, "  Retry onCreate failed: " + retryEx.getClass().getSimpleName() + ": " + retryEx.getMessage());
+            // PF-noice-022 (2026-05-11): the pre-onCreate fillNullFieldsWithProxies
+            // has already filled all addressable null fields. A second call here
+            // has caused SIGBUS in past sessions on the standalone guest (likely
+            // from re-creating Proxy classes for the same interfaces). Skip it.
+            // PF-noice-022 (2026-05-11): iterative NPE-driven Hilt graph repair.
+            //
+            // After the first NPE, the message tells us EXACTLY which field of
+            // which class was dereferenced to null (e.g. `noice.repository.p.a`).
+            // We can use that to build a deep-stubbed instance of `noice.repository.p`
+            // and route the broken Lazy to return it. Each iteration peels off one
+            // more layer of the Hilt graph; bounded retries prevent infinite loops.
+            int retryCount = 0;
+            final int maxRetries = 6;
+            String lastError = null;
+            while (retryCount < maxRetries) {
+                try {
+                    if (retryCount == 0) {
+                        Log.d(TAG, "  Retrying onCreate with stub DI fields...");
+                    } else {
+                        Log.d(TAG, "  Retrying onCreate (attempt #" + (retryCount + 1) + ")");
+                    }
+                    r.activity.onCreate(null);
+                    Log.d(TAG, "  Retry onCreate SUCCESS");
+                    break;
+                } catch (Throwable retryEx) {
+                    String msg = retryEx.getMessage();
+                    Log.d(TAG, "  Retry onCreate failed: "
+                            + retryEx.getClass().getSimpleName() + ": " + msg);
+                    if (!(retryEx instanceof NullPointerException) || msg == null
+                            || msg.equals(lastError)) {
+                        break;
+                    }
+                    lastError = msg;
+                    // Try to extract "ClassName.fieldName" from the NPE message
+                    // and stub the missing object via a Lazy override.
+                    if (!repairNpeViaLazyStub(r.activity, msg)) {
+                        Log.d(TAG, "  NPE repair: no actionable info in message; giving up retries");
+                        break;
+                    }
+                    retryCount++;
+                }
             }
             if (isFinishedOrDestroyed(r)) {
                 return;
             }
             try {
-                // Try setContentView with the splash layout resource ID. Try a
-                // sequence of common layout names so non-McD apps (e.g. noice)
-                // pick up their actual main layout. Fall back to the McDonald's
-                // splash ID as a generic last resort.
+                // PF-arch-025: route layout inflation through WestlakeView
+                // instead of Activity.setContentView. setContentView goes
+                // through Window.getDecorView() which is abstract — no
+                // concrete PhoneWindow without real Context. We inflate
+                // ourselves and store the resulting View in WestlakeView's
+                // map; the render loop picks it up from there.
                 android.content.res.Resources res = r.activity.getResources();
                 int layoutId = 0;
                 if (res != null) {
@@ -2361,14 +2523,144 @@ public class MiniActivityManager {
                     }
                 }
                 if (layoutId == 0) layoutId = 0x7f0e0530; // McDonald's splash layout fallback
-                r.activity.setContentView(layoutId);
-                Log.d(TAG, "  tryRecoverContent: setContentView(0x" + Integer.toHexString(layoutId) + ") OK");
+                /* PF-arch-026: context-free Westlake inflater path. Resolve
+                 * layout-name → file-path via ResourceTable (aapt2 collapsed
+                 * resource names mean files are like res/0H.xml on disk),
+                 * read binary AXML, build WestlakeNode tree, store for render
+                 * loop. Also stash the ResourceTable for renderer resolution. */
+                String resDir = com.westlake.engine.WestlakeLauncher.getResDirForRender();
+                String pkg = r.component != null ? r.component.getPackageName() : null;
+                android.content.res.ResourceTable arsc = null;
+                if (mServer != null) {
+                    android.app.ApkInfo apkInfo = mServer.getApkInfo();
+                    if (apkInfo != null && apkInfo.resourceTable instanceof android.content.res.ResourceTable) {
+                        arsc = (android.content.res.ResourceTable) apkInfo.resourceTable;
+                    }
+                }
+                if (arsc != null) {
+                    com.westlake.engine.WestlakeView.setArsc(r.activity, arsc);
+                    /* PF-arch-032: load the activity's actual theme from the
+                     * manifest XML. The manifest's <activity android:theme>
+                     * (or <application android:theme> as fallback) gives us
+                     * the exact theme resource ID to load. Falls back to
+                     * common theme names if the manifest can't be read. */
+                    int themeResId = 0;
+                    String themeSrc = "unknown";
+                    String resDirForTheme = com.westlake.engine.WestlakeLauncher.getResDirForRender();
+                    if (resDirForTheme != null) {
+                        java.io.File manifestFile = new java.io.File(
+                                resDirForTheme + "/AndroidManifest.xml");
+                        if (manifestFile.isFile()) {
+                            byte[] manifestBytes = readFileBytes(manifestFile);
+                            if (manifestBytes != null) {
+                                com.westlake.engine.WestlakeNode m =
+                                        com.westlake.engine.WestlakeInflater.inflate(manifestBytes);
+                                if (m != null) {
+                                    int activityTheme = findActivityTheme(m, r.component.getClassName());
+                                    if (activityTheme != 0) {
+                                        themeResId = activityTheme;
+                                        themeSrc = "manifest:activity";
+                                    } else {
+                                        int appTheme = findApplicationTheme(m);
+                                        if (appTheme != 0) {
+                                            themeResId = appTheme;
+                                            themeSrc = "manifest:application";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (themeResId == 0) {
+                        final String[] themeNames = {
+                                "Theme.Noice", "Theme.App", "Theme.AppCompat",
+                                "Theme.Material3.DayNight", "AppTheme"
+                        };
+                        for (String tname : themeNames) {
+                            int tid = arsc.getIdentifier(tname);
+                            if (tid != 0) {
+                                themeResId = tid;
+                                themeSrc = "fallback:" + tname;
+                                break;
+                            }
+                        }
+                    }
+                    if (themeResId != 0) {
+                        com.westlake.engine.WestlakeTheme theme =
+                                com.westlake.engine.WestlakeTheme.load(themeResId, resDirForTheme, arsc);
+                        Log.d(TAG, "  theme via " + themeSrc + " (id=0x"
+                                + Integer.toHexString(themeResId) + ") loaded="
+                                + theme.isLoaded() + " attrs=" + theme.size());
+                        if (theme.isLoaded()) {
+                            com.westlake.engine.WestlakeView.setTheme(r.activity, theme);
+                        }
+                    }
+                }
+                final String[] layoutCandidatesArsc = {
+                        "activity_splash_screen", "main_activity", "activity_main",
+                        "activity_home", "splash_screen", "main"
+                };
+                com.westlake.engine.WestlakeNode wlNode = null;
+                String layoutFileUsed = null;
+                if (resDir != null && arsc != null) {
+                    for (String name : layoutCandidatesArsc) {
+                        int id = arsc.getIdentifier(name);
+                        if (id == 0) continue;
+                        String path = arsc.getEntryFilePath(id);
+                        if (path == null || path.isEmpty()) continue;
+                        java.io.File f = new java.io.File(resDir + "/" + path);
+                        if (!f.isFile()) continue;
+                        byte[] axml = readFileBytes(f);
+                        if (axml == null || axml.length == 0) continue;
+                        wlNode = com.westlake.engine.WestlakeInflater.inflate(axml);
+                        if (wlNode != null) {
+                            layoutFileUsed = name + " -> " + path + " (" + axml.length + " B)";
+                            break;
+                        }
+                    }
+                }
+                if (wlNode != null) {
+                    com.westlake.engine.WestlakeView.setNode(r.activity, wlNode);
+                    Log.d(TAG, "  tryRecoverContent: WestlakeInflater parsed " + layoutFileUsed
+                            + " — root=" + wlNode.tag + ", " + wlNode.children.size() + " children");
+                }
+                /* Also try the standard inflater for compatibility (canary apps
+                 * that DO have working Resources). */
+                android.view.View inflated = null;
+                try {
+                    android.view.LayoutInflater inflater = android.view.LayoutInflater.from(r.activity);
+                    inflated = inflater.inflate(layoutId, null);
+                } catch (Throwable e) {
+                    /* Standard inflater needs Context — expected to fail here. */
+                }
+                if (inflated != null) {
+                    com.westlake.engine.WestlakeView.setRoot(r.activity, inflated);
+                    Log.d(TAG, "  tryRecoverContent: standard inflated 0x" + Integer.toHexString(layoutId)
+                            + " -> " + inflated.getClass().getSimpleName());
+                } else if (wlNode == null) {
+                    Log.d(TAG, "  tryRecoverContent: neither inflater produced output");
+                }
             } catch (Throwable ex) {
-                Log.d(TAG, "  tryRecoverContent setContentView failed: " + ex.getMessage());
-                // PF-noice (2026-05-04): when XML layout inflation fails due to
-                // boot-class cascade (Charset/CoderResult), fall back to a
-                // programmatic View tree that bypasses Resources entirely.
-                // This gives at least visible "the app reached resume" pixels.
+                Log.d(TAG, "  tryRecoverContent inflate failed: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                /* PF-arch-025: Context-free stub fallback. When LayoutInflater
+                 * can't run (no Resources/Context), build a marker view tree
+                 * via Unsafe.allocateInstance — the render loop just needs
+                 * SOMETHING in WestlakeView's map so it doesn't fall back to
+                 * "no View tree" mode. The stub view is empty but lets the
+                 * pipeline progress. */
+                try {
+                    Object unsafe = getUnsafeSingleton("sun.misc.Unsafe");
+                    android.view.ViewGroup root = (android.view.ViewGroup) unsafe.getClass()
+                            .getMethod("allocateInstance", Class.class)
+                            .invoke(unsafe, com.westlake.engine.WestlakeStubView.class);
+                    com.westlake.engine.WestlakeView.setRoot(r.activity, root);
+                    Log.d(TAG, "  tryRecoverContent: Unsafe-allocated WestlakeStubView root stored in WestlakeView");
+                    return;
+                } catch (Throwable stubEx) {
+                    Log.d(TAG, "  tryRecoverContent stub-view fallback failed: "
+                            + stubEx.getClass().getSimpleName() + ": " + stubEx.getMessage());
+                }
+                // Legacy programmatic fallback below (kept for canary apps that have Resources working).
                 try {
                     android.widget.LinearLayout root = new android.widget.LinearLayout(r.activity);
                     root.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -2396,8 +2688,18 @@ public class MiniActivityManager {
                             new android.widget.LinearLayout.LayoutParams(
                                     android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
                                     android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
-                    r.activity.setContentView(root);
-                    Log.d(TAG, "  tryRecoverContent: programmatic LinearLayout fallback installed");
+                    /* PF-arch-025: bypass Window/setContentView entirely.
+                     * activity.setContentView → window.getDecorView() fails
+                     * (abstract); store the root in WestlakeView's map so the
+                     * render loop can pick it up directly. */
+                    try {
+                        r.activity.setContentView(root);
+                        Log.d(TAG, "  tryRecoverContent: programmatic LinearLayout via setContentView");
+                    } catch (Throwable swcv) {
+                        com.westlake.engine.WestlakeView.setRoot(r.activity, root);
+                        Log.d(TAG, "  tryRecoverContent: programmatic LinearLayout via WestlakeView.setRoot (setContentView failed: "
+                                + swcv.getClass().getSimpleName() + ")");
+                    }
                 } catch (Throwable progEx) {
                     Log.d(TAG, "  tryRecoverContent programmatic fallback failed: "
                             + progEx.getClass().getSimpleName() + ": " + progEx.getMessage());
@@ -2492,6 +2794,7 @@ public class MiniActivityManager {
     private void fillNullFieldsWithProxies(Activity activity) {
         int filled = 0;
         int filledAbstract = 0;
+        int lazyReplaced = 0;
         try {
             Class<?> cls = activity.getClass();
             while (cls != null && cls != Object.class) {
@@ -2501,9 +2804,33 @@ public class MiniActivityManager {
                     if (type.isPrimitive()) continue;
                     if (type == String.class) continue;
                     f.setAccessible(true);
-                    if (f.get(activity) != null) continue;
+                    Object currentValue = f.get(activity);
+
+                    // PF-noice-022 (2026-05-11): for kotlin.Lazy-shaped interfaces
+                    // (`getValue():Object` + few methods), REPLACE even non-null
+                    // values. Hilt-generated activities initialize these Lazy
+                    // fields in <init> with a lambda that calls
+                    // EntryPoints.get(app, ...).get(); the lambda silently fails
+                    // and getValue() returns null (because we lack the Hilt
+                    // singleton component), causing onCreate to NPE. Replacing
+                    // the Lazy with a stub that returns a deep-stubbed instance
+                    // of the inferred T lets onCreate proceed.
+                    if (type.isInterface() && isKotlinLazyInterface(type)) {
+                        if (currentValue == null || !lazyReturnsNonNull(currentValue)) {
+                            try {
+                                Object lazyStub = buildLazyStub(activity, f, type);
+                                if (lazyStub != null) {
+                                    f.set(activity, lazyStub);
+                                    lazyReplaced++;
+                                    continue;
+                                }
+                            } catch (Throwable ignored) { }
+                        }
+                    }
+                    if (currentValue != null) continue;
 
                     if (type.isInterface()) {
+                        // (kotlin.Lazy case handled above for null values too)
                         // Existing path: Proxy.newProxyInstance for interfaces
                         try {
                             Object proxy = java.lang.reflect.Proxy.newProxyInstance(
@@ -2540,6 +2867,9 @@ public class MiniActivityManager {
                             Object stub = unsafeAllocateInstanceShared(type);
                             if (stub != null) {
                                 f.set(activity, stub);
+                                // PF-noice-022: recursively fill the stub's fields
+                                // so accessing stub.foo doesn't NPE again.
+                                deepFillStubFields(stub, 2);
                                 filledAbstract++;
                             }
                         } catch (Throwable ex) { /* skip */ }
@@ -2558,6 +2888,7 @@ public class MiniActivityManager {
                                 ctor.setAccessible(true);
                                 Object stub = ctor.newInstance();
                                 f.set(activity, stub);
+                                deepFillStubFields(stub, 2);
                                 filledAbstract++;
                                 continue;
                             } catch (NoSuchMethodException | InstantiationException
@@ -2567,6 +2898,7 @@ public class MiniActivityManager {
                             Object stub = unsafeAllocateInstanceShared(type);
                             if (stub != null) {
                                 f.set(activity, stub);
+                                deepFillStubFields(stub, 2);
                                 filledAbstract++;
                             }
                         } catch (Throwable ex) { /* skip */ }
@@ -2575,10 +2907,531 @@ public class MiniActivityManager {
                 cls = cls.getSuperclass();
             }
         } catch (Throwable t) { /* reflection failure */ }
-        if (filled > 0 || filledAbstract > 0) {
+        if (filled > 0 || filledAbstract > 0 || lazyReplaced > 0) {
             Log.d(TAG, "  fillNullFieldsWithProxies: filled " + filled + " interfaces, "
-                    + filledAbstract + " abstract/concrete fields");
+                    + filledAbstract + " abstract/concrete fields, "
+                    + lazyReplaced + " Lazy<T> replacements");
         }
+    }
+
+    // PF-noice-022 (2026-05-11): Hilt-graph injector helpers.
+    //
+    // Hilt-injected activity fields are normally populated by a generated
+    // *_MembersInjector. In the Westlake standalone runtime, the Hilt
+    // singleton component (`Application.componentManager().c()`) can't bind
+    // because the Application isn't `Hilt_NoiceApplication` (loadAppClass
+    // SIGBUSes — see PF-arch-010). When MainActivity.onCreate dereferences
+    // a kotlin.Lazy field that was wired to `EntryPoints.get(app, ...).get()`,
+    // the missing entry-point throws IllegalStateException inside getValue(),
+    // and the activity NPEs on the cached repository's Context field.
+    //
+    // The graph-injector below works generically: it walks the activity's
+    // null fields, replaces kotlin.Lazy-shaped interfaces with a custom Lazy
+    // that produces a deep-stubbed instance, and recursively fills Context-,
+    // SharedPreferences-, and Resources-typed slots on those stubs with the
+    // Application instance. No app-specific names appear here — the only
+    // signals are method shape (`getValue():Object`) and field type families.
+
+    /**
+     * Parse an NPE message of the form:
+     *   "Attempt to read from field 'Lcom/foo/Bar; com.foo.Baz.x' on a null object reference ..."
+     * Extract `com.foo.Baz` (the owner class of the null-dereferenced field) and
+     * build a deep-stubbed instance via Unsafe.allocateInstance + deepFillStubFields.
+     * Then find any Lazy field on the activity that, when getValue() is called,
+     * returns null or throws — and patch its initializer to return our stub.
+     *
+     * Returns true if we made progress (i.e. patched at least one Lazy); false
+     * otherwise (caller should stop retrying).
+     */
+    private boolean repairNpeViaLazyStub(Activity activity, String npeMessage) {
+        if (npeMessage == null) return false;
+        // NPE messages on ART look like:
+        //   "Attempt to read from field 'TYPE pkg.Cls.field' on a null object reference in method ..."
+        // The owner class name is between the space-after-TYPE and the last '.'.
+        String ownerClassName = extractNpeOwnerClass(npeMessage);
+        if (ownerClassName == null) return false;
+        // PF-noice-022: prefer the activity's own classloader's loadClass()
+        // over Class.forName(...) — the latter has historically SIGBUSed on
+        // our standalone guest for app DEX classes due to caller-sensitive
+        // intrinsics. Even loadClass can crash; wrap everything.
+        ClassLoader cl = activity.getClass().getClassLoader();
+        Class<?> ownerClass = null;
+        // Search the activity's class hierarchy for a field whose declared
+        // type's name matches ownerClassName — that gives us the Class<?>
+        // WITHOUT any cross-CL lookup (which is what SIGBUSes).
+        try {
+            Class<?> walk = activity.getClass();
+            while (walk != null && walk != Object.class && ownerClass == null) {
+                for (java.lang.reflect.Field f : walk.getDeclaredFields()) {
+                    Class<?> t = f.getType();
+                    if (t != null && ownerClassName.equals(t.getName())) {
+                        ownerClass = t;
+                        break;
+                    }
+                }
+                walk = walk.getSuperclass();
+            }
+        } catch (Throwable ignored) { }
+        // PF-noice-022 (2026-05-11): unconditional class-lookup paths (loadClass,
+        // resolveAppClassOrNull, native findClass) have all SIGBUSed for unseen
+        // app-DEX classes on the standalone guest (e.g. noice.repository.p — a
+        // Hilt-bound type only reachable transitively via Lazy<T>). Since the
+        // standalone Westlake runtime can't safely resolve such classes from a
+        // bare name, we bail out and let the existing tryRecoverContent
+        // fallbacks (WestlakeInflater + WestlakeView.setRoot) take over.
+        if (ownerClass == null) {
+            Log.d(TAG, "  NPE repair: " + ownerClassName + " not directly reachable; skipping");
+            return false;
+        }
+        // Build a stub of ownerClass.
+        Object stub = buildDeepStubInstance(ownerClass, activity);
+        if (stub == null) {
+            Log.d(TAG, "  NPE repair: can't allocate " + ownerClassName);
+            return false;
+        }
+        // Find a Lazy field on the activity (or super) that returns null/throws
+        // when getValue() is called. Replace it with a Lazy that returns `stub`.
+        // Track whether we patched anything.
+        boolean patched = false;
+        try {
+            Class<?> cls = activity.getClass();
+            while (cls != null && cls != Object.class) {
+                for (java.lang.reflect.Field f : cls.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                    Class<?> type = f.getType();
+                    if (!type.isInterface()) continue;
+                    if (!isKotlinLazyInterface(type)) continue;
+                    f.setAccessible(true);
+                    Object existing = f.get(activity);
+                    boolean broken = existing == null || !lazyReturnsValueAssignableTo(existing, ownerClass);
+                    if (!broken) continue;
+                    Object lazyStub = buildFixedLazy(type, ownerClass, stub, activity);
+                    if (lazyStub != null) {
+                        f.set(activity, lazyStub);
+                        patched = true;
+                        Log.d(TAG, "  NPE repair: patched Lazy field "
+                                + cls.getSimpleName() + "." + f.getName()
+                                + " -> " + ownerClass.getSimpleName());
+                    }
+                }
+                cls = cls.getSuperclass();
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "  NPE repair: walk failed: " + t.getClass().getSimpleName());
+        }
+        return patched;
+    }
+
+    /** Parse the owner class name out of an ART NPE message. */
+    private static String extractNpeOwnerClass(String msg) {
+        // Look for the pattern: "'<TYPE> <OWNER.FIELD>'"
+        int q1 = msg.indexOf('\'');
+        if (q1 < 0) return null;
+        int q2 = msg.indexOf('\'', q1 + 1);
+        if (q2 < 0) return null;
+        String quoted = msg.substring(q1 + 1, q2);
+        // quoted = "android.content.Context com.foo.Bar.fieldName"
+        int sp = quoted.indexOf(' ');
+        if (sp < 0) return null;
+        String full = quoted.substring(sp + 1); // "com.foo.Bar.fieldName"
+        int lastDot = full.lastIndexOf('.');
+        if (lastDot < 0) return null;
+        return full.substring(0, lastDot);
+    }
+
+    /** True if Lazy.getValue() returns an instance assignable to expected. */
+    private boolean lazyReturnsValueAssignableTo(Object lazy, Class<?> expected) {
+        try {
+            java.lang.reflect.Method m = lazy.getClass().getMethod("getValue");
+            m.setAccessible(true);
+            Object v = m.invoke(lazy);
+            return v != null && expected.isInstance(v);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Build a Lazy-shaped proxy that returns a fixed pre-built stub value. */
+    private Object buildFixedLazy(Class<?> lazyInterface, Class<?> valueType,
+                                  final Object value, Activity activity) {
+        try {
+            ClassLoader cl = lazyInterface.getClassLoader();
+            if (cl == null) cl = activity.getClass().getClassLoader();
+            if (cl == null) cl = Thread.currentThread().getContextClassLoader();
+            return java.lang.reflect.Proxy.newProxyInstance(cl,
+                    new Class<?>[]{ lazyInterface },
+                    new java.lang.reflect.InvocationHandler() {
+                        @Override
+                        public Object invoke(Object p, java.lang.reflect.Method m, Object[] args) {
+                            String name = m.getName();
+                            Class<?> rt = m.getReturnType();
+                            if ("toString".equals(name)) return "FixedLazy[" + valueType.getSimpleName() + "]";
+                            if ("hashCode".equals(name)) return System.identityHashCode(p);
+                            if ("equals".equals(name)) return args != null && args.length > 0 && p == args[0];
+                            if (rt == boolean.class) return Boolean.TRUE;
+                            if (rt == void.class) return null;
+                            if (rt == int.class) return 0;
+                            if (rt == long.class) return 0L;
+                            if (rt == float.class) return 0f;
+                            if (rt == double.class) return 0.0;
+                            if (rt == String.class) return "";
+                            return value;
+                        }
+                    });
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /**
+     * Best-effort check whether an existing Lazy already produces a non-null
+     * value. We call `getValue()` reflectively. If it succeeds with a non-null
+     * return, the Lazy is healthy and we leave it alone. On any throw or null
+     * return, we replace it with our stub.
+     */
+    private boolean lazyReturnsNonNull(Object lazy) {
+        if (lazy == null) return false;
+        try {
+            java.lang.reflect.Method m = lazy.getClass().getMethod("getValue");
+            m.setAccessible(true);
+            Object v = m.invoke(lazy);
+            return v != null;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** True if the given interface looks like kotlin.Lazy<T>. */
+    private boolean isKotlinLazyInterface(Class<?> type) {
+        if (type == null || !type.isInterface()) return false;
+        String name = type.getName();
+        if ("kotlin.Lazy".equals(name)) return true;
+        // Obfuscated kotlin.Lazy (e.g. noice's `f7.b`): identify by signature.
+        // The Kotlin Lazy<T> interface declares exactly:
+        //     T getValue();
+        //     boolean isInitialized();
+        // Stripping the original method-name annotations after R8 leaves at
+        // minimum `getValue()Ljava/lang/Object;` — that's the marker we use.
+        try {
+            java.lang.reflect.Method[] methods = type.getDeclaredMethods();
+            boolean hasGetValue = false;
+            for (java.lang.reflect.Method m : methods) {
+                if (m.getParameterCount() != 0) continue;
+                if (m.getReturnType() == Object.class && "getValue".equals(m.getName())) {
+                    hasGetValue = true;
+                    break;
+                }
+            }
+            return hasGetValue && methods.length <= 4;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * Build a Proxy that implements the given Lazy-shaped interface and
+     * memoises a deep-stubbed instance of the inferred value type.
+     *
+     * Value type inference (in order):
+     * 1) Generic type argument of the field signature (e.g. `Lf7/b<Tnoice/...>`)
+     * 2) The Lazy implementation class's `value` field type
+     * 3) Fall back to Object.class — getValue() returns null but doesn't NPE.
+     */
+    private Object buildLazyStub(final Activity activity,
+                                 java.lang.reflect.Field f,
+                                 final Class<?> lazyInterface) {
+        final Class<?> valueType = inferLazyValueType(f);
+        final Object[] cached = new Object[1];
+        try {
+            ClassLoader cl = lazyInterface.getClassLoader();
+            if (cl == null) cl = activity.getClass().getClassLoader();
+            if (cl == null) cl = Thread.currentThread().getContextClassLoader();
+            java.lang.reflect.InvocationHandler h = new java.lang.reflect.InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, java.lang.reflect.Method m, Object[] args) {
+                    String name = m.getName();
+                    Class<?> rt = m.getReturnType();
+                    if ("toString".equals(name)) return "LazyStub[" + (valueType != null ? valueType.getSimpleName() : "?") + "]";
+                    if ("hashCode".equals(name)) return System.identityHashCode(proxy);
+                    if ("equals".equals(name)) return args != null && args.length > 0 && proxy == args[0];
+                    if ("isInitialized".equals(name) || rt == boolean.class) return Boolean.TRUE;
+                    // getValue() and any zero-arg Object-returning method
+                    if (rt == void.class) return null;
+                    if (rt == int.class) return 0;
+                    if (rt == long.class) return 0L;
+                    if (rt == float.class) return 0f;
+                    if (rt == double.class) return 0.0;
+                    if (rt == String.class) return "";
+                    synchronized (cached) {
+                        if (cached[0] == null) {
+                            cached[0] = buildDeepStubInstance(valueType, activity);
+                        }
+                        return cached[0];
+                    }
+                }
+            };
+            return java.lang.reflect.Proxy.newProxyInstance(cl,
+                    new Class<?>[]{ lazyInterface }, h);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /** Infer the Lazy<T> value type from the field's generic signature. */
+    private Class<?> inferLazyValueType(java.lang.reflect.Field f) {
+        try {
+            java.lang.reflect.Type gt = f.getGenericType();
+            if (gt instanceof java.lang.reflect.ParameterizedType) {
+                java.lang.reflect.Type[] args = ((java.lang.reflect.ParameterizedType) gt)
+                        .getActualTypeArguments();
+                if (args != null && args.length > 0) {
+                    java.lang.reflect.Type a0 = args[0];
+                    if (a0 instanceof Class<?>) return (Class<?>) a0;
+                    if (a0 instanceof java.lang.reflect.ParameterizedType) {
+                        Object raw = ((java.lang.reflect.ParameterizedType) a0).getRawType();
+                        if (raw instanceof Class<?>) return (Class<?>) raw;
+                    }
+                }
+            }
+        } catch (Throwable ignored) { }
+        return null;
+    }
+
+    /**
+     * Allocate an instance of the given type via Unsafe (no constructor),
+     * then recursively populate Context/SharedPreferences/Resources fields
+     * with the activity's Application and primitive-ish defaults so that
+     * the consuming code can do `.field.getString(...)` without NPE.
+     */
+    private Object buildDeepStubInstance(Class<?> type, Activity activity) {
+        if (type == null || type == Object.class) return null;
+        if (type.isInterface()) {
+            try {
+                return java.lang.reflect.Proxy.newProxyInstance(
+                        type.getClassLoader(),
+                        new Class<?>[]{ type },
+                        new java.lang.reflect.InvocationHandler() {
+                            @Override public Object invoke(Object p, java.lang.reflect.Method m, Object[] a) {
+                                return defaultReturnFor(m.getReturnType());
+                            }
+                        });
+            } catch (Throwable t) {
+                return null;
+            }
+        }
+        try {
+            Object instance = unsafeAllocateInstanceShared(type);
+            if (instance == null) return null;
+            deepFillStubFields(instance, 2);
+            return instance;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /**
+     * Recursively fill null fields on a stub instance (bounded depth).
+     * Targets:
+     *  - Context-typed → set to mServer.getApplication() if available
+     *  - SharedPreferences → set to a stub (or app's getSharedPreferences if
+     *    we can call it without further NPE)
+     *  - Resources → set to app.getResources() if available
+     *  - Other interfaces → proxy
+     *  - Primitives → leave alone (already zero-init)
+     *  - String → empty string
+     */
+    private void deepFillStubFields(Object stub, int depth) {
+        if (stub == null || depth < 0) return;
+        Class<?> cls = stub.getClass();
+        if (cls == null) return;
+        // Skip framework/library objects — we only want to fix app DTOs.
+        String stubName = cls.getName();
+        if (stubName.startsWith("java.") || stubName.startsWith("kotlin.")
+                || stubName.startsWith("android.") || stubName.startsWith("androidx.")
+                || stubName.startsWith("dagger.")) {
+            return;
+        }
+        android.app.Application app = mServer != null ? mServer.getApplication() : null;
+        // Use the Application as fake Context; fall back to sRealContext.
+        android.content.Context fakeCtx = app;
+        if (fakeCtx == null) {
+            try {
+                Object ctx = com.westlake.engine.WestlakeLauncher.sRealContext;
+                if (ctx instanceof android.content.Context) {
+                    fakeCtx = (android.content.Context) ctx;
+                }
+            } catch (Throwable ignored) { }
+        }
+        try {
+            Class<?> cur = cls;
+            while (cur != null && cur != Object.class) {
+                String curName = cur.getName();
+                if (curName.startsWith("java.") || curName.startsWith("kotlin.")
+                        || curName.startsWith("android.") || curName.startsWith("androidx.")) {
+                    break;
+                }
+                for (java.lang.reflect.Field f : cur.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                    Class<?> type = f.getType();
+                    if (type.isPrimitive()) continue;
+                    try {
+                        f.setAccessible(true);
+                        if (f.get(stub) != null) continue;
+                        Object value = makeFieldValue(type, fakeCtx, depth - 1);
+                        if (value != null) {
+                            f.set(stub, value);
+                        }
+                    } catch (Throwable ignored) { }
+                }
+                cur = cur.getSuperclass();
+            }
+        } catch (Throwable ignored) { }
+    }
+
+    /** Make a non-null stub value of the given type for deep-fill. */
+    private Object makeFieldValue(Class<?> type, android.content.Context fakeCtx, int depth) {
+        if (type == null) return null;
+        if (type == String.class) return "";
+        if (type == CharSequence.class) return "";
+        if (type == Object.class) return null;
+        if (java.util.List.class.isAssignableFrom(type)) return new java.util.ArrayList<>();
+        if (java.util.Map.class.isAssignableFrom(type)) return new java.util.HashMap<>();
+        if (java.util.Set.class.isAssignableFrom(type)) return new java.util.HashSet<>();
+        // Context-shaped fields: route to the Application instance.
+        if (fakeCtx != null) {
+            if (type.isInstance(fakeCtx)) return fakeCtx;
+            if (android.content.Context.class.isAssignableFrom(type)) return fakeCtx;
+        }
+        // SharedPreferences → try app's SharedPreferences; fall back to proxy.
+        if (type == android.content.SharedPreferences.class) {
+            if (fakeCtx != null) {
+                try {
+                    return fakeCtx.getSharedPreferences("__westlake_stub__", 0);
+                } catch (Throwable ignored) { }
+            }
+            return buildSharedPreferencesStub();
+        }
+        // Resources → use the app's Resources if we can get them.
+        if (type == android.content.res.Resources.class) {
+            if (fakeCtx != null) {
+                try { return fakeCtx.getResources(); } catch (Throwable ignored) { }
+            }
+            return null;
+        }
+        // Generic interfaces → proxy.
+        if (type.isInterface()) {
+            try {
+                return java.lang.reflect.Proxy.newProxyInstance(
+                        type.getClassLoader(),
+                        new Class<?>[]{ type },
+                        new java.lang.reflect.InvocationHandler() {
+                            @Override public Object invoke(Object p, java.lang.reflect.Method m, Object[] a) {
+                                return defaultReturnFor(m.getReturnType());
+                            }
+                        });
+            } catch (Throwable ignored) { return null; }
+        }
+        if (depth < 0) return null;
+        // Skip framework / library namespaces — Unsafe.allocateInstance on
+        // e.g. java.io.File can break the runtime, and any framework class
+        // typically needs a constructor to be functional.
+        String tn = type.getName();
+        if (tn.startsWith("java.") || tn.startsWith("javax.") || tn.startsWith("sun.")
+                || tn.startsWith("kotlin.") || tn.startsWith("kotlinx.")
+                || tn.startsWith("android.") || tn.startsWith("androidx.")
+                || tn.startsWith("dagger.") || tn.startsWith("com.google.")
+                || tn.startsWith("org.")) {
+            return null;
+        }
+        // Concrete: best-effort Unsafe allocation.
+        try {
+            Object inst = unsafeAllocateInstanceShared(type);
+            if (inst != null) deepFillStubFields(inst, depth - 1);
+            return inst;
+        } catch (Throwable ignored) { return null; }
+    }
+
+    /** SharedPreferences stub backed by an in-memory map. */
+    private Object buildSharedPreferencesStub() {
+        try {
+            return java.lang.reflect.Proxy.newProxyInstance(
+                    MiniActivityManager.class.getClassLoader(),
+                    new Class<?>[]{ android.content.SharedPreferences.class },
+                    new java.lang.reflect.InvocationHandler() {
+                        final java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        @Override public Object invoke(Object p, java.lang.reflect.Method m, Object[] args) {
+                            String name = m.getName();
+                            Class<?> rt = m.getReturnType();
+                            if ("getString".equals(name) && args != null && args.length >= 2) {
+                                Object v = map.get((String) args[0]);
+                                return v instanceof String ? v : args[1];
+                            }
+                            if ("getInt".equals(name) && args != null && args.length >= 2) {
+                                Object v = map.get((String) args[0]);
+                                return v instanceof Integer ? v : args[1];
+                            }
+                            if ("getBoolean".equals(name) && args != null && args.length >= 2) {
+                                Object v = map.get((String) args[0]);
+                                return v instanceof Boolean ? v : args[1];
+                            }
+                            if ("getLong".equals(name) && args != null && args.length >= 2) {
+                                Object v = map.get((String) args[0]);
+                                return v instanceof Long ? v : args[1];
+                            }
+                            if ("getFloat".equals(name) && args != null && args.length >= 2) {
+                                Object v = map.get((String) args[0]);
+                                return v instanceof Float ? v : args[1];
+                            }
+                            if ("contains".equals(name)) return Boolean.FALSE;
+                            if ("getAll".equals(name)) return new java.util.HashMap<>();
+                            if ("edit".equals(name)) {
+                                // Return an Editor that doesn't crash.
+                                return java.lang.reflect.Proxy.newProxyInstance(
+                                        MiniActivityManager.class.getClassLoader(),
+                                        new Class<?>[]{ android.content.SharedPreferences.Editor.class },
+                                        new java.lang.reflect.InvocationHandler() {
+                                            @Override public Object invoke(Object p, java.lang.reflect.Method m, Object[] a) {
+                                                String nm = m.getName();
+                                                Class<?> ret = m.getReturnType();
+                                                if (nm.startsWith("put") && a != null && a.length >= 2 && a[0] instanceof String) {
+                                                    map.put((String) a[0], a[1]);
+                                                }
+                                                if (nm.equals("remove") && a != null && a.length >= 1 && a[0] instanceof String) {
+                                                    map.remove((String) a[0]);
+                                                }
+                                                if (nm.equals("clear")) {
+                                                    map.clear();
+                                                }
+                                                if (nm.equals("commit")) return Boolean.TRUE;
+                                                if (nm.equals("apply")) return null;
+                                                return ret.isInstance(p) ? p : null;
+                                            }
+                                        });
+                            }
+                            return defaultReturnFor(rt);
+                        }
+                    });
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /** Default return value for a method type (proxy fallback). */
+    private static Object defaultReturnFor(Class<?> rt) {
+        if (rt == void.class) return null;
+        if (rt == boolean.class) return Boolean.FALSE;
+        if (rt == int.class) return 0;
+        if (rt == long.class) return 0L;
+        if (rt == float.class) return 0f;
+        if (rt == double.class) return 0.0;
+        if (rt == byte.class) return (byte) 0;
+        if (rt == short.class) return (short) 0;
+        if (rt == char.class) return '\0';
+        if (rt == String.class) return "";
+        if (java.util.List.class.isAssignableFrom(rt)) return new java.util.ArrayList<>();
+        if (java.util.Map.class.isAssignableFrom(rt)) return new java.util.HashMap<>();
+        if (java.util.Set.class.isAssignableFrom(rt)) return new java.util.HashSet<>();
+        return null;
     }
 
     // PF-noice-016 (2026-05-05): cached Unsafe.allocateInstance handle.

@@ -4991,6 +4991,11 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
         for (int i = 0; i < len; i++) {
             View v = where[i];
+            // PF-noice-022 (2026-05-06): skip child entries that point back
+            // to this ViewGroup. Without this, a cycle (someone added self
+            // as child) drives findViewById/findViewTraversal into infinite
+            // mutual recursion until 32MB stack overflow.
+            if (v == this || v == null) continue;
 
             if ((v.mPrivateFlags & PFLAG_IS_ROOT_NAMESPACE) == 0) {
                 v = v.findViewById(id);
@@ -5305,6 +5310,19 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
         if (child == null) {
             throw new IllegalArgumentException("Cannot add a null child view to a ViewGroup");
+        }
+        // PF-noice-022 (2026-05-06): defense against view-tree cycles. A
+        // ViewGroup must never have itself as a child — that triggers
+        // infinite recursion in findViewTraversal. Some app code (e.g.
+        // FragmentContainerView's onAttachedToWindow path) ends up doing
+        // this when fragments aren't fully wired; we'd rather log+drop than
+        // StackOverflowError on the next findViewById.
+        if (child == this) {
+            try {
+                android.util.Log.w("Westlake", "ViewGroup.addView: refusing to add self as child ("
+                        + getClass().getName() + " id=0x" + Integer.toHexString(getId()) + ")");
+            } catch (Throwable ignored) {}
+            return;
         }
 
         // addViewInner() will call child.requestLayout() when setting the new LayoutParams

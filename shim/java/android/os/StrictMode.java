@@ -98,4 +98,11 @@ public final class StrictMode {
             public VmPolicy build() { return new VmPolicy(); }
         }
     }
+
+    /** Strict-mode violation payload passed by
+     *  IActivityManager.handleApplicationStrictModeViolation.  Stub for
+     *  compile-time only; framework.jar provides the real class. */
+    public static class ViolationInfo {
+        public ViolationInfo() {}
+    }
 }

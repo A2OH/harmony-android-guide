@@ -33,6 +33,33 @@ public class MiniServer {
     private MiniServer(String packageName) {
         mPackageName = packageName;
         mApplication = new Application();
+        // CR59 (2026-05-14): bare `new Application()` has mBase=null
+        // (super(null) in shim ctor).  Any caller that walks the
+        // ContextWrapper chain through this placeholder (e.g.
+        // `app.getApplicationContext()` -> `mBase.getApplicationContext()`)
+        // will NPE.  Attach a default-shaped WestlakeContextImpl base
+        // context so the placeholder Application is at least
+        // chain-walkable.  Generic, no per-app branches.  Uses the same
+        // Application.attach(Context) helper the production
+        // makeApplication path uses.  Anti-drift compliant: no Unsafe,
+        // no setAccessible, no new methods on WestlakeContextImpl, no
+        // per-app paths.
+        try {
+            com.westlake.services.WestlakeContextImpl baseContext =
+                    new com.westlake.services.WestlakeContextImpl(
+                            packageName != null && !packageName.isEmpty()
+                                    ? packageName : "com.example.app",
+                            /*apkPath*/ null,
+                            /*dataDir*/ null,
+                            /*classLoader*/ getClass().getClassLoader(),
+                            /*targetSdk*/ 33);
+            baseContext.setAttachedApplication(mApplication);
+            mApplication.attach(baseContext);
+        } catch (Throwable ignored) {
+            // Best-effort. If WestlakeContextImpl ctor fails for any
+            // reason, leave mApplication with null mBase — matches
+            // pre-CR59 behavior so we never regress sandboxed callers.
+        }
         ShimCompat.setPackageName(mApplication, packageName);
         mActivityManager = new MiniActivityManager(this);
         mServiceManager = new MiniServiceManager(this);
@@ -87,7 +114,29 @@ public class MiniServer {
         if (sInstance == null) {
             return;
         }
-        sInstance.mApplication = app != null ? app : new Application();
+        if (app != null) {
+            sInstance.mApplication = app;
+        } else {
+            // CR59 (2026-05-14): match the ctor's CR59 fixup so we
+            // never publish a bare-mBase=null Application via this
+            // public re-set API.
+            Application placeholder = new Application();
+            try {
+                com.westlake.services.WestlakeContextImpl baseContext =
+                        new com.westlake.services.WestlakeContextImpl(
+                                sInstance.mPackageName != null
+                                        && !sInstance.mPackageName.isEmpty()
+                                        ? sInstance.mPackageName
+                                        : "com.example.app",
+                                /*apkPath*/ null,
+                                /*dataDir*/ null,
+                                /*classLoader*/ sInstance.getClass().getClassLoader(),
+                                /*targetSdk*/ 33);
+                baseContext.setAttachedApplication(placeholder);
+                placeholder.attach(baseContext);
+            } catch (Throwable ignored) {}
+            sInstance.mApplication = placeholder;
+        }
         ShimCompat.setPackageName(sInstance.mApplication, sInstance.mPackageName);
     }
 
@@ -117,7 +166,25 @@ public class MiniServer {
     public MiniPackageManager getPackageManager() { return mPackageManager; }
     public Application getApplication() { return mApplication; }
     public void setApplication(Application app) {
-        mApplication = app != null ? app : new Application();
+        if (app != null) {
+            mApplication = app;
+        } else {
+            // CR59 (2026-05-14): see currentSetApplication for rationale.
+            Application placeholder = new Application();
+            try {
+                com.westlake.services.WestlakeContextImpl baseContext =
+                        new com.westlake.services.WestlakeContextImpl(
+                                mPackageName != null && !mPackageName.isEmpty()
+                                        ? mPackageName : "com.example.app",
+                                /*apkPath*/ null,
+                                /*dataDir*/ null,
+                                /*classLoader*/ getClass().getClassLoader(),
+                                /*targetSdk*/ 33);
+                baseContext.setAttachedApplication(placeholder);
+                placeholder.attach(baseContext);
+            } catch (Throwable ignored) {}
+            mApplication = placeholder;
+        }
         ShimCompat.setPackageName(mApplication, mPackageName);
     }
     public String getPackageName() { return mPackageName; }

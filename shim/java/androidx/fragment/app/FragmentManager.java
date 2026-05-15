@@ -15,12 +15,6 @@ import java.util.List;
  */
 public class FragmentManager {
     private static final String TAG = "WestlakeFragmentMgr";
-    private static final int MCD_SIMPLE_PRODUCT_HOLDER_ID = 0x7f0b171c;
-    private static final int MCD_PDP_PLUS_ID = 0x7f0b12a5;
-    private static final int MCD_PDP_MINUS_ID = 0x7f0b12a2;
-    private static final int MCD_PDP_QUANTITY_ID = 0x7f0b12a9;
-    private static final String MCD_ORDER_PDP_FRAGMENT =
-            "com.mcdonalds.pdpredesign.presentation.ui.OrderPDPFragment";
 
     final List<Fragment> mAdded = new ArrayList<>();
     private final List<BackStackRecord> mBackStack = new ArrayList<>();
@@ -362,17 +356,6 @@ public class FragmentManager {
         f.mAdded = true;
         mAdded.add(f);
         ViewGroup container = resolveContainer(containerId);
-        boolean mcdPdpTarget = isMcdPdpTarget(f, containerId);
-        if (mcdPdpTarget) {
-            proof("MCD_PDP_FRAGMENT_ADD_BEGIN fragment=" + safeToken(fragmentName(f))
-                    + " tag=" + safeToken(tag)
-                    + " container=0x" + Integer.toHexString(containerId)
-                    + " host=" + safeToken(mHost.getClass().getName()));
-            proof("MCD_PDP_FRAGMENT_CONTAINER_RESOLVED container=0x"
-                    + Integer.toHexString(containerId)
-                    + " found=" + (container != null)
-                    + " view=" + safeToken(viewSummary(container)));
-        }
         try {
             note("FragmentManager addFragmentInternal before performAttach");
             Log.i(TAG, "addFragmentInternal before performAttach fragment=" + f
@@ -418,11 +401,6 @@ public class FragmentManager {
             f.performCreateView(inflater, container, null);
             note("FragmentManager addFragmentInternal after performCreateView view="
                     + (f.mView != null));
-            if (mcdPdpTarget) {
-                proof("MCD_PDP_FRAGMENT_VIEW_CREATED fragment=" + safeToken(fragmentName(f))
-                        + " container=0x" + Integer.toHexString(containerId)
-                        + " view=" + safeToken(viewSummary(f.mView)));
-            }
             Log.i(TAG, "addFragmentInternal after performCreateView fragment=" + f
                     + " view=" + f.mView);
         } catch (Throwable t) {
@@ -436,34 +414,12 @@ public class FragmentManager {
                 if (f.mView.getParent() instanceof ViewGroup) {
                     ((ViewGroup) f.mView.getParent()).removeView(f.mView);
                 }
-                if (mcdPdpTarget) {
-                    try {
-                        container.setVisibility(View.VISIBLE);
-                    } catch (Throwable ignored) {
-                    }
-                    proof("MCD_PDP_FRAGMENT_ATTACH_ATTEMPT fragment=" + safeToken(fragmentName(f))
-                            + " container=0x" + Integer.toHexString(containerId)
-                            + " containerView=" + safeToken(viewSummary(container))
-                            + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                }
                 prepareFragmentViewForContainer(f.mView, container);
                 container.addView(f.mView, fullSizeLayoutParamsFor(container));
                 note("FragmentManager addFragmentInternal after addView childCount="
                         + container.getChildCount());
                 Log.i(TAG, "addFragmentInternal attached view fragment=" + f
                         + " childCount=" + container.getChildCount());
-                proof("MCD_FRAGMENT_VIEW_ATTACHED fragment=" + safeToken(fragmentName(f))
-                        + " container=" + safeToken(viewSummary(container))
-                        + " view=" + safeToken(viewSummary(f.mView))
-                        + " childCount=" + container.getChildCount());
-                if (mcdPdpTarget) {
-                    proof("MCD_PDP_FRAGMENT_VIEW_ATTACHED fragment=" + safeToken(fragmentName(f))
-                            + " container=0x" + Integer.toHexString(containerId)
-                            + " parentMatches=" + (f.mView.getParent() == container)
-                            + " childCount=" + container.getChildCount()
-                            + " containerView=" + safeToken(viewSummary(container))
-                            + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                }
             } catch (Throwable t) {
                 note("FragmentManager addFragmentInternal addView err "
                         + t.getClass().getName());
@@ -474,139 +430,25 @@ public class FragmentManager {
                             + container.getChildCount());
                     Log.i(TAG, "addFragmentInternal attached view via standalone fallback fragment=" + f
                             + " childCount=" + container.getChildCount());
-                    proof("MCD_FRAGMENT_VIEW_STANDALONE fragment=" + safeToken(fragmentName(f))
-                            + " container=" + safeToken(viewSummary(container))
-                            + " view=" + safeToken(viewSummary(f.mView))
-                            + " childCount=" + container.getChildCount());
-                    if (mcdPdpTarget) {
-                        proof("MCD_PDP_FRAGMENT_VIEW_ATTACHED_STANDALONE fragment="
-                                + safeToken(fragmentName(f))
-                                + " container=0x" + Integer.toHexString(containerId)
-                                + " parentMatches=" + (f.mView.getParent() == container)
-                                + " childCount=" + container.getChildCount()
-                                + " containerView=" + safeToken(viewSummary(container))
-                                + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                    }
                 } catch (Throwable fallback) {
                     note("FragmentManager addFragmentInternal standalone child fallback err "
                             + fallback.getClass().getName());
-                    if (mcdPdpTarget) {
-                        proof("MCD_PDP_FRAGMENT_VIEW_NOT_ATTACHED fragment="
-                                + safeToken(fragmentName(f))
-                                + " container=0x" + Integer.toHexString(containerId)
-                                + " reason=" + safeToken(t.getClass().getName())
-                                + " fallback=" + safeToken(fallback.getClass().getName())
-                                + " containerView=" + safeToken(viewSummary(container))
-                                + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                    }
                     throw new RuntimeException("FragmentManager.addFragmentInternal:addView " + f, t);
                 }
             }
-        } else if (mcdPdpTarget) {
-            proof("MCD_PDP_FRAGMENT_VIEW_NOT_ATTACHED fragment=" + safeToken(fragmentName(f))
-                    + " container=0x" + Integer.toHexString(containerId)
-                    + " reason=" + (container == null ? "missing_container" : "missing_view")
-                    + " containerView=" + safeToken(viewSummary(container))
-                    + " fragmentView=" + safeToken(viewSummary(f != null ? f.mView : null)));
         }
         try {
             note("FragmentManager addFragmentInternal before lifecycleResume");
             f.performActivityCreated(null);
             f.performStart();
-            if (mcdPdpTarget && !prepareMcdPdpFragmentForResume(f)) {
-                proof("MCD_PDP_FRAGMENT_RESUME_DEFERRED fragment="
-                        + safeToken(fragmentName(f))
-                        + " container=0x" + Integer.toHexString(containerId)
-                        + " reason=missing_bound_views"
-                        + " containerView=" + safeToken(viewSummary(container))
-                        + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                return;
-            }
-            try {
-                f.performResume();
-            } catch (Throwable resumeError) {
-                if (mcdPdpTarget) {
-                    proof("MCD_PDP_FRAGMENT_RESUME_DEFERRED fragment="
-                            + safeToken(fragmentName(f))
-                            + " container=0x" + Integer.toHexString(containerId)
-                            + " reason=" + safeToken(resumeError.getClass().getName())
-                            + " message=" + safeToken(resumeError.getMessage())
-                            + " containerView=" + safeToken(viewSummary(container))
-                            + " fragmentView=" + safeToken(viewSummary(f.mView)));
-                    return;
-                }
-                throw new RuntimeException(
-                        "FragmentManager.addFragmentInternal:performResume " + f,
-                        resumeError);
-            }
+            f.performResume();
             note("FragmentManager addFragmentInternal after lifecycleResume");
-            if (mcdPdpTarget) {
-                proof("MCD_PDP_FRAGMENT_RESUMED fragment=" + safeToken(fragmentName(f))
-                        + " mode=performResume"
-                        + " container=0x" + Integer.toHexString(containerId)
-                        + " containerView=" + safeToken(viewSummary(container))
-                        + " fragmentView=" + safeToken(viewSummary(f.mView)));
-            }
             Log.i(TAG, "addFragmentInternal resumed fragment=" + f);
         } catch (Throwable t) {
             note("FragmentManager addFragmentInternal lifecycleResume err "
                     + t.getClass().getName());
             throw new RuntimeException("FragmentManager.addFragmentInternal:lifecycleResume " + f, t);
         }
-    }
-
-    private static boolean prepareMcdPdpFragmentForResume(Fragment fragment) {
-        if (fragment == null) {
-            return false;
-        }
-        View root = fragment.mView;
-        View plus = root != null ? root.findViewById(MCD_PDP_PLUS_ID) : null;
-        View minus = root != null ? root.findViewById(MCD_PDP_MINUS_ID) : null;
-        View quantity = root != null ? root.findViewById(MCD_PDP_QUANTITY_ID) : null;
-        boolean plusOk = setFragmentFieldIfNull(fragment, "M0", plus);
-        boolean minusOk = setFragmentFieldIfNull(fragment, "N0", minus);
-        boolean quantityOk = setFragmentFieldIfNull(fragment, "mDisplayQuantity", quantity);
-        boolean attached = root != null && root.getParent() != null;
-        String marker = "fragment=" + safeToken(fragmentName(fragment))
-                + " attached=" + attached
-                + " plus=" + safeToken(viewSummary(plus))
-                + " minus=" + safeToken(viewSummary(minus))
-                + " quantity=" + safeToken(viewSummary(quantity))
-                + " plusOk=" + plusOk
-                + " minusOk=" + minusOk
-                + " quantityOk=" + quantityOk;
-        proof("MCD_PDP_FRAGMENT_RESUME_PREP " + marker);
-        return attached && plusOk && minusOk && quantityOk;
-    }
-
-    private static boolean setFragmentFieldIfNull(Fragment fragment, String name, Object value) {
-        if (fragment == null || name == null || value == null) {
-            return false;
-        }
-        try {
-            java.lang.reflect.Field field = findFieldOnHierarchy(fragment.getClass(), name);
-            if (field == null) {
-                return false;
-            }
-            field.setAccessible(true);
-            Object current = field.get(fragment);
-            if (current == null) {
-                field.set(fragment, value);
-            }
-            return field.get(fragment) != null;
-        } catch (Throwable ignored) {
-            return false;
-        }
-    }
-
-    private static java.lang.reflect.Field findFieldOnHierarchy(Class<?> type, String name) {
-        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
-            try {
-                return c.getDeclaredField(name);
-            } catch (NoSuchFieldException ignored) {
-            }
-        }
-        return null;
     }
 
     private static ViewGroup.LayoutParams fullSizeLayoutParamsFor(ViewGroup parent) {
@@ -643,105 +485,6 @@ public class FragmentManager {
             view.setLayoutParams(fullSizeLayoutParamsFor(container));
         } catch (Throwable ignored) {
         }
-    }
-
-    private static void proof(String marker) {
-        try {
-            WestlakeLauncher.marker(marker);
-            WestlakeLauncher.appendCutoffCanaryMarker(marker);
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private static String fragmentName(Fragment fragment) {
-        if (fragment == null) {
-            return "null";
-        }
-        try {
-            return fragment.getClass().getName();
-        } catch (Throwable ignored) {
-            return "unknown";
-        }
-    }
-
-    private static boolean isMcdPdpTarget(Fragment fragment, int containerId) {
-        return containerId == MCD_SIMPLE_PRODUCT_HOLDER_ID || isMcdPdpFragment(fragment);
-    }
-
-    private static boolean isMcdPdpFragment(Fragment fragment) {
-        String name = fragmentName(fragment);
-        return MCD_ORDER_PDP_FRAGMENT.equals(name) || name.endsWith(".OrderPDPFragment");
-    }
-
-    private static String viewSummary(View view) {
-        if (view == null) {
-            return "null";
-        }
-        StringBuilder sb = new StringBuilder(96);
-        try {
-            sb.append(view.getClass().getName());
-        } catch (Throwable ignored) {
-            sb.append("unknown");
-        }
-        try {
-            int id = view.getId();
-            if (id != View.NO_ID) {
-                sb.append("#0x").append(Integer.toHexString(id));
-            }
-        } catch (Throwable ignored) {
-        }
-        if (view instanceof ViewGroup) {
-            try {
-                sb.append("[c=").append(((ViewGroup) view).getChildCount()).append(']');
-            } catch (Throwable ignored) {
-            }
-        }
-        try {
-            sb.append("[v=").append(view.getVisibility())
-                    .append(",w=").append(view.getWidth())
-                    .append(",h=").append(view.getHeight()).append(']');
-        } catch (Throwable ignored) {
-        }
-        try {
-            sb.append("[mw=").append(view.getMeasuredWidth())
-                    .append(",mh=").append(view.getMeasuredHeight()).append(']');
-        } catch (Throwable ignored) {
-        }
-        try {
-            sb.append("[lp=").append(layoutParamsSummary(view.getLayoutParams())).append(']');
-        } catch (Throwable ignored) {
-        }
-        try {
-            sb.append("[parent=").append(view.getParent() != null).append(']');
-        } catch (Throwable ignored) {
-        }
-        return sb.toString();
-    }
-
-    private static String layoutParamsSummary(ViewGroup.LayoutParams lp) {
-        if (lp == null) {
-            return "null";
-        }
-        return lp.getClass().getName() + ":" + lp.width + "x" + lp.height;
-    }
-
-    private static String safeToken(String value) {
-        if (value == null || value.length() == 0) {
-            return "null";
-        }
-        StringBuilder sb = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
-                    || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_'
-                    || ch == '-' || ch == '$' || ch == '#' || ch == '='
-                    || ch == ',' || ch == '[' || ch == ']') {
-                sb.append(ch);
-            } else {
-                sb.append('_');
-            }
-        }
-        return sb.toString();
     }
 
     void removeFragmentInternal(Fragment f) {

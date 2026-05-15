@@ -84,6 +84,38 @@ public class Resources {
 
     public Resources() {}
 
+    /**
+     * 3-arg ctor matching framework.jar's deprecated public ctor.  Exists
+     * so {@code com.westlake.services.WestlakeResources} can call
+     * {@code super(null, null, cfg)} -- at compile time this ctor is a
+     * no-op; at runtime framework.jar's Resources is on the classpath
+     * (shim Resources is stripped via scripts/framework_duplicates.txt)
+     * and the real 3-arg ctor runs.
+     *
+     * Added in M4-PRE6 (2026-05-12).
+     */
+    public Resources(AssetManager assets, DisplayMetrics metrics, Configuration config) {
+        // No fields to assign here -- the existing default-initialized
+        // mDisplayMetrics / mConfiguration above stay valid.  The args
+        // matter only at runtime where the real Resources ctor handles them.
+    }
+
+    /**
+     * 1-arg ctor matching framework.jar's @UnsupportedAppUsage hidden
+     * public Resources(ClassLoader) ctor.  Exists so subclasses such as
+     * {@code com.westlake.services.WestlakeResources} can call
+     * {@code super(ClassLoader)} -- at compile time this is a no-op; at
+     * runtime framework.jar's Resources is on the classpath (shim Resources
+     * is stripped via scripts/framework_duplicates.txt) and the real
+     * 1-arg ctor runs.  The framework body is native-free: just sets
+     * mClassLoader and calls ResourcesManager.registerAllResourcesReference.
+     *
+     * Added in V2-Step4 (2026-05-13).
+     */
+    public Resources(ClassLoader classLoader) {
+        // No fields to assign here -- framework ctor sets mClassLoader.
+    }
+
     // ── ResourceTable integration ────────────────────────────────────────────
 
     /** Load a parsed ResourceTable for resource ID resolution. */
@@ -131,7 +163,9 @@ public class Resources {
         // Check registry first
         Object reg = mRegistry.get(Integer.valueOf(id));
         if (reg instanceof String) return (String) reg;
-        // Then ResourceTable
+        // ResourceTable (real arsc parsing — when complete, this is the
+        // only lookup needed; per-app string maps are forbidden by the
+        // architecture rule in CLAUDE.md).
         if (mTable != null) {
             String s = mTable.getString(id);
             if (s != null) {
@@ -272,14 +306,9 @@ public class Resources {
         if (reg instanceof Integer) {
             return new ColorDrawable(((Integer) reg).intValue());
         }
-        String resourceName = getResourceName(id);
-        if (resourceName != null && resourceName.indexOf("abc_vector_test") >= 0) {
-            return new android.graphics.drawable.VectorDrawable();
-        }
         if (mTable != null) {
-            // Check if the resource is a file path (drawable image)
             String path = mTable.getString(id);
-            if (isVectorDrawableResource(path, resourceName)) {
+            if (isVectorDrawableResource(path, getResourceName(id))) {
                 return new android.graphics.drawable.VectorDrawable();
             }
             if (path != null && (path.endsWith(".webp") || path.endsWith(".png") ||
@@ -852,5 +881,182 @@ public class Resources {
 
     public java.io.InputStream openRawResource(int id, android.util.TypedValue value) {
         return null;
+    }
+
+    // ── CR30-B (2026-05-13): public Resources surface expanded for classpath shadow.
+    // After removing the framework_duplicates.txt strip entry, OUR shim Resources
+    // wins at runtime. Apps and androidx code (ResourcesWrapper, SyncedResourcesWrapper,
+    // ContextThemeWrapper, AppCompatDelegate) hit the full public surface — methods
+    // below were absent in the pre-shadow build (where framework Resources covered
+    // them). Each has a safe default body that subclasses (WestlakeResources) can
+    // override. No throw-by-default: returning empty/zero is safer for cold-boot.
+    // -----------------------------------------------------------------------------
+
+    /** Get a string by name (string resource lookup via R.string.* identifier). */
+    public CharSequence getText(int id, CharSequence def) {
+        CharSequence cs = null;
+        try { cs = getText(id); } catch (Throwable ignored) {}
+        return (cs == null || cs.length() == 0) ? def : cs;
+    }
+
+    /** Quantity text — formatted plural string. Returns the base string. */
+    public CharSequence getQuantityText(int id, int quantity) {
+        return getText(id);
+    }
+
+    /** Quantity string — formatted plural string. Returns the base string. */
+    public String getQuantityString(int id, int quantity) {
+        return getString(id);
+    }
+
+    /** Quantity string with format args. */
+    public String getQuantityString(int id, int quantity, Object... formatArgs) {
+        return getString(id, formatArgs);
+    }
+
+    /** Animation XML resource — returns null (no animation infra). */
+    public XmlResourceParser getAnimation(int id) {
+        return null;
+    }
+
+    /** Float resource. */
+    public float getFloat(int id) {
+        Object reg = mRegistry.get(Integer.valueOf(id));
+        if (reg instanceof Integer) return (float) ((Integer) reg).intValue();
+        if (mTable != null) {
+            return mTable.getDimension(id, resourceDensity());
+        }
+        return 0f;
+    }
+
+    /** Fraction resource. */
+    public float getFraction(int id, int base, int pbase) {
+        return 0f;
+    }
+
+    /** Drawable for a specific density. */
+    public Drawable getDrawableForDensity(int id, int density) {
+        return getDrawable(id);
+    }
+
+    /** Drawable for a specific density and theme. */
+    public Drawable getDrawableForDensity(int id, int density, Theme theme) {
+        return getDrawable(id);
+    }
+
+    /** Movie resource — deprecated GIF support. Returns null. */
+    public android.graphics.Movie getMovie(int id) {
+        return null;
+    }
+
+    /** Open a raw resource as an InputStream. */
+    public java.io.InputStream openRawResource(int id) {
+        return null;
+    }
+
+    /** Open a raw resource as an AssetFileDescriptor. */
+    public AssetFileDescriptor openRawResourceFd(int id) {
+        return null;
+    }
+
+    /** Update Configuration / DisplayMetrics. Best-effort field copy: our
+     *  Configuration / metrics are owned by WestlakeResources via its own ctor.
+     *  Note: Configuration#setTo and DisplayMetrics#setTo exist on the framework
+     *  classes (both stripped from this dex via framework_duplicates.txt, so
+     *  framework wins at runtime) but not on our compile-time shim, so we
+     *  reflectively dispatch to keep the override surface compatible. */
+    public void updateConfiguration(Configuration config, DisplayMetrics metrics) {
+        if (config != null) {
+            try {
+                java.lang.reflect.Method m = config.getClass().getMethod("setTo", Configuration.class);
+                m.invoke(mConfiguration, config);
+            } catch (Throwable ignored) {}
+        }
+        if (metrics != null) {
+            try {
+                java.lang.reflect.Method m = metrics.getClass().getMethod("setTo", DisplayMetrics.class);
+                m.invoke(mDisplayMetrics, metrics);
+            } catch (Throwable ignored) {
+                mDisplayMetrics.density       = metrics.density;
+                mDisplayMetrics.densityDpi    = metrics.densityDpi;
+                mDisplayMetrics.scaledDensity = metrics.scaledDensity;
+                mDisplayMetrics.xdpi          = metrics.xdpi;
+                mDisplayMetrics.ydpi          = metrics.ydpi;
+                mDisplayMetrics.widthPixels   = metrics.widthPixels;
+                mDisplayMetrics.heightPixels  = metrics.heightPixels;
+            }
+        }
+    }
+
+    /** String-keyed getValue — looks up by resource name. */
+    public void getValue(String name, android.util.TypedValue outValue, boolean resolveRefs) {
+        int id = getIdentifier(name, null, null);
+        getValue(id, outValue, resolveRefs);
+    }
+
+    /** Parse bundle extras from a single tag — used by ActivityInfo parsing. */
+    public void parseBundleExtra(String tagName, android.util.AttributeSet attrs,
+            android.os.Bundle outBundle) {
+        // No-op: ManifestParser builds the bundle elsewhere.
+    }
+
+    /** Add resource loaders — no-op (we don't use the ResourcesLoader infra). */
+    public void addLoaders(android.content.res.loader.ResourcesLoader... loaders) {
+        // No-op.
+    }
+
+    /** Remove resource loaders — no-op. */
+    public void removeLoaders(android.content.res.loader.ResourcesLoader... loaders) {
+        // No-op.
+    }
+
+    /** ResourcesLoader list — empty by default. */
+    public java.util.List<android.content.res.loader.ResourcesLoader> getLoaders() {
+        return java.util.Collections.emptyList();
+    }
+
+    /** Clear all resource loaders — no-op. */
+    public void clearLoaders() {
+        // No-op.
+    }
+
+    /** Animator cache — null is acceptable for the View ctor probe path. */
+    public ConfigurationBoundResourceCache<android.animation.Animator> getAnimatorCache() {
+        return new ConfigurationBoundResourceCache<android.animation.Animator>();
+    }
+
+    /** StateListAnimator cache — null is acceptable for the View ctor probe path. */
+    public ConfigurationBoundResourceCache<android.animation.StateListAnimator> getStateListAnimatorCache() {
+        return new ConfigurationBoundResourceCache<android.animation.StateListAnimator>();
+    }
+
+    /** Preload font ids — no-op (no font preloading). */
+    public void preloadFonts(int id) {
+        // No-op.
+    }
+
+    /** Flush layout cache — no-op. */
+    public final void flushLayoutCache() {
+        // No-op.
+    }
+
+    /** Start preloading — no-op. */
+    public final void startPreloading() {
+        // No-op.
+    }
+
+    /** Finish preloading — no-op. */
+    public final void finishPreloading() {
+        // No-op.
+    }
+
+    /** Calc config changes — returns 0 (no changes). */
+    public int calcConfigChanges(Configuration config) {
+        return 0;
+    }
+
+    /** ClassLoader for resource resolution. */
+    public ClassLoader getClassLoader() {
+        return getClass().getClassLoader();
     }
 }

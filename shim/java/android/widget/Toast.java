@@ -199,18 +199,25 @@ public class Toast {
         final int displayId = mContext.getDisplayId();
 
         try {
+            // M4e (2026-05-12): INotificationManager signatures now match the
+            // Android 16 AIDL surface, adding a `boolean isUiContext` param
+            // between `duration` and `displayId`.  The shim passes `false`
+            // (legacy behaviour: Toast originated from a non-UI Context); the
+            // M4e service ignores the value.  Aligns Toast.java with the
+            // updated INotificationManager.java; no functional change.
+            final boolean isUiContext = false;
             if (Compatibility.isChangeEnabled(CHANGE_TEXT_TOASTS_IN_THE_SYSTEM)) {
                 if (mNextView != null) {
                     // It's a custom toast
-                    service.enqueueToast(pkg, mToken, tn, mDuration, displayId);
+                    service.enqueueToast(pkg, mToken, tn, mDuration, isUiContext, displayId);
                 } else {
                     // It's a text toast
                     ITransientNotificationCallback callback =
                             new CallbackBinder(mCallbacks, mHandler);
-                    service.enqueueTextToast(pkg, mToken, mText, mDuration, displayId, callback);
+                    service.enqueueTextToast(pkg, mToken, mText, mDuration, isUiContext, displayId, callback);
                 }
             } else {
-                service.enqueueToast(pkg, mToken, tn, mDuration, displayId);
+                service.enqueueToast(pkg, mToken, tn, mDuration, isUiContext, displayId);
             }
         } catch (RemoteException e) {
             // Empty

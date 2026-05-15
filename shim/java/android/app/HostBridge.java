@@ -453,7 +453,7 @@ public class HostBridge {
             dst.labelRes = getIntField(src, "labelRes");
             dst.icon = getIntField(src, "icon");
             dst.exported = getBooleanField(src, "exported");
-            dst.enabled = getBooleanField(src, "enabled") ? 1 : 0;
+            dst.enabled = getBooleanField(src, "enabled");
         } catch (Exception e) {
             android.util.Log.w(TAG, "copyServiceInfoFields: " + e);
         }

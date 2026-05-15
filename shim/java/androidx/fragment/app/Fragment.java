@@ -30,14 +30,6 @@ import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
  */
 public class Fragment implements LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private static final String TAG = "WestlakeFragment";
-    private static boolean shouldTolerateAttachFailure(Fragment fragment, Throwable t) {
-        if (fragment == null || t == null) {
-            return false;
-        }
-        return fragment.getClass().getName().equals(
-                "com.mcdonalds.homedashboard.fragment.HomeDashboardFragment")
-                && t instanceof IllegalArgumentException;
-    }
     private static String describeThrowable(Throwable t) {
         if (t == null) {
             return "null";
@@ -427,10 +419,6 @@ public class Fragment implements LifecycleOwner, ViewModelStoreOwner, SavedState
         } catch (Throwable t) {
             Log.e(TAG, "performAttach onAttach(Context) failed for " + this
                     + " :: " + describeThrowable(t), t);
-            if (shouldTolerateAttachFailure(this, t)) {
-                Log.w(TAG, "performAttach tolerating HomeDashboardFragment onAttach(Context) failure");
-                return;
-            }
             throw new RuntimeException("Fragment.performAttach:onAttach(Context) " + this, t);
         }
         try {

@@ -86,13 +86,19 @@ public final class Log {
                         || "Canary".equals(tag)
                         || "CutoffCanary".equals(tag)
                         || "MiniActivityManager".equals(tag)
-                        || "StageActivity".equals(tag);
+                        || "StageActivity".equals(tag)
+                        || "WLInflater".equals(tag)
+                        || "LayoutInflater".equals(tag)
+                        || "Window".equals(tag);
             }
             return safeStartsWith(tag, "Westlake")
                     || "MiniActivityManager".equals(tag)
                     || "AppComponentFactory".equals(tag)
                     || "ComponentActivity".equals(tag)
-                    || "SavedStateRegistry".equals(tag);
+                    || "SavedStateRegistry".equals(tag)
+                    || "WLInflater".equals(tag)
+                    || "LayoutInflater".equals(tag)
+                    || "Window".equals(tag);
         } catch (Throwable ignored) {
             return false;
         }

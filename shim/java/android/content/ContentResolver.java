@@ -65,6 +65,55 @@ public class ContentResolver {
         return android.app.MiniServer.get().getPackageManager().resolveProvider(authority);
     }
 
+    // --------------------------------------------------------------
+    // M4-PRE9 (2026-05-12): expose framework.jar's IContentProvider
+    // surface as compile-time stubs so WestlakeContentResolver can
+    // @Override them.  At runtime this whole shim ContentResolver is
+    // stripped via scripts/framework_duplicates.txt; framework.jar's
+    // real ContentResolver (which DOES declare these abstract methods)
+    // takes over and WestlakeContentResolver's overrides plug into
+    // framework's abstract surface directly.
+    //
+    // Method shapes match Android 16 ContentResolver.aidl:
+    //   acquireProvider(Context,String)         PROTECTED ABSTRACT
+    //   acquireUnstableProvider(Context,String) PROTECTED ABSTRACT
+    //   releaseProvider(IContentProvider)       PUBLIC ABSTRACT
+    //   releaseUnstableProvider(IContentProvider) PUBLIC ABSTRACT
+    //   unstableProviderDied(IContentProvider)  PUBLIC ABSTRACT
+    //   getUserId()                              PUBLIC (returns 0 default)
+    //
+    // For compile-time we provide non-abstract default bodies so the
+    // shim ContentResolver remains concrete (existing callers tolerate
+    // the safe defaults).  WestlakeContentResolver overrides them with
+    // its no-op IContentProvider Proxy / USER_SYSTEM logic.
+    // --------------------------------------------------------------
+
+    protected android.content.IContentProvider acquireProvider(
+            Context context, String name) {
+        return null;
+    }
+
+    protected android.content.IContentProvider acquireUnstableProvider(
+            Context context, String name) {
+        return null;
+    }
+
+    public boolean releaseProvider(android.content.IContentProvider icp) {
+        return false;
+    }
+
+    public boolean releaseUnstableProvider(android.content.IContentProvider icp) {
+        return false;
+    }
+
+    public void unstableProviderDied(android.content.IContentProvider icp) {
+        // no-op
+    }
+
+    public int getUserId() {
+        return 0; // USER_SYSTEM
+    }
+
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         ContentProvider provider = acquireProvider(uri);
