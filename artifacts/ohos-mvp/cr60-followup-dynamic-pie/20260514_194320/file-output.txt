@@ -1,0 +1,1 @@
+/home/dspfac/android-to-openharmony-migration/dalvik-port/build-ohos-arm32-dynamic/dalvikvm: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-musl-arm.so.1, with debug_info, not stripped

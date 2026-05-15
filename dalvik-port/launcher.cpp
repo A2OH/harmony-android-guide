@@ -21,6 +21,15 @@ static void crash_handler_sigaction(int sig, siginfo_t *info, void *ucontext) {
 #ifdef __x86_64__
     void *rip = (void*)uc->uc_mcontext.gregs[REG_RIP];
     fprintf(stderr, "\n=== CRASH: signal %d fault_addr=%p rip=%p ===\n", sig, fault_addr, rip);
+#elif defined(__arm__)
+    /* ARM EABI/musl: mcontext has arm_pc / arm_lr fields for the PC and
+     * return address at fault. Printing both helps disambiguate native
+     * call sites from interpreter-internal crashes when investigating
+     * dynamic-PIE launch issues. */
+    void *pc = (void*)uc->uc_mcontext.arm_pc;
+    void *lr = (void*)uc->uc_mcontext.arm_lr;
+    fprintf(stderr, "\n=== CRASH: signal %d fault_addr=%p pc=%p lr=%p ===\n",
+            sig, fault_addr, pc, lr);
 #else
     fprintf(stderr, "\n=== CRASH: signal %d fault_addr=%p ===\n", sig, fault_addr);
 #endif
@@ -28,6 +37,21 @@ static void crash_handler_sigaction(int sig, siginfo_t *info, void *ucontext) {
     void* bt[64];
     int n = backtrace(bt, 64);
     backtrace_symbols_fd(bt, n, 2);
+#else
+    /* musl has no backtrace_symbols_fd; dump /proc/self/maps so the
+     * caller can map fault_addr/pc/lr to a specific mmap'd region.
+     * Helps debug dynamic-PIE launch issues where every run gets a
+     * different ASLR slide. */
+    fputs("--- /proc/self/maps ---\n", stderr);
+    FILE *mf = fopen("/proc/self/maps", "r");
+    if (mf) {
+        char line[512];
+        while (fgets(line, sizeof(line), mf)) {
+            fputs(line, stderr);
+        }
+        fclose(mf);
+    }
+    fputs("--- end maps ---\n", stderr);
 #endif
     _exit(128 + sig);
 }

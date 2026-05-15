@@ -58,6 +58,72 @@ else ifeq ($(TARGET),ohos-arm32)
                 -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
                 -static
   LDFLAGS   := $(OHOS_SYSROOT_ARM32)/usr/lib/preinit_stubs.o -lpthread -ldl -lz -lffi
+else ifeq ($(TARGET),ohos-arm32-dynamic)
+  # OpenHarmony ARM32 — DYNAMIC PIE ELF (CR60 followup, 2026-05-14).
+  # Premise: matches the smoke test linkage proven by
+  # `dalvik-port/compat/ohos_dlopen_smoke.c` so the resulting dalvikvm
+  # can dlopen OHOS production libs (libace_napi.z.so, libnative_window.so,
+  # libace_ndk.z.so) at runtime via System.loadLibrary / JNI. The static
+  # ohos-arm32 target stays alive (see above) — both binaries land in
+  # separate build-ohos-arm32{,-dynamic}/ trees and can coexist on the
+  # board (/data/local/tmp/dalvikvm-arm32 = static legacy ;
+  #         /data/local/tmp/dalvikvm-arm32-dyn = new dynamic).
+  OHOS_SYSROOT_ARM32 := $(CURDIR)/ohos-sysroot-arm32
+  CXX       := $(OHOS_LLVM)/bin/clang++
+  CC        := $(OHOS_LLVM)/bin/clang
+  AR        := $(OHOS_LLVM)/bin/llvm-ar
+  RANLIB    := $(OHOS_LLVM)/bin/llvm-ranlib
+  BUILD     := $(CURDIR)/build-ohos-arm32-dynamic
+  # Compile flags are identical to the static target — same musl headers,
+  # same arch flags, same -fPIC -O2. Only -fPIE is added so reloc-type
+  # discipline at compile time matches the PIE link mode.
+  TARGET_FLAGS := --target=arm-linux-ohos \
+                  --sysroot=$(OHOS_SYSROOT_ARM32) \
+                  -D__MUSL__ \
+                  -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                  -fPIE \
+                  -fuse-ld=lld \
+                  --rtlib=compiler-rt
+  # libunwind.a, libc++.a, libc++abi.a from the OHOS clang prebuilts,
+  # matching the -march=armv7-a -mfloat-abi=softfp -mfpu=neon multilib
+  # slice. libunwind is needed for __aeabi_unwind_cpp_pr0 and friends.
+  # libc++/libc++abi are linked STATICALLY because the device ships
+  # libc++_shared.so (not libc++.so — SONAME mismatch). Smoke test
+  # didn't need these because it was pure C; dalvikvm is C++.
+  OHOS_LIBUNWIND_ARM32 := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libunwind.a
+  OHOS_LIBCXX_ARM32    := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libc++.a
+  OHOS_LIBCXXABI_ARM32 := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libc++abi.a
+  # compiler-rt builtins (-nostdlib disables the automatic --rtlib link).
+  # Provides __aeabi_* helpers (l2d, f2lz, idivmod, etc.) and __clear_cache
+  # that libffi's ffi_prep_closure_loc requires.
+  OHOS_BUILTINS_ARM32  := $(OHOS_LLVM)/lib/clang/15.0.4/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libclang_rt.builtins.a
+  # Dynamic-PIE link flags. The crt files (Scrt1.o + crti.o + crtn.o)
+  # under usr/lib are the same ones the static link uses — only the
+  # link mode and the libc reference differ.
+  LINK_FLAGS := -fuse-ld=lld --rtlib=compiler-rt \
+                --target=arm-linux-ohos \
+                --sysroot=$(OHOS_SYSROOT_ARM32) \
+                -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                -fPIE -pie \
+                -Wl,-dynamic-linker=/lib/ld-musl-arm.so.1 \
+                -Wl,-rpath=/lib \
+                -nostdlib
+  # NB: dynamic libc.so under usr/lib-dynamic/ is the device's own
+  # /lib/ld-musl-arm.so.1 (musl ships libc=libdl=ldso as one file).
+  # Order matters: Scrt1+crti BEFORE user objects → libdvm.a → user libs →
+  # libc → unwind → crtn. The link rule below splits this into
+  # LINK_OBJS_PREFIX (consumed before launcher.cpp) and LDFLAGS (consumed
+  # after libdvm.a closes its --whole-archive).
+  LINK_OBJS_PREFIX := $(OHOS_SYSROOT_ARM32)/usr/lib/Scrt1.o \
+                      $(OHOS_SYSROOT_ARM32)/usr/lib/crti.o
+  LDFLAGS   := -L$(OHOS_SYSROOT_ARM32)/usr/lib-dynamic \
+               -L$(OHOS_SYSROOT_ARM32)/usr/lib \
+               $(OHOS_LIBCXX_ARM32) $(OHOS_LIBCXXABI_ARM32) \
+               -lz -lffi \
+               $(OHOS_BUILTINS_ARM32) \
+               -lc -ldl \
+               $(OHOS_LIBUNWIND_ARM32) \
+               $(OHOS_SYSROOT_ARM32)/usr/lib/crtn.o
 else ifeq ($(TARGET),ohos-x86)
   # OpenHarmony x86_64 (for OHOS emulator)
   CXX       := $(OHOS_LLVM)/bin/clang++
@@ -262,9 +328,12 @@ DVM_SRCS := \
     $(VM)/os/linux.cpp \
     $(VM)/test/TestHash.cpp
 
-# Architecture-specific call bridge
-ifeq ($(TARGET),ohos-arm32)
-  # Use native ARM EABI assembly instead of generic FFI path
+# Architecture-specific call bridge.
+# ARM32 (static or dynamic-PIE) MUST use the hand-rolled CallEABI.S +
+# HintsEABI.cpp pair — the generic FFI path mismatches the JNI calling
+# convention (env in r0 disappears, see CR60 followup investigation
+# 2026-05-14). All other targets fall through to the generic FFI path.
+ifeq ($(filter $(TARGET),ohos-arm32 ohos-arm32-dynamic),$(TARGET))
   DVM_ASM_SRCS := $(COMPAT)/CallEABI.S
   DVM_ARCH_SRCS := $(VM)/arch/arm/HintsEABI.cpp
 else
@@ -381,10 +450,15 @@ link: build-all $(BUILD)/link_fixups.o $(BUILD)/libcore_bridge.o $(BUILD)/arkui_
 	$(AR) rcs $(BUILD)/libdvm.a $(BUILD)/*.o
 	@echo "Created: $(BUILD)/libdvm.a ($$(du -h $(BUILD)/libdvm.a | cut -f1))"
 
+# LINK_OBJS_PREFIX is normally empty; the ohos-arm32-dynamic target sets
+# it to "Scrt1.o crti.o" so the dynamic crt files sit in front of the
+# launcher object (required ordering for PIE start-up + .init/.fini).
+LINK_OBJS_PREFIX ?=
+
 # Build dalvikvm launcher
 dalvikvm: link
 	@echo "═══ Building dalvikvm launcher ═══"
-	$(CXX) $(CXXFLAGS) $(LINK_FLAGS) -o $(BUILD)/dalvikvm launcher.cpp -Wl,--whole-archive $(BUILD)/libdvm.a -Wl,--no-whole-archive $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(LINK_FLAGS) -o $(BUILD)/dalvikvm $(LINK_OBJS_PREFIX) launcher.cpp -Wl,--whole-archive $(BUILD)/libdvm.a -Wl,--no-whole-archive $(LDFLAGS)
 	@echo "Created: $(BUILD)/dalvikvm"
 	@ls -lh $(BUILD)/dalvikvm
 ifneq ($(TARGET),)
@@ -394,7 +468,7 @@ endif
 # Build dexopt tool (required for DEX verification/optimization at runtime)
 dexopt: link
 	@echo "═══ Building dexopt ═══"
-	$(CXX) $(CXXFLAGS) $(LINK_FLAGS) -o $(BUILD)/dexopt $(DALVIK)/dexopt/OptMain.cpp $(BUILD)/libdvm.a $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(LINK_FLAGS) -o $(BUILD)/dexopt $(LINK_OBJS_PREFIX) $(DALVIK)/dexopt/OptMain.cpp $(BUILD)/libdvm.a $(LDFLAGS)
 	@echo "Created: $(BUILD)/dexopt"
 	@ls -lh $(BUILD)/dexopt
 
