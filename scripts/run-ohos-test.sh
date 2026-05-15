@@ -58,10 +58,22 @@ BOARD_DIR="${BOARD_DIR:-/data/local/tmp/westlake}"
 # for Android phones / any future 64-bit OHOS ROM.
 #
 # ARCH selection:
-#   --arch aarch64    use 64-bit dalvikvm (board path /data/local/tmp/dalvikvm)
-#   --arch arm32      use 32-bit dalvikvm (board path /data/local/tmp/dalvikvm-arm32)
-#   --arch auto       auto-detect via `hdc shell getconf LONG_BIT` (default)
-# Or set ARCH=aarch64 / arm32 / auto in env.
+#   --arch aarch64       use 64-bit dalvikvm (board path /data/local/tmp/dalvikvm)
+#   --arch arm32         use 32-bit DYNAMIC-PIE dalvikvm (default arm32 since
+#                        CR60-followup #3, E11). Board path
+#                        /data/local/tmp/dalvikvm-arm32-dyn ; host
+#                        dalvik-port/build-ohos-arm32-dynamic/dalvikvm. Superset
+#                        of arm32-static — passes everything arm32-static
+#                        passes (MVP-0/1) plus System.loadLibrary / in-process
+#                        dlopen (E9a, E9b).
+#   --arch arm32-static  legacy 32-bit STATIC dalvikvm (pre-E11 default). Board
+#                        path /data/local/tmp/dalvikvm-arm32 ; host
+#                        dalvik-port/build-ohos-arm32/dalvikvm. Kept buildable
+#                        for MVP-0 baseline / regression testing; cannot
+#                        dlopen OHOS libs (static musl).
+#   --arch auto          auto-detect via `hdc shell getconf LONG_BIT` (default
+#                        bash entrypoint). 32-bit board → arm32 (dynamic).
+# Or set ARCH=aarch64 / arm32 / arm32-static / auto in env.
 #
 # Resolved by resolve_arch(); writes DALVIKVM_BOARD_PATH + DALVIKVM_HOST_PATH.
 # See docs/engine/CR60_BITNESS_PIVOT_DECISION.md.
@@ -157,6 +169,20 @@ resolve_arch() {
     fi
     case "$effective" in
         arm32)
+            # E11 (CR60-followup #4, 2026-05-15): arm32 default flipped from
+            # static to dynamic-PIE. Rationale: agents 14/15 proved the
+            # dynamic binary is a strict superset — MVP-0/1 PASS unchanged
+            # (commit 8710bf4f), plus E9a System.loadLibrary (commit
+            # 02d7a975) and E9b in-process DRM (commit 411870cb) are only
+            # reachable from the dynamic build. The static binary remains
+            # buildable and selectable via --arch arm32-static for MVP-0
+            # regression / smaller-blast-radius testing.
+            DALVIKVM_BOARD_PATH="/data/local/tmp/dalvikvm-arm32-dyn"
+            DALVIKVM_HOST_PATH="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
+            ;;
+        arm32-static)
+            # Pre-E11 default. Kept for explicit regression testing of the
+            # static-linked binary. Cannot dlopen OHOS libs (static musl).
             DALVIKVM_BOARD_PATH="/data/local/tmp/dalvikvm-arm32"
             DALVIKVM_HOST_PATH="$REPO_ROOT/dalvik-port/build-ohos-arm32/dalvikvm"
             ;;
@@ -165,7 +191,7 @@ resolve_arch() {
             DALVIKVM_HOST_PATH="$REPO_ROOT/dalvik-port/build-ohos-aarch64/dalvikvm"
             ;;
         *)
-            err "unknown ARCH '$effective' (valid: aarch64, arm32, auto)"
+            err "unknown ARCH '$effective' (valid: aarch64, arm32, arm32-static, auto)"
             return 1
             ;;
     esac
@@ -354,7 +380,14 @@ cmd_hello() {
     local bcp="/data/local/tmp/westlake/bcp/core-kitkat.jar"
     bcp="${bcp}:/data/local/tmp/westlake/bcp/direct-print-stream.jar"
     bcp="${bcp}:${BOARD_DIR}/HelloOhos.dex"
-    local cmd="ANDROID_ROOT=${BOARD_DIR} ${DALVIKVM_BOARD_PATH}"
+    # E11 hardening (2026-05-15): wipe both per-test and BCP dalvik-cache
+    # so switching between --arch arm32 (dynamic) and --arch arm32-static
+    # (or aarch64) doesn't trip dexopt cache contamination — the core-kitkat
+    # odex is keyed by path only, not by the producer binary, so a switch
+    # surfaces as 'Fatal error: java/lang/Object' on the second run. Same
+    # rationale documented in cmd_hello_dlopen_real (CR60-followup E9a).
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloOhos* /data/dalvik-cache/data@local@tmp@westlake@bcp@* 2>/dev/null;"
+    cmd="$cmd ANDROID_ROOT=${BOARD_DIR} ${DALVIKVM_BOARD_PATH}"
     cmd="$cmd -Xbootclasspath:${bcp}"
     cmd="$cmd com.westlake.ohostests.hello.HelloOhos arg1 arg2"
     hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
@@ -1778,15 +1811,20 @@ Subcommands:
                       Visible-pixel gate — phone-camera evidence required.
 
 Flags (apply to any subcommand; place before the subcommand name):
-  --arch aarch64|arm32|auto   pick dalvikvm bitness (CR60). 'auto' (default)
+  --arch aarch64|arm32|arm32-static|auto
+                              pick dalvikvm bitness (CR60). 'auto' (default)
                               uses 'hdc shell getconf LONG_BIT' to decide.
+                              'arm32' selects the dynamic-PIE binary (E11
+                              default since CR60-followup #4, 2026-05-15).
+                              'arm32-static' selects the legacy static binary
+                              (pre-E11 default, kept for MVP-0 regression).
 
 Environment overrides:
   HDC=$HDC
   HDC_SERIAL=$HDC_SERIAL
   WINSTAGE=$WINSTAGE
   BOARD_DIR=$BOARD_DIR
-  ARCH=$ARCH   (aarch64 | arm32 | auto)
+  ARCH=$ARCH   (aarch64 | arm32 | arm32-static | auto)
 EOF
 }
 
@@ -1796,7 +1834,7 @@ main() {
         case "$1" in
             --arch)
                 if [ "$#" -lt 2 ]; then
-                    err "--arch requires an argument (aarch64|arm32|auto)"
+                    err "--arch requires an argument (aarch64|arm32|arm32-static|auto)"
                     exit 2
                 fi
                 ARCH="$2"
