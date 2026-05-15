@@ -1,0 +1,8 @@
+apk_alias=noice
+activity=com.github.ashutoshgngwr.noice/.activity.MainActivity
+app_class=com.github.ashutoshgngwr.noice.NoiceApplication
+stage_a=1
+stage_b=1
+stage_c=0
+stage_d=0
+rc_line=

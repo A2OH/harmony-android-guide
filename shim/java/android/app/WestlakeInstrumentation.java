@@ -32,6 +32,114 @@ public class WestlakeInstrumentation extends Instrumentation {
 
     private static final String TAG = "WestlakeInstrumentation";
 
+    // ── CR62 Step 1: Strict exception propagation toggle ───────────────────
+    //
+    // AOSP default: `onException` returns `true` to swallow the throwable and
+    // let the host keep running. That's correct in production where a single
+    // bad Activity shouldn't kill the engine — but it actively HIDES diagnostic
+    // information when we're triaging a launch blocker (E13 stage C). The
+    // observed pattern: AppCompatActivity's super-chain hits an NPE inside
+    // attachBaseContext, that NPE flows back up to performLaunchActivityImpl,
+    // mInstrumentation.onException swallows it, the method returns null
+    // silently, and the launcher reports "launchActivity returned non-Activity:
+    // null" without the underlying stack trace.
+    //
+    // This toggle is a generic safe-primitive variant: when set, `onException`
+    // returns `false` (propagate) instead of `true` (swallow). It applies to
+    // ALL apps — no per-app branches. Default OFF preserves back-compat with
+    // the V1/V2 substrate's tests that rely on swallowing for resilience.
+    //
+    // Macro-shim audit: method on a class WE own, takes a boolean, no
+    // setAccessible / Unsafe / per-app keys.
+    private static volatile boolean sStrictExceptionPropagation = false;
+
+    /**
+     * Toggle strict-mode exception propagation. When true, `onException`
+     * re-throws instead of swallowing — used by the inproc-app-launcher in
+     * apk-mode to surface AppCompat / Hilt / Compose ctor-time exceptions
+     * that would otherwise be lost in the V2 substrate's silent path.
+     *
+     * @param strict true to propagate, false to swallow (default).
+     */
+    public static void setStrictExceptionPropagation(boolean strict) {
+        sStrictExceptionPropagation = strict;
+    }
+
+    /** Read-only accessor for tests + diagnostics. */
+    public static boolean isStrictExceptionPropagation() {
+        return sStrictExceptionPropagation;
+    }
+
+    // ── CR62 Step 2: Pre-attached Context via thread-local ─────────────────
+    //
+    // Problem: `new MainActivity()` (no-arg, the ctor invoked by
+    // Instrumentation.newActivity) walks Activity → ContextThemeWrapper →
+    // ContextWrapper(null) → virtual attachBaseContext(null). When MainActivity
+    // extends AppCompatActivity, the AppCompat override of attachBaseContext
+    // calls AppCompatDelegate.attachBaseContext2(null) which NPEs.
+    //
+    // AOSP's order-of-operations is: Activity is constructed with null base,
+    // THEN Activity.attach(context, ...) is invoked to seed the base context.
+    // But AppCompatActivity violates this in practice: it wraps the base
+    // context inside its own attachBaseContext override, which is dispatched
+    // during the no-arg construction chain when newBase is still null.
+    //
+    // Fix (Option α from CR60-e13 CHECKPOINT.md): right BEFORE invoking the
+    // Activity ctor, publish a real Context to a thread-local. The
+    // ContextWrapper(Context) ctor consults this thread-local when its arg is
+    // null and substitutes the real one. The Activity is constructed with a
+    // non-null base seeded eagerly, AppCompatDelegate.attachBaseContext2 sees
+    // a real Context, no NPE.
+    //
+    // After construction returns, the thread-local is cleared. Subsequent
+    // Activity.attach(...) calls operate as normal — they re-call
+    // attachBaseContext with the same (now-already-attached) context, which
+    // is idempotent at the framework Activity.attachBaseContext layer (super
+    // just stores it again).
+    //
+    // Macro-shim audit:
+    //   - methods live on WestlakeInstrumentation (we own it)
+    //   - ContextWrapper(Context) is the framework-duplicate we own
+    //   - no Unsafe, no setAccessible, no per-app branches
+    //   - thread-local with explicit clear() — no leaks across activities
+    //   - argument type is Context (works for ANY Activity sub-tree)
+    private static final ThreadLocal<Context> sPendingBaseContext = new ThreadLocal<Context>();
+
+    /**
+     * Stash a Context to be picked up by the next ContextWrapper(null) ctor
+     * on this thread. The caller (typically performLaunchActivityImpl, just
+     * before mInstrumentation.newActivity) is responsible for clearing via
+     * {@link #clearPendingBaseContext()} in a finally block.
+     *
+     * @param ctx the Context to publish (must be non-null to take effect).
+     */
+    public static void publishContextForNewActivity(Context ctx) {
+        if (ctx != null) {
+            sPendingBaseContext.set(ctx);
+        }
+    }
+
+    /**
+     * Consume the pending base context. Called by ContextWrapper(Context p0)
+     * when p0 is null. Returns the stashed Context (or null if none) and
+     * leaves the thread-local in place — clearPendingBaseContext() must be
+     * called by the publisher to release it.
+     *
+     * @return the pending base context, or null.
+     */
+    public static Context consumePendingBaseContext() {
+        return sPendingBaseContext.get();
+    }
+
+    /**
+     * Clear the thread-local pending base context. Must be paired with a
+     * prior publishContextForNewActivity() call (typically in a finally
+     * block).
+     */
+    public static void clearPendingBaseContext() {
+        sPendingBaseContext.remove();
+    }
+
 	    private static String throwableSummary(Throwable t) {
 	        if (t == null) {
 	            return "null";
@@ -1290,11 +1398,6 @@ public class WestlakeInstrumentation extends Instrumentation {
         }
         if (!minimalSplash && !mcdonaldsActivity) {
             try {
-                dispatchLifecycleCallback("onActivityPreCreated", activity, icicle);
-            } catch (Throwable t) {
-                log("W", "onActivityPreCreated failed: " + throwableSummary(t));
-            }
-            try {
                 seedCtorBypassedHiltActivityState(activity);
             } catch (Throwable t) {
                 log("W", "seedCtorBypassedHiltActivityState failed: " + throwableSummary(t));
@@ -1860,8 +1963,25 @@ public class WestlakeInstrumentation extends Instrumentation {
         String errTag = e != null ? e.getClass().getName() : "null";
         try {
             WestlakeLauncher.trace("[WestlakeInstrumentation] onException obj="
-                    + objTag + " err=" + errTag);
+                    + objTag + " err=" + errTag
+                    + " strict=" + sStrictExceptionPropagation);
         } catch (Throwable ignored) {
+        }
+        // CR62 Step 1: when strict-mode is on, return false to propagate the
+        // exception up to the substrate's RuntimeException re-throw path.
+        // This surfaces ctor-time AppCompat/Hilt failures that would
+        // otherwise be lost. Default OFF preserves the V2 substrate's
+        // resilient behavior.
+        if (sStrictExceptionPropagation) {
+            // Best-effort stack dump for triage — independent of the
+            // substrate's tracing that may or may not flush before exit.
+            try {
+                markerThrowableFrames(
+                        "[WestlakeInstrumentation] onException(strict) " + errTag,
+                        e, 12);
+            } catch (Throwable ignored) {
+            }
+            return false;
         }
         // Return true = exception handled, don't crash
         return true;
@@ -1918,10 +2038,20 @@ public class WestlakeInstrumentation extends Instrumentation {
         }
         if (app == null) return;
 
-        // Get the callbacks list via reflection (it's package-private in the shim)
+        // CR47: V2 Application's field is mActivityLifecycleCallbacks (was V1 mCallbacks).
+        // Try V2 name first, fall back to V1 for legacy compatibility.
         java.util.List<Application.ActivityLifecycleCallbacks> callbacks = null;
+        java.lang.reflect.Field f = null;
         try {
-            java.lang.reflect.Field f = Application.class.getDeclaredField("mCallbacks");
+            f = Application.class.getDeclaredField("mActivityLifecycleCallbacks");
+        } catch (NoSuchFieldException nsfe) {
+            try {
+                f = Application.class.getDeclaredField("mCallbacks");
+            } catch (NoSuchFieldException nsfe2) {
+                return;
+            }
+        }
+        try {
             f.setAccessible(true);
             @SuppressWarnings("unchecked")
             java.util.List<Application.ActivityLifecycleCallbacks> list =
@@ -1931,7 +2061,6 @@ public class WestlakeInstrumentation extends Instrumentation {
                 callbacks = new java.util.ArrayList<>(list);
             }
         } catch (Exception e) {
-            // Field not found or access error -- skip
             return;
         }
 

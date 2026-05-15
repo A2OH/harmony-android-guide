@@ -65,6 +65,43 @@ public class WestlakeActivityThread {
     /** Queued dashboard activity to launch after render loop starts */
     public static volatile String pendingDashboardClass;
 
+    // M7-Step2 (2026-05-13): production-launcher opt-in to full lifecycle in
+    // strict mode. When `true`, performLaunchActivityImpl's strict-standalone
+    // branch will execute the same Step 7/8 path (record + callActivityOnCreate)
+    // that `forceLifecycleInStrict` (the cutoff-canary / McD per-app gate)
+    // executes today.
+    //
+    // This is NOT a per-app branch: any caller can opt in by invoking
+    // `setForceLifecycleEnabled(true)` before driving a launch. It is the
+    // production launcher's equivalent of "we are wiring the proper Android
+    // launch path, not running the discovery probe" — the same flag is read
+    // for every package and every activity once flipped. M7-Step1's
+    // NoiceLauncher does not call this method (delegates to the discovery
+    // harness reflection path); M7-Step2's NoiceProductionLauncher does.
+    private static volatile boolean sForceLifecycleEnabled = false;
+
+    /**
+     * M7-Step2: enable the full strict-standalone lifecycle path
+     * (record + callActivityOnCreate, then optional Resume) for subsequent
+     * performLaunchActivity calls. Production launchers call this with
+     * {@code true} before driving an Activity launch through
+     * {@link #performLaunchActivity(String, String, Intent, Bundle)}.
+     *
+     * Discovery harnesses leave this {@code false}: they bypass
+     * performLaunchActivity and call onCreate via reflection directly, so
+     * the strict-standalone short-circuit is the desired behavior for them.
+     *
+     * Generic across all apps — no per-app branches.
+     */
+    public static void setForceLifecycleEnabled(boolean enabled) {
+        sForceLifecycleEnabled = enabled;
+    }
+
+    /** Read the current force-lifecycle flag. Generic across all apps. */
+    public static boolean isForceLifecycleEnabled() {
+        return sForceLifecycleEnabled;
+    }
+
     /** Return the process-wide singleton. Creates one if none exists. */
     public static WestlakeActivityThread currentActivityThread() {
         if (sCurrentActivityThread == null) {
@@ -81,6 +118,87 @@ public class WestlakeActivityThread {
     public static Application currentApplication() {
         WestlakeActivityThread t = sCurrentActivityThread;
         return t != null ? t.mInitialApplication : null;
+    }
+
+    // ── CR23-fix: WestlakeContextImpl-based base context construction ──
+    //
+    // When framework.jar is on -Xbootclasspath (post-PF-arch-053 BCP shim
+    // deployment), android.content.Context is the framework's abstract class.
+    // `new Context()` throws InstantiationError at runtime — this used to be
+    // the McDonald's launch failure mode where the VM spawned but mainImpl
+    // crashed immediately after "Using WestlakeActivityThread" with
+    // `java.lang.InstantiationError: android.content.Context`.
+    //
+    // The architectural Context type for the dalvikvm sandbox is
+    // WestlakeContextImpl (frozen-surface class, overrides every Context
+    // abstract method).  This helper builds one — generic across all APKs,
+    // packageName is constructor arg, no per-app branches.
+    //
+    // Fallback to `new Context()` is kept only for the legacy shim-only-BCP
+    // deployment path where Context is concrete.
+
+    /**
+     * Build a base Context for the given package.  Prefers
+     * {@link com.westlake.services.WestlakeContextImpl}; falls back to the
+     * shim's concrete Context when WestlakeContextImpl construction fails
+     * (shim-only-BCP path).  May return {@code null} if both paths fail —
+     * callers must null-check.
+     */
+    static Context buildBaseContext(String packageName, ClassLoader cl) {
+        String apkPath = null;
+        try {
+            apkPath = WestlakeLauncher.currentApkPathForShim();
+        } catch (Throwable ignored) {
+        }
+        String dataDir = null;
+        if (packageName != null && packageName.length() > 0) {
+            dataDir = "/data/local/tmp/westlake/" + packageName;
+        }
+        String pkgArg = (packageName != null && packageName.length() > 0)
+                ? packageName : "com.westlake.unknown";
+        try {
+            return new com.westlake.services.WestlakeContextImpl(
+                    pkgArg, apkPath, dataDir, cl, 33);
+        } catch (Throwable t) {
+            WestlakeLauncher.marker("CV WAT WestlakeContextImpl ctor failed "
+                    + throwableSummary(t));
+            Log.w(TAG, "WestlakeContextImpl construction failed: "
+                    + throwableSummary(t));
+        }
+        try {
+            return new Context();
+        } catch (Throwable t) {
+            WestlakeLauncher.marker("CV WAT base context fallback failed "
+                    + throwableSummary(t));
+            Log.w(TAG, "buildBaseContext: WestlakeContextImpl + new Context() both failed: "
+                    + throwableSummary(t));
+            return null;
+        }
+    }
+
+    /**
+     * Publish the Application back into the base Context via
+     * {@code setAttachedApplication(...)} when the base is a
+     * WestlakeContextImpl.  No-op when the base context is not a
+     * WestlakeContextImpl — keeps the helper safe for the shim-only-BCP
+     * fallback path.
+     */
+    static void publishApplicationToBaseContext(Context baseContext, Application app) {
+        if (baseContext == null || app == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Method method = baseContext.getClass().getMethod(
+                    "setAttachedApplication", Application.class);
+            method.setAccessible(true);
+            method.invoke(baseContext, app);
+            WestlakeLauncher.marker("CV WAT base context setAttachedApplication ok");
+        } catch (NoSuchMethodException nsme) {
+            // Not a WestlakeContextImpl — nothing to do.
+        } catch (Throwable t) {
+            WestlakeLauncher.marker("CV WAT base context setAttachedApplication failed "
+                    + throwableSummary(t));
+        }
     }
 
     // ── Core state ─────────────────────────────────────────────────────────
@@ -238,8 +356,19 @@ public class WestlakeActivityThread {
 
             // Set package name via ShimCompat (handles both shim and real Android)
             ShimCompat.setPackageName(app, packageName);
-            Context baseContext = new Context();
+            // CR23-fix (2026-05-13): use WestlakeContextImpl, NOT `new Context()`.
+            // When framework.jar is on -Xbootclasspath, `android.content.Context`
+            // resolves to the framework's abstract class — instantiating it via
+            // `new Context()` throws java.lang.InstantiationError and breaks every
+            // launch (McD dashboard never attached pre-CR23-fix).  The architectural
+            // Context type for the Westlake dalvikvm sandbox is WestlakeContextImpl
+            // (extends Context, overrides every abstract method).  See
+            // shim/java/com/westlake/services/WestlakeContextImpl.java FROZEN-SURFACE
+            // class header for the contract.  Generic across all APKs — packageName
+            // is constructor arg, no per-app branches.
+            Context baseContext = createApplicationBaseContext(packageName, classLoader);
             attachApplicationBaseContext(app, baseContext);
+            attachApplicationToBaseContext(baseContext, app);
 
             mApplication = app;
             publishApplicationBeforeOnCreate(app, packageName);
@@ -337,24 +466,42 @@ public class WestlakeActivityThread {
             if (app == null || baseContext == null) {
                 return;
             }
+            // CR59 (2026-05-14): use the shim Application's package-private
+            // attach(Context) helper instead of invoking the framework's
+            // protected ContextWrapper.attachBaseContext directly across
+            // package boundaries.  ContextWrapper.attachBaseContext is
+            // protected (Java access checking can reject cross-package
+            // invoke-virtual on a protected non-subclass method), and the
+            // pre-CR59 reflective fallback used getDeclaredMethod() which
+            // does NOT find inherited methods — so when the direct call
+            // silently failed, the fallback also silently failed and
+            // app.mBase stayed null.  The result was that Hilt's first
+            // lazy delegate hit a NullPointerException inside
+            // ContextWrapper.getApplicationContext(): the very NPE M7-Step2
+            // documented as the new in-body blocker.
+            //
+            // Application.attach(Context) is package-private on OUR shim
+            // Application (lives in android.app; matches AOSP-default body
+            // verbatim — `attachBaseContext(base)` from a subclass of
+            // ContextWrapper, which is the legal Java route).
+            // No new methods, no Unsafe, no setAccessible, no per-app
+            // branches.
             try {
-                app.attachBaseContext(baseContext);
-                WestlakeLauncher.marker("CV WAT application attachBaseContext returned");
-            } catch (Throwable directFailure) {
-                try {
-                    java.lang.reflect.Method method = app.getClass().getDeclaredMethod(
-                            "attachBaseContext", Context.class);
-                    method.setAccessible(true);
-                    method.invoke(app, baseContext);
-                    WestlakeLauncher.marker("CV WAT application attachBaseContext reflect returned");
-                } catch (Throwable reflectFailure) {
-                    WestlakeLauncher.marker("CV WAT application attachBaseContext failed "
-                            + throwableSummary(reflectFailure));
-                    log("W", "Application.attachBaseContext failed: "
-                            + throwableSummary(directFailure) + " / "
-                            + throwableSummary(reflectFailure));
-                }
+                app.attach(baseContext);
+                WestlakeLauncher.marker("CV WAT application attach returned");
+            } catch (Throwable t) {
+                WestlakeLauncher.marker("CV WAT application attach failed "
+                        + throwableSummary(t));
+                log("W", "Application.attach failed: " + throwableSummary(t));
             }
+        }
+
+        private Context createApplicationBaseContext(String packageName, ClassLoader cl) {
+            return WestlakeActivityThread.buildBaseContext(packageName, cl);
+        }
+
+        private void attachApplicationToBaseContext(Context baseContext, Application app) {
+            WestlakeActivityThread.publishApplicationToBaseContext(baseContext, app);
         }
 
         private void publishApplicationBeforeOnCreate(Application app, String packageName) {
@@ -709,6 +856,7 @@ public class WestlakeActivityThread {
         return performLaunchActivityImpl(className, packageName, intent, savedState);
     }
 
+    // TODO: V2-Step8 deletion candidate
     private static boolean isCutoffCanaryLifecycleProbe(String packageName,
             String className, Intent intent) {
         if ("com.westlake.cutoffcanary".equals(packageName)) {
@@ -1015,6 +1163,7 @@ public class WestlakeActivityThread {
         }
     }
 
+    // TODO: V2-Step8 deletion candidate
     private static boolean shouldRunMcdonaldsLifecycleInStrict(String packageName,
             String className, Intent intent) {
         if (!isMcdonaldsDataSourceLaunch(packageName, className, intent)) {
@@ -1069,8 +1218,15 @@ public class WestlakeActivityThread {
     private Activity performLaunchActivityImpl(String className, String packageName,
                                                Intent intent, Bundle savedState) {
         final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
+        // M7-Step2 (2026-05-13): generic production-launch opt-in. Either:
+        //  - a westlake/McD probe gate (existing per-app gates, unchanged), or
+        //  - any process-wide caller that invoked
+        //    `WestlakeActivityThread.setForceLifecycleEnabled(true)` to
+        //    request the proper Android launch sequence (record +
+        //    callActivityOnCreate). Generic across all apps.
         final boolean forceLifecycleInStrict =
-                isCutoffCanaryLifecycleProbe(packageName, className, intent)
+                sForceLifecycleEnabled
+                        || isCutoffCanaryLifecycleProbe(packageName, className, intent)
                         || shouldRunMcdonaldsLifecycleInStrict(packageName, className, intent);
         if (strictStandalone) {
             WestlakeLauncher.marker("PF301 strict WAT impl entry");
@@ -1184,11 +1340,14 @@ public class WestlakeActivityThread {
 
         // ── Step 3: Create base context for the activity ──
         // In AOSP this is ContextImpl.createBaseContextForActivity().
-        // We use the Application as the base context, since our shim Context
-        // is simple (no ContextImpl distinction).
+        // We use the Application as the base context when one is available;
+        // otherwise build a WestlakeContextImpl.  CR23-fix (2026-05-13):
+        // `new Context()` would throw InstantiationError when framework.jar
+        // is on -Xbootclasspath (Context is abstract there) — route through
+        // the shared helper so both fall-throughs land on WestlakeContextImpl.
         Context baseContext = mInitialApplication;
         if (baseContext == null) {
-            baseContext = new Context();
+            baseContext = buildBaseContext(packageName, cl);
         }
         if (strictStandalone) {
             WestlakeLauncher.marker("PF301 strict WAT impl baseContext ready");
@@ -1302,7 +1461,22 @@ public class WestlakeActivityThread {
         }
 
         // ── Step 4: Instantiate the Activity via Instrumentation ──
+        // CR62 Step 2: publish the freshly-built baseContext to a
+        // thread-local BEFORE the Activity ctor runs. ContextWrapper(null)
+        // — which runs during the Activity no-arg super-chain — consults
+        // this thread-local. Net effect: the AppCompatActivity override of
+        // attachBaseContext receives a real Context, not null, so
+        // AppCompatDelegate.attachBaseContext2 doesn't NPE.
+        //
+        // Cleared in finally so a failing ctor doesn't leak the
+        // thread-local across subsequent activities on this thread.
         Activity activity = null;
+        if (baseContext != null) {
+            WestlakeInstrumentation.publishContextForNewActivity(baseContext);
+            if (strictStandalone) {
+                WestlakeLauncher.marker("PF301 strict WAT impl newActivity prebase published");
+            }
+        }
         try {
             if (strictStandalone) {
                 WestlakeLauncher.marker("PF301 strict WAT impl newActivity call");
@@ -1326,6 +1500,15 @@ public class WestlakeActivityThread {
             }
         } catch (Exception e) {
             WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] step4 newActivity failed", e);
+            // CR62 Step 2: release the published baseContext from the
+            // thread-local on the failure path so a subsequent retry
+            // doesn't see stale state. (Java doesn't have a try/catch/
+            // finally on this block because the rest of
+            // performLaunchActivityImpl runs straight-line below and we'd
+            // need to wrap everything; the success path clears at the end
+            // of step 4, and re-publishing is per-launch so it's fine if
+            // intermediate ctors don't see the thread-local.)
+            WestlakeInstrumentation.clearPendingBaseContext();
             if (mInstrumentation == null || !mInstrumentation.onException(null, e)) {
                 log("E", "  Unable to instantiate activity " + className + ": " + e);
                 throw new RuntimeException(
@@ -1333,6 +1516,9 @@ public class WestlakeActivityThread {
             }
             return null;
         }
+        // CR62 Step 2: success path — release the thread-local now that
+        // the Activity ctor completed.
+        WestlakeInstrumentation.clearPendingBaseContext();
 
         // ── Step 5: Get or create the Application ──
         // IMPORTANT: reuse existing Application — do NOT call makeApplication() again
@@ -1360,6 +1546,31 @@ public class WestlakeActivityThread {
                             ? "PF301 strict WAT impl step5 MiniServer app nonnull"
                             : "PF301 strict WAT impl step5 MiniServer app null");
                 }
+                // CR59 (2026-05-14): MiniServer.get() auto-inits with a
+                // bare-bones placeholder Application (class is exactly
+                // `android.app.Application`, NOT a user subclass like
+                // NoiceApplication / Hilt_NoiceApplication / McdApplication).
+                // That placeholder has the wrong package + the wrong
+                // class, and -- pre-CR59 ctor fixup -- a null mBase.
+                // Returning it here defeats `makeApplicationForLaunch`
+                // and downstream Hilt resolution fails with
+                // `ContextWrapper.getApplicationContext()` NPE inside
+                // MainActivity's first Kotlin Lazy delegate (the M7-Step2
+                // documented blocker).  Detect the placeholder and
+                // discard it -- the next branch will call
+                // `makeApplicationForLaunch`, which instantiates the
+                // real user Application class via the
+                // AppComponentFactory + APK classloader path.
+                // Generic: no per-app branches.  The placeholder is
+                // identified solely by its exact runtime class.
+                if (app != null
+                        && "android.app.Application".equals(app.getClass().getName())) {
+                    if (strictStandalone) {
+                        WestlakeLauncher.marker(
+                                "PF301 strict WAT impl step5 MiniServer placeholder discarded");
+                    }
+                    app = null;
+                }
             } catch (Exception ignored) {}
         } else if (app == null && strictStandalone) {
             WestlakeLauncher.marker("PF301 strict WAT impl step5 MiniServer app skipped forced");
@@ -1384,6 +1595,21 @@ public class WestlakeActivityThread {
         if (app != null) {
             mInitialApplication = app;
             ShimCompat.setPackageName(app, packageName);
+            // CR56: wire WestlakeContextImpl.setAttachedApplication on the
+            // Activity's base context so getApplicationContext() returns the
+            // Application instead of `this` (a non-Application Context).
+            // Hilt's dagger.hilt.android.internal.Contexts.getApplication(Context)
+            // walks getApplicationContext() expecting to find an Application;
+            // without this call, MainActivity.onCreate's first lazy Hilt
+            // delegate (e.g. settingsRepository$2) NPEs.  The M4-PRE11
+            // plumbing in makeApplication() already wires the SEPARATE
+            // WestlakeContextImpl that's the Application's own mBase, but the
+            // Activity's mBase is a DIFFERENT WestlakeContextImpl built at
+            // line ~1340 (buildBaseContext) — wire it here.  Generic across
+            // all apps, no per-app branches.
+            if (baseContext != null && baseContext != app) {
+                publishApplicationToBaseContext(baseContext, app);
+            }
         }
 
         try {
@@ -2873,377 +3099,29 @@ public class WestlakeActivityThread {
     }
 
     /**
-     * Attach framework state to the Activity. Tries the AOSP-style attach() method
-     * via reflection first; falls back to setting fields directly.
+     * V2 Step 6: WestlakeActivity owns attach() with 6-arg overload (Step 2 added
+     * the 6-arg variant alongside the AOSP 18-arg). No reflection, no try/catch,
+     * no field-set fallback path. Activity.attach() IS our code via classpath
+     * shadowing (framework_duplicates.txt removed android/app/Activity).
      *
-     * The AOSP Activity.attach() signature is:
-     *   attach(Context, ActivityThread, Instrumentation, IBinder token, int ident,
-     *          Application, Intent, ActivityInfo, CharSequence title, Activity parent,
-     *          String embeddedID, NonConfigurationInstances, Configuration,
-     *          String referrer, IVoiceInteractor, Window, ActivityConfigCallback,
-     *          IBinder assistToken)
-     *
-     * Our shim Activity does NOT define attach(). We directly set the fields that
-     * the Activity class expects (mApplication, mIntent, mComponent, etc.).
-     *
-     * NOTE: If attach() is added to the shim's Activity in the future, this method
-     * will use it automatically via the reflection path.
+     * V1 deletions:
+     *   - strictStandalone / runMcdonaldsLifecycle / strictSkipLifecycle flags
+     *   - shimAttachOk try/catch + NoSuchMethodError detection
+     *   - setInstanceField(activity, ContextWrapper.class, "mBase", ...) reflection
+     *   - setInstanceField(activity, Activity.class, "mApplication"/"mIntent"/
+     *     "mComponent"/"mFinished"/"mDestroyed", ...) reflection
+     *   - wireStandaloneActivityResources (V1 hack — Step 4's WestlakeResources is
+     *     now plumbed via activity.getResources())
+     *   - PF301 strict markers (V2 doesn't have strict/control modes)
+     *   - ensureActivityWindow + initializeAndroidxActivityState helpers
      */
     private void attachActivity(Activity activity, Context baseContext,
                                  Application app, Intent intent,
                                  ComponentName component) {
-        final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
-        final boolean runMcdonaldsLifecycle =
-                shouldRunMcdonaldsLifecycleInStrict(
-                        component != null ? component.getPackageName() : null,
-                        component != null ? component.getClassName()
-                                : activity != null ? activity.getClass().getName() : null,
-                        intent);
-        final boolean strictSkipLifecycle =
-                strictStandalone && !runMcdonaldsLifecycle && !isCutoffCanaryLifecycleProbe(
-                        component != null ? component.getPackageName() : null,
-                        component != null ? component.getClassName()
-                                : activity != null ? activity.getClass().getName() : null,
-                        intent);
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity entry");
-        } else {
-            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity begin: "
-                    + activity.getClass().getName());
-        }
-        if (strictStandalone && !strictSkipLifecycle) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity shim attach begin");
-            activity.attach(baseContext, app, intent, component, null, mInstrumentation);
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity shim attach done");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity resource wiring begin");
-            WestlakeLauncher.wireStandaloneActivityResources(
-                    activity,
-                    component != null ? component.getPackageName() : null,
-                    component != null ? component.getClassName()
-                            : activity != null ? activity.getClass().getName() : null);
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity resource wiring done");
-            return;
-        }
-        boolean attached = false;
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity base call");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity base skipped");
-            } else {
-                setInstanceField(activity, android.content.Context.class, "mBase", baseContext);
-                attached = true;
-            }
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity base returned");
-            } else {
-                WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity base context set");
-            }
-        } catch (Throwable e) {
-            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] attachActivity base context failed", e);
-        }
-
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity window call");
-        }
-        ensureActivityWindow(activity);
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity window returned");
-        }
-
-        // Try 2: Direct field setting (always works with the shim's Activity)
-        // Even if attach() succeeded, ensure critical fields are set.
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity field mApplication call");
-        }
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mApplication skipped");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mApplication returned");
-            } else {
-                setInstanceField(activity, android.app.Activity.class, "mApplication", app);
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mApplication threw");
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity field mIntent call");
-        }
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mIntent skipped");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mIntent returned");
-            } else {
-                setInstanceField(activity, android.app.Activity.class, "mIntent", intent);
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mIntent threw");
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity field mComponent call");
-        }
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mComponent skipped");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mComponent returned");
-            } else {
-                setInstanceField(activity, android.app.Activity.class, "mComponent", component);
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mComponent threw");
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity field mFinished call");
-        }
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mFinished skipped");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mFinished returned");
-            } else {
-                setInstanceField(activity, android.app.Activity.class, "mFinished", Boolean.FALSE);
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mFinished threw");
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity field mDestroyed call");
-        }
-        try {
-            if (strictSkipLifecycle) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mDestroyed skipped");
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mDestroyed returned");
-            } else {
-                setInstanceField(activity, android.app.Activity.class, "mDestroyed", Boolean.FALSE);
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity field mDestroyed threw");
-            }
-        }
-        if (strictSkipLifecycle) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity core fields done");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity AndroidX init call");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity AndroidX init skipped");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity AndroidX init done");
-        } else {
-            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity core fields set");
-            initializeAndroidxActivityState(activity);
-            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity AndroidX init done");
-        }
-
-        // Skip direct framework AssetManager surgery here. It is still unstable on the
-        // standalone ART path and can recurse badly during reflected field access.
-        if (!strictStandalone) {
-            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity asset inject skipped");
-        }
-
-        // Wire ResourceTable to the activity's resources
-        // Try MiniServer's ApkInfo first (it has the parsed resources.arsc)
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity resource wiring begin");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity resource wiring skipped");
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity resource wiring done");
-        } else {
-            try {
-                android.content.res.Resources actRes = activity.getResources();
-                String apkPath = WestlakeLauncher.currentApkPathForShim();
-                String resDir = WestlakeLauncher.currentResDirForShim();
-                WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource wiring begin");
-
-                // Try to get ResourceTable from MiniServer's ApkInfo
-                android.app.MiniServer server = android.app.MiniServer.get();
-                if (server != null && actRes != null) {
-                    try {
-                        java.lang.reflect.Field apkField = android.app.MiniServer.class.getDeclaredField("mApkInfo");
-                        apkField.setAccessible(true);
-                        Object apkInfo = apkField.get(server);
-                        if (apkInfo != null) {
-                            java.lang.reflect.Field rtField = apkInfo.getClass().getField("resourceTable");
-                            Object table = rtField.get(apkInfo);
-                            if (table instanceof android.content.res.ResourceTable) {
-                                ShimCompat.loadResourceTable(actRes, (android.content.res.ResourceTable) table);
-                                WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource table wired");
-                                log("I", "Wired ResourceTable to " + activity.getClass().getSimpleName());
-                            }
-                        }
-                    } catch (Throwable ex) { /* MiniServer may not have ApkInfo */ }
-                }
-                // Also try from Application's resources
-                android.content.res.Resources appRes = app != null ? app.getResources() : null;
-                if (appRes != null && actRes != null) {
-                    try {
-                        java.lang.reflect.Field tableField = android.content.res.Resources.class.getDeclaredField("mTable");
-                        tableField.setAccessible(true);
-                        Object table = tableField.get(appRes);
-                        if (table != null) tableField.set(actRes, table);
-                    } catch (NoSuchFieldException e) { /* field may not exist */ }
-                }
-                ShimCompat.setApkPath(actRes, apkPath);
-                android.content.res.AssetManager assets = activity.getAssets();
-                ShimCompat.setAssetApkPath(assets, apkPath);
-                if (resDir != null) ShimCompat.setAssetDir(assets, resDir);
-                WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity resource wiring done");
-            } catch (Throwable t) {
-                WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] attachActivity resource wiring failed", t);
-                log("W", "Resource wiring: " + t.getMessage());
-            }
-        }
-
-        // Skip attachBaseContext — mBase was already set directly above.
-        // attachBaseContext is protected and inaccessible cross-classloader on app_process64.
-
-        if (!attached) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT attachActivity skip attached log");
-            } else {
-                log("D", "  Attached via direct field setting");
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT attachActivity end");
-        } else {
-            WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity end");
-        }
-    }
-
-    private void ensureActivityWindow(Activity activity) {
-        final boolean strictStandalone = !WestlakeLauncher.isRealFrameworkFallbackAllowed();
-        if (activity == null) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow activity null");
-            }
-            return;
-        }
-        android.view.Window window = null;
-        try {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow getWindow call");
-            }
-            window = activity.getWindow();
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow getWindow returned");
-            }
-        } catch (Throwable ignored) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow getWindow threw");
-            }
-        }
-        if (window == null) {
-            try {
-                if (strictStandalone) {
-                    WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback alloc call");
-                    Object rawWindow = WestlakeLauncher.tryAllocInstance(android.view.Window.class);
-                    WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback alloc returned");
-                    if (rawWindow instanceof android.view.Window) {
-                        android.view.Window fallback = (android.view.Window) rawWindow;
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback context call");
-                        fallback.adoptContext(activity);
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback context returned");
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback context field skipped");
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow decor alloc skipped");
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback callback call");
-                        fallback.setCallback(activity);
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback callback returned");
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback field call");
-                        activity.mWindow = fallback;
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback field returned");
-                        window = fallback;
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback done");
-                    } else {
-                        WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback alloc unusable");
-                    }
-                } else {
-                    android.view.Window fallback = new android.view.Window(activity);
-                    fallback.setCallback(activity);
-                    setInstanceField(activity, android.app.Activity.class, "mWindow", fallback);
-                    window = fallback;
-                    WestlakeLauncher.trace("[WestlakeActivityThread] attachActivity fallback window created");
-                }
-            } catch (Throwable t) {
-                if (strictStandalone) {
-                    WestlakeLauncher.marker("PF301 strict WAT ensureWindow fallback threw");
-                } else {
-                    WestlakeLauncher.dumpThrowable(
-                            "[WestlakeActivityThread] attachActivity fallback window failed", t);
-                }
-                return;
-            }
-        }
-        if (strictStandalone) {
-            WestlakeLauncher.marker("PF301 strict WAT ensureWindow adoptContext call");
-            window.adoptContext(activity);
-            WestlakeLauncher.marker("PF301 strict WAT ensureWindow adoptContext returned");
-        }
-        try {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow final callback call");
-            }
-            window.setCallback(activity);
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow final callback returned");
-            }
-        } catch (Throwable t) {
-            if (strictStandalone) {
-                WestlakeLauncher.marker("PF301 strict WAT ensureWindow final callback threw");
-            } else {
-                WestlakeLauncher.dumpThrowable(
-                        "[WestlakeActivityThread] attachActivity window callback failed", t);
-            }
-        }
-    }
-
-    private void initializeAndroidxActivityState(Activity activity) {
-        boolean splashMinimal = isMinimalSplashActivity(activity);
-        boolean dashboardHost = isDashboardHostActivity(activity);
-        boolean anySeeded = false;
-        if (splashMinimal) {
-            log("I", "Using minimal AndroidX path for " + activity.getClass().getName());
-            return;
-        }
-        if (!dashboardHost) {
-            try {
-                anySeeded |= initializeNamedCoreComponentActivityState(activity);
-            } catch (Throwable t) {
-                WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX core init failed", t);
-                log("W", "AndroidX core init failed: " + throwableTag(t));
-            }
-        } else {
-            log("I", "Skipping AndroidX core init for dashboard host "
-                    + activity.getClass().getName());
-        }
-        try {
-            anySeeded |= initializeNamedComponentActivityState(activity);
-        } catch (Throwable t) {
-            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX component init failed", t);
-            log("W", "AndroidX component init failed: " + throwableTag(t));
-        }
-        if (dashboardHost) {
-            try {
-                anySeeded |= initializeNamedFragmentActivityState(activity);
-            } catch (Throwable t) {
-                WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX fragment init failed", t);
-                log("W", "AndroidX fragment init failed: " + throwableTag(t));
-            }
-        } else if (activity != null) {
-            log("I", "Skipping AndroidX fragment bootstrap for non-dashboard "
-                    + activity.getClass().getName());
-        }
-        try {
-            anySeeded |= initializeNamedAppCompatActivityState(activity);
-        } catch (Throwable t) {
-            WestlakeLauncher.dumpThrowable("[WestlakeActivityThread] AndroidX appcompat init failed", t);
-            log("W", "AndroidX appcompat init failed: " + throwableTag(t));
-        }
-        if (anySeeded) {
-            WestlakeLauncher.trace("[WestlakeActivityThread] AndroidX init complete");
-        }
+        WestlakeLauncher.trace("[WestlakeActivityThread] V2 attachActivity begin: "
+                + activity.getClass().getName());
+        activity.attach(baseContext, app, intent, component, /*window*/ null, mInstrumentation);
+        WestlakeLauncher.trace("[WestlakeActivityThread] V2 attachActivity done");
     }
 
     private boolean isMinimalSplashActivity(Activity activity) {
@@ -3754,13 +3632,6 @@ public class WestlakeActivityThread {
         if (current == null) {
             field.set(target, value);
         }
-    }
-
-    private void setInstanceField(Object target, Class<?> owner, String fieldName, Object value)
-            throws Exception {
-        java.lang.reflect.Field field = owner.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
     }
 
     private void setNamedFieldIfNull(Object target, Class<?> owner, String fieldName, Object value)
@@ -4527,8 +4398,12 @@ public class WestlakeActivityThread {
         if (strictStandalone) {
             WestlakeLauncher.marker("PF301 strict WAT launchAndResume launch returned");
         }
+        // M7-Step2 (2026-05-13): production launchers (sForceLifecycleEnabled
+        // == true) want full create -> start -> resume. Pre-M7-Step2, only
+        // the cutoff-canary lifecycle probe drove resume in strict mode.
         if (activity != null
                 && (!strictStandalone
+                        || sForceLifecycleEnabled
                         || isCutoffCanaryLifecycleProbe(packageName, className, intent))) {
             performResumeActivity(activity);
         }

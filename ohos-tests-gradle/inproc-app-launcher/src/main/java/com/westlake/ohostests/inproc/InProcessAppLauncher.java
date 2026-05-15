@@ -191,6 +191,21 @@ public final class InProcessAppLauncher {
             // shim-source-tree dep without setAccessible (we only invoke
             // public methods).
             //
+            // CR62 Step 1: flip WestlakeInstrumentation into strict-mode
+            // BEFORE the substrate's launch chain runs. This makes
+            // onException return false (propagate) instead of true
+            // (swallow), so AppCompat / Hilt / Compose ctor-time
+            // exceptions surface up to the launcher rather than getting
+            // silently dropped. Generic, no per-app branching.
+            try {
+                Class<?> instrCls = Class.forName("android.app.WestlakeInstrumentation");
+                java.lang.reflect.Method setStrict = instrCls.getMethod(
+                        "setStrictExceptionPropagation", boolean.class);
+                setStrict.invoke(null, Boolean.TRUE);
+                log("step 3-strict: WestlakeInstrumentation.setStrictExceptionPropagation(true)");
+            } catch (Throwable t) {
+                log("step 3-strict: setStrictExceptionPropagation threw (continuing): " + t);
+            }
             // Pre-flight: try to no-arg-construct the Activity class
             // directly. If this throws, the V2 substrate's
             // mInstrumentation.onException would swallow the same
@@ -198,6 +213,12 @@ public final class InProcessAppLauncher {
             // is the only way to triage stage-B/C blockers without
             // patching the shim's diagnostic surface. Generic; not
             // app-specific.
+            //
+            // CR62: with strict-mode AND the CR62 Step 2 thread-local
+            // pre-attached context wired in, this probe is more of a
+            // diagnostic checkpoint than a blocker — the substrate's
+            // newActivity call path will publish a real base context
+            // before the same ctor runs there.
             try {
                 Object probe = activityClass.newInstance();
                 log("step 3-pre: Activity no-arg newInstance() OK: "
@@ -206,8 +227,9 @@ public final class InProcessAppLauncher {
                 log("step 3-pre: Activity no-arg newInstance() THREW: " + t);
                 t.printStackTrace(System.out);
                 // Continue — the substrate may still succeed via its
-                // AppComponentFactory path with a constructor we couldn't
-                // call directly here.
+                // AppComponentFactory path AND its newActivity-time
+                // thread-local pre-attached base context (CR62 Step 2)
+                // that this direct probe doesn't get.
             }
             try {
                 Class<?> watCls = Class.forName("android.app.WestlakeActivityThread");
@@ -233,11 +255,21 @@ public final class InProcessAppLauncher {
                 }
                 java.lang.reflect.Method launch = watCls.getMethod("launchActivity",
                         watCls, String.class, String.class, Intent.class);
-                Object launched = launch.invoke(null, thread, className, packageName, intent);
+                Object launched = null;
+                Throwable launchError = null;
+                try {
+                    launched = launch.invoke(null, thread, className, packageName, intent);
+                } catch (java.lang.reflect.InvocationTargetException ite) {
+                    launchError = ite.getCause() != null ? ite.getCause() : ite;
+                } catch (Throwable t) {
+                    launchError = t;
+                }
 
-                // Probe Application state — even if launched==null, the
-                // substrate may have set mInitialApplication before
-                // bailing out. Stage B is "Application.onCreate ran".
+                // CR62: Probe Application state INDEPENDENT of launchActivity
+                // success — the substrate may have set mInitialApplication
+                // (and run Application.onCreate) BEFORE the activity ctor
+                // threw. Stage B is "Application.onCreate ran" regardless of
+                // whether Stage C reaches.
                 Application appObj = null;
                 try {
                     java.lang.reflect.Method getApp = watCls.getMethod("currentApplication");
@@ -253,11 +285,18 @@ public final class InProcessAppLauncher {
                     log("step 3e: currentApplication=null (Application not yet wired)");
                 }
 
+                if (launchError != null) {
+                    log("step 3 FAIL (apk-mode launchActivity): " + launchError);
+                    launchError.printStackTrace(System.out);
+                    log("inproc-app-launcher-done passed=" + passed + " failed=1");
+                    System.exit(5);
+                    return;
+                }
                 if (!(launched instanceof Activity)) {
                     log("step 3 FAIL: launchActivity returned non-Activity: "
                             + (launched == null ? "null" : launched.getClass().getName())
-                            + " — V2 substrate's mInstrumentation.onException always"
-                            + " returns true so the underlying exception is hidden.");
+                            + " — substrate hid the underlying exception even"
+                            + " though strict-mode is on; check stage C marker.");
                     log("inproc-app-launcher-done passed=" + passed + " failed=1");
                     System.exit(5);
                     return;
@@ -265,13 +304,6 @@ public final class InProcessAppLauncher {
                 activity = (Activity) launched;
                 log("step 3d: launchActivity returned " + activity.getClass().getName());
                 passed++;
-            } catch (java.lang.reflect.InvocationTargetException ite) {
-                Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
-                log("step 3 FAIL (apk-mode launchActivity): " + cause);
-                cause.printStackTrace(System.out);
-                log("inproc-app-launcher-done passed=" + passed + " failed=1");
-                System.exit(5);
-                return;
             } catch (Throwable t) {
                 log("step 3 FAIL (apk-mode): " + t);
                 t.printStackTrace(System.out);

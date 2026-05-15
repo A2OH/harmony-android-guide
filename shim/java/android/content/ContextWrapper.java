@@ -15,7 +15,32 @@ import android.view.Display;
 import java.io.File;
 
 public class ContextWrapper extends Context {
-    public ContextWrapper(Context p0) { attachBaseContext(p0); }
+    public ContextWrapper(Context p0) {
+        // CR62 Step 2: when constructed with a null base (the typical
+        // path during Activity's no-arg super-chain:
+        //   Activity() -> ContextThemeWrapper() -> ContextWrapper(null)),
+        // consult WestlakeInstrumentation's thread-local for a Context
+        // that the substrate published just before invoking
+        // mInstrumentation.newActivity. This lets the ctor-time virtual
+        // dispatch to AppCompatActivity.attachBaseContext receive a real
+        // Context instead of null — preventing the
+        // AppCompatDelegate.attachBaseContext2 NPE on noice's MainActivity.
+        //
+        // Safe-primitive: only substitutes when caller passed null. When a
+        // real Context is supplied, behavior is unchanged.
+        //
+        // No reflective access; we just look up a published Context object.
+        if (p0 == null) {
+            try {
+                p0 = android.app.WestlakeInstrumentation.consumePendingBaseContext();
+            } catch (Throwable ignored) {
+                // WestlakeInstrumentation may not be class-loaded in some
+                // very-early-boot paths; fall through to the AOSP-default
+                // null pass-through.
+            }
+        }
+        attachBaseContext(p0);
+    }
 
     public void attachBaseContext(Context p0) { super.attachBaseContext(p0); }
     public boolean bindService(Intent p0, ServiceConnection p1, int p2) { return super.bindService(p0, p1, p2); }

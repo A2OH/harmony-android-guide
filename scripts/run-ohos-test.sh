@@ -2027,6 +2027,19 @@ cmd_inproc_app() {
         err "missing BCP files on board (need aosp-shim-ohos.dex + core-android-x86.jar + direct-print-stream.jar in $BOARD_DIR/bcp/)"
         return 1
     fi
+    # CR62 (2026-05-15): refresh aosp-shim-ohos.dex when local was rebuilt
+    # (matches the refresh pattern in cmd_hello_dlopen_real). Without this,
+    # CR62's WestlakeInstrumentation.setStrictExceptionPropagation +
+    # ContextWrapper(null) pre-attach changes can't reach the board.
+    local local_shim="$REPO_ROOT/ohos-deploy/aosp-shim-ohos.dex"
+    local local_shim_size
+    local_shim_size="$(stat -c%s "$local_shim" 2>/dev/null || echo 0)"
+    local board_shim_size
+    board_shim_size="$(hdc_shell "stat -c%s $BOARD_DIR/bcp/aosp-shim-ohos.dex 2>/dev/null" | tr -d '\r')"
+    if [ "$local_shim_size" != "$board_shim_size" ] && [ "$local_shim_size" -gt 0 ]; then
+        log "  refreshing aosp-shim-ohos.dex on board (local=$local_shim_size board=$board_shim_size)"
+        hdc_send "$local_shim" "$BOARD_DIR/bcp/aosp-shim-ohos.dex" || return 1
+    fi
     hdc_shell "ls -la $BOARD_DIR/HelloColorApk.dex $BOARD_DIR/InProcAppLauncher.dex $BOARD_DIR/libdrm_inproc_bridge.so" \
             > "$outdir/on-device-ls.log" 2>&1
     ok "dex + .so pushed; BCP intact"

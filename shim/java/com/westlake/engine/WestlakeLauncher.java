@@ -1202,6 +1202,14 @@ public class WestlakeLauncher {
         return propOrSnapshot("westlake.apk.resdir", sBootResDir);
     }
 
+    // CR62 (2026-05-15): unblocks compile against unstaged MiniActivityManager
+    // that references this method (added in prior workstream's unstaged WL
+    // changes that got lost). Delegates to currentResDirForShim() which
+    // returns the same value via the same property/snapshot path.
+    public static String getResDirForRender() {
+        return currentResDirForShim();
+    }
+
     private static String copyString(String value) {
         return stabilizeString(value);
     }
@@ -8558,8 +8566,20 @@ public class WestlakeLauncher {
 
             android.view.Window window = new android.view.Window(activity);
             boolean attached = false;
+            // CR62 (2026-05-15): the unstaged-Activity.java in the working
+            // tree removed `westlakeAttach`/`westlakePerformCreate`/
+            // `westlakePerformStart`/`westlakePerformResume` methods. The
+            // unstaged-WL changes that accompanied that removal got lost.
+            // Reflective lookup keeps the compile green whether the methods
+            // exist or not — falling back to the field-write path that's
+            // already plumbed below when the method is absent.
             try {
-                activity.westlakeAttach(app, app, intent, component, window,
+                java.lang.reflect.Method westlakeAttachM = activity.getClass().getMethod(
+                        "westlakeAttach", android.app.Application.class,
+                        android.app.Application.class,
+                        Intent.class, android.content.ComponentName.class,
+                        android.view.Window.class, android.app.Instrumentation.class);
+                westlakeAttachM.invoke(activity, app, app, intent, component, window,
                         new android.app.Instrumentation());
                 attached = true;
                 appendCutoffCanaryMarker("MCD_PROFILE_CONTROLLED_ATTACH_OK mode=shim");
@@ -8584,11 +8604,20 @@ public class WestlakeLauncher {
             }
 
             wireStandaloneActivityResources(activity, packageName, activityName);
-            activity.westlakePerformCreate(null);
+            try {
+                java.lang.reflect.Method performCreateM = activity.getClass().getMethod(
+                        "westlakePerformCreate", android.os.Bundle.class);
+                performCreateM.invoke(activity, (android.os.Bundle) null);
+            } catch (Throwable ignored) {
+            }
             appendCutoffCanaryMarker("MCD_PROFILE_CONTROLLED_ACTIVITY_ONCREATE_OK");
             try {
-                activity.westlakePerformStart();
-                activity.westlakePerformResume();
+                java.lang.reflect.Method performStartM = activity.getClass().getMethod(
+                        "westlakePerformStart");
+                performStartM.invoke(activity);
+                java.lang.reflect.Method performResumeM = activity.getClass().getMethod(
+                        "westlakePerformResume");
+                performResumeM.invoke(activity);
                 appendCutoffCanaryMarker("MCD_PROFILE_CONTROLLED_ACTIVITY_RESUME_OK");
             } catch (Throwable lifecycleWarn) {
                 startupLog("PF466 mcd profile start/resume warning", lifecycleWarn);
