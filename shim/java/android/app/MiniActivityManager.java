@@ -162,11 +162,26 @@ public class MiniActivityManager {
         if (manifest == null || className == null) return 0;
         com.westlake.engine.WestlakeNode app = childByTag(manifest, "application");
         if (app == null) return 0;
+        String pkg = manifest.getAttr("package");
         for (com.westlake.engine.WestlakeNode act : app.children) {
             if (!"activity".equals(act.tag) && !"activity-alias".equals(act.tag)) continue;
             String name = act.getAttr("name");
             if (name == null) continue;
-            if (!name.equals(className) && !endsWithAfterDot(name, className)) continue;
+            /* Per android:name spec: a leading '.' is shorthand for the
+             * manifest package. Normalize before comparing to className
+             * (which is always the fully-qualified runtime class name). */
+            String normalized = name;
+            if (name.startsWith(".") && pkg != null && !pkg.isEmpty()) {
+                normalized = pkg + name;
+            } else if (!name.contains(".") && pkg != null && !pkg.isEmpty()) {
+                normalized = pkg + "." + name;
+            }
+            if (!normalized.equals(className)
+                    && !name.equals(className)
+                    && !endsWithAfterDot(name, className)
+                    && !endsWithAfterDot(className, name)) {
+                continue;
+            }
             String theme = act.getAttr("theme");
             int tid = parseRefId(theme);
             if (tid != 0) return tid;
@@ -192,7 +207,14 @@ public class MiniActivityManager {
 
     private static boolean endsWithAfterDot(String full, String tail) {
         if (full == null || tail == null) return false;
-        return full.endsWith("." + tail) || tail.endsWith("." + full);
+        if (full.isEmpty() || tail.isEmpty()) return false;
+        /* Strip leading '.' on either side so "<pkg>.MainActivity" matches
+         * a manifest declaration of ".MainActivity" (the shorthand for
+         * package-local Activity names). */
+        String f = full.startsWith(".") ? full.substring(1) : full;
+        String t = tail.startsWith(".") ? tail.substring(1) : tail;
+        if (f.isEmpty() || t.isEmpty()) return false;
+        return f.endsWith("." + t) || t.endsWith("." + f);
     }
 
     private static int parseRefId(String raw) {
