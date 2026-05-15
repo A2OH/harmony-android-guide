@@ -2038,6 +2038,18 @@ cmd_inproc_app() {
         hdc_send "$apk_dex_local" "$apk_dex_board" || return 1
         hdc_shell "chmod 0644 $apk_dex_board" >/dev/null 2>&1
     fi
+    # CR-W (2026-05-15): push the full apk too. Path W setContentView fix
+    # needs to do a JIT arsc parse from inside the shim's LayoutInflater so
+    # AppCompatDelegateImpl.ensureSubDecor's findViewById(app-compiled
+    # action_bar_activity_content) returns a real ContentFrameLayout (instead
+    # of the previously-stubbed empty FrameLayout). Generic across any
+    # AppCompat app — same mechanism McD would benefit from.
+    apk_board=""
+    if [ -n "$apk_path" ] && [ -f "$apk_path" ]; then
+        apk_board="$BOARD_DIR/${apk_alias}.apk"
+        hdc_send "$apk_path" "$apk_board" || return 1
+        hdc_shell "chmod 0644 $apk_board" >/dev/null 2>&1
+    fi
     # BCP files are stable across runs — just verify they exist.
     local bcp_check
     bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
@@ -2104,6 +2116,9 @@ cmd_inproc_app() {
     fi
     cmd="$cmd -Xbootclasspath:$bcp"
     cmd="$cmd -Djava.library.path=$BOARD_DIR"
+    if [ -n "$apk_board" ]; then
+        cmd="$cmd -Dwestlake.apk.path=$apk_board"
+    fi
     cmd="$cmd com.westlake.ohostests.inproc.InProcessAppLauncher"
     cmd="$cmd $activity_spec"
     if [ -n "$app_class" ]; then
