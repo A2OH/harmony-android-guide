@@ -4166,30 +4166,68 @@ public class WestlakeActivityThread {
             performPauseActivity(mResumedRecord.activity);
         }
 
-        try {
-            // Call onStart if not yet started
-            if (r.lifecycleState < ActivityClientRecord.STARTED) {
+        // Catch both Exception and Error subclasses. NoSuchMethodError from
+        // the APK's own bytecode (e.g. KitKat-libcore Locale.forLanguageTag
+        // missing inside emoji2.onStart) is an Error, not an Exception —
+        // without this widened catch, those NSMEs propagate to the launcher
+        // and abort the lifecycle drive entirely. AOSP's production
+        // ActivityThread catches Throwable in this path; matching that.
+        Throwable startError = null;
+        if (r.lifecycleState < ActivityClientRecord.STARTED) {
+            try {
                 mInstrumentation.callActivityOnStart(activity);
                 r.lifecycleState = ActivityClientRecord.STARTED;
+            } catch (Throwable t) {
+                startError = t;
+                log("E", "  performResumeActivity onStart raised: " + t);
+                if (t instanceof Exception
+                        && mInstrumentation.onException(activity, (Exception) t)) {
+                    // swallowed by instrumentation; keep going to onResume.
+                    startError = null;
+                }
             }
+        }
 
-            // Mark resumed before onResume so nested lifecycle calls such as
-            // Activity.recreate() observe the same state Android apps expect.
-            r.lifecycleState = ActivityClientRecord.RESUMED;
-            mResumedRecord = r;
+        // Mark resumed before onResume so nested lifecycle calls such as
+        // Activity.recreate() observe the same state Android apps expect.
+        r.lifecycleState = ActivityClientRecord.RESUMED;
+        mResumedRecord = r;
+        try {
             mInstrumentation.callActivityOnResume(activity);
-
             if (findRecord(activity) == r
                     && r.lifecycleState != ActivityClientRecord.DESTROYED) {
                 r.lifecycleState = ActivityClientRecord.RESUMED;
                 mResumedRecord = r;
                 log("I", "  Resumed: " + r.className);
             }
-        } catch (Exception e) {
-            if (!mInstrumentation.onException(activity, e)) {
-                log("E", "  performResumeActivity failed: " + e);
-                throw new RuntimeException("Resume failed for " + r.className, e);
+        } catch (Throwable t) {
+            log("E", "  performResumeActivity onResume raised: " + t);
+            if (t instanceof Exception
+                    && mInstrumentation.onException(activity, (Exception) t)) {
+                // swallowed; lifecycle remains RESUMED-marked for FragmentManager.
+                return;
             }
+            // Both Exception (not swallowed) and Error: propagate Exception
+            // wrapped, but Errors (NSME etc) shouldn't crash the launcher —
+            // log and return so the caller can still drive the draw step.
+            if (t instanceof Exception) {
+                throw new RuntimeException("Resume failed for " + r.className, t);
+            }
+            // Error: log + swallow, matching AOSP's tolerance for
+            // missing-API errors raised from app code.
+        }
+
+        // If onStart raised an unsendable Error (e.g. NSME), surface it AFTER
+        // onResume has had its chance — but only as a logged warning, not a
+        // thrown RuntimeException. The fragment-lifecycle path treats the
+        // Activity as STARTED so FragmentManager.dispatchActivityCreated
+        // can run, and the draw step still gets a decor view to render.
+        if (startError != null && !(startError instanceof Exception)) {
+            log("W", "  performResumeActivity onStart error tolerated: "
+                    + startError.getClass().getName() + ": " + startError.getMessage());
+            // Promote lifecycle to STARTED so FragmentManager sees a host in
+            // STARTED state even though the app's own onStart body threw.
+            r.lifecycleState = Math.max(r.lifecycleState, ActivityClientRecord.STARTED);
         }
     }
 

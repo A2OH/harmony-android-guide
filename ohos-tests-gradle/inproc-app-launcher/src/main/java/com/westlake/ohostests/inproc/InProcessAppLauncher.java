@@ -353,6 +353,46 @@ public final class InProcessAppLauncher {
                     + activity.getClass().getName() + ")");
         }
 
+        // Step 4.5: drive onStart + onResume (E13 fragment-lifecycle path).
+        //
+        // AndroidX FragmentManager moves attached fragments to STARTED only
+        // when the host Activity is in STARTED state (and to RESUMED when
+        // the host is RESUMED). performLaunchActivityImpl in the substrate
+        // only calls callActivityOnCreate — it doesn't progress to
+        // onStart/onResume. Without these, NavHostFragment.onCreateView is
+        // never invoked even when setContentView+FragmentManager add()
+        // succeed during onCreate.
+        //
+        // Best-effort: a NoSuchMethodError / NPE here means the Activity's
+        // own onStart/onResume body raised an exception (e.g. emoji2's
+        // attachBaseContext NSME chain that already aborts onCreate). We
+        // log + continue to the draw step so the panel still gets the
+        // theme-bg pixel from CR-X.
+        //
+        // Generic, not per-app. Macro-shim contract: only invokes public
+        // API methods on shim classes (WestlakeActivityThread + Activity).
+        if (apkMode && activity != null) {
+            try {
+                Class<?> watCls = Class.forName("android.app.WestlakeActivityThread");
+                java.lang.reflect.Method current = watCls.getMethod("currentActivityThread");
+                Object thread = current.invoke(null);
+                java.lang.reflect.Method resume = watCls.getMethod(
+                        "performResumeActivity", Activity.class);
+                resume.invoke(thread, activity);
+                log("step 4.5: performResumeActivity returned ("
+                        + activity.getClass().getName() + ")");
+                log("inproc-app-launcher stage Cs: Activity.onStart returned");
+                log("inproc-app-launcher stage Cr: Activity.onResume returned");
+            } catch (java.lang.reflect.InvocationTargetException ite) {
+                Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
+                log("step 4.5: performResumeActivity threw (continuing): " + cause);
+                cause.printStackTrace(System.out);
+            } catch (Throwable t) {
+                log("step 4.5: performResumeActivity unreachable (continuing): " + t);
+                t.printStackTrace(System.out);
+            }
+        }
+
         // Step 5: locate drawView.
         // Tier 1: InProcDrawSource interface (the E12 smoke contract).
         // Tier 2: Window.getDecorView() — real Android apps that called
