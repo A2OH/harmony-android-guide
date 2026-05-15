@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdint.h>
 #include <fcntl.h>
 #include <dlfcn.h>
 #include <netdb.h>
@@ -1683,15 +1684,24 @@ static jboolean JNICALL UnixSocketBridge_ftruncateRaw(
 static jboolean JNICALL UnixSocketBridge_writeAllToFd(
         JNIEnv* env, jclass, jint fd, jbyteArray data, jlong size) {
     if (fd < 0 || data == NULL || size <= 0) return JNI_FALSE;
-    if ((jsize) (size / 1) > env->GetArrayLength(data)) return JNI_FALSE;
-    void* map = mmap(NULL, (size_t) size, PROT_READ | PROT_WRITE,
+    /* Codex P2: compare `size` against the Java array length in wide
+     * (jlong) form BEFORE narrowing to size_t. The prior cast to jsize
+     * (= int32_t) wrapped negative for size > INT32_MAX, making the
+     * bounds check pass even when the byte[] was smaller — leading to
+     * OOB reads in the memcpy below. Also reject sizes that won't fit
+     * in size_t on 32-bit builds. */
+    jlong arr_len = (jlong) env->GetArrayLength(data);
+    if (size > arr_len) return JNI_FALSE;
+    if ((uint64_t) size > (uint64_t) SIZE_MAX) return JNI_FALSE;
+    size_t map_size = (size_t) size;
+    void* map = mmap(NULL, map_size, PROT_READ | PROT_WRITE,
                      MAP_SHARED, fd, 0);
     if (map == MAP_FAILED) return JNI_FALSE;
     jbyte* bytes = env->GetByteArrayElements(data, NULL);
-    if (!bytes) { munmap(map, (size_t) size); return JNI_FALSE; }
-    memcpy(map, bytes, (size_t) size);
+    if (!bytes) { munmap(map, map_size); return JNI_FALSE; }
+    memcpy(map, bytes, map_size);
     env->ReleaseByteArrayElements(data, bytes, JNI_ABORT);
-    if (munmap(map, (size_t) size) != 0) return JNI_FALSE;
+    if (munmap(map, map_size) != 0) return JNI_FALSE;
     return JNI_TRUE;
 }
 
