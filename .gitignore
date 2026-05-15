@@ -22,3 +22,21 @@ claude
 .claire/
 .clone/
 skills/test/
+
+# Gradle / Android build outputs that were never meaningful to track
+multiproc-test-gradle/.gradle/
+multiproc-test-gradle/app/build/
+multiproc-test-gradle/local.properties
+westlake-host-gradle/local.properties
+westlake-host-gradle/gradlew.bat
+test-apps/*/build/
+
+# Untracked artifact subtrees with no committed contents (probes / scratch experiments).
+# Note: artifacts/real-mcd/, artifacts/noice-1day/, artifacts/ohos-mvp/ are NOT ignored
+# here because they contain tracked files that downstream tooling references.
+artifacts/icu-probe/
+artifacts/mcd-westlake/
+artifacts/noice-westlake/
+
+# Legacy shim snapshot from before the 2026-05-07 framework-jar dedupe.
+shim.bak.before-dedupe-*/
