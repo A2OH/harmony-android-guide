@@ -2,9 +2,9 @@
 
 **Date:** 2026-05-15
 **Author:** strategic research after current DRM-direct path was rejected as architecturally wrong
-**Status:** PROPOSAL (READ-ONLY research; no code touched)
+**Status:** PROPOSAL — **PENDING REVISION (agent 34, 2026-05-15)**. Codex P1 #1 + #2 confirmed valid by feasibility spike at `artifacts/ohos-mvp/cr-bb-spike/20260515_220900/CHECKPOINT.md`. Three surgical edits required before adoption: (1) §4 Candidate C "draw flow" must replace the fictitious GraphicBuffer-bound canvas with the codex-corrected one-copy `OH_Drawing_BitmapBuild` → memcpy → `FlushBuffer` path; (2) §4 Candidate C must explicitly require same-process dalvikvm built as `libdvm_arm32.so` (cross-process `OHNativeWindow*` is meaningless per codex P1 #2); (3) §5 4-week milestone schedule slips to 6 weeks with a new W0 for the shared-library scaffold, signal-handler chaining patch, and HAP build pipeline. **Underlying architecture is sound; this is spec-cleanup not rewrite.**
 **Supersedes (when adopted):** the implicit "SoftwareCanvas + drm_inproc_bridge" production path
-**Cross-refs:** `BINDER_PIVOT_ARCHITECTURE.md`, `CR60_BITNESS_PIVOT_DECISION.md`, `CR61_BINDER_STRATEGY_POST_CR60.md`, `cr66-e10-libsurface/.../CHECKPOINT.md`, `cr67-compose-spike/.../CHECKPOINT.md`
+**Cross-refs:** `BINDER_PIVOT_ARCHITECTURE.md`, `CR60_BITNESS_PIVOT_DECISION.md`, `CR61_BINDER_STRATEGY_POST_CR60.md`, `cr66-e10-libsurface/.../CHECKPOINT.md`, `cr67-compose-spike/.../CHECKPOINT.md`, `cr-bb-spike/20260515_220900/CHECKPOINT.md`
 
 ---
 

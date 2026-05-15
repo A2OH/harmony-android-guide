@@ -1,0 +1,48 @@
+# CR-BB spike — re-run smoke + composer state, 2026-05-15
+
+## Pre-state
+
+composer_host: 6659
+render_service: 678
+
+## ohos_dlopen_smoke (re-run)
+
+[ohos-dlopen-smoke] starting; range [0,3) of 3 probes
+[ohos-dlopen-smoke] probe 0: dlopen /system/lib/platformsdk/libace_napi.z.so
+[ohos-dlopen-smoke] probe 0: dlopen returned 0x84b40b21
+[ohos-dlopen-smoke] probe 0: dlsym returned 0xf649d64d
+[ohos-dlopen-smoke] OK  : /system/lib/platformsdk/libace_napi.z.so::napi_get_undefined @ 0xf649d64d (handle 0x84b40b21)
+[ohos-dlopen-smoke] probe 1: dlopen /system/lib/chipset-sdk-sp/libnative_window.so
+[ohos-dlopen-smoke] probe 1: dlopen returned 0x75a8c3d9
+[ohos-dlopen-smoke] probe 1: dlsym returned 0xf558b219
+[ohos-dlopen-smoke] OK  : /system/lib/chipset-sdk-sp/libnative_window.so::OH_NativeWindow_NativeWindowRequestBuffer @ 0xf558b219 (handle 0x75a8c3d9)
+[ohos-dlopen-smoke] probe 2: dlopen /system/lib/ndk/libace_ndk.z.so
+[ohos-dlopen-smoke] probe 2: dlopen returned 0xe5318c46
+[ohos-dlopen-smoke] probe 2: dlsym returned 0xf414a365
+[ohos-dlopen-smoke] OK  : /system/lib/ndk/libace_ndk.z.so::OH_NativeXComponent_GetXComponentId @ 0xf414a365 (handle 0xe5318c46)
+[ohos-dlopen-smoke] PASS  3/3
+
+## surface_inproc_smoke (re-run)
+
+[surface-smoke] CR66-E10 standalone smoke starting
+[surface-smoke] P1 dlopen /system/lib/chipset-sdk-sp/libsurface.z.so
+[surface-smoke] P1 PASS: handle=0x6c456fad
+[surface-smoke] P2 dlsym CreateNativeWindowFromSurfaceId = 0xf67cc7fd
+[surface-smoke] P2 CreateFromSurfaceId(id=0) rc=40001000 win=0
+[surface-smoke] P2 CreateFromSurfaceId(id=0x12345...) rc=40001000 win=0
+[surface-smoke] P3 dlsym CreateSurfaceAsConsumer = 0xf67c710d
+[surface-smoke] DONE: composer_host alive throughout
+[surface-smoke] PASS-INFRA (load+resolve); SurfaceId path requires IPC-registered uniqueId in surfaceCache_
+
+## Post-state
+
+composer_host: 6659
+render_service: 678
+
+## Board arch facts
+
+Linux localhost 6.6.101 #1 SMP Sat Apr  4 16:40:55 CST 2026 aarch64 Toybox
+32
+/system/bin/appspawn:               ELF shared object, 32-bit LSB arm, EABI5, soft float, dynamic (/lib/ld-musl-arm.so.1), BuildID=e06576e991cd69aacc01e5dc3ac4c2c7, stripped
+/system/bin/render_service:         ELF shared object, 32-bit LSB arm, EABI5, soft float, dynamic (/lib/ld-musl-arm.so.1), BuildID=13e436c910eecb5112fb624ea4c175f2, stripped
+/data/local/tmp/dalvikvm-arm32-dyn: ELF shared object, 32-bit LSB arm, EABI5, soft float, dynamic (/lib/ld-musl-arm.so.1), bad note 2 size?
