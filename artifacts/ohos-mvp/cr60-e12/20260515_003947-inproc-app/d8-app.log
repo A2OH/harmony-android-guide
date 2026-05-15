@@ -1,0 +1,6 @@
+Warning in /home/dspfac/android-to-openharmony-migration/ohos-tests-gradle/hello-color-apk/build/intermediates/javac/debug/classes/com/westlake/ohostests/helloc/ColorView.class:
+Type `android.view.View` was not found, it is required for default or static interface methods desugaring of `com.westlake.ohostests.helloc.ColorView`
+Warning in /home/dspfac/android-to-openharmony-migration/ohos-tests-gradle/hello-color-apk/build/intermediates/javac/debug/classes/com/westlake/ohostests/helloc/MainActivity.class:
+Type `android.app.Activity` was not found, it is required for default or static interface methods desugaring of `com.westlake.ohostests.helloc.MainActivity`
+Warning in /home/dspfac/android-to-openharmony-migration/ohos-tests-gradle/hello-color-apk/build/intermediates/javac/debug/classes/com/westlake/ohostests/helloc/MainActivity.class:
+Type `com.westlake.ohostests.inproc.InProcDrawSource` was not found, it is required for default or static interface methods desugaring of `com.westlake.ohostests.helloc.MainActivity`

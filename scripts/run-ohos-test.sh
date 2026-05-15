@@ -1775,6 +1775,234 @@ cmd_hello_drm_inprocess() {
     fi
 }
 
+# ---------- subcommand: inproc-app ------------------------------------------
+# CR60 follow-up E12 (2026-05-15): smallest real-Android-Activity pixel
+# on the DAYU200 DSI panel via the in-process path. Stage 1 routes the
+# test APK through -Xbootclasspath (system classloader); stage 2 (TODO)
+# loads it via DexClassLoader.
+#
+# Pipeline (mirrors hello-drm-inprocess but with an Activity in the
+# middle):
+#   A. gradle :hello-color-apk:assembleDebug + :inproc-app-launcher:compileJava
+#   B. make TARGET=ohos-arm32-dynamic drm-inproc-bridge → libdrm_inproc_bridge.so
+#   C. d8 → HelloColorApk.dex (Activity, ColorView) + InProcessAppLauncher.dex
+#      (launcher, DrmInprocessPresenter, SoftwareCanvas, InProcDrawSource)
+#   D. push dalvikvm-arm32-dyn + dex + .so. Verify BCP intact.
+#   E. capture DRM pre-state.
+#   F. (note) composer_host kill happens inside libdrm_inproc_bridge.so
+#      via the same SET_MASTER retry loop E9b uses.
+#   G. run dalvikvm com.westlake.ohostests.inproc.InProcessAppLauncher
+#         com.westlake.ohostests.helloc/.MainActivity <holdSecs>
+#      Launcher resolves MainActivity (BCP), instantiates it, drives
+#      Instrumentation.callActivityOnCreate, locates the View via the
+#      InProcDrawSource interface, allocates SoftwareCanvas, view.draw
+#      records BLUE, materializes int[w*h] ARGB, calls
+#      DrmInprocessPresenter.present → DSI panel shows BLUE for holdSecs.
+#   H. capture DRM post-state; grade markers.
+#
+# PASS criterion: marker `inproc-app-launcher present rc=0` AND the
+# success line shows `fill=argb` (NOT `fill=red` — that would mean the
+# E9b hardcoded path was somehow invoked instead). Operator captures a
+# phone-camera photo of the DSI panel showing BLUE (distinguishable
+# from E9b's RED) during the hold window.
+
+cmd_inproc_app() {
+    # Hard-pin to arm32 dynamic (same as hello-drm-inprocess) — the
+    # in-process pipeline depends on libdrm_inproc_bridge.so which is
+    # arm32-dynamic-only.
+    if [ "$ARCH" = "aarch64" ]; then
+        warn "inproc-app requires --arch arm32; overriding ARCH from aarch64"
+        ARCH="arm32"
+        DALVIKVM_BOARD_PATH=""
+        DALVIKVM_HOST_PATH=""
+        resolve_arch || return 1
+    fi
+    if [ "$ARCH" = "auto" ]; then
+        case "$DALVIKVM_BOARD_PATH" in
+            *dalvikvm-arm32*) ;;
+            *)
+                warn "auto-detect picked $DALVIKVM_BOARD_PATH; forcing arm32 for inproc-app"
+                ARCH="arm32"
+                DALVIKVM_BOARD_PATH=""
+                DALVIKVM_HOST_PATH=""
+                resolve_arch || return 1
+                ;;
+        esac
+    fi
+    local dvm_dyn_board="/data/local/tmp/dalvikvm-arm32-dyn"
+    local dvm_dyn_host="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
+    local hold_secs="${INPROC_APP_HOLD_SECS:-10}"
+    # Activity spec; defaults to :hello-color-apk. The brief allows
+    # --apk overrides for noice/mcd (stretch); we don't wire those yet.
+    local activity_spec="${1:-com.westlake.ohostests.helloc/.MainActivity}"
+
+    local outdir="$ARTIFACT_ROOT/cr60-e12/$TS-inproc-app"
+    mkdir -p "$outdir"
+    log "${BOLD}== CR60-followup E12 inproc-app -> $outdir hold=${hold_secs}s ==${RESET}"
+    log "  activity: $activity_spec"
+
+    log "[A/H] gradle :hello-color-apk:assembleDebug + :inproc-app-launcher:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :hello-color-apk:assembleDebug :inproc-app-launcher:compileJava --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local app_classes="$GRADLE_DIR/hello-color-apk/build/intermediates/javac/debug/classes"
+    local launcher_classes="$GRADLE_DIR/inproc-app-launcher/build/classes/java/main"
+    if [ ! -d "$app_classes/com/westlake/ohostests/helloc" ]; then
+        err "missing hello-color-apk classes at $app_classes/com/westlake/ohostests/helloc"
+        return 1
+    fi
+    if [ ! -d "$launcher_classes/com/westlake/ohostests/inproc" ]; then
+        err "missing inproc-app-launcher classes at $launcher_classes/com/westlake/ohostests/inproc"
+        return 1
+    fi
+    local app_class_list=()
+    while IFS= read -r f; do
+        app_class_list+=("$f")
+    done < <(find "$app_classes/com/westlake/ohostests/helloc" -name '*.class' | sort)
+    local launcher_class_list=()
+    while IFS= read -r f; do
+        launcher_class_list+=("$f")
+    done < <(find "$launcher_classes/com/westlake/ohostests/inproc" -name '*.class' | sort)
+    ok "gradle build complete (${#app_class_list[@]} app + ${#launcher_class_list[@]} launcher classes)"
+
+    log "[B/H] make libdrm_inproc_bridge.so (TARGET=ohos-arm32-dynamic)"
+    if ! (cd "$REPO_ROOT/dalvik-port" && make TARGET=ohos-arm32-dynamic drm-inproc-bridge) \
+            > "$outdir/bridge-build.log" 2>&1; then
+        err "bridge build failed — see $outdir/bridge-build.log"
+        return 1
+    fi
+    local bridge_so="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/libdrm_inproc_bridge.so"
+    if [ ! -f "$bridge_so" ]; then
+        err "libdrm_inproc_bridge.so not produced at $bridge_so"
+        return 1
+    fi
+    ok "bridge .so built: $(du -b "$bridge_so" | awk '{print $1}') bytes"
+
+    log "[C/H] d8 --min-api 13 -> HelloColorApk.dex + InProcessAppLauncher.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir/app" "$dexdir/launcher"
+    if ! "$D8" --min-api 13 --output "$dexdir/app" "${app_class_list[@]}" \
+            > "$outdir/d8-app.log" 2>&1; then
+        err "d8 app failed — see $outdir/d8-app.log"
+        return 1
+    fi
+    if ! "$D8" --min-api 13 --output "$dexdir/launcher" "${launcher_class_list[@]}" \
+            > "$outdir/d8-launcher.log" 2>&1; then
+        err "d8 launcher failed — see $outdir/d8-launcher.log"
+        return 1
+    fi
+    mv "$dexdir/app/classes.dex" "$dexdir/HelloColorApk.dex"
+    mv "$dexdir/launcher/classes.dex" "$dexdir/InProcAppLauncher.dex"
+    rmdir "$dexdir/app" "$dexdir/launcher" 2>/dev/null || true
+    ok "dex emitted: HelloColorApk.dex=$(du -b "$dexdir/HelloColorApk.dex" | awk '{print $1}')B "\
+"InProcAppLauncher.dex=$(du -b "$dexdir/InProcAppLauncher.dex" | awk '{print $1}')B"
+
+    log "[D/H] push dalvikvm-arm32-dyn + dex + .so"
+    hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
+    if [ ! -f "$dvm_dyn_host" ]; then
+        err "dalvikvm-arm32 dynamic missing at $dvm_dyn_host"
+        return 1
+    fi
+    hdc_send "$dvm_dyn_host" "$dvm_dyn_board" || return 1
+    hdc_shell "chmod 0755 $dvm_dyn_board" >/dev/null 2>&1
+    hdc_send "$dexdir/HelloColorApk.dex"      "$BOARD_DIR/HelloColorApk.dex"      || return 1
+    hdc_send "$dexdir/InProcAppLauncher.dex"  "$BOARD_DIR/InProcAppLauncher.dex"  || return 1
+    hdc_send "$bridge_so" "$BOARD_DIR/libdrm_inproc_bridge.so" || return 1
+    hdc_shell "chmod 0644 $BOARD_DIR/libdrm_inproc_bridge.so" >/dev/null 2>&1
+    # BCP files are stable across runs — just verify they exist.
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing BCP files on board (need aosp-shim-ohos.dex + core-android-x86.jar + direct-print-stream.jar in $BOARD_DIR/bcp/)"
+        return 1
+    fi
+    hdc_shell "ls -la $BOARD_DIR/HelloColorApk.dex $BOARD_DIR/InProcAppLauncher.dex $BOARD_DIR/libdrm_inproc_bridge.so" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex + .so pushed; BCP intact"
+
+    log "[E/H] check SELinux + capture DRM pre-state"
+    local enforce
+    enforce="$(hdc_shell 'getenforce' 2>&1 | tr -d '\r' | head -1)"
+    log "  getenforce: $enforce (NOT changing — see brief)"
+    echo "getenforce=$enforce" > "$outdir/selinux.log"
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-pre.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/state" > "$outdir/drm-state-pre.txt" 2>&1
+    local composer_pid_pre
+    composer_pid_pre="$(hdc_shell 'ps -ef | grep composer_host | grep -v grep' 2>&1 | head -1 | awk '{print $2}' | tr -d '\r')"
+    log "  composer_host pid (pre): ${composer_pid_pre:-(none)}"
+
+    log "[F/H] (note) composer_host kill happens INSIDE libdrm_inproc_bridge.so"
+
+    log "[G/H] invoke dalvikvm-arm32-dyn (in-process app, hold=${hold_secs}s)"
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="$bcp:$BOARD_DIR/HelloColorApk.dex"
+    bcp="$bcp:$BOARD_DIR/InProcAppLauncher.dex"
+    # Wipe per-run dalvik-cache for stable dexopt across --arch switches
+    # (same rationale documented in cmd_hello_dlopen_real).
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloColorApk* /data/dalvik-cache/data@local@tmp@westlake@InProcAppLauncher* /data/dalvik-cache/data@local@tmp@westlake@bcp@* 2>/dev/null;"
+    cmd="$cmd LD_LIBRARY_PATH=$BOARD_DIR:/system/lib:/system/lib/chipset-sdk-sp:/system/lib/platformsdk:/system/lib/ndk"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR $dvm_dyn_board"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd -Djava.library.path=$BOARD_DIR"
+    cmd="$cmd com.westlake.ohostests.inproc.InProcessAppLauncher"
+    cmd="$cmd $activity_spec $hold_secs"
+    log "  cmd: $cmd"
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
+        warn "dalvikvm exited non-zero — capturing output regardless"
+    }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr ($(wc -l < "$outdir/dalvikvm.stderr") lines)"
+
+    log "[H/H] capture DRM post-state + grade markers"
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" > "$outdir/drm-clients-post.txt" 2>&1
+    hdc_shell "cat /sys/kernel/debug/dri/0/state" > "$outdir/drm-state-post.txt" 2>&1
+    local composer_pid_post
+    composer_pid_post="$(hdc_shell 'ps -ef | grep composer_host | grep -v grep' 2>&1 | head -1 | awk '{print $2}' | tr -d '\r')"
+    log "  composer_host pid (post): ${composer_pid_post:-(none)}"
+
+    # Echo step lines for triage.
+    grep -E "^(inproc-app-launcher|HelloColorApk\.)" "$outdir/dalvikvm.stdout" | tr -d '\r' | while IFS= read -r line; do
+        log "  $line"
+    done
+
+    local has_present_rc0=0 has_fill_argb=0 has_oncreate=0 has_fail=0
+    local rc_line
+    rc_line="$(grep -E '^inproc-app-launcher present rc=' "$outdir/dalvikvm.stdout" 2>/dev/null | tail -1 | tr -d '\r')"
+    case "$rc_line" in
+        *"rc=0 "*) has_present_rc0=1 ;;
+    esac
+    case "$rc_line" in
+        *"fill=argb"*) has_fill_argb=1 ;;
+    esac
+    grep -qF "HelloColorApk.onCreate reached" "$outdir/dalvikvm.stdout" 2>/dev/null && has_oncreate=1
+    grep -qE 'inproc-app-launcher.*(FAIL|step.*FAIL)' "$outdir/dalvikvm.stdout" 2>/dev/null && has_fail=1
+    log "  has_oncreate=$has_oncreate has_present_rc0=$has_present_rc0 has_fill_argb=$has_fill_argb has_fail=$has_fail"
+    log "  rc line: $rc_line"
+
+    if [ "$has_oncreate" -eq 1 ] && [ "$has_present_rc0" -eq 1 ] \
+       && [ "$has_fill_argb" -eq 1 ] && [ "$has_fail" -eq 0 ]; then
+        ok "${GREEN}${BOLD}inproc-app PASS${RESET}: real Activity pixel reached DSI panel in-process"
+        log "  panel was BLUE for ~${hold_secs}s during this run (color from ColorView.onDraw)"
+        log "  PHONE-CAMERA: capture a photo of the DSI panel showing BLUE during the hold"
+        log "    and save it into $outdir/ (filename like 'panel-blue.jpg')"
+        echo "PASS rc_line=$rc_line" > "$outdir/result.txt"
+        return 0
+    elif [ "$has_oncreate" -eq 1 ]; then
+        warn "Activity ran but pixel pipeline failed (rc0=$has_present_rc0 argb=$has_fill_argb fail=$has_fail)"
+        echo "PARTIAL_ACTIVITY_NO_PIXEL rc0=$has_present_rc0 argb=$has_fill_argb rc_line=$rc_line" > "$outdir/result.txt"
+        return 1
+    else
+        err "inproc-app FAIL: Activity didn't reach onCreate"
+        echo "FAIL rc0=$has_present_rc0 argb=$has_fill_argb oncreate=$has_oncreate rc_line=$rc_line" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -1809,6 +2037,13 @@ Subcommands:
                       around the test (auto-respawns afterwards), drives
                       DSI-1 panel red via CREATE_DUMB+ADDFB2+SETCRTC.
                       Visible-pixel gate — phone-camera evidence required.
+  inproc-app          CR60-followup E12 (2026-05-15): real Android Activity
+                      onCreate → View.onDraw → SoftwareCanvas → BGRA →
+                      DrmInprocessPresenter. Default target is
+                      :hello-color-apk (BLUE Activity, distinguishable
+                      from E9b's hardcoded RED). PASS criterion: marker
+                      'present rc=0' AND 'fill=argb'. Phone-camera evidence
+                      of BLUE panel is the visible-pixel gate.
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|arm32-static|auto
@@ -1875,6 +2110,7 @@ main() {
         xcomponent-test)    cmd_xcomponent_test "$@" ;;
         hello-dlopen-real)  cmd_hello_dlopen_real "$@" ;;
         hello-drm-inprocess) cmd_hello_drm_inprocess "$@" ;;
+        inproc-app)         cmd_inproc_app "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

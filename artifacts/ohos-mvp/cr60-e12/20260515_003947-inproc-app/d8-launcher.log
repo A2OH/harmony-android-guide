@@ -1,0 +1,2 @@
+Warning in /home/dspfac/android-to-openharmony-migration/ohos-tests-gradle/inproc-app-launcher/build/classes/java/main/com/westlake/ohostests/inproc/SoftwareCanvas.class:
+Type `android.graphics.Canvas` was not found, it is required for default or static interface methods desugaring of `com.westlake.ohostests.inproc.SoftwareCanvas`

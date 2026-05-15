@@ -103,6 +103,7 @@ extern int usleep(unsigned int useconds);
 #define DRM_FAIL_MMAP       19
 #define DRM_FAIL_ADDFB      20
 #define DRM_FAIL_SETCRTC    21
+#define DRM_FAIL_BAD_DIMS   22  /* E12: caller's argb dims != DRM mode */
 
 /* Last-error message for diagnostics. Populated whenever
  * nativePresent returns nonzero. */
@@ -161,7 +162,17 @@ static int kill_composer_host(void) {
 
 /* Core scan-out worker. Returns 0 on success, one of the DRM_FAIL_*
  * codes on failure. Mirrors drm_present.c main() but without stdin
- * read (we fill RED directly) and without argv parsing.
+ * read and without argv parsing.
+ *
+ * Fill source (E12 extension, 2026-05-15):
+ *   - argb == NULL → fill BO with hardcoded RED (E9b semantics; the
+ *     `nativePresent(int)` JNI entry point uses this).
+ *   - argb != NULL → copy `argb` (length argb_count, must equal w*h)
+ *     into the BO row by row, converting ARGB8888 -> BGRA bytes the
+ *     rk3568 DRM driver's XRGB8888 dumb BO expects. The
+ *     `nativePresentArgb(int[], int, int, int)` JNI entry point uses
+ *     this. If argb_w/argb_h don't match the picked DRM mode, the
+ *     function returns DRM_FAIL_BAD_DIMS without touching DRM state.
  *
  * Composer-host coexistence:
  *   - Before SET_MASTER, we kill composer_host. hdf_devmgr WILL
@@ -172,7 +183,11 @@ static int kill_composer_host(void) {
  *     window is small but real: the new composer_host has to fork,
  *     reopen card0, and call SET_MASTER itself, which takes 50-200 ms.
  */
-static int drm_present_red(int hold_secs) {
+static int drm_present_fill(int hold_secs,
+                            const uint32_t *argb,
+                            size_t argb_count,
+                            unsigned argb_w,
+                            unsigned argb_h) {
     /* Step 0: clear the path. composer_host respawns fast, so we
      * retry kill+open+master a few times. */
     int drm_fd = -1;
@@ -350,21 +365,71 @@ static int drm_present_red(int hold_secs) {
         return DRM_FAIL_MMAP;
     }
 
-    /* Fill BO with RED. rk3568 dumb BO is XRGB8888 in memory (little
-     * endian: bytes B G R X per pixel). Pure red = 00 00 FF FF.
-     * Write per row, respecting cdumb.pitch (may exceed w*4 due to
-     * alignment). */
-    size_t row_bytes = (size_t)pick_mode.hdisplay * 4;
-    for (size_t y = 0; y < (size_t)pick_mode.vdisplay; y++) {
-        uint8_t *row = bo + y * (size_t)cdumb.pitch;
-        for (size_t x = 0; x < (size_t)pick_mode.hdisplay; x++) {
-            uint8_t *p = row + x * 4;
-            p[0] = 0x00;  /* B */
-            p[1] = 0x00;  /* G */
-            p[2] = 0xFF;  /* R */
-            p[3] = 0xFF;  /* X (alpha-byte; rk3568 ignores) */
+    /* Fill BO. rk3568 dumb BO is XRGB8888 in memory (little endian:
+     * bytes B G R X per pixel; alpha-byte ignored). Write per row,
+     * respecting cdumb.pitch (may exceed w*4 due to alignment).
+     *
+     * E12 fill source selection:
+     *   - argb == NULL: hardcoded RED (E9b semantics).
+     *   - argb != NULL: caller-supplied ARGB8888 grid. Element layout
+     *     is 0xAARRGGBB; we extract R/G/B and write B,G,R,X bytes.
+     *     If argb_w/argb_h don't match the DRM mode we bail out with
+     *     DRM_FAIL_BAD_DIMS — caller should rebuild buffer to mode dims.
+     */
+    if (argb != NULL) {
+        if ((unsigned)argb_w != (unsigned)pick_mode.hdisplay
+                || (unsigned)argb_h != (unsigned)pick_mode.vdisplay) {
+            drm_set_errf("argb dims %ux%u != mode %ux%u",
+                         argb_w, argb_h,
+                         pick_mode.hdisplay, pick_mode.vdisplay);
+            munmap(bo, (size_t)cdumb.size);
+            /* The created dumb BO and acquired master still need
+             * teardown; route through the same teardown path the
+             * success branch uses to avoid leaks. We have not yet
+             * called ADDFB2 so there's no fb_id to RM. */
+            struct drm_mode_destroy_dumb ddumb_bad;
+            memset(&ddumb_bad, 0, sizeof(ddumb_bad));
+            ddumb_bad.handle = cdumb.handle;
+            ioctl(drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &ddumb_bad);
+            ioctl(drm_fd, DRM_IOCTL_DROP_MASTER, 0);
+            close(drm_fd);
+            return DRM_FAIL_BAD_DIMS;
         }
-        (void)row_bytes;  /* silence unused warning if optimizer drops */
+        if (argb_count != (size_t)argb_w * (size_t)argb_h) {
+            drm_set_errf("argb count %zu != w*h %u",
+                         argb_count, argb_w * argb_h);
+            munmap(bo, (size_t)cdumb.size);
+            struct drm_mode_destroy_dumb ddumb_bad;
+            memset(&ddumb_bad, 0, sizeof(ddumb_bad));
+            ddumb_bad.handle = cdumb.handle;
+            ioctl(drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &ddumb_bad);
+            ioctl(drm_fd, DRM_IOCTL_DROP_MASTER, 0);
+            close(drm_fd);
+            return DRM_FAIL_BAD_DIMS;
+        }
+        for (size_t y = 0; y < (size_t)pick_mode.vdisplay; y++) {
+            uint8_t *row = bo + y * (size_t)cdumb.pitch;
+            const uint32_t *src = argb + y * (size_t)argb_w;
+            for (size_t x = 0; x < (size_t)pick_mode.hdisplay; x++) {
+                uint8_t *p = row + x * 4;
+                uint32_t c = src[x];
+                p[0] = (uint8_t)(c & 0xff);          /* B */
+                p[1] = (uint8_t)((c >> 8) & 0xff);   /* G */
+                p[2] = (uint8_t)((c >> 16) & 0xff);  /* R */
+                p[3] = (uint8_t)((c >> 24) & 0xff);  /* X (alpha) */
+            }
+        }
+    } else {
+        for (size_t y = 0; y < (size_t)pick_mode.vdisplay; y++) {
+            uint8_t *row = bo + y * (size_t)cdumb.pitch;
+            for (size_t x = 0; x < (size_t)pick_mode.hdisplay; x++) {
+                uint8_t *p = row + x * 4;
+                p[0] = 0x00;  /* B */
+                p[1] = 0x00;  /* G */
+                p[2] = 0xFF;  /* R */
+                p[3] = 0xFF;  /* X (alpha-byte; rk3568 ignores) */
+            }
+        }
     }
 
     /* Add framebuffer + bind. */
@@ -420,18 +485,26 @@ static int drm_present_red(int hold_secs) {
     close(drm_fd);
 
     /* Side-channel info for the Java caller — encoded as the result
-     * marker; success returns 0. */
+     * marker; success returns 0. E12 distinguishes "fill=red" (E9b
+     * hardcoded path) from "fill=argb" (caller-supplied buffer) so
+     * driver-side log greps can tell which entry point ran. */
     snprintf(g_drm_err, sizeof(g_drm_err),
-             "OK crtc=%u fb=%u conn=%u mode=%ux%u hold=%ds",
+             "OK crtc=%u fb=%u conn=%u mode=%ux%u hold=%ds fill=%s",
              pick_crtc, fb2.fb_id, pick_connector,
-             pick_mode.hdisplay, pick_mode.vdisplay, hold_secs);
+             pick_mode.hdisplay, pick_mode.vdisplay, hold_secs,
+             argb ? "argb" : "red");
     return DRM_OK;
 }
 
 /* =========================================================================
- * JNI entry points. Class: com.westlake.ohostests.hello.DrmInProcessBridge
+ * JNI entry points.
  *
- *   static int  nativePresent(int holdSecs)
+ * E9b class: com.westlake.ohostests.hello.DrmInProcessBridge
+ *   static int  nativePresent(int holdSecs)         - hardcoded RED
+ *   static String nativeLastError()
+ *
+ * E12 class: com.westlake.ohostests.inproc.DrmInprocessPresenter
+ *   static int  nativePresentArgb(int[], int, int, int)  - caller-supplied buffer
  *   static String nativeLastError()
  * ========================================================================= */
 
@@ -443,11 +516,68 @@ Java_com_westlake_ohostests_hello_DrmInProcessBridge_nativePresent(
     int hs = (int)holdSecs;
     if (hs < 0) hs = 0;
     if (hs > 120) hs = 120;
-    return (jint)drm_present_red(hs);
+    (void)env; (void)cls;
+    return (jint)drm_present_fill(hs, NULL, 0, 0, 0);
 }
 
 JNIEXPORT jstring JNICALL
 Java_com_westlake_ohostests_hello_DrmInProcessBridge_nativeLastError(
         JNIEnv *env, jclass cls) {
+    (void)cls;
+    return (*env)->NewStringUTF(env, g_drm_err);
+}
+
+/* ---- E12 entry points ------------------------------------------------- */
+
+JNIEXPORT jint JNICALL
+Java_com_westlake_ohostests_inproc_DrmInprocessPresenter_nativePresentArgb(
+        JNIEnv *env, jclass cls, jintArray argb_arr,
+        jint w, jint h, jint holdSecs) {
+    (void)cls;
+    if (argb_arr == NULL) {
+        drm_set_errf("nativePresentArgb: argb_arr is NULL");
+        return (jint)DRM_FAIL_BAD_DIMS;
+    }
+    if (w <= 0 || h <= 0 || w > 8192 || h > 8192) {
+        drm_set_errf("nativePresentArgb: bogus dims %dx%d", (int)w, (int)h);
+        return (jint)DRM_FAIL_BAD_DIMS;
+    }
+    jsize n = (*env)->GetArrayLength(env, argb_arr);
+    /* sanity: n == w*h */
+    if ((size_t)n != (size_t)w * (size_t)h) {
+        drm_set_errf("nativePresentArgb: array length %d != w*h %d",
+                     (int)n, (int)w * (int)h);
+        return (jint)DRM_FAIL_BAD_DIMS;
+    }
+    /* Pin the array. GetIntArrayElements may return a copy on dalvik-
+     * kitkat; that's fine — we just need a contiguous uint32_t buffer
+     * for the scan-out loop. JNI_ABORT on release because we don't
+     * mutate the buffer. */
+    jint *pixels = (*env)->GetIntArrayElements(env, argb_arr, NULL);
+    if (pixels == NULL) {
+        drm_set_errf("nativePresentArgb: GetIntArrayElements returned NULL");
+        return (jint)DRM_FAIL_BAD_DIMS;
+    }
+
+    int hs = (int)holdSecs;
+    if (hs < 0) hs = 0;
+    if (hs > 120) hs = 120;
+
+    /* The dalvik-kitkat jint is 32-bit signed; the bridge wants
+     * uint32_t. Reinterpret is bit-equivalent. */
+    int rc = drm_present_fill(hs,
+                              (const uint32_t *)pixels,
+                              (size_t)n,
+                              (unsigned)w,
+                              (unsigned)h);
+
+    (*env)->ReleaseIntArrayElements(env, argb_arr, pixels, JNI_ABORT);
+    return (jint)rc;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_westlake_ohostests_inproc_DrmInprocessPresenter_nativeLastError(
+        JNIEnv *env, jclass cls) {
+    (void)cls;
     return (*env)->NewStringUTF(env, g_drm_err);
 }

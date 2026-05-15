@@ -1,0 +1,1 @@
+PASS rc_line=inproc-app-launcher present rc=0 reason=OK crtc=92 fb=161 conn=159 mode=720x1280 hold=10s fill=argb[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x20100071

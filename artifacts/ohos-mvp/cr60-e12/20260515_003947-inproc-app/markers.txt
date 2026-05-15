@@ -1,0 +1,26 @@
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloColorApk.dex:/data/local/tmp/westlake/InProcAppLauncher.dex'
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloColorApk.dex:/data/local/tmp/westlake/InProcAppLauncher.dex'
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/HelloColorApk.dex' '(null)' is '/data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex'
+[V/dalvikvm] dvmRawDexFileOpen: Checking cache for /data/local/tmp/westlake/HelloColorApk.dex (/data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex (fd=6, boot=1)
+[D/dalvikvm] DexOpt: --- BEGIN 'HelloColorApk.dex' (bootstrap=1) ---
+[V/dalvikvm] Args: fd=6 off=40 len=2776 name='/data/local/tmp/westlake/HelloColorApk.dex' mod=0x5fefce95 crc=0xe341f15c flg=61 (argc=4)
+[V/dalvikvm] Continuing optimization (/data/local/tmp/westlake/HelloColorApk.dex, isb=1)
+[D/dalvikvm] DexOpt: --- END 'HelloColorApk.dex' (success) ---
+[D/dalvikvm] DEX prep '/data/local/tmp/westlake/HelloColorApk.dex': copy in 0ms, rewrite 26ms
+[V/dalvikvm] Successfully opened '/data/local/tmp/westlake/HelloColorApk.dex'
+[V/dalvikvm] DEP: '/data/local/tmp/westlake/HelloColorApk.dex'
+[V/dalvikvm]   bootclasspath is '/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloColorApk.dex'
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/HelloColorApk.dex' '(null)' is '/data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex'
+[V/dalvikvm] dvmRawDexFileOpen: Checking cache for /data/local/tmp/westlake/HelloColorApk.dex (/data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex (fd=7, boot=1)
+[V/dalvikvm] Successfully opened '/data/local/tmp/westlake/HelloColorApk.dex'
+[V/dalvikvm] +++ DexOpt: found dep '/data/dalvik-cache/data@local@tmp@westlake@HelloColorApk.dex'
+inproc-app-launcher-start[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x1d600071
+HelloColorApk.onCreate reached pid=15083[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x1e500071
+HelloColorApk.setContentView returned[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x1e700071
+HelloColorApk.onCreate done drawView=com.westlake.ohostests.helloc.ColorView[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x1e900071
+inproc-app-launcher canvas sample(0,0)=0xff0000ff mid=0xff0000ff hasBackground=true bgARGB=0xff0000ff[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x1f500071
+inproc-app-launcher present rc=0 reason=OK crtc=92 fb=161 conn=159 mode=720x1280 hold=10s fill=argb[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x20100071
+HelloColorApk.onDestroy reached[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x20300071
+inproc-app-launcher-done passed=5 failed=0[W/dalvikvm] addLocalReference: obj=0xf2b0cbc0 -> jobj=0x20700071
