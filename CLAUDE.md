@@ -1,5 +1,29 @@
 # Westlake -- Build & Development Guide
 
+## ARCHITECTURE RULE (read before any code change)
+
+**Westlake is an architectural Android-on-OHOS engine, not a per-app demo.**
+
+You MUST NOT add per-app hardcoded shortcuts to the shim. Every time an app fails, ask "which Android API surface is incomplete?" and fix that surface generically. The right answer is almost never "branch on package name" or "hardcode a layout id" or "ship a per-app resource map."
+
+Anti-patterns that are FORBIDDEN:
+- Per-app `if (pkg.startsWith("com.foo."))` branches in shim methods.
+- Per-app generated resource maps like `NoiceResourceMap.java` / `McdStringMap.java`.
+- Per-app hardcoded layout/menu/string IDs in inflater/menu code paths.
+- Per-app branding switches in fallback views.
+- Per-app timeout extensions in lifecycle code.
+- Per-app overlay text injected into a view tree.
+
+The correct architecture for running an unmodified Android app:
+1. Real Android `framework.jar` on the bootclasspath, not partial Java reimplementations.
+2. Real `AssetManager` / `Resources` backed by the APK, not parser hacks.
+3. Stubs ONLY at the JNI / native boundary (graphics natives, system services, IPC). Stubs return safe defaults or redirect to OHOS equivalents.
+4. Real Fragment / coroutines / Hilt — fix root causes (deadlocks, missing dispatchers) at the framework layer, never per-app.
+
+If a generic fix isn't tractable in one session, document the gap and STOP. Do not ship the per-app shortcut as a substitute. Better to leave the screen blank with an honest gap report than to demo a fake-looking-correct UI.
+
+See `~/.claude/projects/-home-dspfac-openharmony/memory/feedback_no_per_app_hacks.md` for context.
+
 ## What This Project Is
 
 This project runs **unmodified Android APKs on OpenHarmony** using:
