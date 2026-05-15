@@ -1832,14 +1832,66 @@ cmd_inproc_app() {
     local dvm_dyn_board="/data/local/tmp/dalvikvm-arm32-dyn"
     local dvm_dyn_host="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
     local hold_secs="${INPROC_APP_HOLD_SECS:-10}"
-    # Activity spec; defaults to :hello-color-apk. The brief allows
-    # --apk overrides for noice/mcd (stretch); we don't wire those yet.
-    local activity_spec="${1:-com.westlake.ohostests.helloc/.MainActivity}"
 
-    local outdir="$ARTIFACT_ROOT/cr60-e12/$TS-inproc-app"
+    # CR60 E13 (2026-05-15): parse --apk <name> for noice/mcd-style real-app
+    # mode. The manifest values are pulled from the on-disk APK at
+    # `/tmp/cr40-noice/noice.apk` (or any --apk-path override) so the
+    # launcher's args remain generic — no per-app branches in the script
+    # body or the launcher itself.
+    local apk_alias=""           # "noice", "mcd", or ""
+    local apk_path=""            # /path/to/app.apk
+    local activity_spec=""
+    local app_class=""           # FQCN of the Application class
+    local fallback_argb=""       # hex (overrides launcher default WHITE)
+    local outdir_subdir="cr60-e12"
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --apk)
+                apk_alias="$2"; shift 2 ;;
+            --apk-path)
+                apk_path="$2"; shift 2 ;;
+            --apk-activity)
+                activity_spec="$2"; shift 2 ;;
+            --apk-app)
+                app_class="$2"; shift 2 ;;
+            --fallback-argb)
+                fallback_argb="$2"; shift 2 ;;
+            *)
+                # First positional is treated as activity_spec for back-compat
+                if [ -z "$activity_spec" ]; then
+                    activity_spec="$1"
+                fi
+                shift ;;
+        esac
+    done
+    case "$apk_alias" in
+        noice)
+            # noice values — extracted from
+            # /tmp/cr40-noice/noice.apk via aapt2 dump xmltree (versionCode=72,
+            # versionName=2.5.7, minSdk=21, compileSdk=34).
+            apk_path="${apk_path:-/tmp/cr40-noice/noice.apk}"
+            activity_spec="${activity_spec:-com.github.ashutoshgngwr.noice/.activity.MainActivity}"
+            app_class="${app_class:-com.github.ashutoshgngwr.noice.NoiceApplication}"
+            outdir_subdir="cr60-e13-noice"
+            ;;
+        "")
+            # E12 smoke path (default) — keep hello-color-apk routing.
+            activity_spec="${activity_spec:-com.westlake.ohostests.helloc/.MainActivity}"
+            ;;
+        *)
+            err "unknown --apk alias '$apk_alias' (supported: noice)"
+            return 1 ;;
+    esac
+
+    local outdir="$ARTIFACT_ROOT/$outdir_subdir/$TS-inproc-app"
     mkdir -p "$outdir"
-    log "${BOLD}== CR60-followup E12 inproc-app -> $outdir hold=${hold_secs}s ==${RESET}"
+    log "${BOLD}== CR60-followup inproc-app -> $outdir hold=${hold_secs}s ==${RESET}"
     log "  activity: $activity_spec"
+    if [ -n "$apk_alias" ]; then
+        log "  --apk:    $apk_alias (apk-mode: real-Android-style launch)"
+        log "  apk-path: $apk_path"
+        log "  app-class: $app_class"
+    fi
 
     log "[A/H] gradle :hello-color-apk:assembleDebug + :inproc-app-launcher:compileJava"
     if ! (cd "$GRADLE_DIR" && ./gradlew :hello-color-apk:assembleDebug :inproc-app-launcher:compileJava --no-daemon -q) \
@@ -1900,6 +1952,58 @@ cmd_inproc_app() {
     ok "dex emitted: HelloColorApk.dex=$(du -b "$dexdir/HelloColorApk.dex" | awk '{print $1}')B "\
 "InProcAppLauncher.dex=$(du -b "$dexdir/InProcAppLauncher.dex" | awk '{print $1}')B"
 
+    # E13 (apk-mode): redex the target APK's classes.dex with d8
+    # --min-api 13 so dalvik-kitkat can dexopt it without choking on
+    # newer-than-035 bytecodes. (noice's classes.dex is multidex-free —
+    # baseline check in the brief.)
+    local apk_dex_local=""
+    local apk_dex_board=""
+    if [ -n "$apk_alias" ]; then
+        if [ ! -f "$apk_path" ]; then
+            err "apk not found at $apk_path (required for --apk $apk_alias)"
+            return 1
+        fi
+        local apk_redex="$outdir/apk-redex"
+        mkdir -p "$apk_redex/unzipped" "$apk_redex/dexed"
+        log "[C2/H] extract + d8 --min-api 13 $(basename "$apk_path")"
+        if ! unzip -q -o "$apk_path" classes*.dex -d "$apk_redex/unzipped" \
+                > "$outdir/apk-unzip.log" 2>&1; then
+            err "unzip $apk_path failed — see $outdir/apk-unzip.log"
+            return 1
+        fi
+        # Multi-dex support: feed every classes*.dex to d8 in one go.
+        local input_dex_files=()
+        while IFS= read -r f; do
+            input_dex_files+=("$f")
+        done < <(find "$apk_redex/unzipped" -maxdepth 1 -name 'classes*.dex' | sort)
+        if [ ${#input_dex_files[@]} -eq 0 ]; then
+            err "no classes*.dex in $apk_path"
+            return 1
+        fi
+        if ! "$D8" --min-api 13 --release --output "$apk_redex/dexed" \
+                "${input_dex_files[@]}" \
+                > "$outdir/apk-d8.log" 2>&1; then
+            err "d8 of $apk_path failed — see $outdir/apk-d8.log"
+            return 1
+        fi
+        # d8 emits classes.dex (and classes2.dex etc if input was big).
+        local n_out
+        n_out=$(find "$apk_redex/dexed" -maxdepth 1 -name 'classes*.dex' | wc -l)
+        if [ "$n_out" -ne 1 ]; then
+            warn "d8 emitted $n_out output dex files — apk-mode currently"
+            warn "  only pushes the primary classes.dex. Multi-dex apps may"
+            warn "  hit ClassNotFound for classes in classes2.dex etc."
+            warn "  (noice's classes.dex is single-dex per the E13 brief.)"
+        fi
+        apk_dex_local="$apk_redex/dexed/classes.dex"
+        if [ ! -f "$apk_dex_local" ]; then
+            err "primary classes.dex missing after d8 — check $outdir/apk-d8.log"
+            return 1
+        fi
+        apk_dex_board="$BOARD_DIR/${apk_alias}-classes-min13.dex"
+        ok "apk redex: $(du -b "$apk_dex_local" | awk '{print $1}')B -> $apk_dex_board"
+    fi
+
     log "[D/H] push dalvikvm-arm32-dyn + dex + .so"
     hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
     if [ ! -f "$dvm_dyn_host" ]; then
@@ -1912,6 +2016,10 @@ cmd_inproc_app() {
     hdc_send "$dexdir/InProcAppLauncher.dex"  "$BOARD_DIR/InProcAppLauncher.dex"  || return 1
     hdc_send "$bridge_so" "$BOARD_DIR/libdrm_inproc_bridge.so" || return 1
     hdc_shell "chmod 0644 $BOARD_DIR/libdrm_inproc_bridge.so" >/dev/null 2>&1
+    if [ -n "$apk_dex_local" ]; then
+        hdc_send "$apk_dex_local" "$apk_dex_board" || return 1
+        hdc_shell "chmod 0644 $apk_dex_board" >/dev/null 2>&1
+    fi
     # BCP files are stable across runs — just verify they exist.
     local bcp_check
     bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/aosp-shim-ohos.dex $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
@@ -1942,15 +2050,38 @@ cmd_inproc_app() {
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
     bcp="$bcp:$BOARD_DIR/HelloColorApk.dex"
     bcp="$bcp:$BOARD_DIR/InProcAppLauncher.dex"
+    if [ -n "$apk_dex_board" ]; then
+        bcp="$bcp:$apk_dex_board"
+    fi
     # Wipe per-run dalvik-cache for stable dexopt across --arch switches
-    # (same rationale documented in cmd_hello_dlopen_real).
-    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloColorApk* /data/dalvik-cache/data@local@tmp@westlake@InProcAppLauncher* /data/dalvik-cache/data@local@tmp@westlake@bcp@* 2>/dev/null;"
+    # (same rationale documented in cmd_hello_dlopen_real). E13 (apk-mode):
+    # also wipe the cached oat/odex for the noice/mcd dex so its dexopt
+    # re-runs cleanly on each invocation (apk-mode redex changes the
+    # checksum each session via d8 timestamp metadata).
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloColorApk* /data/dalvik-cache/data@local@tmp@westlake@InProcAppLauncher* /data/dalvik-cache/data@local@tmp@westlake@bcp@* /data/dalvik-cache/data@local@tmp@westlake@${apk_alias}* 2>/dev/null;"
     cmd="$cmd LD_LIBRARY_PATH=$BOARD_DIR:/system/lib:/system/lib/chipset-sdk-sp:/system/lib/platformsdk:/system/lib/ndk"
     cmd="$cmd ANDROID_ROOT=$BOARD_DIR $dvm_dyn_board"
+    # E13 apk-mode (2026-05-15): disable the dex verifier so noice's
+    # R8-shrunk androidx code can be loaded. Without this, dalvik-kitkat's
+    # bytecode verifier rejects intermediate classes (e.g. Le/q;
+    # `dispatchKeyEvent` invoke-virtual on Lc0/p;) because the inherited
+    # superclass chain spans R8-renamed types it can't resolve. The smoke
+    # path (--apk not set) keeps strict verification so the
+    # :hello-color-apk regression remains tight.
+    if [ -n "$apk_alias" ]; then
+        cmd="$cmd -Xverify:none -Xdexopt:none"
+    fi
     cmd="$cmd -Xbootclasspath:$bcp"
     cmd="$cmd -Djava.library.path=$BOARD_DIR"
     cmd="$cmd com.westlake.ohostests.inproc.InProcessAppLauncher"
-    cmd="$cmd $activity_spec $hold_secs"
+    cmd="$cmd $activity_spec"
+    if [ -n "$app_class" ]; then
+        cmd="$cmd --apk-app $app_class"
+    fi
+    if [ -n "$fallback_argb" ]; then
+        cmd="$cmd --fallback-argb $fallback_argb"
+    fi
+    cmd="$cmd $hold_secs"
     log "  cmd: $cmd"
     hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
         warn "dalvikvm exited non-zero — capturing output regardless"
@@ -1983,6 +2114,56 @@ cmd_inproc_app() {
     grep -qE 'inproc-app-launcher.*(FAIL|step.*FAIL)' "$outdir/dalvikvm.stdout" 2>/dev/null && has_fail=1
     log "  has_oncreate=$has_oncreate has_present_rc0=$has_present_rc0 has_fill_argb=$has_fill_argb has_fail=$has_fail"
     log "  rc line: $rc_line"
+
+    # E13 (apk-mode): grade stage A/B/C/D markers.
+    if [ -n "$apk_alias" ]; then
+        local has_stage_a has_stage_b has_stage_c has_stage_d
+        # grep -c on no matches exits with status 1 AND emits "0", so
+        # `|| echo 0` would append a second "0" — capture both via
+        # explicit gate.
+        has_stage_a=$(grep -cF 'inproc-app-launcher stage A:' "$outdir/dalvikvm.stdout" 2>/dev/null); has_stage_a="${has_stage_a:-0}"
+        has_stage_b=$(grep -cF 'inproc-app-launcher stage B:' "$outdir/dalvikvm.stdout" 2>/dev/null); has_stage_b="${has_stage_b:-0}"
+        has_stage_c=$(grep -cF 'inproc-app-launcher stage C:' "$outdir/dalvikvm.stdout" 2>/dev/null); has_stage_c="${has_stage_c:-0}"
+        has_stage_d=$(grep -cF 'inproc-app-launcher stage D:' "$outdir/dalvikvm.stdout" 2>/dev/null); has_stage_d="${has_stage_d:-0}"
+        log "  E13 stage markers: A=$has_stage_a B=$has_stage_b C=$has_stage_c D=$has_stage_d"
+        {
+            echo "apk_alias=$apk_alias"
+            echo "activity=$activity_spec"
+            echo "app_class=$app_class"
+            echo "stage_a=$has_stage_a"
+            echo "stage_b=$has_stage_b"
+            echo "stage_c=$has_stage_c"
+            echo "stage_d=$has_stage_d"
+            echo "rc_line=$rc_line"
+        } > "$outdir/e13-stages.txt"
+        # In apk-mode, hello-color-apk markers don't apply. Use stage C
+        # as the "Activity.onCreate ran" gate, and stage D as "pixel pushed".
+        local has_apk_oncreate=0
+        [ "$has_stage_c" -gt 0 ] && has_apk_oncreate=1
+        if [ "$has_apk_oncreate" -eq 1 ] && [ "$has_present_rc0" -eq 1 ] \
+                && [ "$has_fail" -eq 0 ]; then
+            ok "${GREEN}${BOLD}inproc-app PASS (E13 $apk_alias)${RESET}: $apk_alias's Activity.onCreate ran AND pixel pushed"
+            log "  stage A=$has_stage_a B=$has_stage_b C=$has_stage_c D=$has_stage_d"
+            echo "PASS_E13 apk=$apk_alias A=$has_stage_a B=$has_stage_b C=$has_stage_c D=$has_stage_d rc_line=$rc_line" > "$outdir/result.txt"
+            return 0
+        elif [ "$has_apk_oncreate" -eq 1 ]; then
+            warn "E13 $apk_alias: Activity onCreate ran but pixel pipeline failed"
+            echo "PARTIAL_E13_ACTIVITY_NO_PIXEL apk=$apk_alias C=$has_stage_c D=$has_stage_d rc_line=$rc_line" > "$outdir/result.txt"
+            return 1
+        elif [ "$has_stage_b" -gt 0 ]; then
+            warn "E13 $apk_alias: Application onCreate ran but Activity onCreate did NOT (stage C not reached)"
+            echo "PARTIAL_E13_APPLICATION_NO_ACTIVITY apk=$apk_alias B=$has_stage_b C=$has_stage_c" > "$outdir/result.txt"
+            return 1
+        elif [ "$has_stage_a" -gt 0 ]; then
+            warn "E13 $apk_alias: dex loaded (stage A) but Application did NOT instantiate (stage B not reached)"
+            echo "PARTIAL_E13_DEX_NO_APPLICATION apk=$apk_alias A=$has_stage_a B=$has_stage_b" > "$outdir/result.txt"
+            return 1
+        else
+            err "E13 $apk_alias FAIL: dex did NOT load (stage A not reached)"
+            echo "FAIL_E13 apk=$apk_alias A=$has_stage_a" > "$outdir/result.txt"
+            return 1
+        fi
+    fi
 
     if [ "$has_oncreate" -eq 1 ] && [ "$has_present_rc0" -eq 1 ] \
        && [ "$has_fill_argb" -eq 1 ] && [ "$has_fail" -eq 0 ]; then
@@ -2044,6 +2225,14 @@ Subcommands:
                       from E9b's hardcoded RED). PASS criterion: marker
                       'present rc=0' AND 'fill=argb'. Phone-camera evidence
                       of BLUE panel is the visible-pixel gate.
+                      E13 extension (2026-05-15): pass `--apk noice` to
+                      retarget at /tmp/cr40-noice/noice.apk. The script
+                      d8-redexes its classes.dex to min-api 13, stages on
+                      BCP, and runs the apk-mode launcher path which
+                      drives WestlakeActivityThread.launchActivity (full
+                      Application + Activity create + onCreate sequence).
+                      PASS criterion: stage C marker (Activity.onCreate
+                      returned) plus 'present rc=0'.
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|arm32-static|auto
