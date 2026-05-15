@@ -1,8 +1,16 @@
 # OHOS Phase 2 — MVP Validation Workstreams
 
 **Date:** 2026-05-14
-**Hardware:** Yue-D200 / DAYU200 dev board (rk3568, Cortex-A55 ×4, aarch64 userspace, OHOS 7.0.0.18 Beta1)
+**Hardware:** Yue-D200 / DAYU200 dev board (rk3568, Cortex-A55 ×4, **32-bit ARM userspace on aarch64 kernel**, OHOS 7.0.0.18 Beta1)
 **Goal:** smallest possible visible proof that Westlake can run unmodified Android APKs on OpenHarmony, before committing to the full 13-person-day Phase 2 roadmap (`CR41_PHASE2_OHOS_ROADMAP.md`).
+
+> **2026-05-14 strategic correction — bitness pivot.** Pre-flight (below) originally
+> recorded userspace as `aarch64`. Empirical re-verification on the board: kernel is
+> aarch64 but **userspace is 32-bit ARM only** (no `/system/lib64/`, all OS libs
+> 32-bit, dynamic linker `/lib/ld-musl-arm.so.1`). This invalidates the assumption
+> that our 64-bit dalvikvm can dlopen OHOS native libs in-process. Workstream E
+> (32-bit dalvikvm pivot) captures the corrective path; CR60 captures the rationale.
+> M6 daemon work (Steps 1-2) remains valid as a fallback / future 64-bit-board path.
 
 ---
 
@@ -12,7 +20,7 @@
 |---|---|
 | hdc connection | ✅ `dd011a414436314130101250040eac00` via USB on Windows host |
 | Kernel | Linux 6.6.101 SMP aarch64 Toybox (Apr 2026 build) |
-| Userspace bitness | aarch64 (`uname -m` → `aarch64`, `ld-musl-arm.so.1` is OHOS musl-aarch64 naming) |
+| Userspace bitness | **32-bit ARM** (`getconf LONG_BIT` → `32`; `/system/bin/sh` is `ELF 32-bit LSB arm, EABI5, dynamic (/lib/ld-musl-arm.so.1)`; no `/system/lib64/`, no `/vendor/lib64/`; kernel `uname -m` is `aarch64` but userspace is entirely 32-bit) |
 | CPU | 4× Cortex-A55 with FP/ASIMD/AES/CRC32/atomics/asimddp |
 | Storage | `/data` 19 GB free / `/system` 857 MB free |
 | **Binder devices** | ✅ `/dev/binder`, `/dev/hwbinder`, `/dev/vndbinder` all present |
@@ -186,6 +194,42 @@ See `artifacts/ohos-mvp/mvp2-red-square-drm/` for kernel evidence, the rendered 
 
 ---
 
+## Workstream E — 32-bit dalvikvm pivot (added 2026-05-14)
+
+**Goal:** match OHOS DAYU200 userspace bitness so dalvikvm can `dlopen` OHOS native libs in-process (XComponent, AudioRenderer, network, etc.) rather than tunneling everything through a 64-bit-side daemon.
+
+**Decision record:** `docs/engine/CR60_BITNESS_PIVOT_DECISION.md`.
+
+**Spike result (2026-05-14):** `docs/engine/CR60_SPIKE_RESULT.md`. E1-E5 PASS on real DAYU200; E6 driver landed. Both arches coexist; `scripts/run-ohos-test.sh --arch auto` picks arm32 on the rk3568 board, aarch64 on phones / future 64-bit ROMs. Recommendation: CONTINUE to dynamic-linked arm32 dalvikvm (~½ day) which unblocks full XComponent in-process.
+
+**Why now:** MVP-2 succeeded via DRM/KMS direct (commit `44686464`) and M6 daemon (commits `c32a219e`, `204a8fa0`) — but only because the daemon does the heavy lifting in 64-bit and pipes pixels over AF_UNIX. The same bitness mismatch will reappear for every OHOS native API we need (audio, network, input). Continuing on 64-bit costs M11 + M12 (~7-8 person-days) for cross-arch bridges that a 32-bit dalvikvm would never need. Pivot is cheaper.
+
+### Open work
+
+E1. **OHOS-MVP-016 — Rebuild `dalvikvm-arm32` on current source.** **DONE 2026-05-14.** 124/124 sources compiled; 7.7 MB 32-bit ARM EABI5 static binary at `dalvik-port/build-ohos-arm32/dalvikvm`. Inherited all CR59 fixes (ScopedShutdown, Libcore.os stubs) for free because they were bitness-neutral by construction.
+
+E2. **OHOS-MVP-017 — Port the 4-layer aarch64 SIGSEGV fix to ARM32.** **DONE 2026-05-14 (zero porting needed).** All 4 layers verified arch-agnostic in source; `u4` cast bug literally impossible on 32-bit.
+
+E3. **OHOS-MVP-018 — Validate MVP-0 on 32-bit binary.** **PASS 2026-05-14.** Same marker as aarch64. Evidence: `artifacts/ohos-mvp/cr60-arm32-spike/20260514_184734/mvp0/`.
+
+E4. **OHOS-MVP-019 — Validate MVP-1 on 32-bit binary.** **PASS 2026-05-14.** `OhosTrivialActivity.onCreate reached pid=9750` plus full step 0-6 launcher trace. Evidence: `artifacts/ohos-mvp/cr60-arm32-spike/20260514_184734/mvp1/`.
+
+E5. **OHOS-MVP-020 — Wire XComponent in-process (the actual win).** **Smoke test PASS 2026-05-14**: standalone 32-bit ARM dynamic ELF (`dalvik-port/compat/ohos_dlopen_smoke.c`) dlopen+dlsym's three OHOS native libs (libace_napi.z.so, libnative_window.so, libace_ndk.z.so) in-process and resolves `napi_get_undefined`, `OH_NativeWindow_NativeWindowRequestBuffer`, `OH_NativeXComponent_GetXComponentId`. Full integration (System.loadLibrary inside the VM) deferred to the followup gate (~½ day): rebuild `dalvikvm-arm32` as a dynamic PIE ELF using the same linkage pattern proved by the smoke test. Static musl `dlopen` cannot load arbitrary runtime SOs — only dynamic linkage unlocks System.loadLibrary inside the VM. See `CR60_SPIKE_RESULT.md`.
+
+E6. **OHOS-MVP-021 — Bitness-as-parameter discipline.** **DONE 2026-05-14.** `--arch aarch64|arm32|auto` flag in `scripts/run-ohos-test.sh`. Auto-detect via `hdc shell getconf LONG_BIT`. Both arches PASS MVP-0/1 through the unified driver; both builds coexist; zero `#ifdef __aarch64__` in shim or JNI bridge sources.
+
+### Spike bounds
+
+- **3-5 days** of focused work for E1-E5. Hard stop at 5 days: if MVP-0 doesn't run on 32-bit dalvikvm in that window, the spike is killed and the 64-bit + M6 daemon path resumes as primary. Either outcome is a useful answer.
+- **What stays even if spike fails:** M6 daemon (`c32a219e`), M6DrmClient (`204a8fa0`), DRM/KMS direct (`44686464`) — none of these are lost work.
+- **What stays even if spike succeeds:** the aarch64 dalvikvm build (for future boards / phones with 64-bit userspace). Bitness is a parameter, not a one-way pivot.
+
+### Reversibility (if 64-bit userspace ships on a later DAYU200 ROM)
+
+CR60 spells this out: switching back is ~2-4 days of revalidation, mostly because all V2 substrate / BCP / Java / daemon code is bitness-neutral. We never delete the 64-bit path — we just stop deploying it on boards that lack `/system/lib64/`. The 32-bit pivot is **additive**, not replacing.
+
+---
+
 ## Workstream D — Infrastructure (supports A/B/C in parallel)
 
 11. **OHOS-MVP-011 — Build script `scripts/run-ohos-test.sh`**
@@ -207,22 +251,24 @@ Issues will be opened as `PF-ohos-mvp-001..012` with the work items above, label
 ## Order of attack
 
 ```
-OHOS-MVP-001 (debug SIGSEGV)    ← critical blocker, MVP-0
+MVP-0 ✅ commit 2664900a
+MVP-1 ✅ commit 2d00f89f
+MVP-2 ✅ commit 44686464 (DRM/KMS direct)
+M6-OHOS-Step1 ✅ commit c32a219e (daemon + vsync)
+M6-OHOS-Step2 ✅ commit 204a8fa0 (Java client)
+CR59       ✅ Hilt unblocked (zero NPE in MainActivity.onCreate)
+       │
+       ▼ (strategic re-route — see CR60)
+Workstream E — 32-bit dalvikvm pivot       ← CURRENT
+       │
+       ▼ (if E succeeds)
+In-process XComponent / AudioRenderer / network — no daemon needed
        │
        ▼
-OHOS-MVP-002 + 003 (BCP + harness)   ← finishes MVP-0
-       │
-       ▼
-OHOS-MVP-004 + 005 (libbinder + V2 substrate on board)
-       │
-       ▼
-OHOS-MVP-006 + 007 (trivial APK + launcher)   ← finishes MVP-1
-       │
-       ▼
-OHOS-MVP-008 + 009 + 010 (display)   ← finishes MVP-2
+Per-app validation: noice (~2-3 weeks), McD (~3-4 weeks)
 ```
 
-Workstream D (infrastructure) runs continuously alongside.
+Workstream D (infrastructure) runs continuously alongside. If Workstream E hits a hard wall, fall back to the 64-bit + M6 daemon path that already passes MVP-2.
 
 ## Honest scope statement
 

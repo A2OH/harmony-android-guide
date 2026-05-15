@@ -51,6 +51,24 @@ HDC_SERIAL="${HDC_SERIAL:-dd011a414436314130101250040eac00}"
 WINSTAGE="${WINSTAGE:-/mnt/c/Users/dspfa/Dev/ohos-tools/stage}"
 BOARD_DIR="${BOARD_DIR:-/data/local/tmp/westlake}"
 
+# ---------- CR60: bitness-as-parameter (--arch) -----------------------------
+# We keep BOTH aarch64 and ARM32 dalvikvm builds alive. The CR60 spike
+# (2026-05-14) showed DAYU200 userspace is 32-bit only, so a 32-bit dalvikvm
+# can dlopen OHOS libs in-process. The aarch64 binary stays as the primary
+# for Android phones / any future 64-bit OHOS ROM.
+#
+# ARCH selection:
+#   --arch aarch64    use 64-bit dalvikvm (board path /data/local/tmp/dalvikvm)
+#   --arch arm32      use 32-bit dalvikvm (board path /data/local/tmp/dalvikvm-arm32)
+#   --arch auto       auto-detect via `hdc shell getconf LONG_BIT` (default)
+# Or set ARCH=aarch64 / arm32 / auto in env.
+#
+# Resolved by resolve_arch(); writes DALVIKVM_BOARD_PATH + DALVIKVM_HOST_PATH.
+# See docs/engine/CR60_BITNESS_PIVOT_DECISION.md.
+ARCH="${ARCH:-auto}"
+DALVIKVM_BOARD_PATH=""   # populated by resolve_arch
+DALVIKVM_HOST_PATH=""    # populated by resolve_arch
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 GRADLE_DIR="$REPO_ROOT/ohos-tests-gradle"
@@ -116,6 +134,44 @@ ok()   { echo "${GREEN}[$(date +%H:%M:%S)] [ohos][OK]${RESET} $*"; }
 # fails on-device; callers check stdout/stderr to discriminate.
 
 hdc() { "$HDC" -t "$HDC_SERIAL" "$@"; }
+
+# ---------- CR60 arch resolution -------------------------------------------
+# Populates $DALVIKVM_BOARD_PATH and $DALVIKVM_HOST_PATH based on $ARCH.
+# Idempotent. Call at the top of every arch-sensitive subcommand.
+resolve_arch() {
+    if [ -n "$DALVIKVM_BOARD_PATH" ]; then
+        return 0  # already resolved
+    fi
+    local effective="$ARCH"
+    if [ "$effective" = "auto" ]; then
+        local bits
+        bits="$(hdc shell "getconf LONG_BIT" 2>/dev/null | tr -d '\r\n ' | head -c 4)"
+        case "$bits" in
+            32) effective="arm32" ;;
+            64) effective="aarch64" ;;
+            *)
+                warn "auto-detect failed (getconf LONG_BIT='$bits'); falling back to aarch64"
+                effective="aarch64"
+                ;;
+        esac
+    fi
+    case "$effective" in
+        arm32)
+            DALVIKVM_BOARD_PATH="/data/local/tmp/dalvikvm-arm32"
+            DALVIKVM_HOST_PATH="$REPO_ROOT/dalvik-port/build-ohos-arm32/dalvikvm"
+            ;;
+        aarch64)
+            DALVIKVM_BOARD_PATH="/data/local/tmp/dalvikvm"
+            DALVIKVM_HOST_PATH="$REPO_ROOT/dalvik-port/build-ohos-aarch64/dalvikvm"
+            ;;
+        *)
+            err "unknown ARCH '$effective' (valid: aarch64, arm32, auto)"
+            return 1
+            ;;
+    esac
+    log "[arch] resolved ARCH=$ARCH -> $effective  (board=$DALVIKVM_BOARD_PATH host=$DALVIKVM_HOST_PATH)"
+    return 0
+}
 
 hdc_shell() {
     # Single-string shell command — quoted twice (once by us, once by hdc).
@@ -298,7 +354,7 @@ cmd_hello() {
     local bcp="/data/local/tmp/westlake/bcp/core-kitkat.jar"
     bcp="${bcp}:/data/local/tmp/westlake/bcp/direct-print-stream.jar"
     bcp="${bcp}:${BOARD_DIR}/HelloOhos.dex"
-    local cmd="ANDROID_ROOT=${BOARD_DIR} /data/local/tmp/dalvikvm"
+    local cmd="ANDROID_ROOT=${BOARD_DIR} ${DALVIKVM_BOARD_PATH}"
     cmd="$cmd -Xbootclasspath:${bcp}"
     cmd="$cmd com.westlake.ohostests.hello.HelloOhos arg1 arg2"
     hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
@@ -404,7 +460,7 @@ cmd_trivial_activity() {
     bcp="$bcp:$BOARD_DIR/TrivialActivity.dex"
     bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
     local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
-    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR ${DALVIKVM_BOARD_PATH}"
     cmd="$cmd -Xbootclasspath:$bcp"
     cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
     cmd="$cmd com.westlake.ohostests.trivial/.MainActivity"
@@ -521,7 +577,7 @@ cmd_red_square() {
     bcp="$bcp:$BOARD_DIR/RedSquare.dex"
     bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
     local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
-    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR ${DALVIKVM_BOARD_PATH}"
     cmd="$cmd -Xbootclasspath:$bcp"
     cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
     cmd="$cmd com.westlake.ohostests.red/.MainActivity"
@@ -646,7 +702,7 @@ cmd_red_square_drm() {
     bcp="$bcp:$BOARD_DIR/OhosMvpLauncher.dex"
     local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@* 2>/dev/null;"
     cmd="$cmd rm -f /data/local/tmp/red_bgra.bin 2>/dev/null;"
-    cmd="$cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR ${DALVIKVM_BOARD_PATH}"
     cmd="$cmd -Xbootclasspath:$bcp"
     cmd="$cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
     cmd="$cmd com.westlake.ohostests.red/.MainActivity"
@@ -929,15 +985,16 @@ cmd_m6_java_client() {
         hdc_send "$local_shim" "$BOARD_DIR/bcp/aosp-shim-ohos.dex" || return 1
     fi
     # Also refresh dalvikvm if local is newer than the board's.
-    local local_dvm="$REPO_ROOT/dalvik-port/build-ohos-aarch64/dalvikvm"
+    # CR60: use the arch-resolved host + board paths.
+    local local_dvm="$DALVIKVM_HOST_PATH"
     if [ -f "$local_dvm" ]; then
         local local_dvm_size board_dvm_size
         local_dvm_size="$(stat -c%s "$local_dvm")"
-        board_dvm_size="$(hdc_shell "stat -c%s /data/local/tmp/dalvikvm 2>/dev/null" | tr -d '\r')"
+        board_dvm_size="$(hdc_shell "stat -c%s $DALVIKVM_BOARD_PATH 2>/dev/null" | tr -d '\r')"
         if [ "$local_dvm_size" != "$board_dvm_size" ]; then
             log "  refreshing dalvikvm on board (local=$local_dvm_size board=$board_dvm_size)"
-            hdc_send "$local_dvm" "/data/local/tmp/dalvikvm" || return 1
-            hdc_shell "chmod 0755 /data/local/tmp/dalvikvm" >/dev/null 2>&1
+            hdc_send "$local_dvm" "$DALVIKVM_BOARD_PATH" || return 1
+            hdc_shell "chmod 0755 $DALVIKVM_BOARD_PATH" >/dev/null 2>&1
         fi
     fi
     hdc_shell "ls -la $BOARD_DIR/M6Test.dex $BOARD_DIR/OhosMvpLauncher.dex $BOARD_DIR/bcp/" \
@@ -985,7 +1042,7 @@ cmd_m6_java_client() {
     run_cmd="$run_cmd   ps -ef | grep -E 'composer_host|m6-drm-daemon|dalvikvm' | grep -v grep;"
     run_cmd="$run_cmd ) > /data/local/tmp/m6.midflight.log 2>&1 &"
     # Run dalvikvm + launcher targeting M6ClientTestActivity.
-    run_cmd="$run_cmd ANDROID_ROOT=$BOARD_DIR /data/local/tmp/dalvikvm"
+    run_cmd="$run_cmd ANDROID_ROOT=$BOARD_DIR $DALVIKVM_BOARD_PATH"
     run_cmd="$run_cmd -Xbootclasspath:$bcp"
     run_cmd="$run_cmd com.westlake.ohostests.launcher.OhosMvpLauncher"
     run_cmd="$run_cmd com.westlake.ohostests.m6/.M6ClientTestActivity;"
@@ -1077,20 +1134,54 @@ Subcommands:
                       frames RED/BLUE submitted from a dalvikvm Activity via
                       memfd + SCM_RIGHTS (PF-ohos-m6-002 / M6-OHOS-Step2)
 
+Flags (apply to any subcommand; place before the subcommand name):
+  --arch aarch64|arm32|auto   pick dalvikvm bitness (CR60). 'auto' (default)
+                              uses 'hdc shell getconf LONG_BIT' to decide.
+
 Environment overrides:
   HDC=$HDC
   HDC_SERIAL=$HDC_SERIAL
   WINSTAGE=$WINSTAGE
   BOARD_DIR=$BOARD_DIR
+  ARCH=$ARCH   (aarch64 | arm32 | auto)
 EOF
 }
 
 main() {
+    # CR60: parse --arch flag(s) that may precede the subcommand.
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --arch)
+                if [ "$#" -lt 2 ]; then
+                    err "--arch requires an argument (aarch64|arm32|auto)"
+                    exit 2
+                fi
+                ARCH="$2"
+                shift 2
+                ;;
+            --arch=*)
+                ARCH="${1#--arch=}"
+                shift
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
     if [ "$#" -lt 1 ]; then
         usage
         exit 2
     fi
     local sub="$1"; shift
+    # CR60: any subcommand that touches dalvikvm needs the arch resolved up
+    # front. We always call resolve_arch so subcommands can use
+    # $DALVIKVM_BOARD_PATH / $DALVIKVM_HOST_PATH; cmd_status uses neither so
+    # we skip it explicitly. cmd_push_bcp likewise (BCP is arch-neutral).
+    case "$sub" in
+        status|push-bcp|-h|--help|help) ;;
+        *) resolve_arch || exit 1 ;;
+    esac
     case "$sub" in
         status)             cmd_status "$@" ;;
         push-bcp)           cmd_push_bcp "$@" ;;
