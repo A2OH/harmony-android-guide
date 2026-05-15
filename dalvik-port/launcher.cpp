@@ -4,6 +4,18 @@
  * and invoke a class's static main(String[]) method.
  *
  * Usage: dalvikvm -cp <classpath> <classname> [args...]
+ *
+ * Optional env: DVM_PRELOAD_LIB=<absolute path>
+ *   When set (CR60 follow-up, 2026-05-14), the launcher calls
+ *   dvmLoadNativeCode(path, NULL, ...) right after VM creation,
+ *   BEFORE invoking main(). This is necessary because the bundled
+ *   core-kitkat.jar's Runtime.load / loadLibrary / System.loadLibrary
+ *   are stubs (return-void) — they don't reach the VM's nativeLoad
+ *   path. Loading via the C-side function call associates the lib
+ *   with the boot class loader (null), matching the classLoader of
+ *   BCP-loaded test classes, so the JNI auto-discovery in
+ *   dvmResolveNativeMethod / findMethodInLib succeeds when the test
+ *   first calls a native method.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +25,18 @@
 #include <execinfo.h>
 #endif
 #include <jni.h>
+
+/* Forward-declare dvmLoadNativeCode without pulling in Object.h /
+ * Native.h (which would require the full dalvik internal header
+ * chain). Signature matches /home/dspfac/dalvik-kitkat/vm/Native.h
+ * line 65. The Object* classLoader pointer is passed as NULL → boot
+ * class loader; any non-null value would need a real ClassLoader
+ * object handle from JNI which we don't currently need. This symbol
+ * is a C++ symbol (no extern "C" in Native.h), so we declare it
+ * without extern "C" too — the mangling matches. */
+typedef struct Object Object;
+bool dvmLoadNativeCode(const char* fileName, Object* classLoader,
+                       char** detail);
 
 #include <ucontext.h>
 static void crash_handler_sigaction(int sig, siginfo_t *info, void *ucontext) {
@@ -132,6 +156,44 @@ int main(int argc, char* argv[]) {
     if (rc != JNI_OK) {
         fprintf(stderr, "dalvikvm: JNI_CreateJavaVM failed (%d)\n", rc);
         return 1;
+    }
+
+    /* CR60 follow-up (2026-05-14): preload native lib(s) via the
+     * VM's own dvmLoadNativeCode → dlopen path. The bundled
+     * core-kitkat.jar stubs out Runtime.load / loadLibrary, so any
+     * Java-side System.loadLibrary call silently returns without
+     * doing the dlopen. We work around that by reading
+     * $DVM_PRELOAD_LIB (colon-separated absolute paths) and calling
+     * dvmLoadNativeCode here, BEFORE the user's main(). Each lib is
+     * associated with classLoader=NULL (boot CL); the test class
+     * is itself BCP-loaded so findMethodInLib's CL match succeeds. */
+    {
+        const char* preload = getenv("DVM_PRELOAD_LIB");
+        if (preload && *preload) {
+            fprintf(stderr, "dalvikvm: DVM_PRELOAD_LIB=%s\n", preload);
+            /* Walk a colon-separated list in-place using a mutable
+             * copy (strdup since getenv yields a const-ish buffer
+             * that's unsafe to modify on some libc impls). */
+            char* dup = strdup(preload);
+            if (dup) {
+                char* save = dup;
+                char* tok;
+                while ((tok = strsep(&save, ":")) != NULL) {
+                    if (!*tok) continue;
+                    char* detail = NULL;
+                    fprintf(stderr, "dalvikvm: preload dvmLoadNativeCode(%s)\n", tok);
+                    bool ok = dvmLoadNativeCode(tok, NULL, &detail);
+                    if (!ok) {
+                        fprintf(stderr, "dalvikvm: preload FAILED %s : %s\n",
+                                tok, detail ? detail : "(no detail)");
+                    } else {
+                        fprintf(stderr, "dalvikvm: preload OK %s\n", tok);
+                    }
+                    free(detail);
+                }
+                free(dup);
+            }
+        }
     }
 
     /* Convert class name from com.foo.Bar to com/foo/Bar */

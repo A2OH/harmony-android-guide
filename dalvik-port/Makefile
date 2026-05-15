@@ -472,6 +472,39 @@ dexopt: link
 	@echo "Created: $(BUILD)/dexopt"
 	@ls -lh $(BUILD)/dexopt
 
+# Build libxcomponent_bridge.so (CR60 follow-up, agent 13, 2026-05-14).
+#
+# Standalone JNI shared library that dlopens OHOS production native
+# libs (libnative_buffer.so / libnative_window.so) by absolute path at
+# runtime and exposes a tier-1..3 ladder of test entry points to the
+# `xcomponent-test` gradle module. Built only against the OHOS arm32
+# dynamic toolchain — host x86_64 / aarch64 / static-arm32 targets
+# skip this target.
+#
+# Link surface: just -ldl + libc; nothing else needed because all OHOS
+# entry points are resolved via dlsym at runtime. The .so is
+# self-contained and can be pushed to /data/local/tmp/westlake/ and
+# loaded via System.loadLibrary("xcomponent_bridge") with LD_LIBRARY_PATH
+# set to that directory.
+ifeq ($(filter $(TARGET),ohos-arm32-dynamic),$(TARGET))
+xcomponent-bridge:
+	@echo "═══ Building libxcomponent_bridge.so (OHOS ARM32 dynamic) ═══"
+	@mkdir -p $(BUILD)
+	$(CC) -std=c11 -fPIC -O2 -shared \
+		$(TARGET_FLAGS) \
+		-I$(AOSP)/libnativehelper/include_jni \
+		-Wl,-soname,libxcomponent_bridge.so \
+		-o $(BUILD)/libxcomponent_bridge.so \
+		$(COMPAT)/xcomponent_bridge.c \
+		-ldl
+	@echo "Created: $(BUILD)/libxcomponent_bridge.so"
+	@ls -lh $(BUILD)/libxcomponent_bridge.so
+	@file $(BUILD)/libxcomponent_bridge.so
+else
+xcomponent-bridge:
+	@echo "(skipped: xcomponent-bridge is OHOS-arm32-dynamic only; current TARGET=$(TARGET))"
+endif
+
 clean:
 	rm -rf $(BUILD)
 

@@ -1113,6 +1113,188 @@ cmd_m6_java_client() {
     fi
 }
 
+# ---------- subcommand: xcomponent-test -------------------------------------
+# CR60 follow-up #2 (post-E7): prove that the in-process dlopen of OHOS
+# production native libs actually produces working function pointers, not
+# just resolved symbols. The HelloDlopen.java test (committed 8710bf4f)
+# only proved System.loadLibrary returns OK — symbol calls might still
+# SIGSEGV at first invocation. This subcommand runs the tiered API-call
+# acceptance ladder defined in XComponentTest.java.
+#
+# Always uses --arch arm32 (the dynamic-PIE binary). The aarch64 build
+# does NOT ship libxcomponent_bridge.so — that bridge is OHOS-arm32-only
+# (TARGET=ohos-arm32-dynamic in dalvik-port/Makefile).
+#
+# Pipeline:
+#   1. gradle :xcomponent-test:assemble (compileJava only — plain-java module).
+#   2. make TARGET=ohos-arm32-dynamic xcomponent-bridge → libxcomponent_bridge.so
+#   3. d8 --min-api 13 on the two .class files → XComponentTest.dex (dex.035).
+#   4. push dex + .so to BOARD_DIR.
+#   5. invoke dalvikvm-arm32-dyn with LD_LIBRARY_PATH set so
+#      System.loadLibrary("xcomponent_bridge") resolves.
+#   6. grep stdout for the "xcomp-test-done highest=<n>" marker; emit
+#      PASS/FAIL based on the highest tier reached.
+#
+# Tier ladder (matches XComponentTest.java):
+#   highest=0  Tier 0: libxcomponent_bridge.so loaded; no further progress.
+#   highest=1  Tier 1: OH_NativeBuffer_Alloc(NULL) returned 0 without crash.
+#   highest=2  Tier 2: OH_NativeBuffer_Alloc(720x1280 BGRA8888) returned non-NULL.
+#   highest=3  Tier 3: map → fill RED → unmap completed.
+#
+# The script reports PASS at highest>=1 (Tier 1 is the actual gate the
+# brief asked us to clear). highest>=2/3 are bonus signals.
+
+cmd_xcomponent_test() {
+    # Hard-pin to arm32 dynamic — the bridge .so is built for that target
+    # only. Allow the caller's --arch flag to override but warn loudly.
+    if [ "$ARCH" = "aarch64" ]; then
+        warn "xcomponent-test requires --arch arm32; overriding ARCH from aarch64"
+        ARCH="arm32"
+        DALVIKVM_BOARD_PATH=""
+        DALVIKVM_HOST_PATH=""
+        resolve_arch || return 1
+    fi
+    if [ "$ARCH" = "auto" ]; then
+        # auto-detect already resolved to one of {arm32, aarch64}; if
+        # board returned 64-bit, override to arm32 for this test.
+        case "$DALVIKVM_BOARD_PATH" in
+            *dalvikvm-arm32*) ;;
+            *)
+                warn "auto-detect picked $DALVIKVM_BOARD_PATH; forcing arm32 for xcomponent-test"
+                ARCH="arm32"
+                DALVIKVM_BOARD_PATH=""
+                DALVIKVM_HOST_PATH=""
+                resolve_arch || return 1
+                ;;
+        esac
+    fi
+    # Switch the on-device binary path to the dynamic-PIE variant. The
+    # static binary cannot do runtime dlopen of OHOS libs.
+    local dvm_dyn_board="/data/local/tmp/dalvikvm-arm32-dyn"
+    local dvm_dyn_host="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
+
+    local outdir="$ARTIFACT_ROOT/cr60-followup-xcomp-call/$TS"
+    mkdir -p "$outdir"
+    log "${BOLD}== CR60 follow-up xcomponent-test (in-process NDK call) -> $outdir ==${RESET}"
+
+    log "[1/7] gradle :xcomponent-test:assemble"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :xcomponent-test:assemble --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local app_classes="$GRADLE_DIR/xcomponent-test/build/classes/java/main"
+    local bridge_class="$app_classes/com/westlake/ohostests/xcomponent/XComponentBridge.class"
+    local test_class="$app_classes/com/westlake/ohostests/xcomponent/XComponentTest.class"
+    if [ ! -f "$bridge_class" ] || [ ! -f "$test_class" ]; then
+        err "missing class files: bridge=$bridge_class test=$test_class"
+        return 1
+    fi
+    ok "gradle build complete"
+
+    log "[2/7] make libxcomponent_bridge.so (TARGET=ohos-arm32-dynamic)"
+    if ! (cd "$REPO_ROOT/dalvik-port" && make TARGET=ohos-arm32-dynamic xcomponent-bridge) \
+            > "$outdir/bridge-build.log" 2>&1; then
+        err "bridge build failed — see $outdir/bridge-build.log"
+        return 1
+    fi
+    local bridge_so="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so"
+    if [ ! -f "$bridge_so" ]; then
+        err "libxcomponent_bridge.so not produced at $bridge_so"
+        return 1
+    fi
+    ok "bridge .so built: $(du -b "$bridge_so" | awk '{print $1}') bytes"
+
+    log "[3/7] d8 --min-api 13 -> XComponentTest.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir"
+    if ! "$D8" --min-api 13 --output "$dexdir" \
+            "$bridge_class" "$test_class" \
+            > "$outdir/d8.log" 2>&1; then
+        err "d8 failed — see $outdir/d8.log"
+        return 1
+    fi
+    mv "$dexdir/classes.dex" "$dexdir/XComponentTest.dex"
+    ok "dex emitted: XComponentTest.dex=$(du -b "$dexdir/XComponentTest.dex" | awk '{print $1}')B"
+
+    log "[4/7] push dalvikvm-arm32-dyn + dex + .so"
+    hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
+    if [ ! -f "$dvm_dyn_host" ]; then
+        err "dalvikvm-arm32 dynamic missing at $dvm_dyn_host"
+        err "  build via: make -C dalvik-port TARGET=ohos-arm32-dynamic dalvikvm"
+        return 1
+    fi
+    # Always push the local dalvikvm-arm32-dyn — the launcher's
+    # DVM_PRELOAD_LIB handling lives there (CR60 follow-up), so an
+    # older on-device binary would silently miss it. The send is
+    # idempotent and only takes ~1s for the 6.5MB binary.
+    hdc_send "$dvm_dyn_host" "$dvm_dyn_board" || return 1
+    hdc_shell "chmod 0755 $dvm_dyn_board" >/dev/null 2>&1
+    hdc_send "$dexdir/XComponentTest.dex" "$BOARD_DIR/XComponentTest.dex" || return 1
+    hdc_send "$bridge_so" "$BOARD_DIR/libxcomponent_bridge.so" || return 1
+    hdc_shell "chmod 0644 $BOARD_DIR/libxcomponent_bridge.so" >/dev/null 2>&1
+    hdc_shell "ls -la $BOARD_DIR/XComponentTest.dex $BOARD_DIR/libxcomponent_bridge.so" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex + .so pushed"
+
+    log "[5/7] check SELinux state (no setenforce 0)"
+    local enforce
+    enforce="$(hdc_shell 'getenforce' 2>&1 | tr -d '\r' | head -1)"
+    log "  getenforce: $enforce"
+    echo "getenforce=$enforce" > "$outdir/selinux.log"
+
+    log "[6/7] invoke dalvikvm-arm32-dyn"
+    # BCP: minimum viable set (core-kitkat + DirectPrintStream + our dex).
+    # LD_LIBRARY_PATH: must include BOARD_DIR so dlopen("libxcomponent_bridge.so")
+    # finds it. We also keep the default OHOS paths so the bridge's own
+    # dlopen(/system/lib/chipset-sdk-sp/libnative_buffer.so) resolves the
+    # secondary deps (libdisplay_buffer*, libcomposer*, libsync_fence, …).
+    local bcp="$BOARD_DIR/bcp/core-kitkat.jar"
+    bcp="${bcp}:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="${bcp}:$BOARD_DIR/XComponentTest.dex"
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@XComponentTest* 2>/dev/null;"
+    # DVM_PRELOAD_LIB: launcher.cpp dvmLoadNativeCode preload (CR60
+    # follow-up workaround for the stubbed Runtime.load in
+    # core-kitkat.jar). Without this, the JNI methods on
+    # XComponentBridge won't resolve.
+    cmd="$cmd DVM_PRELOAD_LIB=$BOARD_DIR/libxcomponent_bridge.so"
+    cmd="$cmd LD_LIBRARY_PATH=$BOARD_DIR:/system/lib:/system/lib/chipset-sdk-sp:/system/lib/platformsdk:/system/lib/ndk"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR $dvm_dyn_board"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd com.westlake.ohostests.xcomponent.XComponentTest"
+    log "  cmd: $cmd"
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
+        warn "dalvikvm exited non-zero — capturing output regardless"
+    }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr ($(wc -l < "$outdir/dalvikvm.stderr") lines)"
+
+    log "[7/7] grade markers"
+    local highest_line highest
+    highest_line="$(grep -E '^xcomp-test-done highest=' "$outdir/dalvikvm.stdout" 2>/dev/null | tail -1 | tr -d '\r')"
+    highest="$(echo "$highest_line" | sed -n 's/.*highest=\(-\?[0-9]\+\).*/\1/p')"
+    if [ -z "$highest" ]; then highest="-1"; fi
+    log "  highest tier reached: $highest"
+    log "  marker line: $highest_line"
+
+    # Echo every tier-N line to the operator for quick triage.
+    grep -E "^tier-[0-9]" "$outdir/dalvikvm.stdout" | tr -d '\r' | while IFS= read -r line; do
+        log "  $line"
+    done
+
+    # PASS gate: highest >= 1 (Tier 1 is the minimum brief gate).
+    if [ "$highest" -ge 1 ]; then
+        ok "${GREEN}${BOLD}xcomponent-test PASS${RESET}: in-process NDK call returned; tier=$highest"
+        echo "PASS highest=$highest" > "$outdir/result.txt"
+        return 0
+    else
+        err "xcomponent-test FAIL: highest=$highest (no API call returned without crash)"
+        echo "FAIL highest=$highest" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -1133,6 +1315,11 @@ Subcommands:
   m6-java-client      run Java-side M6DrmClient against the daemon: 120 BGRA
                       frames RED/BLUE submitted from a dalvikvm Activity via
                       memfd + SCM_RIGHTS (PF-ohos-m6-002 / M6-OHOS-Step2)
+  xcomponent-test     CR60 follow-up: in-process OHOS NDK API call ladder
+                      (Tier 1: OH_NativeBuffer_Alloc(NULL) returns w/o crash,
+                       Tier 2: real alloc returns non-NULL handle,
+                       Tier 3: map → BGRA8888 fill RED → unmap). Forces
+                       --arch arm32 (dynamic PIE).
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|auto   pick dalvikvm bitness (CR60). 'auto' (default)
@@ -1191,6 +1378,7 @@ main() {
         red-square-drm)     cmd_red_square_drm "$@" ;;
         m6-drm-daemon)      cmd_m6_drm_daemon "$@" ;;
         m6-java-client)     cmd_m6_java_client "$@" ;;
+        xcomponent-test)    cmd_xcomponent_test "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

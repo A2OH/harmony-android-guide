@@ -6,6 +6,10 @@
 //   :launcher          — OhosMvpLauncher (Activity-driver for MVP-1/2)
 //   :red-square        — MVP-2 visible-pixels APK (PF-ohos-mvp-003)
 //   :m6-test           — M6 DRM daemon Java client + driver (PF-ohos-m6-002)
+//   :xcomponent-test   — CR60 follow-up: in-process OHOS NDK API call
+//                        (proves dlopen produces working function pointers,
+//                        not just resolved symbols). Plain-Java module
+//                        whose static main is run under dalvikvm-arm32-dyn.
 //
 // Mirrors multiproc-test-gradle/ layout; see /scripts/run-ohos-test.sh
 // for the driver that compiles + pushes + runs these artifacts on the
@@ -31,3 +35,4 @@ include(":trivial-activity")
 include(":launcher")
 include(":red-square")
 include(":m6-test")
+include(":xcomponent-test")
