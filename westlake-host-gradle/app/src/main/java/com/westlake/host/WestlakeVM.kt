@@ -59,6 +59,13 @@ private const val OP_DRAW_ROUND_RECT = 9
 private const val OP_DRAW_CIRCLE     = 10
 private const val OP_DRAW_IMAGE      = 11
 private const val OP_ARGB_BITMAP     = 12
+private const val OP_DRAW_PATH       = 13
+// Path command tags inside OP_DRAW_PATH payload (must match ohbridge_stub.c PCMD_*)
+private const val PCMD_MOVE   = 0
+private const val PCMD_LINE   = 1
+private const val PCMD_QUAD   = 2
+private const val PCMD_CUBIC  = 3
+private const val PCMD_CLOSE  = 4
 private const val IMAGE_CACHE_MAX = 48
 private const val GUEST_FRAME_WIDTH = 480f
 private const val GUEST_FRAME_HEIGHT = 800f
@@ -120,6 +127,13 @@ object WestlakeVM {
     private const val TAG = "WestlakeVM"
     val TOUCH_PATH: String get() = WestlakeActivity.instance?.getExternalFilesDir(null)?.absolutePath + "/westlake_touch.dat"
     private const val DALVIKVM_DIR = "/data/local/tmp/westlake"
+
+    // M6-Step4 surface-daemon DLST FIFO path. Must match
+    // `aosp-surface-daemon-port/native/surfaceflinger_main.cpp:kDefaultDlstPipe`
+    // and the path written by `m6step4-smoke.sh` / `m6step5-smoke.sh`. The
+    // daemon honors `$WESTLAKE_DLST_PIPE` to override; for the host this is
+    // currently a compile-time constant (CR46 reader-path wiring).
+    const val WESTLAKE_DLST_FIFO: String = "/data/local/tmp/westlake/dlst.fifo"
 
     var process: Process? = null
     var pipeStream: java.io.InputStream? = null  // stdout pipe (binary display list frames)
@@ -213,6 +227,76 @@ object WestlakeVM {
             }
         }
         pipeReaderThread = null
+    }
+
+    /**
+     * CR46 — connect this VM's pipe reader to the M6 surface-daemon's DLST
+     * FIFO at `WESTLAKE_DLST_FIFO`. This is the daemon-side companion to
+     * the legacy `process.inputStream` path (subprocess stdout): instead of
+     * spawning a dalvikvm subprocess and reading its binary stdout, this
+     * blocks-opens the named FIFO that `aosp-surface-daemon-port`'s
+     * `DlstConsumer::writeFrame` writes into.
+     *
+     * The wire format the daemon emits is byte-for-byte identical to the
+     * pipe mode used by `process.inputStream` (`DLIST_MAGIC=0x444C5354` +
+     * 4B size + payload starting with `OP_ARGB_BITMAP=12`), so the existing
+     * `readPipeAndRenderLocked` is reused unchanged.
+     *
+     * The call is idempotent: if a FIFO stream is already attached (or a
+     * subprocess pipe is currently in use), the existing stream is left
+     * alone. `O_RDONLY` on a FIFO blocks until the writer (daemon) opens
+     * for write — that's the intended back-pressure: with no daemon
+     * running, the FIFO open blocks indefinitely (we therefore open on a
+     * daemon thread, never on the UI thread).
+     *
+     * Returns true if a fresh FIFO connection was made, false otherwise
+     * (already connected / open failed). On open failure logs and gives
+     * up; the caller can retry later.
+     */
+    fun connectDaemonFifo(path: String = WESTLAKE_DLST_FIFO): Boolean {
+        if (pipeStream != null) {
+            Log.i(TAG, "connectDaemonFifo($path): pipeStream already attached, skipping")
+            return false
+        }
+        return try {
+            Log.i(TAG, "connectDaemonFifo: opening $path (will block until daemon writer attaches)")
+            val fis = java.io.FileInputStream(path)
+            pipeStream = fis
+            Log.i(TAG, "connectDaemonFifo: open OK, fifo=$path")
+            if (surfaceHolder != null) startPipeReader()
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "connectDaemonFifo($path) FAILED: $e")
+            false
+        }
+    }
+
+    /**
+     * Convenience launcher for the CR46 / M7 host-daemon integration path:
+     * opens the FIFO on a daemon thread (so the blocking `O_RDONLY` open
+     * does not stall the UI thread) and starts the pipe reader once the
+     * surface is attached. Caller is responsible for ensuring a
+     * `surfaceHolder` exists either before or shortly after this call —
+     * the existing `PipeReaderStarter` poll loop pattern handles either
+     * order.
+     */
+    fun connectDaemonFifoAsync(path: String = WESTLAKE_DLST_FIFO) {
+        Thread({
+            connectDaemonFifo(path)
+        }, "DaemonFifoConnect").apply { isDaemon = true; start() }
+        // Mirror the subprocess start() polling pattern: kick off a watcher
+        // thread that retries startPipeReader once both holder + stream are
+        // present, so the order of surfaceHolder-vs-FIFO-open doesn't
+        // matter.
+        Thread({
+            for (i in 0..100) {
+                if (surfaceHolder != null && pipeStream != null) {
+                    startPipeReader()
+                    if (pipeReaderThread?.isAlive == true) break
+                }
+                Thread.sleep(200)
+            }
+        }, "DaemonFifoPipeReaderStarter").apply { isDaemon = true; start() }
     }
 
     fun startPipeReader() {
@@ -797,13 +881,31 @@ object WestlakeVM {
         // Run from /data/local/tmp/westlake/ directly so boot image paths match
         val dvm = dvmDst.absolutePath
         val runDir = DALVIKVM_DIR
-        // BCP must match boot image order: core-oj, core-libart, core-icu4j, then extras, then shim
-        // bouncycastle.jar provides BouncyCastleProvider for java.security (UUID, SecureRandom)
-        // Conscrypt stubs in aosp-shim.dex satisfy Providers strict init check
-        // aosp-shim.dex FIRST (provides native stubs: SystemProperties, MessageQueue, etc.)
-        // framework.jar SECOND (provides real TypedArray, Theme, Material support)
+        // BCP order:
+        //   1. core-oj, core-libart, core-icu4j  (matches boot image)
+        //   2. bouncycastle  (BouncyCastleProvider for java.security: UUID, SecureRandom)
+        //   3. aosp-shim.dex  (native stubs that framework.jar's java code calls into:
+        //      SystemProperties, MessageQueue, Surface, AssetManager binders, etc.)
+        //   4. framework.jar / ext.jar  (real Android framework; runs
+        //      LayoutInflater, View hierarchy, Resources, ActivityThread on top of
+        //      the aosp-shim native stubs.)
+        // Architecture rule (CLAUDE.md): real framework code runs the show. Shim's
+        // job is the JNI/native boundary, not parallel reimplementation.
+        //
+        // CR23-fix (2026-05-13): services.jar is INTENTIONALLY excluded.  It is a
+        // system_server-only jar; including it in an app process triggers a
+        // classpath collision between AOSP's stock Guava (services.jar!classes3.dex
+        // ImmutableMap) and the launched APK's R8-obfuscated Guava — McD's
+        // McDMarketApplication.onCreate() crashes with NoSuchMethodError:
+        // `No InvokeType(0) method m()Lcom/google/common/collect/ImmutableMap;`
+        // because R8's renamed accessor isn't present on services.jar's
+        // ImmutableMap.  See aosp-libbinder-port/M4_PRE_NOTES.md and
+        // aosp-libbinder-port/m3-dalvikvm-boot.sh:42-50 (--bcp-framework vs
+        // --bcp-framework-strict) and docs/engine/M4_DISCOVERY.md §13.
+        // App processes should mirror the `--bcp-framework-strict` BCP shape.
         val fwJar = if (File("$runDir/framework.jar").exists()) ":$runDir/framework.jar" else ""
-        val bcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar:$runDir/bouncycastle.jar:$runDir/aosp-shim.dex$fwJar"
+        val extJar = if (File("$runDir/ext.jar").exists()) ":$runDir/ext.jar" else ""
+        val bcp = "$runDir/core-oj.jar:$runDir/core-libart.jar:$runDir/core-icu4j.jar:$runDir/bouncycastle.jar:$runDir/aosp-shim.dex$fwJar$extJar"
         val icuDataDir = File(runDir, "icu").apply {
             mkdirs()
             setReadable(true, false)
@@ -1553,12 +1655,47 @@ private fun replayDisplayList(canvas: Canvas, paint: Paint, data: ByteArray, siz
     // Dump first 3 frames for debugging
     if (framesDumped < 3) {
         val ops = StringBuilder("Frame $framesDumped ($size bytes): ")
+        // Walk opcodes properly so we get a real op stream, counting paths
         val dbg = ByteBuffer.wrap(data, 0, size).order(ByteOrder.LITTLE_ENDIAN)
+        var pathCount = 0
         while (dbg.hasRemaining()) {
             val op = dbg.get().toInt() and 0xFF
-            ops.append("op$op ")
-            if (ops.length > 200) { ops.append("..."); break }
+            when (op) {
+                OP_DRAW_COLOR -> { dbg.position(dbg.position() + 4); ops.append("COL ") }
+                OP_DRAW_RECT  -> { dbg.position(dbg.position() + 20); ops.append("RCT ") }
+                OP_DRAW_TEXT  -> {
+                    dbg.position(dbg.position() + 16)
+                    val len = dbg.getShort().toInt() and 0xFFFF
+                    dbg.position(dbg.position() + len)
+                    ops.append("TXT($len) ")
+                }
+                OP_DRAW_LINE  -> { dbg.position(dbg.position() + 20); ops.append("LNE ") }
+                OP_SAVE       -> ops.append("SV ")
+                OP_RESTORE    -> ops.append("RT ")
+                OP_TRANSLATE  -> { dbg.position(dbg.position() + 8); ops.append("TR ") }
+                OP_CLIP_RECT  -> { dbg.position(dbg.position() + 16); ops.append("CL ") }
+                OP_DRAW_ROUND_RECT -> { dbg.position(dbg.position() + 28); ops.append("RRC ") }
+                OP_DRAW_CIRCLE -> { dbg.position(dbg.position() + 16); ops.append("CIR ") }
+                OP_DRAW_IMAGE, OP_ARGB_BITMAP -> {
+                    dbg.position(dbg.position() + 16)
+                    val dl = dbg.getInt()
+                    dbg.position(dbg.position() + dl)
+                    ops.append("IMG ")
+                }
+                OP_DRAW_PATH -> {
+                    dbg.position(dbg.position() + 4)
+                    val pl = dbg.getShort().toInt() and 0xFFFF
+                    dbg.position(dbg.position() + pl)
+                    pathCount++; ops.append("PTH($pl) ")
+                }
+                else -> { ops.append("?$op "); break }
+            }
+            if (ops.length > 700) { ops.append("..."); break }
         }
+        // Brute-force scan: count any 13 byte in payload (false-positive friendly but tells us if any OP_PATH was emitted at all)
+        var rawPath13 = 0
+        for (b in data.copyOfRange(0, size)) { if ((b.toInt() and 0xFF) == 13) rawPath13++ }
+        ops.append(" [paths=$pathCount raw13=$rawPath13]")
         Log.i("WestlakeVM", ops.toString())
         framesDumped++
     }
@@ -1630,6 +1767,57 @@ private fun replayDisplayList(canvas: Canvas, paint: Paint, data: ByteArray, siz
                                 y + (if (h > 0) h.toFloat() else bmp.height.toFloat()))
                             canvas.drawBitmap(bmp, null, dst, paint)
                         }
+                    }
+                }
+                OP_DRAW_PATH -> {
+                    val color = bb.getInt()
+                    val payloadLen = bb.getShort().toInt() and 0xFFFF
+                    if (payloadLen > 0 && bb.remaining() >= payloadLen) {
+                        val end = bb.position() + payloadLen
+                        val androidPath = android.graphics.Path()
+                        var haveMove = false
+                        try {
+                            while (bb.position() < end) {
+                                when (bb.get().toInt() and 0xFF) {
+                                    PCMD_MOVE -> {
+                                        val x = bb.getFloat(); val y = bb.getFloat()
+                                        androidPath.moveTo(x, y); haveMove = true
+                                    }
+                                    PCMD_LINE -> {
+                                        val x = bb.getFloat(); val y = bb.getFloat()
+                                        if (!haveMove) { androidPath.moveTo(0f, 0f); haveMove = true }
+                                        androidPath.lineTo(x, y)
+                                    }
+                                    PCMD_QUAD -> {
+                                        val x1 = bb.getFloat(); val y1 = bb.getFloat()
+                                        val x2 = bb.getFloat(); val y2 = bb.getFloat()
+                                        if (!haveMove) { androidPath.moveTo(0f, 0f); haveMove = true }
+                                        androidPath.quadTo(x1, y1, x2, y2)
+                                    }
+                                    PCMD_CUBIC -> {
+                                        val x1 = bb.getFloat(); val y1 = bb.getFloat()
+                                        val x2 = bb.getFloat(); val y2 = bb.getFloat()
+                                        val x3 = bb.getFloat(); val y3 = bb.getFloat()
+                                        if (!haveMove) { androidPath.moveTo(0f, 0f); haveMove = true }
+                                        androidPath.cubicTo(x1, y1, x2, y2, x3, y3)
+                                    }
+                                    PCMD_CLOSE -> androidPath.close()
+                                    else -> {
+                                        // Unknown sub-command: jump to end of payload to stay aligned
+                                        bb.position(end)
+                                    }
+                                }
+                            }
+                        } catch (_: java.nio.BufferUnderflowException) {
+                            bb.position(end)
+                        }
+                        if (bb.position() != end) bb.position(end)
+                        paint.color = color
+                        paint.style = Paint.Style.FILL
+                        canvas.drawPath(androidPath, paint)
+                    } else if (payloadLen > 0) {
+                        // Truncated — skip remaining bytes
+                        bb.position(bb.position() + minOf(payloadLen, bb.remaining()))
                     }
                 }
                 OP_ARGB_BITMAP -> {

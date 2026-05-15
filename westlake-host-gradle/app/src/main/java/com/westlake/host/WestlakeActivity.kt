@@ -607,6 +607,7 @@ fun WestlakeHome() {
             AppInfo("Calculator (Native)", "Huawei Calculator in-process", Color(0xFF4CAF50), "NATIVE_APK:com.huawei.calculator:com.huawei.calculator.Calculator:Calculator", null, ""),
             AppInfo("Westlake VM", "Run MockDonalds in our own ART11 (subprocess)", Color(0xFF4CAF50), "WESTLAKE_VM", null, ""),
             AppInfo("Counter (VM)", "Simple Counter APK in ART11 subprocess", Color(0xFF9C27B0), "VM_APK:me.tsukanov.counter:me.tsukanov.counter.ui.MainActivity:Simple Counter", null, ""),
+            AppInfo("Noice (VM)", "Real Noice app via Westlake-native render pipeline", Color(0xFF26A69A), "VM_APK:com.github.ashutoshgngwr.noice:com.github.ashutoshgngwr.noice.activity.MainActivity:Noice", null, ""),
             AppInfo("Tip Calculator (VM)", "Full app in ART11 subprocess", Color(0xFFFF9800), "WESTLAKE_VM_TIP", null, ""),
             AppInfo("TODO List (VM)", "Multi-Activity app with ListView", Color(0xFF2196F3), "WESTLAKE_VM_TODO", null, ""),
             AppInfo("Canary L1 (Control)", "Westlake ART + Android backend baseline", Color(0xFF00ACC1), "VM_APK_CONTROL:com.westlake.cutoffcanary:com.westlake.cutoffcanary.StageActivity:Cutoff Canary L1 (Control):L1", null, ""),
