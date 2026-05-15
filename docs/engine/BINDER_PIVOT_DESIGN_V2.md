@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-05-14 by BINDER_PIVOT_ARCHITECTURE.md (merged consolidation). Kept for historical reference.
+
 # Westlake Binder Pivot — Architectural Design V2
 
 **Status:** Draft (2026-05-13) — CR28-architect; supersedes V1 for the in-process Java boundary

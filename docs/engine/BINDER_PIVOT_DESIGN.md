@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-05-14 by BINDER_PIVOT_ARCHITECTURE.md (merged consolidation). Kept for historical reference.
+
 # Westlake Binder Pivot — Architectural Design
 
 **Status:** Draft (2026-05-12) — decision pending implementation; awaiting Phase 1 validation
