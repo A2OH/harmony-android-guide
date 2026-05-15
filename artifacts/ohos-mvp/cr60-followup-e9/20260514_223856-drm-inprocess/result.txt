@@ -1,0 +1,1 @@
+FAIL/CHECKPOINT loadOK=1 rc0=0 fail=0 rc_line=hello-drm-inprocess nativePresent rc=12 reason=SET_MASTER (composer_host still owns it?): Resource busy (errno=16)[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1e40006d

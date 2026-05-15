@@ -1,0 +1,105 @@
+plane[56]: Smart1-win0
+	crtc=(null)
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=1
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+plane[78]: Smart0-win0
+	crtc=video_port1
+	fb=161
+		allocated by = dalvikvm-arm32-
+		refcount=2
+		format=XR24 little-endian (0x34325258)
+		modifier=0x0
+		size=720x1280
+		layers:
+			size[0]=720x1280
+			pitch[0]=2880
+			offset[0]=0
+			obj[0]:
+				name=0
+				refcount=3
+				start=00100000
+				size=3686400
+				imported=no
+	crtc-pos=720x1280+0+0
+	src-pos=720.000000x1280.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=0
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+plane[100]: Esmart1-win0
+	crtc=(null)
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=2
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+plane[122]: Esmart0-win0
+	crtc=(null)
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=3
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+crtc[70]: video_port0
+	enable=0
+	active=0
+	self_refresh_active=0
+	planes_changed=0
+	mode_changed=0
+	active_changed=0
+	connectors_changed=0
+	color_mgmt_changed=0
+	plane_mask=0
+	connector_mask=0
+	encoder_mask=0
+	mode: "": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+crtc[92]: video_port1
+	enable=1
+	active=1
+	self_refresh_active=0
+	planes_changed=1
+	mode_changed=0
+	active_changed=0
+	connectors_changed=0
+	color_mgmt_changed=0
+	plane_mask=2
+	connector_mask=4
+	encoder_mask=4
+	mode: "720x1280": 69 75000 720 760 770 810 1280 1290 1326 1341 0x48 0xa
+crtc[114]: video_port2
+	enable=0
+	active=0
+	self_refresh_active=0
+	planes_changed=0
+	mode_changed=0
+	active_changed=0
+	connectors_changed=0
+	color_mgmt_changed=0
+	plane_mask=0
+	connector_mask=0
+	encoder_mask=0
+	mode: "": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+connector[141]: Writeback-1
+	crtc=(null)
+	self_refresh_aware=0
+	max_requested_bpc=0
+	colorspace=Default
+connector[143]: HDMI-A-1
+	crtc=(null)
+	self_refresh_aware=0
+	max_requested_bpc=0
+	colorspace=Default
+connector[159]: DSI-1
+	crtc=video_port1
+	self_refresh_aware=0
+	max_requested_bpc=0
+	colorspace=Default

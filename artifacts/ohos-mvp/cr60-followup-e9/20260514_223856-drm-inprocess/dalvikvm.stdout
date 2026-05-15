@@ -1,0 +1,100 @@
+dalvikvm: creating VM...
+[V/dalvikvm] VM init args (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDrmInProcess.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] VM options (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDrmInProcess.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] Using kernel group scheduling
+[V/dalvikvm] Using executionMode 1
+[V/dalvikvm] threadid=1: interp stack at 0xf75d3000
+[V/dalvikvm] LinearAlloc: created region at 0xf00e9000-0xf10e8fff
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/core-android-x86.jar' 0xffb8b0a0
+[V/dalvikvm] +++ Found EOCD at buf+65535
+[V/dalvikvm] +++ numEntries=6 dirSize=458 dirOffset=1230935
+
+[V/dalvikvm] +++ zip good scan 6 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/core-android-x86.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/core-android-x86.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/core-android-x86.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex (fd=4, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] DexOpt: successfully initialized new cache file
+[D/dalvikvm] DexOpt: --- BEGIN 'core-android-x86.jar' (bootstrap=1) ---
+[V/dalvikvm] DexOpt: waiting for verify+opt, pid=13163
+[V/dalvikvm] Args: fd=4 off=40 len=2830544 name='/data/local/tmp/westlake/bcp/core-android-x86.jar' mod=0x444e8952 crc=0xd686558e flg=61 (argc=1)
+[V/dalvikvm]   bootclasspath is ''
+[V/dalvikvm] threadid=1: interp stack at 0x7f862b7000
+[V/dalvikvm] LinearAlloc: created region at 0x7f852a8000-0x7f862a7fff
+[V/dalvikvm] Continuing optimization (/data/local/tmp/westlake/bcp/core-android-x86.jar, isb=1)
+[V/dalvikvm] +++ swapping and verifying
+[V/dalvikvm] +++ DEX 0x115f7000: allocateAux (46336+4534+42730+15854)*4 = 437816 bytes
+[V/dalvikvm] Class lookup: classes=2125 slots=8192 (25% occ) alloc=98312 total=446 max=8
+[V/dalvikvm] DexOpt: +++ trying to load 2125 classes
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Object;' 0 (isnew=1) --> 0x10001010
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Throwable;' 0 (isnew=1) --> 0x10001130
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/Serializable;' 0 (isnew=1) --> 0x10001280
+[V/dalvikvm] --- LinearRealloc(184) old=196
+[V/dalvikvm] Array class '[Ljava/lang/Class;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Class;' 0 (isnew=1) --> 0x100003c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/AnnotatedElement;' 0 (isnew=1) --> 0x100013a0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/GenericDeclaration;' 0 (isnew=1) --> 0x100014c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Type;' 0 (isnew=1) --> 0x100015e0
+[V/dalvikvm] --- LinearRealloc(576) old=588
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Cloneable;' 0 (isnew=1) --> 0x10001820
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Class;' 0 (isnew=1) --> 0x10001700
+[V/dalvikvm] Created array class '[Ljava/lang/Class;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0x10006640
+[V/dalvikvm] +++  loading 'Ljava/lang/UnsatisfiedLinkError;'
+[V/dalvikvm] +++ grm: Ljava/lang/UnsatisfiedLinkError;.<init> (adr=1 gpc=2 rwd=1 bsz=8)
+[V/dalvikvm] +++ grm: Ljava/lang/UnsatisfiedLinkError;.<init> (adr=1 gpc=2 rwd=1 bsz=8)
+[V/dalvikvm] +++ grm: Llibcore/io/ForwardingOs;.kill (adr=1 gpc=3 rwd=1 bsz=10)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0x10006640
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0x10006640
+[V/dalvikvm] +++ grm: Landroid/app/ActivityManager;.killBackgroundProcesses (adr=1 gpc=9 rwd=1 bsz=22)
+[V/dalvikvm] +++ grm: Landroid/os/Process;.killProcess (adr=1 gpc=11 rwd=1 bsz=26)
+[V/dalvikvm] +++ grm: Landroid/system/Os;.kill (adr=1 gpc=1 rwd=1 bsz=6)
+[V/dalvikvm] +++ grm: Landroid/view/SurfaceSession;.kill (adr=1 gpc=1 rwd=1 bsz=6)
+[V/dalvikvm] +++ grm: Landroid/view/ViewTreeObserver;.kill (adr=1 gpc=2 rwd=1 bsz=8)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killAllBackgroundProcesses (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killApplication (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killApplicationProcess (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killBackgroundProcesses (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killPackageDependents (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killPids (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killProcessesBelowForeground (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killProcessesWhenImperceptible (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killUid (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ grm: Lcom/westlake/services/WestlakeActivityManagerService;.killUidForPermissionChange (adr=1 gpc=4 rwd=1 bsz=12)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0x10006640
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0xf28c3a68
+dalvikvm: invoking com.westlake.ohostests.hello.HelloDrmInProcess.main()
+hello-drm-inprocess-start[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1d60006d
+hello-drm-inprocess holdSecs=6[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1d80006d
+hello-drm-inprocess loadLibrary OK[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1e00006d
+hello-drm-inprocess nativePresent rc=12 reason=SET_MASTER (composer_host still owns it?): Resource busy (errno=16)[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1e40006d
+hello-drm-inprocess-done passed=1 failed=1[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1e60006d
+[D/dalvikvm-heap] Done.
+[V/dalvikvm-heap] GC finished
+[V/dalvikvm-heap] Resuming threads
+[D/dalvikvm] GC_CONCURRENT freed 16K, 18% free 99K/120K, paused 1ms+0ms, total 1ms
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/CollectionUtils$1$1;' 0 (isnew=1) --> 0xf28d6348
+[V/dalvikvm] threadid=2: bye!
+[V/dalvikvm] threadid=3: bye!
+[V/dalvikvm] signal catcher has shut down
+[V/dalvikvm] +++ DEX 0xf6b0a000: freeing aux structs
+[V/dalvikvm] munmap(0xefdd2000, 3239472) succeeded
+[V/dalvikvm] Closing archive 0xf75f9ef0
+[V/dalvikvm] munmap(0xf75d2000, 2593) succeeded
+[V/dalvikvm] +++ DEX 0xf75b1000: freeing aux structs
+[V/dalvikvm] munmap(0xf75b2000, 2736) succeeded
+[V/dalvikvm] Closing archive 0xf75e4020
+[V/dalvikvm] munmap(0xf75b3000, 1770) succeeded
+[V/dalvikvm] +++ DEX 0xef846000: freeing aux structs
+[V/dalvikvm] munmap(0xef8b5000, 5359328) succeeded
+[V/dalvikvm] +++ DEX 0xf75ad000: freeing aux structs
+[V/dalvikvm] munmap(0xf75ae000, 3808) succeeded

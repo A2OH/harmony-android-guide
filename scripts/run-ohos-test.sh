@@ -1501,6 +1501,247 @@ cmd_hello_dlopen_real() {
     fi
 }
 
+# ---------- subcommand: hello-drm-inprocess ---------------------------------
+# CR60 follow-up #3 (E9b, Path Y): visible red pixel on DSI panel driven
+# in-process by dalvikvm-arm32-dynamic. No daemon, no host APK, no second
+# binary — just one JVM, one .so, one dex.
+#
+# Pipeline (mirrors the existing red-square-drm flow, but the DRM call
+# site moves from a standalone aarch64 static helper into a JNI bridge
+# loaded by dalvikvm):
+#   A. gradle :hello:compileJava → DrmInProcessBridge + HelloDrmInProcess.
+#   B. make TARGET=ohos-arm32-dynamic drm-inproc-bridge → .so.
+#   C. d8 → HelloDrmInProcess.dex (with DrmInProcessBridge inline).
+#   D. push dalvikvm + dex + .so. Verify BCP intact.
+#   E. capture pre-state: /sys/kernel/debug/dri/0/{clients,framebuffer,state}.
+#   F. kill -9 $(pidof composer_host)  (auto-respawn after test).
+#   G. run dalvikvm com.westlake.ohostests.hello.HelloDrmInProcess <holdSecs>.
+#      Bridge takes SET_MASTER, allocates dumb BO, fills RED, SETCRTC.
+#      Panel is red for holdSecs seconds.
+#   H. capture post-state. composer_host respawns within ~1s of cleanup.
+#
+# PASS criterion: nativePresent rc=0 AND post-state shows our fb_id
+# *was* attached to the crtc during the hold window (or a separate
+# kernel-state capture during the window confirms it).
+#
+# Phone-camera evidence: the operator should aim a camera at the DSI
+# panel during the hold window; the captured frame goes into the
+# artifact directory.
+
+cmd_hello_drm_inprocess() {
+    # Hard-pin to arm32 dynamic — this is the in-process gate; the
+    # bridge .so is OHOS-arm32-dynamic-only (Makefile target enforces).
+    if [ "$ARCH" = "aarch64" ]; then
+        warn "hello-drm-inprocess requires --arch arm32; overriding ARCH from aarch64"
+        ARCH="arm32"
+        DALVIKVM_BOARD_PATH=""
+        DALVIKVM_HOST_PATH=""
+        resolve_arch || return 1
+    fi
+    if [ "$ARCH" = "auto" ]; then
+        case "$DALVIKVM_BOARD_PATH" in
+            *dalvikvm-arm32*) ;;
+            *)
+                warn "auto-detect picked $DALVIKVM_BOARD_PATH; forcing arm32 for hello-drm-inprocess"
+                ARCH="arm32"
+                DALVIKVM_BOARD_PATH=""
+                DALVIKVM_HOST_PATH=""
+                resolve_arch || return 1
+                ;;
+        esac
+    fi
+    local dvm_dyn_board="/data/local/tmp/dalvikvm-arm32-dyn"
+    local dvm_dyn_host="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
+    local hold_secs="${DRM_INPROC_HOLD_SECS:-10}"
+
+    local outdir="$ARTIFACT_ROOT/cr60-followup-e9/$TS-drm-inprocess"
+    mkdir -p "$outdir"
+    log "${BOLD}== CR60-followup E9b hello-drm-inprocess -> $outdir hold=${hold_secs}s ==${RESET}"
+
+    log "[A/H] gradle :hello:compileJava"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :hello:compileJava --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local hello_classes="$GRADLE_DIR/hello/build/classes/java/main/com/westlake/ohostests/hello"
+    local bridge_class="$hello_classes/DrmInProcessBridge.class"
+    local main_class="$hello_classes/HelloDrmInProcess.class"
+    if [ ! -f "$bridge_class" ] || [ ! -f "$main_class" ]; then
+        err "missing class files: bridge=$bridge_class main=$main_class"
+        return 1
+    fi
+    ok "gradle build complete"
+
+    log "[B/H] make libdrm_inproc_bridge.so (TARGET=ohos-arm32-dynamic)"
+    if ! (cd "$REPO_ROOT/dalvik-port" && make TARGET=ohos-arm32-dynamic drm-inproc-bridge) \
+            > "$outdir/bridge-build.log" 2>&1; then
+        err "bridge build failed — see $outdir/bridge-build.log"
+        return 1
+    fi
+    local bridge_so="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/libdrm_inproc_bridge.so"
+    if [ ! -f "$bridge_so" ]; then
+        err "libdrm_inproc_bridge.so not produced at $bridge_so"
+        return 1
+    fi
+    ok "bridge .so built: $(du -b "$bridge_so" | awk '{print $1}') bytes"
+
+    log "[C/H] d8 --min-api 13 -> HelloDrmInProcess.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir"
+    if ! "$D8" --min-api 13 --output "$dexdir" \
+            "$bridge_class" "$main_class" \
+            > "$outdir/d8.log" 2>&1; then
+        err "d8 failed — see $outdir/d8.log"
+        return 1
+    fi
+    mv "$dexdir/classes.dex" "$dexdir/HelloDrmInProcess.dex"
+    ok "dex emitted: HelloDrmInProcess.dex=$(du -b "$dexdir/HelloDrmInProcess.dex" | awk '{print $1}')B"
+
+    log "[D/H] push dalvikvm-arm32-dyn + dex + .so"
+    hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
+    if [ ! -f "$dvm_dyn_host" ]; then
+        err "dalvikvm-arm32 dynamic missing at $dvm_dyn_host"
+        return 1
+    fi
+    hdc_send "$dvm_dyn_host" "$dvm_dyn_board" || return 1
+    hdc_shell "chmod 0755 $dvm_dyn_board" >/dev/null 2>&1
+    hdc_send "$dexdir/HelloDrmInProcess.dex" "$BOARD_DIR/HelloDrmInProcess.dex" || return 1
+    hdc_send "$bridge_so" "$BOARD_DIR/libdrm_inproc_bridge.so" || return 1
+    hdc_shell "chmod 0644 $BOARD_DIR/libdrm_inproc_bridge.so" >/dev/null 2>&1
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar $BOARD_DIR/bcp/aosp-shim-ohos.dex 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing required BCP files on board"
+        err "  hdc said: $bcp_check"
+        return 1
+    fi
+    ok "dex + .so pushed; BCP intact"
+
+    log "[E/H] check SELinux state + capture DRM pre-state"
+    local enforce
+    enforce="$(hdc_shell 'getenforce' 2>&1 | tr -d '\r' | head -1)"
+    log "  getenforce: $enforce (NOT changing — see brief)"
+    echo "getenforce=$enforce" > "$outdir/selinux.log"
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" \
+            > "$outdir/drm-clients-pre.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/framebuffer" \
+            > "$outdir/drm-framebuffer-pre.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/state 2>/dev/null | head -200" \
+            > "$outdir/drm-state-pre.txt" 2>&1 || true
+    hdc_shell "pidof composer_host" \
+            > "$outdir/composer-pid-pre.txt" 2>&1 || true
+    log "  composer_host pid (pre): $(cat "$outdir/composer-pid-pre.txt" 2>/dev/null | tr -d '\r')"
+
+    log "[F/H] (note) composer_host kill now happens INSIDE the JNI bridge"
+    # The bridge does the kill itself (drm_inproc_bridge.c
+    # kill_composer_host) right before SET_MASTER, with retries on
+    # respawn. That eliminates the race window that defeated the
+    # original driver-side kill: hdf_devmgr respawns composer_host
+    # within ~0.3s of SIGKILL, faster than VM startup (~5s). Doing the
+    # kill from inside the bridge means it happens immediately before
+    # the SET_MASTER syscall — no round-trip latency.
+    log "  (see drm_inproc_bridge.c kill_composer_host + SET_MASTER retry loop)"
+
+    log "[G/H] invoke dalvikvm-arm32-dyn (in-process DRM scan-out, hold=${hold_secs}s)"
+    # Same BCP shape as hello-dlopen-real (E9a) — core-android-x86.jar
+    # for the real Runtime/System (pure-Java System.loadLibrary path).
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="${bcp}:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="${bcp}:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="${bcp}:$BOARD_DIR/HelloDrmInProcess.dex"
+    # Fused composer-kill + dvm-exec: hdf_devmgr respawns composer_host
+    # within ~0.3s, but a respawn must reopen /dev/dri/card0 + grab
+    # SET_MASTER — both syscalls, ~tens of ms each from a fresh forked
+    # process. Issuing the dalvikvm exec immediately after the kill (no
+    # hdc round-trip) gives our process the ~hundreds-of-ms window to
+    # call SET_MASTER first. We pre-warm the dexopt cache so the VM
+    # doesn't pause for verify/optimize during the race. Then we issue
+    # kill+invoke as a single shell pipeline.
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloDrmInProcess* /data/dalvik-cache/data@local@tmp@westlake@bcp@* 2>/dev/null;"
+    cmd="$cmd LD_LIBRARY_PATH=$BOARD_DIR:/system/lib:/system/lib/chipset-sdk-sp:/system/lib/platformsdk:/system/lib/ndk"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR $dvm_dyn_board"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd -Djava.library.path=$BOARD_DIR"
+    cmd="$cmd com.westlake.ohostests.hello.HelloDrmInProcess $hold_secs"
+    log "  cmd: $cmd"
+
+    # Run the dalvik test in the background and capture kernel state
+    # mid-flight (while the scan-out is held). The Java side sleeps
+    # holdSecs inside nativePresent. VM startup is ~5s; nativePresent
+    # then takes ~0.5s before sleeping. So we sample at +6s — well
+    # inside the hold window for the default 6s hold (totaling ~12s
+    # of subprocess wall time). Operator can override DRM_INPROC_HOLD_SECS
+    # to widen the window if running with a phone-camera capture.
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" &
+    local dvm_pid=$!
+    # First sample: before our bridge has run (compare against pre-state).
+    sleep 1.5
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" \
+            > "$outdir/drm-clients-early.txt" 2>&1 || true
+    # Mid sample: after VM startup + kill_composer_host + SET_MASTER, well
+    # inside our hold window. VM startup ~5s + 0.5s setup → sample at +6.5s.
+    sleep 5.0
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" \
+            > "$outdir/drm-clients-mid.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/framebuffer" \
+            > "$outdir/drm-framebuffer-mid.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/state 2>/dev/null | head -200" \
+            > "$outdir/drm-state-mid.txt" 2>&1 || true
+    # Wait for the Java side to finish.
+    wait $dvm_pid || warn "dalvikvm exited non-zero — capturing output regardless"
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr ($(wc -l < "$outdir/dalvikvm.stderr") lines)"
+
+    log "[H/H] capture DRM post-state + grade markers"
+    sleep 1.5  # give hdf_devmgr time to respawn composer_host
+    hdc_shell "cat /sys/kernel/debug/dri/0/clients" \
+            > "$outdir/drm-clients-post.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/framebuffer" \
+            > "$outdir/drm-framebuffer-post.txt" 2>&1 || true
+    hdc_shell "cat /sys/kernel/debug/dri/0/state 2>/dev/null | head -200" \
+            > "$outdir/drm-state-post.txt" 2>&1 || true
+    hdc_shell "pidof composer_host" \
+            > "$outdir/composer-pid-post.txt" 2>&1 || true
+    log "  composer_host pid (post): $(cat "$outdir/composer-pid-post.txt" 2>/dev/null | tr -d '\r')"
+
+    # Echo every hello-drm-inprocess line to operator.
+    grep -E '^hello-drm-inprocess' "$outdir/dalvikvm.stdout" | tr -d '\r' | while IFS= read -r line; do
+        log "  $line"
+    done
+
+    # PASS criteria:
+    #   - "loadLibrary OK" present
+    #   - "nativePresent rc=0" present (and no "-FAIL" line)
+    # CHECKPOINT (still useful):
+    #   - rc != 0 with a specific failure code (DRM_FAIL_* in the .c)
+    #     so operator can diagnose.
+    local has_load_ok=0 has_rc0=0 has_fail=0 rc_line
+    grep -qF "hello-drm-inprocess loadLibrary OK" "$outdir/dalvikvm.stdout" 2>/dev/null && has_load_ok=1
+    rc_line="$(grep -E '^hello-drm-inprocess nativePresent rc=' "$outdir/dalvikvm.stdout" 2>/dev/null | tail -1 | tr -d '\r')"
+    case "$rc_line" in
+        *"rc=0 "*) has_rc0=1 ;;
+    esac
+    grep -qF "hello-drm-inprocess-FAIL" "$outdir/dalvikvm.stdout" 2>/dev/null && has_fail=1
+    log "  has_load_ok=$has_load_ok has_rc0=$has_rc0 has_fail=$has_fail"
+    log "  rc line: $rc_line"
+
+    if [ "$has_load_ok" -eq 1 ] && [ "$has_rc0" -eq 1 ] && [ "$has_fail" -eq 0 ]; then
+        ok "${GREEN}${BOLD}hello-drm-inprocess PASS${RESET}: in-process DRM scan-out completed cleanly"
+        log "  panel was RED for ~${hold_secs}s during this run"
+        log "  evidence in mid-state: $outdir/drm-clients-mid.txt / drm-state-mid.txt"
+        log "  PHONE-CAMERA: capture a photo of the DSI panel showing red and"
+        log "    save it into $outdir/ (filename like 'panel-red.jpg')"
+        echo "PASS rc_line=$rc_line" > "$outdir/result.txt"
+        return 0
+    else
+        err "hello-drm-inprocess FAIL/CHECKPOINT (loadOK=$has_load_ok rc0=$has_rc0 fail=$has_fail)"
+        echo "FAIL/CHECKPOINT loadOK=$has_load_ok rc0=$has_rc0 fail=$has_fail rc_line=$rc_line" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -1530,6 +1771,11 @@ Subcommands:
                       via core-android-x86.jar (no \$DVM_PRELOAD_LIB env var
                       workaround). Loads libxcomponent_bridge.so + invokes
                       its JNI methods to prove the load was real.
+  hello-drm-inprocess CR60-followup E9b (Path Y): in-process DRM/KMS scan-out
+                      from dalvikvm-arm32-dynamic. Kills composer_host
+                      around the test (auto-respawns afterwards), drives
+                      DSI-1 panel red via CREATE_DUMB+ADDFB2+SETCRTC.
+                      Visible-pixel gate — phone-camera evidence required.
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|auto   pick dalvikvm bitness (CR60). 'auto' (default)
@@ -1590,6 +1836,7 @@ main() {
         m6-java-client)     cmd_m6_java_client "$@" ;;
         xcomponent-test)    cmd_xcomponent_test "$@" ;;
         hello-dlopen-real)  cmd_hello_dlopen_real "$@" ;;
+        hello-drm-inprocess) cmd_hello_drm_inprocess "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

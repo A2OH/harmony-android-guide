@@ -1,0 +1,1 @@
+PASS rc_line=hello-drm-inprocess nativePresent rc=0 reason=OK crtc=92 fb=161 conn=159 mode=720x1280 hold=6s[W/dalvikvm] addLocalReference: obj=0xf298cbc0 -> jobj=0x1e40006d

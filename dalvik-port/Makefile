@@ -505,6 +505,33 @@ xcomponent-bridge:
 	@echo "(skipped: xcomponent-bridge is OHOS-arm32-dynamic only; current TARGET=$(TARGET))"
 endif
 
+# drm_inproc_bridge — CR60 follow-up E9b. JNI bridge wrapping the same
+# DRM/KMS dumb-BO scan-out pipeline as `drm_present` (agent 7's MVP-2
+# helper). The Java caller invokes nativePresent(holdSecs) which opens
+# /dev/dri/card0, takes SET_MASTER, allocates a dumb BO, fills it with
+# RED, ADDFB2 + SETCRTC, sleeps holdSecs, then RMFB + DESTROY_DUMB +
+# DROP_MASTER. Symmetric to xcomponent-bridge — OHOS-arm32-dynamic only;
+# resolves all symbols at link/runtime via standard libc + the
+# kernel-uapi headers shipped with the OHOS sysroot.
+ifeq ($(filter $(TARGET),ohos-arm32-dynamic),$(TARGET))
+drm-inproc-bridge:
+	@echo "═══ Building libdrm_inproc_bridge.so (OHOS ARM32 dynamic) ═══"
+	@mkdir -p $(BUILD)
+	$(CC) -std=c11 -fPIC -O2 -shared \
+		$(TARGET_FLAGS) \
+		-I$(AOSP)/libnativehelper/include_jni \
+		-Wl,-soname,libdrm_inproc_bridge.so \
+		-o $(BUILD)/libdrm_inproc_bridge.so \
+		$(COMPAT)/drm_inproc_bridge.c \
+		-ldl
+	@echo "Created: $(BUILD)/libdrm_inproc_bridge.so"
+	@ls -lh $(BUILD)/libdrm_inproc_bridge.so
+	@file $(BUILD)/libdrm_inproc_bridge.so
+else
+drm-inproc-bridge:
+	@echo "(skipped: drm-inproc-bridge is OHOS-arm32-dynamic only; current TARGET=$(TARGET))"
+endif
+
 clean:
 	rm -rf $(BUILD)
 
