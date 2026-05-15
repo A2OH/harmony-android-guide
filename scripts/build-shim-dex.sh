@@ -39,6 +39,35 @@ javac -source 1.8 -target 1.8 \
 
 echo "Javac complete."
 
+# Architecture rule (CLAUDE.md): aosp-shim.dex must NOT duplicate classes
+# already provided by framework.jar. javac compiles all sources (so the
+# source graph stays consistent and shim code can reference @hide types
+# during build) but the DEX packaging step strips classes that exist in
+# framework.jar so the real Android implementation wins at runtime.
+#
+# M3 exception (2026-05-12): android/os/ServiceManager, IServiceManager,
+# and ServiceManagerNative were REMOVED from the duplicates list so the
+# shim wins.  The shim ServiceManager is rewired as a thin Java -> JNI
+# wrapper over our libbinder.so — see aosp-libbinder-port/M3_NOTES.md
+# (Path A2).  Migrating to a "real ServiceManager from framework.jar"
+# (Path A1) is M4-era work and only requires re-adding those three lines.
+DUP_LIST="$REPO_ROOT/scripts/framework_duplicates.txt"
+if [ -f "$DUP_LIST" ]; then
+    echo "Stripping duplicate-with-framework.jar classes before DEX packaging..."
+    DELETED=0
+    while IFS= read -r cls; do
+        # cls is like "android/foo/Bar" (slash form, no .class suffix)
+        [ -z "$cls" ] && continue
+        f="$BUILD_DIR/classes/$cls.class"
+        if [ -f "$f" ]; then rm -f "$f"; DELETED=$((DELETED+1)); fi
+        # Also remove inner classes ($Inner, $1, $2, ...)
+        for inner in "$BUILD_DIR/classes/$cls"\$*.class; do
+            [ -f "$inner" ] && { rm -f "$inner"; DELETED=$((DELETED+1)); }
+        done
+    done < "$DUP_LIST"
+    echo "  Stripped $DELETED .class files"
+fi
+
 # Convert to DEX
 echo "Running dx..."
 CLASS_COUNT=$(find "$BUILD_DIR/classes" -name "*.class" | wc -l)

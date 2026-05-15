@@ -85,7 +85,7 @@ echo "aosp-shim src: $AOSP_SHIM_SRC"
 timeout "$ADB_TIMEOUT" "${ADB[@]}" get-state >/dev/null
 "${ADB[@]}" shell mkdir -p "$PHONE_DIR"
 
-for remote_name in dalvikvm core-oj.jar core-libart.jar core-icu4j.jar bouncycastle.jar aosp-shim.dex; do
+for remote_name in dalvikvm core-oj.jar core-libart.jar core-icu4j.jar bouncycastle.jar aosp-shim.dex framework.jar services.jar ext.jar framework-res.apk; do
     if "${ADB[@]}" shell "[ -f '$PHONE_DIR/$remote_name' ]" >/dev/null 2>&1; then
         "${ADB[@]}" shell cp "$PHONE_DIR/$remote_name" "$PHONE_DIR/$remote_name.bak.$STAMP"
     fi
@@ -97,7 +97,22 @@ done
 "${ADB[@]}" push "$CORE_ICU4J_SRC" "$PHONE_DIR/core-icu4j.jar" >/dev/null
 "${ADB[@]}" push "$BOUNCYCASTLE_SRC" "$PHONE_DIR/bouncycastle.jar" >/dev/null
 "${ADB[@]}" push "$AOSP_SHIM_SRC" "$PHONE_DIR/aosp-shim.dex" >/dev/null
+# framework.jar / services.jar / ext.jar / framework-res.apk are pulled
+# from a real Android device once with `adb pull /system/framework/<name>`
+# and staged at FRAMEWORK_SRC. Optional: skip if not present locally so
+# the script stays compatible with shim-only runs while we are bringing
+# real framework.jar online.
+FRAMEWORK_SRC="${FRAMEWORK_SRC:-$REPO_ROOT/ohos-deploy/arm64-a15}"
+for fw_name in framework.jar services.jar ext.jar framework-res.apk; do
+    src="$FRAMEWORK_SRC/$fw_name"
+    if [ -f "$src" ]; then
+        "${ADB[@]}" push "$src" "$PHONE_DIR/$fw_name" >/dev/null
+    elif [ -f "/tmp/phone-framework/$fw_name" ]; then
+        "${ADB[@]}" push "/tmp/phone-framework/$fw_name" "$PHONE_DIR/$fw_name" >/dev/null
+    fi
+done
 "${ADB[@]}" shell chmod 0777 "$PHONE_DIR/dalvikvm" "$PHONE_DIR/core-oj.jar" "$PHONE_DIR/core-libart.jar" "$PHONE_DIR/core-icu4j.jar" "$PHONE_DIR/bouncycastle.jar" "$PHONE_DIR/aosp-shim.dex"
+"${ADB[@]}" shell "chmod 0644 $PHONE_DIR/framework.jar $PHONE_DIR/services.jar $PHONE_DIR/ext.jar $PHONE_DIR/framework-res.apk 2>/dev/null || true"
 
 echo
 echo "Local hashes:"
