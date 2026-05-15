@@ -2045,10 +2045,32 @@ cmd_inproc_app() {
     # of the previously-stubbed empty FrameLayout). Generic across any
     # AppCompat app — same mechanism McD would benefit from.
     apk_board=""
+    apk_manifest_board=""
     if [ -n "$apk_path" ] && [ -f "$apk_path" ]; then
         apk_board="$BOARD_DIR/${apk_alias}.apk"
         hdc_send "$apk_path" "$apk_board" || return 1
         hdc_shell "chmod 0644 $apk_board" >/dev/null 2>&1
+        # CR-X (2026-05-15): host-side extract of AndroidManifest.xml so the
+        # shim Window.getDecorView can resolve ?android:windowBackground
+        # without invoking dalvik-on-OHOS's java.util.zip.Inflater (which
+        # ref-leaks uncontrollably during DEFLATE — verified: 32M+ JNI local
+        # refs in seconds with no termination). AndroidManifest.xml is
+        # always DEFLATE in modern apks; resources.arsc is STORED so the
+        # in-shim LFH walker handles it directly. Generic — works for any
+        # apk alias.
+        local apk_manifest_local="$outdir/apk-manifest.bin"
+        if unzip -p "$apk_path" AndroidManifest.xml > "$apk_manifest_local" 2>"$outdir/apk-manifest-extract.log"; then
+            if [ -s "$apk_manifest_local" ]; then
+                apk_manifest_board="$BOARD_DIR/${apk_alias}.apk.manifest"
+                hdc_send "$apk_manifest_local" "$apk_manifest_board" || return 1
+                hdc_shell "chmod 0644 $apk_manifest_board" >/dev/null 2>&1
+                ok "manifest extracted: $(du -b "$apk_manifest_local" | awk '{print $1}')B -> $apk_manifest_board"
+            else
+                warn "manifest extract produced 0 bytes — see $outdir/apk-manifest-extract.log"
+            fi
+        else
+            warn "unzip -p $apk_path AndroidManifest.xml failed — see $outdir/apk-manifest-extract.log"
+        fi
     fi
     # BCP files are stable across runs — just verify they exist.
     local bcp_check
@@ -2118,6 +2140,12 @@ cmd_inproc_app() {
     cmd="$cmd -Djava.library.path=$BOARD_DIR"
     if [ -n "$apk_board" ]; then
         cmd="$cmd -Dwestlake.apk.path=$apk_board"
+    fi
+    # CR-X (2026-05-15): expose the pre-extracted AndroidManifest.xml so the
+    # shim Window.getDecorView can read android:theme without inflating
+    # in-apk DEFLATE (the dalvik-on-OHOS Inflater hang).
+    if [ -n "$apk_manifest_board" ]; then
+        cmd="$cmd -Dwestlake.apk.manifest=$apk_manifest_board"
     fi
     cmd="$cmd com.westlake.ohostests.inproc.InProcessAppLauncher"
     cmd="$cmd $activity_spec"

@@ -1,7 +1,9 @@
 package android.content.pm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ManifestParser — parses Android binary XML (AXML) from an APK's AndroidManifest.xml.
@@ -31,6 +33,11 @@ public class ManifestParser {
     // android:name resource ID
     private static final int ATTR_NAME = 0x01010003;
     private static final int ATTR_APP_COMPONENT_FACTORY = 0x0101057A;
+    /** CR-X (2026-05-15): android:theme attribute, framework attr id 0x01010000.
+     *  Captured on &lt;activity&gt;/&lt;activity-alias&gt;/&lt;application&gt; so
+     *  Window.getDecorView() can resolve {@code ?android:windowBackground} for
+     *  the first-pixel paint without hardcoded per-app data. */
+    private static final int ATTR_THEME = 0x01010000;
 
     /** Result of parsing an AndroidManifest.xml */
     public static class ManifestInfo {
@@ -40,6 +47,28 @@ public class ManifestParser {
         public List<String> activities = new ArrayList<>();
         public List<String> providers = new ArrayList<>();
         public List<String> services = new ArrayList<>();
+        /** CR-X (2026-05-15): Resolved {@code android:theme} resource ID for
+         *  the &lt;application&gt; tag, or {@code 0} if unset. Acts as the
+         *  fallback when an individual activity has no theme override. */
+        public int applicationTheme;
+        /** CR-X (2026-05-15): Resolved {@code android:theme} resource ID per
+         *  activity FQCN (key: same form as entries in {@link #activities}).
+         *  Absent → 0 → fall through to {@link #applicationTheme}. */
+        public Map<String, Integer> activityThemes = new HashMap<>();
+
+        /**
+         * CR-X (2026-05-15): convenience for callers (Window.getDecorView())
+         * that want the effective theme for an activity FQCN. Returns the
+         * activity's own theme, else the application theme, else 0. Generic;
+         * no per-app branches.
+         */
+        public int getActivityTheme(String activityFqcn) {
+            if (activityFqcn != null) {
+                Integer t = activityThemes.get(activityFqcn);
+                if (t != null && t.intValue() != 0) return t.intValue();
+            }
+            return applicationTheme;
+        }
 
         @Override
         public String toString() {
@@ -54,6 +83,13 @@ public class ManifestParser {
             sb.append(", activities=").append(activities);
             sb.append(", providers=").append(providers);
             sb.append(", services=").append(services);
+            if (applicationTheme != 0) {
+                sb.append(", applicationTheme=0x")
+                        .append(Integer.toHexString(applicationTheme));
+            }
+            if (!activityThemes.isEmpty()) {
+                sb.append(", activityThemes=").append(activityThemes.size());
+            }
             sb.append('}');
             return sb.toString();
         }
@@ -331,6 +367,13 @@ public class ManifestParser {
             if (factory != null) {
                 info.appComponentFactoryClass = resolveClassName(factory, info.packageName);
             }
+            // CR-X: capture application-level android:theme (fallback used
+            // when an activity has no per-activity override).
+            int appTheme = findAttributeRefByResId(data, offset, attrCount,
+                    resourceIds, ATTR_THEME);
+            if (appTheme != 0) {
+                info.applicationTheme = appTheme;
+            }
             return;
         }
 
@@ -343,7 +386,17 @@ public class ManifestParser {
                         "name", resourceIds, ATTR_NAME);
             }
             if (name != null) {
-                info.activities.add(resolveClassName(name, info.packageName));
+                String fqcn = resolveClassName(name, info.packageName);
+                info.activities.add(fqcn);
+                // CR-X: capture per-activity android:theme. AAPT emits this
+                // as a TYPE_REFERENCE attribute whose typed-value data is the
+                // resource ID of the &lt;style&gt; tag. Index by the resolved
+                // FQCN so Window.getDecorView() can look it up by class.
+                int actTheme = findAttributeRefByResId(data, offset, attrCount,
+                        resourceIds, ATTR_THEME);
+                if (actTheme != 0 && fqcn != null) {
+                    info.activityThemes.put(fqcn, Integer.valueOf(actTheme));
+                }
             }
         } else if ("provider".equals(tagName)) {
             String name = findAttributeByResId(data, offset, attrCount, stringPool,
@@ -391,6 +444,42 @@ public class ManifestParser {
             }
         }
         return null;
+    }
+
+    /**
+     * CR-X (2026-05-15): Variant of {@link #findAttributeByResId} that
+     * returns the attribute's typed-value DATA as an int rather than a
+     * pool-resolved string. Used for {@code android:theme} which is encoded
+     * as a TYPE_REFERENCE (0x01) whose 4-byte data field holds the target
+     * resource id. Returns {@code 0} when the attribute is absent or has an
+     * unexpected data type.
+     */
+    private static int findAttributeRefByResId(byte[] data, int elementOffset,
+            int attrCount, int[] resourceIds, int targetResId) {
+        if (resourceIds == null) return 0;
+        int attrOffset = elementOffset + 36;
+        for (int i = 0; i < attrCount; i++) {
+            int attrBase = attrOffset + i * 20;
+            if (attrBase + 20 > data.length) break;
+            int attrNameIdx = readInt(data, attrBase + 4);
+            if (attrNameIdx >= 0 && attrNameIdx < resourceIds.length
+                    && resourceIds[attrNameIdx] == targetResId) {
+                int typedValueRaw = readInt(data, attrBase + 12);
+                int dataType = (typedValueRaw >> 24) & 0xFF;
+                int valueData = readInt(data, attrBase + 16);
+                // TYPE_REFERENCE=0x01, TYPE_ATTRIBUTE=0x02, TYPE_INT_HEX=0x11,
+                // TYPE_INT_DEC=0x10. Accept any of those — anything else
+                // (string-form reference into the pool) is not a usable
+                // resource id for our purposes and signals an unexpected
+                // manifest shape.
+                if (dataType == 0x01 || dataType == 0x02
+                        || dataType == 0x10 || dataType == 0x11) {
+                    return valueData;
+                }
+                return 0;
+            }
+        }
+        return 0;
     }
 
     /**
