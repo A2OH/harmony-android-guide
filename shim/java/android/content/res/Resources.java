@@ -57,6 +57,14 @@ public class Resources {
         public int getExplicitStyle(android.util.AttributeSet set) { return 0; }
         public void applyStyle(int resId, boolean force) {}
         public void setTo(Theme other) {}
+        /**
+         * AOSP-default body of {@code Resources.Theme.rebase()} (Android Q+
+         * API, frameworks/base/core/java/android/content/res/Resources.java).
+         * The real frameworks/base impl re-applies all theme styles to pick
+         * up new resource overlays; for this thin shim there is no overlay
+         * state, so this is a no-op.
+         */
+        public void rebase() {}
         public TypedArray resolveAttributes(int[] values, int[] attrs) { return new TypedArray(); }
         public Resources getResources() { return Resources.getSystem(); }
         public android.graphics.drawable.Drawable getDrawable(int id) { return new android.graphics.drawable.ColorDrawable(0); }

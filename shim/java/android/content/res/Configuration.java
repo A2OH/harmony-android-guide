@@ -136,4 +136,69 @@ public class Configuration {
     }
 
     public int diff(Configuration delta) { return 0; }
+
+    public static final int SCREENLAYOUT_LAYOUTDIR_MASK = 0xC0;
+    public static final int SCREENLAYOUT_LAYOUTDIR_SHIFT = 6;
+    public static final int SCREENLAYOUT_LAYOUTDIR_UNDEFINED = 0;
+    public static final int SCREENLAYOUT_LAYOUTDIR_LTR = 1 << SCREENLAYOUT_LAYOUTDIR_SHIFT;
+    public static final int SCREENLAYOUT_LAYOUTDIR_RTL = 2 << SCREENLAYOUT_LAYOUTDIR_SHIFT;
+
+    /**
+     * AOSP-default body of {@code Configuration.setTo(Configuration)} —
+     * copy every public field from {@code o} into {@code this}. Mirrors
+     * frameworks/base/core/java/android/content/res/Configuration.java
+     * (Android 14/Android 15 source).
+     */
+    public void setTo(Configuration o) {
+        if (o == null) return;
+        this.fontScale          = o.fontScale;
+        this.mcc                = o.mcc;
+        this.mnc                = o.mnc;
+        this.locale             = o.locale;
+        this.orientation        = o.orientation;
+        this.screenLayout       = o.screenLayout;
+        this.colorMode          = o.colorMode;
+        this.uiMode             = o.uiMode;
+        this.touchscreen        = o.touchscreen;
+        this.keyboard           = o.keyboard;
+        this.keyboardHidden     = o.keyboardHidden;
+        this.hardKeyboardHidden = o.hardKeyboardHidden;
+        this.navigation         = o.navigation;
+        this.navigationHidden   = o.navigationHidden;
+        this.densityDpi         = o.densityDpi;
+        this.screenWidthDp      = o.screenWidthDp;
+        this.screenHeightDp     = o.screenHeightDp;
+        this.smallestScreenWidthDp = o.smallestScreenWidthDp;
+        this.screenLayoutLong   = o.screenLayoutLong;
+    }
+
+    /**
+     * AOSP-default body of {@code Configuration.setLocale(Locale)} —
+     * sets the primary locale and refreshes the layout direction bits.
+     */
+    public void setLocale(java.util.Locale loc) {
+        this.locale = loc;
+        setLayoutDirection(loc);
+    }
+
+    /**
+     * AOSP-default body of {@code Configuration.setLayoutDirection(Locale)} —
+     * derives the layout direction from a Locale and stores it in the
+     * SCREENLAYOUT_LAYOUTDIR_MASK bits of {@link #screenLayout}.
+     */
+    public void setLayoutDirection(java.util.Locale loc) {
+        int dir = (loc == null) ? SCREENLAYOUT_LAYOUTDIR_LTR : SCREENLAYOUT_LAYOUTDIR_LTR;
+        // We default to LTR; real direction inference (TextUtils.getLayoutDirectionFromLocale)
+        // is not modelled in this thin shim. Apps that need RTL set it explicitly.
+        this.screenLayout = (this.screenLayout & ~SCREENLAYOUT_LAYOUTDIR_MASK) | dir;
+    }
+
+    /**
+     * AOSP-default body of {@code Configuration.getLayoutDirection()} —
+     * returns View.LAYOUT_DIRECTION_LTR (=0) or LAYOUT_DIRECTION_RTL (=1)
+     * derived from the SCREENLAYOUT_LAYOUTDIR_MASK bits.
+     */
+    public int getLayoutDirection() {
+        return (screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK) == SCREENLAYOUT_LAYOUTDIR_RTL ? 1 : 0;
+    }
 }
