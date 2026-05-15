@@ -82,7 +82,10 @@ public final class ULocale {
     }
 
     public String toLanguageTag() {
-        return locale.toLanguageTag();
+        // KitKat libcore (dalvikvm-arm32-dynamic) lacks Locale.toLanguageTag()
+        // — delegate to LocaleList's reflective+fallback helper so the call
+        // doesn't NSME and abort the caller's Activity onCreate.
+        return android.os.LocaleList.localeToBcp47(locale);
     }
 
     public String getDisplayName() {

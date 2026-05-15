@@ -54,16 +54,75 @@ public final class LocaleList {
     /**
      * Returns a comma-separated string of BCP-47 language tags for all locales
      * in this list (e.g. {@code "en-US,fr-FR"}).
+     *
+     * NB: java.util.Locale.toLanguageTag() was added in Java 7 (API 21) and is
+     * NOT present on KitKat's libcore (the runtime that dalvikvm-arm32-dynamic
+     * uses on OHOS). Calling it raises NoSuchMethodError, which AndroidX
+     * libraries (notably emoji2 during attachBaseContext) DO NOT catch — they
+     * propagate up to Activity.onCreate and abort the body before
+     * setContentView ever runs. To preserve the AOSP-default contract while
+     * remaining KitKat-libcore safe, we synthesise a BCP-47-ish tag from
+     * Locale.getLanguage() / getCountry() / getVariant() and only fall back to
+     * the native toLanguageTag() if the reflective probe succeeds.
      */
     public String toLanguageTags() {
         if (mList.length == 0) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < mList.length; i++) {
             if (i > 0) sb.append(',');
-            sb.append(mList[i].toLanguageTag());
+            sb.append(localeToBcp47(mList[i]));
         }
         return sb.toString();
     }
+
+    /**
+     * Returns the BCP-47 tag for a {@link Locale}, using the native API if
+     * present and falling back to a hand-rolled
+     * "lang[-country][-variant]" build for KitKat-era libcore that lacks
+     * {@code Locale.toLanguageTag()}.
+     *
+     * AOSP-default-equivalent body; safe on all locales. Generic, not
+     * per-app.
+     */
+    public static String localeToBcp47(Locale locale) {
+        if (locale == null) return "";
+        // Probe for the native method via reflection — caches negative
+        // result via the static-final flag below.
+        if (sHasNativeToLanguageTag) {
+            try {
+                java.lang.reflect.Method m = locale.getClass().getMethod("toLanguageTag");
+                Object result = m.invoke(locale);
+                if (result instanceof String) return (String) result;
+            } catch (NoSuchMethodException nsme) {
+                // KitKat libcore — fall through to manual build.
+                sHasNativeToLanguageTag = false;
+            } catch (Throwable ignored) {
+                // Reflection failure — fall through.
+            }
+        }
+        String lang = locale.getLanguage();
+        if (lang == null) lang = "";
+        String country = locale.getCountry();
+        String variant = locale.getVariant();
+        StringBuilder out = new StringBuilder();
+        if (lang.isEmpty()) {
+            out.append("und"); // BCP-47 "undetermined"
+        } else {
+            out.append(lang);
+        }
+        if (country != null && !country.isEmpty()) {
+            out.append('-').append(country);
+        }
+        if (variant != null && !variant.isEmpty()) {
+            out.append('-').append(variant);
+        }
+        return out.toString();
+    }
+
+    // Mutable flag — set false on first NoSuchMethodError to skip reflection
+    // on subsequent calls. Not volatile: races just retry the reflection,
+    // benign.
+    private static boolean sHasNativeToLanguageTag = true;
 
     @Override
     public String toString() {
