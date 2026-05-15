@@ -72,7 +72,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+
+import java.util.Map;
 
 // SoftwareCanvas is local to this module — see SoftwareCanvas.java
 // (intentional duplicate of :red-square's class; see that file for
@@ -519,11 +522,39 @@ public final class InProcessAppLauncher {
             }
         }
         passed++;
+
+        // CR-AA-diag: dump decor tree identity, canvas op histogram, first-N
+        // ops, and 4-corner pixel samples so we can determine whether the
+        // View tree walked was noice's REAL hierarchy (drawText/drawBitmap
+        // signals) or the substrate's recovery FrameLayout fallback
+        // (drawColor/drawRect only). Generic — no per-app branches.
+        if (drawView != null) {
+            StringBuilder tree = new StringBuilder("inproc-app-launcher decor-tree-dump:\n");
+            dumpViewTree(drawView, tree, 0);
+            System.out.println(tree.toString());
+        } else {
+            log("inproc-app-launcher decor-tree-dump: (no drawView)");
+        }
+        log("inproc-app-launcher canvas-diag totalOps=" + canvas.getTotalOps());
+        StringBuilder hist = new StringBuilder("inproc-app-launcher canvas-diag histogram:");
+        for (Map.Entry<String, Integer> e : canvas.getOpHistogram().entrySet()) {
+            hist.append(" ").append(e.getKey()).append("=").append(e.getValue());
+        }
+        log(hist.toString());
+        int opIdx = 0;
+        for (String op : canvas.getFirstOps()) {
+            log("inproc-app-launcher canvas-diag op[" + opIdx + "]=" + op);
+            opIdx++;
+        }
         log("inproc-app-launcher canvas sample(0,0)=0x"
                 + Integer.toHexString(canvas.sampleArgb(0, 0))
                 + " mid=0x" + Integer.toHexString(canvas.sampleArgb(FB_W / 2, FB_H / 2))
+                + " topRight=0x" + Integer.toHexString(canvas.sampleArgb(FB_W - 1, 0))
+                + " bottomLeft=0x" + Integer.toHexString(canvas.sampleArgb(0, FB_H - 1))
                 + " hasBackground=" + canvas.hasBackground()
-                + " bgARGB=0x" + Integer.toHexString(canvas.getBackgroundARGB()));
+                + " bgARGB=0x" + Integer.toHexString(canvas.getBackgroundARGB())
+                + " hasRect=" + canvas.hasRect()
+                + " rectColor=0x" + Integer.toHexString(canvas.getRectColor()));
 
         // Step 8: materialize int[] ARGB.
         int[] argb;
@@ -604,5 +635,44 @@ public final class InProcessAppLauncher {
 
     private static void log(String msg) {
         System.out.println(msg);
+    }
+
+    /** CR-AA-diag: compact view-tree dump (class + bounds + child count). */
+    private static void dumpViewTree(View v, StringBuilder sb, int depth) {
+        if (v == null) return;
+        for (int d = 0; d < depth; d++) sb.append("  ");
+        sb.append(v.getClass().getName())
+                .append(" [")
+                .append(v.getWidth()).append("x").append(v.getHeight())
+                .append(" @").append(v.getLeft()).append(",").append(v.getTop())
+                .append(" vis=").append(v.getVisibility())
+                .append("]");
+        // Lightweight extra info for text views; no setAccessible, no
+        // per-app branches — just an instanceof check on a public type.
+        if (v instanceof android.widget.TextView) {
+            CharSequence txt = ((android.widget.TextView) v).getText();
+            String preview = txt == null ? "(null)"
+                    : (txt.length() > 32 ? txt.subSequence(0, 32).toString() + "..."
+                                         : txt.toString());
+            sb.append(" text=\"").append(preview).append("\"");
+        }
+        sb.append("\n");
+        if (v instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) v;
+            int n = vg.getChildCount();
+            for (int d = 0; d < depth + 1; d++) sb.append("  ");
+            sb.append("childCount=").append(n).append("\n");
+            // Cap recursion so a pathological tree doesn't blow the log.
+            int cap = depth >= 6 ? 0 : n;
+            for (int i = 0; i < cap; i++) {
+                try {
+                    dumpViewTree(vg.getChildAt(i), sb, depth + 1);
+                } catch (Throwable t) {
+                    for (int d = 0; d < depth + 1; d++) sb.append("  ");
+                    sb.append("[child ").append(i).append(" dump threw: ")
+                            .append(t).append("]\n");
+                }
+            }
+        }
     }
 }
