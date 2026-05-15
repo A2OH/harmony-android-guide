@@ -1,0 +1,81 @@
+dalvikvm: creating VM...
+[V/dalvikvm] VM init args (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDlopenReal.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] VM options (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDlopenReal.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] Using kernel group scheduling
+[V/dalvikvm] Using executionMode 1
+[V/dalvikvm] threadid=1: interp stack at 0xf7764000
+[V/dalvikvm] LinearAlloc: created region at 0xf0269000-0xf1268fff
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/core-android-x86.jar' 0xffdc7c40
+[V/dalvikvm] +++ Found EOCD at buf+65535
+[V/dalvikvm] +++ numEntries=6 dirSize=458 dirOffset=1230935
+
+[V/dalvikvm] +++ zip good scan 6 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/core-android-x86.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/core-android-x86.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/core-android-x86.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex (fd=4, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 0
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=310532
+[V/dalvikvm] +++ DEX 0xf6b0a000: allocateAux (23168+2267+21365+7927)*4 = 218908 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/core-android-x86.jar'
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 0xffdc7c40
+[V/dalvikvm] +++ Found EOCD at buf+1770
+[V/dalvikvm] +++ numEntries=3 dirSize=182 dirOffset=1588
+
+[V/dalvikvm] +++ zip good scan 3 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/direct-print-stream.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/direct-print-stream.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex (fd=5, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 1
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=164
+[V/dalvikvm] +++ DEX 0xf7754000: allocateAux (39+11+22+1)*4 = 292 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/direct-print-stream.jar'
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0x10006640
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0xf2a43a68
+dalvikvm: invoking com.westlake.ohostests.hello.HelloDlopenReal.main()
+hello-dlopen-real-start[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1d900069
+hello-dlopen-real loadLibrary OK[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1e100069
+hello-dlopen-real nativeInit=1[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1e400069
+hello-dlopen-real nativeAllocNull=0[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1e700069
+hello-dlopen-real nativeAlloc handle=0xf6b08e70[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1ea00069
+hello-dlopen-real seqNum=845348865[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1ed00069
+hello-dlopen-real nativeUnref rc=0[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1f000069
+hello-dlopen-real-done passed=6 failed=0[W/dalvikvm] addLocalReference: obj=0xf2a4cbc0 -> jobj=0x1f200069
+[D/dalvikvm-heap] Done.
+[V/dalvikvm-heap] GC finished
+[V/dalvikvm-heap] Resuming threads
+[D/dalvikvm] GC_CONCURRENT freed 17K, 16% free 104K/124K, paused 0ms+0ms, total 1ms
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/CollectionUtils$1$1;' 0 (isnew=1) --> 0xf2a56348
+[V/dalvikvm] threadid=2: bye!
+[V/dalvikvm] threadid=3: bye!
+[V/dalvikvm] signal catcher has shut down
+[V/dalvikvm] +++ DEX 0xf6b0a000: freeing aux structs
+[V/dalvikvm] munmap(0xeff52000, 3239472) succeeded
+[V/dalvikvm] Closing archive 0xf778aef0
+[V/dalvikvm] munmap(0xf7757000, 2593) succeeded
+[V/dalvikvm] +++ DEX 0xf7754000: freeing aux structs
+[V/dalvikvm] munmap(0xf7755000, 2736) succeeded
+[V/dalvikvm] Closing archive 0xf7775020
+[V/dalvikvm] munmap(0xf7756000, 1770) succeeded
+[V/dalvikvm] +++ DEX 0xef9c6000: freeing aux structs
+[V/dalvikvm] munmap(0xefa35000, 5359328) succeeded
+[V/dalvikvm] +++ DEX 0xf773d000: freeing aux structs
+[V/dalvikvm] munmap(0xf773e000, 6072) succeeded

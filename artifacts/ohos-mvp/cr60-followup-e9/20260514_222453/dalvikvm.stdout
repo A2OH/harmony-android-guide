@@ -1,0 +1,1138 @@
+dalvikvm: creating VM...
+[V/dalvikvm] VM init args (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDlopenReal.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] VM options (4):
+[V/dalvikvm]   0: '-Xbootclasspath:/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex:/data/local/tmp/westlake/HelloDlopenReal.dex'
+[V/dalvikvm]   1: '-Djava.library.path=/data/local/tmp/westlake'
+[V/dalvikvm]   2: '-Xms4m'
+[V/dalvikvm]   3: '-Xmx64m'
+[V/dalvikvm] Using kernel group scheduling
+[V/dalvikvm] Using executionMode 1
+[V/dalvikvm] threadid=1: interp stack at 0xf75eb000
+[V/dalvikvm] LinearAlloc: created region at 0xf00e9000-0xf10e8fff
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/core-android-x86.jar' 0xffb8ea20
+[V/dalvikvm] +++ Found EOCD at buf+65535
+[V/dalvikvm] +++ numEntries=6 dirSize=458 dirOffset=1230935
+
+[V/dalvikvm] +++ zip good scan 6 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/core-android-x86.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/core-android-x86.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/core-android-x86.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex (fd=4, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 0
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=310532
+[V/dalvikvm] +++ DEX 0xf6b4a000: allocateAux (23168+2267+21365+7927)*4 = 218908 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/core-android-x86.jar'
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 0xffb8ea20
+[V/dalvikvm] +++ Found EOCD at buf+1770
+[V/dalvikvm] +++ numEntries=3 dirSize=182 dirOffset=1588
+
+[V/dalvikvm] +++ zip good scan 3 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/direct-print-stream.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/direct-print-stream.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex (fd=5, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 1
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=164
+[V/dalvikvm] +++ DEX 0xf75db000: allocateAux (39+11+22+1)*4 = 292 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/direct-print-stream.jar'
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex' '(null)' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex'
+[V/dalvikvm] dvmRawDexFileOpen: Checking cache for /data/local/tmp/westlake/bcp/aosp-shim-ohos.dex (/data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex (fd=6, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 2
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex'
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=375552
+[V/dalvikvm] +++ DEX 0xef846000: allocateAux (48238+4556+39770+20584)*4 = 452592 bytes
+[V/dalvikvm] Successfully opened '/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex'
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/HelloDlopenReal.dex' '(null)' is '/data/dalvik-cache/data@local@tmp@westlake@HelloDlopenReal.dex'
+[V/dalvikvm] dvmRawDexFileOpen: Checking cache for /data/local/tmp/westlake/HelloDlopenReal.dex (/data/dalvik-cache/data@local@tmp@westlake@HelloDlopenReal.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@HelloDlopenReal.dex (fd=6, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] DexOpt: successfully initialized new cache file
+[D/dalvikvm] DexOpt: --- BEGIN 'HelloDlopenReal.dex' (bootstrap=1) ---
+[V/dalvikvm] DexOpt: waiting for verify+opt, pid=12826
+[V/dalvikvm] Args: fd=6 off=40 len=5264 name='/data/local/tmp/westlake/HelloDlopenReal.dex' mod=0x5fefaef4 crc=0xabc09b6b flg=61 (argc=4)
+[V/dalvikvm] DEP: '/data/local/tmp/westlake/bcp/core-android-x86.jar'
+[V/dalvikvm] DEP: '/data/local/tmp/westlake/bcp/direct-print-stream.jar'
+[V/dalvikvm] DEP: '/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex'
+[V/dalvikvm]   bootclasspath is '/data/local/tmp/westlake/bcp/core-android-x86.jar:/data/local/tmp/westlake/bcp/direct-print-stream.jar:/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex'
+[V/dalvikvm] threadid=1: interp stack at 0x7f87bd9000
+[V/dalvikvm] LinearAlloc: created region at 0x7f86bca000-0x7f87bc9fff
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/core-android-x86.jar' 0x7fd2182fd8
+[V/dalvikvm] +++ Found EOCD at buf+65535
+[V/dalvikvm] +++ numEntries=6 dirSize=458 dirOffset=1230935
+
+[V/dalvikvm] +++ zip good scan 6 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/core-android-x86.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/core-android-x86.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/core-android-x86.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex (fd=4, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 0
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=310532
+[V/dalvikvm] +++ DEX 0x105f7000: allocateAux (46336+4534+42730+15854)*4 = 437816 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/core-android-x86.jar'
+[V/dalvikvm] Opening as zip '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 0x7fd2182fd8
+[V/dalvikvm] +++ Found EOCD at buf+1770
+[V/dalvikvm] +++ numEntries=3 dirSize=182 dirOffset=1588
+
+[V/dalvikvm] +++ zip good scan 3 entries
+[V/dalvikvm] Couldn't open /data/local/tmp/westlake/bcp/direct-print-stream.odex: No such file or directory
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/direct-print-stream.jar' 'classes.dex' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex'
+[V/dalvikvm] dvmJarFileOpen: Checking cache for /data/local/tmp/westlake/bcp/direct-print-stream.jar (/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex (fd=5, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 1
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=164
+[V/dalvikvm] +++ DEX 0x10662000: allocateAux (78+22+44+2)*4 = 584 bytes
+[V/dalvikvm] Successfully opened 'classes.dex' in '/data/local/tmp/westlake/bcp/direct-print-stream.jar'
+[V/dalvikvm] Cache file for '/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex' '(null)' is '/data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex'
+[V/dalvikvm] dvmRawDexFileOpen: Checking cache for /data/local/tmp/westlake/bcp/aosp-shim-ohos.dex (/data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex)
+[V/dalvikvm] DexOpt: locking cache file /data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex (fd=7, boot=1)
+[V/dalvikvm] DexOpt:  locked cache file
+[V/dalvikvm] checking deps, expecting vfy=1 opt=1
+[V/dalvikvm] +++ DexOpt: numDeps = 2
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex'
+[V/dalvikvm] DexOpt: dep match on '/data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex'
+[V/dalvikvm] DexOpt: good deps in cache file
+[V/dalvikvm] Good opt header, DEX offset is 40, flags=0x00
+[V/dalvikvm] +++ found register maps, size=375552
+[V/dalvikvm] +++ DEX 0x10663000: allocateAux (96476+9112+79540+41168)*4 = 905184 bytes
+[V/dalvikvm] Successfully opened '/data/local/tmp/westlake/bcp/aosp-shim-ohos.dex'
+[V/dalvikvm] Continuing optimization (/data/local/tmp/westlake/HelloDlopenReal.dex, isb=1)
+[V/dalvikvm] +++ swapping and verifying
+[V/dalvikvm] +++ DEX 0x10741000: allocateAux (174+30+54+10)*4 = 1072 bytes
+[V/dalvikvm] Class lookup: classes=2 slots=4 (50% occ) alloc=56 total=0 max=0
+[V/dalvikvm] DexOpt: +++ trying to load 2 classes
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Object;' 0 (isnew=1) --> 0x7f87bf1010
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Throwable;' 0 (isnew=1) --> 0x7f87bf1130
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/Serializable;' 0 (isnew=1) --> 0x7f87bf1280
+[W/dalvikvm] DexOpt: --- END 'HelloDlopenReal.dex' --- status=0x000b, process failed
+[W/dalvikvm] Unable to extract+optimize DEX from '/data/local/tmp/westlake/HelloDlopenReal.dex' (non-fatal, using raw)
+[V/dalvikvm] +++ DEX 0xf75d6000: allocateAux (87+15+27+5)*4 = 536 bytes
+[I/dalvikvm] Loaded raw DEX '/data/local/tmp/westlake/HelloDlopenReal.dex' without optimization (5264 bytes mmap'd)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Object;' 0 (isnew=1) --> 0xf28c0890
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Throwable;' 0 (isnew=1) --> 0xf28c0938
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/Serializable;' 0 (isnew=1) --> 0xf28c09f8
+[V/dalvikvm] --- LinearRealloc(92) old=100
+[V/dalvikvm] Array class '[Ljava/lang/Class;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Class;' 0 (isnew=1) --> 0xf28c01e8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/AnnotatedElement;' 0 (isnew=1) --> 0xf28c0aa0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/GenericDeclaration;' 0 (isnew=1) --> 0xf28c0b48
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Type;' 0 (isnew=1) --> 0xf28c0bf0
+[V/dalvikvm] --- LinearRealloc(288) old=292
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Cloneable;' 0 (isnew=1) --> 0xf28c0d40
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Class;' 0 (isnew=1) --> 0xf28c0c98
+[V/dalvikvm] Created array class '[Ljava/lang/Class;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassLoader;' 0 (isnew=1) --> 0xf28c0de8
+[V/dalvikvm] Array class '[Ljava/lang/Object;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Object;' 0 (isnew=1) --> 0xf28c0e90
+[V/dalvikvm] Created array class '[Ljava/lang/Object;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StackTraceElement;' 0 (isnew=1) --> 0xf28c1008
+[V/dalvikvm] --- LinearRealloc(64) old=76
+[V/dalvikvm] Array class '[Ljava/lang/StackTraceElement;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/StackTraceElement;' 0 (isnew=1) --> 0xf28c0f38
+[V/dalvikvm] Created array class '[Ljava/lang/StackTraceElement;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/String;' 0 (isnew=1) --> 0xf28c10e0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Comparable;' 0 (isnew=1) --> 0xf28c11e8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/CharSequence;' 0 (isnew=1) --> 0xf28c1290
+[V/dalvikvm] --- LinearRealloc(248) old=260
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Thread;' 0 (isnew=1) --> 0xf28c1338
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Runnable;' 0 (isnew=1) --> 0xf28c1470
+[V/dalvikvm] --- LinearRealloc(180) old=188
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ThreadGroup;' 0 (isnew=1) --> 0xf28c1518
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Thread$UncaughtExceptionHandler;' 0 (isnew=1) --> 0xf28c15f0
+[V/dalvikvm] --- LinearRealloc(144) old=148
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/VMThread;' 0 (isnew=1) --> 0xf28c1698
+[V/dalvikvm] Array class '[Z' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Z' 0 (isnew=1) --> 0xf28c1758
+[V/dalvikvm] Created array class '[Z' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[B' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[B' 0 (isnew=1) --> 0xf28c1800
+[V/dalvikvm] Created array class '[B' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[S' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[S' 0 (isnew=1) --> 0xf28c18a8
+[V/dalvikvm] Created array class '[S' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[C' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[C' 0 (isnew=1) --> 0xf28c1950
+[V/dalvikvm] Created array class '[C' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[I' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[I' 0 (isnew=1) --> 0xf28c19f8
+[V/dalvikvm] Created array class '[I' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[J' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[J' 0 (isnew=1) --> 0xf28c1aa0
+[V/dalvikvm] Created array class '[J' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[F' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[F' 0 (isnew=1) --> 0xf28c1b48
+[V/dalvikvm] Created array class '[F' 0 (access=0x4000.0411)
+[V/dalvikvm] Array class '[D' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[D' 0 (isnew=1) --> 0xf28c1bf0
+[V/dalvikvm] Created array class '[D' 0 (access=0x4000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/AbstractMethodError;' 0 (isnew=1) --> 0xf28c1c98
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IncompatibleClassChangeError;' 0 (isnew=1) --> 0xf28c1d58
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/LinkageError;' 0 (isnew=1) --> 0xf28c1e18
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Error;' 0 (isnew=1) --> 0xf28c1ed8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ArithmeticException;' 0 (isnew=1) --> 0xf28c1f98
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/RuntimeException;' 0 (isnew=1) --> 0xf28c2058
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Exception;' 0 (isnew=1) --> 0xf28c2118
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ArrayIndexOutOfBoundsException;' 0 (isnew=1) --> 0xf28c21d8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IndexOutOfBoundsException;' 0 (isnew=1) --> 0xf28c2298
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ArrayStoreException;' 0 (isnew=1) --> 0xf28c2358
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassCastException;' 0 (isnew=1) --> 0xf28c2418
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassCircularityError;' 0 (isnew=1) --> 0xf28c24d8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassNotFoundException;' 0 (isnew=1) --> 0xf28c2598
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ReflectiveOperationException;' 0 (isnew=1) --> 0xf28c2658
+[V/dalvikvm] --- LinearRealloc(96) old=100
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassFormatError;' 0 (isnew=1) --> 0xf28c2700
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ExceptionInInitializerError;' 0 (isnew=1) --> 0xf28c27c0
+[V/dalvikvm] --- LinearRealloc(96) old=100
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FileNotFoundException;' 0 (isnew=1) --> 0xf28c2880
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/IOException;' 0 (isnew=1) --> 0xf28c2940
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalAccessError;' 0 (isnew=1) --> 0xf28c2a00
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalAccessException;' 0 (isnew=1) --> 0xf28c2ac0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalArgumentException;' 0 (isnew=1) --> 0xf28c2b80
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalMonitorStateException;' 0 (isnew=1) --> 0xf28c2c40
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalStateException;' 0 (isnew=1) --> 0xf28c2d00
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/IllegalThreadStateException;' 0 (isnew=1) --> 0xf28c2dc0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/InstantiationError;' 0 (isnew=1) --> 0xf28c2e80
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/InstantiationException;' 0 (isnew=1) --> 0xf28c2f40
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/InternalError;' 0 (isnew=1) --> 0xf28c3000
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/VirtualMachineError;' 0 (isnew=1) --> 0xf28c30c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/InterruptedException;' 0 (isnew=1) --> 0xf28c3180
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NegativeArraySizeException;' 0 (isnew=1) --> 0xf28c3240
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NoClassDefFoundError;' 0 (isnew=1) --> 0xf28c3300
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NoSuchFieldError;' 0 (isnew=1) --> 0xf28c33c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NoSuchFieldException;' 0 (isnew=1) --> 0xf28c3480
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NoSuchMethodError;' 0 (isnew=1) --> 0xf28c3540
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/NullPointerException;' 0 (isnew=1) --> 0xf28c3600
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/OutOfMemoryError;' 0 (isnew=1) --> 0xf28c36c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StackOverflowError;' 0 (isnew=1) --> 0xf28c3780
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/StaleDexCacheError;' 0 (isnew=1) --> 0xf28c3840
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StringIndexOutOfBoundsException;' 0 (isnew=1) --> 0xf28c38e8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/TypeNotPresentException;' 0 (isnew=1) --> 0xf28c39a8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsatisfiedLinkError;' 0 (isnew=1) --> 0xf28c3a68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/UnsupportedOperationException;' 0 (isnew=1) --> 0xf28c3b28
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/VerifyError;' 0 (isnew=1) --> 0xf28c3be8
+[V/dalvikvm] Array class '[Ljava/lang/annotation/Annotation;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/annotation/Annotation;' 0 (isnew=1) --> 0xf28c3ca8
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/annotation/Annotation;' 0 (isnew=1) --> 0xf28c3d50
+[V/dalvikvm] Created array class '[Ljava/lang/annotation/Annotation;' 0 (access=0x6000.0411)
+[V/dalvikvm] Array class '[[Ljava/lang/annotation/Annotation;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[[Ljava/lang/annotation/Annotation;' 0 (isnew=1) --> 0xf28c3df8
+[V/dalvikvm] Created array class '[[Ljava/lang/annotation/Annotation;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/AccessibleObject;' 0 (isnew=1) --> 0xf28c3ea0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Constructor;' 0 (isnew=1) --> 0xf28c3f60
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Member;' 0 (isnew=1) --> 0xf28c4008
+[V/dalvikvm] --- LinearRealloc(148) old=180
+[V/dalvikvm] Array class '[Ljava/lang/reflect/Constructor;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/reflect/Constructor;' 0 (isnew=1) --> 0xf28c40e0
+[V/dalvikvm] Created array class '[Ljava/lang/reflect/Constructor;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Field;' 0 (isnew=1) --> 0xf28c4188
+[V/dalvikvm] --- LinearRealloc(200) old=228
+[V/dalvikvm] Array class '[Ljava/lang/reflect/Field;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/reflect/Field;' 0 (isnew=1) --> 0xf28c4308
+[V/dalvikvm] Created array class '[Ljava/lang/reflect/Field;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Method;' 0 (isnew=1) --> 0xf28c43b0
+[V/dalvikvm] --- LinearRealloc(164) old=196
+[V/dalvikvm] Array class '[Ljava/lang/reflect/Method;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/reflect/Method;' 0 (isnew=1) --> 0xf28c4488
+[V/dalvikvm] Created array class '[Ljava/lang/reflect/Method;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/Proxy;' 0 (isnew=1) --> 0xf28c4530
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/System;' 0 (isnew=1) --> 0xf28c4650
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/DirectByteBuffer;' 0 (isnew=1) --> 0xf28c4770
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/MappedByteBuffer;' 0 (isnew=1) --> 0xf28c4818
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/ByteBuffer;' 0 (isnew=1) --> 0xf28c48c0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/Buffer;' 0 (isnew=1) --> 0xf28c4968
+[V/dalvikvm] --- LinearRealloc(140) old=148
+[V/dalvikvm] --- LinearRealloc(344) old=372
+[V/dalvikvm] --- LinearRealloc(408) old=588
+[V/dalvikvm] +++ dvmAddClassToHash 'Lorg/apache/harmony/dalvik/ddmc/Chunk;' 0 (isnew=1) --> 0xf28c4a28
+[V/dalvikvm] +++ dvmAddClassToHash 'Lorg/apache/harmony/dalvik/ddmc/DdmServer;' 0 (isnew=1) --> 0xf28c4ad0
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/reflect/AnnotationFactory;' 0 (isnew=1) --> 0xf28c4c08
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/InvocationHandler;' 0 (isnew=1) --> 0xf28c4cc8
+[V/dalvikvm] --- LinearRealloc(48) old=60
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/reflect/AnnotationMember;' 0 (isnew=1) --> 0xf28c4d70
+[V/dalvikvm] --- LinearRealloc(64) old=76
+[V/dalvikvm] Array class '[Llibcore/reflect/AnnotationMember;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Llibcore/reflect/AnnotationMember;' 0 (isnew=1) --> 0xf28c4e78
+[V/dalvikvm] Created array class '[Llibcore/reflect/AnnotationMember;' 0 (access=0x6000.0411)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FileDescriptor;' 0 (isnew=1) --> 0xf28c4f20
+[V/dalvikvm] --- LinearRealloc(60) old=68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ref/FinalizerReference;' 0 (isnew=1) --> 0xf28c5010
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ref/Reference;' 0 (isnew=1) --> 0xf28c5100
+[V/dalvikvm] --- LinearRealloc(64) old=76
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/VMDebug;' 0 (isnew=1) --> 0xf28c51a8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/NativeStart;' 0 (isnew=1) --> 0xf28c5598
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ref/ReferenceQueue;' 0 (isnew=1) --> 0xf28c5640
+[V/dalvikvm] ----- type is 0x04 2, ptr=0xf0061bf5 [0x28fbcd]
+[V/dalvikvm] +++ dvmAddClassToHash 'Lorg/apache/harmony/dalvik/NativeTestTarget;' 0 (isnew=1) --> 0xf28c5738
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Math;' 0 (isnew=1) --> 0xf28c57e0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Float;' 0 (isnew=1) --> 0xf28c58d0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Number;' 0 (isnew=1) --> 0xf28c5b28
+[V/dalvikvm] --- LinearRealloc(84) old=124
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Double;' 0 (isnew=1) --> 0xf28c5be8
+[V/dalvikvm] --- LinearRealloc(84) old=124
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StrictMath;' 0 (isnew=1) --> 0xf28c5e40
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Boolean;' 0 (isnew=1) --> 0xf28c5f18
+[V/dalvikvm] --- LinearRealloc(56) old=68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Character;' 0 (isnew=1) --> 0xf28c6020
+[V/dalvikvm] --- LinearRealloc(56) old=68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Byte;' 0 (isnew=1) --> 0xf28c6728
+[V/dalvikvm] --- LinearRealloc(76) old=116
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Short;' 0 (isnew=1) --> 0xf28c6860
+[V/dalvikvm] --- LinearRealloc(76) old=116
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Integer;' 0 (isnew=1) --> 0xf28c6998
+[V/dalvikvm] --- LinearRealloc(76) old=116
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Long;' 0 (isnew=1) --> 0xf28c6ae8
+[V/dalvikvm] --- LinearRealloc(76) old=116
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00619d6 [0x28f9ae]
+[W/dalvikvm] addLocalReference: obj=0xf28c01e8 -> jobj=0x1d200001
+[V/dalvikvm] JNI-registered Ljava/lang/Class;.getDex:()Lcom/android/dex/Dex;
+[D/dalvikvm] Trying to load lib libjavacore.so 0
+[E/dalvikvm] dlopen("libjavacore.so") failed: Error loading shared library libjavacore.so: No such file or directory
+[W/dalvikvm] dvmLoadNativeCode failed for "javacore": Error loading shared library libjavacore.so: No such file or directory (non-fatal)
+[D/dalvikvm] Trying to load lib libnativehelper.so 0
+[E/dalvikvm] dlopen("libnativehelper.so") failed: Error loading shared library libnativehelper.so: No such file or directory
+[W/dalvikvm] dvmLoadNativeCode failed for "nativehelper": Error loading shared library libnativehelper.so: No such file or directory (non-fatal)
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/OsConstants;' 0 (isnew=1) --> 0xf28c6c20
+[W/dalvikvm] addLocalReference: obj=0xf28c6c20 -> jobj=0x1d200005
+[V/dalvikvm] JNI-registered Llibcore/io/OsConstants;.initConstants:()V
+[V/dalvikvm] Registered libcore bridge: libcore/io/OsConstants (1/1 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/Posix;' 0 (isnew=1) --> 0xf28c95f0
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/Os;' 0 (isnew=1) --> 0xf28c9698
+[W/dalvikvm] addLocalReference: obj=0xf28c95f0 -> jobj=0x1d200009
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getenv:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getuid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getgid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.geteuid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getegid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getpid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getppid:()I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.sysconf:(I)J
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.isatty:(Ljava/io/FileDescriptor;)Z
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.setenv:(Ljava/lang/String;Ljava/lang/String;Z)V
+[W/dalvikvm] Unable to register: not native: Llibcore/io/Posix;.umask:(I)I
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061288 [0x28f260]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00615d5 [0x28f5ad]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00618b8 [0x28f890]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00618c2 [0x28f89a]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061bb8 [0x28fb90]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061c38 [0x28fc10]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061c39 [0x28fc11]
+[V/dalvikvm] ----- type is 0x03 1, ptr=0xf0061c3a [0x28fc12]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061c3d [0x28fc15]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/String$CaseInsensitiveComparator;' 0 (isnew=1) --> 0xf28c9760
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Comparator;' 0 (isnew=1) --> 0xf28c9820
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061c2e [0x28fc06]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections;' 0 (isnew=1) --> 0xf28c9a88
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections$1;' 0 (isnew=1) --> 0xf28c9ba8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Iterator;' 0 (isnew=1) --> 0xf28c9c50
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections$2;' 0 (isnew=1) --> 0xf28c9d08
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Enumeration;' 0 (isnew=1) --> 0xf28c9db0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections$EmptyList;' 0 (isnew=1) --> 0xf28c9e68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/AbstractList;' 0 (isnew=1) --> 0xf28c9f28
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/AbstractCollection;' 0 (isnew=1) --> 0xf28c9fd0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collection;' 0 (isnew=1) --> 0xf28ca078
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Iterable;' 0 (isnew=1) --> 0xf28ca120
+[V/dalvikvm] --- LinearRealloc(96) old=100
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/List;' 0 (isnew=1) --> 0xf28ca1c8
+[V/dalvikvm] --- LinearRealloc(140) old=164
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/RandomAccess;' 0 (isnew=1) --> 0xf28ca270
+[V/dalvikvm] --- LinearRealloc(140) old=156
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0062796 [0x29076e]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections$EmptySet;' 0 (isnew=1) --> 0xf28ca328
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/AbstractSet;' 0 (isnew=1) --> 0xf28ca3e8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Set;' 0 (isnew=1) --> 0xf28ca490
+[V/dalvikvm] --- LinearRealloc(96) old=108
+[V/dalvikvm] --- LinearRealloc(96) old=108
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00627aa [0x290782]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Collections$EmptyMap;' 0 (isnew=1) --> 0xf28ca548
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/AbstractMap;' 0 (isnew=1) --> 0xf28ca608
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Map;' 0 (isnew=1) --> 0xf28ca6b0
+[V/dalvikvm] --- LinearRealloc(92) old=108
+[V/dalvikvm] --- LinearRealloc(92) old=116
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00627a0 [0x290778]
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/EmptyArray;' 0 (isnew=1) --> 0xf28ca770
+[V/dalvikvm] Array class '[Ljava/lang/String;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/String;' 0 (isnew=1) --> 0xf28ca9e0
+[V/dalvikvm] Created array class '[Ljava/lang/String;' 0 (access=0x6000.0411)
+[V/dalvikvm] Array class '[Ljava/lang/Throwable;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Throwable;' 0 (isnew=1) --> 0xf28caaa0
+[V/dalvikvm] Created array class '[Ljava/lang/Throwable;' 0 (access=0x6000.0411)
+[V/dalvikvm] Array class '[Ljava/lang/reflect/Type;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/reflect/Type;' 0 (isnew=1) --> 0xf28cab78
+[V/dalvikvm] Created array class '[Ljava/lang/reflect/Type;' 0 (access=0x6000.0411)
+[V/dalvikvm] Array class '[Ljava/lang/reflect/TypeVariable;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/reflect/TypeVariable;' 0 (isnew=1) --> 0xf28cac38
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/reflect/TypeVariable;' 0 (isnew=1) --> 0xf28cace0
+[V/dalvikvm] Created array class '[Ljava/lang/reflect/TypeVariable;' 0 (access=0x6000.0411)
+[V/dalvikvm] Skipped non-native: libcore/io/Posix.umask
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.getpwuid:(I)Llibcore/io/StructPasswd;
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.stat:(Ljava/lang/String;)Llibcore/io/StructStat;
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.uname:()Llibcore/io/StructUtsname;
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.open:(Ljava/lang/String;II)Ljava/io/FileDescriptor;
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.close:(Ljava/io/FileDescriptor;)V
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.fstat:(Ljava/io/FileDescriptor;)Llibcore/io/StructStat;
+[W/dalvikvm] Unable to register: not native: Llibcore/io/Posix;.read:(Ljava/io/FileDescriptor;[BII)I
+[V/dalvikvm] Skipped non-native: libcore/io/Posix.read
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.readBytes:(Ljava/io/FileDescriptor;Ljava/lang/Object;II)I
+[W/dalvikvm] Unable to register: not native: Llibcore/io/Posix;.write:(Ljava/io/FileDescriptor;[BII)I
+[V/dalvikvm] Skipped non-native: libcore/io/Posix.write
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.writeBytes:(Ljava/io/FileDescriptor;Ljava/lang/Object;II)I
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.mkdir:(Ljava/lang/String;I)V
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.lseek:(Ljava/io/FileDescriptor;JI)J
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/io/Posix;.fcntlInt:(Ljava/io/FileDescriptor;II)I
+[V/dalvikvm] Skipped non-native: libcore/io/Posix.fcntlInt
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.access:(Ljava/lang/String;I)Z
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.chmod:(Ljava/lang/String;I)V
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.rename:(Ljava/lang/String;Ljava/lang/String;)V
+[V/dalvikvm] JNI-registered Llibcore/io/Posix;.remove:(Ljava/lang/String;)V
+[V/dalvikvm] Registered libcore bridge: libcore/io/Posix (24/28 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/icu/ICU;' 0 (isnew=1) --> 0xf28cb0f8
+[W/dalvikvm] addLocalReference: obj=0xf28cb0f8 -> jobj=0x1d20000d
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getIcuVersion:()Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getUnicodeVersion:()Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getCldrVersion:()Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getAvailableLocalesNative:()[Ljava/lang/String;
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/icu/ICU;.getDefaultLocale:()Ljava/lang/String;
+[V/dalvikvm] Skipped non-native: libcore/icu/ICU.getDefaultLocale
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/icu/ICU;.setDefaultLocale:(Ljava/lang/String;)V
+[V/dalvikvm] Skipped non-native: libcore/icu/ICU.setDefaultLocale
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.toLowerCase:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.toUpperCase:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.initLocaleDataNative:(Ljava/lang/String;Llibcore/icu/LocaleData;)Z
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getCurrencyCode:(Ljava/lang/String;)Ljava/lang/String;
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/icu/ICU;.getISO3Country:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] Skipped non-native: libcore/icu/ICU.getISO3Country
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/icu/ICU;.getISO3Language:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] Skipped non-native: libcore/icu/ICU.getISO3Language
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getScript:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getBestDateTimePatternNative:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getISOLanguagesNative:()[Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/ICU;.getISOCountriesNative:()[Ljava/lang/String;
+[V/dalvikvm] Registered libcore bridge: libcore/icu/ICU (12/16 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/icu/NativeConverter;' 0 (isnew=1) --> 0xf28cb758
+[W/dalvikvm] addLocalReference: obj=0xf28cb758 -> jobj=0x1d200011
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.charsetForName:(Ljava/lang/String;)Ljava/nio/charset/Charset;
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.openConverter:(Ljava/lang/String;)J
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.closeConverter:(J)V
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.resetByteToChar:(J)V
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.resetCharToByte:(J)V
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getAveBytesPerChar:(J)F
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getAveCharsPerByte:(J)F
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getMaxBytesPerChar:(J)I
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getMinBytesPerChar:(J)I
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getSubstitutionBytes:(J)[B
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.contains:(Ljava/lang/String;Ljava/lang/String;)Z
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.getAvailableCharsetNames:()[Ljava/lang/String;
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.encode:(J[CI[BI[IZ)I
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.decode:(J[BI[CI[IZ)I
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.setCallbackDecode:(JIILjava/lang/String;)V
+[V/dalvikvm] JNI-registered Llibcore/icu/NativeConverter;.setCallbackEncode:(JII[B)V
+[V/dalvikvm] Registered libcore bridge: libcore/icu/NativeConverter (16/16 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c4650 -> jobj=0x1d200015
+[V/dalvikvm] JNI-registered Ljava/lang/System;.specialProperties:()[Ljava/lang/String;
+[V/dalvikvm] JNI-registered Ljava/lang/System;.currentTimeMillis:()J
+[V/dalvikvm] JNI-registered Ljava/lang/System;.nanoTime:()J
+[V/dalvikvm] JNI-registered Ljava/lang/System;.identityHashCode:(Ljava/lang/Object;)I
+[V/dalvikvm] JNI-registered Ljava/lang/System;.mapLibraryName:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Ljava/lang/System;.log:(CLjava/lang/String;Ljava/lang/Throwable;)V
+[V/dalvikvm] Registered libcore bridge: java/lang/System (6/6 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/File;' 0 (isnew=1) --> 0xf28cb800
+[V/dalvikvm] --- LinearRealloc(220) old=236
+[W/dalvikvm] addLocalReference: obj=0xf28cb800 -> jobj=0x1d200019
+[V/dalvikvm] JNI-registered Ljava/io/File;.realpath:(Ljava/lang/String;)Ljava/lang/String;
+[V/dalvikvm] JNI-registered Ljava/io/File;.setLastModifiedImpl:(Ljava/lang/String;J)Z
+[V/dalvikvm] Registered libcore bridge: java/io/File (2/2 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/charset/Charsets;' 0 (isnew=1) --> 0xf28cb938
+[W/dalvikvm] addLocalReference: obj=0xf28cb938 -> jobj=0x1d20001d
+[V/dalvikvm] JNI-registered Ljava/nio/charset/Charsets;.toUtf8Bytes:([CII)[B
+[V/dalvikvm] JNI-registered Ljava/nio/charset/Charsets;.toAsciiBytes:([CII)[B
+[V/dalvikvm] JNI-registered Ljava/nio/charset/Charsets;.toIsoLatin1Bytes:([CII)[B
+[V/dalvikvm] JNI-registered Ljava/nio/charset/Charsets;.asciiBytesToChars:([BII[C)V
+[V/dalvikvm] JNI-registered Ljava/nio/charset/Charsets;.isoLatin1BytesToChars:([BII[C)V
+[V/dalvikvm] Registered libcore bridge: java/nio/charset/Charsets (5/5 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c57e0 -> jobj=0x1d200021
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.ceil:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.floor:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.sqrt:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.sin:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.cos:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.tan:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.asin:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.acos:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.atan:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.atan2:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.exp:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.log:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.log10:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.pow:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.IEEEremainder:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.cbrt:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.cosh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.sinh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.tanh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.expm1:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.hypot:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.log1p:(D)D
+[W/dalvikvm] Unable to register: not native: Ljava/lang/Math;.nextAfter:(DD)D
+[V/dalvikvm] Skipped non-native: java/lang/Math.nextAfter
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Ljava/lang/Math;.nextAfter:(FF)F
+[E/dalvikvm] Candidate: Ljava/lang/Math;.nextAfter:(DD)D
+[E/dalvikvm] Candidate: Ljava/lang/Math;.nextAfter:(FD)F
+[V/dalvikvm] Skipped non-native: java/lang/Math.nextAfter
+[V/dalvikvm] JNI-registered Ljava/lang/Math;.rint:(D)D
+[W/dalvikvm] Unable to register: not native: Ljava/lang/Math;.scalb:(DI)D
+[V/dalvikvm] Skipped non-native: java/lang/Math.scalb
+[W/dalvikvm] Unable to register: not native: Ljava/lang/Math;.scalb:(FI)F
+[V/dalvikvm] Skipped non-native: java/lang/Math.scalb
+[V/dalvikvm] Registered libcore bridge: java/lang/Math (23/27 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c5e40 -> jobj=0x1d200025
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.ceil:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.floor:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.sqrt:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.sin:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.cos:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.tan:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.asin:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.acos:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.atan:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.atan2:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.exp:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.log:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.log10:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.pow:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.IEEEremainder:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.cbrt:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.cosh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.sinh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.tanh:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.expm1:(D)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.hypot:(DD)D
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.log1p:(D)D
+[W/dalvikvm] Unable to register: not native: Ljava/lang/StrictMath;.nextAfter:(DD)D
+[V/dalvikvm] Skipped non-native: java/lang/StrictMath.nextAfter
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Ljava/lang/StrictMath;.nextAfter:(FF)F
+[E/dalvikvm] Candidate: Ljava/lang/StrictMath;.nextAfter:(DD)D
+[E/dalvikvm] Candidate: Ljava/lang/StrictMath;.nextAfter:(FD)F
+[V/dalvikvm] Skipped non-native: java/lang/StrictMath.nextAfter
+[V/dalvikvm] JNI-registered Ljava/lang/StrictMath;.rint:(D)D
+[W/dalvikvm] Unable to register: not native: Ljava/lang/StrictMath;.scalb:(DI)D
+[V/dalvikvm] Skipped non-native: java/lang/StrictMath.scalb
+[W/dalvikvm] Unable to register: not native: Ljava/lang/StrictMath;.scalb:(FI)F
+[V/dalvikvm] Skipped non-native: java/lang/StrictMath.scalb
+[V/dalvikvm] Registered libcore bridge: java/lang/StrictMath (23/27 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StringToReal;' 0 (isnew=1) --> 0xf28cc0f8
+[W/dalvikvm] addLocalReference: obj=0xf28cc0f8 -> jobj=0x1d200029
+[V/dalvikvm] JNI-registered Ljava/lang/StringToReal;.parseDblImpl:(Ljava/lang/String;I)D
+[V/dalvikvm] JNI-registered Ljava/lang/StringToReal;.parseFltImpl:(Ljava/lang/String;I)F
+[V/dalvikvm] Registered libcore bridge: java/lang/StringToReal (2/2 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/RealToString;' 0 (isnew=1) --> 0xf28cc1a0
+[W/dalvikvm] addLocalReference: obj=0xf28cc1a0 -> jobj=0x1d20002d
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Ljava/lang/RealToString;.doubleToStringImpl:(D)Ljava/lang/String;
+[V/dalvikvm] Skipped non-native: java/lang/RealToString.doubleToStringImpl
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Ljava/lang/RealToString;.floatToStringImpl:(F)Ljava/lang/String;
+[V/dalvikvm] Skipped non-native: java/lang/RealToString.floatToStringImpl
+[V/dalvikvm] Registered libcore bridge: java/lang/RealToString (0/2 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c58d0 -> jobj=0x1d200031
+[V/dalvikvm] JNI-registered Ljava/lang/Float;.floatToRawIntBits:(F)I
+[V/dalvikvm] JNI-registered Ljava/lang/Float;.intBitsToFloat:(I)F
+[V/dalvikvm] Registered libcore bridge: java/lang/Float (2/2 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c5be8 -> jobj=0x1d200035
+[V/dalvikvm] JNI-registered Ljava/lang/Double;.doubleToRawLongBits:(D)J
+[V/dalvikvm] JNI-registered Ljava/lang/Double;.longBitsToDouble:(J)D
+[V/dalvikvm] Registered libcore bridge: java/lang/Double (2/2 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/icu/LocaleData;' 0 (isnew=1) --> 0xf28cc4e8
+[V/dalvikvm] --- LinearRealloc(52) old=60
+[W/dalvikvm] addLocalReference: obj=0xf28cc4e8 -> jobj=0x1d200039
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Llibcore/icu/LocaleData;.initLocaleData:(Ljava/lang/String;Llibcore/icu/LocaleData;)Z
+[E/dalvikvm] Candidate: Llibcore/icu/LocaleData;.initLocaleData:(Ljava/util/Locale;)Llibcore/icu/LocaleData;
+[V/dalvikvm] Skipped non-native: libcore/icu/LocaleData.initLocaleData
+[V/dalvikvm] Registered libcore bridge: libcore/icu/LocaleData (0/1 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/regex/Pattern;' 0 (isnew=1) --> 0xf28cc708
+[V/dalvikvm] --- LinearRealloc(64) old=76
+[W/dalvikvm] addLocalReference: obj=0xf28cc708 -> jobj=0x1d20003d
+[V/dalvikvm] JNI-registered Ljava/util/regex/Pattern;.compileImpl:(Ljava/lang/String;I)J
+[V/dalvikvm] Registered libcore bridge: java/util/regex/Pattern (1/1 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/regex/Matcher;' 0 (isnew=1) --> 0xf28cc888
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/regex/MatchResult;' 0 (isnew=1) --> 0xf28cc930
+[V/dalvikvm] --- LinearRealloc(160) old=172
+[W/dalvikvm] addLocalReference: obj=0xf28cc888 -> jobj=0x1d200041
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.openImpl:(J)J
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.closeImpl:(J)V
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.setInputImpl:(JLjava/lang/String;II)V
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.findImpl:(JLjava/lang/String;I[I)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.findNextImpl:(JLjava/lang/String;[I)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.matchesImpl:(JLjava/lang/String;[I)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.groupCountImpl:(J)I
+[E/dalvikvm] ERROR: couldn't find native method
+[E/dalvikvm] Requested: Ljava/util/regex/Matcher;.usePatternImpl:(JJ)V
+[V/dalvikvm] Skipped non-native: java/util/regex/Matcher.usePatternImpl
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.hitEndImpl:(J)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.requireEndImpl:(J)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.lookingAtImpl:(JLjava/lang/String;[I)Z
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.useAnchoringBoundsImpl:(JZ)V
+[V/dalvikvm] JNI-registered Ljava/util/regex/Matcher;.useTransparentBoundsImpl:(JZ)V
+[V/dalvikvm] Registered libcore bridge: java/util/regex/Matcher (12/13 methods)
+[W/dalvikvm] addLocalReference: obj=0xf28c1338 -> jobj=0x1d200045
+[W/dalvikvm] Unable to register: not native: Ljava/lang/Thread;.sleep:(J)V
+[V/dalvikvm] Skipped non-native: java/lang/Thread.sleep
+[V/dalvikvm] Registered libcore bridge: java/lang/Thread (0/1 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/DirectPrintStream;' 0 (isnew=1) --> 0xf28ccbc0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/PrintStream;' 0 (isnew=1) --> 0xf28ccc68
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FilterOutputStream;' 0 (isnew=1) --> 0xf28ccd10
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/OutputStream;' 0 (isnew=1) --> 0xf28ccdb8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/Closeable;' 0 (isnew=1) --> 0xf28cce60
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/AutoCloseable;' 0 (isnew=1) --> 0xf28ccf08
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/Flushable;' 0 (isnew=1) --> 0xf28ccfb0
+[V/dalvikvm] --- LinearRealloc(68) old=84
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Appendable;' 0 (isnew=1) --> 0xf28cd058
+[V/dalvikvm] --- LinearRealloc(192) old=212
+[V/dalvikvm] --- LinearRealloc(192) old=236
+[W/dalvikvm] addLocalReference: obj=0xf28ccbc0 -> jobj=0x1d200049
+[V/dalvikvm] JNI-registered Ljava/io/DirectPrintStream;.nativeWrite:(I[BII)V
+[V/dalvikvm] JNI-registered Ljava/io/DirectPrintStream;.nativeWriteByte:(II)V
+[V/dalvikvm] Registered libcore bridge: java/io/DirectPrintStream (2/2 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Lcom/westlake/compat/UnixSocketBridge;' 0 (isnew=1) --> 0xf28cd100
+[W/dalvikvm] addLocalReference: obj=0xf28cd100 -> jobj=0x1d20004d
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.memfdCreate:(Ljava/lang/String;I)I
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.ftruncateRaw:(IJ)Z
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.writeAllToFd:(I[BJ)Z
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.closeFd:(I)V
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.socketUnixSeqpacket:()I
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.connectUnix:(ILjava/lang/String;)Z
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.sendFrameWithFd:(I[BI)I
+[V/dalvikvm] JNI-registered Lcom/westlake/compat/UnixSocketBridge;.recvBytes:(I[B)I
+[V/dalvikvm] Registered libcore bridge: com/westlake/compat/UnixSocketBridge (8/8 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/zip/Inflater;' 0 (isnew=1) --> 0xf28cd1a8
+[V/dalvikvm] --- LinearRealloc(116) old=124
+[W/dalvikvm] addLocalReference: obj=0xf28cd1a8 -> jobj=0x1d200051
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.createStream:(Z)J
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.setInputImpl:([BIIJ)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.inflateImpl:([BIIJ)I
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.getAdlerImpl:(J)I
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.getTotalInImpl:(J)J
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.getTotalOutImpl:(J)J
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.resetImpl:(J)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Inflater;.endImpl:(J)V
+[V/dalvikvm] Registered libcore bridge: java/util/zip/Inflater (8/8 methods)
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/zip/Deflater;' 0 (isnew=1) --> 0xf28cd250
+[V/dalvikvm] --- LinearRealloc(120) old=124
+[W/dalvikvm] addLocalReference: obj=0xf28cd250 -> jobj=0x1d200055
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.createStream:(IIZ)J
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.setInputImpl:([BIIJ)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.setLevelsImpl:(IIJ)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.deflateImpl:([BIIJI)I
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.endImpl:(J)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.resetImpl:(J)V
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.getAdlerImpl:(J)I
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.getTotalInImpl:(J)J
+[V/dalvikvm] JNI-registered Ljava/util/zip/Deflater;.getTotalOutImpl:(J)J
+[V/dalvikvm] Registered libcore bridge: java/util/zip/Deflater (9/9 methods)
+[V/dalvikvm] No liboh_bridge.so, using software renderer
+[V/dalvikvm] +++ dvmAddClassToHash 'Lcom/ohos/shim/bridge/OHBridge;' 0 (isnew=1) --> 0xf28cd418
+[W/dalvikvm] addLocalReference: obj=0xf28cd418 -> jobj=0x1d200059
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapCreate:(III)J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapGetWidth:(J)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapGetHeight:(J)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapSetPixel:(JIII)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapGetPixel:(JII)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapWriteToFile:(JLjava/lang/String;)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.bitmapBlitToFb0:(JI)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasCreate:(J)J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawColor:(JI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawRect:(JFFFFJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawCircle:(JFFFJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawLine:(JFFFFJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawPath:(JJJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawBitmap:(JJFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawText:(JLjava/lang/String;FFJJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasSave:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasRestore:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasTranslate:(JFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasScale:(JFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasRotate:(JFFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasClipRect:(JFFFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasClipPath:(JJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawArc:(JFFFFFFZJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawOval:(JFFFFJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasDrawRoundRect:(JFFFFFFJJ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.canvasConcat:(J[F)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penCreate:()J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penSetColor:(JI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penSetWidth:(JF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penSetAntiAlias:(JZ)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penSetCap:(JI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.penSetJoin:(JI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.brushCreate:()J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.brushDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.brushSetColor:(JI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.fontCreate:()J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.fontDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.fontSetSize:(JF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.fontMeasureText:(JLjava/lang/String;)F
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.fontGetMetrics:(J)[F
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathCreate:()J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathMoveTo:(JFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathLineTo:(JFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathQuadTo:(JFFFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathCubicTo:(JFFFFFF)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathClose:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathReset:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathAddRect:(JFFFFI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.pathAddCircle:(JFFFI)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.surfaceCreate:(JII)J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.surfaceDestroy:(J)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.surfaceResize:(JII)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.surfaceGetCanvas:(J)J
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.surfaceFlush:(J)I
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.logDebug:(Ljava/lang/String;Ljava/lang/String;)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.logInfo:(Ljava/lang/String;Ljava/lang/String;)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.logWarn:(Ljava/lang/String;Ljava/lang/String;)V
+[V/dalvikvm] JNI-registered Lcom/ohos/shim/bridge/OHBridge;.logError:(Ljava/lang/String;Ljava/lang/String;)V
+[OHBridge] Registered com/ohos/shim/bridge/OHBridge (62/62 methods)
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00615df [0x28f5b7]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061be0 [0x28fbb8]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061b49 [0x28fb21]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061b9a [0x28fb72]
+[V/dalvikvm] +++ finishing prep on main VM thread
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/ArrayList;' 0 (isnew=1) --> 0xf28cd768
+[V/dalvikvm] --- LinearRealloc(148) old=236
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00626b6 [0x29068e]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00626b8 [0x290690]
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/CollectionUtils;' 0 (isnew=1) --> 0xf28cd880
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/CollectionUtils$1;' 0 (isnew=1) --> 0xf28cd928
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/ArrayList$ArrayListIterator;' 0 (isnew=1) --> 0xf28cdb60
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061bea [0x28fbc2]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061bec [0x28fbc4]
+[V/dalvikvm] ----- type is 0x04 2, ptr=0xf0061bee [0x28fbc6]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061bf2 [0x28fbca]
+[V/dalvikvm] Array class '[Ljava/lang/Thread$State;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Thread$State;' 0 (isnew=1) --> 0xf28cdc28
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Enum;' 0 (isnew=1) --> 0xf28cdd78
+[V/dalvikvm] --- LinearRealloc(64) old=84
+[V/dalvikvm] ----- type is 0x04 1, ptr=0xf0057ab4 [0x285a8c]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf0057aba [0x285a92]
+[V/dalvikvm] ----- type is 0x04 1, ptr=0xf0057ab4 [0x285a8c]
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Thread$State;' 0 (isnew=1) --> 0xf28cde50
+[V/dalvikvm] Created array class '[Ljava/lang/Thread$State;' 0 (access=0x6000.4419)
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061304 [0x28f2dc]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/Enum$1;' 0 (isnew=1) --> 0xf28cdf78
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/util/BasicLruCache;' 0 (isnew=1) --> 0xf28ce020
+[V/dalvikvm] --- LinearRealloc(72) old=76
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/LinkedHashMap;' 0 (isnew=1) --> 0xf28ce0e0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/HashMap;' 0 (isnew=1) --> 0xf28ce1a0
+[V/dalvikvm] --- LinearRealloc(132) old=188
+[V/dalvikvm] --- LinearRealloc(140) old=188
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf0062951 [0x290929]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0062954 [0x29092c]
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf0062955 [0x29092d]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf006295a [0x290932]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf006295c [0x290934]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf006295d [0x290935]
+[V/dalvikvm] Array class '[Ljava/util/HashMap$HashMapEntry;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/HashMap$HashMapEntry;' 0 (isnew=1) --> 0xf28ce2d8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Map$Entry;' 0 (isnew=1) --> 0xf28ce380
+[V/dalvikvm] --- LinearRealloc(56) old=68
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf005ba7a [0x289a52]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf005ba7f [0x289a57]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf005ba7a [0x289a52]
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/util/HashMap$HashMapEntry;' 0 (isnew=1) --> 0xf28ce428
+[V/dalvikvm] Created array class '[Ljava/util/HashMap$HashMapEntry;' 0 (access=0x6000.0418)
+[V/dalvikvm] Array class '[Ljava/io/ObjectStreamField;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/ObjectStreamField;' 0 (isnew=1) --> 0xf28ce540
+[V/dalvikvm] --- LinearRealloc(96) old=100
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/io/ObjectStreamField;' 0 (isnew=1) --> 0xf28ce5e8
+[V/dalvikvm] Created array class '[Ljava/io/ObjectStreamField;' 0 (access=0x6000.0411)
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061918 [0x28f8f0]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061a8a [0x28fa62]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061a8c [0x28fa64]
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf0061a8e [0x28fa66]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061a93 [0x28fa6b]
+[V/dalvikvm] ----- type is 0x04 2, ptr=0xf0061a95 [0x28fa6d]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061a99 [0x28fa71]
+[V/dalvikvm] ----- type is 0x10 3, ptr=0xf0061a9b [0x28fa73]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061aa0 [0x28fa78]
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf0061aa2 [0x28fa7a]
+[V/dalvikvm] ----- type is 0x10 3, ptr=0xf0061aa5 [0x28fa7d]
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf0061aaa [0x28fa82]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061aad [0x28fa85]
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf0061aaf [0x28fa87]
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf0061ab2 [0x28fa8a]
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf0061ab5 [0x28fa8d]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061aba [0x28fa92]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061abc [0x28fa94]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061abd [0x28fa95]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ref/WeakReference;' 0 (isnew=1) --> 0xf28ce718
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00629bf [0x290997]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/LinkedHashMap$LinkedEntry;' 0 (isnew=1) --> 0xf28ce820
+[W/dalvikvm] Main Thread fields set directly
+[W/dalvikvm] VMThread fields set directly
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/ClassLoader$SystemClassLoader;' 0 (isnew=1) --> 0xf28cec10
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FileOutputStream;' 0 (isnew=1) --> 0xf28ced80
+[V/dalvikvm] --- LinearRealloc(76) old=92
+[W/dalvikvm] addLocalReference: obj=0xf28c6c20 -> jobj=0x1d20005d
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061ba4 [0x28fb7c]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/CloseGuard;' 0 (isnew=1) --> 0xf28cf430
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/CloseGuard$DefaultReporter;' 0 (isnew=1) --> 0xf28cf530
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/CloseGuard$Reporter;' 0 (isnew=1) --> 0xf28cf5d8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/NioUtils;' 0 (isnew=1) --> 0xf28cf6a0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/FileChannelImpl;' 0 (isnew=1) --> 0xf28cf748
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/FileChannel;' 0 (isnew=1) --> 0xf28cf808
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/spi/AbstractInterruptibleChannel;' 0 (isnew=1) --> 0xf28cf8b0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/Channel;' 0 (isnew=1) --> 0xf28cf958
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/InterruptibleChannel;' 0 (isnew=1) --> 0xf28cfa00
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/GatheringByteChannel;' 0 (isnew=1) --> 0xf28cfaa8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/WritableByteChannel;' 0 (isnew=1) --> 0xf28cfb50
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/ScatteringByteChannel;' 0 (isnew=1) --> 0xf28cfbf8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/ReadableByteChannel;' 0 (isnew=1) --> 0xf28cfca0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/ByteChannel;' 0 (isnew=1) --> 0xf28cfd48
+[V/dalvikvm] --- LinearRealloc(152) old=220
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/FileChannelImpl$1;' 0 (isnew=1) --> 0xf28cfdf0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/nio/channels/spi/AbstractInterruptibleChannel$1;' 0 (isnew=1) --> 0xf28cfed0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/TreeSet;' 0 (isnew=1) --> 0xf28cff88
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/NavigableSet;' 0 (isnew=1) --> 0xf28d0048
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/SortedSet;' 0 (isnew=1) --> 0xf28d00f0
+[V/dalvikvm] --- LinearRealloc(164) old=204
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0062ad2 [0x290aaa]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/TreeMap;' 0 (isnew=1) --> 0xf28d01b0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/SortedMap;' 0 (isnew=1) --> 0xf28d0288
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/NavigableMap;' 0 (isnew=1) --> 0xf28d0330
+[V/dalvikvm] --- LinearRealloc(212) old=252
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0062ac7 [0x290a9f]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0062ac8 [0x290aa0]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/TreeMap$1;' 0 (isnew=1) --> 0xf28d03d8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/BufferedInputStream;' 0 (isnew=1) --> 0xf28d05b8
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FilterInputStream;' 0 (isnew=1) --> 0xf28d0660
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/InputStream;' 0 (isnew=1) --> 0xf28d0708
+[V/dalvikvm] --- LinearRealloc(80) old=116
+[V/dalvikvm] --- LinearRealloc(80) old=116
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/io/FileInputStream;' 0 (isnew=1) --> 0xf28d07d8
+[V/dalvikvm] --- LinearRealloc(88) old=116
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/VMRuntime;' 0 (isnew=1) --> 0xf28d2940
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Properties;' 0 (isnew=1) --> 0xf28d2a10
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Hashtable;' 0 (isnew=1) --> 0xf28d2b90
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Dictionary;' 0 (isnew=1) --> 0xf28d2ce0
+[V/dalvikvm] --- LinearRealloc(108) old=156
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf006209d [0x290075]
+[V/dalvikvm] ----- type is 0x10 1, ptr=0xf006209f [0x290077]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf00620a2 [0x29007a]
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf00620a3 [0x29007b]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620a8 [0x290080]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf00620aa [0x290082]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00620ab [0x290083]
+[V/dalvikvm] Array class '[Ljava/util/Hashtable$HashtableEntry;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Hashtable$HashtableEntry;' 0 (isnew=1) --> 0xf28d2d88
+[V/dalvikvm] --- LinearRealloc(56) old=68
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf005bc52 [0x289c2a]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf005bc57 [0x289c2f]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf005bc52 [0x289c2a]
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/util/Hashtable$HashtableEntry;' 0 (isnew=1) --> 0xf28d2e30
+[V/dalvikvm] Created array class '[Ljava/util/Hashtable$HashtableEntry;' 0 (access=0x6000.041a)
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf0061b30 [0x28fb08]
+[V/dalvikvm] ----- type is 0x04 3, ptr=0xf0061b35 [0x28fb0d]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061b3a [0x28fb12]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf0061b3b [0x28fb13]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061b3d [0x28fb15]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061b3e [0x28fb16]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf0061b3f [0x28fb17]
+[V/dalvikvm] Array class '[Ljava/lang/Integer;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/lang/Integer;' 0 (isnew=1) --> 0xf28d3030
+[V/dalvikvm] Created array class '[Ljava/lang/Integer;' 0 (access=0x6000.0411)
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620b5 [0x29008d]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620b7 [0x29008f]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620b9 [0x290091]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620bb [0x290093]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00620bd [0x290095]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00620c0 [0x290098]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620c3 [0x29009b]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00620c5 [0x29009d]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00620c7 [0x29009f]
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/Libcore;' 0 (isnew=1) --> 0xf28d4ea0
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/BlockGuardOs;' 0 (isnew=1) --> 0xf28d4f60
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/ForwardingOs;' 0 (isnew=1) --> 0xf28d5008
+[V/dalvikvm] --- LinearRealloc(476) old=572
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1d30005d
+[W/dalvikvm] addLocalReference: obj=0xf28d4e58 -> jobj=0x1d200061
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1d40005d
+[W/dalvikvm] addLocalReference: obj=0xf28d5288 -> jobj=0x1d300061
+[W/dalvikvm] addLocalReference: obj=0xf28d52e0 -> jobj=0x1d200065
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1d50005d
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1d60005d
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/StructPasswd;' 0 (isnew=1) --> 0xf28d62a0
+[W/dalvikvm] addLocalReference: obj=0xf28d62a0 -> jobj=0x1d400061
+[W/dalvikvm] addLocalReference: obj=0xf28d6348 -> jobj=0x1d300065
+[W/dalvikvm] addLocalReference: obj=0xf28d6388 -> jobj=0x1d200069
+[W/dalvikvm] addLocalReference: obj=0xf28d63c0 -> jobj=0x1d20006d
+[W/dalvikvm] addLocalReference: obj=0xf28d6408 -> jobj=0x1d200071
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1d70005d
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/StructUtsname;' 0 (isnew=1) --> 0xf28d64f8
+[W/dalvikvm] addLocalReference: obj=0xf28d64f8 -> jobj=0x1d500061
+[W/dalvikvm] addLocalReference: obj=0xf28d65a0 -> jobj=0x1d400065
+[W/dalvikvm] addLocalReference: obj=0xf28d65e0 -> jobj=0x1d300069
+[W/dalvikvm] addLocalReference: obj=0xf28d6628 -> jobj=0x1d30006d
+[W/dalvikvm] addLocalReference: obj=0xf28d6670 -> jobj=0x1d300071
+[W/dalvikvm] addLocalReference: obj=0xf28d66f0 -> jobj=0x1d200075
+[W/dalvikvm] addLocalReference: obj=0xf28d6738 -> jobj=0x1d200079
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf006349a [0x291472]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf006349b [0x291473]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf006349d [0x291475]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf006349f [0x291477]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00634a1 [0x291479]
+[W/dalvikvm] addLocalReference: obj=0xf28cb0f8 -> jobj=0x1d80005d
+[W/dalvikvm] addLocalReference: obj=0xf28d6980 -> jobj=0x1d600061
+[W/dalvikvm] addLocalReference: obj=0xf28cb0f8 -> jobj=0x1d90005d
+[W/dalvikvm] addLocalReference: obj=0xf28d6a50 -> jobj=0x1d700061
+[W/dalvikvm] addLocalReference: obj=0xf28cb0f8 -> jobj=0x1da0005d
+[W/dalvikvm] addLocalReference: obj=0xf28d6b18 -> jobj=0x1d800061
+[W/dalvikvm] addLocalReference: obj=0xf28c4650 -> jobj=0x1db0005d
+[W/dalvikvm] addLocalReference: obj=0xf28c10e0 -> jobj=0x1d900061
+[W/dalvikvm] addLocalReference: obj=0xf28d6b70 -> jobj=0x1d500065
+[W/dalvikvm] addLocalReference: obj=0xf28d6bd0 -> jobj=0x1d400069
+[W/dalvikvm] addLocalReference: obj=0xf28d6c28 -> jobj=0x1d40006d
+[W/dalvikvm] addLocalReference: obj=0xf28d6c78 -> jobj=0x1d400071
+[W/dalvikvm] addLocalReference: obj=0xf28d6cd8 -> jobj=0x1d300075
+[W/dalvikvm] addLocalReference: obj=0xf28d6d48 -> jobj=0x1d300079
+[W/dalvikvm] addLocalReference: obj=0xf28d6da0 -> jobj=0x1d20007d
+[W/dalvikvm] addLocalReference: obj=0xf28d6e00 -> jobj=0x1d200081
+[W/dalvikvm] addLocalReference: obj=0xf28d6e60 -> jobj=0x1d200085
+[W/dalvikvm] addLocalReference: obj=0xf28d6ec0 -> jobj=0x1d200089
+[W/dalvikvm] addLocalReference: obj=0xf28d6f20 -> jobj=0x1d20008d
+[W/dalvikvm] addLocalReference: obj=0xf28d6f70 -> jobj=0x1d200091
+[W/dalvikvm] addLocalReference: obj=0xf28d6fc0 -> jobj=0x1d200095
+[W/dalvikvm] addLocalReference: obj=0xf28d7018 -> jobj=0x1d200099
+[W/dalvikvm] addLocalReference: obj=0xf28d7070 -> jobj=0x1d20009d
+[W/dalvikvm] addLocalReference: obj=0xf28d70c0 -> jobj=0x1d2000a1
+[W/dalvikvm] addLocalReference: obj=0xf28d7118 -> jobj=0x1d2000a5
+[W/dalvikvm] addLocalReference: obj=0xf28d7170 -> jobj=0x1d2000a9
+[W/dalvikvm] addLocalReference: obj=0xf28d71c8 -> jobj=0x1d2000ad
+[W/dalvikvm] addLocalReference: obj=0xf28d7228 -> jobj=0x1d2000b1
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/PathClassLoader;' 0 (isnew=1) --> 0xf28d7888
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/BaseDexClassLoader;' 0 (isnew=1) --> 0xf28d7930
+[V/dalvikvm] --- LinearRealloc(148) old=172
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/BootClassLoader;' 0 (isnew=1) --> 0xf28d79f0
+[V/dalvikvm] --- LinearRealloc(144) old=172
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/DexPathList;' 0 (isnew=1) --> 0xf28d7b38
+[V/dalvikvm] --- LinearRealloc(64) old=68
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00615f9 [0x28f5d1]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00615fc [0x28f5d4]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00615ff [0x28f5d7]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf0061602 [0x28f5da]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/regex/Splitter;' 0 (isnew=1) --> 0xf28d7d90
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf006311f [0x2910f7]
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1dc0005d
+[W/dalvikvm] addLocalReference: obj=0xf28d73c8 -> jobj=0x1da00061
+[V/dalvikvm] +++ dvmAddClassToHash 'Llibcore/io/StructStat;' 0 (isnew=1) --> 0xf28d7eb8
+[W/dalvikvm] addLocalReference: obj=0xf28d7eb8 -> jobj=0x1d600065
+[W/dalvikvm] addLocalReference: obj=0xf28d7f60 -> jobj=0x1d500069
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf0061797 [0x28f76f]
+[V/dalvikvm] ----- type is 0x03 0, ptr=0xf0061798 [0x28f770]
+[V/dalvikvm] ----- type is 0x1e 0, ptr=0xf006179a [0x28f772]
+[V/dalvikvm] ----- type is 0x03 0, ptr=0xf006179b [0x28f773]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf006179d [0x28f775]
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/util/Random;' 0 (isnew=1) --> 0xf28d7fc8
+[V/dalvikvm] ----- type is 0x06 4, ptr=0xf00621cd [0x2901a5]
+[V/dalvikvm] ----- type is 0x06 7, ptr=0xf00621d3 [0x2901ab]
+[W/dalvikvm] addLocalReference: obj=0xf28c4650 -> jobj=0x1dd0005d
+[W/dalvikvm] addLocalReference: obj=0xf28c4650 -> jobj=0x1de0005d
+[W/dalvikvm] addLocalReference: obj=0xf28d80a0 -> jobj=0x1db00061
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1df0005d
+[W/dalvikvm] addLocalReference: obj=0xf28d73c8 -> jobj=0x1dc00061
+[W/dalvikvm] addLocalReference: obj=0xf28d7eb8 -> jobj=0x1d700065
+[W/dalvikvm] addLocalReference: obj=0xf28d81a8 -> jobj=0x1d600069
+[V/dalvikvm] +++ dvmAddClassToHash 'Ldalvik/system/DexPathList$Element;' 0 (isnew=1) --> 0xf28d8210
+[V/dalvikvm] --- LinearRealloc(52) old=60
+[V/dalvikvm] Array class '[Ldalvik/system/DexPathList$Element;' 0 not found; creating
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00565ac [0x284584]
+[V/dalvikvm] ----- type is 0x17 1, ptr=0xf00565b1 [0x284589]
+[V/dalvikvm] ----- type is 0x04 0, ptr=0xf00565ac [0x284584]
+[V/dalvikvm] +++ dvmAddClassToHash '[Ldalvik/system/DexPathList$Element;' 0 (isnew=1) --> 0xf28d8328
+[V/dalvikvm] Created array class '[Ldalvik/system/DexPathList$Element;' 0 (access=0x6000.0418)
+[W/dalvikvm] addLocalReference: obj=0xf28d50c0 -> jobj=0x1e00005d
+[W/dalvikvm] addLocalReference: obj=0xf28d7868 -> jobj=0x1dd00061
+[W/dalvikvm] addLocalReference: obj=0xf28d7eb8 -> jobj=0x1d800065
+[W/dalvikvm] addLocalReference: obj=0xf28d8460 -> jobj=0x1d700069
+[V/dalvikvm] Array class '[Ljava/io/File;' 0 not found; creating
+[V/dalvikvm] +++ dvmAddClassToHash '[Ljava/io/File;' 0 (isnew=1) --> 0xf28d8568
+[V/dalvikvm] Created array class '[Ljava/io/File;' 0 (access=0x6000.0411)
+[W/dalvikvm] System.out = DirectPrintStream(1)
+[W/dalvikvm] System.err = DirectPrintStream(2)
+[W/dalvikvm] Forced System to INITIALIZED
+[D/dalvikvm] No way to set current thread's name (GC)
+[V/dalvikvm] threadid=2: interp stack at 0xf6b46000
+[D/dalvikvm] No way to set current thread's name (Signal Catcher)
+[V/dalvikvm] threadid=3: interp stack at 0xf6b37000
+[V/dalvikvm] Signal catcher thread started (threadid=3)
+[V/dalvikvm] thread-start heap=732 quit=573 jdwp=1 total=1311 usec
+[V/dalvikvm] CreateJavaVM succeeded
+[V/dalvikvm] +++ dvmAddClassToHash 'Lcom/westlake/ohostests/hello/HelloDlopenReal;' 0 (isnew=1) --> 0xf28d8840
+[W/dalvikvm] addLocalReference: obj=0xf28d8840 -> jobj=0x1e10005d
+[V/dalvikvm] +++ late verify on Lcom/westlake/ohostests/hello/HelloDlopenReal;
+[V/dalvikvm] +++ grm: Lcom/westlake/ohostests/hello/HelloDlopenReal;.<init> (adr=1 gpc=2 rwd=1 bsz=8)
+[V/dalvikvm] mapData=0xf75fc538 pMap=0xf75fc530 bufSize=8
+[V/dalvikvm] +++ dvmAddClassToHash 'Lcom/westlake/ohostests/xcomponent/XComponentBridge;' 0 (isnew=1) --> 0xf28d8900
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/StringBuilder;' 0 (isnew=1) --> 0xf28d89f0
+[V/dalvikvm] +++ dvmAddClassToHash 'Ljava/lang/AbstractStringBuilder;' 0 (isnew=1) --> 0xf28d8ab0
+[V/dalvikvm] --- LinearRealloc(192) old=196
+[V/dalvikvm] --- LinearRealloc(324) old=404
+[V/dalvikvm] +++ grm: Lcom/westlake/ohostests/hello/HelloDlopenReal;.main (adr=2 gpc=239 rwd=3 bsz=1199)
+[V/dalvikvm] mapData=0xf7625f4f pMap=0xf7625aa0 bufSize=1199
+[V/dalvikvm] +++ grm: Lcom/westlake/ohostests/hello/HelloDlopenReal;.safeLastError (adr=1 gpc=16 rwd=1 bsz=36)
+[V/dalvikvm] mapData=0xf75fc764 pMap=0xf75fc740 bufSize=36
+[V/dalvikvm] +++ late optimize on Lcom/westlake/ohostests/hello/HelloDlopenReal; (pv=0)
+
+=== CRASH: signal 11 fault_addr=0xf75d7484 pc=0x6c7478 lr=0x670308 ===
+--- /proc/self/maps ---
+0061a000-00654000 r--p 00000000 b3:0f 4973                               /data/local/tmp/dalvikvm-arm32-dyn
+00654000-00736000 r-xp 00039000 b3:0f 4973                               /data/local/tmp/dalvikvm-arm32-dyn
+00736000-0073c000 r--p 0011a000 b3:0f 4973                               /data/local/tmp/dalvikvm-arm32-dyn
+0073c000-0073e000 rw-p 0011f000 b3:0f 4973                               /data/local/tmp/dalvikvm-arm32-dyn
+0073e000-0073f000 rw-p 00000000 00:00 0                                  [anon:dalvikvm-arm32-dyn.bss]
+02327000-02328000 ---p 00000000 00:00 0                                  [heap]
+02328000-0232a000 rw-p 00000000 00:00 0                                  [heap]
+ef846000-ef8b5000 rw-p 00000000 00:01 11863                              /memfd:dalvik-aux-structure (deleted)
+ef8b5000-efdd2000 r--p 00000000 b3:0f 5050                               /data/dalvik-cache/data@local@tmp@westlake@bcp@aosp-shim-ohos.dex
+efdd2000-f00e9000 r--p 00000000 b3:0f 5048                               /data/dalvik-cache/data@local@tmp@westlake@bcp@core-android-x86.jar@classes.dex
+f00e9000-f00ea000 ---p 00000000 00:01 11860                              /memfd:dalvik-LinearAlloc (deleted)
+f00ea000-f0121000 rw-p 00001000 00:01 11860                              /memfd:dalvik-LinearAlloc (deleted)
+f0121000-f10e9000 ---p 00038000 00:01 11860                              /memfd:dalvik-LinearAlloc (deleted)
+f10e9000-f116a000 rw-p 00000000 00:01 11859                              /memfd:dalvik-card-table (deleted)
+f116a000-f26c0000 rw-p 00000000 00:01 11858                              /memfd:dalvik-mark-stack (deleted)
+f26c0000-f27c0000 rw-p 00000000 00:01 11857                              /memfd:dalvik-bitmap-2 (deleted)
+f27c0000-f28c0000 rw-p 00000000 00:01 11856                              /memfd:dalvik-bitmap-1 (deleted)
+f28c0000-f28d9000 rw-p 00000000 00:01 11855                              /memfd:dalvik-heap (deleted)
+f28d9000-f68c0000 ---p 00019000 00:01 11855                              /memfd:dalvik-heap (deleted)
+f68c0000-f68c8000 r--p 00000000 b3:07 2569                               /system/lib/chipset-sdk-sp/libbegetutil.z.so
+f68c8000-f68d9000 r-xp 00007000 b3:07 2569                               /system/lib/chipset-sdk-sp/libbegetutil.z.so
+f68d9000-f68da000 r--p 00017000 b3:07 2569                               /system/lib/chipset-sdk-sp/libbegetutil.z.so
+f68da000-f68db000 rw-p 00017000 b3:07 2569                               /system/lib/chipset-sdk-sp/libbegetutil.z.so
+f6900000-f6901000 r--p 00000000 b3:07 2574                               /system/lib/chipset-sdk-sp/libconfigpolicy_util.z.so
+f6901000-f6903000 r-xp 00000000 b3:07 2574                               /system/lib/chipset-sdk-sp/libconfigpolicy_util.z.so
+f6903000-f6904000 r--p 00001000 b3:07 2574                               /system/lib/chipset-sdk-sp/libconfigpolicy_util.z.so
+f6904000-f6905000 rw-p 00001000 b3:07 2574                               /system/lib/chipset-sdk-sp/libconfigpolicy_util.z.so
+f6940000-f6944000 r--p 00000000 b3:07 2615                               /system/lib/chipset-sdk-sp/libsystemparam.z.so
+f6944000-f694a000 r-xp 00003000 b3:07 2615                               /system/lib/chipset-sdk-sp/libsystemparam.z.so
+f694a000-f694c000 r--p 00008000 b3:07 2615                               /system/lib/chipset-sdk-sp/libsystemparam.z.so
+f694c000-f694d000 rw-p 00009000 b3:07 2615                               /system/lib/chipset-sdk-sp/libsystemparam.z.so
+f6980000-f69e9000 r--p 00000000 b3:07 2571                               /system/lib/chipset-sdk-sp/libc++.so
+f69e9000-f6a8b000 r-xp 00068000 b3:07 2571                               /system/lib/chipset-sdk-sp/libc++.so
+f6a8b000-f6a91000 r--p 00109000 b3:07 2571                               /system/lib/chipset-sdk-sp/libc++.so
+f6a91000-f6a92000 rw-p 0010e000 b3:07 2571                               /system/lib/chipset-sdk-sp/libc++.so
+f6a92000-f6a98000 rw-p 00000000 00:00 0                                  [anon:libc++.so.bss]
+f6ac0000-f6ac4000 r--p 00000000 b3:07 2573                               /system/lib/chipset-sdk-sp/libclang_rt.ubsan_minimal.so
+f6ac4000-f6aca000 r-xp 00003000 b3:07 2573                               /system/lib/chipset-sdk-sp/libclang_rt.ubsan_minimal.so
+f6aca000-f6acb000 r--p 00008000 b3:07 2573                               /system/lib/chipset-sdk-sp/libclang_rt.ubsan_minimal.so
+f6acb000-f6acc000 rw-p 00008000 b3:07 2573                               /system/lib/chipset-sdk-sp/libclang_rt.ubsan_minimal.so
+f6add000-f6adf000 ---p 00000000 00:00 0                                  [anon:guard:12828]
+f6adf000-f6b00000 rw-p 00000000 00:00 0                                  [anon:stack:12828]
+f6b00000-f6b07000 r--p 00000000 b3:07 2537                               /system/lib/chipset-sdk/libhilog.so
+f6b07000-f6b1e000 r-xp 00006000 b3:07 2537                               /system/lib/chipset-sdk/libhilog.so
+f6b1e000-f6b20000 r--p 0001c000 b3:07 2537                               /system/lib/chipset-sdk/libhilog.so
+f6b20000-f6b21000 rw-p 0001d000 b3:07 2537                               /system/lib/chipset-sdk/libhilog.so
+f6b21000-f6b22000 rw-p 00000000 00:00 0                                  [anon:libhilog.so.bss]
+f6b37000-f6b3b000 rw-p 00000000 00:00 0 
+f6b3b000-f6b3d000 ---p 00000000 00:00 0 
+f6b3d000-f6b40000 rw-p 00000000 00:00 0                                  [anon:signal_stack:12828]
+f6b40000-f6b41000 r--p 00000000 b3:07 5018                               /system/lib/platformsdk/libfwmark_client.z.so
+f6b41000-f6b44000 r-xp 00000000 b3:07 5018                               /system/lib/platformsdk/libfwmark_client.z.so
+f6b44000-f6b45000 r--p 00002000 b3:07 5018                               /system/lib/platformsdk/libfwmark_client.z.so
+f6b45000-f6b46000 rw-p 00002000 b3:07 5018                               /system/lib/platformsdk/libfwmark_client.z.so
+f6b46000-f6b4a000 rw-p 00000000 00:00 0 
+f6b4a000-f6b80000 rw-p 00000000 00:01 11861                              /memfd:dalvik-aux-structure (deleted)
+f6b80000-f7580000 r--s 00000000 00:13 124                                /dev/__parameters__/u:object_r:default_param:s0
+f7580000-f7583000 r--p 00000000 b3:07 2609                               /system/lib/chipset-sdk-sp/libsec_shared.z.so
+f7583000-f7590000 r-xp 00002000 b3:07 2609                               /system/lib/chipset-sdk-sp/libsec_shared.z.so
+f7590000-f7591000 r--p 0000e000 b3:07 2609                               /system/lib/chipset-sdk-sp/libsec_shared.z.so
+f7591000-f7592000 rw-p 0000e000 b3:07 2609                               /system/lib/chipset-sdk-sp/libsec_shared.z.so
+f7592000-f7594000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f7594000-f7596000 ---p 00000000 00:00 0 
+f7596000-f7599000 rw-p 00000000 00:00 0                                  [anon:signal_stack:12827]
+f7599000-f759b000 ---p 00000000 00:00 0                                  [anon:guard:12827]
+f759b000-f75bc000 rw-p 00000000 00:00 0                                  [anon:stack:12827]
+f75bc000-f75c0000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75c0000-f75c4000 r--p 00000000 b3:07 4923                               /system/lib/platformsdk/libdfx_signalhandler.z.so
+f75c4000-f75cd000 r-xp 00003000 b3:07 4923                               /system/lib/platformsdk/libdfx_signalhandler.z.so
+f75cd000-f75ce000 r--p 0000b000 b3:07 4923                               /system/lib/platformsdk/libdfx_signalhandler.z.so
+f75ce000-f75cf000 rw-p 0000b000 b3:07 4923                               /system/lib/platformsdk/libdfx_signalhandler.z.so
+f75cf000-f75d2000 rw-p 00000000 00:00 0                                  [anon:libdfx_signalhandler.z.so.bss]
+f75d4000-f75d6000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75d6000-f75d7000 rw-p 00000000 00:01 11864                              /memfd:dalvik-aux-structure (deleted)
+f75d7000-f75d9000 r--p 00000000 b3:0f 5037                               /data/local/tmp/westlake/HelloDlopenReal.dex
+f75d9000-f75db000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75db000-f75dc000 rw-p 00000000 00:01 11862                              /memfd:dalvik-aux-structure (deleted)
+f75dc000-f75dd000 r--p 00000000 b3:0f 5049                               /data/dalvik-cache/data@local@tmp@westlake@bcp@direct-print-stream.jar@classes.dex
+f75dd000-f75de000 r--s 00000000 b3:0f 4614                               /data/local/tmp/westlake/bcp/direct-print-stream.jar
+f75de000-f75df000 r--s 0012c000 b3:0f 4659                               /data/local/tmp/westlake/bcp/core-android-x86.jar
+f75df000-f75eb000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75eb000-f75ef000 rw-p 00000000 00:00 0 
+f75ef000-f75f6000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75f6000-f75f8000 ---p 00000000 00:00 0 
+f75f8000-f75fb000 rw-p 00000000 00:00 0                                  [anon:signal_stack:12825]
+f75fb000-f75fd000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f75fd000-f7611000 r--s 00000000 00:13 55                                 /dev/__parameters__/u:object_r:startup_init_param:s0
+f7611000-f7612000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f7612000-f7613000 r--p 00000000 00:00 0                                  [anon:cfi_shadow:musl]
+f7613000-f7619000 ---p 00000000 00:00 0                                  [anon:cfi_shadow:musl]
+f7619000-f761a000 r--p 00000000 00:00 0                                  [anon:cfi_shadow:musl]
+f761a000-f7624000 r--s 00000000 00:13 70                                 /dev/__parameters__/u:object_r:persist_param:s0
+f7624000-f7625000 r--s 00000000 00:13 69                                 /dev/__parameters__/u:object_r:hook_param:s0
+f7625000-f7626000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f7626000-f7627000 r--s 00000000 00:13 73                                 /dev/__parameters__/u:object_r:hitrace_param:s0
+f7627000-f7827000 r--s 00000000 00:13 54                                 /dev/__parameters__/u:object_r:devinfo_public_param:s0
+f7827000-f7828000 r--s 00000000 00:13 89                                 /dev/__parameters__/u:object_r:time_param:s0
+f7828000-f7829000 r--s 00000000 00:13 108                                /dev/__parameters__/u:object_r:i18n_param_tz_override:s0
+f7829000-f782a000 r--s 00000000 00:13 75                                 /dev/__parameters__/u:object_r:musl_param:s0
+f782a000-f782e000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f782e000-f7a2e000 r--s 00000000 00:13 48                                 /dev/__parameters__/param_sec_dac
+f7a2e000-f7a3e000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f7a3e000-f7a52000 r--s 00000000 00:13 47                                 /dev/__parameters__/param_selinux
+f7a52000-f7a53000 rw-p 00000000 00:00 0                                  [anon:native_heap:brk]
+f7a53000-f7a54000 r-xp 00000000 00:00 0                                  [sigpage]
+f7a54000-f7a56000 r--p 00000000 00:00 0                                  [vvar]
+f7a56000-f7a57000 r-xp 00000000 00:00 0                                  [vdso]
+f7a57000-f7ab2000 r--p 00000000 b3:07 2689                               /system/lib/ld-musl-arm.so.1
+f7ab2000-f7b81000 r-xp 0005a000 b3:07 2689                               /system/lib/ld-musl-arm.so.1
+f7b81000-f7b83000 r--p 00128000 b3:07 2689                               /system/lib/ld-musl-arm.so.1
+f7b83000-f7b85000 rw-p 00129000 b3:07 2689                               /system/lib/ld-musl-arm.so.1
+f7b85000-f7b93000 rw-p 00000000 00:00 0                                  [anon:ld-musl-arm.so.1.bss]
+ffb71000-ffb92000 rw-p 00000000 00:00 0                                  [stack]
+ffff0000-ffff1000 r-xp 00000000 00:00 0                                  [vectors]
+--- end maps ---

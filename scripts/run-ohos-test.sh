@@ -1295,6 +1295,212 @@ cmd_xcomponent_test() {
     fi
 }
 
+# ---------- subcommand: hello-dlopen-real -----------------------------------
+# CR60 follow-up #3 (E9a): close the System.loadLibrary stub gate.
+#
+# Agent 13 hit a false positive in HelloDlopen.java (commit 8710bf4f) —
+# it reported every probed library as status=OK, but the BCP in use
+# (core-kitkat.jar) has Runtime.loadLibrary / System.loadLibrary stubs
+# (return-void). The "OK" proved the calls returned without throwing;
+# it did NOT prove a real dlopen happened. Agent 13 worked around the
+# stub with $DVM_PRELOAD_LIB (launcher.cpp calls dvmLoadNativeCode
+# before main() runs). That fix is per-launch, not durable.
+#
+# This subcommand swaps the BCP to core-android-x86.jar — which carries
+# the REAL KitKat Runtime/System with nativeLoad wired through to the
+# registered Dalvik_java_lang_Runtime_nativeLoad → dvmLoadNativeCode →
+# dlopen chain. It then runs HelloDlopenReal.main(), which:
+#   1. calls System.loadLibrary("xcomponent_bridge") with NO env var,
+#   2. invokes XComponentBridge.nativeInit() — a JNI call into the
+#      just-loaded .so, which itself dlopens libnative_buffer.so and
+#      resolves OH_NativeBuffer_Alloc / Unreference,
+#   3. invokes nativeAlloc(720,1280) → real buffer handle,
+#   4. invokes nativeGetSeqNum + nativeUnref to prove the handle is alive.
+#
+# PASS criterion: HelloDlopenReal prints "loadLibrary OK" AND
+# "nativeInit=1" AND "nativeAlloc handle=<non-zero>" AND no
+# "hello-dlopen-real-FAIL" lines. The driver collapses these to PASS/FAIL.
+
+cmd_hello_dlopen_real() {
+    # Hard-pin to arm32 dynamic (same as xcomponent-test) — the bridge
+    # .so is only built for that target. Allow --arch to override but
+    # warn loudly.
+    if [ "$ARCH" = "aarch64" ]; then
+        warn "hello-dlopen-real requires --arch arm32; overriding ARCH from aarch64"
+        ARCH="arm32"
+        DALVIKVM_BOARD_PATH=""
+        DALVIKVM_HOST_PATH=""
+        resolve_arch || return 1
+    fi
+    if [ "$ARCH" = "auto" ]; then
+        case "$DALVIKVM_BOARD_PATH" in
+            *dalvikvm-arm32*) ;;
+            *)
+                warn "auto-detect picked $DALVIKVM_BOARD_PATH; forcing arm32 for hello-dlopen-real"
+                ARCH="arm32"
+                DALVIKVM_BOARD_PATH=""
+                DALVIKVM_HOST_PATH=""
+                resolve_arch || return 1
+                ;;
+        esac
+    fi
+    local dvm_dyn_board="/data/local/tmp/dalvikvm-arm32-dyn"
+    local dvm_dyn_host="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/dalvikvm"
+
+    local outdir="$ARTIFACT_ROOT/cr60-followup-e9/$TS"
+    mkdir -p "$outdir"
+    log "${BOLD}== CR60-followup E9a hello-dlopen-real -> $outdir ==${RESET}"
+
+    log "[1/7] gradle :hello:compileJava + :xcomponent-test:assemble"
+    if ! (cd "$GRADLE_DIR" && ./gradlew :hello:compileJava :xcomponent-test:assemble --no-daemon -q) \
+            > "$outdir/gradle.log" 2>&1; then
+        err "gradle build failed — see $outdir/gradle.log"
+        return 1
+    fi
+    local hello_classes="$GRADLE_DIR/hello/build/classes/java/main"
+    local xcomp_classes="$GRADLE_DIR/xcomponent-test/build/classes/java/main"
+    local real_class="$hello_classes/com/westlake/ohostests/hello/HelloDlopenReal.class"
+    local bridge_class="$xcomp_classes/com/westlake/ohostests/xcomponent/XComponentBridge.class"
+    if [ ! -f "$real_class" ] || [ ! -f "$bridge_class" ]; then
+        err "missing class files: real=$real_class bridge=$bridge_class"
+        return 1
+    fi
+    ok "gradle build complete"
+
+    log "[2/7] make libxcomponent_bridge.so (TARGET=ohos-arm32-dynamic)"
+    if ! (cd "$REPO_ROOT/dalvik-port" && make TARGET=ohos-arm32-dynamic xcomponent-bridge) \
+            > "$outdir/bridge-build.log" 2>&1; then
+        err "bridge build failed — see $outdir/bridge-build.log"
+        return 1
+    fi
+    local bridge_so="$REPO_ROOT/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so"
+    if [ ! -f "$bridge_so" ]; then
+        err "libxcomponent_bridge.so not produced at $bridge_so"
+        return 1
+    fi
+    ok "bridge .so built: $(du -b "$bridge_so" | awk '{print $1}') bytes"
+
+    log "[3/7] d8 --min-api 13 -> HelloDlopenReal.dex"
+    if [ ! -x "$D8" ]; then err "d8 not found at $D8"; return 1; fi
+    local dexdir="$outdir/dex"
+    mkdir -p "$dexdir"
+    if ! "$D8" --min-api 13 --output "$dexdir" \
+            "$real_class" "$bridge_class" \
+            > "$outdir/d8.log" 2>&1; then
+        err "d8 failed — see $outdir/d8.log"
+        return 1
+    fi
+    mv "$dexdir/classes.dex" "$dexdir/HelloDlopenReal.dex"
+    ok "dex emitted: HelloDlopenReal.dex=$(du -b "$dexdir/HelloDlopenReal.dex" | awk '{print $1}')B"
+
+    log "[4/7] push dalvikvm-arm32-dyn + dex + .so"
+    hdc_shell "mkdir -p $BOARD_DIR" >/dev/null 2>&1
+    if [ ! -f "$dvm_dyn_host" ]; then
+        err "dalvikvm-arm32 dynamic missing at $dvm_dyn_host"
+        err "  build via: make -C dalvik-port TARGET=ohos-arm32-dynamic dalvikvm"
+        return 1
+    fi
+    hdc_send "$dvm_dyn_host" "$dvm_dyn_board" || return 1
+    hdc_shell "chmod 0755 $dvm_dyn_board" >/dev/null 2>&1
+    hdc_send "$dexdir/HelloDlopenReal.dex" "$BOARD_DIR/HelloDlopenReal.dex" || return 1
+    hdc_send "$bridge_so" "$BOARD_DIR/libxcomponent_bridge.so" || return 1
+    hdc_shell "chmod 0644 $BOARD_DIR/libxcomponent_bridge.so" >/dev/null 2>&1
+    # Verify the production BCP is on board (this test REQUIRES
+    # core-android-x86.jar — core-kitkat.jar stubs would silently pass
+    # loadLibrary without doing dlopen).
+    local bcp_check
+    bcp_check="$(hdc_shell "ls $BOARD_DIR/bcp/core-android-x86.jar $BOARD_DIR/bcp/direct-print-stream.jar 2>&1")"
+    if echo "$bcp_check" | grep -q "No such file"; then
+        err "missing required BCP files on board (need core-android-x86.jar + direct-print-stream.jar in $BOARD_DIR/bcp/)"
+        err "  hdc said: $bcp_check"
+        return 1
+    fi
+    hdc_shell "ls -la $BOARD_DIR/HelloDlopenReal.dex $BOARD_DIR/libxcomponent_bridge.so $BOARD_DIR/bcp/core-android-x86.jar" \
+            > "$outdir/on-device-ls.log" 2>&1
+    ok "dex + .so pushed; BCP intact"
+
+    log "[5/7] check SELinux state (no setenforce 0)"
+    local enforce
+    enforce="$(hdc_shell 'getenforce' 2>&1 | tr -d '\r' | head -1)"
+    log "  getenforce: $enforce"
+    echo "getenforce=$enforce" > "$outdir/selinux.log"
+
+    log "[6/7] invoke dalvikvm-arm32-dyn (NO DVM_PRELOAD_LIB)"
+    # BCP differs from xcomponent-test: we use core-android-x86.jar
+    # (real Runtime/System) instead of core-kitkat.jar (stub
+    # loadLibrary). aosp-shim-ohos.dex is included for parity with
+    # trivial-activity/red-square — without it, dexopt SIGSEGVs in
+    # rewriteInvokeObjectInit while scanning constructors of classes
+    # that reference shim-provided android.app.* superclasses.
+    # (Verified empirically 2026-05-14: dropping aosp-shim from the
+    # BCP makes BCP-load dexopt crash at Optimize.cpp:365.)
+    local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
+    bcp="${bcp}:$BOARD_DIR/bcp/direct-print-stream.jar"
+    bcp="${bcp}:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
+    bcp="${bcp}:$BOARD_DIR/HelloDlopenReal.dex"
+    # Wipe BOTH the test-dex cache AND every BCP cache. Without this,
+    # if a prior test ran with a DIFFERENT BCP order (e.g., aarch64
+    # trivial-activity which has the same files in a different layout),
+    # the dexopt subprocess silently fails and the late-optimize path
+    # SIGSEGVs trying to write into the read-only raw-dex mapping.
+    # (Verified 2026-05-14: dropping this wipe makes the test flaky
+    # after any aarch64 run between two arm32 runs.)
+    local cmd="rm -f /data/dalvik-cache/data@local@tmp@westlake@HelloDlopenReal* /data/dalvik-cache/data@local@tmp@westlake@bcp@* 2>/dev/null;"
+    # NO DVM_PRELOAD_LIB. java.library.path lets Runtime.loadLibrary
+    # resolve "xcomponent_bridge" → "$BOARD_DIR/libxcomponent_bridge.so".
+    # LD_LIBRARY_PATH stays for the bridge's secondary dlopen of
+    # /system/lib/chipset-sdk-sp/libnative_buffer.so deps.
+    cmd="$cmd LD_LIBRARY_PATH=$BOARD_DIR:/system/lib:/system/lib/chipset-sdk-sp:/system/lib/platformsdk:/system/lib/ndk"
+    cmd="$cmd ANDROID_ROOT=$BOARD_DIR $dvm_dyn_board"
+    cmd="$cmd -Xbootclasspath:$bcp"
+    cmd="$cmd -Djava.library.path=$BOARD_DIR"
+    cmd="$cmd com.westlake.ohostests.hello.HelloDlopenReal"
+    log "  cmd: $cmd"
+    hdc_shell "$cmd" > "$outdir/dalvikvm.stdout" 2> "$outdir/dalvikvm.stderr" || {
+        warn "dalvikvm exited non-zero — capturing output regardless"
+    }
+    log "  stdout: $outdir/dalvikvm.stdout ($(wc -l < "$outdir/dalvikvm.stdout") lines)"
+    log "  stderr: $outdir/dalvikvm.stderr ($(wc -l < "$outdir/dalvikvm.stderr") lines)"
+
+    log "[7/7] grade markers"
+    local done_line passed failed
+    done_line="$(grep -E '^hello-dlopen-real-done passed=' "$outdir/dalvikvm.stdout" 2>/dev/null | tail -1 | tr -d '\r')"
+    passed="$(echo "$done_line" | sed -n 's/.*passed=\([0-9]\+\).*/\1/p')"
+    failed="$(echo "$done_line" | sed -n 's/.*failed=\([0-9]\+\).*/\1/p')"
+    if [ -z "$passed" ]; then passed="0"; fi
+    if [ -z "$failed" ]; then failed="-1"; fi
+    log "  done line: $done_line"
+
+    # Echo every hello-dlopen-real line to operator.
+    grep -E '^hello-dlopen-real' "$outdir/dalvikvm.stdout" | tr -d '\r' | while IFS= read -r line; do
+        log "  $line"
+    done
+
+    # PASS criteria, all three required:
+    #   - "loadLibrary OK" line present
+    #   - "nativeInit=1" line present (NOT 0)
+    #   - no "-FAIL" line (any stage)
+    #   - "nativeAlloc handle=0x..." with a non-zero hex value
+    local has_load_ok=0 has_init1=0 has_fail=0 has_handle_nonzero=0
+    grep -qF "hello-dlopen-real loadLibrary OK" "$outdir/dalvikvm.stdout" 2>/dev/null && has_load_ok=1
+    grep -qE 'hello-dlopen-real nativeInit=1$|hello-dlopen-real nativeInit=1[^0-9]' "$outdir/dalvikvm.stdout" 2>/dev/null && has_init1=1
+    grep -qF "hello-dlopen-real-FAIL" "$outdir/dalvikvm.stdout" 2>/dev/null && has_fail=1
+    grep -qE 'hello-dlopen-real nativeAlloc handle=0x[0-9a-f]*[1-9a-f][0-9a-f]*' "$outdir/dalvikvm.stdout" 2>/dev/null && has_handle_nonzero=1
+
+    log "  has_load_ok=$has_load_ok has_init1=$has_init1 has_handle_nonzero=$has_handle_nonzero has_fail=$has_fail"
+
+    if [ "$has_load_ok" -eq 1 ] && [ "$has_init1" -eq 1 ] \
+       && [ "$has_handle_nonzero" -eq 1 ] && [ "$has_fail" -eq 0 ]; then
+        ok "${GREEN}${BOLD}hello-dlopen-real PASS${RESET}: pure-Java System.loadLibrary works (no env var)"
+        echo "PASS passed=$passed failed=$failed" > "$outdir/result.txt"
+        return 0
+    else
+        err "hello-dlopen-real FAIL (loadOK=$has_load_ok init1=$has_init1 handle=$has_handle_nonzero fail=$has_fail)"
+        echo "FAIL passed=$passed failed=$failed loadOK=$has_load_ok init1=$has_init1 handle=$has_handle_nonzero failLine=$has_fail" > "$outdir/result.txt"
+        return 1
+    fi
+}
+
 # ---------- usage / dispatch ------------------------------------------------
 usage() {
     cat <<EOF
@@ -1320,6 +1526,10 @@ Subcommands:
                        Tier 2: real alloc returns non-NULL handle,
                        Tier 3: map → BGRA8888 fill RED → unmap). Forces
                        --arch arm32 (dynamic PIE).
+  hello-dlopen-real   CR60-followup E9a: pure-Java System.loadLibrary path
+                      via core-android-x86.jar (no \$DVM_PRELOAD_LIB env var
+                      workaround). Loads libxcomponent_bridge.so + invokes
+                      its JNI methods to prove the load was real.
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|auto   pick dalvikvm bitness (CR60). 'auto' (default)
@@ -1379,6 +1589,7 @@ main() {
         m6-drm-daemon)      cmd_m6_drm_daemon "$@" ;;
         m6-java-client)     cmd_m6_java_client "$@" ;;
         xcomponent-test)    cmd_xcomponent_test "$@" ;;
+        hello-dlopen-real)  cmd_hello_dlopen_real "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

@@ -1,0 +1,11 @@
+═══ Building libxcomponent_bridge.so (OHOS ARM32 dynamic) ═══
+/home/dspfac/openharmony/prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang -std=c11 -fPIC -O2 -shared \
+	--target=arm-linux-ohos --sysroot=/home/dspfac/android-to-openharmony-migration/dalvik-port/ohos-sysroot-arm32 -D__MUSL__ -march=armv7-a -mfloat-abi=softfp -mfpu=neon -fPIE -fuse-ld=lld --rtlib=compiler-rt \
+	-I/home/dspfac/aosp-android-11/libnativehelper/include_jni \
+	-Wl,-soname,libxcomponent_bridge.so \
+	-o /home/dspfac/android-to-openharmony-migration/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so \
+	/home/dspfac/android-to-openharmony-migration/dalvik-port/compat/xcomponent_bridge.c \
+	-ldl
+Created: /home/dspfac/android-to-openharmony-migration/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so
+-rwxr-xr-x 1 dspfac dspfac 390K May 14 22:27 /home/dspfac/android-to-openharmony-migration/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so
+/home/dspfac/android-to-openharmony-migration/dalvik-port/build-ohos-arm32-dynamic/libxcomponent_bridge.so: ELF 32-bit LSB shared object, ARM, EABI5 version 1 (SYSV), static-pie linked, with debug_info, not stripped
