@@ -1,0 +1,95 @@
+#!/bin/bash
+# ============================================================================
+# Westlake CR3 -- SystemServiceRouteTest.dex build helper
+#
+# Compiles aosp-libbinder-port/test/SystemServiceRouteTest.java plus the
+# AsInterfaceTest.java helper (used for its already-registered
+# println/eprintln natives) into one .dex.  Same strategy as
+# build_power_service_test.sh -- see that file for the longer comment.
+#
+# Output: out/SystemServiceRouteTest.dex
+# ============================================================================
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+DX=/home/dspfac/aosp-android-11/prebuilts/build-tools/common/bin/dx
+ANDROID_JAR=/home/dspfac/aosp-android-11/prebuilts/sdk/30/public/android.jar
+BUILD=/tmp/system-service-route-test-build-$$
+OUT_DEX="$SCRIPT_DIR/out/SystemServiceRouteTest.dex"
+
+if [ ! -f "$ANDROID_JAR" ]; then
+    echo "ERROR: android.jar not found at $ANDROID_JAR"
+    exit 1
+fi
+if [ ! -x "$DX" ]; then
+    echo "ERROR: dx not found at $DX"
+    exit 1
+fi
+
+mkdir -p "$BUILD/classes" "$BUILD/stubs/android/os"
+
+# Compile-time stub for ServiceManager (public SDK doesn't expose
+# addService).  Runtime uses the real shim ServiceManager from
+# aosp-shim.dex on the bootclasspath.  (Not strictly needed for this test,
+# but kept for parity with build_power_service_test.sh so AsInterfaceTest
+# also compiles cleanly when bundled.)
+cat > "$BUILD/stubs/android/os/ServiceManager.java" <<'EOF'
+package android.os;
+public final class ServiceManager {
+    public static String[] listServices() { throw new RuntimeException("stub"); }
+    public static IBinder getService(String name) { throw new RuntimeException("stub"); }
+    public static IBinder checkService(String name) { throw new RuntimeException("stub"); }
+    public static void addService(String name, IBinder s) { throw new RuntimeException("stub"); }
+}
+EOF
+
+# The test reflectively constructs com.westlake.services.WestlakeContextImpl
+# and com.westlake.services.ServiceRegistrar; both come from aosp-shim.dex at
+# runtime, so no compile-time stub is needed for them.
+
+javac -source 1.8 -target 1.8 -classpath "$ANDROID_JAR" \
+    -d "$BUILD/classes" \
+    "$BUILD/stubs/android/os/ServiceManager.java" \
+    "$SCRIPT_DIR/test/AsInterfaceTest.java" \
+    "$SCRIPT_DIR/test/CharsetPrimer.java" \
+    "$SCRIPT_DIR/test/SystemServiceRouteTest.java" 2>&1 | grep -v "^Note:" || true
+
+if [ ! -f "$BUILD/classes/SystemServiceRouteTest.class" ]; then
+    echo "ERROR: javac failed (SystemServiceRouteTest.class missing)"
+    rm -rf "$BUILD"
+    exit 1
+fi
+if [ ! -f "$BUILD/classes/AsInterfaceTest.class" ]; then
+    echo "ERROR: javac failed (AsInterfaceTest.class missing)"
+    rm -rf "$BUILD"
+    exit 1
+fi
+if [ ! -f "$BUILD/classes/CharsetPrimer.class" ]; then
+    echo "ERROR: javac failed (CharsetPrimer.class missing)"
+    rm -rf "$BUILD"
+    exit 1
+fi
+
+# Package SystemServiceRouteTest + AsInterfaceTest + CharsetPrimer (and
+# their inner classes) into the dex; the stubs above stay out.  CR9:
+# CharsetPrimer is required because main()'s first line calls
+# CharsetPrimer.primeCharsetState().
+mkdir -p "$BUILD/dex-only"
+cp "$BUILD/classes/SystemServiceRouteTest"*.class "$BUILD/dex-only/"
+cp "$BUILD/classes/AsInterfaceTest"*.class "$BUILD/dex-only/"
+cp "$BUILD/classes/CharsetPrimer"*.class "$BUILD/dex-only/"
+
+"$DX" --dex --output="$OUT_DEX" "$BUILD/dex-only" >/dev/null 2>&1
+
+if [ ! -s "$OUT_DEX" ]; then
+    echo "ERROR: $OUT_DEX not produced (or empty)"
+    rm -rf "$BUILD"
+    exit 1
+fi
+
+ls -lh "$OUT_DEX"
+rm -rf "$BUILD"
+echo "Done."

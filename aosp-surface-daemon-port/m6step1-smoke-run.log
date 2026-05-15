@@ -1,0 +1,35 @@
+[m6-step1] stopping vndservicemanager
+[m6-step1] starting our servicemanager on /dev/vndbinder
+[m6-step1] servicemanager up (pid via shell=10096)
+[m6-step1] starting westlake-surface-daemon on /dev/vndbinder
+[m6-step1] surface daemon up (pid via shell=10138)
+[m6-step1] --- surface daemon log so far ---
+[wlk-surface-daemon pid=10141] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[m6-step1] ---
+[m6-step1] running sm_smoke (verifies listServices)
+[m6-step1] sm_smoke exit=0
+[m6-step1] --- sm_smoke log ---
+[sm_smoke/parent] waiting for child ready signal...
+[sm_smoke/child pid=10153] opening /dev/vndbinder
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[sm_smoke/child] addService("m6step1.smoke") -> status=0 (ok)
+[sm_smoke/child] joining thread pool — will be killed by parent
+[sm_smoke/parent pid=10152] opening /dev/vndbinder
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[sm_smoke/parent] defaultServiceManager() OK
+[sm_smoke/parent] listServices() returned 3 names:
+    - SurfaceFlinger
+    - m6step1.smoke
+    - manager
+[sm_smoke/parent] listServices(): found m6step1.smoke — ok
+[sm_smoke/parent] checkService("m6step1.smoke"): non-null binder matches (remote BpBinder at 0x798aa2cb90)
+[sm_smoke/parent] addService("m6step1.smoke.parent") -> status=0 (ok)
+[sm_smoke/parent] PASS: all checks ok. Reaping child 10153
+[m6-step1] ---
+[m6-step1] PASS: SurfaceFlinger appears in listServices output
+[m6-step1] tearing down
+[m6-step1] done; result=0

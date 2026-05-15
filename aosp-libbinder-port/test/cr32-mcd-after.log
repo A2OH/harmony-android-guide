@@ -1,0 +1,80 @@
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) inputs=3 quick=0xd8f570 jni=0x0 native=0 code=0x701b9579f4 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) shorty=VLL quick=0xd8f570 jni=0x0 native=0 code=0x701b9579f4
+[PFCUT] McD perf arg0 String("AppLaunch")
+[PFCUT] McD perf arg1 String("splashTime")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.constants.PerfConstant$PerformanceLog.a(java.lang.String) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x701b966fc0 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.constants.PerfConstant$PerformanceLog.a(java.lang.String) shorty=VL quick=0xd8f570 jni=0x0 native=0 code=0x701b966fc0
+[PFCUT] McD perf arg0 String("SplashActivity.onCreate : start")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> androidx.core.splashscreen.SplashScreen androidx.core.splashscreen.SplashScreen.c(android.app.Activity) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x7021bdd32c splash=1
+[PFCUT] AndroidX splash noop androidx.core.splashscreen.SplashScreen androidx.core.splashscreen.SplashScreen.c(android.app.Activity) shorty=LL quick=0xd8f570 jni=0x0 native=0 code=0x7021bdd32c
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.onCreate(android.os.Bundle) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x701b8d1f80 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x701b8ddc68 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> boolean android.app.Activity.isTaskRoot() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x70389ea280 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x701b9576b0 splash=1
+[PFCUT] McD perf noop com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() shorty=L quick=0xd8f570 jni=0x0 native=0 code=0x701b9576b0
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.a(java.lang.String, java.lang.String) inputs=3 quick=0xd8f570 jni=0x0 native=0 code=0x701b959094 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.a(java.lang.String, java.lang.String) shorty=VLL quick=0xd8f570 jni=0x0 native=0 code=0x701b959094
+[PFCUT] McD perf arg0 String("AppLaunch")
+[PFCUT] McD perf arg1 String("backgroundTime")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> void androidx.appcompat.app.AppCompatActivity.setTheme(int) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x70222ebbac splash=1
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.BaseActivity.onCreate(android.os.Bundle) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x701b8c8d74 splash=1
+[PFCUT] NewRelic noop void com.newrelic.agent.android.tracing.TraceMachine.startTracing(java.lang.String) shorty=VL quick=0xd8f570 jni=0x0 native=0 code=0x70193688cc
+[PFCUT] NewRelic noop void com.newrelic.agent.android.tracing.TraceMachine.enterMethod(com.newrelic.agent.android.tracing.Trace, java.lang.String, java.util.ArrayList) shorty=VLLL quick=0xd8f570 jni=0x0 native=0 code=0x7019367f18
+[PFCUT] Kotlin reflection ClassReference fallback kotlin.reflect.KClass kotlin.reflect.jvm.internal.ReflectionFactoryImpl.getOrCreateKotlinClass(java.lang.Class) shorty=LL
+[PFCUT] AndroidX ViewModelProviderImpl KClass helper delegated to Class+Extras overload androidx.lifecycle.ViewModel androidx.lifecycle.ViewModelProvider$Factory.create(java.lang.Class, androidx.lifecycle.viewmodel.CreationExtras)
+[PFCUT] AtomicReference.getAndSet intrinsic current=0x1430b850
+[PFCUT] AtomicReference.getAndSet intrinsic current=0x1430b900
+[PFCUT] AtomicReference.getAndSet intrinsic current=0x1430b9b0
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+[PFCUT] String.split intrinsic delimiter=44 limit=-1 pieces=1
+[NPE] android.view.Window$Callback android.view.Window.getCallback()
+[NPE]   #0 void androidx.appcompat.app.AppCompatDelegateImpl.Y(android.view.Window) (dex_pc=6)
+[NPE]   #1 void androidx.appcompat.app.AppCompatDelegateImpl.n0() (dex_pc=16)
+[NPE]   #2 void androidx.appcompat.app.AppCompatDelegateImpl.z(android.os.Bundle) (dex_pc=7)
+[NPE]   #3 void androidx.appcompat.app.AppCompatDelegateWrapper.z(android.os.Bundle) (dex_pc=2)
+[NPE]   #4 void androidx.appcompat.app.PhraseAppCompatDelegate.z(android.os.Bundle) (dex_pc=0)
+[NPE]   #5 void androidx.appcompat.app.AppCompatActivity$2.a(android.content.Context) (dex_pc=21)
+[NPE]   #6 void androidx.activity.contextaware.ContextAwareHelper.c(android.content.Context) (dex_pc=25)
+[NPE]   #7 void androidx.activity.ComponentActivity.onCreate(android.os.Bundle) (dex_pc=7)
+DISCOVER-FAIL: PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to invoke InvokeType(2) method 'android.view.Window$Callback android.view.Window.getCallback()' on a null object reference
+
+============================================================
+DISCOVERY REPORT -- service probes + failures
+  app.packageName    = com.mcdonalds.app
+  app.applicationClass=com.mcdonalds.app.application.McDMarketApplication
+============================================================
+
+Phase outcomes:
+  PHASE A: 7/70 services resolved
+  PHASE B: 7/7 classes loadable
+  PHASE C: PASSED -- com.mcdonalds.app.application.McDMarketApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: FAILED (expected -- diagnoses missing service)
+  PHASE F: drove 5 framework Singletons, 1 failed
+  PHASE G2: PASSED -- MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: PASSED -- Activity.attach succeeded
+  PHASE G4: FAILED (expected -- diagnoses needed service)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@6081b1f
+  FOUND  package -> found=WestlakePackageManagerService{package=com.westlake.host}
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  display -> found=WestlakeDisplayManagerService{callbacks=0}
+  FOUND  input_method -> found=WestlakeInputMethodManagerService{clients=0}
+  FOUND  notification -> found=WestlakeNotificationManagerService{}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (7 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] com.mcdonalds.app.application.McDMarketApplication.onCreate() threw java.lang.reflect.InvocationTargetException: null
+  [2] PHASE F: DisplayManagerGlobal chain threw java.lang.reflect.InvocationTargetException: null
+  [3] PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+DiscoverWrapperBase: DONE

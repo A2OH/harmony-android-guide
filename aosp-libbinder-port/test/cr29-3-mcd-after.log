@@ -1,0 +1,218 @@
+[mcd-discover] stopping device vndservicemanager
+[mcd-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[mcd-discover] servicemanager up; log: /data/local/tmp/westlake/mcd-discover-sm.log
+[mcd-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[mcd-discover] CP=/data/local/tmp/westlake/dex/McdDiscoverWrapper.dex
+[mcd-discover] MANIFEST=/data/local/tmp/westlake/mcd.discover.properties
+[mcd-discover] running dalvikvm McdDiscoverWrapper
+[mcd-discover] dalvikvm exit code: 0
+[mcd-discover] ============================== END OF RUN ==============================
+[mcd-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+[PFCUT] AtomicInteger.getAndIncrement intrinsic current=0
+[PFCUT] AtomicReference.getAndSet intrinsic current=0x1426a070
+[PF-arch-051] ThrowAIOOB length=0 index=0 stack:
+  at android.os.Build$VERSION.<clinit>(Build.java:529)
+  at java.lang.Class.classForName(Native method)
+  at java.lang.Class.forName(Class.java:607)
+  at java.lang.Class.forName(Class.java:512)
+  at kotlin.internal.jdk8.JDK8PlatformImplementations$ReflectSdkVersion.<clinit>(unavailable:10)
+  at kotlin.internal.jdk8.JDK8PlatformImplementations.d(unavailable:0)
+  at kotlin.internal.jdk8.JDK8PlatformImplementations.b(unavailable:2)
+  at kotlin.random.Random.<clinit>(unavailable:10)
+  at androidx.activity.result.ActivityResultRegistry$generateRandomNumber$1.invoke(SourceFile:2)
+  at androidx.activity.result.ActivityResultRegistry$generateRandomNumber$1.invoke(SourceFile:1)
+  at kotlin.sequences.GeneratorSequence$iterator$1.a(unavailable:11)
+  at kotlin.sequences.GeneratorSequence$iterator$1.hasNext(unavailable:4)
+  at androidx.activity.result.ActivityResultRegistry.h(unavailable:10)
+  at androidx.activity.result.ActivityResultRegistry.o(unavailable:11)
+  at androidx.activity.result.ActivityResultRegistry.m(unavailable:36)
+  at androidx.activity.ComponentActivity.registerForActivityResult(SourceFile:2)
+  at androidx.activity.ComponentActivity.registerForActivityResult(SourceFile:3)
+  at com.mcdonalds.mcdcoreapp.common.activity.BaseActivity.<init>(unavailable:72)
+  at com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.<init>(unavailable:0)
+  at com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.<init>(unavailable:0)
+  at com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.<init>(unavailable:0)
+  at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+  at android.app.Instrumentation.newActivity(Instrumentation.java:1453)
+  at java.lang.reflect.Method.invoke(Native method)
+  at java.lang.reflect.Method.invoke(Native method)
+  at DiscoverWrapperBase.phaseG_mainActivityLaunch(DiscoverWrapperBase.java:863)
+  at DiscoverWrapperBase.runFromManifest(DiscoverWrapperBase.java:270)
+  at DiscoverWrapperBase.runFromManifest(DiscoverWrapperBase.java:211)
+  at McdDiscoverWrapper.main(McdDiscoverWrapper.java:65)
+nullptr W 05-13 11:02:54 23590 23592 class_linker.cc:6724] Tolerating clinit failure for Landroid/os/Build$VERSION;: java.lang.ArrayIndexOutOfBoundsException: length=0; index=0
+nullptr W 05-13 11:02:54 23590 23592 class_linker.cc:6724] (Throwable with no stack trace)
+nullptr W 05-13 11:02:54 23590 23592 class_linker.cc:6724] 
+[PFCUT] AtomicLong.get intrinsic current=3447679086515839964
+[PFCUT] AtomicLong.compareAndSet intrinsic current=3447679086515839964
+[PFCUT] AtomicInteger.addAndGet intrinsic current=0
+[PFCUT] AtomicLong.getAndAdd intrinsic current=2231405668231947843
+[PFCUT] InterpreterJni jdk.Unsafe putInt target=0x1404d088 offset=100 new=-1640531527
+[PFCUT]   caller#0 void jdk.internal.misc.Unsafe.putInt(java.lang.Object, long, int) dex_pc=0
+[PFCUT]   caller#1 void java.util.concurrent.ThreadLocalRandom.localInit() dex_pc=46
+[PFCUT]   caller#2 java.util.concurrent.ThreadLocalRandom java.util.concurrent.ThreadLocalRandom.current() dex_pc=14
+[PFCUT]   caller#3 java.util.Random kotlin.random.jdk8.PlatformThreadLocalRandom.getImpl() dex_pc=0
+[PFCUT]   caller#4 int kotlin.random.AbstractPlatformRandom.nextInt(int) dex_pc=0
+[PFCUT]   caller#5 int kotlin.random.Random$Default.nextInt(int) dex_pc=4
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.<init>() -> void java.lang.Object.<init>() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75948c869c splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.<init>() -> void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity._initHiltInternal() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x757710bec8 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity._initHiltInternal() -> void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity$1.<init>(com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x757710bd88 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity$1.<init>(com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity) -> void java.lang.Object.<init>() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75948c869c splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity._initHiltInternal() -> void androidx.activity.ComponentActivity.addOnContextAvailableListener(androidx.activity.contextaware.OnContextAvailableListener) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x757db19ed8 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.<init>() -> android.os.Looper android.os.Looper.getMainLooper() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x7592ae5ef8 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.<init>() -> void android.os.Handler.<init>(android.os.Looper) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x7592ac10f0 splash=1
+[PFCUT] Class.newInstance intrinsic class=java.lang.Class<com.mcdonalds.mcdcoreapp.common.activity.SplashActivity> ctor=void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.<init>()
+[PFCUT] StringFactory Charset fallback bytes=6 offset=0 utf16=6 shorty=LLIIL
+PHASE G:  Instrumentation.newActivity(MainActivity) -> com.mcdonalds.mcdcoreapp.common.activity.SplashActivity@b9ffce
+PHASE G:    class: com.mcdonalds.mcdcoreapp.common.activity.SplashActivity
+PHASE G:    superclass: com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity
+PHASE G3: located Activity.attach with 6 params
+    arg[0] android.content.Context
+    arg[1] android.app.Application
+    arg[2] android.content.Intent
+    arg[3] android.content.ComponentName
+    arg[4] android.view.Window
+    arg[5] android.app.Instrumentation
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G3:    attach arg[0] android.content.Context = com.westlake.services.WestlakeContextImpl@a9cfc91
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G3:    attach arg[1] android.app.Application = com.mcdonalds.app.application.McDMarketApplication@8b35d3b
+PHASE G3:    attach arg[2] android.content.Intent = Intent { cmp=com.mcdonalds.app/com.mcdonalds.mcdcoreapp.common.activity.SplashActivity }
+PHASE G3:    attach arg[3] android.content.ComponentName = null
+PHASE G3:    attach arg[4] android.view.Window = null
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G3:    attach arg[5] android.app.Instrumentation = android.app.Instrumentation@276deef
+[PFCUT] StringFactory Charset fallback bytes=6 offset=0 utf16=6 shorty=LLIIL
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141f1510 offset=72 current=0x0 expected=0x0 new=0x143020b8 success=1 array_index=15
+[Log/2] Configuration: Updating configuration, locales updated from [] to [en_US]
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[NPE] android.content.res.ResourcesImpl$ThemeImpl android.content.res.ResourcesImpl.newThemeImpl()
+[NPE]   #0 android.content.res.Resources$Theme android.content.res.Resources.newTheme() (dex_pc=8)
+[NPE]   #1 android.content.res.Resources$Theme com.westlake.services.WestlakeContextImpl.getTheme() (dex_pc=16)
+[NPE]   #2 android.content.Context androidx.appcompat.app.AppCompatDelegateImpl.g(android.content.Context) (dex_pc=143)
+[NPE]   #3 android.content.Context androidx.appcompat.app.AppCompatDelegateWrapper.g(android.content.Context) (dex_pc=10)
+[NPE]   #4 android.content.Context androidx.appcompat.app.PhraseAppCompatDelegate.g(android.content.Context) (dex_pc=14)
+[NPE]   #5 void androidx.appcompat.app.AppCompatActivity.attachBaseContext(android.content.Context) (dex_pc=4)
+[NPE]   #6 void android.app.Activity.attachInternal(android.content.Context, android.app.Application, android.content.Intent, android.content.ComponentName, android.app.Instrumentation, android.content.pm.ActivityInfo) (dex_pc=3)
+[NPE]   #7 void android.app.Activity.attach(android.content.Context, android.app.Application, android.content.Intent, android.content.ComponentName, android.view.Window, android.app.Instrumentation) (dex_pc=7)
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+[NPE] android.content.res.AssetManager android.content.res.ResourcesImpl.getAssets()
+[NPE]   #0 android.content.res.AssetManager android.content.res.Resources.getAssets() (dex_pc=2)
+[NPE]   #1 void androidx.appcompat.widget.ResourcesWrapper.<init>(android.content.res.Resources) (dex_pc=0)
+[NPE]   #2 void androidx.appcompat.widget.SyncedResourcesWrapper.<init>(android.content.res.Resources) (dex_pc=5)
+[NPE]   #3 void com.phrase.android.sdk.inject.PhraseResources.<init>(android.content.res.Resources) (dex_pc=5)
+[NPE]   #4 java.lang.Object com.phrase.android.sdk.inject.a.invoke() (dex_pc=20)
+[NPE]   #5 java.lang.Object kotlin.SynchronizedLazyImpl.getValue() (dex_pc=20)
+[NPE]   #6 android.content.res.Resources com.phrase.android.sdk.inject.PhraseContextWrapper.getResources() (dex_pc=2)
+[NPE]   #7 android.content.res.Resources android.content.ContextWrapper.getResources() (dex_pc=2)
+PHASE G3: Activity.attach(...) returned cleanly
+PHASE G4: calling MainActivity.onCreate(null)
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.startAppLaunchTimer() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x7577118034 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.startAppLaunchTimer() -> long java.lang.System.nanoTime() inputs=0 quick=0xd8f400 jni=0x4d331c native=1 code=0x0 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.startAppLaunchTimer() -> java.lang.Long java.lang.Long.valueOf(long) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x75948c60c0 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x757711cfd4 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> android.content.Intent android.app.Activity.getIntent() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x759420e234 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> android.os.Bundle android.content.Intent.getExtras() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x7593c6cf1c splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> void com.mcdonalds.androidsdk.core.logger.McDLog.b(java.lang.Object[]) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x757b4ea570 splash=1
+[PFCUT] McDLog noop void com.mcdonalds.androidsdk.core.logger.McDLog.b(java.lang.Object[]) shorty=VL quick=0xd8f570 jni=0x0 native=0 code=0x757b4ea570
+[PFCUT] McDLog arg0 [Ljava/lang/Object;[len=2]{#0=String("com.mcdonalds.mcdcoreapp.common.activity.SplashActivity"), #1=String("Beaconeator - getExtraIntentData: No extras found in the intent")}
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.lang.String java.lang.String.toLowerCase() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75948d4f58 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> boolean java.lang.String.equals(java.lang.Object) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x75948d3ce8 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.util.UUID java.util.UUID.randomUUID() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x75949e7e94 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.lang.String java.util.UUID.toString() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75949e7934 splash=1
+[PFCUT] StringFactory Charset fallback bytes=9 offset=0 utf16=9 shorty=LLIIL
+[PFCUT] StringFactory Charset fallback bytes=5 offset=0 utf16=5 shorty=LLIIL
+[PFCUT] StringFactory Charset fallback bytes=5 offset=0 utf16=5 shorty=LLIIL
+[PFCUT] StringFactory Charset fallback bytes=5 offset=0 utf16=5 shorty=LLIIL
+[PFCUT] StringFactory Charset fallback bytes=13 offset=0 utf16=13 shorty=LLIIL
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> void java.lang.StringBuilder.<init>() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75948d0d20 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x75948d0b08 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x75948d0b08 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> java.lang.String java.lang.StringBuilder.toString() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75948d09bc splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.getExtraIntentData() -> void com.mcdonalds.androidsdk.core.logger.McDLog.b(java.lang.Object[]) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x757b4ea570 splash=1
+[PFCUT] McDLog noop void com.mcdonalds.androidsdk.core.logger.McDLog.b(java.lang.Object[]) shorty=VL quick=0xd8f570 jni=0x0 native=0 code=0x757b4ea570
+[PFCUT] McDLog arg0 [Ljava/lang/Object;[len=2]{#0=String("com.mcdonalds.mcdcoreapp.common.activity.SplashActivity"), #1=String("Beaconeator - getExtraIntentData: execution-id is set to default, changing it to random UUID - 12345678-9abc-4001-8000-000000000001")}
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0 splash=1
+[PFCUT] McD perf noop com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() shorty=L quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) inputs=3 quick=0xd8f570 jni=0x0 native=0 code=0x75771919f4 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) shorty=VLL quick=0xd8f570 jni=0x0 native=0 code=0x75771919f4
+[PFCUT] McD perf arg0 String("AppLaunch")
+[PFCUT] McD perf arg1 String("splashOnCreate")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0 splash=1
+[PFCUT] McD perf noop com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() shorty=L quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) inputs=3 quick=0xd8f570 jni=0x0 native=0 code=0x75771919f4 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.h(java.lang.String, java.lang.String) shorty=VLL quick=0xd8f570 jni=0x0 native=0 code=0x75771919f4
+[PFCUT] McD perf arg0 String("AppLaunch")
+[PFCUT] McD perf arg1 String("splashTime")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.constants.PerfConstant$PerformanceLog.a(java.lang.String) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x75771a0fc0 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.constants.PerfConstant$PerformanceLog.a(java.lang.String) shorty=VL quick=0xd8f570 jni=0x0 native=0 code=0x75771a0fc0
+[PFCUT] McD perf arg0 String("SplashActivity.onCreate : start")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> androidx.core.splashscreen.SplashScreen androidx.core.splashscreen.SplashScreen.c(android.app.Activity) inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x757d41732c splash=1
+[PFCUT] AndroidX splash noop androidx.core.splashscreen.SplashScreen androidx.core.splashscreen.SplashScreen.c(android.app.Activity) shorty=LL quick=0xd8f570 jni=0x0 native=0 code=0x757d41732c
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.onCreate(android.os.Bundle) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x757710bf80 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.Hilt_SplashActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x7577117c68 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> boolean android.app.Activity.isTaskRoot() inputs=1 quick=0xd8f570 jni=0x0 native=0 code=0x759420e718 splash=1
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() inputs=0 quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0 splash=1
+[PFCUT] McD perf noop com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.H() shorty=L quick=0xd8f570 jni=0x0 native=0 code=0x75771916b0
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.a(java.lang.String, java.lang.String) inputs=3 quick=0xd8f570 jni=0x0 native=0 code=0x7577193094 splash=1
+[PFCUT] McD perf noop void com.mcdonalds.mcdcoreapp.performanalytics.PerfAnalyticsInteractor.a(java.lang.String, java.lang.String) shorty=VLL quick=0xd8f570 jni=0x0 native=0 code=0x7577193094
+[PFCUT] McD perf arg0 String("AppLaunch")
+[PFCUT] McD perf arg1 String("backgroundTime")
+[MCD-CALL] void com.mcdonalds.mcdcoreapp.common.activity.McdLauncherActivity.onCreate(android.os.Bundle) -> void androidx.appcompat.app.AppCompatActivity.setTheme(int) inputs=2 quick=0xd8f570 jni=0x0 native=0 code=0x757db25bac splash=1
+[NPE] android.content.res.AssetManager android.content.res.ResourcesImpl.getAssets()
+[NPE]   #0 android.content.res.AssetManager android.content.res.Resources.getAssets() (dex_pc=2)
+[NPE]   #1 void androidx.appcompat.widget.ResourcesWrapper.<init>(android.content.res.Resources) (dex_pc=0)
+[NPE]   #2 void androidx.appcompat.widget.SyncedResourcesWrapper.<init>(android.content.res.Resources) (dex_pc=5)
+[NPE]   #3 void com.phrase.android.sdk.inject.PhraseResources.<init>(android.content.res.Resources) (dex_pc=5)
+[NPE]   #4 java.lang.Object com.phrase.android.sdk.inject.a.invoke() (dex_pc=20)
+[NPE]   #5 java.lang.Object kotlin.SynchronizedLazyImpl.getValue() (dex_pc=20)
+[NPE]   #6 android.content.res.Resources com.phrase.android.sdk.inject.PhraseContextWrapper.getResources() (dex_pc=2)
+[NPE]   #7 android.content.res.Resources android.content.ContextWrapper.getResources() (dex_pc=2)
+DISCOVER-FAIL: PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to invoke InvokeType(2) method 'android.content.res.AssetManager android.content.res.ResourcesImpl.getAssets()' on a null object reference
+
+============================================================
+DISCOVERY REPORT -- service probes + failures
+  app.packageName    = com.mcdonalds.app
+  app.applicationClass=com.mcdonalds.app.application.McDMarketApplication
+============================================================
+
+Phase outcomes:
+  PHASE A: 7/70 services resolved
+  PHASE B: 7/7 classes loadable
+  PHASE C: PASSED -- com.mcdonalds.app.application.McDMarketApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: FAILED (expected -- diagnoses missing service)
+  PHASE F: drove 5 framework Singletons, 1 failed
+  PHASE G2: PASSED -- MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: PASSED -- Activity.attach succeeded
+  PHASE G4: FAILED (expected -- diagnoses needed service)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@a62f735
+  FOUND  package -> found=WestlakePackageManagerService{package=com.westlake.host}
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  display -> found=WestlakeDisplayManagerService{callbacks=0}
+  FOUND  input_method -> found=WestlakeInputMethodManagerService{clients=0}
+  FOUND  notification -> found=WestlakeNotificationManagerService{}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (7 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] com.mcdonalds.app.application.McDMarketApplication.onCreate() threw java.lang.reflect.InvocationTargetException: null
+  [2] PHASE F: DisplayManagerGlobal chain threw java.lang.reflect.InvocationTargetException: null
+  [3] PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+DiscoverWrapperBase: DONE
+----- end dalvikvm log -----
+[mcd-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+----- end sm log -----
+/data/local/tmp/westlake/bin-bionic/mcd-discover.sh: line 127: 23581 Killed                  su 1000 -c "LD_LIBRARY_PATH=$SM_LIB $SM_BIN $DEV" > "$SM_LOG" 2>&1
+[mcd-discover] restart device vndservicemanager

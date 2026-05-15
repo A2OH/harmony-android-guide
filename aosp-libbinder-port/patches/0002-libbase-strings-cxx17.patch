@@ -1,0 +1,32 @@
+--- /home/dspfac/aosp-sources/system-libbase/strings.cpp	2026-05-12 11:40:00.959118770 -0700
++++ deps-src/libbase/strings.cpp	2026-05-12 11:59:49.826005251 -0700
+@@ -92,11 +92,12 @@
+ 
+ 
+ bool StartsWith(std::string_view s, std::string_view prefix) {
+-  return s.starts_with(prefix);
++  // libbinder-port: C++20 std::string_view::starts_with not available in C++17.
++  return s.size() >= prefix.size() && s.substr(0, prefix.size()) == prefix;
+ }
+ 
+ bool StartsWith(std::string_view s, char prefix) {
+-  return s.starts_with(prefix);
++  return !s.empty() && s.front() == prefix;
+ }
+ 
+ bool StartsWithIgnoreCase(std::string_view s, std::string_view prefix) {
+@@ -104,11 +105,12 @@
+ }
+ 
+ bool EndsWith(std::string_view s, std::string_view suffix) {
+-  return s.ends_with(suffix);
++  // libbinder-port: C++20 std::string_view::ends_with not available in C++17.
++  return s.size() >= suffix.size() && s.substr(s.size() - suffix.size()) == suffix;
+ }
+ 
+ bool EndsWith(std::string_view s, char suffix) {
+-  return s.ends_with(suffix);
++  return !s.empty() && s.back() == suffix;
+ }
+ 
+ bool EndsWithIgnoreCase(std::string_view s, std::string_view suffix) {

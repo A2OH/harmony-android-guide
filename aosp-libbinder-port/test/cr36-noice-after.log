@@ -1,0 +1,221 @@
+[noice-discover] stopping device vndservicemanager
+[noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[noice-discover] servicemanager up; log: /data/local/tmp/westlake/noice-discover-sm.log
+[noice-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[noice-discover] CP=/data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+[noice-discover] running dalvikvm NoiceDiscoverWrapper
+[noice-discover] dalvikvm exit code: 0
+[noice-discover] ============================== END OF RUN ==============================
+[noice-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+PHASE F:  ActivityManager.getService() returned com.westlake.services.WestlakeActivityManagerService@7a2fa97
+PHASE F:    IActivityManager.getRunningTasks(maxNum=10) -- method not found on com.westlake.services.WestlakeActivityManagerService
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.pm.UserInfo name=userType
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.pm.UserInfo name=serialNumber
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.pm.UserInfo name=profileGroupId
+[PFCUT] StringFactory Charset fallback bytes=1 offset=0 utf16=1 shorty=LLIIL
+PHASE F:    IActivityManager.getCurrentUser() -> UserInfo{0:Owner:1}
+WLK-binder-jni: nativeGetLocalService("package") binder=0x7f4d40a6e0 local=0x2e6
+[WLK-binder-jni] nativeGetLocalService("package") binder=0x7f4d40a6e0 local=0x2e6
+PHASE F:  ActivityThread.getPackageManager() returned WestlakePackageManagerService{package=com.westlake.host}
+PHASE F:    IPackageManager.getApplicationInfo(com.github.ashutoshgngwr.noice) -> null
+nullptr W 05-13 12:33:01  1599  1614 class_linker.cc:6724] Tolerating clinit failure for Landroid/content/pm/BaseParceledListSlice;: java.lang.NoSuchMethodError: No InvokeType(0) method getSuggestedMaxIpcSizeBytes()I in class Landroid/os/IBinder; or its super classes (declaration of 'android.os.IBinder' appears in /data/local/tmp/westlake/aosp-shim.dex)
+nullptr W 05-13 12:33:01  1599  1614 class_linker.cc:6724] (Throwable with no stack trace)
+nullptr W 05-13 12:33:01  1599  1614 class_linker.cc:6724] 
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE F:    IPackageManager.getInstalledPackages(flags=0) -> android.content.pm.ParceledListSlice@a5e3cee
+WLK-binder-jni: nativeGetLocalService("window") binder=0x7f4d40a5a0 local=0x266
+[WLK-binder-jni] nativeGetLocalService("window") binder=0x7f4d40a5a0 local=0x266
+PHASE F:  WindowManagerGlobal.getWindowManagerService() returned WestlakeWindowManagerService{tokens=0, dispatching=true}
+PHASE F:    IWindowManager.isViewServerRunning() -> false
+WLK-binder-jni: nativeGetLocalService("display") binder=0x7f4d40a5f0 local=0x286
+[WLK-binder-jni] nativeGetLocalService("display") binder=0x7f4d40a5f0 local=0x286
+WLK-jbbh: JavaBBinderHolder ctor: this=0x7f4d40ff40
+[WLK-jbbh] JavaBBinderHolder ctor: this=0x7f4d40ff40
+[PFCUT-CHAR] handled java.lang.Character.isUpperCaseImpl cp=105 inputs=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x140ac7e0 offset=52 current=0x0 expected=0x0 new=0x1411f5c8 success=1 array_index=10
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf294
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x140e88c0 offset=40 current=1 expected=1 new=2 success=1
+[WestlakeServiceMethodMissing] display.getPreferredWideGamutColorSpaceId() called but not observed needed during discovery; throwing UnsupportedOperationException. If you see this, the method is a Tier-1 candidate -- add a real impl per docs/engine/M4_DISCOVERY.md.
+[PFCUT] pending UOE return caller=void android.hardware.display.DisplayManagerGlobal.<init>(android.hardware.display.IDisplayManager) callee=int com.westlake.services.WestlakeDisplayManagerService.getPreferredWideGamutColorSpaceId() inputs=1 native=0 code=0x7f38eb49b8 message=WestlakeServiceMethodMissing: display.getPreferredWideGamutColorSpaceId() not implemented. This method was not observed needed during M4 discovery. If you reached this from an app, treat it as a new Tier-1 candidate (see docs/engine/M4_DISCOVERY.md).
+[PFCUT] pending UOE return caller=android.hardware.display.DisplayManagerGlobal android.hardware.display.DisplayManagerGlobal.getInstance() callee=void android.hardware.display.DisplayManagerGlobal.<init>(android.hardware.display.IDisplayManager) inputs=2 native=0 code=0x7f37ea1c20 message=WestlakeServiceMethodMissing: display.getPreferredWideGamutColorSpaceId() not implemented. This method was not observed needed during M4 discovery. If you reached this from an app, treat it as a new Tier-1 candidate (see docs/engine/M4_DISCOVERY.md).
+DISCOVER-FAIL: PHASE F: DisplayManagerGlobal chain threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.UnsupportedOperationException: WestlakeServiceMethodMissing: display.getPreferredWideGamutColorSpaceId() not implemented. This method was not observed needed during M4 discovery. If you reached this from an app, treat it as a new Tier-1 candidate (see docs/engine/M4_DISCOVERY.md).
+PHASE F:  AudioSystem.getMasterMute() returned false
+PHASE F:  InputMethodManager class loadable: class android.view.inputmethod.InputMethodManager
+PHASE F:  IActivityManager.Stub.asInterface(null) -> null
+
+=== PHASE G: MainActivity launch driver (M4-PRE3) ===
+WLK-mq-jni: nativeInit -> NativeMessageQueue=0x7f4d40ffc0 looper=0x7f4d41a280 tid=546372451504
+[WLK-mq-jni] nativeInit -> NativeMessageQueue=0x7f4d40ffc0 looper=0x7f4d41a280 tid=546372451504
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G:  Looper.prepareMainLooper() -> getMainLooper now: Looper (main-256mb, tid 2) {fc6401c}
+[PFCUT] StringFactory Charset fallback bytes=6 offset=0 utf16=6 shorty=LLIIL
+PHASE G:  rebuilt WestlakeContextImpl: com.westlake.services.WestlakeContextImpl@9a0425
+PHASE G:  WestlakeContextImpl.setAttachedApplication(NoiceApplication) OK
+PHASE G:  built Intent with ComponentName: Intent { cmp=com.github.ashutoshgngwr.noice/.activity.MainActivity }
+[Log/6] Instrumentation: Uninitialized ActivityThread, likely app-created Instrumentation, disabling AppComponentFactory
+java.lang.Throwable
+
+[PFCUT] MethodHandles.lookup intrinsic caller=void java.util.concurrent.atomic.AtomicReference.<clinit>()
+[PFCUT] Class.getDeclaredField intrinsic hit class=java.util.concurrent.atomic.AtomicReference name=value
+[PF-arch-051] ThrowAIOOB length=0 index=0 stack:
+  at android.os.Build$VERSION.<clinit>(Build.java:529)
+  at androidx.activity.ComponentActivity.<init>(SourceFile:121)
+  at androidx.fragment.app.d0.<init>(SourceFile:1)
+  at e.q.<init>(SourceFile:1)
+  at v3.e.<init>(SourceFile:78)
+  at com.github.ashutoshgngwr.noice.activity.MainActivity.<init>(SourceFile:2)
+  at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+  at android.app.Instrumentation.newActivity(Instrumentation.java:1453)
+  at java.lang.reflect.Method.invoke(Native method)
+  at java.lang.reflect.Method.invoke(Native method)
+  at DiscoverWrapperBase.phaseG_mainActivityLaunch(DiscoverWrapperBase.java:863)
+  at DiscoverWrapperBase.runFromManifest(DiscoverWrapperBase.java:270)
+  at DiscoverWrapperBase.runFromManifest(DiscoverWrapperBase.java:211)
+  at NoiceDiscoverWrapper.main(NoiceDiscoverWrapper.java:52)
+nullptr W 05-13 12:33:02  1599  1614 class_linker.cc:6724] Tolerating clinit failure for Landroid/os/Build$VERSION;: java.lang.ArrayIndexOutOfBoundsException: length=0; index=0
+nullptr W 05-13 12:33:02  1599  1614 class_linker.cc:6724] (Throwable with no stack trace)
+nullptr W 05-13 12:33:02  1599  1614 class_linker.cc:6724] 
+[PFCUT] Class.newInstance intrinsic class=java.lang.Class<com.github.ashutoshgngwr.noice.activity.MainActivity> ctor=void com.github.ashutoshgngwr.noice.activity.MainActivity.<init>()
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G:  Instrumentation.newActivity(MainActivity) -> com.github.ashutoshgngwr.noice.activity.MainActivity@fd84523
+PHASE G:    class: com.github.ashutoshgngwr.noice.activity.MainActivity
+PHASE G:    superclass: v3.e
+PHASE G3: located Activity.attach with 6 params
+    arg[0] android.content.Context
+    arg[1] android.app.Application
+    arg[2] android.content.Intent
+    arg[3] android.content.ComponentName
+    arg[4] android.view.Window
+    arg[5] android.app.Instrumentation
+[PFCUT] StringFactory Charset fallback bytes=6 offset=0 utf16=6 shorty=LLIIL
+PHASE G3:    attach arg[0] android.content.Context = com.westlake.services.WestlakeContextImpl@9a0425
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+PHASE G3:    attach arg[1] android.app.Application = com.github.ashutoshgngwr.noice.NoiceApplication@201b46d
+PHASE G3:    attach arg[2] android.content.Intent = Intent { cmp=com.github.ashutoshgngwr.noice/.activity.MainActivity }
+PHASE G3:    attach arg[3] android.content.ComponentName = null
+PHASE G3:    attach arg[4] android.view.Window = null
+[PFCUT] StringFactory Charset fallback bytes=6 offset=0 utf16=6 shorty=LLIIL
+PHASE G3:    attach arg[5] android.app.Instrumentation = android.app.Instrumentation@384a20
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x140ac7e0 offset=72 current=0x0 expected=0x0 new=0x1417eaf0 success=1 array_index=15
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf294
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x140e88c0 offset=40 current=2 expected=2 new=3 success=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetInt(java.lang.Object, long, int, int) quick=0xd8f400 jni=0x7bf074
+[PFCUT] InterpreterJni jdk.Unsafe CAS int target=0x1418e440 offset=52 current=32 expected=32 new=-1 success=1
+[PFCUT]   caller#0 boolean jdk.internal.misc.Unsafe.compareAndSetInt(java.lang.Object, long, int, int) dex_pc=0
+[PFCUT]   caller#1 java.util.concurrent.ConcurrentHashMap$Node[] java.util.concurrent.ConcurrentHashMap.initTable() dex_pc=25
+[PFCUT]   caller#2 java.lang.Object java.util.concurrent.ConcurrentHashMap.putVal(java.lang.Object, java.lang.Object, boolean) dex_pc=196
+[PFCUT]   caller#3 java.lang.Object java.util.concurrent.ConcurrentHashMap.putIfAbsent(java.lang.Object, java.lang.Object) dex_pc=1
+[PFCUT]   caller#4 java.lang.Object sun.util.locale.LocaleObjectCache.get(java.lang.Object) dex_pc=42
+[PFCUT]   caller#5 sun.util.locale.BaseLocale sun.util.locale.BaseLocale.getInstance(java.lang.String, java.lang.String, java.lang.String, java.lang.String) dex_pc=92
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a00d0 offset=128 current=0x0 expected=0x0 new=0x1419f640 success=1 array_index=29
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf294
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e440 offset=40 current=0 expected=0 new=1 success=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a00d0 offset=100 current=0x0 expected=0x0 new=0x1419f6e8 success=1 array_index=22
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf294
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e440 offset=40 current=1 expected=1 new=2 success=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a00d0 offset=20 current=0x0 expected=0x0 new=0x141a1088 success=1 array_index=2
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf294
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e440 offset=40 current=2 expected=2 new=3 success=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetInt(java.lang.Object, long, int, int) quick=0xd8f400 jni=0x7bf074
+[PFCUT] InterpreterJni jdk.Unsafe CAS int target=0x1418e480 offset=52 current=32 expected=32 new=-1 success=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf428
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a0310 offset=108 current=0x0 expected=0x0 new=0x141a10d0 success=1 array_index=24
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e480 offset=40 current=0 expected=0 new=1 success=1
+[Log/2] Configuration: Updating configuration, locales updated from [] to [en_US]
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] InterpreterJni jdk.Unsafe CAS int target=0x1418e540 offset=52 current=0 expected=0 new=-1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x1413ef10 offset=20 current=0x0 expected=0x0 new=0x141a1580 success=1 array_index=2
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e540 offset=40 current=0 expected=0 new=1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x1413ef10 offset=64 current=0x0 expected=0x0 new=0x141a1640 success=1 array_index=13
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e540 offset=40 current=1 expected=1 new=2 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x1413ef10 offset=60 current=0x0 expected=0x0 new=0x141a1790 success=1 array_index=12
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e540 offset=40 current=2 expected=2 new=3 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x1413ef10 offset=32 current=0x0 expected=0x0 new=0x141a17f0 success=1 array_index=5
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e540 offset=40 current=3 expected=3 new=4 success=1
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] InterpreterJni jdk.Unsafe CAS int target=0x1418e5c0 offset=52 current=32 expected=32 new=-1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a0c10 offset=12 current=0x0 expected=0x0 new=0x141a1eb0 success=1 array_index=0
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e5c0 offset=40 current=0 expected=0 new=1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x141a0c10 offset=44 current=0x0 expected=0x0 new=0x141a1ec8 success=1 array_index=8
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e5c0 offset=40 current=1 expected=1 new=2 success=1
+WLK-binder-jni: nativeGetLocalService("window") binder=0x7f4d40a5a0 local=0x266
+[WLK-binder-jni] nativeGetLocalService("window") binder=0x7f4d40a5a0 local=0x266
+PHASE G3: Activity.attach(...) returned cleanly
+PHASE G4: calling MainActivity.onCreate(null)
+[Log/2] Configuration: Updating configuration, locales updated from [] to [en_US]
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] AtomicLong.get intrinsic current=3447679086515839964
+[PFCUT] AtomicLong.compareAndSet intrinsic current=3447679086515839964
+[PFCUT] AtomicInteger.addAndGet intrinsic current=0
+[PFCUT] AtomicLong.getAndAdd intrinsic current=3563889352183506261
+[PFCUT] InterpreterJni jdk.Unsafe putInt target=0x1404d088 offset=100 new=-1640531527
+[PFCUT]   caller#0 void jdk.internal.misc.Unsafe.putInt(java.lang.Object, long, int) dex_pc=0
+[PFCUT]   caller#1 void java.util.concurrent.ThreadLocalRandom.localInit() dex_pc=46
+[PFCUT]   caller#2 java.util.concurrent.ThreadLocalRandom java.util.concurrent.ThreadLocalRandom.current() dex_pc=14
+[PFCUT]   caller#3 java.util.Random u7.a.c() dex_pc=0
+[PFCUT]   caller#4 void androidx.activity.result.f.e(java.lang.String) dex_pc=18
+[PFCUT]   caller#5 androidx.activity.result.c androidx.activity.result.f.d(java.lang.String, c.a, androidx.fragment.app.m0) dex_pc=0
+[PFCUT] String.split intrinsic delimiter=45 limit=-1 pieces=2
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x1418e440 offset=40 current=3 expected=3 new=4 success=1
+[PFCUT] String.split intrinsic delimiter=44 limit=-1 pieces=1
+DISCOVER-FAIL: PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to read from null array
+
+============================================================
+DISCOVERY REPORT -- service probes + failures
+  app.packageName    = com.github.ashutoshgngwr.noice
+  app.applicationClass=com.github.ashutoshgngwr.noice.NoiceApplication
+============================================================
+
+Phase outcomes:
+  PHASE A: 8/70 services resolved
+  PHASE B: 5/7 classes loadable
+  PHASE C: PASSED -- com.github.ashutoshgngwr.noice.NoiceApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: PASSED unexpectedly
+  PHASE F: drove 5 framework Singletons, 1 failed
+  PHASE G2: PASSED -- MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: PASSED -- Activity.attach succeeded
+  PHASE G4: FAILED (expected -- diagnoses needed service)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@7a2fa97
+  FOUND  package -> found=WestlakePackageManagerService{package=com.westlake.host}
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  display -> found=WestlakeDisplayManagerService{callbacks=0}
+  FOUND  input_method -> found=WestlakeInputMethodManagerService{clients=0}
+  FOUND  notification -> found=WestlakeNotificationManagerService{}
+  FOUND  media.audio_flinger -> found=NativeBinderProxy{name=media.audio_flinger, handle=0x7f4d408090}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (8 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] PHASE F: DisplayManagerGlobal chain threw java.lang.reflect.InvocationTargetException: null
+  [2] PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+DiscoverWrapperBase: DONE
+----- end dalvikvm log -----
+[noice-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+ProcessState: android_errorWriteLog(534e4554, 121035042)
+ProcessState: Binder ioctl to become context manager failed: Device or resource busy
+
+F ?: Could not become context manager
+Aborted 
+----- end sm log -----
+[noice-discover] restart device vndservicemanager

@@ -1,0 +1,217 @@
+[noice-discover] stopping device vndservicemanager
+[noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[noice-discover] servicemanager up; log: /data/local/tmp/westlake/noice-discover-sm.log
+[noice-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[noice-discover] CP=/data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+[noice-discover] running dalvikvm NoiceDiscoverWrapper
+[noice-discover] dalvikvm exit code: 0
+[noice-discover] ============================== END OF RUN ==============================
+[noice-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a47e0 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a4830 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a4880 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a48d0 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a4920 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-PROXY] direct proxy constructor android.provider.$Proxy0 handler=0x141a4970 ctor=void java.lang.reflect.Proxy.<init>(java.lang.reflect.InvocationHandler) quick=0xd8d570 virt=5
+[PFCUT-PROXY]   method=java.lang.Class java.lang.annotation.Annotation.annotationType() target=java.lang.Class java.lang.annotation.Annotation.annotationType() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=boolean java.lang.annotation.Annotation.equals(java.lang.Object) target=boolean java.lang.annotation.Annotation.equals(java.lang.Object) quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int java.lang.annotation.Annotation.hashCode() target=int java.lang.annotation.Annotation.hashCode() quick=0xd8d060 flags=0x1a300011
+[PFCUT-PROXY]   method=int android.provider.Settings$Readable.maxTargetSdk() target=int android.provider.Settings$Readable.maxTargetSdk() quick=0xd8d060 flags=0xa300011
+[PFCUT-PROXY]   method=java.lang.String java.lang.annotation.Annotation.toString() target=java.lang.String java.lang.annotation.Annotation.toString() quick=0xd8d060 flags=0x1a300011
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-IFACE] DoInvoke calling proxy method int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8d060
+[NPE] int android.content.ContentResolver.getUserId()
+[NPE]   #0 java.lang.String android.provider.Settings$Global.getString(android.content.ContentResolver, java.lang.String) (dex_pc=0)
+[NPE]   #1 int android.provider.Settings$Global.getInt(android.content.ContentResolver, java.lang.String, int) (dex_pc=0)
+[NPE]   #2 void com.android.internal.policy.PhoneWindow.<init>(android.content.Context) (dex_pc=123)
+[NPE]   #3 void com.android.internal.policy.PhoneWindow.<init>(android.content.Context, android.view.Window, android.view.ViewRootImpl$ActivityConfigCallback) (dex_pc=0)
+[NPE]   #4 void android.app.Activity.attach(android.content.Context, android.app.ActivityThread, android.app.Instrumentation, android.os.IBinder, int, android.app.Application, android.content.Intent, android.content.pm.ActivityInfo, java.lang.CharSequence, android.app.Activity, java.lang.String, android.app.Activity$NonConfigurationInstances, android.content.res.Configuration, java.lang.String, com.android.internal.app.IVoiceInteractor, android.view.Window, android.view.ViewRootImpl$ActivityConfigCallback, android.os.IBinder, android.os.IBinder, android.os.IBinder) (dex_pc=34)
+DISCOVER-FAIL: PHASE G3: Activity.attach threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to invoke InvokeType(2) method 'int android.content.ContentResolver.getUserId()' on a null object reference
+
+============================================================
+DISCOVERY REPORT — service probes + failures
+============================================================
+
+Phase outcomes:
+  PHASE A: 3/70 services resolved
+  PHASE B: 5/7 classes loadable
+  PHASE C: PASSED — NoiceApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: PASSED unexpectedly
+  PHASE F: drove 5 framework Singletons, 1 failed
+  PHASE G2: PASSED — MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: FAILED — attach threw InvocationTargetException (likely M4-PRE4 candidate; see log)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@4e2294a
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (3 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] PHASE F: AudioSystem chain threw java.lang.reflect.InvocationTargetException: null
+  [2] PHASE G3: Activity.attach threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+NoiceDiscoverWrapper: DONE
+----- end dalvikvm log -----
+[noice-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+----- end sm log -----
+/data/local/tmp/westlake/bin-bionic/noice-discover.sh: line 128:  8295 Killed                  su 1000 -c "LD_LIBRARY_PATH=$SM_LIB $SM_BIN $DEV" > "$SM_LOG" 2>&1
+[noice-discover] restart device vndservicemanager

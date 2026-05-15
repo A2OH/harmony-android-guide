@@ -1,0 +1,159 @@
+First-run transcript for scripts/binder-pivot-regression.sh (D2 milestone).
+Captured on a fresh-rebooted phone (uptime 7 min) so init.svc state is clean.
+
+Command:
+  bash scripts/binder-pivot-regression.sh --quick --no-color
+Date: 2026-05-13T00:45:49Z
+
+============================================================================
+RAW OUTPUT
+============================================================================
+
+Westlake Binder Pivot Regression Suite
+========================================
+mode=quick phase-limit=99 date=2026-05-13T00:45:49Z
+ADB=/mnt/c/Users/dspfa/Dev/platform-tools/adb.exe -H localhost -P 5037 -s cfb7c9e3
+WESTLAKE_DIR=/data/local/tmp/westlake
+
+preflight OK
+
+[ 1] sm_smoke / sandbox (M1+M2)                   PASS ( 3s)
+[ 2] HelloBinder (M3)                             PASS ( 6s)
+[ 3] AsInterfaceTest (M3++)                       PASS ( 3s)
+[ 4] BCP-shim (M3+)                               PASS ( 5s)
+[ 5] BCP-framework (M3+ / PF-arch-053)            PASS ( 5s)
+[ 6] ActivityServiceTest (M4a)                    FAIL ( 4s) — exit 10
+      Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+      Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+       manager
+      ----- end sm log -----
+      [m3-boot] smoke registrar log was:
+      ----- smoke log -----
+      [sm_registrar pid=8893] opening /dev/vndbinder, will register "westlake.test.echo"
+      [sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+      [sm_registrar] addService("westlake.test.echo") -> status=0 (ok)
+      [sm_registrar] READY — joining thread pool forever
+      ----- end smoke log -----
+[ 7] PowerServiceTest (M4-power)                  FAIL ( 4s) — exit 20
+      [.... same SYST/VNDR header mismatch shape as #6 ....]
+[ 8] SystemServiceRouteTest (CR3)                 FAIL ( 4s) — exit 20
+      [.... same shape ....]
+[ 9] DisplayServiceTest (M4d)                     FAIL ( 4s) — exit 1
+      [.... same shape ....]
+[10] NotificationServiceTest (M4e)                FAIL ( 4s) — exit 20
+      [.... same shape ....]
+[11] InputMethodServiceTest (M4e)                 FAIL ( 4s) — exit 20
+      [.... same shape ....]
+[12] WindowServiceTest (M4b)                      FAIL ( 4s) — exit 135
+      [.... same shape ....]
+[13] noice-discover (W2/M4-PRE)                   SKIP — --quick mode
+
+========================================
+Results: 5 PASS  7 FAIL  1 SKIP  (total 13, 73s)
+
+Failed tests:
+  - ActivityServiceTest (M4a) — exit 10
+  - PowerServiceTest (M4-power) — exit 20
+  - SystemServiceRouteTest (CR3) — exit 20
+  - DisplayServiceTest (M4d) — exit 1
+  - NotificationServiceTest (M4e) — exit 20
+  - InputMethodServiceTest (M4e) — exit 20
+  - WindowServiceTest (M4b) — exit 135
+
+Skipped tests:
+  - noice-discover (W2/M4-PRE) — --quick mode
+
+REGRESSION SUITE: FAIL
+
+
+============================================================================
+DIAGNOSTIC INTERPRETATION
+============================================================================
+
+What PASSED (5):
+  - sm_smoke / sandbox     M1+M2 musl libbinder + servicemanager round-trip
+  - HelloBinder            M3 dalvikvm ServiceManager listServices/getService
+  - AsInterfaceTest        M3++ same-process Stub.asInterface elision
+  - BCP-shim               PF-arch-053 (slim shim on -Xbootclasspath)
+  - BCP-framework          PF-arch-053 (framework.jar + ext.jar on BCP)
+
+  This is the canonical "M1-M3+ regression set". All five verify the
+  binder pivot's foundational layer: libbinder protocol, servicemanager,
+  Java JNI plumbing, framework.jar bootclasspath sanity. They all pass on
+  a freshly-rebooted phone — the binder substrate is solid.
+
+What FAILED (7):
+  All 7 M4 service tests (ActivityServiceTest, PowerServiceTest,
+  SystemServiceRouteTest, DisplayServiceTest, NotificationServiceTest,
+  InputMethodServiceTest, WindowServiceTest) fail with the same Parcel
+  header mismatch:
+
+    Parcel: Expecting header 0x53595354 but found 0x564e4452.
+            Mixing copies of libbinder?
+
+  0x53595354 = 'SYST' — Phase 1 setting per
+                        patches/0003-parcel-kheader-syst.patch (default
+                        per README §"patches/0003-parcel-kheader-syst.patch")
+  0x564e4452 = 'VNDR' — Phase 2 production OHOS-vendor binder endpoint
+
+  The 'Mixing copies of libbinder?' message is libbinder's own diagnostic
+  for exactly this case: two endpoints on /dev/vndbinder where one was
+  built with WESTLAKE_KHEADER_VNDR=1 and the other with WESTLAKE_KHEADER_SYST=1.
+
+  Hypothesis (NOT verified — out of scope for D2): something in the recent
+  M4-PRE7/M4-PRE8/M4-PRE9/M5-PRE work that grew dalvikvm's link-time
+  libbinder_full_static.a may have flipped to VNDR while the freshly-
+  restarted vndservicemanager (still using out/bionic/libbinder.so built
+  for Phase 1) speaks SYST. The m3-dalvikvm-boot.sh kicks off a fresh SM
+  each test, so SM speaks SYST; dalvikvm client speaks VNDR; mismatch.
+
+  All 7 FAILs are identical in shape, consistent with a single root cause
+  (the SYST/VNDR mismatch), not 7 independent service bugs. This is
+  exactly the kind of regression the suite is designed to surface — its
+  cause should be investigated by the relevant agent (audit dalvikvm
+  link config vs out/bionic/libbinder.so build flag).
+
+  NOTE: Tests #2-#5 (HelloBinder etc.) all PASS — they ALSO use libbinder
+  but apparently don't trigger the mismatch path (perhaps the JNI bridge
+  short-circuit on local services skips the Parcel header check?). That
+  the same dalvikvm + same SM produces PASS for M3-era tests and FAIL for
+  M4-era tests means whatever the new tests do *differently* (likely
+  ServiceRegistrar's addService loop, which exercises the cross-process
+  marshal path more aggressively than M3 tests) is exposing the mismatch.
+
+What SKIPPED (1):
+  - noice-discover         out of scope for --quick mode (by design)
+
+============================================================================
+SCRIPT BEHAVIOR VERIFICATION
+============================================================================
+
+  - Preflight catches missing artifacts / offline device and exits with
+    code 2 (verified earlier in session against an offline phone).
+  - run_test() correctly distinguishes PASS (exit 0 + pass-grep matched
+    + no fail-grep match) from FAIL.
+  - SKIP via sentinel exit 99 from test fns works (used for missing dex
+    / missing framework.jar; not triggered in this run because all
+    artifacts present — parallel agents pushed M4d/M4e dexes during
+    this session, no longer missing).
+  - 2s inter-test sleep gives init's vndservicemanager rate-limiter
+    time to settle; no "Could not become context manager" cascades on
+    this healthy-state run.
+  - Suite exit code is 1 when any FAIL recorded; 0 when all PASS;
+    2 on setup error.
+  - Total runtime 73s for --quick (within the ~1min budget claimed in
+    the script's --help text).
+
+============================================================================
+REPRODUCTION
+============================================================================
+
+  bash scripts/binder-pivot-regression.sh --quick --no-color
+  bash scripts/binder-pivot-regression.sh --full --no-color    # adds noice
+  bash scripts/binder-pivot-regression.sh --phase=3 --no-color # stop after BCP
+
+D2 acceptance: script exists, runs end-to-end, grades correctly, reports
+clearly. Test substance failures (the 7 SYST/VNDR mismatch ones) are
+diagnostic data exposed by the suite, not script bugs — exactly what the
+spec ("Some tests may fail... That's diagnostic data, not a script bug.")
+calls for.

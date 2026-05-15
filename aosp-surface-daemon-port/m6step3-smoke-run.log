@@ -1,0 +1,64 @@
+[m6-step3] stopping vndservicemanager
+[m6-step3] starting our servicemanager on /dev/vndbinder
+[m6-step3] servicemanager up
+[m6-step3] starting westlake-surface-daemon on /dev/vndbinder
+[m6-step3] surface daemon up
+[m6-step3] --- surface daemon log so far ---
+[wlk-surface-daemon pid=20744] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x71313fab10
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[m6-step3] ---
+[m6-step3] running sm_smoke (Step-1 regression: listServices)
+[m6-step3] PASS: SurfaceFlinger appears in listServices (Step-1 regression OK)
+[m6-step3] running surface_smoke (Step-2 + Step-3 transaction acceptance, 6 checks)
+[m6-step3] surface_smoke exit=0
+[m6-step3] --- surface_smoke log ---
+[surface_smoke pid=20936] opening /dev/vndbinder
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[surface_smoke] A: PASS SurfaceFlinger remote BpBinder=0x7e63232dd0
+[surface_smoke] B: PASS GET_PHYSICAL_DISPLAY_IDS -> {0}
+[surface_smoke] C: PASS GET_PHYSICAL_DISPLAY_TOKEN(0) -> binder=0x7e632322d0
+[surface_smoke] D: PASS GET_DISPLAY_STATS vsyncTime=0 vsyncPeriod=16666667
+[surface_smoke] E: PASS CREATE_CONNECTION -> binder=0x7e63233a30
+[surface_smoke] F.cs: handle=0x7e632341c0 gbp=0x7e63233610 transformHint=0 status=0
+[surface_smoke] F.deq: slot=0 bufferAge=0 status=1
+[surface_smoke] F.req: slot=0 magic=GB01 dims=1080x2280 stride=1088 format=1 numFds=1 numInts=4 fd=4 status=0
+[surface_smoke] F.que: slot=0 status=0
+[surface_smoke] F.deq: slot=0 bufferAge=0 status=1
+[surface_smoke] F.req: slot=0 magic=GB01 dims=1080x2280 stride=1088 format=1 numFds=1 numInts=4 fd=4 status=0
+[surface_smoke] F.que: slot=0 status=0
+[surface_smoke] F: PASS buffer pipeline (slotA=0 slotB=0)
+[surface_smoke] summary: 0 failure(s) of 6 checks
+[m6-step3] ---
+[m6-step3] --- daemon log (post-test) ---
+[wlk-surface-daemon pid=20744] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x71313fab10
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[wlk-sf] GET_PHYSICAL_DISPLAY_IDS -> {0}
+[wlk-sf] GET_PHYSICAL_DISPLAY_TOKEN id=0
+[wlk-sf] GET_DISPLAY_STATS display=0x71313fab10 -> vsyncPeriod=16666667ns
+[wlk-sf] CREATE_CONNECTION
+[wlk-sf] SurfaceComposerClient constructed (this=0x71313fa1d0)
+[wlk-sf] CREATE_SURFACE name="westlake-m6step3-smoke" 1080x2280 fmt=1 flags=0x0 parent=0x0
+[wlk-igbp] ctor 1080x2280 fmt=1 slots=2
+[wlk-igbp] DEQUEUE_BUFFER req=1080x2280 fmt=1 usage=0x0 getTs=0
+[wlk-mgb] ctor 1080x2280 fmt=1 stride=1088 bytes=9922560 (lazy; no memfd yet)
+[wlk-mgb] allocated memfd=4 size=9922560 (1080x2280 stride=1088 fmt=1)
+[wlk-igbp] DEQUEUE_BUFFER -> slot=0 memfd=4 state=DEQUEUED
+[wlk-igbp] REQUEST_BUFFER idx=0
+[wlk-igbp] QUEUE_BUFFER slot=0
+[wlk-igbp] DEQUEUE_BUFFER req=1080x2280 fmt=1 usage=0x0 getTs=0
+[wlk-igbp] DEQUEUE_BUFFER -> slot=0 memfd=4 state=DEQUEUED
+[wlk-igbp] REQUEST_BUFFER idx=0
+[wlk-igbp] QUEUE_BUFFER slot=0
+[wlk-igbp] dtor (this=0x70e13fa040)
+[wlk-mgb] dtor closing memfd=4
+[wlk-sf] SurfaceComposerClient destructed (this=0x71313fa1d0)
+[m6-step3] ---
+[m6-step3] PASS: all 6 transaction checks passed (Step-2 A..E + Step-3 F)
+[m6-step3] tearing down
+[m6-step3] done; result=0

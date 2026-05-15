@@ -1,0 +1,28 @@
+--- /home/dspfac/aosp-sources/frameworks-native/libs/binder/IMemory.cpp	2026-05-12 11:39:03.350983832 -0700
++++ aosp-src/libbinder/IMemory.cpp	2026-05-12 11:54:29.685260209 -0700
+@@ -17,7 +17,6 @@
+ #define LOG_TAG "IMemory"
+ 
+ #include <atomic>
+-#include <stdatomic.h>
+ 
+ #include <fcntl.h>
+ #include <stdint.h>
+@@ -27,6 +26,17 @@
+ #include <sys/mman.h>
+ #include <unistd.h>
+ 
++// libbinder-port: <stdatomic.h> collides with libcxx-ohos.  Pull memory_order
++// names out of std:: so we don't have to qualify every load/store call site.
++using std::memory_order_relaxed;
++using std::memory_order_acquire;
++using std::memory_order_release;
++
++// libbinder-port: stub for android_errorWriteWithInfoLog (Android-only logger).
++static inline int android_errorWriteWithInfoLog(int /*tag*/, const char* /*subTag*/,
++                                                int /*uid*/, const char* /*data*/,
++                                                int /*dataLen*/) { return 0; }
++
+ #include <binder/IMemory.h>
+ #include <binder/Parcel.h>
+ #include <log/log.h>

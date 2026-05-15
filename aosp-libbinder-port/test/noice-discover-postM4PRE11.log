@@ -1,0 +1,47 @@
+[noice-discover] M4-PRE11 build-verified; on-device discovery test deferred.
+[noice-discover]
+[noice-discover] Reason: phone (serial cfb7c9e3) not reachable at run time:
+[noice-discover]
+[noice-discover]   $ /mnt/c/Users/dspfa/Dev/platform-tools/adb.exe -H localhost -P 5037 -s cfb7c9e3 shell echo test
+[noice-discover]   adb.exe: device 'cfb7c9e3' not found
+[noice-discover]
+[noice-discover]   $ /mnt/c/Users/dspfa/Dev/platform-tools/adb.exe devices
+[noice-discover]   List of devices attached
+[noice-discover]   (empty)
+[noice-discover]
+[noice-discover] Build status (host):
+[noice-discover]
+[noice-discover]   scripts/build-shim-dex.sh             -> aosp-shim.dex (1,553,276 bytes)
+[noice-discover]   aosp-libbinder-port/build_discover.sh -> NoiceDiscoverWrapper.dex (27,856 bytes)
+[noice-discover]
+[noice-discover] Code changes landed (M4-PRE11 — Hilt Context.getApplication wiring):
+[noice-discover]
+[noice-discover]   shim/java/com/westlake/services/WestlakeContextImpl.java
+[noice-discover]     +import android.app.Application
+[noice-discover]     +private volatile Application mAttachedApplication
+[noice-discover]     ~Context getApplicationContext()    // returns mAttachedApp if set, else this
+[noice-discover]     +void   setAttachedApplication(Application)
+[noice-discover]     +Application getAttachedApplication()
+[noice-discover]
+[noice-discover]   aosp-libbinder-port/test/NoiceDiscoverWrapper.java
+[noice-discover]     ~phaseDE_attachAndOnCreate()  // after attachBaseContext, reflectively call
+[noice-discover]                                   //   proxyContext.setAttachedApplication(noiceAppInstance)
+[noice-discover]     ~phaseG_mainActivityLaunch()  // same wiring on the PHASE-G Context that
+[noice-discover]                                   // becomes Activity.mBase via Activity.attach
+[noice-discover]
+[noice-discover] Expected new-state once the phone is reattached:
+[noice-discover]   PHASE G4 MainActivity.onCreate(null):
+[noice-discover]     - Hilt's dagger.hilt.android.internal.Contexts.getApplication(ctx) walk
+[noice-discover]       now finds noiceAppInstance via ctx.getApplicationContext()
+[noice-discover]     - IllegalStateException "Could not find an Application in the given context"
+[noice-discover]       (the M4-PRE10 closing failure) should be GONE
+[noice-discover]     - Next failure expected: deeper inside Hilt's component creation OR
+[noice-discover]       Activity-internal init (PhoneWindow draw, theme resolution, etc.)
+[noice-discover]
+[noice-discover] Acceptance command to run when phone is reattached:
+[noice-discover]
+[noice-discover]   ADB="/mnt/c/Users/dspfa/Dev/platform-tools/adb.exe -H localhost -P 5037 -s cfb7c9e3"
+[noice-discover]   $ADB push aosp-shim.dex /data/local/tmp/westlake/
+[noice-discover]   $ADB push aosp-libbinder-port/out/NoiceDiscoverWrapper.dex /data/local/tmp/westlake/dex/
+[noice-discover]   $ADB shell 'su -c "bash /data/local/tmp/westlake/bin-bionic/noice-discover.sh"' \
+[noice-discover]       2>&1 | tee aosp-libbinder-port/test/noice-discover-postM4PRE11.log

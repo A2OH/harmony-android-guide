@@ -1,0 +1,42 @@
+[m6-step2] stopping vndservicemanager
+[m6-step2] starting our servicemanager on /dev/vndbinder
+[m6-step2] servicemanager up
+[m6-step2] starting westlake-surface-daemon on /dev/vndbinder
+[m6-step2] surface daemon up
+[m6-step2] --- surface daemon log so far ---
+[wlk-surface-daemon pid=25242] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x6fac458610
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[m6-step2] ---
+[m6-step2] running sm_smoke (Step-1 regression: listServices)
+[m6-step2] PASS: SurfaceFlinger appears in listServices (Step-1 regression OK)
+[m6-step2] running surface_smoke (Step-2 transaction acceptance)
+[m6-step2] surface_smoke exit=0
+[m6-step2] --- surface_smoke log ---
+[surface_smoke pid=25395] opening /dev/vndbinder
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[surface_smoke] A: PASS SurfaceFlinger remote BpBinder=0x77a8205f30
+[surface_smoke] B: PASS GET_PHYSICAL_DISPLAY_IDS -> {0}
+[surface_smoke] C: PASS GET_PHYSICAL_DISPLAY_TOKEN(0) -> binder=0x77a8207060
+[surface_smoke] D: PASS GET_DISPLAY_STATS vsyncTime=0 vsyncPeriod=16666667
+[surface_smoke] E: PASS CREATE_CONNECTION -> binder=0x77a8207110
+[surface_smoke] summary: 0 failure(s) of 5 checks
+[m6-step2] ---
+[m6-step2] --- daemon log (post-test) ---
+[wlk-surface-daemon pid=25242] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x6fac458610
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[wlk-sf] GET_PHYSICAL_DISPLAY_IDS -> {0}
+[wlk-sf] GET_PHYSICAL_DISPLAY_TOKEN id=0
+[wlk-sf] GET_DISPLAY_STATS display=0x6fac458610 -> vsyncPeriod=16666667ns
+[wlk-sf] CREATE_CONNECTION
+[wlk-sf] SurfaceComposerClient constructed (this=0x6fac458c90)
+[wlk-sf] SurfaceComposerClient destructed (this=0x6fac458c90)
+[m6-step2] ---
+[m6-step2] PASS: all 5 transaction checks passed
+[m6-step2] tearing down
+[m6-step2] done; result=0

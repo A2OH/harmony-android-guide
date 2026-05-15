@@ -1,0 +1,44 @@
+================================================================
+CR34 spike — M5 audio-daemon AAudio feasibility probe
+Phone: OnePlus 6 cfb7c9e3 (Android 15 LineageOS 22, kernel 4.9.337)
+================================================================
+
+=== Phase A: AAudio open-stream probe ===
+[A] AAudio_createStreamBuilder OK
+[A] PASS openStream
+[A]   sample rate    : 48000
+[A]   channel count  : 1
+[A]   format         : 1  (1=PCM_I16, 2=PCM_FLOAT)
+[A]   buffer capacity: 3844 frames
+[A]   buffer size    : 3844 frames
+[A]   frames/burst   : 1922
+[A]   xrun count     : 0
+[A]   sharing mode   : 1
+[A]   performance    : 10
+
+=== Phase B: AAudio actually-write probe ===
+[B] requestStart OK
+[B] state after start: r=0 next=4 (4=STARTED)
+[B] wrote 48000 / 48000 frames (full second)
+[B] requestStop: 0
+[B] PASS
+
+=== Phase C: OpenSL ES fallback probe ===
+[C] engine realized
+[C] output mix realized
+[C] player realized
+[C] Enqueue OK (48000 frames)
+[C] SetPlayState(STOPPED): 0x0
+[C] PASS
+
+================================================================
+VERDICT
+================================================================
+  Phase A (AAudio open)  : PASS
+  Phase B (AAudio write) : PASS
+  Phase C (OpenSL ES)    : PASS
+
+  M5 timeline impact: HOLDS (6.5 person-days).
+  AAudio is fully viable as the M5 Phase-1 backend.
+  Bonus: OpenSL ES also works; fallback path is free.
+================================================================

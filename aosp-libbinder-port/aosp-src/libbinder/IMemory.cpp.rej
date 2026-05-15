@@ -1,0 +1,18 @@
+--- IMemory.cpp
++++ IMemory.cpp
+@@ -17,12 +17,14 @@
+ #define LOG_TAG "IMemory"
+ 
+ #include <atomic>
+-#include <stdatomic.h>
+ 
+ #include <fcntl.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <sys/types.h>
+ #include <sys/mman.h>
+ #include <unistd.h>
++
++// Pull memory_order names out of std:: into local namespace so we don't have
++// to qualify every load/store call site.  (Replaces <stdatomic.h> which

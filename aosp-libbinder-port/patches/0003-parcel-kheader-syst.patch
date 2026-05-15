@@ -1,0 +1,84 @@
+# Patch 0003: Parcel kHeader build-flag selectable for Westlake
+# ==============================================================
+#
+# Why this patch exists
+# ---------------------
+# AOSP's Parcel.cpp picks a 4-byte "header magic" that gets written on every
+# kernel-binder transaction payload. The kernel doesn't care about the value,
+# but the peer libbinder's `Parcel::readInterfaceToken()` does — a mismatch
+# is rejected as `BR_FAILED_REPLY` and the call dies.
+#
+# AOSP picks the header based on which __ANDROID_* macros are defined:
+#
+#   __ANDROID_VNDK__       -> 'VNDR'   (vendor partition processes)
+#   __ANDROID_RECOVERY__   -> 'RECO'   (recovery boot mode)
+#   __ANDROID__ (plain)    -> 'SYST'   (system partition processes)
+#   (none of the above)    -> 'UNKN'   (default for non-Android builds)
+#
+# Westlake's libbinder is the non-Android case (we build with -U__ANDROID__
+# even on the bionic variant so the source goes through the "host" code path,
+# avoiding vintf/perfetto/SELinux dependencies we don't have). The vanilla
+# 'UNKN' header would not interoperate with anything real — neither the
+# OnePlus 6's system_server peers (which expect 'SYST') nor a stock OHOS
+# vendor binder endpoint (which expects 'VNDR' on /dev/vndbinder).
+#
+# Resolution: make the choice selectable at compile time. The Makefile passes
+# `-DWESTLAKE_KHEADER_SYST=1` for both the musl and the bionic build variants
+# today (Phase 1 — talks to phone's Android system servicemanager and our own
+# AOSP servicemanager registered as a SYST peer). Phase 2 can flip to
+# `-DWESTLAKE_KHEADER_VNDR=1` for OHOS production deployments where libbinder
+# needs to interoperate with OHOS-vendor binder endpoints. If neither flag
+# is defined, the AOSP default ('UNKN') is preserved.
+#
+# Codex review (Tier 4, CR6): the original patch hardcoded 'SYST' which
+# broke the "AOSP default behavior is unchanged when our defines aren't set"
+# invariant and made any future stock-OHOS-vendor interop a fresh patch. The
+# conditional below restores the AOSP default and gates Westlake behavior on
+# explicit opt-in via the build flag.
+#
+# Build-flag reference
+# --------------------
+#   -DWESTLAKE_KHEADER_SYST=1   -> 'SYST'  (Phase 1 sandbox; this is what
+#                                            today's Makefile sets)
+#   -DWESTLAKE_KHEADER_VNDR=1   -> 'VNDR'  (Phase 2 stock-OHOS interop)
+#   (neither defined)          -> 'UNKN'   (AOSP default, unmodified)
+#
+# Defining both at once is undefined-behavior on our side: the #if defined
+# ladder picks SYST and silently drops VNDR. The Makefile sets exactly one.
+
+--- /home/dspfac/aosp-sources/frameworks-native/libs/binder/Parcel.cpp	2026-05-12 11:39:03.350983832 -0700
++++ aosp-src/libbinder/Parcel.cpp	2026-05-12 17:30:00.000000000 -0700
+@@ -956,9 +956,30 @@
+
+ #else // ANDROID not defined
+
+-// If kernel binder is used in new environments, we need to make sure it's
+-// separated out and has a separate header.
+-constexpr int32_t kHeader = B_PACK_CHARS('U', 'N', 'K', 'N');
++// libbinder-port: when libbinder runs on a non-__ANDROID__ host (OHOS musl
++// build, or our bionic build with -U__ANDROID__), AOSP defaults the header
++// to 'UNKN'.  That value gets rejected as BR_FAILED_REPLY by both the host
++// phone's Android system servicemanager (which expects 'SYST' on transaction
++// payloads) AND by a stock OHOS-vendor binder peer (which expects 'VNDR').
++// Pick the right one at compile time via the build flag:
++//
++//   -DWESTLAKE_KHEADER_SYST=1   -> 'SYST' (Phase 1 sandbox; talks to phone's
++//                                   system_server peers and our own SM)
++//   -DWESTLAKE_KHEADER_VNDR=1   -> 'VNDR' (future Phase 2 production OHOS,
++//                                   when libbinder must interoperate with
++//                                   stock OHOS-vendor binder endpoints)
++//   (neither defined)          -> 'UNKN' (AOSP default — unmodified behavior)
++//
++// Westlake builds always set WESTLAKE_KHEADER_SYST=1 today (see Makefile).
++#if defined(WESTLAKE_KHEADER_SYST)
++constexpr int32_t kHeader = B_PACK_CHARS('S', 'Y', 'S', 'T');
++#elif defined(WESTLAKE_KHEADER_VNDR)
++constexpr int32_t kHeader = B_PACK_CHARS('V', 'N', 'D', 'R');
++#else
++// If kernel binder is used in new environments, we need to make sure it's
++// separated out and has a separate header.
++constexpr int32_t kHeader = B_PACK_CHARS('U', 'N', 'K', 'N');
++#endif
+ #endif
+
+ #endif // BINDER_WITH_KERNEL_IPC

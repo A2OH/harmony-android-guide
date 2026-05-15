@@ -1,0 +1,112 @@
+============================================================
+M5-PRE discovery re-run transcript
+Date: 2026-05-12
+Builder: M5-PRE agent
+============================================================
+
+== STATIC VERIFICATION (host-side, before push) ==
+
+Build artifact:
+  $ ls -la /home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm
+  -rwxr-xr-x 1 dspfac dspfac 28266008 May 12 17:15 build-bionic-arm64/bin/dalvikvm
+  $ file ...
+  ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked
+
+Size delta:
+  pre-M5-PRE  dalvikvm: 28,244,792 bytes
+  post-M5-PRE dalvikvm: 28,266,008 bytes  (+21,216 bytes / +21 KB)
+
+JNI symbols (host nm verification):
+  $ nm /home/dspfac/art-latest/build-bionic-arm64/bin/dalvikvm \
+        | grep -c "Java_android_media_AudioSystem"
+  105
+  $ nm ... | grep "JNI_OnLoad_audiosystem"
+  T JNI_OnLoad_audiosystem
+  T JNI_OnLoad_audiosystem_with_cl
+
+105 native methods stubbed = exact match for framework.jar's
+android.media.AudioSystem on the OnePlus 6 phone (Android 16).
+Source of truth: `dexdump -l plain` of phone's
+  /system/framework/framework.jar classes2.dex
+filtered to NATIVE methods inside Landroid/media/AudioSystem;.
+
+== TARGET-SIDE PUSH ==
+
+ADB="/mnt/c/Users/dspfa/Dev/platform-tools/adb.exe -H localhost -P 5037 -s cfb7c9e3"
+
+  $ $ADB push build-bionic-arm64/bin/dalvikvm /data/local/tmp/westlake/bin-bionic/dalvikvm
+  1 file pushed, 0 skipped. 44.8 MB/s (28266008 bytes in 0.602s)
+  $ $ADB push build-bionic-arm64/bin/dalvikvm /data/local/tmp/westlake/dalvikvm
+  1 file pushed, 0 skipped. 38.3 MB/s (28266008 bytes in 0.704s)
+  $ $ADB shell "ls -la /data/local/tmp/westlake/dalvikvm /data/local/tmp/westlake/bin-bionic/dalvikvm"
+  -rw-rw-rw- 1 shell shell 28266008 2026-05-12 13:15 /data/local/tmp/westlake/bin-bionic/dalvikvm
+  -rw-rw-rw- 1 shell shell 28266008 2026-05-12 13:15 /data/local/tmp/westlake/dalvikvm
+
+== FIRST DISCOVERY ATTEMPT (transient infra fault) ==
+
+  $ $ADB shell "su -c 'bash /data/local/tmp/westlake/bin-bionic/noice-discover.sh'"
+  [noice-discover] stopping device vndservicemanager
+  [noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+  [noice-discover] ERROR: servicemanager died on startup. log:
+  I ?: Starting sm instance on /dev/vndbinder
+  Killed
+  Failed to set property 'ctl.start' to 'vndservicemanager'.
+
+Root cause: the device's `vndservicemanager` was already in a stale
+state from prior runs — process 19370 had become a `Z` (zombie)
+under init (PPid=1), and init still considered the service running
+(flags 2052), so `ctl.stop` was a no-op and the W2 sm couldn't bind
+to /dev/vndbinder.
+
+  $ $ADB shell "su -c 'cat /proc/19370/status | head'"
+  Name:   vndservicemanag
+  State:  Z (zombie)
+  Tgid:   19370
+  PPid:   1
+  ...
+  $ $ADB shell "su -c 'dmesg | grep -i vndservice | tail -3'"
+  init: service 'vndservicemanager' requested start, but it is
+        already running (flags: 2052)
+
+== DEVICE OFFLINE ==
+
+Attempting to manually kill the zombie pid (`kill -9 19370`) triggered
+ADB disconnect; the phone has not reattached since (~10 minutes).  No
+crash dump retrieved; this is a generic OnePlus 6 sandbox quirk and
+unrelated to M5-PRE — same fault has been seen mid-day on previous
+milestones (M4-PRE7, CR3) when init flag bookkeeping desyncs.  The
+phone is expected to reattach after a USB cable reseat or
+sleep/wake cycle; the next agent should re-run
+  bash /data/local/tmp/westlake/bin-bionic/noice-discover.sh
+to capture the actual post-M5-PRE transcript.
+
+== EXPECTED OUTPUT (POST-M5-PRE) ==
+
+Based on M4-PRE7's chain pattern, JNI_OnLoad_audiosystem_with_cl will
+fire from binder_jni_stub.cc:JNI_OnLoad_binder_with_cl right after the
+existing assetmanager chain.  Expected new log lines:
+
+  [WLK-audiosys-jni] JNI_OnLoad_audiosystem: vm=0x... classLoader=0x...
+  [WLK-audiosys-jni] JNI_OnLoad_audiosystem: android.media.AudioSystem
+        natives: 105/105
+
+Expected DISAPPEARED:
+  nullptr W class_linker.cc:6724: Tolerating clinit failure for
+        Landroid/media/AudioSystem;: java.lang.UnsatisfiedLinkError:
+        No implementation found for int
+        android.media.AudioSystem.native_getMaxChannelCount()
+  DISCOVER-FAIL: PHASE F: AudioSystem chain threw
+        java.lang.reflect.InvocationTargetException
+
+Expected NEW (NoiceDiscoverWrapper PHASE F):
+  PHASE F:  AudioSystem.getMasterMute() returned false
+  (i.e., the chain probe progresses through the AudioSystem branch
+   and increments probedTransactions instead of caughtFailuresHere)
+
+Expected unchanged blocker (from post-CR4 discovery):
+  [2] PHASE G3: Activity.attach threw InvocationTargetException
+       (NPE on ContentResolver.getUserId() — CR5 territory)
+
+============================================================
+END OF M5-PRE TRANSCRIPT (partial — re-run pending phone reattach)
+============================================================

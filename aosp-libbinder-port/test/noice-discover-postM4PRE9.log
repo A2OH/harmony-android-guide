@@ -1,0 +1,41 @@
+[noice-discover-postM4PRE9] DEFERRED — OnePlus 6 (cfb7c9e3) was OFFLINE at M4-PRE9 PR time.
+[noice-discover-postM4PRE9] Last successful device interaction was the post-CR4 run captured
+[noice-discover-postM4PRE9] at noice-discover-postCR4.log; M4-PRE9 build artifacts pushed to
+[noice-discover-postM4PRE9] /home/dspfac/android-to-openharmony-migration/aosp-shim.dex
+[noice-discover-postM4PRE9] (1551224 bytes; SHA: see git history) and
+[noice-discover-postM4PRE9] /home/dspfac/android-to-openharmony-migration/ohos-deploy/aosp-shim.dex.
+[noice-discover-postM4PRE9]
+[noice-discover-postM4PRE9] To re-run when device reattaches:
+[noice-discover-postM4PRE9]   ADB="/mnt/c/Users/dspfa/Dev/platform-tools/adb.exe -H localhost -P 5037 -s cfb7c9e3"
+[noice-discover-postM4PRE9]   $ADB push /home/dspfac/android-to-openharmony-migration/aosp-shim.dex \
+[noice-discover-postM4PRE9]       /data/local/tmp/westlake/aosp-shim.dex
+[noice-discover-postM4PRE9]   $ADB shell "su -c 'bash /data/local/tmp/westlake/bin-bionic/noice-discover.sh'" \
+[noice-discover-postM4PRE9]       2>&1 | tee aosp-libbinder-port/test/noice-discover-postM4PRE9.log
+[noice-discover-postM4PRE9]
+[noice-discover-postM4PRE9] Acceptance criteria (post-M4-PRE9):
+[noice-discover-postM4PRE9]   [GONE]  [NPE] int android.content.ContentResolver.getUserId()
+[noice-discover-postM4PRE9]   [GONE]  cause[1]: NullPointerException: ContentResolver.getUserId() on null
+[noice-discover-postM4PRE9]   [NEW]   PhoneWindow.<init> progresses past dex_pc=123 (Settings.Global.getInt)
+[noice-discover-postM4PRE9]   [NEW]   New failure at mWindow.setWindowManager(...) OR somewhere deeper in Activity.attach
+[noice-discover-postM4PRE9]           (M4b's "window" wrap arm in SystemServiceWrapperRegistry.wrap is the predicted owner)
+[noice-discover-postM4PRE9]
+[noice-discover-postM4PRE9] WestlakeContentResolver implementation strategy (recap):
+[noice-discover-postM4PRE9]   - getUserId() returns USER_SYSTEM (0); no mContext dereference
+[noice-discover-postM4PRE9]   - acquireProvider(Context,String) returns a lazy-built no-op IContentProvider Proxy
+[noice-discover-postM4PRE9]   - The Proxy's invoke handler returns null/0/false for every method
+[noice-discover-postM4PRE9]   - Settings.NameValueCache.getStringForUser: provider.call(...) returns null,
+[noice-discover-postM4PRE9]     code falls through to cursor fallback at dex_pc 0x01c2 (wrapped in <any> catch
+[noice-discover-postM4PRE9]     returning null on exception); Settings.Global.getInt returns the default value.
+[noice-discover-postM4PRE9]   - No per-app branches; no provider tables seeded.
+[noice-discover-postM4PRE9]
+[noice-discover-postM4PRE9] DEX inspection (offline verification):
+[noice-discover-postM4PRE9]   $ dexdump aosp-shim.dex | grep -A 2 'WestlakeContentResolver;'
+[noice-discover-postM4PRE9]   Class descriptor  : 'Lcom/westlake/services/WestlakeContentResolver;'
+[noice-discover-postM4PRE9]   Superclass        : 'Landroid/content/ContentResolver;'
+[noice-discover-postM4PRE9]   ...
+[noice-discover-postM4PRE9]   acquireProvider(Landroid/content/Context;Ljava/lang/String;)Landroid/content/IContentProvider; PROTECTED
+[noice-discover-postM4PRE9]   acquireUnstableProvider(Landroid/content/Context;Ljava/lang/String;)Landroid/content/IContentProvider; PROTECTED
+[noice-discover-postM4PRE9]   releaseProvider(Landroid/content/IContentProvider;)Z  PUBLIC
+[noice-discover-postM4PRE9]   releaseUnstableProvider(Landroid/content/IContentProvider;)Z  PUBLIC
+[noice-discover-postM4PRE9]   unstableProviderDied(Landroid/content/IContentProvider;)V  PUBLIC
+[noice-discover-postM4PRE9]   getUserId()I  PUBLIC  (overrides framework's mContext-dereferencing impl)

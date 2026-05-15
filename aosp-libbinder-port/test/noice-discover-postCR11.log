@@ -1,0 +1,217 @@
+[noice-discover] stopping device vndservicemanager
+[noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[noice-discover] servicemanager up; log: /data/local/tmp/westlake/noice-discover-sm.log
+[noice-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[noice-discover] CP=/data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+[noice-discover] running dalvikvm NoiceDiscoverWrapper
+[noice-discover] dalvikvm exit code: 135
+[noice-discover] ============================== END OF RUN ==============================
+[noice-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+  probe: shortcut -> null
+WLK-binder-jni: nativeGetService("jobscheduler") -> 0x0
+[WLK-binder-jni] nativeGetService("jobscheduler") -> 0x0
+  probe: jobscheduler -> null
+WLK-binder-jni: nativeGetService("trust") -> 0x0
+[WLK-binder-jni] nativeGetService("trust") -> 0x0
+  probe: trust -> null
+WLK-binder-jni: nativeGetService("voiceinteraction") -> 0x0
+[WLK-binder-jni] nativeGetService("voiceinteraction") -> 0x0
+  probe: voiceinteraction -> null
+WLK-binder-jni: nativeGetService("wallpaper") -> 0x0
+[WLK-binder-jni] nativeGetService("wallpaper") -> 0x0
+  probe: wallpaper -> null
+WLK-binder-jni: nativeGetService("webviewupdate") -> 0x0
+[WLK-binder-jni] nativeGetService("webviewupdate") -> 0x0
+  probe: webviewupdate -> null
+WLK-binder-jni: nativeGetService("tv_input") -> 0x0
+[WLK-binder-jni] nativeGetService("tv_input") -> 0x0
+  probe: tv_input -> null
+WLK-binder-jni: nativeGetService("textservices") -> 0x0
+[WLK-binder-jni] nativeGetService("textservices") -> 0x0
+  probe: textservices -> null
+WLK-binder-jni: nativeGetService("textclassification") -> 0x0
+[WLK-binder-jni] nativeGetService("textclassification") -> 0x0
+  probe: textclassification -> null
+WLK-binder-jni: nativeGetService("autofill") -> 0x0
+[WLK-binder-jni] nativeGetService("autofill") -> 0x0
+  probe: autofill -> null
+WLK-binder-jni: nativeGetService("credential") -> 0x0
+[WLK-binder-jni] nativeGetService("credential") -> 0x0
+  probe: credential -> null
+WLK-binder-jni: nativeGetService("role") -> 0x0
+[WLK-binder-jni] nativeGetService("role") -> 0x0
+  probe: role -> null
+WLK-binder-jni: nativeGetService("rolemanager") -> 0x0
+[WLK-binder-jni] nativeGetService("rolemanager") -> 0x0
+  probe: rolemanager -> null
+WLK-binder-jni: nativeGetService("companion_device") -> 0x0
+[WLK-binder-jni] nativeGetService("companion_device") -> 0x0
+  probe: companion_device -> null
+WLK-binder-jni: nativeGetService("stats") -> 0x0
+[WLK-binder-jni] nativeGetService("stats") -> 0x0
+  probe: stats -> null
+WLK-binder-jni: nativeGetService("statscompanion") -> 0x0
+[WLK-binder-jni] nativeGetService("statscompanion") -> 0x0
+  probe: statscompanion -> null
+WLK-binder-jni: nativeGetService("SurfaceFlinger") -> 0x0
+[WLK-binder-jni] nativeGetService("SurfaceFlinger") -> 0x0
+  probe: SurfaceFlinger -> null
+WLK-binder-jni: nativeGetService("GpuService") -> 0x0
+[WLK-binder-jni] nativeGetService("GpuService") -> 0x0
+  probe: GpuService -> null
+WLK-binder-jni: nativeGetService("android.security.keystore") -> 0x0
+[WLK-binder-jni] nativeGetService("android.security.keystore") -> 0x0
+  probe: android.security.keystore -> null
+WLK-binder-jni: nativeGetService("deviceidle") -> 0x0
+[WLK-binder-jni] nativeGetService("deviceidle") -> 0x0
+  probe: deviceidle -> null
+PHASE A: total 70 probes; hits=4 misses=66
+=== PHASE B: classload noice from /data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk ===
+[PFCUT] String.split intrinsic delimiter=58 limit=0 pieces=1
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+ziparchive: Unable to open '/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.dm': No such file or directory
+ziparchive: Closing archive 0x78d5c11780
+ziparchive: +++ Found EOCD at buf+65535
+ziparchive: +++ num_entries=1245 dir_size=82394 dir_offset=5017600
+ziparchive: +++ zip good scan 1245 entries
+ziparchive: Zip: Unable to find entry classes2.dex
+ziparchive: Zip: Could not find entry classes2.dex
+ziparchive: Closing archive 0x78d5c11780
+ziparchive: +++ Found EOCD at buf+65535
+ziparchive: +++ num_entries=1245 dir_size=82394 dir_offset=5017600
+ziparchive: +++ zip good scan 1245 entries
+ziparchive: Zip: Unable to find entry classes2.dex
+ziparchive: Zip: Could not find entry classes2.dex
+ziparchive: Closing archive 0x78d5c11720
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+[PFCUT] String.split intrinsic delimiter=58 limit=0 pieces=1
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/lib-bionic attrs=0x5
+*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Fatal signal 7 (SIGBUS), code 1 (BUS_ADRALN) fault addr 0xfffffffffffffb17
+OS: Linux 4.9.337-g2e921a892c03 (aarch64)
+Cmdline: <unset>
+Thread: 4637 "main-256mb"
+Registers:
+     x0: 0x000000000000000b     x1: 0x00000078bebbed50     x2: 0x00000078bebbedd0     x3: 0x0000000000000000
+     x4: 0x0000000000000000     x5: 0x0000000000000000     x6: 0x0000000000000000     x7: 0x0000000000000000
+     x8: 0x0000000014058e08     x9: 0x0000000000000000    x10: 0x0000000000000007    x11: 0x00000078bebbeb10
+    x12: 0x00000078bebbebc8    x13: 0x0000000000080100    x14: 0x0000000000d780f8    x15: 0x00000078bec338d1
+    x16: 0x00000000006744b4    x17: 0x00000078bebbffb0    x18: 0x00000078ae1ea000    x19: 0x00000078d5c62c00
+    x20: 0x0000000000000000    x21: 0x00000078aebc3000    x22: 0x00000078bebc01e0    x23: 0x00000078c1a7706d
+    x24: 0x0000000000000004    x25: 0x00000078d5c22c00    x26: 0x00000078c1a7706d    x27: 0x0000000000000001
+    x28: 0x00000078bebbffc0    x29: 0x00000078bebbffa0    x30: 0x00000078d71267d0
+     sp: 0x00000078bebbed50     pc: 0xfffffffffffffb17
+ pstate: 0x0000000060000000 [ Z C ]
+
+Backtrace:
+
+[PFCUT-SIGNAL] thread=0x78d5c62c00 shadow=0x0 quick=0x78bebbffc0
+[PFCUT-SIGNAL] top_quick_method=0x78bec338d0 native=1 quick=0xd8f400 jni=0x6744b4 java.lang.String dalvik.system.BaseDexClassLoader.toString()
+  at dalvik.system.BaseDexClassLoader.toString(Native method)
+  at dalvik.system.BaseDexClassLoader.toString(Native method)
+  at java.lang.String.valueOf(String.java:4102)
+  at java.lang.StringBuilder.append(StringBuilder.java:179)
+  at NoiceDiscoverWrapper.phaseB_classLoad(NoiceDiscoverWrapper.java:326)
+  at NoiceDiscoverWrapper.main(NoiceDiscoverWrapper.java:207)
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 00200000-004cd000 r--p 00000000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 004cd000-00fa1000 r-xp 002cc000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 00fa1000-01011000 r--p 00d9f000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 01012000-0101b000 rw-p 00e0f000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 0101b000-0147a000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 0147a000-0147b000 r--p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 0147b000-01483000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 04265000-04267000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 04267000-08265000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 14000000-14201000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 14201000-24000000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 24000000-24001000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 24001000-34000000 ---p 00000000 00:00 0                                  [heap]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 34000000-44000000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] ebad6000-ebad7000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ab321000-78ab7c9000 r--p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ab7de000-78ab81e000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ab81e000-78ab894000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ab894000-78ab896000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ab896000-78ac81e000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac81e000-78ac81f000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac81f000-78ac827000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac827000-78ac828000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac828000-78ac924000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:4657]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac924000-78ac925000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ac925000-78acdaa000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78acdaa000-78acdac000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78acdac000-78ad925000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ad925000-78ad926000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ad926000-78ada22000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:4656]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ada22000-78ada23000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ada23000-78adb21000 r--p 00000000 00:10 22755                          /dev/vndbinder
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78adb21000-78adbc1000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78adbc1000-78ae1ea000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ae1ea000-78ae1ec000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78ae1ec000-78aebc1000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78aebc1000-78aebc2000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78aebc2000-78aebc3000 ---p 00000000 00:00 0                              [anon:stack_and_tls:4637]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78aebc3000-78bebc6000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:4637]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bebc6000-78bebc7000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bebc7000-78bec47000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bec47000-78bec8b000 r--p 00000000 103:01 1976228                       /data/local/tmp/westlake/ext.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bec8f000-78bec90000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bec90000-78bec98000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bec98000-78bec99000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bec99000-78beca1000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78beca1000-78beca9000 r--p 00000000 103:01 2492824                       /data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78beca9000-78bf38e000 r--p 02102000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bf38e000-78bfb35000 r--p 0195c000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78bfb35000-78c039e000 r--p 010f4000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c039e000-78c0bad000 r--p 008e6000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c0bad000-78c148d000 r--p 00007000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c148d000-78c160f000 r--p 00000000 103:01 1976250                       /data/local/tmp/westlake/aosp-shim.dex
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c160f000-78c173c000 r--p 00000000 103:01 1976249                       /data/local/tmp/westlake/bouncycastle.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c173c000-78c1a15000 r--p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c1a15000-78c1aa2000 r--p 00000000 103:01 1976247                       /data/local/tmp/westlake/core-libart.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c1aa2000-78c202f000 r--p 00000000 103:01 1976246                       /data/local/tmp/westlake/core-oj.jar
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c202f000-78c47fa000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c47fa000-78c486a000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c486a000-78c486c000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c486c000-78c57fa000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c57fa000-78c57fb000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c57fb000-78c57fc000 ---p 00000000 00:00 0                              [anon:stack_and_tls:4628]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78c57fc000-78d57ff000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:4628]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d57ff000-78d5800000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d5800000-78d6000000 rw-p 00000000 00:00 0                              [anon:libc_malloc]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6007000-78d6027000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6027000-78d6047000 r--s 00000000 00:10 21880                          /dev/__properties__/u:object_r:timezone_prop:s0
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6047000-78d6048000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6048000-78d6050000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6050000-78d6070000 r--s 00000000 00:10 21592                          /dev/__properties__/u:object_r:build_prop:s0
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6070000-78d6090000 r--s 00000000 00:10 21671                          /dev/__properties__/u:object_r:device_config_memory_safety_native_prop:s0
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6090000-78d60b0000 r--s 00000000 00:10 21563                          /dev/__properties__/u:object_r:arm64_memtag_prop:s0
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d60b0000-78d60d0000 r--s 00000000 00:10 21654                          /dev/__properties__/u:object_r:debug_prop:s0
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d60d0000-78d60f0000 r--s 00000000 00:10 22006                          /dev/__properties__/properties_serial
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d60f0000-78d60f5000 rw-p 00000000 00:00 0                              [anon:System property context nodes]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d60f5000-78d6112000 r--s 00000000 00:10 21546                          /dev/__properties__/property_info
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6112000-78d6113000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6113000-78d6117000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:main]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6117000-78d6118000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d6118000-78d7062000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7062000-78d7064000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7064000-78d7118000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7118000-78d7119000 ---p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7119000-78d7121000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7121000-78d7122000 rw-p 00000000 00:00 0                              [anon:arc4random data]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7122000-78d7124000 r--p 00000000 00:00 0                              [anon:atexit handlers]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7124000-78d7125000 rw-p 00000000 00:00 0 
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7125000-78d7126000 r--p 00000000 00:00 0                              [vvar]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 78d7126000-78d7127000 r-xp 00000000 00:00 0                              [vdso]
+nullptr F 05-12 15:43:27  4627  4637 logging.cc:197] 7ffc109000-7ffc12b000 rw-p 00000000 00:00 0                              [stack]
+Fault message: 
+Bus error 
+----- end dalvikvm log -----
+[noice-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+----- end sm log -----
+/data/local/tmp/westlake/bin-bionic/noice-discover.sh: line 128:  4501 Killed                  su 1000 -c "LD_LIBRARY_PATH=$SM_LIB $SM_BIN $DEV" > "$SM_LOG" 2>&1
+[noice-discover] restart device vndservicemanager

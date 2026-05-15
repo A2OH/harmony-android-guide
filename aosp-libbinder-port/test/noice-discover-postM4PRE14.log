@@ -1,0 +1,284 @@
+[noice-discover] stopping device vndservicemanager
+[noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[noice-discover] servicemanager up; log: /data/local/tmp/westlake/noice-discover-sm.log
+[noice-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[noice-discover] CP=/data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+[noice-discover] running dalvikvm NoiceDiscoverWrapper
+[noice-discover] dalvikvm exit code: 135
+[noice-discover] ============================== END OF RUN ==============================
+[noice-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+  probe: shortcut -> null
+WLK-binder-jni: nativeGetService("jobscheduler") -> 0x0
+[WLK-binder-jni] nativeGetService("jobscheduler") -> 0x0
+  probe: jobscheduler -> null
+WLK-binder-jni: nativeGetService("trust") -> 0x0
+[WLK-binder-jni] nativeGetService("trust") -> 0x0
+  probe: trust -> null
+WLK-binder-jni: nativeGetService("voiceinteraction") -> 0x0
+[WLK-binder-jni] nativeGetService("voiceinteraction") -> 0x0
+  probe: voiceinteraction -> null
+WLK-binder-jni: nativeGetService("wallpaper") -> 0x0
+[WLK-binder-jni] nativeGetService("wallpaper") -> 0x0
+  probe: wallpaper -> null
+WLK-binder-jni: nativeGetService("webviewupdate") -> 0x0
+[WLK-binder-jni] nativeGetService("webviewupdate") -> 0x0
+  probe: webviewupdate -> null
+WLK-binder-jni: nativeGetService("tv_input") -> 0x0
+[WLK-binder-jni] nativeGetService("tv_input") -> 0x0
+  probe: tv_input -> null
+WLK-binder-jni: nativeGetService("textservices") -> 0x0
+[WLK-binder-jni] nativeGetService("textservices") -> 0x0
+  probe: textservices -> null
+WLK-binder-jni: nativeGetService("textclassification") -> 0x0
+[WLK-binder-jni] nativeGetService("textclassification") -> 0x0
+  probe: textclassification -> null
+WLK-binder-jni: nativeGetService("autofill") -> 0x0
+[WLK-binder-jni] nativeGetService("autofill") -> 0x0
+  probe: autofill -> null
+WLK-binder-jni: nativeGetService("credential") -> 0x0
+[WLK-binder-jni] nativeGetService("credential") -> 0x0
+  probe: credential -> null
+WLK-binder-jni: nativeGetService("role") -> 0x0
+[WLK-binder-jni] nativeGetService("role") -> 0x0
+  probe: role -> null
+WLK-binder-jni: nativeGetService("rolemanager") -> 0x0
+[WLK-binder-jni] nativeGetService("rolemanager") -> 0x0
+  probe: rolemanager -> null
+WLK-binder-jni: nativeGetService("companion_device") -> 0x0
+[WLK-binder-jni] nativeGetService("companion_device") -> 0x0
+  probe: companion_device -> null
+WLK-binder-jni: nativeGetService("stats") -> 0x0
+[WLK-binder-jni] nativeGetService("stats") -> 0x0
+  probe: stats -> null
+WLK-binder-jni: nativeGetService("statscompanion") -> 0x0
+[WLK-binder-jni] nativeGetService("statscompanion") -> 0x0
+  probe: statscompanion -> null
+WLK-binder-jni: nativeGetService("SurfaceFlinger") -> 0x0
+[WLK-binder-jni] nativeGetService("SurfaceFlinger") -> 0x0
+  probe: SurfaceFlinger -> null
+WLK-binder-jni: nativeGetService("GpuService") -> 0x0
+[WLK-binder-jni] nativeGetService("GpuService") -> 0x0
+  probe: GpuService -> null
+WLK-binder-jni: nativeGetService("android.security.keystore") -> 0x0
+[WLK-binder-jni] nativeGetService("android.security.keystore") -> 0x0
+  probe: android.security.keystore -> null
+WLK-binder-jni: nativeGetService("deviceidle") -> 0x0
+[WLK-binder-jni] nativeGetService("deviceidle") -> 0x0
+  probe: deviceidle -> null
+PHASE A: total 70 probes; hits=3 misses=67
+=== PHASE B: classload noice from /data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk ===
+[PFCUT] String.split intrinsic delimiter=58 limit=0 pieces=1
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+ziparchive: Unable to open '/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.dm': No such file or directory
+ziparchive: Closing archive 0x7ed6011780
+ziparchive: +++ Found EOCD at buf+65535
+ziparchive: +++ num_entries=1245 dir_size=82394 dir_offset=5017600
+ziparchive: +++ zip good scan 1245 entries
+ziparchive: Zip: Unable to find entry classes2.dex
+ziparchive: Zip: Could not find entry classes2.dex
+ziparchive: Closing archive 0x7ed6011780
+ziparchive: +++ Found EOCD at buf+65535
+ziparchive: +++ num_entries=1245 dir_size=82394 dir_offset=5017600
+ziparchive: +++ zip good scan 1245 entries
+ziparchive: Zip: Unable to find entry classes2.dex
+ziparchive: Zip: Could not find entry classes2.dex
+ziparchive: Closing archive 0x7ed6011720
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/com_github_ashutoshgngwr_noice.apk attrs=0x3
+[PFCUT] String.split intrinsic delimiter=58 limit=0 pieces=1
+[PFCUT] UnixFileSystem.getBooleanAttributes intrinsic path=/data/local/tmp/westlake/lib-bionic attrs=0x5
+*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Fatal signal 7 (SIGBUS), code 1 (BUS_ADRALN) fault addr 0x6f6874656d2063
+OS: Linux 4.9.337-g2e921a892c03 (aarch64)
+Cmdline: <unset>
+Thread: 20936 "main-256mb"
+Registers:
+     x0: 0x0000007ebf1410a8     x1: 0x000000000026fec0     x2: 0x646f6874656d2063     x3: 0x0000000000000000
+     x4: 0x0000000000000000     x5: 0x0000000000000000     x6: 0x0000000000000000     x7: 0x0000000000000000
+     x8: 0x0000000014058d60     x9: 0x0000000000000000    x10: 0x0000000000000007    x11: 0x0000007ebf13fb10
+    x12: 0x0000007ebf13fbc8    x13: 0x0000000000080100    x14: 0x0000000000d780f8    x15: 0x0000007ebf1b48d1
+    x16: 0x00000000006744b4    x17: 0x0000007ebf140fb0    x18: 0x0000007eae6b6000    x19: 0x0000007ed6062c00
+    x20: 0x0000000000000000    x21: 0x0000007eaf144000    x22: 0x0000007ebf1411e0    x23: 0x0000007ec1ff506d
+    x24: 0x0000000000000004    x25: 0x0000007ed6022c00    x26: 0x0000007ec1ff506d    x27: 0x0000000000000001
+    x28: 0x0000007ebf140fc0    x29: 0x0000007ebf1410b0    x30: 0x0000000000d8f494
+     sp: 0x0000007ebf140fb0     pc: 0x006f6874656d2063
+ pstate: 0x0000000060000000 [ Z C ]
+
+Backtrace:
+
+[PFCUT-SIGNAL] thread=0x7ed6062c00 shadow=0x0 quick=0x7ebf140fc0
+[PFCUT-SIGNAL] top_quick_method=0x7ebf1b48d0 native=1 quick=0xd8f400 jni=0x6744b4 java.lang.String dalvik.system.BaseDexClassLoader.toString()
+  at dalvik.system.BaseDexClassLoader.toString(Native method)
+  at dalvik.system.BaseDexClassLoader.toString(Native method)
+  at java.lang.String.valueOf(String.java:4102)
+  at java.lang.StringBuilder.append(StringBuilder.java:179)
+  at NoiceDiscoverWrapper.phaseB_classLoad(NoiceDiscoverWrapper.java:326)
+  at NoiceDiscoverWrapper.main(NoiceDiscoverWrapper.java:207)
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 00200000-004cd000 r--p 00000000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 004cd000-00fa1000 r-xp 002cc000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 00fa1000-01011000 r--p 00d9f000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 01011000-0101b000 rw-p 00e0e000 103:01 1973257                           /data/local/tmp/westlake/dalvikvm
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 0101b000-0147a000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 0147a000-0147b000 r--p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 0147b000-01483000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 14000000-14201000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 14201000-24000000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 2fd0b000-2fd0d000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 2fd0d000-33d0b000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 33d0b000-33d0c000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 33d0c000-43d0b000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 43d0b000-53d0b000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] ebad6000-ebad7000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eab8a2000-7eabd4a000 r--p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eabd5f000-7eabd9f000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eabd9f000-7eacb84000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacb84000-7eacb86000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacb86000-7eacd9f000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacd9f000-7eacda0000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacda0000-7eacda8000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacda8000-7eacda9000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacda9000-7eacea5000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:20975]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacea5000-7eacea6000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eacea6000-7ead6d2000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ead6d2000-7ead6d4000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ead6d4000-7eadea6000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eadea6000-7eadea7000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eadea7000-7eadfa3000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:20973]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eadfa3000-7eadfa4000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eadfa4000-7eae0a2000 r--p 00000000 00:10 13584                          /dev/vndbinder
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eae0a2000-7eae142000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eae142000-7eae6b6000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eae6b6000-7eae6b8000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eae6b8000-7eaf142000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eaf142000-7eaf143000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eaf143000-7eaf144000 ---p 00000000 00:00 0                              [anon:stack_and_tls:20936]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7eaf144000-7ebf147000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:20936]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf147000-7ebf148000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf148000-7ebf1c8000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf1c8000-7ebf20c000 r--p 00000000 103:01 1976228                       /data/local/tmp/westlake/ext.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf210000-7ebf211000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf211000-7ebf219000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf219000-7ebf21a000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf21a000-7ebf222000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf222000-7ebf22a000 r--p 00000000 103:01 2492824                       /data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf22a000-7ebf90f000 r--p 02102000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ebf90f000-7ec00b6000 r--p 0195c000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec00b6000-7ec091f000 r--p 010f4000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec091f000-7ec112e000 r--p 008e6000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec112e000-7ec1a0e000 r--p 00007000 103:01 1976226                       /data/local/tmp/westlake/framework.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec1a11000-7ec1b8d000 r--p 00000000 103:01 1976250                       /data/local/tmp/westlake/aosp-shim.dex
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec1b8d000-7ec1cba000 r--p 00000000 103:01 1976249                       /data/local/tmp/westlake/bouncycastle.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec1cba000-7ec1f93000 r--p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec1f93000-7ec2020000 r--p 00000000 103:01 1976247                       /data/local/tmp/westlake/core-libart.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec2020000-7ec25ad000 r--p 00000000 103:01 1976246                       /data/local/tmp/westlake/core-oj.jar
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec25af000-7ec4bfa000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec4bfa000-7ec516c000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec516c000-7ec516e000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec516e000-7ec5bfa000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec5bfa000-7ec5bfb000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec5bfb000-7ec5bfc000 ---p 00000000 00:00 0                              [anon:stack_and_tls:20934]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ec5bfc000-7ed5bff000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:20934]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed5bff000-7ed5c00000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed5c00000-7ed6400000 rw-p 00000000 00:00 0                              [anon:libc_malloc]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed6401000-7ed65a1000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed65a1000-7ed65c1000 r--s 00000000 00:10 21839                          /dev/__properties__/u:object_r:timezone_prop:s0
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed65c1000-7ed65c2000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed65c2000-7ed65ca000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed65ca000-7ed65ea000 r--s 00000000 00:10 21551                          /dev/__properties__/u:object_r:build_prop:s0
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed65ea000-7ed660a000 r--s 00000000 00:10 21630                          /dev/__properties__/u:object_r:device_config_memory_safety_native_prop:s0
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed660a000-7ed662a000 r--s 00000000 00:10 21522                          /dev/__properties__/u:object_r:arm64_memtag_prop:s0
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed662a000-7ed664a000 r--s 00000000 00:10 21613                          /dev/__properties__/u:object_r:debug_prop:s0
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed664a000-7ed666a000 r--s 00000000 00:10 21965                          /dev/__properties__/properties_serial
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed666a000-7ed666f000 rw-p 00000000 00:00 0                              [anon:System property context nodes]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed666f000-7ed668c000 r--s 00000000 00:10 21505                          /dev/__properties__/property_info
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed668c000-7ed668d000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed668d000-7ed6691000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:main]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed6691000-7ed6692000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed6692000-7ed6ce0000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed6ce0000-7ed6ce2000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed6ce2000-7ed7692000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed7692000-7ed7693000 ---p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed7693000-7ed769b000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed769b000-7ed769c000 rw-p 00000000 00:00 0                              [anon:arc4random data]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed769c000-7ed769e000 r--p 00000000 00:00 0                              [anon:atexit handlers]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed769e000-7ed769f000 rw-p 00000000 00:00 0 
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed769f000-7ed76a0000 r--p 00000000 00:00 0                              [vvar]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ed76a0000-7ed76a1000 r-xp 00000000 00:00 0                              [vdso]
+nullptr F 05-12 14:43:05 20933 20936 logging.cc:197] 7ff28d8000-7ff28fa000 rw-p 00000000 00:00 0                              [stack]
+Fault message: 
+Bus error 
+----- end dalvikvm log -----
+[noice-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+Parcel: Expecting header 0x53595354 but found 0x564e4452. Mixing copies of libbinder?
+----- end sm log -----
+[noice-discover] restart device vndservicemanager

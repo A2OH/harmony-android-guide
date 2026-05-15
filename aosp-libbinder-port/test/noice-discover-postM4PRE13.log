@@ -1,0 +1,217 @@
+[noice-discover] stopping device vndservicemanager
+[noice-discover] starting W2-discover servicemanager (bionic) on /dev/vndbinder as uid=1000
+[noice-discover] servicemanager up; log: /data/local/tmp/westlake/noice-discover-sm.log
+[noice-discover] BCP=/data/local/tmp/westlake/core-oj.jar:/data/local/tmp/westlake/core-libart.jar:/data/local/tmp/westlake/core-icu4j.jar:/data/local/tmp/westlake/bouncycastle.jar:/data/local/tmp/westlake/aosp-shim.dex:/data/local/tmp/westlake/framework.jar:/data/local/tmp/westlake/ext.jar
+[noice-discover] CP=/data/local/tmp/westlake/dex/NoiceDiscoverWrapper.dex
+[noice-discover] running dalvikvm NoiceDiscoverWrapper
+[noice-discover] dalvikvm exit code: 0
+[noice-discover] ============================== END OF RUN ==============================
+[noice-discover] dalvikvm log tail (200 lines):
+----- begin dalvikvm log -----
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] DoCallCommon proxy enter int android.provider.Settings$Readable.maxTargetSdk() inputs=1 range=0 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT-IFACE] DoInvoke repaired null interface method android.provider.Settings$Readable.maxTargetSdk()I -> int android.provider.Settings$Readable.maxTargetSdk()
+[PFCUT-PROXY] interpreter proxy invoke int android.provider.Settings$Readable.maxTargetSdk() via int android.provider.Settings$Readable.maxTargetSdk() args=0 quick=0xd8f060
+[PFCUT] AtomicInteger.addAndGet intrinsic current=3
+[PFCUT] Ljava/nio/charset/CharsetDecoder;.onMalformedInput fallback action=0x140839a0
+[PFCUT] Ljava/nio/charset/CharsetDecoder;.onUnmappableCharacter fallback action=0x140839a0
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf358
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x14192830 offset=44 current=0x0 expected=0x0 new=0x14191ef8 success=1 array_index=8
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetLong(java.lang.Object, long, long, long) quick=0xd8f400 jni=0x7bf1c4
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x141a93c0 offset=40 current=1 expected=1 new=2 success=1
+[PFCUT] AtomicLong.getAndIncrement intrinsic current=1
+[PFCUT] forced interpreter JNI reason=Unsafe method=boolean jdk.internal.misc.Unsafe.compareAndSetReference(java.lang.Object, long, java.lang.Object, java.lang.Object) quick=0xd8f400 jni=0x7bf358
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x14192880 offset=56 current=0x0 expected=0x0 new=0x14202328 success=1 array_index=11
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x141a9380 offset=40 current=1 expected=1 new=2 success=1
+[PFCUT-IFACE] DoInvoke repaired null interface method android.content.IContentProvider.call(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle; -> android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle)
+[PFCUT-IFACE] DoInvoke calling proxy method android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) inputs=6 range=1 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) inputs=6 range=1 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) via android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) args=5 quick=0xd8f060
+[M4-PRE9-cr] IContentProvider.call returning null (no provider)
+[PFCUT-IFACE] DoInvoke repaired null interface method android.content.IContentProvider.query(Landroid/content/AttributionSource;Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/ICancellationSignal;)Landroid/database/Cursor; -> android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal)
+[PFCUT-IFACE] DoInvoke calling proxy method android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) inputs=6 range=1 vregC=11
+[PFCUT-PROXY] DoCallCommon proxy enter android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) inputs=6 range=1 vregC=11 arg0=11
+[PFCUT-PROXY] interpreter proxy invoke android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) via android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) args=5 quick=0xd8f060
+[M4-PRE9-cr] IContentProvider.query returning null (no provider)
+[Log/5] Settings: Can't get key render_shadows_in_compositor from content://settings/global
+[PFCUT-IFACE] DoInvoke repaired null interface method android.content.IContentProvider.call(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle; -> android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle)
+[PFCUT-IFACE] DoInvoke calling proxy method android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) inputs=6 range=1 vregC=2
+[PFCUT-PROXY] DoCallCommon proxy enter android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) inputs=6 range=1 vregC=2 arg0=2
+[PFCUT-PROXY] interpreter proxy invoke android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) via android.os.Bundle android.content.IContentProvider.call(android.content.AttributionSource, java.lang.String, java.lang.String, java.lang.String, android.os.Bundle) args=5 quick=0xd8f060
+[M4-PRE9-cr] IContentProvider.call returning null (no provider)
+[PFCUT-IFACE] DoInvoke repaired null interface method android.content.IContentProvider.query(Landroid/content/AttributionSource;Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/ICancellationSignal;)Landroid/database/Cursor; -> android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal)
+[PFCUT-IFACE] DoInvoke calling proxy method android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) inputs=6 range=1 vregC=11
+[PFCUT-PROXY] DoCallCommon proxy enter android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) inputs=6 range=1 vregC=11 arg0=11
+[PFCUT-PROXY] interpreter proxy invoke android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) via android.database.Cursor android.content.IContentProvider.query(android.content.AttributionSource, android.net.Uri, java.lang.String[], android.os.Bundle, android.os.ICancellationSignal) args=5 quick=0xd8f060
+[M4-PRE9-cr] IContentProvider.query returning null (no provider)
+[Log/5] Settings: Can't get key force_resizable_activities from content://settings/global
+WLK-binder-jni: nativeGetLocalService("window") binder=0x792900a5a0 local=0x266
+[WLK-binder-jni] nativeGetLocalService("window") binder=0x792900a5a0 local=0x266
+WLK-jbbh: JavaBBinderHolder ctor: this=0x792907b0c0
+[WLK-jbbh] JavaBBinderHolder ctor: this=0x792907b0c0
+PHASE G3: Activity.attach(...) returned cleanly
+PHASE G4: calling MainActivity.onCreate(null)
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.Configuration name=locale
+[PFCUT] Class.getDeclaredField intrinsic miss class=android.content.res.Configuration name=mLocale
+[PFCUT] Class.getDeclaredField intrinsic hit class=sun.misc.Unsafe name=theUnsafe
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.ResourcesImpl name=mConfiguration
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.ResourcesImpl name=mMetrics
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.ResourcesImpl name=mAccessLock
+[PFCUT] Class.getDeclaredField intrinsic hit class=sun.misc.Unsafe name=theUnsafe
+WLK-am-jni: nativeCreate -> 0x792902e860
+[WLK-am-jni] nativeCreate -> 0x792902e860
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.AssetManager name=mObject
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.AssetManager name=mApkAssets
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.AssetManager name=mValue
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.AssetManager name=mOffsets
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.ResourcesImpl name=mAssets
+[PFCUT] Class.getDeclaredField intrinsic hit class=android.content.res.Resources name=mResourcesImpl
+[NPE] int android.content.SharedPreferences.getInt(java.lang.String, int)
+[NPE]   #0 void com.github.ashutoshgngwr.noice.activity.MainActivity.onCreate(android.os.Bundle) (dex_pc=20)
+[PF-arch-020] null-receiver interface invoke android.content.SharedPreferences.getInt(Ljava/lang/String;I)I — throwing NPE
+[PFCUT] AtomicLong.get intrinsic current=-2942033378085796212
+[PFCUT] AtomicLong.compareAndSet intrinsic current=-2942033378085796212
+[PFCUT] AtomicInteger.addAndGet intrinsic current=0
+[PFCUT] AtomicLong.getAndAdd intrinsic current=3718187396276119509
+[PFCUT] InterpreterJni jdk.Unsafe putInt target=0x1404d088 offset=100 new=-1640531527
+[PFCUT]   caller#0 void jdk.internal.misc.Unsafe.putInt(java.lang.Object, long, int) dex_pc=0
+[PFCUT]   caller#1 void java.util.concurrent.ThreadLocalRandom.localInit() dex_pc=46
+[PFCUT]   caller#2 java.util.concurrent.ThreadLocalRandom java.util.concurrent.ThreadLocalRandom.current() dex_pc=14
+[PFCUT]   caller#3 java.util.Random u7.a.c() dex_pc=0
+[PFCUT]   caller#4 void androidx.activity.result.f.e(java.lang.String) dex_pc=18
+[PFCUT]   caller#5 androidx.activity.result.c androidx.activity.result.f.d(java.lang.String, c.a, androidx.fragment.app.m0) dex_pc=0
+[PFCUT] String.split intrinsic delimiter=45 limit=-1 pieces=2
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x141033c0 offset=40 current=3 expected=3 new=4 success=1
+[PFCUT] String.split intrinsic delimiter=44 limit=-1 pieces=1
+[NPE] android.content.res.CompatibilityInfo android.view.DisplayAdjustments.getCompatibilityInfo()
+[NPE]   #0 void android.content.res.ResourcesImpl.updateConfigurationImpl(android.content.res.Configuration, android.util.DisplayMetrics, android.content.res.CompatibilityInfo, boolean) (dex_pc=36)
+[NPE]   #1 void android.content.res.ResourcesImpl.updateConfiguration(android.content.res.Configuration, android.util.DisplayMetrics, android.content.res.CompatibilityInfo) (dex_pc=1)
+[NPE]   #2 void android.content.res.Resources.updateConfiguration(android.content.res.Configuration, android.util.DisplayMetrics, android.content.res.CompatibilityInfo) (dex_pc=2)
+[NPE]   #3 void android.content.res.Resources.updateConfiguration(android.content.res.Configuration, android.util.DisplayMetrics) (dex_pc=1)
+[NPE]   #4 boolean e.k0.p(boolean, boolean) (dex_pc=299)
+[NPE]   #5 void e.k0.d() (dex_pc=4)
+[NPE]   #6 void e.p.a(android.content.Context) (dex_pc=130)
+[NPE]   #7 void androidx.activity.ComponentActivity.onCreate(android.os.Bundle) (dex_pc=30)
+DISCOVER-FAIL: PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to invoke InvokeType(2) method 'android.content.res.CompatibilityInfo android.view.DisplayAdjustments.getCompatibilityInfo()' on a null object reference
+
+============================================================
+DISCOVERY REPORT — service probes + failures
+============================================================
+
+Phase outcomes:
+  PHASE A: 3/70 services resolved
+  PHASE B: 5/7 classes loadable
+  PHASE C: PASSED — NoiceApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: PASSED unexpectedly
+  PHASE F: drove 6 framework Singletons, 0 failed
+  PHASE G2: PASSED — MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: PASSED — Activity.attach succeeded
+  PHASE G4: FAILED (expected — diagnoses needed service)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@29cd9e1
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (3 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+NoiceDiscoverWrapper: DONE
+----- end dalvikvm log -----
+[noice-discover] servicemanager log:
+----- begin sm log -----
+I ?: Starting sm instance on /dev/vndbinder
+----- end sm log -----
+/data/local/tmp/westlake/bin-bionic/noice-discover.sh: line 128:  9814 Killed                  su 1000 -c "LD_LIBRARY_PATH=$SM_LIB $SM_BIN $DEV" > "$SM_LOG" 2>&1
+[noice-discover] restart device vndservicemanager

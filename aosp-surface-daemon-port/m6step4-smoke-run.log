@@ -1,0 +1,109 @@
+[m6-step4] stopping vndservicemanager
+[m6-step4] ensuring FIFO at /data/local/tmp/westlake/dlst.fifo
+prw-rw-rw- 1 root root 0 2026-05-13 13:21 /data/local/tmp/westlake/dlst.fifo
+[m6-step4] starting our servicemanager on /dev/vndbinder
+[m6-step4] servicemanager up
+[m6-step4] starting westlake-surface-daemon on /dev/vndbinder (WESTLAKE_DLST_PIPE=/data/local/tmp/westlake/dlst.fifo)
+[m6-step4] surface daemon up
+[m6-step4] --- surface daemon log so far ---
+[wlk-surface-daemon pid=19890] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x7e8a094050
+[wlk-surface-daemon] DLST pipe path: "/data/local/tmp/westlake/dlst.fifo" (env=WESTLAKE_DLST_PIPE)
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[m6-step4] ---
+[m6-step4] running sm_smoke (Step-1 regression: listServices)
+[m6-step4] PASS: SurfaceFlinger appears in listServices (Step-1 regression OK)
+[m6-step4] running surface_smoke (Step-2..4 transaction acceptance, 7 checks)
+[m6-step4] surface_smoke exit=0
+[m6-step4] --- surface_smoke log ---
+[surface_smoke pid=20038] opening /dev/vndbinder
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[surface_smoke] A: PASS SurfaceFlinger remote BpBinder=0x75352c01c0
+[surface_smoke] B: PASS GET_PHYSICAL_DISPLAY_IDS -> {0}
+[surface_smoke] C: PASS GET_PHYSICAL_DISPLAY_TOKEN(0) -> binder=0x75352bf8d0
+[surface_smoke] D: PASS GET_DISPLAY_STATS vsyncTime=0 vsyncPeriod=16666667
+[surface_smoke] E: PASS CREATE_CONNECTION -> binder=0x75352c0320
+[surface_smoke] F.cs: handle=0x75352bf610 gbp=0x75352bffb0 transformHint=0 status=0
+[surface_smoke] F.deq: slot=0 bufferAge=0 status=1
+[surface_smoke] F.req: slot=0 magic=GB01 dims=1080x2280 stride=1088 format=1 numFds=1 numInts=4 fd=4 status=0
+[surface_smoke] F.que: slot=0 status=0
+[surface_smoke] F.deq: slot=1 bufferAge=0 status=1
+[surface_smoke] F.req: slot=1 magic=GB01 dims=1080x2280 stride=1088 format=1 numFds=1 numInts=4 fd=4 status=0
+[surface_smoke] F.que: slot=1 status=0
+[surface_smoke] F: PASS buffer pipeline (slotA=0 slotB=1)
+[surface_smoke] E: PASS CREATE_CONNECTION -> binder=0x75352bf610
+[surface_smoke] G: starting; fifo=/data/local/tmp/westlake/dlst.fifo pattern=64x32 red-top/green-bottom
+[surface_smoke] F.deq: slot=0 bufferAge=0 status=1
+[surface_smoke] G: got memfd=6 stride=64 — painting test pattern
+[surface_smoke] F.que: slot=0 status=0
+[surface_smoke] G: QUEUE_BUFFER sent; awaiting reader
+[surface_smoke] G: PASS magic=0x444c5354 payloadSize=8213 opcode=12 dims=64x32 dataLen=8192 firstPixel=FF 00 00 FF
+[surface_smoke] summary: 0 failure(s) of 7 checks
+[m6-step4] ---
+[m6-step4] --- daemon log (post-test) ---
+[wlk-surface-daemon pid=19890] starting; binder=/dev/vndbinder; will register as "SurfaceFlinger"
+[sm-stub] WaitForProperty(servicemanager.ready=true) -> immediate true
+[wlk-surface-daemon] defaultServiceManager() OK
+[wlk-sf] WestlakeSurfaceComposer constructed; physicalDisplayToken=0x7e8a094050
+[wlk-surface-daemon] DLST pipe path: "/data/local/tmp/westlake/dlst.fifo" (env=WESTLAKE_DLST_PIPE)
+[wlk-surface-daemon] addService("SurfaceFlinger") OK; entering joinThreadPool
+[wlk-sf] GET_PHYSICAL_DISPLAY_IDS -> {0}
+[wlk-sf] GET_PHYSICAL_DISPLAY_TOKEN id=0
+[wlk-sf] GET_DISPLAY_STATS display=0x7e8a094050 -> vsyncPeriod=16666667ns
+[wlk-sf] CREATE_CONNECTION
+[wlk-sf] SurfaceComposerClient constructed (this=0x7dca095840)
+[wlk-sf] CREATE_SURFACE name="westlake-m6step3-smoke" 1080x2280 fmt=1 flags=0x0 parent=0x0
+[wlk-igbp] ctor 1080x2280 fmt=1 slots=2
+[wlk-dlst] ctor gbp=0x7dea08dd90 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-dlst] start() thread spawned for gbp=0x7dea08dd90 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-sf] spawned DlstConsumer #1 for gbp=0x7dea08dd90 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-dlst] run() loop start gbp=0x7dea08dd90 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-igbp] DEQUEUE_BUFFER req=1080x2280 fmt=1 usage=0x0 getTs=0
+[wlk-mgb] ctor 1080x2280 fmt=1 stride=1088 bytes=9922560 (lazy; no memfd yet)
+[wlk-mgb] allocated memfd=4 size=9922560 (1080x2280 stride=1088 fmt=1)
+[wlk-igbp] DEQUEUE_BUFFER -> slot=0 memfd=4 state=DEQUEUED
+[wlk-igbp] REQUEST_BUFFER idx=0
+[wlk-igbp] QUEUE_BUFFER slot=0
+[wlk-igbp] QUEUE_BUFFER slot=0 state=QUEUED frame#=1 (consumer signaled)
+[wlk-igbp] DEQUEUE_BUFFER req=1080x2280 fmt=1 usage=0x0 getTs=0
+[wlk-mgb] ctor 1080x2280 fmt=1 stride=1088 bytes=9922560 (lazy; no memfd yet)
+[wlk-mgb] allocated memfd=6 size=9922560 (1080x2280 stride=1088 fmt=1)
+[wlk-igbp] DEQUEUE_BUFFER -> slot=1 memfd=6 state=DEQUEUED
+[wlk-igbp] REQUEST_BUFFER idx=1
+[wlk-igbp] QUEUE_BUFFER slot=1
+[wlk-igbp] QUEUE_BUFFER slot=1 state=QUEUED frame#=2 (consumer signaled)
+[wlk-sf] CREATE_CONNECTION
+[wlk-sf] SurfaceComposerClient constructed (this=0x7dca094d00)
+[wlk-sf] CREATE_SURFACE name="westlake-m6step4-smoke" 64x32 fmt=1 flags=0x0 parent=0x0
+[wlk-igbp] ctor 64x32 fmt=1 slots=2
+[wlk-dlst] ctor gbp=0x7dea08f650 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-dlst] start() thread spawned for gbp=0x7dea08f650 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-sf] spawned DlstConsumer #1 for gbp=0x7dea08f650 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-dlst] run() loop start gbp=0x7dea08f650 pipe="/data/local/tmp/westlake/dlst.fifo"
+[wlk-igbp] DEQUEUE_BUFFER req=64x32 fmt=1 usage=0x0 getTs=0
+[wlk-mgb] ctor 64x32 fmt=1 stride=64 bytes=8192 (lazy; no memfd yet)
+[wlk-mgb] allocated memfd=5 size=8192 (64x32 stride=64 fmt=1)
+[wlk-igbp] DEQUEUE_BUFFER -> slot=0 memfd=5 state=DEQUEUED
+[wlk-igbp] REQUEST_BUFFER idx=0
+[wlk-igbp] QUEUE_BUFFER slot=0
+[wlk-igbp] QUEUE_BUFFER slot=0 state=QUEUED frame#=1 (consumer signaled)
+[wlk-dlst] writeFrame slot=0 frame#=1 wrote magic+payload = 8221 bytes (64x32 stride=64 memfd=5)
+[wlk-dlst] run() loop exit gbp=0x7dea08f650
+[wlk-dlst] run() loop exit gbp=0x7dea08dd90
+[wlk-dlst] stop() joined; framesWritten=0 framesDropped=2
+[wlk-dlst] dtor (gbp=0x7dea08dd90; framesWritten=0 framesDropped=2 bytesWritten=0)
+[wlk-igbp] dtor (this=0x7dea08dd90)
+[wlk-mgb] dtor closing memfd=6
+[wlk-mgb] dtor closing memfd=4
+[wlk-sf] SurfaceComposerClient destructed (this=0x7dca095840)
+[wlk-dlst] stop() joined; framesWritten=1 framesDropped=0
+[wlk-dlst] dtor (gbp=0x7dea08f650; framesWritten=1 framesDropped=0 bytesWritten=8221)
+[wlk-igbp] dtor (this=0x7dea08f650)
+[wlk-mgb] dtor closing memfd=5
+[wlk-sf] SurfaceComposerClient destructed (this=0x7dca094d00)
+[m6-step4] ---
+[m6-step4] PASS: all 7 transaction checks passed (Step-2 A..E + Step-3 F + Step-4 G)
+[m6-step4] tearing down
+[m6-step4] done; result=0

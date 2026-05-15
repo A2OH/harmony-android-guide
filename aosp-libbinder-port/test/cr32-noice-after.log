@@ -1,0 +1,80 @@
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x2260c4c0 offset=40 current=2 expected=2 new=3 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x225bcec0 offset=32 current=0x0 expected=0x0 new=0x2261f760 success=1 array_index=5
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x2260c4c0 offset=40 current=3 expected=3 new=4 success=1
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] InterpreterJni jdk.Unsafe CAS int target=0x2260c540 offset=52 current=32 expected=32 new=-1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x2261ec10 offset=12 current=0x0 expected=0x0 new=0x2261fe20 success=1 array_index=0
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x2260c540 offset=40 current=0 expected=0 new=1 success=1
+[PFCUT] InterpreterJni jdk.Unsafe CAS ref target=0x2261ec10 offset=44 current=0x0 expected=0x0 new=0x2261fe38 success=1 array_index=8
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x2260c540 offset=40 current=1 expected=1 new=2 success=1
+[PFCUT] StringFactory Charset fallback bytes=7 offset=0 utf16=7 shorty=LLIIL
+WLK-binder-jni: nativeGetLocalService("window") binder=0x78a560a5a0 local=0x266
+[WLK-binder-jni] nativeGetLocalService("window") binder=0x78a560a5a0 local=0x266
+PHASE G3: Activity.attach(...) returned cleanly
+PHASE G4: calling MainActivity.onCreate(null)
+[Log/2] Configuration: Updating configuration, locales updated from [] to [en_US]
+[PFCUT] ULocale.forLocale(Locale) fallback -> en_US object
+[PFCUT] AtomicLong.get intrinsic current=3447679086515839964
+[PFCUT] AtomicLong.compareAndSet intrinsic current=3447679086515839964
+[PFCUT] AtomicInteger.addAndGet intrinsic current=0
+[PFCUT] AtomicLong.getAndAdd intrinsic current=3977703364174754341
+[PFCUT] InterpreterJni jdk.Unsafe putInt target=0x224cb088 offset=100 new=-1640531527
+[PFCUT]   caller#0 void jdk.internal.misc.Unsafe.putInt(java.lang.Object, long, int) dex_pc=0
+[PFCUT]   caller#1 void java.util.concurrent.ThreadLocalRandom.localInit() dex_pc=46
+[PFCUT]   caller#2 java.util.concurrent.ThreadLocalRandom java.util.concurrent.ThreadLocalRandom.current() dex_pc=14
+[PFCUT]   caller#3 java.util.Random u7.a.c() dex_pc=0
+[PFCUT]   caller#4 void androidx.activity.result.f.e(java.lang.String) dex_pc=18
+[PFCUT]   caller#5 androidx.activity.result.c androidx.activity.result.f.d(java.lang.String, c.a, androidx.fragment.app.m0) dex_pc=0
+[PFCUT] String.split intrinsic delimiter=45 limit=-1 pieces=2
+[PFCUT] InterpreterJni jdk.Unsafe CAS long target=0x2260c3c0 offset=40 current=3 expected=3 new=4 success=1
+[PFCUT] String.split intrinsic delimiter=44 limit=-1 pieces=1
+[NPE] android.view.Window$Callback android.view.Window.getCallback()
+[NPE]   #0 void e.k0.q(android.view.Window) (dex_pc=6)
+[NPE]   #1 void e.k0.z() (dex_pc=16)
+[NPE]   #2 void e.k0.d() (dex_pc=7)
+[NPE]   #3 void e.p.a(android.content.Context) (dex_pc=130)
+[NPE]   #4 void androidx.activity.ComponentActivity.onCreate(android.os.Bundle) (dex_pc=30)
+[NPE]   #5 void androidx.fragment.app.d0.onCreate(android.os.Bundle) (dex_pc=0)
+[NPE]   #6 void v3.e.onCreate(android.os.Bundle) (dex_pc=77)
+[NPE]   #7 void com.github.ashutoshgngwr.noice.activity.MainActivity.onCreate(android.os.Bundle) (dex_pc=40)
+DISCOVER-FAIL: PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+  cause[0]: java.lang.reflect.InvocationTargetException: null
+  cause[1]: java.lang.NullPointerException: Attempt to invoke InvokeType(2) method 'android.view.Window$Callback android.view.Window.getCallback()' on a null object reference
+
+============================================================
+DISCOVERY REPORT -- service probes + failures
+  app.packageName    = com.github.ashutoshgngwr.noice
+  app.applicationClass=com.github.ashutoshgngwr.noice.NoiceApplication
+============================================================
+
+Phase outcomes:
+  PHASE A: 7/70 services resolved
+  PHASE B: 5/7 classes loadable
+  PHASE C: PASSED -- com.github.ashutoshgngwr.noice.NoiceApplication instantiated
+  PHASE D: PASSED (attachBaseContext with WestlakeContextImpl)
+  PHASE E: PASSED unexpectedly
+  PHASE F: drove 5 framework Singletons, 1 failed
+  PHASE G2: PASSED -- MainActivity instantiated via Instrumentation.newActivity
+  PHASE G3: PASSED -- Activity.attach succeeded
+  PHASE G4: FAILED (expected -- diagnoses needed service)
+
+Service-name lookup results (PHASE A probes):
+  FOUND  activity -> found=com.westlake.services.WestlakeActivityManagerService@6e1573f
+  FOUND  package -> found=WestlakePackageManagerService{package=com.westlake.host}
+  FOUND  window -> found=WestlakeWindowManagerService{tokens=0, dispatching=true}
+  FOUND  display -> found=WestlakeDisplayManagerService{callbacks=0}
+  FOUND  input_method -> found=WestlakeInputMethodManagerService{clients=0}
+  FOUND  notification -> found=WestlakeNotificationManagerService{}
+  FOUND  power -> found=WestlakePowerManagerService{wakelocks=0}
+  (7 of 70 probed services were found)
+
+Failures encountered (caused by missing services or framework gaps):
+  [1] PHASE F: DisplayManagerGlobal chain threw java.lang.reflect.InvocationTargetException: null
+  [2] PHASE G4: MainActivity.onCreate(null) threw java.lang.reflect.InvocationTargetException: null
+
+============================================================
+END OF DISCOVERY REPORT
+============================================================
+DiscoverWrapperBase: DONE

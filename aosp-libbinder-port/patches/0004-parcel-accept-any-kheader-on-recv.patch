@@ -1,0 +1,105 @@
+# Patch 0004: Parcel accept any canonical kHeader on receive (CR11)
+# ===================================================================
+#
+# Why this patch exists
+# ---------------------
+# Patch 0003 made the SEND-side kHeader build-flag selectable so our libbinder
+# writes a peer-recognizable 4-byte transaction-header magic ('SYST' under
+# WESTLAKE_KHEADER_SYST=1, 'VNDR' under WESTLAKE_KHEADER_VNDR=1, 'UNKN' if
+# neither is set).  But the RECEIVE-side comparison in `enforceInterface`
+# stayed strict: `if (header != kHeader) reject`.  That works fine when peers
+# happen to ship the same kHeader, but it falls apart any time a peer was
+# compiled with a different one -- which is the common case on a real phone:
+#
+#   * Android system-partition processes write 'SYST'.
+#   * Android vendor-partition processes (and OHOS-vendor binder peers on
+#     /dev/vndbinder) write 'VNDR'.
+#   * Android recovery boot writes 'RECO'.
+#   * AOSP default (non-__ANDROID__ build with no Westlake flag) writes 'UNKN'.
+#
+# Concrete failure mode that motivated CR11
+# -----------------------------------------
+# After a OnePlus 6 reboot on 2026-05-12, the phone's vndservicemanager
+# started writing 'VNDR' on the replies it sent to our discovery harness.
+# Our libbinder, baked with WESTLAKE_KHEADER_SYST=1 from CR6 (patch 0003),
+# rejected every single transaction:
+#
+#   E Parcel: Expecting header 0x53595354 but found 0x564e4452.
+#                                                   Mixing copies of libbinder?
+#
+# The discovery harness logged 177 KB of those errors and made zero progress
+# past PHASE A.  dalvikvm couldn't acquire even one binder service.
+#
+# Resolution
+# ----------
+# The send side stays unchanged (we keep writing kHeader so peers can
+# identify us as a Westlake/AOSP-shim caller).  The receive side widens
+# from a single-value equality check to a set-membership check over the
+# four canonical magic values: SYST, VNDR, RECO, UNKN.  The four-byte
+# magic remains a useful self-identifying breadcrumb in logs but is no
+# longer a gate -- exactly mirroring AOSP's own behavior across partitions,
+# where system_server happily accepts traffic from vendor processes (and
+# vice versa) at the kernel-binder layer (the partition split is enforced
+# higher up via SELinux, not via this magic).
+#
+# Codex review (Tier 4, CR11): the comment block at the comparison site
+# explains the asymmetry clearly so a future reader doesn't try to "fix"
+# it back to a strict check.  The constants are defined locally to keep
+# the patch surface tiny and not introduce a new translation-unit-level
+# table; if the set ever needs to grow we can promote them to file-scope.
+#
+# Idempotence
+# -----------
+# This patch is forward-apply-safe (turns the strict check into a set
+# check) and reverse-apply-safe (the original strict check is restored).
+# It does NOT touch the kHeader definitions from patch 0003 nor the
+# writeInterfaceToken send-side write.
+#
+# Files touched
+# -------------
+#   aosp-src/libbinder/Parcel.cpp -- enforceInterface() body around line 1087
+#
+# Cross-references
+# ----------------
+#   docs/engine/BINDER_PIVOT_DESIGN.md §5.8 (kHeader strategy)
+#   docs/engine/M4_DISCOVERY.md         §40  (CR11 deployment log)
+#   docs/engine/PHASE_1_STATUS.md       (CR11 milestone row)
+
+--- a/aosp-src/libbinder/Parcel.cpp	2026-05-12 19:00:00.000000000 -0700
++++ b/aosp-src/libbinder/Parcel.cpp	2026-05-12 19:05:00.000000000 -0700
+@@ -1084,7 +1084,34 @@
+
+         // fuzzers skip this check, because it is for protecting the underlying ABI, but
+         // we don't want it to reduce our coverage
+-        if (header != kHeader && !mServiceFuzzing) {
++        //
++        // Westlake CR11 (2026-05-12): widen the receive-side comparison.  The
++        // send side (writeInterfaceToken above) still writes our chosen
++        // kHeader so peers can recognize us, but on the receive side we must
++        // accept any of the canonical AOSP/OHOS magic values: SYST (Android
++        // system partition), VNDR (Android vendor partition / OHOS-vendor
++        // binder peer), RECO (Android recovery), and UNKN (AOSP default for
++        // non-__ANDROID__ builds).  Reason: peer libbinders are compiled with
++        // their own kHeader based on partition/build-flag, so a strict
++        // equality check breaks cross-partition / cross-vendor interop.  The
++        // four-byte magic remains a useful self-identifying breadcrumb in
++        // logs but is no longer a gate.
++        //
++        // Concrete trigger: after a OnePlus 6 reboot, the phone's
++        // vndservicemanager started writing 'VNDR' on replies; our libbinder
++        // (kHeader='SYST' via WESTLAKE_KHEADER_SYST=1) was rejecting every
++        // transaction with "Expecting header 0x53595354 but found 0x564e4452.
++        // Mixing copies of libbinder?".  See patches/0004-parcel-accept-any-
++        // kheader-on-recv.patch and docs/engine/M4_DISCOVERY.md §CR11.
++        constexpr int32_t kHeaderSYST = B_PACK_CHARS('S', 'Y', 'S', 'T');
++        constexpr int32_t kHeaderVNDR = B_PACK_CHARS('V', 'N', 'D', 'R');
++        constexpr int32_t kHeaderRECO = B_PACK_CHARS('R', 'E', 'C', 'O');
++        constexpr int32_t kHeaderUNKN = B_PACK_CHARS('U', 'N', 'K', 'N');
++        const bool headerAccepted = (header == kHeaderSYST) ||
++                                    (header == kHeaderVNDR) ||
++                                    (header == kHeaderRECO) ||
++                                    (header == kHeaderUNKN);
++        if (!headerAccepted && !mServiceFuzzing) {
+             ALOGE("Expecting header 0x%x but found 0x%x. Mixing copies of libbinder?", kHeader,
+                   header);
+             return false;
