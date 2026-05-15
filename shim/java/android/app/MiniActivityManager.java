@@ -290,52 +290,28 @@ public class MiniActivityManager {
     }
 
     private Activity instantiateActivity(Class<?> cls, String className, Intent intent) throws Throwable {
-        /* PF-arch-017: Activity ctors throw exceptions (e.g., Hilt/DI init failure)
-         * that ART's long-jump cannot deliver — Context vtable comes out NULL,
-         * crashing artContextCopyForLongJump. Use Unsafe.allocateInstance FIRST
-         * to bypass the ctor entirely. Activity fields start zero-initialized;
-         * framework re-populates them via attachBaseContext / setIntent /
-         * setApplication in startResolvedActivity. */
-        /* PF-arch-017: prefer sun.misc.Unsafe over jdk.internal.misc.Unsafe — the
-         * latter's allocateInstance native is unregistered in our ART, throws
-         * UnsatisfiedLinkError that ART's long-jump can't deliver (PF-arch-016
-         * aborts). sun.misc.Unsafe.allocateInstance works. */
-        String[] unsafeClasses = {
-                "sun.misc.Unsafe",
-                "jdk.internal.misc.Unsafe"
-        };
-        Throwable firstError = null;
-        for (String unsafeName : unsafeClasses) {
-            try {
-                Object unsafe = getUnsafeSingleton(unsafeName);
-                Activity activity = (Activity) unsafe.getClass()
-                        .getMethod("allocateInstance", Class.class)
-                        .invoke(unsafe, cls);
-                if (activity != null) {
-                    return activity;
-                }
-            } catch (Throwable t) {
-                if (firstError == null) {
-                    firstError = t;
-                }
-            }
-        }
-
-        // Fallback to ctor only if Unsafe.allocateInstance unavailable
-        try {
-            java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
-            ctor.setAccessible(true);
-            return (Activity) ctor.newInstance();
-        } catch (Throwable t) {
-            if (firstError == null) {
-                firstError = t;
-            }
-        }
-
-        if (firstError != null) {
-            throw firstError;
-        }
-        throw new InstantiationException("Failed to instantiate " + className);
+        /* Historical note (PF-arch-017): previously this path used
+         * sun.misc.Unsafe.allocateInstance(cls) to bypass the Activity
+         * no-arg constructor entirely, because real ctors (Hilt/DI init,
+         * AppCompatDelegate.attachBaseContext2(null), etc.) hit NPEs on
+         * a not-yet-attached Context and ART's long-jump could not
+         * deliver the exception — Context vtable came back NULL and
+         * artContextCopyForLongJump aborted.
+         *
+         * CR62 (commit 459cb133) resolved the underlying issue at the
+         * source by pre-attaching a Context via thread-local before any
+         * super-chain ctor runs, so the real constructor path can now
+         * complete normally. The Unsafe.allocateInstance bypass +
+         * setAccessible fallback both violated the macro-shim contract
+         * (feedback_macro_shim_contract.md) and are removed here.
+         *
+         * Activity has a public no-arg ctor, and every concrete subclass
+         * resolved through this code path is itself public, so the
+         * default reflection lookup needs no setAccessible call. If a
+         * specific Activity legitimately has no public no-arg ctor, that
+         * is a configuration error to surface, not to silently bypass. */
+        java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
+        return (Activity) ctor.newInstance();
     }
 
     private void attachBaseContextFallback(Activity activity) throws Throwable {
