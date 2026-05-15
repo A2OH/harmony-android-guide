@@ -1088,6 +1088,21 @@ public class LayoutInflater {
             }
         } catch (Throwable ignored) {
         }
+        // The substrate's primary Resources is deliberately empty() for
+        // cold-boot speed, so getResourceName() above either returns null
+        // or the synthetic fallback "res/0x<hex>" (see Resources.java:712)
+        // for app-compiled IDs (e.g. noice's 0x7f0c0015 abc_screen_simple).
+        // Fall back to a JIT arsc probe — same generic mechanism the
+        // resolveStaticResourceId helper uses for AppCompat content/root IDs.
+        if (name == null || name.startsWith("res/0x")) {
+            try {
+                String arscName = probeArscResourceName(resource);
+                if (arscName != null) {
+                    name = arscName;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
         boolean contentInclude = resource == APPCOMPAT_LAYOUT_ABC_SCREEN_CONTENT_INCLUDE;
         boolean simple = resource == APPCOMPAT_LAYOUT_ABC_SCREEN_SIMPLE;
         boolean simpleOverlay = resource == APPCOMPAT_LAYOUT_ABC_SCREEN_SIMPLE_OVERLAY_ACTION_MODE;
@@ -1152,20 +1167,78 @@ public class LayoutInflater {
     }
 
     private int resolveStaticResourceId(String className, String fieldName, int fallback) {
+        // Prefer the app's actual compiled resource ID (e.g. noice's
+        // action_bar_root=0x7f090045, action_bar_activity_content=0x7f090043)
+        // over a hard-coded AOSP-source fallback, because
+        // AppCompatDelegateImpl.ensureSubDecor() does
+        // subDecor.findViewById(R.id.action_bar_activity_content) using the
+        // app-baked ID. If the inflated subdecor uses a different ID, the
+        // findViewById returns null and the subsequent setAttachListener() NPEs
+        // (observed at MainActivity onCreate y:386 in noice's R8 dex).
+        //
+        // Strategy (most-specific first):
+        //   1. Resources.getIdentifier under the app's package — works if the
+        //      Resources is already arsc-backed.
+        //   2. Just-in-time arsc probe via the Context's APK source dir —
+        //      reads ONLY the identifier table from resources.arsc (cached).
+        //      Avoids loading the full Resources because the substrate prefers
+        //      empty() Resources for cold-boot speed (see WestlakeContextImpl).
+        //   3. Probe a curated list of R$id classes the app's ClassLoader may
+        //      have brought in (R8 typically merges appcompat's R$id into a
+        //      single R class under one of the app's own packages).
+        //   4. Original Class.forName(className) for the AOSP-source class name.
+        //   5. Fallback constant — only correct for apps whose compiled ID
+        //      space happens to match AOSP-source AppCompat (rare).
+        try {
+            if (mContext != null) {
+                android.content.res.Resources res = mContext.getResources();
+                if (res != null) {
+                    String pkg = mContext.getPackageName();
+                    if (pkg != null) {
+                        int id = res.getIdentifier(fieldName, "id", pkg);
+                        if (id != 0) {
+                            return id;
+                        }
+                    }
+                    // Also try androidx.appcompat package namespace for libs
+                    // that publish ids under their own arsc.
+                    int id = res.getIdentifier(fieldName, "id", "androidx.appcompat");
+                    if (id != 0) {
+                        return id;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        // JIT arsc probe: load just the identifier table from the apk's
+        // resources.arsc once per Context. Cached so subsequent lookups are
+        // free.
+        try {
+            int id = probeArscIdentifier(fieldName);
+            if (id != 0) {
+                return id;
+            }
+        } catch (Throwable ignored) {
+        }
+        // Walk candidate R$id classes the app's classloader can resolve.
         ClassLoader[] loaders = new ClassLoader[] {
                 mContext != null ? mContext.getClass().getClassLoader() : null,
                 Thread.currentThread().getContextClassLoader(),
                 LayoutInflater.class.getClassLoader()
         };
-        for (int i = 0; i < loaders.length; i++) {
-            try {
-                ClassLoader loader = loaders[i];
-                if (loader == null) {
-                    continue;
+        String pkg = mContext != null ? mContext.getPackageName() : null;
+        String[] candidates = candidateRIdClassNames(className, pkg);
+        for (String candidateName : candidates) {
+            for (int i = 0; i < loaders.length; i++) {
+                try {
+                    ClassLoader loader = loaders[i];
+                    if (loader == null) {
+                        continue;
+                    }
+                    Class<?> cls = Class.forName(candidateName, false, loader);
+                    return cls.getField(fieldName).getInt(null);
+                } catch (Throwable ignored) {
                 }
-                Class<?> cls = Class.forName(className, false, loader);
-                return cls.getField(fieldName).getInt(null);
-            } catch (Throwable ignored) {
             }
         }
         try {
@@ -1174,6 +1247,494 @@ public class LayoutInflater {
         } catch (Throwable ignored) {
             return fallback;
         }
+    }
+
+    /**
+     * Reads resources.arsc directly from the apk zip and parses it into a
+     * ResourceTable. Used by both {@link #probeArscIdentifier(String)} and
+     * {@link #probeArscResourceName(int)}. Bypasses the
+     * {@link android.content.res.ApkResourceLoader} full-Resources path
+     * because we only need the identifier and name tables — the full
+     * Resources scan (8K probes for the entry registry) was failing silently
+     * on noice's 2 MB arsc under dalvik-kitkat. Direct
+     * {@link android.content.res.ResourceTable#parse(byte[])} is enough.
+     */
+    /**
+     * Result of a minimal arsc parse: {@code id <-> "type/name"} two-way map.
+     * Just the data we need for {@link #probeArscIdentifier(String)} and
+     * {@link #probeArscResourceName(int)}. Skipping bag entries and value
+     * types entirely.
+     */
+    private static final class ArscIdTable {
+        final java.util.Map<Integer, String> namesById = new java.util.HashMap<>();
+        final java.util.Map<String, Integer> idsByName = new java.util.HashMap<>();
+        boolean empty() {
+            return namesById.isEmpty();
+        }
+    }
+
+    /** Sentinel for apk paths that failed to parse / have no arsc. */
+    private static final ArscIdTable ARSC_ID_NONE = new ArscIdTable();
+    /** Cached per-apk identifier map. */
+    private static final java.util.Map<String, ArscIdTable> sArscIdTableCache =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Reads and parses the resources.arsc identifier table from {@code apkPath}.
+     *
+     * <p>Pure byte-array walk — does NOT use {@code java.nio.ByteBuffer}
+     * because dalvik-kitkat on rk3568 throws
+     * {@code UnsatisfiedLinkError: Native method not found:
+     * java.nio.ByteOrder.isLittleEndian:()Z} when {@code ByteOrder} class init
+     * runs in some contexts (observed first-call here even though
+     * {@code WestlakeLauncher} uses ByteOrder elsewhere — those calls happen
+     * to be inside outer try/catches that swallow the init failure).
+     *
+     * <p>Only parses ResTable, ResTable_package, ResTable_typeSpec, and
+     * ResTable_type chunks far enough to populate (id, "type/name") pairs.
+     * Skips bag entries and values entirely.
+     */
+    private static ArscIdTable parseArscIdentifiers(String apkPath) {
+        byte[] data = readZipEntry(apkPath, "resources.arsc");
+        if (data == null || data.length < 12) {
+            return null;
+        }
+        ArscIdTable out = new ArscIdTable();
+        try {
+            // ResTable_header: type(2), headerSize(2), size(4), packageCount(4)
+            int tableType = u16(data, 0);
+            if (tableType != 0x0002) { // RES_TABLE_TYPE
+                return null;
+            }
+            int tableHeaderSize = u16(data, 2);
+            int p = tableHeaderSize;
+            while (p + 8 <= data.length) {
+                int chunkStart = p;
+                int chunkType = u16(data, p);
+                int chunkHeaderSize = u16(data, p + 2);
+                int chunkSize = u32(data, p + 4);
+                if (chunkSize < 8 || chunkStart + chunkSize > data.length) {
+                    break;
+                }
+                if (chunkType == 0x0200) { // RES_TABLE_PACKAGE_TYPE
+                    parsePackage(data, chunkStart, chunkHeaderSize, chunkSize, out);
+                }
+                // Top-level RES_STRING_POOL_TYPE (chunkType == 0x0001) is the
+                // global value pool, not needed for the id <-> name map.
+                p = chunkStart + chunkSize;
+            }
+        } catch (Throwable ignored) {
+        }
+        return out;
+    }
+
+    private static String[] parseStringPool(byte[] data, int chunkStart,
+                                             int chunkHeaderSize, int chunkSize) {
+        // ResStringPool_header (after chunk header at chunkStart):
+        //   header: 2 type, 2 headerSize, 4 size,
+        //   then: 4 stringCount, 4 styleCount, 4 flags, 4 stringsStart, 4 stylesStart
+        if (chunkHeaderSize < 28) {
+            return null;
+        }
+        int stringCount = u32(data, chunkStart + 8);
+        int flags = u32(data, chunkStart + 16);
+        int stringsStart = u32(data, chunkStart + 20);
+        boolean utf8 = (flags & 0x100) != 0;
+        if (stringCount <= 0) {
+            return new String[0];
+        }
+        int offsetsStart = chunkStart + chunkHeaderSize;
+        String[] out = new String[stringCount];
+        for (int i = 0; i < stringCount; i++) {
+            int strOffset = u32(data, offsetsStart + i * 4);
+            int abs = chunkStart + stringsStart + strOffset;
+            if (abs >= data.length) {
+                continue;
+            }
+            if (utf8) {
+                // UTF-8 string: 1- or 2-byte length-in-chars + 1- or 2-byte
+                // length-in-bytes + bytes + NUL.
+                int p = abs;
+                int charLen = data[p] & 0xFF;
+                p++;
+                if ((charLen & 0x80) != 0) {
+                    charLen = ((charLen & 0x7f) << 8) | (data[p] & 0xFF);
+                    p++;
+                }
+                int byteLen = data[p] & 0xFF;
+                p++;
+                if ((byteLen & 0x80) != 0) {
+                    byteLen = ((byteLen & 0x7f) << 8) | (data[p] & 0xFF);
+                    p++;
+                }
+                if (p + byteLen <= data.length) {
+                    try {
+                        out[i] = new String(data, p, byteLen, "UTF-8");
+                    } catch (Throwable t) {
+                        out[i] = "";
+                    }
+                }
+            } else {
+                // UTF-16: 2-byte char length + 2*chars + 2-byte NUL.
+                int p = abs;
+                int charLen = u16(data, p);
+                p += 2;
+                if ((charLen & 0x8000) != 0) {
+                    charLen = ((charLen & 0x7fff) << 16) | u16(data, p);
+                    p += 2;
+                }
+                int byteLen = charLen * 2;
+                if (p + byteLen <= data.length) {
+                    char[] chars = new char[charLen];
+                    for (int k = 0; k < charLen; k++) {
+                        chars[k] = (char) u16(data, p + k * 2);
+                    }
+                    out[i] = new String(chars);
+                }
+            }
+        }
+        return out;
+    }
+
+    private static void parsePackage(byte[] data, int chunkStart,
+                                     int chunkHeaderSize, int chunkSize,
+                                     ArscIdTable out) {
+        // ResTable_package: header(8) + id(4) + name[128 uint16](256 bytes)
+        //                  + typeStrings(4) + lastPublicType(4)
+        //                  + keyStrings(4) + lastPublicKey(4) [+ typeIdOffset(4)]
+        // Total = 288 bytes (or 284 in older formats without typeIdOffset).
+        if (chunkHeaderSize < 8 + 4 + 256 + 16) {
+            return;
+        }
+        int packageId = u32(data, chunkStart + 8);
+        int typeStringsOff = u32(data, chunkStart + 8 + 4 + 256);
+        int keyStringsOff = u32(data, chunkStart + 8 + 4 + 256 + 4 + 4);
+        // typeStrings chunk = string pool at chunkStart + typeStringsOff
+        String[] typeNames = null;
+        String[] keyNames = null;
+        if (typeStringsOff > 0 && chunkStart + typeStringsOff + 8 < data.length) {
+            int tsCS = chunkStart + typeStringsOff;
+            int tsHdr = u16(data, tsCS + 2);
+            int tsSize = u32(data, tsCS + 4);
+            if (tsSize >= 8) {
+                typeNames = parseStringPool(data, tsCS, tsHdr, tsSize);
+            }
+        }
+        if (keyStringsOff > 0 && chunkStart + keyStringsOff + 8 < data.length) {
+            int ksCS = chunkStart + keyStringsOff;
+            int ksHdr = u16(data, ksCS + 2);
+            int ksSize = u32(data, ksCS + 4);
+            if (ksSize >= 8) {
+                keyNames = parseStringPool(data, ksCS, ksHdr, ksSize);
+            }
+        }
+        if (typeNames == null || keyNames == null) {
+            return;
+        }
+        // Walk type chunks after the keyStrings pool.
+        int p = chunkStart + chunkHeaderSize;
+        // Skip typeStrings and keyStrings sub-chunks (they ARE the chunks at
+        // typeStringsOff and keyStringsOff). Walk forward past whichever ends
+        // later.
+        int afterPools = Math.max(
+                chunkStart + typeStringsOff + (typeStringsOff > 0
+                        ? u32(data, chunkStart + typeStringsOff + 4) : 0),
+                chunkStart + keyStringsOff + (keyStringsOff > 0
+                        ? u32(data, chunkStart + keyStringsOff + 4) : 0));
+        if (afterPools > p) {
+            p = afterPools;
+        }
+        int pkgEnd = chunkStart + chunkSize;
+        while (p + 8 <= pkgEnd) {
+            int cType = u16(data, p);
+            int cHdr = u16(data, p + 2);
+            int cSize = u32(data, p + 4);
+            if (cSize < 8 || p + cSize > pkgEnd) {
+                break;
+            }
+            if (cType == 0x0201) { // RES_TABLE_TYPE_TYPE
+                parseTypeChunk(data, p, cHdr, cSize, packageId,
+                        typeNames, keyNames, out);
+            }
+            p += cSize;
+        }
+    }
+
+    private static void parseTypeChunk(byte[] data, int p, int cHdr, int cSize,
+                                       int packageId, String[] typeNames,
+                                       String[] keyNames, ArscIdTable out) {
+        // ResTable_type header (after standard chunk header at p):
+        //   1 id, 1 res0, 2 res1, 4 entryCount, 4 entriesStart,
+        //   then ResTable_config (size variable)
+        if (cHdr < 20) {
+            return;
+        }
+        int typeId = data[p + 8] & 0xFF;
+        int entryCount = u32(data, p + 12);
+        int entriesStart = u32(data, p + 16);
+        if (typeId == 0 || typeId > typeNames.length || entryCount <= 0) {
+            return;
+        }
+        String typeName = typeNames[typeId - 1];
+        int offsetsStart = p + cHdr;
+        int dataStart = p + entriesStart;
+        for (int i = 0; i < entryCount; i++) {
+            int eOffOff = offsetsStart + i * 4;
+            if (eOffOff + 4 > p + cSize) {
+                break;
+            }
+            int eOff = u32(data, eOffOff);
+            if (eOff == -1 || eOff == 0xFFFFFFFF) {
+                continue;
+            }
+            int entryHdrPos = dataStart + eOff;
+            if (entryHdrPos + 8 > data.length) {
+                continue;
+            }
+            // ResTable_entry: 2 size, 2 flags, 4 key (index into keyStrings)
+            int keyIdx = u32(data, entryHdrPos + 4);
+            if (keyIdx < 0 || keyIdx >= keyNames.length) {
+                continue;
+            }
+            String keyName = keyNames[keyIdx];
+            if (typeName == null || keyName == null) {
+                continue;
+            }
+            int resId = (packageId << 24) | (typeId << 16) | i;
+            String full = typeName + "/" + keyName;
+            if (!out.namesById.containsKey(resId)) {
+                out.namesById.put(resId, full);
+            }
+            if (!out.idsByName.containsKey(full)) {
+                out.idsByName.put(full, resId);
+            }
+        }
+    }
+
+    /**
+     * Minimal hand-rolled APK zip entry reader. dalvik-kitkat's
+     * {@link java.util.zip.ZipFile}(String) throws
+     * "File too short to be a zip file: 0" on the rk3568 board for files
+     * that are unquestionably valid zips (5 MB on disk, exists+canRead
+     * confirmed), and {@link java.util.zip.ZipInputStream#getNextEntry}
+     * raises UnsatisfiedLinkError because zlib JNI symbols are missing.
+     * To avoid both, parse the local-file-header sequence directly.
+     *
+     * <p>Supported: STORED (method=0) entries only. APK packagers always
+     * store resources.arsc uncompressed (verified for noice and McD), so
+     * this is enough for the AppCompat-resource lookup path we need.
+     */
+    private static byte[] readZipEntry(String apkPath, String entryName) {
+        // dalvik-kitkat on rk3568 mis-reports RandomAccessFile.length() as 0
+        // and ZipFile throws "File too short to be a zip file: 0" for valid
+        // files. Workaround: slurp the file via FileInputStream(8192 buf)
+        // and parse the LFH chain in-memory. Generic across all apks.
+        byte[] all = null;
+        try {
+            long sz = new java.io.File(apkPath).length();
+            if (sz <= 0) {
+                return null;
+            }
+            java.io.FileInputStream fis = new java.io.FileInputStream(apkPath);
+            try {
+                java.io.ByteArrayOutputStream baos =
+                        new java.io.ByteArrayOutputStream((int) sz);
+                byte[] buf = new byte[65536];
+                int n;
+                while ((n = fis.read(buf)) > 0) {
+                    baos.write(buf, 0, n);
+                }
+                all = baos.toByteArray();
+            } finally {
+                try {
+                    fis.close();
+                } catch (Throwable ignored) {
+                }
+            }
+        } catch (Throwable t) {
+            return null;
+        }
+        if (all == null || all.length < 30) {
+            return null;
+        }
+        int pos = 0;
+        while (pos + 30 <= all.length) {
+            int sig = u32(all, pos);
+            if (sig != 0x04034b50) {
+                return null; // past LFH section
+            }
+            int method = u16(all, pos + 8);
+            int compSize = u32(all, pos + 18);
+            int uncompSize = u32(all, pos + 22);
+            int nameLen = u16(all, pos + 26);
+            int extraLen = u16(all, pos + 28);
+            int nameStart = pos + 30;
+            if (nameStart + nameLen > all.length) {
+                return null;
+            }
+            String name;
+            try {
+                name = new String(all, nameStart, nameLen, "UTF-8");
+            } catch (Throwable t) {
+                name = "";
+            }
+            int dataStart = nameStart + nameLen + extraLen;
+            if (entryName.equals(name)) {
+                if (method != 0) {
+                    return null; // would need inflate
+                }
+                if (dataStart + uncompSize > all.length) {
+                    return null;
+                }
+                byte[] data = new byte[uncompSize];
+                System.arraycopy(all, dataStart, data, 0, uncompSize);
+                return data;
+            }
+            pos = dataStart + compSize;
+        }
+        return null;
+    }
+
+    private static int u32(byte[] b, int o) {
+        return (b[o] & 0xFF) | ((b[o + 1] & 0xFF) << 8)
+                | ((b[o + 2] & 0xFF) << 16) | ((b[o + 3] & 0xFF) << 24);
+    }
+
+    private static int u16(byte[] b, int o) {
+        return (b[o] & 0xFF) | ((b[o + 1] & 0xFF) << 8);
+    }
+
+    /**
+     * Returns the apk path to probe for arsc data. Falls back through:
+     *   1. mContext.getPackageResourcePath() — populated when substrate has
+     *      a proper ApplicationInfo.sourceDir (binder-pivot apps).
+     *   2. -Dwestlake.apk.path — set by inproc-app-launcher when the test
+     *      harness pushes the app's apk to the board.
+     *   3. mContext-backed Application's sourceDir (same chain via
+     *      WestlakeActivityThread.currentApplication).
+     * Returns null if none yield a valid path. Generic across any apk-mode
+     * substrate run, no per-app branches.
+     */
+    private String resolveProbeApkPath() {
+        if (mContext != null) {
+            try {
+                String p = mContext.getPackageResourcePath();
+                if (p != null && p.length() > 0) {
+                    return p;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        try {
+            String prop = System.getProperty("westlake.apk.path");
+            if (prop != null && prop.length() > 0) {
+                return prop;
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            String prop = System.getProperty("westlake.apk.sourceDir");
+            if (prop != null && prop.length() > 0) {
+                return prop;
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Returns the "type/name" resource name from the apk's arsc, or null.
+     * Caches its result via the same per-apk ResourceTable as
+     * {@link #probeArscIdentifier(String)}. Generic across any
+     * AppCompat-using app.
+     */
+    private String probeArscResourceName(int resource) {
+        if (resource == 0) {
+            return null;
+        }
+        ArscIdTable table = loadArscIdCached();
+        if (table == null || table == ARSC_ID_NONE) {
+            return null;
+        }
+        return table.namesById.get(Integer.valueOf(resource));
+    }
+
+    /**
+     * Loads the resources.arsc identifier table from the Context's apk path
+     * and returns the id for "id/{fieldName}", or 0 if not found / arsc not
+     * loadable. Cached per apk-path so the parse runs at most once per
+     * Context. Generic — applies to any AppCompat-using app, no per-app
+     * branches.
+     */
+    private int probeArscIdentifier(String fieldName) {
+        if (fieldName == null) {
+            return 0;
+        }
+        ArscIdTable table = loadArscIdCached();
+        if (table == null || table == ARSC_ID_NONE) {
+            return 0;
+        }
+        Integer v = table.idsByName.get("id/" + fieldName);
+        return v != null ? v.intValue() : 0;
+    }
+
+    /**
+     * Loads (and caches) the apk's arsc identifier table. Cached per apk
+     * path so subsequent lookups are free. Returns {@link #ARSC_ID_NONE} on
+     * parse failure; null only if no apk path could be resolved.
+     */
+    private ArscIdTable loadArscIdCached() {
+        String apkPath = resolveProbeApkPath();
+        if (apkPath == null || apkPath.isEmpty()) {
+            return null;
+        }
+        ArscIdTable table = sArscIdTableCache.get(apkPath);
+        if (table == null) {
+            table = parseArscIdentifiers(apkPath);
+            if (table == null || table.empty()) {
+                table = ARSC_ID_NONE;
+            }
+            sArscIdTableCache.put(apkPath, table);
+            try {
+                android.util.Log.i("Westlake",
+                        "[LayoutInflater] arsc parse apk=" + apkPath
+                                + " entries=" + (table == ARSC_ID_NONE
+                                        ? 0 : table.namesById.size()));
+            } catch (Throwable ignored) {
+            }
+        }
+        return table;
+    }
+
+    /**
+     * Produces a list of candidate `*.R$id` class names to probe when looking
+     * up an AppCompat resource ID. R8/ProGuard frequently strips the
+     * `androidx.appcompat.R$id` class because it's just a holder of `int`
+     * constants — the constant values get inlined at usage sites and the
+     * holder ends up merged into one of the app's own R classes (e.g.
+     * `com.github.appintro.R$id` for noice). Probing common candidates is
+     * a generic AppCompat-shim concern, not a per-app branch.
+     */
+    private static String[] candidateRIdClassNames(String original, String pkg) {
+        java.util.ArrayList<String> list = new java.util.ArrayList<>();
+        if (original != null) {
+            list.add(original);
+        }
+        if (pkg != null && !pkg.isEmpty()) {
+            list.add(pkg + ".R$id");
+            // App-bundle pattern: many R8 builds merge into a feature-module
+            // R class. Walk parent packages.
+            int dot = pkg.lastIndexOf('.');
+            while (dot > 0) {
+                String parent = pkg.substring(0, dot);
+                list.add(parent + ".R$id");
+                dot = parent.lastIndexOf('.');
+            }
+        }
+        // Common AppCompat-ish landing spots used by R8 when it merges R.
+        list.add("androidx.appcompat.R$id");
+        list.add("com.google.android.material.R$id");
+        return list.toArray(new String[0]);
     }
 
     private void addCompatChild(ViewGroup parent, View child) {
@@ -1306,7 +1867,7 @@ public class LayoutInflater {
         root.addView(rightClone, rightCloneLp);
 
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_ACTIVITY_SIMPLE_PRODUCT_SHELL layout=activity_simple_product holder=0x"
                             + Integer.toHexString(MCD_ID_SIMPLE_PRODUCT_HOLDER));
         } catch (Throwable ignored) {
@@ -1581,7 +2142,7 @@ public class LayoutInflater {
         root.addView(line, lineLp);
 
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_APPLICATION_NOTIFICATION_LAYOUT_OK tag=" + root.getTag()
                             + " children=" + root.getChildCount());
         } catch (Throwable ignored) {
@@ -1906,7 +2467,7 @@ public class LayoutInflater {
             view = inflate(layoutId, null, false);
         } catch (Throwable t) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_INFLATE_FAILED layout=" + safeMcdMarkerToken(layoutName)
                                 + " err=" + throwableName(t) + ":" + t.getMessage());
             } catch (Throwable ignored) {
@@ -1915,7 +2476,7 @@ public class LayoutInflater {
         }
         if (view == null || view.getId() == layoutId) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_INFLATE_FALLBACK layout="
                                 + safeMcdMarkerToken(layoutName));
             } catch (Throwable ignored) {
@@ -1923,7 +2484,7 @@ public class LayoutInflater {
             return null;
         }
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_INFLATED layout=" + safeMcdMarkerToken(layoutName)
                             + " root=" + simpleClassNameOf(view));
         } catch (Throwable ignored) {
@@ -1976,7 +2537,7 @@ public class LayoutInflater {
             added++;
         }
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_ORDER_INFLATED layout=fragment_order categories="
                             + added + " compact=" + compact);
         } catch (Throwable ignored) {
@@ -2015,7 +2576,7 @@ public class LayoutInflater {
         setMcdImageIfPresent(row, MCD_ID_CATEGORY_IMAGE,
                 MCD_ID_MENU_CATEGORY_LIST, position, label);
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_CATEGORY_ROW_INFLATED layout=category_list_item label="
                             + safeMcdMarkerToken(label));
         } catch (Throwable ignored) {
@@ -2055,7 +2616,7 @@ public class LayoutInflater {
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 try {
-                    com.westlake.engine.WestlakeLauncher.marker(
+                    System.out.println(
                             "MCD_ADD_TO_BAG_CLICKED source=real_xml_product_detail");
                 } catch (Throwable ignored) {
                 }
@@ -2071,7 +2632,7 @@ public class LayoutInflater {
         panel.addView(bag, bagLp);
 
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_CATEGORY_DETAIL_INFLATED layout=new_plp_product_item label="
                             + safeMcdMarkerToken(productLabel));
         } catch (Throwable ignored) {
@@ -2088,7 +2649,7 @@ public class LayoutInflater {
 
     private void enhanceMcdFragmentOrderPdp(View root) {
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_PDP_ENHANCE_BEGIN");
         } catch (Throwable ignored) {
         }
@@ -2174,7 +2735,7 @@ public class LayoutInflater {
         setVisibleIfPresent(root, MCD_ID_BOTTOM_LAYOUT);
 
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_PDP_ENHANCED productInfo="
                             + (productInfo instanceof ViewGroup
                             ? ((ViewGroup) productInfo).getChildCount() : -1)
@@ -2231,7 +2792,7 @@ public class LayoutInflater {
         String activityName = classNameOf(activity);
         if (!"com.mcdonalds.order.activity.OrderProductDetailsActivity".equals(activityName)) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_PDP_DIRECT_ATTACH_SKIPPED activity="
                                 + safeMcdMarkerToken(activityName));
             } catch (Throwable ignored) {
@@ -2254,7 +2815,7 @@ public class LayoutInflater {
         }
         if (!(holder instanceof ViewGroup)) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_PDP_DIRECT_ATTACH_NO_HOLDER activity="
                                 + safeMcdMarkerToken(activityName)
                                 + " holder=" + simpleClassNameOf(holder));
@@ -2277,7 +2838,7 @@ public class LayoutInflater {
                 pdpRoot.requestLayout();
                 target.requestLayout();
                 target.invalidate();
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_PDP_DIRECT_ATTACH already=true childCount="
                                 + target.getChildCount()
                                 + " parentMatches=true tree=" + describeViewTree(target, 0));
@@ -2293,14 +2854,14 @@ public class LayoutInflater {
             pdpRoot.requestLayout();
             target.requestLayout();
             target.invalidate();
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_PDP_DIRECT_ATTACH already=false childCount="
                             + target.getChildCount()
                             + " parentMatches=" + (pdpRoot.getParent() == target)
                             + " tree=" + describeViewTree(target, 0));
         } catch (Throwable t) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "MCD_REAL_XML_PDP_DIRECT_ATTACH_ERROR err="
                                 + throwableName(t) + ":" + safeMcdMarkerToken(t.getMessage()));
             } catch (Throwable ignored) {
@@ -3588,7 +4149,7 @@ public class LayoutInflater {
                         ? root.getChildCount()
                         : -1;
                 try {
-                    com.westlake.engine.WestlakeLauncher.marker(
+                    System.out.println(
                             "LAYOUT_INFLATER_AXML_PARSER_OK resource=0x"
                                     + Integer.toHexString(resource)
                                     + " events=" + parser.getEventCount()
@@ -3618,7 +4179,7 @@ public class LayoutInflater {
                 }
             } catch (Throwable e) {
                 try {
-                    com.westlake.engine.WestlakeLauncher.marker(
+                    System.out.println(
                             "LAYOUT_INFLATER_AXML_PARSE_ERROR resource=0x"
                                     + Integer.toHexString(resource)
                                     + " err=" + e.getClass().getName()
@@ -3687,7 +4248,7 @@ public class LayoutInflater {
 	            diag("[LayoutInflater] DATA BINDING TAG (repair): " + tag
 	                    + " on " + classNameOf(view));
 	            try {
-	                com.westlake.engine.WestlakeLauncher.marker(
+	                System.out.println(
 	                        "DATA_BINDING_TAG_REPAIR resource=0x"
 	                                + Integer.toHexString(resource)
 	                                + " tag=" + tag
@@ -3736,7 +4297,7 @@ public class LayoutInflater {
         try {
             String expected = deriveDataBindingTag(layoutId);
             Object tag = included != null ? included.getTag() : null;
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_PDP_INCLUDE_BINDING layout=0x"
                             + Integer.toHexString(layoutId)
                             + " includeId=0x" + Integer.toHexString(includeId)
@@ -4040,14 +4601,14 @@ public class LayoutInflater {
             }
         } catch (Throwable e) {
             try {
-                com.westlake.engine.WestlakeLauncher.marker(
+                System.out.println(
                         "LAYOUT_INFLATER_XML_INFLATE_ERROR err="
                                 + e.getClass().getName() + ":" + e.getMessage());
                 StackTraceElement[] frames = e.getStackTrace();
                 int max = frames != null && frames.length < 8 ? frames.length : 8;
                 for (int i = 0; i < max; i++) {
                     StackTraceElement frame = frames[i];
-                    com.westlake.engine.WestlakeLauncher.marker(
+                    System.out.println(
                             "LAYOUT_INFLATER_XML_FRAME " + i + " "
                                     + frame.getClassName() + "." + frame.getMethodName()
                                     + ":" + frame.getLineNumber());
@@ -4157,7 +4718,7 @@ public class LayoutInflater {
         }
         sInflateTagMarkerCount++;
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "LAYOUT_INFLATER_TAG " + sInflateTagMarkerCount
                             + " " + phase + " depth=" + depth + " tag=" + tagName);
         } catch (Throwable ignored) {
@@ -4321,7 +4882,7 @@ public class LayoutInflater {
     private void markIncludeInflated(int layoutId, int includeId, View included, ViewGroup parent) {
         try {
             Object tag = included != null ? included.getTag() : null;
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "LAYOUT_INCLUDE_INFLATED layout=0x" + Integer.toHexString(layoutId)
                             + " includeId=0x" + Integer.toHexString(includeId)
                             + " view=" + simpleClassNameOf(included)
@@ -4974,7 +5535,7 @@ public class LayoutInflater {
             diag("[LayoutInflater] " + source + ": non-binary XML for 0x"
                     + Integer.toHexString(resource) + " (" + data.length
                     + " bytes), continuing");
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "LAYOUT_INFLATER_AXML_NON_BINARY resource=0x"
                             + Integer.toHexString(resource)
                             + " source=" + safeMcdMarkerToken(source)
@@ -5029,7 +5590,7 @@ public class LayoutInflater {
             return;
         }
         try {
-            com.westlake.engine.WestlakeLauncher.marker(
+            System.out.println(
                     "MCD_REAL_XML_INFLATED layout=" + safeMcdMarkerToken(layoutName)
                             + " resource=0x" + Integer.toHexString(resource)
                             + " root=" + simpleClassNameOf(view));
