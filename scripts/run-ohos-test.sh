@@ -115,7 +115,18 @@ BCP_FILES=(
 #                          to ship.
 #   - core-android-x86.jar : richer core library than core-kitkat.jar
 #                           (includes java.util.concurrent.* etc. needed for
-#                           android.content.Context.<clinit>). Already dex.035.
+#                           android.content.Context.<clinit>).
+#                           CR-Y+1 (2026-05-15): the deployed copy is now an
+#                           IN-PLACE-PATCHED variant — Locale.smali augmented
+#                           with forLanguageTag(String) + toLanguageTag() (and
+#                           6 private RFC-5646 helper methods) via baksmali +
+#                           smali round-trip. All 52 pre-existing fields and
+#                           methods are preserved byte-compatible from the
+#                           kitkat libcore baseline. Source of truth lives at
+#                           dalvik-port/locale-patch/ (Locale.java +
+#                           rebuild.sh). The unpatched original remains at
+#                           dalvik-port/core-android-x86.jar; ohos-deploy/
+#                           ships the patched variant.
 #   - direct-print-stream.jar : MVP-0 stdout bypass (unchanged).
 BCP_FILES_OHOS=(
     "aosp-shim-ohos.dex"
@@ -487,6 +498,9 @@ cmd_trivial_activity() {
     ok "dex pushed; BCP intact"
 
     log "[4/5] invoke dalvikvm + OhosMvpLauncher"
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -604,6 +618,9 @@ cmd_red_square() {
     ok "dex pushed; BCP intact"
 
     log "[4/5] invoke dalvikvm + OhosMvpLauncher"
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -728,6 +745,9 @@ cmd_red_square_drm() {
     ok "binaries pushed"
 
     log "[A.4/6] invoke dalvikvm + OhosMvpLauncher (dumps BGRA to /data/local/tmp/red_bgra.bin)"
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -1051,6 +1071,9 @@ cmd_m6_java_client() {
     #  - sleep 1, capture mid-flight DRM state in parallel via subshell
     #  - wait for daemon to exit
     #  - dump both logs
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -1467,6 +1490,9 @@ cmd_hello_dlopen_real() {
     # that reference shim-provided android.app.* superclasses.
     # (Verified empirically 2026-05-14: dropping aosp-shim from the
     # BCP makes BCP-load dexopt crash at Optimize.cpp:365.)
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="${bcp}:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="${bcp}:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -1680,6 +1706,9 @@ cmd_hello_drm_inprocess() {
     log "[G/H] invoke dalvikvm-arm32-dyn (in-process DRM scan-out, hold=${hold_secs}s)"
     # Same BCP shape as hello-dlopen-real (E9a) — core-android-x86.jar
     # for the real Runtime/System (pure-Java System.loadLibrary path).
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="${bcp}:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="${bcp}:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
@@ -2110,6 +2139,9 @@ cmd_inproc_app() {
     log "[F/H] (note) composer_host kill happens INSIDE libdrm_inproc_bridge.so"
 
     log "[G/H] invoke dalvikvm-arm32-dyn (in-process app, hold=${hold_secs}s)"
+    # CR-Y+1 (2026-05-15): core-android-x86.jar is the IN-PLACE-PATCHED
+    # variant from ohos-deploy/ — Locale.forLanguageTag + Locale.toLanguageTag
+    # are part of THIS jar (no sibling-jar prepend needed).
     local bcp="$BOARD_DIR/bcp/core-android-x86.jar"
     bcp="$bcp:$BOARD_DIR/bcp/direct-print-stream.jar"
     bcp="$bcp:$BOARD_DIR/bcp/aosp-shim-ohos.dex"
