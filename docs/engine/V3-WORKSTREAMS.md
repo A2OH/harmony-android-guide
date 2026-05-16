@@ -121,15 +121,19 @@ hdc shell "aa start com.example.helloworld" && hdc shell "sleep 3 && hilog | gre
 
 Replace Westlake's V2-OHOS `OhosMvpLauncher` (and surrounding launch infrastructure) with the HBC `aa start <bundle>` → AMS → AbilitySchedulerAdapter → ActivityThread path. After W3, Westlake's OHOS-target launchers are entirely replaced by HBC's launch model. No more `OhosMvpLauncher`. No more bespoke driver.
 
+### Status (2026-05-16, agent 50)
+
+**PARTIAL — pending W2 board deploy.** The launcher replacement (script + docs + deprecation of V2 subcommands) is landed. Final launch-against-HelloWorld smoke is blocked on W2 (no `v3-hbc/` tree on the DAYU200 board yet, so `aa-launch.sh precheck` correctly reports "V3 artifacts not deployed"). When W2 lands, run `scripts/v3/aa-launch.sh launch-helloworld` to close the last acceptance gate.
+
 ### Acceptance criteria
 
-- [ ] `OhosMvpLauncher` source files moved to `archive/v2-ohos-substrate/launchers/` with a top-level `README.md` pointing to V3-ARCHITECTURE §4
-- [ ] All call sites that depended on `OhosMvpLauncher` either removed (OHOS path) or marked Android-phone-only (V2 path)
-- [ ] HBC's launch model documented in `docs/engine/V3-LAUNCH-MODEL.md` — short doc covering `aa start <bundle>` → AppMgrService → appspawn-x socket → fork → child runs ActivityThread.main()
-- [ ] Westlake's launcher driver wrapper (if any) reduced to a thin shell that just calls `hdc shell aa start ...`
-- [ ] HelloWorld.apk launches via this path on DAYU200, reproducing W2 result
+- [x] `OhosMvpLauncher` source files moved to `archive/v2-ohos-substrate/launchers/` with a top-level `README.md` pointing to V3-ARCHITECTURE §4 — _DONE by W13 (commit `62526c87`); actual location is `archive/v2-ohos-substrate/ohos-tests-gradle/launcher/` since the whole gradle root archived together_
+- [x] All call sites that depended on `OhosMvpLauncher` either removed (OHOS path) or marked Android-phone-only (V2 path) — _DONE; `scripts/run-ohos-test.sh` deprecates 10 V2 subcommands (hello, trivial-activity, red-square, red-square-drm, m6-drm-daemon, m6-java-client, xcomponent-test, hello-dlopen-real, hello-drm-inprocess, inproc-app) with hard-error exit 2 + redirect to `scripts/v3/aa-launch.sh`. Self-audit grep returns OK._
+- [x] HBC's launch model documented in `docs/engine/V3-LAUNCH-MODEL.md` — _DONE; full dataflow diagram + V2→V3 replacement table + acceptance status_
+- [x] Westlake's launcher driver wrapper (if any) reduced to a thin shell that just calls `hdc shell aa start ...` — _DONE; `scripts/v3/aa-launch.sh` (~250 LOC, ~60% comments) with `precheck`, `launch`, `launch-helloworld`, `stop` subcommands_
+- [ ] HelloWorld.apk launches via this path on DAYU200, reproducing W2 result — _PENDING W2 (board has no v3-hbc/ tree, no appspawn-x; precheck FAIL is expected day-1 state)_
 - [ ] Mock APK from W5 launches via this path (forward-link; W3 acceptance can be partial pending W5)
-- [ ] Macro-shim contract self-audit clean: no Unsafe / setAccessible / per-app branches in any new code
+- [x] Macro-shim contract self-audit clean: no Unsafe / setAccessible / per-app branches in any new code — _PASS; aa-launch.sh is shell (no Java), zero per-app branches (positional `<bundle> <ability>` args carry the only per-app data)_
 
 ### Dependencies
 

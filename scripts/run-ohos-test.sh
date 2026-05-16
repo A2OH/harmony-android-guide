@@ -162,6 +162,67 @@ warn() { echo "${YELLOW}[$(date +%H:%M:%S)] [ohos][WARN]${RESET} $*" >&2; }
 err()  { echo "${RED}[$(date +%H:%M:%S)] [ohos][ERR]${RESET} $*" >&2; }
 ok()   { echo "${GREEN}[$(date +%H:%M:%S)] [ohos][OK]${RESET} $*"; }
 
+# ---------- V3 migration: deprecated dalvik-kitkat subcommands --------------
+# W3 (V3-WORKSTREAMS §W3, agent 50, 2026-05-16) archived OhosMvpLauncher
+# and the dalvik-kitkat-era ohos-tests-gradle test harnesses under
+# archive/v2-ohos-substrate/. The subcommands listed below built APKs /
+# dex from those gradle modules, pushed them, and ran them under
+# dalvikvm-arm32-dyn with OhosMvpLauncher as the entrypoint. Since the
+# sources are archived and the V3 path uses HBC's appspawn-x + `aa start`
+# instead, these subcommands HARD-ERROR (exit 2) with a redirect.
+#
+# Re-enable for forensic / V2-archive regression by setting
+# RUN_OHOS_ALLOW_V2_ARCHIVE=1 in the environment. The gradle modules will
+# need to be `git mv`-restored from archive/v2-ohos-substrate/
+# ohos-tests-gradle/ first; the build will otherwise fail.
+cmd_deprecated_v2() {
+    local sub="$1"; shift || true
+    err "${BOLD}'$sub' is a V2 (dalvik-kitkat) OHOS-substrate subcommand and was DEPRECATED 2026-05-16 by W3.${RESET}"
+    err "  V2 OHOS targets archived under archive/v2-ohos-substrate/."
+    err "  V3 (HBC) launch path replaces this — see:"
+    err "    scripts/v3/aa-launch.sh         (thin wrapper around hdc aa start)"
+    err "    docs/engine/V3-WORKSTREAMS.md   (§W3 archive plan)"
+    err "    docs/engine/V3-LAUNCH-MODEL.md  (aa start -> AMS -> appspawn-x)"
+    case "$sub" in
+        hello|trivial-activity)
+            err "  V3 analog: scripts/v3/aa-launch.sh launch-helloworld  (HBC HelloWorld smoke)"
+            err "             scripts/v3/aa-launch.sh launch <bundle> <ability>"
+            ;;
+        red-square|red-square-drm|m6-drm-daemon|m6-java-client|hello-drm-inprocess)
+            err "  V3 analog: HBC libhwui + RSSurfaceNode render path"
+            err "             (no script analog — visible-pixel proof is part of W2 deploy)"
+            ;;
+        xcomponent-test|hello-dlopen-real)
+            err "  V3 analog: HBC adapter dlopen path; no longer exercised separately"
+            ;;
+        inproc-app)
+            err "  V3 analog: scripts/v3/aa-launch.sh launch <bundle> <ability>"
+            err "             (V3 NEVER runs in-process; each app is its own appspawn-x child)"
+            ;;
+    esac
+    if [ "${RUN_OHOS_ALLOW_V2_ARCHIVE:-0}" = "1" ]; then
+        err "  RUN_OHOS_ALLOW_V2_ARCHIVE=1 set — but archive restore is manual:"
+        err "    git mv archive/v2-ohos-substrate/ohos-tests-gradle ohos-tests-gradle"
+        err "    git mv archive/v2-ohos-substrate/dalvik-port/compat dalvik-port/compat"
+        err "  Then re-run. (W13: archive is preserved as 'git mv', not 'git rm'.)"
+    fi
+    return 2
+}
+
+# ---------- V3 entrypoint pass-through --------------------------------------
+# Forwards to scripts/v3/aa-launch.sh so users who memorized
+# `scripts/run-ohos-test.sh ...` get a single redirect rather than
+# having to re-learn the location.
+cmd_v3_launch() {
+    local aa_sh="$REPO_ROOT/scripts/v3/aa-launch.sh"
+    if [ ! -x "$aa_sh" ]; then
+        err "V3 launch wrapper missing: $aa_sh (W3 deliverable)"
+        return 1
+    fi
+    log "${BOLD}== forwarding to V3 launcher: $aa_sh launch-helloworld ==${RESET}"
+    "$aa_sh" launch-helloworld "$@"
+}
+
 # ---------- hdc helpers ------------------------------------------------------
 # We always pin the serial via `-t <serial>` to defeat multi-board ambiguity.
 # hdc.exe runs on Windows and exits with status 0 even when the command
@@ -2306,50 +2367,31 @@ usage() {
     cat <<EOF
 Usage: $0 <subcommand>
 
-Subcommands:
+Subcommands (V3 path — current as of 2026-05-16):
   status              hdc list targets + board health check
   push-bcp            push boot-aosp-shim.{art,oat,vdex} + aosp-shim.dex
-                      to $BOARD_DIR/bcp/
-  hello               compile :hello, dex via d8, push, run, capture (#616)
-  trivial-activity    build :trivial-activity APK, push, run, capture (#619)
-  red-square          build :red-square APK, push, run, paint red on fb0 (PF-ohos-mvp-003)
-  red-square-drm      build :red-square, run Java side, then drm_present pipe
-                      → panel scans red via DRM/KMS (PF-ohos-mvp-003 MVP-2)
-  m6-drm-daemon       run long-lived DRM/KMS daemon: self-test (5s) + end-to-end
-                      AF_UNIX/memfd round-trip (120 frames RED/BLUE @ vsync;
-                      composer_host coexists) (PF-ohos-m6-001)
-  m6-java-client      run Java-side M6DrmClient against the daemon: 120 BGRA
-                      frames RED/BLUE submitted from a dalvikvm Activity via
-                      memfd + SCM_RIGHTS (PF-ohos-m6-002 / M6-OHOS-Step2)
-  xcomponent-test     CR60 follow-up: in-process OHOS NDK API call ladder
-                      (Tier 1: OH_NativeBuffer_Alloc(NULL) returns w/o crash,
-                       Tier 2: real alloc returns non-NULL handle,
-                       Tier 3: map → BGRA8888 fill RED → unmap). Forces
-                       --arch arm32 (dynamic PIE).
-  hello-dlopen-real   CR60-followup E9a: pure-Java System.loadLibrary path
-                      via core-android-x86.jar (no \$DVM_PRELOAD_LIB env var
-                      workaround). Loads libxcomponent_bridge.so + invokes
-                      its JNI methods to prove the load was real.
-  hello-drm-inprocess CR60-followup E9b (Path Y): in-process DRM/KMS scan-out
-                      from dalvikvm-arm32-dynamic. Kills composer_host
-                      around the test (auto-respawns afterwards), drives
-                      DSI-1 panel red via CREATE_DUMB+ADDFB2+SETCRTC.
-                      Visible-pixel gate — phone-camera evidence required.
-  inproc-app          CR60-followup E12 (2026-05-15): real Android Activity
-                      onCreate → View.onDraw → SoftwareCanvas → BGRA →
-                      DrmInprocessPresenter. Default target is
-                      :hello-color-apk (BLUE Activity, distinguishable
-                      from E9b's hardcoded RED). PASS criterion: marker
-                      'present rc=0' AND 'fill=argb'. Phone-camera evidence
-                      of BLUE panel is the visible-pixel gate.
-                      E13 extension (2026-05-15): pass `--apk noice` to
-                      retarget at /tmp/cr40-noice/noice.apk. The script
-                      d8-redexes its classes.dex to min-api 13, stages on
-                      BCP, and runs the apk-mode launcher path which
-                      drives WestlakeActivityThread.launchActivity (full
-                      Application + Activity create + onCreate sequence).
-                      PASS criterion: stage C marker (Activity.onCreate
-                      returned) plus 'present rc=0'.
+                      to $BOARD_DIR/bcp/   (V2 legacy; still useful for
+                      forensic V2-archive runs)
+  v3-launch           forwards to scripts/v3/aa-launch.sh launch-helloworld
+                      (the V3 (HBC) launch path). Alias: launch-helloworld.
+  launch-helloworld   alias for 'v3-launch'.
+
+DEPRECATED (V2 dalvik-kitkat OHOS substrate — archived 2026-05-16 by W3):
+  hello, trivial-activity, red-square, red-square-drm, m6-drm-daemon,
+  m6-java-client, xcomponent-test, hello-dlopen-real, hello-drm-inprocess,
+  inproc-app
+                      All of the above HARD-ERROR (exit 2) with a redirect
+                      to scripts/v3/aa-launch.sh and docs/engine/
+                      V3-LAUNCH-MODEL.md.
+                      Rationale: the ohos-tests-gradle modules they
+                      depended on (hello/, trivial-activity/, red-square/,
+                      m6-test/, inproc-app-launcher/, xcomponent-test/,
+                      hello-color-apk/, launcher/) and OhosMvpLauncher
+                      moved to archive/v2-ohos-substrate/ohos-tests-gradle/.
+                      See docs/engine/V3-WORKSTREAMS.md §W3 + §W13.
+                      Set RUN_OHOS_ALLOW_V2_ARCHIVE=1 for the deprecation
+                      message to also show the manual archive-restore
+                      recipe (not automatic; W13 preserved git history).
 
 Flags (apply to any subcommand; place before the subcommand name):
   --arch aarch64|arm32|arm32-static|auto
@@ -2400,23 +2442,28 @@ main() {
     # front. We always call resolve_arch so subcommands can use
     # $DALVIKVM_BOARD_PATH / $DALVIKVM_HOST_PATH; cmd_status uses neither so
     # we skip it explicitly. cmd_push_bcp likewise (BCP is arch-neutral).
+    # W3 (2026-05-16): V2 dalvik-kitkat subcommands also skip resolve_arch
+    # because they hard-error immediately. v3-launch likewise.
     case "$sub" in
         status|push-bcp|-h|--help|help) ;;
+        v3-launch|launch-helloworld) ;;
+        hello|trivial-activity|red-square|red-square-drm|m6-drm-daemon|m6-java-client) ;;
+        xcomponent-test|hello-dlopen-real|hello-drm-inprocess|inproc-app) ;;
         *) resolve_arch || exit 1 ;;
     esac
     case "$sub" in
         status)             cmd_status "$@" ;;
         push-bcp)           cmd_push_bcp "$@" ;;
-        hello)              cmd_hello "$@" ;;
-        trivial-activity)   cmd_trivial_activity "$@" ;;
-        red-square)         cmd_red_square "$@" ;;
-        red-square-drm)     cmd_red_square_drm "$@" ;;
-        m6-drm-daemon)      cmd_m6_drm_daemon "$@" ;;
-        m6-java-client)     cmd_m6_java_client "$@" ;;
-        xcomponent-test)    cmd_xcomponent_test "$@" ;;
-        hello-dlopen-real)  cmd_hello_dlopen_real "$@" ;;
-        hello-drm-inprocess) cmd_hello_drm_inprocess "$@" ;;
-        inproc-app)         cmd_inproc_app "$@" ;;
+        # V3 path (W3, 2026-05-16) ---------------------------------
+        v3-launch|launch-helloworld)
+                            cmd_v3_launch "$@" ;;
+        # V2 dalvik-kitkat path — DEPRECATED W3, 2026-05-16 --------
+        hello|trivial-activity|red-square|red-square-drm)
+                            cmd_deprecated_v2 "$sub" "$@" ;;
+        m6-drm-daemon|m6-java-client|xcomponent-test)
+                            cmd_deprecated_v2 "$sub" "$@" ;;
+        hello-dlopen-real|hello-drm-inprocess|inproc-app)
+                            cmd_deprecated_v2 "$sub" "$@" ;;
         -h|--help|help)     usage; exit 0 ;;
         *)
             err "unknown subcommand: $sub"

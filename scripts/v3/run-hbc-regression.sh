@@ -348,14 +348,43 @@ w2_slot() {
 }
 
 w3_slot() {
-    # W3-STUB — appspawn-x integration replacing OhosMvpLauncher.
-    # Owner: V3-WORKSTREAMS.md §W3. Recommended fill-in:
-    #   - Deploy v3-hbc/ tree via existing run-ohos-test.sh push pattern.
-    #   - hdc shell launches appspawn-x with a known mock-app spec; assert
-    #     fork + dlopen of libart_runtime_stubs.so succeeds.
-    # See: westlake-deploy-ohos/v3-hbc/adapter-src/; CR61.1 amendment doc.
-    echo "W3 owner not yet implemented (appspawn-x integration)"
-    return 99
+    # W3 — appspawn-x integration replacing OhosMvpLauncher.
+    # Filled in: 2026-05-16 (agent 50, V3-WORKSTREAMS §W3, issue #628).
+    #
+    # This slot invokes `scripts/v3/aa-launch.sh precheck` (read-only) to
+    # exercise the V3 launch path's pre-flight without actually starting
+    # an Activity. The real `launch-helloworld` smoke runs out-of-band
+    # (it depends on W2 having pushed v3-hbc/ to the board, which the
+    # regression suite is forbidden from doing).
+    #
+    # Verdict mapping:
+    #   - aa-launch.sh missing or non-executable        -> FAIL  (regression)
+    #   - precheck exit 0 (board ready, V3 deployed)    -> PASS
+    #   - precheck exit 1 (V3 not yet deployed by W2)   -> PASS-with-warn (77)
+    #     (this is the expected day-1 state until W2 lands its deploy)
+    local aa_sh="$REPO_ROOT/scripts/v3/aa-launch.sh"
+    if [ ! -x "$aa_sh" ]; then
+        echo "scripts/v3/aa-launch.sh missing or not executable"
+        return 1
+    fi
+    if [ "$SKIP_BOARD" = "1" ]; then
+        echo "W3 aa-launch.sh present; precheck skipped (--no-board)"
+        return 0
+    fi
+    # Capture precheck output and grade.
+    local out rc=0
+    out="$("$aa_sh" precheck 2>&1)" || rc=$?
+    if [ "$rc" = "0" ]; then
+        echo "W3 aa-launch.sh precheck PASS (V3 deployed; appspawn-x running)"
+        return 0
+    fi
+    # Common pending-state: V3 not yet pushed to board by W2.
+    if echo "$out" | grep -qE "V3 artifacts not deployed|appspawn-x not running"; then
+        echo "W3 aa-launch.sh present; V3 deploy pending W2 (precheck FAIL — expected)"
+        return 77
+    fi
+    echo "W3 aa-launch.sh precheck FAIL: $(echo "$out" | tail -1)"
+    return 1
 }
 
 w5_slot() {
