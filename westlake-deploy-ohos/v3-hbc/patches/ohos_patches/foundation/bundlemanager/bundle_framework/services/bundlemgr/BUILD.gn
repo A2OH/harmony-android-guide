@@ -1,0 +1,743 @@
+# Copyright (c) 2021-2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../appexecfwk.gni")
+import("appexecfwk_bundlemgr.gni")
+
+config("bundlemgr_common_config") {
+  include_dirs = [
+    "include",
+    "include/aot",
+    "include/app_disable_forbidden",
+    "include/app_provision_info",
+    "include/app_service_fwk",
+    "include/exception",
+    "include/bundlemgr",
+    "include/bms_extension",
+    "include/bundle_backup",
+    "include/bundle_resource",
+    "include/clone",
+    "include/common",
+    "include/default_app",
+    "include/bundlemgr_ext",
+    "include/free_install",
+    "include/distributed_manager",
+    "include/driver",
+    "include/extend_resource",
+    "include/first_install_data_mgr",
+    "include/idle_condition_mgr",
+    "include/uninstall_data_mgr",
+    "include/overlay",
+    "include/quick_fix",
+    "include/sandbox_app",
+    "include/navigation",
+    "include/shared",
+    "include/quick_fix/state/include",
+    "include/utd",
+    "include/verify",
+    "include/plugin",
+    "include/on_demand_install",
+    "../../interfaces/inner_api/appexecfwk_base/include",
+    "../../interfaces/inner_api/bundlemgr_extension/include",
+  ]
+
+  defines = [
+    "APP_LOG_TAG = \"BMS\"",
+    "LOG_DOMAIN = 0xD001120",
+  ]
+}
+
+config("rdb_config") {
+  include_dirs = [ "include/rdb" ]
+}
+
+config("app_control_config") {
+  include_dirs = [ "include/app_control" ]
+}
+
+config("overlay_installation_config") {
+  include_dirs = [ "include/overlay" ]
+}
+
+config("user_auth_config") {
+  include_dirs = [ "include/user_auth" ]
+}
+
+bundlemgr_parser_common_config = [ ":bundlemgr_common_config" ]
+
+ohos_source_set("parser_common") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  sources = [
+    "src/base_extractor.cpp",
+    "src/zip_file.cpp",
+  ]
+
+  public_configs = bundlemgr_parser_common_config
+
+  deps = [
+    "${base_path}:appexecfwk_base",
+    "${common_path}:libappexecfwk_common",
+    "${extension_path}:bundlemgr_extension",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "zlib:shared_libz",
+  ]
+
+  public_external_deps = [
+    "json:nlohmann_json_static",
+    "zlib:libz",
+  ]
+
+  part_name = "bundle_framework"
+  subsystem_name = "bundlemanager"
+}
+
+ohos_source_set("rpcid_decode") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  include_dirs = [ "include/rpcid_decode" ]
+
+  sources = [ "src/rpcid_decode/syscap_tool.c" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
+
+  part_name = "bundle_framework"
+  subsystem_name = "bundlemanager"
+}
+
+ohos_source_set("bundle_parser") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  sources = [
+    "include/bundle_extractor.h",
+    "include/bundle_parser.h",
+    "include/bundle_profile.h",
+    "include/default_permission_profile.h",
+    "include/module_profile.h",
+    "src/bundle_extractor.cpp",
+    "src/bundle_parser.cpp",
+    "src/bundle_profile.cpp",
+    "src/default_permission_profile.cpp",
+    "src/module_profile.cpp",
+    "src/pre_bundle_profile.cpp",
+  ]
+
+  if (bundle_framework_quick_fix) {
+    sources += [
+      "include/quick_fix/patch_extractor.h",
+      "include/quick_fix/patch_parser.h",
+      "include/quick_fix/patch_profile.h",
+      "src/quick_fix/patch_extractor.cpp",
+      "src/quick_fix/patch_parser.cpp",
+      "src/quick_fix/patch_profile.cpp",
+    ]
+  }
+
+  public_configs = bundlemgr_parser_common_config
+
+  cflags = [ "-fstack-protector-strong" ]
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+  deps = [
+    ":parser_common",
+    ":rpcid_decode",
+    "${base_path}:appexecfwk_base",
+    "${common_path}:libappexecfwk_common",
+    "${extension_path}:bundlemgr_extension",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "libxml2:libxml2",
+  ]
+
+  public_external_deps = [
+    "json:nlohmann_json_static",
+    "zlib:libz",
+  ]
+
+  defines = []
+  if (use_pre_bundle_profile) {
+    defines += [ "USE_PRE_BUNDLE_PROFILE" ]
+  }
+
+  if (bundle_framework_overlay_install) {
+    defines += [ "BUNDLE_FRAMEWORK_OVERLAY_INSTALLATION" ]
+  }
+
+  if (is_emulator) {
+    defines += [ "X86_EMULATOR_MODE" ]
+  }
+  part_name = "bundle_framework"
+  subsystem_name = "bundlemanager"
+}
+
+group("bms_target") {
+  deps = [
+    ":bundle_tool_libs",
+    ":installs",
+    ":installs.cfg",
+    ":libbms",
+    ":libbms_exception_wrapper",
+  ]
+}
+
+ohos_shared_library("libbms_exception_wrapper") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  use_exceptions = true
+
+  sources = [ "src/exception/exception_wrapper.cpp" ]
+
+  defines = [
+    "APP_LOG_TAG = \"BMS\"",
+    "LOG_DOMAIN = 0xD001120",
+  ]
+
+  cflags = [
+    "-fvisibility=hidden",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-Os",
+    "-fstack-protector-strong",
+    "-Wno-non-c-typedef-for-linkage",
+  ]
+
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+    "-fstack-protector-strong",
+    "-Wno-non-c-typedef-for-linkage",
+  ]
+
+  ldflags = [ "-Wl,--gc-sections" ]
+
+  deps = [ "${common_path}:libappexecfwk_common" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
+
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}
+
+ohos_shared_library("libbms") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  visibility = [
+    "//base/*",
+    "//foundation/*",
+  ]
+
+  sources = bundle_mgr_source
+
+  sources += bundle_install_sources
+
+  defines = [
+    "APP_LOG_TAG = \"BMS\"",
+    "LOG_DOMAIN = 0xD001120",
+  ]
+  defines += [ "OH_ADAPTER_ANDROID" ]  # enable Android APK routing in libbms (gap 0.6)
+
+  if (is_emulator) {
+    defines += [ "X86_EMULATOR_MODE" ]
+  }
+
+  if (build_variant == "user") {
+    defines += [ "BUILD_VARIANT_USER" ]
+  }
+
+  configs = [ 
+    ":bundlemgr_common_config",
+    "${core_path}:bundlemgr_ipc_public_config",
+  ]
+  cflags = [
+    "-fvisibility=hidden",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-Wno-non-c-typedef-for-linkage",
+    "-Os",
+    "-fstack-protector-strong",
+  ]
+
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Wno-non-c-typedef-for-linkage",
+    "-Os",
+    "-fstack-protector-strong",
+  ]
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+  deps = [
+    ":bundle_parser",
+    ":parser_common",
+    "${base_path}:appexecfwk_base",
+    "${common_path}:libappexecfwk_common",
+    "${core_path}:appexecfwk_core",
+    "${extension_path}:bundlemgr_extension",
+  ]
+
+  version_script = "libbms.map"
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_connect_callback_stub",
+    "access_token:el5_filekey_manager_sdk",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
+    "access_token:libtokenid_sdk",
+    "appspawn:appspawn_client",
+    "appverify:libhapverify",
+    "battery_manager:batterysrv_client",
+    "common_event_service:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "libxml2:libxml2",
+    "memmgr:memmgrclient",
+    "os_account:libaccountkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "syscap_codec:syscap_interface_shared",
+    "thermal_manager:thermalsrv_client",
+    "window_manager:libmodal_system_ui_extension_client",
+    "zlib:shared_libz",
+  ]
+
+  if (bundle_framework_power_mgr_enable) {
+    external_deps += aot_external_deps
+  }
+
+  if (storage_service_enable) {
+    external_deps += [ "storage_service:storage_manager_sa_proxy" ]
+    defines += [ "STORAGE_SERVICE_ENABLE" ]
+  }
+
+  if (window_enable) {
+    external_deps += [ "window_manager:libwsutils" ]
+    defines += [ "WINDOW_ENABLE" ]
+  }
+
+  if (distributed_bundle_framework) {
+    external_deps += [ "distributed_bundle_framework:dbms_fwk" ]
+    defines += [ "DISTRIBUTED_BUNDLE_FRAMEWORK" ]
+  }
+
+  if (bundle_framework_sandbox_app) {
+    sources += sandbox_app
+    defines += [ "BUNDLE_FRAMEWORK_SANDBOX_APP" ]
+
+    if (dlp_permission_enable) {
+      external_deps += [ "dlp_permission_service:libdlp_permission_sdk" ]
+      defines += [ "DLP_PERMISSION_ENABLE" ]
+    }
+  }
+
+  if (ability_runtime_enable) {
+    external_deps += [
+      "ability_runtime:ability_manager",
+      "ability_runtime:app_manager",
+    ]
+    defines += [ "ABILITY_RUNTIME_ENABLE" ]
+  }
+
+  if (account_enable) {
+    external_deps += [ "os_account:os_account_innerkits" ]
+    defines += [ "ACCOUNT_ENABLE" ]
+  }
+
+  if (bundle_framework_free_install) {
+    sources += aging
+    sources += free_install
+    sources += distributed_manager
+    external_deps += [
+      "ability_runtime:ability_manager",
+      "ability_runtime:app_manager",
+      "battery_manager:batterysrv_client",
+      "display_manager:displaymgr",
+      "power_manager:powermgr_client",
+    ]
+    defines += [ "BUNDLE_FRAMEWORK_FREE_INSTALL" ]
+  } else {
+    external_deps += [
+      "ability_runtime:ability_manager",
+      "ability_runtime:app_manager",
+    ]
+  }
+
+  if (device_usage_statistics_enabled) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLED" ]
+  }
+
+  if (bundle_framework_power_mgr_enable) {
+    defines += [ "BUNDLE_FRAMEWORK_POWER_MGR_ENABLE" ]
+  }
+
+  if (bundle_framework_default_app) {
+    sources += default_app
+    defines += [ "BUNDLE_FRAMEWORK_DEFAULT_APP" ]
+  }
+
+  if (bundle_framework_quick_fix) {
+    sources += quick_fix
+    defines += [ "BUNDLE_FRAMEWORK_QUICK_FIX" ]
+  }
+
+  if (configpolicy_enable) {
+    external_deps += [ "config_policy:configpolicy_util" ]
+    defines += [ "CONFIG_POLOCY_ENABLE" ]
+  }
+
+  if (global_resmgr_enable) {
+    defines += [ "GLOBAL_RESMGR_ENABLE" ]
+    external_deps += [ "resource_management:global_resmgr" ]
+  }
+
+  if (global_i18n_enable) {
+    defines += [ "GLOBAL_I18_ENABLE" ]
+    external_deps += [ "i18n:intl_util" ]
+  }
+
+  if (hicollie_enable) {
+    external_deps += [ "hicollie:libhicollie" ]
+    defines += [ "HICOLLIE_ENABLE" ]
+  }
+
+  if (hisysevent_enable) {
+    sources += [ "src/inner_event_report.cpp" ]
+    external_deps += [ "hisysevent:libhisysevent" ]
+    defines += [ "HISYSEVENT_ENABLE" ]
+  }
+
+  if (current_cpu == "arm64") {
+    defines += [ "USE_EXTENSION_DATA" ]
+  }
+
+  if (use_pre_bundle_profile) {
+    defines += [ "USE_PRE_BUNDLE_PROFILE" ]
+  }
+
+  if (bundle_framework_overlay_install) {
+    configs += [ ":overlay_installation_config" ]
+    sources += overlay_installation
+    defines += [ "BUNDLE_FRAMEWORK_OVERLAY_INSTALLATION" ]
+  }
+
+  configs += [ ":rdb_config" ]
+  external_deps += [ "relational_store:native_rdb" ]
+  sources += [
+    "src/bundle_data_storage_rdb.cpp",
+    "src/preinstall_data_storage_rdb.cpp",
+    "src/rdb/bms_rdb_open_callback.cpp",
+    "src/rdb/rdb_data_manager.cpp",
+  ]
+
+  if (bundle_framework_app_control) {
+    configs += [ ":app_control_config" ]
+    defines += [ "BUNDLE_FRAMEWORK_APP_CONTROL" ]
+    sources += app_control
+  }
+
+  if (bundle_framework_bundle_resource) {
+    defines += [ "BUNDLE_FRAMEWORK_BUNDLE_RESOURCE" ]
+    external_deps += [ "ability_base:configuration" ]
+    if (bundle_framework_graphics) {
+      defines += [ "BUNDLE_FRAMEWORK_GRAPHICS" ]
+      external_deps += [
+        "ace_engine:drawable_descriptor",
+        "image_framework:image_native",
+      ]
+    }
+
+    sources += bundle_resource
+  }
+
+  if (build_variant == "root") {
+    defines += [ "QUOTA_PARAM_SET_ENABLE" ]
+  }
+
+  if (verify_abc_enabled) {
+    defines += [ "VERIFY_ABC_ENABLED" ]
+    external_deps += [ "runtime_core:libarkverifier" ]
+  }
+
+  if (check_eldir_enabled) {
+    defines += [ "CHECK_ELDIR_ENABLED" ]
+  }
+
+  if (udmf_enabled) {
+    defines += [ "BUNDLE_FRAMEWORK_UDMF_ENABLED" ]
+    external_deps += [ "udmf:utd_client" ]
+  }
+
+  if (bms_device_info_manager_part_enabled) {
+    external_deps += [
+      "device_info_manager:distributed_device_profile_common",
+      "device_info_manager:distributed_device_profile_sdk",
+    ]
+    defines += [ "BMS_DEVICE_INFO_MANAGER_ENABLE" ]
+  }
+
+  if (app_domain_verify_enabled) {
+    external_deps += [
+      "app_domain_verify:app_domain_verify_common",
+      "app_domain_verify:app_domain_verify_mgr_client",
+    ]
+    defines += [ "APP_DOMAIN_VERIFY_ENABLED" ]
+  }
+
+  if (code_signature_enable) {
+    sources += [ "src/aot/aot_sign_data_cache_mgr.cpp" ]
+    defines += [ "CODE_SIGNATURE_ENABLE" ]
+  }
+
+  if (webview_enable) {
+    external_deps += [ "webview:app_fwk_update_service" ]
+    defines += [ "WEBVIEW_ENABLE" ]
+  }
+
+  if (user_auth_framework_impl_enabled) {
+    external_deps += [ "user_auth_framework:userauth_client" ]
+    defines += [ "BMS_USER_AUTH_FRAMEWORK_ENABLED" ]
+    configs += [ ":user_auth_config" ]
+    sources += user_auth
+  }
+
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}
+
+ohos_shared_library("installs") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+
+  sources = [
+    "src/bundle_extractor.cpp",
+    "src/system_ability_helper.cpp",
+  ]
+
+  use_exceptions = true
+  visibility = [
+    "//base/*",
+    "//foundation/*",
+  ]
+
+  sources += install_daemon_sources
+
+  defines = [ "APP_LOG_TAG = \"BMS\"" ]
+
+  configs = [ ":bundlemgr_common_config" ]
+
+  cflags = [
+    "-Os",
+    "-fstack-protector-strong",
+  ]
+
+  cflags_cc = cflags
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+  deps = [
+    ":parser_common",
+    "${common_path}:libappexecfwk_common",
+  ]
+
+  external_deps = [
+    "access_token:el5_filekey_manager_sdk",
+    "appspawn:hnpapi",
+    "appverify:libhapverify",
+    "bounds_checking_function:libsec_shared",
+    "eventhandler:libeventhandler",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "libxml2:libxml2",
+    "memmgr:memmgrclient",
+    "openssl:libcrypto_shared",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "selinux:libselinux",
+    "selinux_adapter:librestorecon",
+    "storage_service:storage_manager_acl",
+  ]
+
+  if (code_signature_enable) {
+    external_deps += [
+      "code_signature:libcode_sign_utils",
+      "ets_runtime:libcompiler_service",
+    ]
+    defines += [ "CODE_SIGNATURE_ENABLE" ]
+  }
+
+  if (code_encryption_enable) {
+    defines += [ "CODE_ENCRYPTION_ENABLE" ]
+  }
+
+  if (configpolicy_enable) {
+    external_deps += [ "config_policy:configpolicy_util" ]
+    defines += [ "CONFIG_POLOCY_ENABLE" ]
+  }
+
+  if (build_selinux) {
+    external_deps += [ "selinux_adapter:libhap_restorecon" ]
+    cflags += [ "-DWITH_SELINUX" ]
+  }
+
+  if (dfx_sigdump_handler_enabled) {
+    external_deps += [
+      "faultloggerd:dfx_sigdump_handler",
+      "faultloggerd:libbacktrace_local",
+      "faultloggerd:libdfx_procinfo",
+      "faultloggerd:libfaultloggerd",
+    ]
+    defines += [ "DFX_SIGDUMP_HANDLER_ENABLE" ]
+  }
+
+  if (bundle_framework_bss_enable) {
+    defines += [ "SECURITY_PRIVACY_SERVER_ENABLE" ]
+  }
+
+  install_enable = true
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}
+
+ohos_prebuilt_etc("installs.cfg") {
+  source = "installs.cfg"
+  relative_install_dir = "init"
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}
+
+config("bundle_tool_libs_config") {
+  include_dirs = [
+    "include",
+    "include/shared",
+    "include/sandbox_app",
+    "include/rdb",
+    "include/installd",
+    "include/quick_fix",
+    "include/uninstall_data_mgr",
+    "include/navigation",
+  ]
+}
+
+ohos_shared_library("bundle_tool_libs") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+  }
+  public_configs = [
+    ":bundle_tool_libs_config",
+    "${common_path}:appexecfwk_common_config",
+  ]
+
+  sources = [ "${kits_path}/js/bundlemgr/bundle_death_recipient.cpp" ]
+
+  deps = [ "${core_path}:appexecfwk_core" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}

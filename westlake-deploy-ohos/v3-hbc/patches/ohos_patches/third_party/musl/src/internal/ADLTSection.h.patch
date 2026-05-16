@@ -1,0 +1,15 @@
+--- a/src/internal/ADLTSection.h
++++ b/src/internal/ADLTSection.h
+@@ -75,9 +75,9 @@
+
+ // DT_NEEDED string index with embedded PSOD index if available
+ typedef struct {
+-  Elf64_Off hasInternalPSOD : 1; // true if soname
+-  Elf64_Off PSODindex : 16;      // PSOD in the current ADLT image
+-  Elf64_Off sonameOffset : 47;   // string start in bound .adlt.strtab
++  unsigned long long hasInternalPSOD : 1; // true if soname
++  unsigned long long PSODindex : 16;      // PSOD in the current ADLT image
++  unsigned long long sonameOffset : 47;   // string start in bound .adlt.strtab
+ } adlt_dt_needed_index_t;
+
+ typedef enum {

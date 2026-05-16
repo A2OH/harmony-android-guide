@@ -1,0 +1,162 @@
+{
+    "common": {
+        "top-sandbox-switch": "ON",
+        "app-base": {
+            "sandbox-root": "/mnt/sandbox/<currentUserId>/appspawnx/<PackageName>",
+            "sandbox-ns-flags": ["net"],
+            "mount-paths": [
+                {
+                    "src-path": "/system",
+                    "sandbox-path": "/system",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/vendor",
+                    "sandbox-path": "/vendor",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/dev",
+                    "sandbox-path": "/dev",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/proc",
+                    "sandbox-path": "/proc",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/sys",
+                    "sandbox-path": "/sys",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/sys_prod",
+                    "sandbox-path": "/sys_prod",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/system/app",
+                    "sandbox-path": "/system/app",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/system/fonts",
+                    "sandbox-path": "/system/fonts",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/system/lib",
+                    "sandbox-path": "/system/lib",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/system/usr",
+                    "sandbox-path": "/system/usr",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/system/profile",
+                    "sandbox-path": "/system/profile",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                },
+                {
+                    "src-path": "/config",
+                    "sandbox-path": "/config",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false"
+                }
+            ],
+            "symbol-links": [
+                {
+                    "target-name": "/system/lib64",
+                    "link-name": "/lib64"
+                },
+                {
+                    "target-name": "/system/lib",
+                    "link-name": "/lib"
+                }
+            ]
+        },
+        "android-app-base": {
+            "comment": "Android-specific mount paths for APK, DEX cache, and app data. Aligned with OH style (check-action-status:false) — see doc/appspawn_x_design.html AL.2.",
+            "mount-paths": [
+                {
+                    "src-path": "/system/framework",
+                    "sandbox-path": "/system/framework",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false",
+                    "comment": "Android framework JARs (framework.jar, ext.jar, etc.)"
+                },
+                {
+                    "src-path": "/system/android",
+                    "sandbox-path": "/system/android",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false",
+                    "comment": "Adapter Android runtime (libart.so, boot.art, framework jars)"
+                },
+                {
+                    "src-path": "/data/app",
+                    "sandbox-path": "/data/app",
+                    "sandbox-flags": ["bind", "rec", "rdonly"],
+                    "check-action-status": "false",
+                    "comment": "User-installed Android APKs"
+                },
+                {
+                    "src-path": "/data/misc/appspawnx/dalvik-cache",
+                    "sandbox-path": "/data/dalvik-cache",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false",
+                    "comment": "DEX optimization cache (shared)"
+                },
+                {
+                    "src-path": "/data/data/<PackageName>",
+                    "sandbox-path": "/data/data/<PackageName>",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false",
+                    "comment": "App private data directory"
+                },
+                {
+                    "src-path": "/data/user/0/<PackageName>",
+                    "sandbox-path": "/data/user/0/<PackageName>",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false",
+                    "comment": "App user-specific data directory"
+                },
+                {
+                    "src-path": "/storage/emulated/0/Android/data/<PackageName>",
+                    "sandbox-path": "/storage/emulated/0/Android/data/<PackageName>",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false",
+                    "comment": "App external storage data"
+                },
+                {
+                    "src-path": "/data/local/tmp",
+                    "sandbox-path": "/data/local/tmp",
+                    "sandbox-flags": ["bind", "rec"],
+                    "check-action-status": "false",
+                    "comment": "Temporary files (debugging)"
+                }
+            ],
+            "symbol-links": [
+                {
+                    "target-name": "/data/data/<PackageName>",
+                    "link-name": "/data/user/0/<PackageName>",
+                    "comment": "Compatibility symlink for user 0"
+                }
+            ]
+        }
+    },
+    "individual": []
+}

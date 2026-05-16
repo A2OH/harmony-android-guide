@@ -1,0 +1,15 @@
+--- a/third_party/icu/icu4c/source/i18n/number_decimalquantity.cpp
++++ b/third_party/icu/icu4c/source/i18n/number_decimalquantity.cpp
+@@ -1089,9 +1089,9 @@
+     }
+     int32_t insertIndex = result.length();
+     while (_scale > 0) {
+-        std::div_t res = std::div(_scale, 10);
+-        result.insert(insertIndex, u'0' + res.rem);
+-        _scale = res.quot;
++        auto res_quot = _scale / 10; auto res_rem = _scale % 10;
++        result.insert(insertIndex, u'0' + res_rem);
++        _scale = res_quot;
+     }
+     return result;
+ }

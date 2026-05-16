@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Minimal Android fonts.xml for OH adapter.
+    Maps Android default font families to HarmonyOS_Sans.ttf available on
+    OH /system/fonts/.  Keeps SystemFonts.getSystemPreinstalledFontConfig
+    parsing happy and lets Typeface.<clinit> wire up real SkTypeface objects
+    via libhwui's MinikinFontSkia → libskia_canvaskit text rendering.
+-->
+<familyset version="23">
+    <family name="sans-serif">
+        <font weight="100" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="200" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="300" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="500" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="600" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="700" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="800" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="900" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="100" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+        <font weight="400" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+        <font weight="700" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    </family>
+
+    <alias name="sans-serif-thin"      to="sans-serif" weight="100" />
+    <alias name="sans-serif-light"     to="sans-serif" weight="300" />
+    <alias name="sans-serif-medium"    to="sans-serif" weight="500" />
+    <alias name="sans-serif-black"     to="sans-serif" weight="900" />
+    <alias name="arial"                to="sans-serif" />
+    <alias name="helvetica"            to="sans-serif" />
+    <alias name="tahoma"               to="sans-serif" />
+    <alias name="verdana"              to="sans-serif" />
+
+    <family name="sans-serif-condensed">
+        <font weight="400" style="normal">HarmonyOS_Sans_Condensed.ttf</font>
+        <font weight="700" style="normal">HarmonyOS_Sans_Condensed.ttf</font>
+        <font weight="400" style="italic">HarmonyOS_Sans_Condensed_Italic.ttf</font>
+    </family>
+    <alias name="sans-serif-condensed-light" to="sans-serif-condensed" weight="300" />
+
+    <family name="serif">
+        <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="700" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="400" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    </family>
+    <alias name="times"        to="serif" />
+    <alias name="times new roman" to="serif" />
+    <alias name="palatino"     to="serif" />
+    <alias name="georgia"      to="serif" />
+    <alias name="baskerville"  to="serif" />
+    <alias name="goudy"        to="serif" />
+    <alias name="fantasy"      to="serif" />
+    <alias name="ITC Stone Serif" to="serif" />
+
+    <family name="monospace">
+        <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="700" style="normal">HarmonyOS_Sans.ttf</font>
+    </family>
+    <alias name="sans-serif-monospace" to="monospace" />
+    <alias name="serif-monospace"      to="monospace" />
+    <alias name="courier"              to="monospace" />
+    <alias name="courier new"          to="monospace" />
+
+    <family name="casual">
+        <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+    </family>
+    <family name="cursive">
+        <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+        <font weight="400" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    </family>
+
+    <family lang="und-Zsye">
+        <font weight="400" style="normal">HMOSColorEmojiCompat.ttf</font>
+    </family>
+</familyset>

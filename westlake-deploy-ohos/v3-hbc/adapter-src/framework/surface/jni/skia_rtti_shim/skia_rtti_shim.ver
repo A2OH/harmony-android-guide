@@ -1,0 +1,23 @@
+# skia_rtti_shim.ver
+#
+# Linker version script for liboh_skia_rtti_shim.so.
+#
+# Export policy:
+#   - GLOBAL: only _ZTI* (typeinfo nodes) and _ZTS* (typeinfo name strings)
+#     These are the symbols libhwui actually needs resolved.
+#   - LOCAL: everything else. Critically, this hides _ZTV* (vtables),
+#     _ZN*D0Ev / _ZN*D1Ev / _ZN*D2Ev (destructors), and any compiler-
+#     synthesized helpers. Those mangled names collide 1:1 with the real
+#     Skia symbols exported by libskia_canvaskit.z.so, and if they were
+#     global here the dynamic linker could preempt real calls into the
+#     shim's empty bodies, causing crashes or silent wrong behavior.
+#
+# ld.lld uses shell-style globbing for version scripts.
+
+LIBOH_SKIA_RTTI_SHIM_1.0 {
+  global:
+    _ZTI*;
+    _ZTS*;
+  local:
+    *;
+};

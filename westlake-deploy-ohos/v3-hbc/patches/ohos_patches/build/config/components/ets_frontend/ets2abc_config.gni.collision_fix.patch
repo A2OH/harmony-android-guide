@@ -1,0 +1,24 @@
+--- a/build/config/components/ets_frontend/ets2abc_config.gni
++++ b/build/config/components/ets_frontend/ets2abc_config.gni
+@@ -91,9 +91,9 @@
+ ohos_ets_etsstdlib_path =
+     "$build_sdk_path/build-tools/ets2panda/lib/etsstdlib.abc"
+
+-ohos_ets_kits_deps = ""
+-ohos_ets_api_deps = ""
+-ohos_ets_arkts_deps = ""
++ohos_ets_kits_deps = "sdk:ohos_ets_kits"
++ohos_ets_api_deps = "sdk:ohos_ets_api"
++ohos_ets_arkts_deps = "sdk:ohos_ets_arkts"
+ ohos_ets_stdlib_deps = "runtime_core:ohos_ets_stdlib"
+ ohos_ets_es2panda_deps =
+     "//build/config/components/ets_frontend:ohos_ets_es2panda"
+@@ -103,7 +103,7 @@
+     "//build/config/components/ets_frontend:ohos_ets_libes2panda_public"
+ ohos_ets_build_system_deps = "ets_frontend:ohos_ets_build_system"
+ ohos_ets_dependency_analyzer_deps = "ets_frontend:ohos_ets_dependency_analyzer"
+-ohos_ets_ui_plugins_deps = ""
++ohos_ets_ui_plugins_deps = "ace_ets2bundle:ohos_ets_ui_plugins"
+
+ ohos_ets_api_tmp_path = "$root_build_dir/ohos_ets_tmp/api"
+ ohos_ets_api_arkui_tmp_path = "$root_build_dir/ohos_ets_tmp/api/arkui/component"

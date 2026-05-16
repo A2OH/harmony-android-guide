@@ -1,0 +1,148 @@
+# BUILD.gn for appspawn-x hybrid spawner
+# Combines OH appspawn security modules with Android ART runtime preloading
+
+import("//build/ohos.gni")
+
+config("appspawnx_config") {
+  include_dirs = [
+    "src",
+    "//base/startup/appspawn/interfaces/innerkits/include",
+    "//base/startup/init/interfaces/innerkits/include",
+  ]
+
+  cflags_cc = [
+    "-std=c++17",
+    "-fPIC",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+  ]
+
+  defines = [
+    "APPSPAWNX_LOG_DOMAIN=0xD001F00",
+    "APPSPAWNX_LOG_TAG=\"AppSpawnX\"",
+  ]
+}
+
+# ============================================================
+# appspawn-x executable
+# ============================================================
+ohos_executable("appspawn-x") {
+  sources = [
+    "src/main.cpp",
+    "src/appspawnx_runtime.cpp",
+    "src/spawn_server.cpp",
+    "src/child_main.cpp",
+  ]
+
+  configs = [ ":appspawnx_config" ]
+
+  # OH dependencies (security, sandbox, IPC)
+  deps = [
+    "//base/startup/appspawn:appspawn_client",
+    "//base/startup/init:libbegetutil",
+  ]
+
+  external_deps = [
+    "hilog:libhilog",
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_manager_sdk",
+    "access_token:libtokensetproc_shared",
+    "selinux_adapter:librestorecon",
+    "selinux_adapter:libhap_restorecon",
+    "json:nlohmann_json_static",
+  ]
+
+  # Android runtime dependencies
+  # These are cross-compiled Android libraries for OH
+  deps += [
+    "//third_party/android/runtime:libandroid_runtime",
+    "//third_party/android/runtime:libnativehelper",
+    "//third_party/android/art:libart",
+    "//third_party/android/art:libdexfile",
+  ]
+
+  # JNI headers
+  external_deps += [
+    "napi:libnapi_jni",
+  ]
+
+  # Adapter bridge library
+  deps += [
+    "//adapter/framework/jni:oh_adapter_bridge",
+  ]
+
+  ldflags = [
+    "-ldl",
+    "-lpthread",
+  ]
+
+  install_enable = true
+  install_images = [ "system" ]
+  module_install_dir = "bin"
+
+  part_name = "appspawnx"
+  subsystem_name = "startup"
+}
+
+# ============================================================
+# appspawn-x Java library (preload classes)
+# ============================================================
+ohos_prebuilt_etc("appspawnx_preloaded_classes") {
+  source = "config/preloaded-classes"
+  module_install_dir = "etc"
+  part_name = "appspawnx"
+  subsystem_name = "startup"
+}
+
+# ============================================================
+# appspawn-x configuration files
+# ============================================================
+ohos_prebuilt_etc("appspawn_x_cfg") {
+  source = "config/appspawn_x.cfg"
+  module_install_dir = "etc/init"
+  part_name = "appspawnx"
+  subsystem_name = "startup"
+}
+
+ohos_prebuilt_etc("appspawn_x_sandbox_config") {
+  source = "config/appspawn_x_sandbox.json"
+  module_install_dir = "etc"
+  part_name = "appspawnx"
+  subsystem_name = "startup"
+}
+
+# ============================================================
+# Java library for AppSpawnXInit
+# ============================================================
+ohos_java_library("appspawnx_java") {
+  sources = [
+    "java/com/android/internal/os/AppSpawnXInit.java",
+  ]
+
+  deps = [
+    "//adapter/framework/java:oh-adapter-framework",
+  ]
+
+  # Depends on Android framework.jar for Class.forName() targets
+  libs = [
+    "//third_party/android/framework/framework.jar",
+  ]
+
+  part_name = "appspawnx"
+  subsystem_name = "startup"
+}
+
+# ============================================================
+# Group target: install everything
+# ============================================================
+group("appspawnx_packages") {
+  deps = [
+    ":appspawn-x",
+    ":appspawn_x_cfg",
+    ":appspawn_x_sandbox_config",
+    ":appspawnx_java",
+  ]
+}

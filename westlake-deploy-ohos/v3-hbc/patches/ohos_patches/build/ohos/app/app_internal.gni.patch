@@ -1,0 +1,27 @@
+diff --git a/ohos/app/app_internal.gni b/ohos/app/app_internal.gni
+index 6e75c883..2a99816e 100644
+--- a/ohos/app/app_internal.gni
++++ b/ohos/app/app_internal.gni
+@@ -373,18 +373,13 @@ template("compile_js_assets") {
+     } else {
+       deps += [
+         "//arkcompiler/ets_frontend/es2panda:build_es2abc_for_hap($host_toolchain)",
+-        "//developtools/ace_js2bundle:ace_loader_ark_hap",
++        # "//developtools/ace_js2bundle:ace_loader_ark_hap",  # patched
+         "//third_party/parse5:parse5_ark_hap",
+         "//third_party/weex-loader:weex_loader_ark_hap",
+       ]
+-      external_deps = [ "ace_ets2bundle:ets_loader_ark_hap" ]
+-      _ace_loader_home =
+-          get_label_info("//developtools/ace_js2bundle:ace_loader_node_modules",
+-                         "target_out_dir") + "/ace_loader_ark"
+-      _ets_loader_home =
+-          get_label_info(
+-              "//developtools/ace_ets2bundle:ets_loader_node_modules",
+-              "target_out_dir") + "/ets_loader_ark"
++      # external_deps = [ "ace_ets2bundle:ets_loader_ark_hap" ]  # patched: not needed for system services
++      _ace_loader_home = "/developtools/ace_js2bundle/ace_loader_ark"  # patched
++      _ets_loader_home = "/developtools/ace_ets2bundle/ets_loader_ark"  # patched
+     }
+ 
+     _webpack_config_js = "${_ace_loader_home}/webpack.rich.config.js"

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenHarmony 源文件备份说明</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #0d47a1;
+    --accent: #e8710a;
+    --bg: #fafafa;
+    --card-bg: #fff;
+    --text: #333;
+    --text-light: #666;
+    --border: #e0e0e0;
+    --code-bg: #f5f5f5;
+    --bridged: #2e7d32;
+    --high: #c62828;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Microsoft YaHei', Tahoma, sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 30px; }
+  h1 { color: var(--primary-dark); font-size: 1.9em; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin: 30px 0 20px; background: linear-gradient(90deg, #e3f2fd, transparent); padding: 12px 16px; }
+  h2 { color: var(--primary); font-size: 1.4em; margin: 28px 0 14px; border-left: 4px solid var(--primary); padding-left: 12px; background: linear-gradient(90deg, #e8eaf6, transparent); padding: 8px 12px; }
+  h3 { color: var(--text); font-size: 1.1em; margin: 18px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0 8px 24px; }
+  li { margin: 4px 0; }
+  .header { background: linear-gradient(135deg, #1565c0, #00695c); color: white; padding: 40px 30px; margin: -20px -30px 30px; }
+  .header h1 { color: white; border-bottom-color: rgba(255,255,255,0.3); background: none; }
+  .header p { color: rgba(255,255,255,0.9); font-size: 1.05em; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.92em; }
+  th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: #f0f7ff; }
+  code { background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.9em; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.88em; line-height: 1.5; margin: 12px 0; }
+  pre code { background: none; padding: 0; }
+  .toc { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin: 20px 0; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { padding: 3px 0; }
+  .toc a { color: var(--primary); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .note { background: #fff3e0; border-left: 4px solid var(--accent); padding: 12px 16px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .warn { background: #fce4ec; border-left: 4px solid var(--high); padding: 12px 16px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 16px 0; }
+  .stat-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .stat-box .number { font-size: 2em; font-weight: 700; color: var(--primary); }
+  .stat-box .label { font-size: 0.9em; color: var(--text-light); }
+  .module-tag { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 0.8em; font-weight: 600; color: white; margin-right: 4px; }
+  .tag-ability { background: #1565c0; }
+  .tag-bundle { background: #2e7d32; }
+  .tag-graphic { background: #7b1fa2; }
+  .tag-musl { background: #ef6c00; }
+  .tag-build { background: #546e7a; }
+  footer { margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--border); color: var(--text-light); font-size: 0.85em; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>OpenHarmony 源文件备份说明</h1>
+  <p>ECS 云服务器上已修改 OH 源文件的原始备份记录</p>
+</div>
+
+<!-- 目录 -->
+<div class="toc">
+  <h3>目录</h3>
+  <ul>
+    <li><a href="#ch1">1. 基本信息</a></li>
+    <li><a href="#ch2">2. 备份概览</a></li>
+    <li><a href="#ch3">3. 备份文件清单</a></li>
+    <li><a href="#ch4">4. 恢复与验证方法</a></li>
+    <li><a href="#ch5">5. 注意事项</a></li>
+  </ul>
+</div>
+
+<!-- 第1章 -->
+<h1 id="ch1">1. 基本信息</h1>
+<div class="card">
+  <table>
+    <tr><td style="width:160px;font-weight:600;">备份日期</td><td>2026-04-07</td></tr>
+    <tr><td style="font-weight:600;">服务器</td><td>oh-build（华为云 ECS，HanBingChen@1.95.175.212）</td></tr>
+    <tr><td style="font-weight:600;">OH 源码路径</td><td><code>~/oh/</code></td></tr>
+    <tr><td style="font-weight:600;">OH 源码版本</td><td>weekly_20260302（对应设备 OpenHarmony 7.0.0.18）</td></tr>
+    <tr><td style="font-weight:600;">编译 product</td><td><code>rk3568</code>（DAYU200 开发板，32 位）</td></tr>
+    <tr><td style="font-weight:600;">命名规则</td><td>原文件名 + <code>.bk</code> 后缀，与原文件同目录</td></tr>
+  </table>
+</div>
+
+<!-- 第2章 -->
+<h1 id="ch2">2. 备份概览</h1>
+
+<div class="stat-grid">
+  <div class="stat-box">
+    <div class="number">16</div>
+    <div class="label">备份文件总数</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">5</div>
+    <div class="label">涉及模块</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">5</div>
+    <div class="label">ability_rt</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">4</div>
+    <div class="label">bundle_framework</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">1</div>
+    <div class="label">graphic_2d</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">2</div>
+    <div class="label">third_party/musl</div>
+  </div>
+  <div class="stat-box">
+    <div class="number">4</div>
+    <div class="label">build 配置</div>
+  </div>
+</div>
+
+<!-- 第3章 -->
+<h1 id="ch3">3. 备份文件清单</h1>
+
+<h2>3.1 ability_rt（5 个文件）</h2>
+<p>基础路径：<code>~/oh/foundation/ability/ability_runtime/</code></p>
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40px;">序号</th>
+      <th>原始文件相对路径</th>
+      <th>备份文件</th>
+      <th>修改说明</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><code>interfaces/inner_api/ability_manager/include/ability_manager_interface.h</code></td>
+      <td><code>ability_manager_interface.h.bk</code></td>
+      <td>新增 StartAbilityInMission IPC 方法</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><code>services/abilitymgr/include/mission/mission.h</code></td>
+      <td><code>mission.h.bk</code></td>
+      <td>abilityRecord_ 改为 abilityStack_（vector），新增多 Ability 栈管理方法</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><code>services/abilitymgr/src/mission/mission.cpp</code></td>
+      <td><code>mission.cpp.bk</code></td>
+      <td>多 Ability 栈方法实现</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><code>services/appmgr/include/remote_client_manager.h</code></td>
+      <td><code>remote_client_manager.h.bk</code></td>
+      <td>AppMgr 远程客户端管理适配</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><code>services/appmgr/src/app_mgr_service_inner.cpp</code></td>
+      <td><code>app_mgr_service_inner.cpp.bk</code></td>
+      <td>AppMgr 服务内部逻辑适配</td>
+    </tr>
+  </table>
+</div>
+
+<h2>3.2 bundle_framework（4 个文件）</h2>
+<p>基础路径：<code>~/oh/foundation/bundlemanager/bundle_framework/</code></p>
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40px;">序号</th>
+      <th>原始文件相对路径</th>
+      <th>备份文件</th>
+      <th>修改说明</th>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><code>interfaces/inner_api/appexecfwk_base/include/bundle_constants.h</code></td>
+      <td><code>bundle_constants.h.bk</code></td>
+      <td>BMS 常量扩展（APK 安装支持）</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><code>interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp</code></td>
+      <td><code>bundle_mgr_host.cpp.bk</code></td>
+      <td>BMS Host 端 IPC 处理适配</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><code>services/bundlemgr/include/ipc/installd_interface.h</code></td>
+      <td><code>installd_interface.h.bk</code></td>
+      <td>Installd 接口扩展（APK 安装）</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><code>services/bundlemgr/src/bundle_installer.cpp</code></td>
+      <td><code>bundle_installer.cpp.bk</code></td>
+      <td>Bundle 安装器适配（支持 APK 格式）</td>
+    </tr>
+  </table>
+</div>
+
+<div class="note">
+  <strong>注意：</strong><code>installd_interface.h</code> 的实际路径为 <code>include/ipc/installd_interface.h</code>，
+  而非 <code>ohos_patches/</code> 目录结构中标注的 <code>include/installd/installd_interface.h</code>。
+</div>
+
+<h2>3.3 graphic_2d（1 个文件）</h2>
+<p>基础路径：<code>~/oh/foundation/graphic/graphic_2d/</code></p>
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40px;">序号</th>
+      <th>原始文件相对路径</th>
+      <th>备份文件</th>
+      <th>修改说明</th>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><code>rosen/modules/render_service_base/src/feature/buffer_reclaim/rs_buffer_reclaim.cpp</code></td>
+      <td><code>rs_buffer_reclaim.cpp.bk</code></td>
+      <td>Buffer 回收逻辑适配</td>
+    </tr>
+  </table>
+</div>
+
+<h2>3.4 third_party/musl（2 个文件）</h2>
+<p>基础路径：<code>~/oh/third_party/musl/</code></p>
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40px;">序号</th>
+      <th>原始文件相对路径</th>
+      <th>备份文件</th>
+      <th>修改说明</th>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td><code>arch/aarch64/bits/syscall.h.in</code></td>
+      <td><code>syscall.h.in.bk</code></td>
+      <td>修复 SYS_futex_time64 缺失问题</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><code>src/internal/ADLTSection.h</code></td>
+      <td><code>ADLTSection.h.bk</code></td>
+      <td>ADLT 段定义适配</td>
+    </tr>
+  </table>
+</div>
+
+<h2>3.5 build 配置（4 个文件）</h2>
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40px;">序号</th>
+      <th>完整路径（<code>~/oh/</code> 下）</th>
+      <th>备份文件</th>
+      <th>修改说明</th>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td><code>build/config/components/ets_frontend/ets2abc_config.gni</code></td>
+      <td><code>ets2abc_config.gni.bk</code></td>
+      <td>ets2abc 编译配置修复</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td><code>build/ohos/app/app_internal.gni</code></td>
+      <td><code>app_internal.gni.bk</code></td>
+      <td>App 内部构建配置修复</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td><code>foundation/arkui/ui_lite/ext/updater/BUILD.gn</code></td>
+      <td><code>BUILD.gn.bk</code></td>
+      <td>ui_lite updater 构建配置修复</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td><code>third_party/libjpeg-turbo/BUILD.gn</code></td>
+      <td><code>BUILD.gn.bk</code></td>
+      <td>libjpeg-turbo 构建配置修复</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 第4章 -->
+<h1 id="ch4">4. 恢复与验证方法</h1>
+
+<h2>4.1 恢复单个文件</h2>
+<pre><code># 以 mission.h 为例
+cd ~/oh/foundation/ability/ability_runtime/services/abilitymgr/include/mission/
+cp mission.h.bk mission.h</code></pre>
+
+<h2>4.2 查看修改差异</h2>
+<pre><code># 对比备份与当前文件的差异
+diff mission.h.bk mission.h</code></pre>
+
+<h2>4.3 批量恢复所有文件</h2>
+<pre><code>#!/bin/bash
+# restore_all_backups.sh
+OH=~/oh
+
+files=(
+  "foundation/ability/ability_runtime/interfaces/inner_api/ability_manager/include/ability_manager_interface.h"
+  "foundation/ability/ability_runtime/services/abilitymgr/include/mission/mission.h"
+  "foundation/ability/ability_runtime/services/abilitymgr/src/mission/mission.cpp"
+  "foundation/ability/ability_runtime/services/appmgr/include/remote_client_manager.h"
+  "foundation/ability/ability_runtime/services/appmgr/src/app_mgr_service_inner.cpp"
+  "foundation/bundlemanager/bundle_framework/interfaces/inner_api/appexecfwk_base/include/bundle_constants.h"
+  "foundation/bundlemanager/bundle_framework/interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp"
+  "foundation/bundlemanager/bundle_framework/services/bundlemgr/include/ipc/installd_interface.h"
+  "foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_installer.cpp"
+  "foundation/graphic/graphic_2d/rosen/modules/render_service_base/src/feature/buffer_reclaim/rs_buffer_reclaim.cpp"
+  "third_party/musl/arch/aarch64/bits/syscall.h.in"
+  "third_party/musl/src/internal/ADLTSection.h"
+  "build/config/components/ets_frontend/ets2abc_config.gni"
+  "build/ohos/app/app_internal.gni"
+  "foundation/arkui/ui_lite/ext/updater/BUILD.gn"
+  "third_party/libjpeg-turbo/BUILD.gn"
+)
+
+for f in "${files[@]}"; do
+  full="$OH/$f"
+  if [ -f "${full}.bk" ]; then
+    cp "${full}.bk" "$full"
+    echo "RESTORED: $f"
+  else
+    echo "SKIP (no backup): $f"
+  fi
+done</code></pre>
+
+<!-- 第5章 -->
+<h1 id="ch5">5. 注意事项</h1>
+
+<div class="warn">
+  <strong>repo sync 会覆盖补丁：</strong>执行 <code>repo sync</code> 后，OH 源文件会被还原为上游版本，
+  此时 <code>.bk</code> 备份文件也会变得多余。但 <strong>补丁必须在下次编译前重新应用</strong>。
+</div>
+
+<div class="info">
+  <strong>备份内容：</strong>所有 <code>.bk</code> 文件保存的是 <strong>修改前的原始文件</strong>，
+  即 OH 源码 weekly_20260302 的未修改版本。可用于与当前文件对比，确认补丁内容。
+</div>
+
+<div class="note">
+  <strong>路径映射差异：</strong>本项目 <code>ohos_patches/</code> 中的目录结构与 OH 源码树的实际路径存在部分差异：
+  <ul>
+    <li><code>ohos_patches/ability_rt/</code> → <code>~/oh/foundation/ability/ability_runtime/</code></li>
+    <li><code>ohos_patches/bundle_framework/</code> → <code>~/oh/foundation/bundlemanager/bundle_framework/</code></li>
+    <li><code>ohos_patches/graphic_2d/</code> → <code>~/oh/foundation/graphic/graphic_2d/</code></li>
+    <li><code>ohos_patches/build/</code> → <code>~/oh/build/</code> 及 <code>~/oh/foundation/</code>、<code>~/oh/third_party/</code></li>
+    <li><code>installd_interface.h</code>：patch 目录标注为 <code>include/installd/</code>，实际为 <code>include/ipc/</code></li>
+  </ul>
+</div>
+
+<footer>
+  Android-OpenHarmony Adapter Project &mdash; 备份说明文档 &mdash; 2026-04-07
+</footer>
+
+</div>
+</body>
+</html>

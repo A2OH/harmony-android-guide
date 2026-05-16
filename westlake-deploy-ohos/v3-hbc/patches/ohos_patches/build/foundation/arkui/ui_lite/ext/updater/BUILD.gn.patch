@@ -1,0 +1,13 @@
+diff --git a/ext/updater/BUILD.gn b/ext/updater/BUILD.gn
+index 89fa5b1..5d65a50 100755
+--- a/ext/updater/BUILD.gn
++++ b/ext/updater/BUILD.gn
+@@ -80,7 +80,7 @@ if (os_level == "standard") {
+       "freetype:freetype_static",
+       "libjpeg-turbo:turbojpeg_static",
+       "libpng:libpng",
+-      "graphic_utils_lite:utils_lite",
++      # "graphic_utils_lite:utils_lite",  # patched
+     ]
+ 
+     install_images = [

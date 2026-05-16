@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  adapter minimal fonts.xml (G2.14q, 2026-05-02)
+
+  Purpose: provide a fonts.xml so AOSP SystemFonts.<clinit> succeeds in the
+  OH environment. AOSP framework.jar's SystemFonts.java hard-codes the path
+  /system/etc/fonts.xml — OH leaves that path empty, causing Java init to
+  hang when adapter switches libhwui from typeface_minimal_stub to AOSP
+  original Typeface.cpp (which triggers SystemFonts).
+
+  Authoritative location:    /system/android/etc/fonts.xml (independent of OH)
+  Compat symlink on device:  /system/etc/fonts.xml -> /system/android/etc/fonts.xml
+  Font files come from:      /system/fonts/ (OH device — already populated)
+
+  Strategy: alias serif/monospace to sans-serif (HarmonyOS_Sans) to keep this
+  file minimal. Color emoji uses OH's HMOSColorEmojiCompat. CJK uses
+  HarmonyOS_Sans_SC. No variable-font axes (avoid minikin parser corner cases
+  on first Path-A validation).
+-->
+<familyset version="23">
+  <!-- Default sans-serif (no name= means weight-only fallback for Roboto-class queries) -->
+  <family name="sans-serif">
+    <font weight="100" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="200" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="300" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="500" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="600" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="700" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="800" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="900" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="100" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    <font weight="400" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    <font weight="700" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+  </family>
+
+  <!-- Aliases (no real serif font in OH baseline; map to sans-serif) -->
+  <alias name="sans-serif-thin"        to="sans-serif" weight="100" />
+  <alias name="sans-serif-light"       to="sans-serif" weight="300" />
+  <alias name="sans-serif-medium"      to="sans-serif" weight="500" />
+  <alias name="sans-serif-black"       to="sans-serif" weight="900" />
+  <alias name="arial"                  to="sans-serif" />
+  <alias name="helvetica"              to="sans-serif" />
+  <alias name="tahoma"                 to="sans-serif" />
+  <alias name="verdana"                to="sans-serif" />
+
+  <family name="serif">
+    <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="700" style="normal">HarmonyOS_Sans.ttf</font>
+    <font weight="400" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+    <font weight="700" style="italic">HarmonyOS_Sans_Italic.ttf</font>
+  </family>
+  <alias name="times"                  to="serif" />
+  <alias name="times new roman"        to="serif" />
+  <alias name="palatino"               to="serif" />
+  <alias name="georgia"                to="serif" />
+  <alias name="baskerville"            to="serif" />
+  <alias name="goudy"                  to="serif" />
+  <alias name="fantasy"                to="serif" />
+  <alias name="ITC Stone Serif"        to="serif" />
+
+  <family name="monospace">
+    <font weight="400" style="normal">HarmonyOS_Sans.ttf</font>
+  </family>
+  <alias name="sans-serif-monospace"   to="monospace" />
+  <alias name="monaco"                 to="monospace" />
+  <alias name="courier"                to="monospace" />
+  <alias name="courier new"            to="monospace" />
+
+  <!-- CJK (Simplified Chinese) -->
+  <family lang="zh-Hans">
+    <font weight="400" style="normal">HarmonyOS_Sans_SC.ttf</font>
+  </family>
+  <!-- CJK (Traditional Chinese) -->
+  <family lang="zh-Hant">
+    <font weight="400" style="normal">HarmonyOS_Sans_TC.ttf</font>
+  </family>
+  <!-- Arabic -->
+  <family lang="und-Arab">
+    <font weight="400" style="normal">HarmonyOS_Sans_Naskh_Arabic.ttf</font>
+  </family>
+  <!-- Color emoji -->
+  <family lang="und-Zsye">
+    <font weight="400" style="normal">HMOSColorEmojiCompat.ttf</font>
+  </family>
+  <!-- Symbols -->
+  <family lang="und-Zsym">
+    <font weight="400" style="normal">HMSymbolVF.ttf</font>
+  </family>
+</familyset>

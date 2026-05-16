@@ -1,0 +1,55 @@
+# BUILD.gn for liboh_skia_rtti_shim
+#
+# Provides Itanium C++ ABI typeinfo symbols (_ZTI*, _ZTS*) for Skia
+# classes referenced by Android libhwui at link time, without modifying
+# OH's libskia_canvaskit.z.so. See README.md and
+# doc/skia_rtti_shim_design.html for the design rationale.
+#
+# NOTE: The primary build path for this module is the direct clang
+# script build/compile_skia_rtti_shim.sh, which mirrors how libhwui and
+# the existing liboh_hwui_shim are built in this project. This BUILD.gn
+# exists so the shim can be produced via GN when the libhwui pipeline
+# eventually migrates to GN, and for consistency with
+# framework/jni/BUILD.gn / framework/package-manager/BUILD.gn.
+
+import("//build/ohos.gni")
+
+config("skia_rtti_shim_config") {
+  cflags_cc = [
+    "-std=c++17",
+    "-frtti",                 # required — without this no _ZTI*/_ZTS* get emitted
+    "-fvisibility=hidden",    # all symbols hidden by default; version script picks
+    "-Os",                    # optimize for size (target .so is < 100 KB)
+    "-fno-exceptions",        # shim has no throwing code, keeps the .so minimal
+    "-Wall",
+    "-Wno-unused-function",
+  ]
+}
+
+ohos_shared_library("liboh_skia_rtti_shim") {
+  sources = [ "skia_rtti_shim.cpp" ]
+
+  configs = [ ":skia_rtti_shim_config" ]
+
+  # Version script: only _ZTI* and _ZTS* are GLOBAL. Vtables, destructors,
+  # and every other compiler-synthesized symbol stay LOCAL and cannot
+  # collide with real Skia symbols at dynamic-link time.
+  ldflags = [
+    "-Wl,--version-script=" +
+        rebase_path("skia_rtti_shim.ver", root_build_dir),
+    "-Wl,--no-undefined",
+  ]
+
+  # libc++_shared.so provides __cxxabiv1::__class_type_info whose vtable
+  # is referenced by every _ZTI* node we emit. All other OH/AOSP libs
+  # we avoid on purpose — no hilog, no utils, no ipc. This stays a pure
+  # symbol-provider .so with no actual code path.
+
+  output_name = "oh_skia_rtti_shim"
+  install_enable = true
+  install_images = [ "system" ]
+  module_install_dir = "lib64"  # match framework/jni/BUILD.gn convention
+
+  part_name = "oh_adapter"
+  subsystem_name = "oh_adapter"
+}

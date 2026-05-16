@@ -1,0 +1,63 @@
+diff --git a/services/bundlemgr/src/bundle_installer.cpp b/services/bundlemgr/src/bundle_installer.cpp
+index c7525c6b8..3a1e37cb2 100644
+--- a/services/bundlemgr/src/bundle_installer.cpp
++++ b/services/bundlemgr/src/bundle_installer.cpp
+@@ -27,6 +27,33 @@
+
+ namespace OHOS {
+ namespace AppExecFwk {
++#ifdef OH_ADAPTER_ANDROID
++// Route C (feedback.txt 2026-04-17): APK parsing lives in the adapter-owned
++// libapk_installer.so, NOT compiled into libbms. libbms only routes .apk
++// install requests via runtime dlopen — this keeps libbms free of AOSP-chain
++// DT_NEEDED (libandroidfw + its transitive libbase/libutils/libcutils/liblog/
++// libicuuc) so that BMS SA can start in OH foundation without /system/android/
++// lib being on the default namespace linker path.
++#include <dlfcn.h>
++
++namespace {
++using AdapterApkInstallFn = int (*)(const char* apkPath, int userId);
++
++AdapterApkInstallFn LoadAdapterApkInstaller() {
++    static void* handle = dlopen("libapk_installer.so", RTLD_NOW | RTLD_GLOBAL);
++    if (handle == nullptr) {
++        return nullptr;
++    }
++    // Adapter-owned C ABI entry. libapk_installer.so exports this as
++    // extern "C" to keep the bridge name-mangle-stable across toolchains.
++    // Signature: int oh_adapter_install_apk(const char* apkPath, int userId);
++    return reinterpret_cast<AdapterApkInstallFn>(
++        dlsym(handle, "oh_adapter_install_apk"));
++}
++
++constexpr int kErrAdapterNotAvailable = -1001;
++}  // namespace
++#endif
+ namespace {
+ constexpr const char* USER_DATA_DIR = "/data";
+ constexpr double MIN_FREE_INODE_PERCENT = 0.005; // 0.5%
+@@ -66,6 +93,24 @@ BundleInstaller::~BundleInstaller()
+
+ void BundleInstaller::Install(const std::string &bundleFilePath, const InstallParam &installParam)
+ {
++#ifdef OH_ADAPTER_ANDROID
++    // Android APK detection: dispatch to adapter-owned libapk_installer.so
++    // via runtime dlopen. Keeps libbms zero-AOSP-dep (Route C).
++    if (bundleFilePath.size() > 4 &&
++        bundleFilePath.compare(bundleFilePath.size() - 4, 4, ".apk") == 0) {
++        AdapterApkInstallFn installFn = LoadAdapterApkInstaller();
++        int rc = kErrAdapterNotAvailable;
++        if (installFn != nullptr) {
++            rc = installFn(bundleFilePath.c_str(), installParam.userId);
++        }
++        if (statusReceiver_ != nullptr) {
++            statusReceiver_->OnFinished(rc == 0 ? ERR_OK : rc,
++                rc == 0 ? "Install success" :
++                installFn == nullptr ? "APK adapter unavailable" : "APK install failed");
++        }
++        return;
++    }
++#endif
+     ErrCode resultCode = ERR_OK;
+     if (installParam.userId == Constants::ALL_USERID) {
+         auto userInstallParam = installParam;

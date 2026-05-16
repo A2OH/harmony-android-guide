@@ -1,0 +1,22 @@
+FileTransfer finish, Size:12492, File count = 1, time:29ms rate:430.76kB/s
+FileTransfer finish, Size:55950, File count = 1, time:32ms rate:1748.44kB/s
+FileTransfer finish, Size:110256, File count = 1, time:32ms rate:3445.50kB/s
+FileTransfer finish, Size:11765908, File count = 1, time:470ms rate:25033.85kB/s
+FileTransfer finish, Size:2260012, File count = 1, time:110ms rate:20545.56kB/s
+FileTransfer finish, Size:1569240, File count = 1, time:81ms rate:19373.33kB/s
+total 15806464
+drwxr-xr-x 2 root  root      3452 2017-08-06 06:29 .
+drwxrwx--x 6 shell shell     8192 2017-08-06 06:29 ..
+-rw-r--r-- 1 root  root     12492 2017-08-06 06:29 DEPLOY_SOP.md
+-rw-r--r-- 1 root  root     55950 2017-08-06 06:29 HelloWorld.apk
+-rw-r--r-- 1 root  root    110256 2017-08-06 06:29 appspawn-x
+-rw-r--r-- 1 root  root  11765908 2017-08-06 06:29 libart.so
+-rw-r--r-- 1 root  root   2260012 2017-08-06 06:29 libhwui.so
+-rw-r--r-- 1 root  root   1569240 2017-08-06 06:29 liboh_adapter_bridge.so
+--- md5 ---
+0d9ba07d8c90e4c420ade38d6cfc2d66  /data/local/tmp/v3-hbc-smoke/appspawn-x
+eadd392606013bca388dd1a196e5b0b7  /data/local/tmp/v3-hbc-smoke/libart.so
+1b5bb4e888b80eb11fda8385361f5b9d  /data/local/tmp/v3-hbc-smoke/HelloWorld.apk
+0d9ba07d8c90e4c420ade38d6cfc2d66  /home/dspfac/android-to-openharmony-migration/westlake-deploy-ohos/v3-hbc/bin/appspawn-x
+eadd392606013bca388dd1a196e5b0b7  /home/dspfac/android-to-openharmony-migration/westlake-deploy-ohos/v3-hbc/lib/libart.so
+1b5bb4e888b80eb11fda8385361f5b9d  /home/dspfac/android-to-openharmony-migration/westlake-deploy-ohos/v3-hbc/app/HelloWorld.apk

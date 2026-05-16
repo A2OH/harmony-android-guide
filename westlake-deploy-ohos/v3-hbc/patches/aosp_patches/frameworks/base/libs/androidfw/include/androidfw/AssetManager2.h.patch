@@ -1,0 +1,15 @@
+--- AssetManager2.h.orig
++++ AssetManager2.h
+@@ -554,7 +554,11 @@
+
+   void Dump() const;
+
+-  struct Entry;
++  struct Entry {
++    ApkAssetsCookie cookie;
++    uint32_t type_spec_flags;
++    Res_value value;
++  };
+  private:
+   DISALLOW_COPY_AND_ASSIGN(Theme);
+

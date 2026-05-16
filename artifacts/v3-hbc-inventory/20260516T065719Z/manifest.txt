@@ -1,0 +1,646 @@
+# HBC artifact inventory — generated 2026-05-16 (V3-W1)
+# Pull session: 20260516T065719Z
+# Remote: chenyue@1.95.175.212:/home/HanBingChen/adapter/
+# Columns:  remote_path<TAB>size_bytes<TAB>type<TAB>license<TAB>reuse_priority
+# Sorted by priority then path. HIGH-* entries are pulled to westlake-deploy-ohos/v3-hbc/.
+#
+/home/HanBingChen/adapter/deploy/deploy_to_dayu200 .sh.bk	38302	other	HBC-internal	SKIP
+/home/HanBingChen/adapter/out/adapter/appspawn-x	110256	other	HBC-internal	HIGH-adapter
+/home/HanBingChen/adapter/appspawn/apply_appspawnx_routing.py	7056	build-script-py	HBC-internal	HIGH-appspawn
+/home/HanBingChen/adapter/appspawn/apply_appspawnx_sepolicy_and_namespace.py	8149	build-script-py	HBC-internal	HIGH-appspawn
+/home/HanBingChen/adapter/framework/core/include/oh_br_trace.h	6730	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/java/OHEnvironment.java	8378	adapter-java-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/java/OHServiceManager.java	8048	adapter-java-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/java/OhTokenRegistry.java	4059	adapter-java-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/java/ServiceInterceptor.java	5127	adapter-java-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/jni/adapter_bridge.cpp	54411	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/jni/adapter_bridge.h	1279	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/jni/android_log_hilog_bridge.cpp	5905	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/jni/oh_callback_handler.cpp	4964	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/core/jni/oh_callback_handler.h	4026	adapter-c-src	HBC-internal	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/activity/java/AbilityConnectionBridge.java	3986	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/AbilitySchedulerBridge.java	24188	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/ActivityClientControllerAdapter.java	23604	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/ActivityManagerAdapter.java	92981	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/ActivityTaskManagerAdapter.java	46317	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/AppBindDataDefaults.java	4325	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/AppSchedulerBridge.java	97044	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/IntentWantConverter.java	11326	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/LifecycleAdapter.java	49302	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/OhApplicationInfoConverter.java	12221	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/OhConfigurationConverter.java	8697	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/OhDisplayProvider.java	2617	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/ServiceConnectionRegistry.java	8430	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/java/compile_oh_adapter_runtime.sh	8082	build-script-sh	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/ability_connection_adapter.cpp	7478	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/ability_connection_adapter.h	1818	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/ability_scheduler_adapter.cpp	32754	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/ability_scheduler_adapter.h	9097	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/app_scheduler_adapter.cpp	42418	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/app_scheduler_adapter.h	8136	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/intent_want_converter.cpp	700	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/intent_want_converter.h	799	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/lifecycle_state_mapper.cpp	421	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/lifecycle_state_mapper.h	1942	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/oh_ability_manager_client.cpp	18638	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/oh_ability_manager_client.h	5704	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/oh_app_mgr_client.cpp	5056	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/activity/jni/oh_app_mgr_client.h	2904	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/etc/fonts.xml	3652	config-or-text	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/include/AndroidRuntime.h	2637	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/include/binder/Parcel.h	71747	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/AndroidRuntime.cpp	30438	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/Parcel_aosp_native.cpp	104984	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_animation_PropertyValuesHolder.cpp	7497	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_app_Activity.cpp	1821	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_content_AssetManager.cpp	13990	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_content_res_ApkAssets.cpp	5456	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_content_res_ApkAssets.h	949	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_content_res_ApkAssets_aosp.cpp	21524	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_Canvas.cpp	2511	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_HardwareRenderer.cpp	13784	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_Paint.cpp	15626	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_RenderNode.cpp	15861	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_Typeface.cpp	9944	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_graphics_compat_shim.cpp	43734	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_Binder.cpp	8951	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_GraphicsEnvironment.cpp	4017	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_MessageQueue.cpp	5745	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_Parcel_aosp.cpp	28827	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_Process.cpp	4520	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_SystemClock.cpp	3898	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_SystemProperties.cpp	10678	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_os_Trace.cpp	5244	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_runtime/AndroidRuntime.h	484	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_runtime/android_util_AssetManager.h	1262	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_util_AssetManager_aosp.cpp	64167	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_util_EventLog.cpp	13352	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_util_Log.cpp	5447	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_util_StringBlock_aosp.cpp	5520	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_util_XmlBlock_aosp.cpp	13448	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_DisplayEventReceiver.cpp	31325	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_InputChannel.cpp	10154	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_InputEventReceiver.cpp	7804	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_KeyCharacterMap_aosp.cpp	13121	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_SurfaceControl.cpp	57151	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/android_view_SurfaceSession.cpp	4640	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/atrace_stubs.cpp	2450	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/com_android_internal_os_ClassLoaderFactory.cpp	2385	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/com_android_internal_util_VirtualRefBasePtr_aosp.cpp	1663	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/core_jni_helpers.h	4231	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/libart_log_bridge.cpp	6189	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/android-runtime/src/libcore_util_NativeAllocationRegistry_guard.cpp	7420	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/BUILD.gn	3811	build-config	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/android/fdsan.h	883	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/art/arm32_atomic_compat.h	803	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/art/asm_defines.h	8333	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/bionic/malloc.h	887	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/gtest/gtest_prod.h	127	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/incfs_support/signal_handling.h	293	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/incfs_support/util.h	313	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/libcxx_array_aosp/array	17364	other	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/libcxx_compat.h	14192	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/musl_math_compat.h	1068	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/musl_math_macro_undef.h	3404	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/odr_statslog/odr_statslog.h	210	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/server_configurable_flags/get_flags.h	326	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/statslog_art.h	4911	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/sys/_system_properties.h	215	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/sys/system_properties.h	1151	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/include/vixl_math_fix.h	2193	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/art_compiler_stubs.cpp	1267	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/art_quick_entrypoints_arm64.S	21287	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/art_runtime_stubs.cpp	60599	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/asm_support_arm64.S	1510	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/fdsan_stubs.cpp	820	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/liblog_android_supplement.cpp	5503	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/malloc_compat.cpp	931	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/minizip.cpp	13859	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/misc_compat.cpp	2737	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/palette_system_stub.c	2185	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/sync_builtins.c	3141	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/bionic_compat/src/system_properties.cpp	3790	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/config/appspawn_x.cfg	4246	config-or-text	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/config/appspawn_x_sandbox.json	6666	config-or-text	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/java/com/android/internal/os/AppSpawnXInit.java	95549	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/AndroidRuntime.cpp	24729	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/appspawn_x.cfg	4246	config-or-text	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/appspawnx_runtime.cpp	44145	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/appspawnx_runtime.h	4616	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/child_main.cpp	28674	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/child_main.h	1354	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/main.cpp	13631	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/oh_ability_manager_client.cpp	14295	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/spawn_msg.h	7355	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/spawn_server.cpp	29672	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/src/spawn_server.h	1661	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/test/out/test_init_minimal	113592	other	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/test/test_init_minimal.c	1157	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/test/test_init_minimal.cfg	484	config-or-text	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/appspawn-x/test/test_tlv_client.c	4528	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/java/BroadcastEventConverter.java	9355	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/java/CommonEventReceiverBridge.java	3856	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/jni/common_event_subscriber_adapter.cpp	4924	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/jni/common_event_subscriber_adapter.h	1543	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/jni/oh_common_event_client.cpp	7667	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/broadcast/jni/oh_common_event_client.h	4139	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/contentprovider/java/ContentProviderBridge.java	18316	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/contentprovider/java/ContentProviderRegistry.java	8747	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/contentprovider/java/ContentProviderUriConverter.java	5788	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/contentprovider/jni/oh_datashare_client.cpp	26927	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/contentprovider/jni/oh_datashare_client.h	5940	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/ashmem_compat.c	2182	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/atrace_compat.c	2411	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_choreographer_shim.c	9688	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_display_shim.c	4893	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_graphicsstats_shim.cpp	3550	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_hardwarebuffer_shim.c	6847	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_minikin_shim.cpp	10839	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_native_window_shim.c	13431	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_sync_builtins.S	1707	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_typeface_init.cpp	6825	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/hwui-shim/jni/sync_wait_compat.c	806	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/jni/BUILD.gn	8434	build-config	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/BUILD.gn	1771	build-config	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/java/PackageInfoBuilder.java	12379	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/java/PackageManagerAdapter.java	54613	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/java/PermissionMapper.java	6486	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_bundle_parser.cpp	9462	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_bundle_parser.h	2518	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_installer.cpp	22432	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_installer.h	4161	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_manifest_jni.cpp	8122	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_manifest_parser.cpp	24448	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_manifest_parser.h	5695	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_signature_verifier.cpp	12334	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/apk_signature_verifier.h	3190	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/axml_parser.cpp	12457	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/axml_parser.h	5092	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/oh_ability_manager_client.h	4896	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/oh_adapter_install_apk_c_entry.cpp	11087	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/oh_bundle_mgr_client.cpp	14935	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/oh_bundle_mgr_client.h	2591	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/permission_mapper.cpp	8750	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/permission_mapper.h	1201	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/package-manager/jni/template_entry_hap.h	95406	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/android_view_surface_stubs.cpp.deprecated	27371	other	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_canvas_renderer.cpp	18107	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_canvas_renderer.h	6347	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_egl_surface_adapter.cpp	10913	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_egl_surface_adapter.h	5013	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_graphic_buffer_producer.cpp	13118	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_graphic_buffer_producer.h	5414	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_surface_bridge.cpp	12150	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/oh_surface_bridge.h	4587	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/pixel_format_mapper.h	7651	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/rs_surface_helper.cpp	2690	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/surface_oh_helper.cpp	2916	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/DisplayManagerAdapter.java	18729	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/IWindowManagerBridge.java	22234	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/IWindowSessionBridge.java	12105	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/InputEventBridge.java	5336	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/InputManagerAdapter.java	29070	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/InputMethodManagerAdapter.java	11121	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/SessionStageBridge.java	24903	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/WindowCallbackBridge.java	21974	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/WindowManagerAdapter.java	53078	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/WindowManagerAgentBridge.java	12404	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/java/WindowSessionAdapter.java	52017	adapter-java-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/display_manager_adapter_jni.cpp	10232	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_anativewindow_shim.cpp	30811	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_anativewindow_shim.h	3334	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_input_bridge.cpp	10966	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_input_bridge.h	3507	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_input_manager_bridge.cpp	24300	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_input_manager_bridge.h	4554	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_window_manager_client.cpp	36155	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/oh_window_manager_client.h	9539	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/session_stage_adapter.cpp	26443	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/session_stage_adapter.h	13689	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_callback_adapter.cpp	17855	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_callback_adapter.h	8276	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_event_channel_adapter.cpp	8304	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_event_channel_adapter.h	4786	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_manager_agent_adapter.cpp	10101	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/window/jni/window_manager_agent_adapter.h	5410	adapter-c-src	HBC-internal	HIGH-bridge-src
+/home/HanBingChen/adapter/build/apply_aosp_java_patches.py	13729	build-script-py	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/build/apply_oh_patches.sh	7658	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/build/collect_oh_artifacts.sh	1757	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/build/gen_boot_image.sh	11865	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/build/restore_after_sync.sh	55642	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/build/revert_oh_patches.sh	2883	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/restore_after_sync.sh	37917	build-script-sh	HBC-internal	HIGH-build
+/home/HanBingChen/adapter/config/appspawn_x.cfg	2989	config-or-text	HBC-internal	HIGH-config
+/home/HanBingChen/adapter/config/appspawn_x_sandbox.json	6666	config-or-text	HBC-internal	HIGH-config
+/home/HanBingChen/adapter/deploy/DEPLOY_SOP.md	12492	doc	HBC-internal	HIGH-deploy
+/home/HanBingChen/adapter/deploy/README.md	10476	doc	HBC-internal	HIGH-deploy
+/home/HanBingChen/adapter/deploy/deploy_cmd.txt	19208	config-or-text	HBC-internal	HIGH-deploy
+/home/HanBingChen/adapter/deploy/deploy_stage.sh	38398	build-script-sh	HBC-internal	HIGH-deploy
+/home/HanBingChen/adapter/deploy/deploy_to_dayu200.sh	46936	build-script-sh	HBC-internal	HIGH-deploy
+/home/HanBingChen/adapter/ohos_patches/appspawn/apply_appspawnx_routing.py	7056	build-script-py	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/appspawn/apply_appspawnx_sepolicy_and_namespace.py	9710	build-script-py	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/security/selinux_adapter/sepolicy/ohos_policy/startup/appspawn/system/file_contexts	1475	other	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/startup/appspawn/interfaces/innerkits/client/appspawn_client.c	25730	adapter-c-src	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/startup/appspawn/interfaces/innerkits/client/appspawn_client.h	2875	adapter-c-src	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/startup/appspawn/interfaces/innerkits/include/appspawn.h	13576	adapter-c-src	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/startup/appspawn/modules/module_engine/include/appspawn_msg.h	4078	adapter-c-src	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/base/startup/init/services/init/include/init_service.h	7733	adapter-c-src	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/init/apply_init_max_env_value.py	2533	build-script-py	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/third_party/musl/config/ld-musl-namespace-arm.ini	3293	config-or-text	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/third_party/musl/scripts/create_syscall.sh	2884	build-script-sh	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/third_party/musl/src/internal/ADLTSection.h.patch	623	source-patch	HBC-internal	HIGH-ohos-patch
+/home/HanBingChen/adapter/framework/CMakeLists.txt	4313	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/README_BACKUPS.html	14947	doc	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/README_BUILD_GN_ARGS.txt	1855	doc	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/README_BUNDLE_MGR_PATCHES.txt	1934	doc	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/README_OHOS_PATCHES.txt	1285	doc	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/common/apply_BUILD_gn.py	1983	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/common/apply_bundle_file_util.py	3226	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/interfaces/inner_api/appexecfwk_base/include/application_info.h.patch	539	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp.patch	695	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/BUILD.gn.patch	1802	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_BUILD_gn.py	5841	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_apk_dispatch_installapp.py	5793	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_apk_dispatch_processinstall.py	7146	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_apk_dispatch_vector.py	4875	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_apk_gates.py	7126	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_apk_register_with_manifest.py	40228	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_bms_iconpath_fallback.py	4524	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_installd_apk_resources_hap.py	7358	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/apply_installd_write_file_bytes.py	16874	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/src/README_CANONICAL_SOURCES.txt	2418	doc	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/src/adapter_apk_install_minimal.cpp	10043	adapter-c-src	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/bundle_framework/services/bundlemgr/src/bundle_installer.cpp.patch	2704	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/foundation/ability/ability_runtime/services/abilitymgr/include/mission/mission.h	8952	adapter-c-src	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/foundation/ability/ability_runtime/services/abilitymgr/src/mission/mission.cpp	7935	adapter-c-src	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/foundation/ability/ability_runtime/services/abilitymgr/src/mission/mission_list_manager_patch.cpp	9221	adapter-c-src	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/foundation/ability/ability_runtime/services/appmgr/src/app_spawn_client.cpp	28818	adapter-c-src	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/graphic_2d/apply_G214au_r5_oh_rs_probes.py	7716	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/graphic_2d/rosen/modules/render_service_base/src/feature/buffer_reclaim/rs_buffer_reclaim.cpp.patch	2490	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/graphic_2d/rosen/modules/render_service_base/src/transaction/rs_transaction_data.cpp.patch	2455	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/graphic_surface/surface/src/buffer_queue.cpp.patch	1544	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/patch_diff_report.html	99428	other	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/selinux_adapter/file_contexts.patch	1080	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/icu/icu4c/source/i18n/decimfmt.cpp.patch	659	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/icu/icu4c/source/i18n/number_decimalquantity.cpp.patch	539	source-patch	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/vendor/hihope/rk3568/apply_config.py	1737	build-script-py	HBC-internal	LOW
+/home/HanBingChen/adapter/ohos_patches/vendor/hihope/rk3568/config.json	10104	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/b29_aa_start_hilog.txt	327362	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/b30_v1_first_aa_start.txt	498053	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/b30_v3_hilog_visible.txt	354156	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/b31_v3_loginvisible.txt	347359	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/AbilityConnectionBridge.class	2441	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/AbilitySchedulerBridge.class	11852	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityClientControllerAdapter$1.class	1292	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityClientControllerAdapter$2$1.class	1178	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityClientControllerAdapter$2.class	1318	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityClientControllerAdapter$3.class	1429	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityClientControllerAdapter.class	11947	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityManagerAdapter.class	47052	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ActivityTaskManagerAdapter.class	21527	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/IntentWantConverter$WantParams.class	461	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/IntentWantConverter.class	7317	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/LifecycleAdapter$1.class	802	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/LifecycleAdapter$2.class	784	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/LifecycleAdapter$3.class	781	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/LifecycleAdapter.class	24527	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ServiceConnectionRegistry$ConnectionRecord.class	687	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/activity/ServiceConnectionRegistry.class	4559	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/broadcast/BroadcastEventConverter.class	7560	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/broadcast/CommonEventReceiverBridge.class	3455	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/contentprovider/ContentProviderBridge.class	10821	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/contentprovider/ContentProviderRegistry.class	5254	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/contentprovider/ContentProviderUriConverter.class	3596	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/core/OHEnvironment.class	3416	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/core/OHServiceManager.class	4665	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/core/OhTokenRegistry.class	2193	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/core/ServiceInterceptor.class	3763	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/packagemanager/PackageInfoBuilder.class	7434	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/packagemanager/PackageManagerAdapter.class	33663	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/packagemanager/PermissionMapper.class	5139	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/DisplayManagerAdapter.class	11845	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/IWindowManagerBridge.class	14755	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/IWindowSessionBridge.class	6690	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/InputEventBridge.class	2979	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/InputManagerAdapter.class	15618	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/InputMethodManagerAdapter.class	6348	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/SessionStageBridge.class	11890	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge$1.class	683	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge$2.class	781	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge$3.class	615	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge$4.class	615	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge$5.class	701	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowCallbackBridge.class	8672	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowManagerAdapter.class	20172	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowManagerAgentBridge.class	4385	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/classes/adapter/window/WindowSessionAdapter.class	22045	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/compile.log	318	build-log	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/dlopen_probe	112100	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/adapter/activity/AppSchedulerBridge$1.class	1171	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/adapter/activity/AppSchedulerBridge$DisplaySnapshot.class	475	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/adapter/activity/AppSchedulerBridge$OhTokenRegistry.class	1053	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/adapter/activity/AppSchedulerBridge.class	42915	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/com/android/internal/os/AppSpawnXInit$1.class	2670	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/com/android/internal/os/AppSpawnXInit$HiLogOutputStream.class	1757	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/classes/com/android/internal/os/AppSpawnXInit.class	36300	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/runtime-build/compile.log	110	build-log	HBC-internal	LOW
+/home/HanBingChen/adapter/out/adapter/test_tlv_client	113996	other	HBC-internal	LOW
+/home/HanBingChen/adapter/out/aosp_fwk/icu/icudt72l.dat	33589824	other	HBC-internal	LOW
+/home/HanBingChen/adapter/readme.txt	6251	config-or-text	HBC-internal	LOW
+/home/HanBingChen/adapter/app/AndroidManifest.xml	945	config-or-text	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/BUILD_INSTRUCTIONS.md	5390	doc	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/java/com/example/helloworld/HelloService.java	1108	adapter-java-src	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/java/com/example/helloworld/HelloWorldApplication.java	872	adapter-java-src	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/java/com/example/helloworld/MainActivity.java	8229	adapter-java-src	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/java/com/example/helloworld/SecondActivity.java	1467	adapter-java-src	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/app/res/layout/activity_main.xml	2175	config-or-text	HBC-internal	MED-app-src
+/home/HanBingChen/adapter/CLAUDE.md	30473	doc	HBC-internal	MED-doc
+/home/HanBingChen/adapter/ohos_patches/build/config/components/ets_frontend/ets2abc_config.gni.collision_fix.patch	1060	source-patch	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/build/foundation/arkui/ui_lite/ext/updater/BUILD.gn.patch	415	source-patch	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/build/ohos/app/app_internal.gni.patch	1348	source-patch	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/common/BUILD.gn	1802	build-config	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/common/utils/src/bundle_file_util.cpp	9702	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/BUILD.gn	17454	build-config	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/include/installd/installd_operator.h	19400	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/include/ipc/extract_param.h	1553	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/base_bundle_installer.cpp	425981	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_data_mgr.cpp	593746	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_installer.cpp	17584	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_stream_installer_host_impl.cpp	26911	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_util.cpp	58269	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/ohos_patches/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/installd/installd_operator.cpp	131128	adapter-c-src	HBC-internal	MED-ohos-patch
+/home/HanBingChen/adapter/aosp_patches/README_AOSP_PATCHES.txt	1550	doc	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/art/runtime/gc/collector/mark_compact.cc.patch	646	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/data/fonts/fonts.xml	4235	config-or-text	Apache-2.0 (AOSP source patches)	HIGH-fonts
+/home/HanBingChen/adapter/aosp_patches/external/icu/android_icu4j/Android.bp.patch	725	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/core/jni/AndroidRuntime.cpp.patch	15220	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/core/jni/android_util_Process.cpp.patch	825	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/libs/androidfw/Asset.cpp.patch	702	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/libs/androidfw/AssetManager2.cpp.patch	420	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/libs/androidfw/include/androidfw/AssetManager2.h.patch	261	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h.patch	580	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/core/java/android/app/ActivityManager.java.patch	1956	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/core/java/android/app/ActivityTaskManager.java.patch	1945	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/core/java/android/app/ActivityThread.java.patch	1740	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/frameworks/core/java/android/view/WindowManagerGlobal.java.patch	5475	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214au_r4_probes.py	6565	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214ay_skia_probe.py	12382	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214be_displaylist_probe.py	7785	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214bg_options_explicit_set.py	3633	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214bh_align_rs_options.py	3153	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_G214bi_remove_red_clear.py	2365	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_hwui_nio_utils_unstub.py	3157	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/apply_hwui_vulkan_manager_stub.py	11549	build-script-py	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/hwui_oh_abi_patch.cpp	43192	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/hwui_register_stubs.cpp	3071	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/hwui_rk3568.patch	70548	source-patch	Apache-2.0 (AOSP source patches)	HIGH-aosp-patch
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/oh_native_window_compat.h	3756	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/renderthread/ReliableSurface.cpp	5918	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/skia_m133_compat.h	5371	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/libs/hwui/typeface_minimal_stub.cpp	14221	adapter-c-src	Apache-2.0 (AOSP source patches)	LOW
+/home/HanBingChen/adapter/aosp_patches/replacement_headers/meminfo/meminfo.h	6219	adapter-c-src	Apache-2.0 (AOSP source patches)	HIGH-headers
+/home/HanBingChen/adapter/aosp_patches/replacement_headers/meminfo/procmeminfo.h	2866	adapter-c-src	Apache-2.0 (AOSP source patches)	HIGH-headers
+/home/HanBingChen/adapter/aosp_patches/replacement_headers/meminfo/sysmeminfo.h	4687	adapter-c-src	Apache-2.0 (AOSP source patches)	HIGH-headers
+/home/HanBingChen/adapter/aosp_patches/replacement_headers/sys/pidfd.h	772	adapter-c-src	Apache-2.0 (AOSP source patches)	HIGH-headers
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/adservices/AdServicesFrameworkInitializer.java	529	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/appsearch/AppSearchManagerFrameworkInitializer.java	531	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/appsearch/AppSearchSchema.java	1402	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/appsearch/GenericDocument.java	450	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/blob/BlobStoreManagerFrameworkInitializer.java	526	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/job/JobSchedulerFrameworkInitializer.java	530	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/role/OnRoleHoldersChangedListener.java	411	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/role/RoleFrameworkInitializer.java	515	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/role/RoleManager.java	360	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/sdksandbox/SdkSandboxManagerFrameworkInitializer.java	547	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/app/usage/NetworkStats.java	431	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/BluetoothActivityEnergyInfo.java	410	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/BluetoothCodecConfig.java	457	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/BluetoothDevice.java	374	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/BluetoothFrameworkInitializer.java	758	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/BluetoothLeAudioCodecConfig.java	478	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/le/ScanFilter.java	433	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/le/ScanRecord.java	365	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/bluetooth/le/ScanResult.java	365	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/content/rollback/RollbackManagerFrameworkInitializer.java	532	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/devicelock/DeviceLockFrameworkInitializer.java	529	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/graphics/ColorMatrix.java	360	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/health/connect/HealthConnectManager.java	399	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/health/connect/HealthServicesInitializer.java	523	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/media/ApplicationMediaCapabilities.java	473	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/media/MediaCommunicationManager.java	396	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/media/MediaFrameworkInitializer.java	614	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/media/MediaFrameworkPlatformInitializer.java	630	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/media/Session2Token.java	360	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/nearby/NearbyFrameworkInitializer.java	517	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ConnectivityFrameworkInitializer.java	526	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ConnectivityFrameworkInitializerTiramisu.java	542	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ConnectivityManager.java	458	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/InetAddresses.java	356	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/IpPrefix.java	341	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/IpSecAlgorithm.java	359	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/LinkAddress.java	350	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/LinkProperties.java	359	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/MacAddress.java	347	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/Network.java	338	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkCapabilities.java	374	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkIdentity.java	430	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkInfo.java	430	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkRequest.java	427	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkStats.java	417	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkStatsCollection.java	511	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkStatsHistory.java	506	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/NetworkTemplate.java	430	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ParseException.java	359	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ProxyInfo.java	832	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/QosSessionAttributes.java	377	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/RouteInfo.java	344	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/TetheringManager.java	932	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/TrafficStats.java	823	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/TransportInfo.java	356	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/eap/EapSessionConfig.java	1017	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/ChildSaProposal.java	450	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeDerAsn1DnIdentification.java	415	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeFqdnIdentification.java	400	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeIdentification.java	388	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeIpv4AddrIdentification.java	412	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeIpv6AddrIdentification.java	412	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeKeyIdIdentification.java	403	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeRfc822AddrIdentification.java	418	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeSaProposal.java	444	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeSessionParams.java	1237	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeTrafficSelector.java	391	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/IkeTunnelConnectionParams.java	412	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/SaProposal.java	367	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/TunnelModeChildSessionParams.java	1225	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/ipsec/ike/ike3gpp/Ike3gppExtension.java	401	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/ScanResult.java	357	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/SoftApConfiguration.java	452	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/WifiConfiguration.java	378	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/WifiFrameworkInitializer.java	515	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/WifiInfo.java	351	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/WifiManager.java	360	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/net/wifi/WifiSsid.java	351	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/nfc/NfcFrameworkInitializer.java	602	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/ondevicepersonalization/OnDevicePersonalizationFrameworkInitializer.java	568	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/os/StatsFrameworkInitializer.java	608	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/provider/DeviceConfig.java	59327	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/provider/DeviceConfigInitializer.java	617	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/provider/MediaStore.java	929	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/provider/WritableFlags.java	125495	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/safetycenter/SafetyCenterFrameworkInitializer.java	535	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/scheduling/SchedulingFrameworkInitializer.java	529	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/system/virtualmachine/VirtualizationFrameworkInitializer.java	548	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/telephony/TelephonyFrameworkInitializer.java	631	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/util/StatsEvent.java	2199	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/util/StatsLog.java	655	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/android/uwb/UwbFrameworkInitializer.java	508	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/AsYouTypeFormatter.java	407	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/NumberParseException.java	413	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/PhoneNumberMatch.java	401	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/PhoneNumberUtil.java	628	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/Phonenumber.java	562	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/i18n/phonenumbers/geocoding/PhoneNumberOfflineGeocoder.java	451	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/CertPinManager.java	387	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/ClientSessionContext.java	405	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/ConscryptCertStore.java	399	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/FileClientSessionCache.java	411	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/OpenSSLSocketImpl.java	396	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/SSLClientSessionCache.java	408	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/TrustManagerImpl.java	393	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/TrustedCertificateIndex.java	414	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/android/org/conscrypt/TrustedCertificateStore.java	489	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/com/google/android/rappor/Encoder.java	366	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/org/ccil/cowan/tagsoup/HTMLSchema.java	369	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/mainline-stubs/java/org/ccil/cowan/tagsoup/Parser.java	357	adapter-java-src	Apache-2.0 (AOSP API stubs)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/core/jni/skia_codec_register.cpp	14901	adapter-c-src	BSD-3-Clause (Skia)	HIGH-bridge-core
+/home/HanBingChen/adapter/framework/hwui-shim/jni/oh_skia_ahb_shim.cpp	11188	adapter-c-src	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/skia_rtti_shim/BUILD.gn	2114	build-config	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/skia_rtti_shim/README.md	4141	doc	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/skia_rtti_shim/skia_class_list.inc	2949	config-or-text	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/skia_rtti_shim/skia_rtti_shim.cpp	3718	adapter-c-src	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/framework/surface/jni/skia_rtti_shim/skia_rtti_shim.ver	794	config-or-text	BSD-3-Clause (Skia)	HIGH-bridge-src
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_force_failflush_false_v4d.py	3081	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_gate_probe_v4.py	8288	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_gate_probe_v4b.py	4855	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_preflush_probe_v4c.py	8887	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_replay_probe.py	8318	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_replay_probe_v2.py	14954	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_replay_probe_v3.py	12379	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/apply_oh_sk_revert_v4d.py	3704	build-script-py	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/third_party/externals/icu/source/i18n/decimfmt.cpp.patch	711	source-patch	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/ohos_patches/third_party/skia/m133/third_party/externals/icu/source/i18n/number_decimalquantity.cpp.patch	591	source-patch	BSD-3-Clause (Skia)	LOW
+/home/HanBingChen/adapter/out/adapter/adapter-mainline-stubs.jar	49407	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/classes_test_dex/classes.dex	236828	adapter-dex	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/adapter/framework-dex/classes.dex	258588	adapter-dex	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/adapter/libapk_installer.so	370932	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/liboh_adapter_bridge.so	1569240	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/liboh_android_runtime.so	294384	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/liboh_hwui_shim.so	174496	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/liboh_skia_rtti_shim.so	12632	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/oh-adapter-framework.jar	103253	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/oh-adapter-runtime.jar	33346	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-adapter
+/home/HanBingChen/adapter/out/adapter/runtime-build/dex/classes.dex	73232	adapter-dex	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/aosp_fwk/apache-xml.jar	1199041	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/bouncycastle.jar	1473697	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/core-icu4j.jar	1195762	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/core-libart.jar	564550	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/core-oj.jar	5536847	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/framework-classes.dex.jar	39457968	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/framework-res-package.jar	34449293	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/framework.jar	40087842	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/oh-adapter-framework.jar	92816	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/oh-adapter-runtime.jar	21532	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_fwk/okhttp.jar	401190	cross-built-jar	Apache-2.0 (built from AOSP source)	HIGH-fwk
+/home/HanBingChen/adapter/out/aosp_lib/libandroid_runtime.so	895228	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libandroidfw.so	591116	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libandroidio.so	12804	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libart-compiler.so	3641376	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libart.so	11765908	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libart_runtime_stubs.so	99436	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libartbase.so	367044	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libartpalette-system.so	19140	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libartpalette.so	18684	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libbase.so	133100	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libbionic_compat.so	18496	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libcrypto.so	1491428	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libcutils.so	36284	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libdexfile.so	303428	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libelffile.so	31408	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libexpat.so	194548	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libft2.so	535012	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libharfbuzz_ng.so	1132720	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libhwui.so	2260012	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libicu_jni.so	132392	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libicui18n.so	3116820	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libicuuc.so	1842124	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libjavacore.so	373208	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/liblog.so	89612	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/liblz4.so	161524	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libminikin.so	256000	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libnativebridge.so	21840	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libnativehelper.so	29828	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libnativeloader.so	201312	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libopenjdk.so	274352	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libopenjdkjvm.so	61932	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libprofile.so	217544	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libsigchain.so	20188	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libtinyxml2.so	110720	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libunwindstack.so	701464	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libutils.so	177632	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libvixl.so	1490256	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/aosp_lib/libziparchive.so	120772	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-lib
+/home/HanBingChen/adapter/out/boot-image/arm/boot-core-libart.art	331776	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/arm/boot-core-libart.oat	693664	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/arm/boot-core-libart.vdex	8408	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/arm/boot.art	3395584	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/arm/boot.oat	9629564	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/arm/boot.vdex	77400	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/boot-adapter-mainline-stubs.art	245760	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-adapter-mainline-stubs.oat	43180	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-adapter-mainline-stubs.vdex	174500	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-apache-xml.art	1327104	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-apache-xml.oat	1375596	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-apache-xml.vdex	18388	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-bouncycastle.art	827392	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-bouncycastle.oat	2204124	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-bouncycastle.vdex	32980	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-icu4j.art	1425408	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-icu4j.oat	3880540	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-icu4j.vdex	2403760	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-libart.art	339968	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-libart.oat	660328	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-core-libart.vdex	8404	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-framework.art	23781376	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-framework.oat	51271200	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-framework.vdex	37029828	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-oh-adapter-framework.art	147456	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-oh-adapter-framework.oat	456320	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-oh-adapter-framework.vdex	243760	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-okhttp.art	225280	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-okhttp.oat	639504	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot-okhttp.vdex	5168	boot-image-segment	Apache-2.0 (built from AOSP source)	HIGH-bcp
+/home/HanBingChen/adapter/out/boot-image/boot.art	3436544	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/boot.oat	8939492	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/boot-image/boot.vdex	77400	boot-image-segment	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libabilityms.z.so	64099484	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libappms.z.so	27561580	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libbms.z.so	87664288	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/librender_service.z.so	124425856	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/librender_service_base.z.so	168270348	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libscene_session.z.so	43494928	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libskia_canvaskit.z.so	196316112	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/lib.unstripped/libsurface.z.so	11010496	cross-built-so	Apache-2.0 (built from AOSP source)	LOW
+/home/HanBingChen/adapter/out/oh-service/libabilityms.z.so	4627104	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libappms.z.so	1777992	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libappspawn_client.z.so	42480	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libbms.z.so	5070672	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/librender_service.z.so	5439256	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/librender_service_base.z.so	8112900	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libscene_session.z.so	2095244	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libscene_session_manager.z.so	2112236	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libskia_canvaskit.z.so	23300376	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libsurface.z.so	415636	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/oh-service/libwms.z.so	1072868	cross-built-so	Apache-2.0 (built from AOSP source)	HIGH-oh-service
+/home/HanBingChen/adapter/out/aosp_fwk/framework-res.apk	34449293	test-apk	HBC test artifact	LOW
+/home/HanBingChen/adapter/out/app/HelloWorld.apk	55950	test-apk	HBC test artifact	HIGH-test
+/home/HanBingChen/adapter/out/app/helloworld_resources.hap	51488	test-apk	HBC test artifact	HIGH-test

@@ -1,0 +1,39 @@
+================================================================================
+ AOSP Modification: ActivityTaskManager.java
+ File: frameworks/core/java/android/app/ActivityTaskManager.java
+ Purpose: Replace IActivityTaskManager Singleton to return ActivityTaskManagerAdapter
+================================================================================
+
+--- a/core/java/android/app/ActivityTaskManager.java
++++ b/core/java/android/app/ActivityTaskManager.java
+@@ -39,6 +39,9 @@ import android.util.Singleton;
+ ...existing imports...
+
++// [OH_ADAPTER] Import adapter classes
++import adapter.core.OHEnvironment;
++import adapter.activity.ActivityTaskManagerAdapter;
++
+ ...
+
+@@ -159,11 +162,21 @@ public class ActivityTaskManager {
+     @UnsupportedAppUsage(trackingBug = 129726065)
+     private static final Singleton<IActivityTaskManager> IActivityTaskManagerSingleton =
+             new Singleton<IActivityTaskManager>() {
+                 @Override
+                 protected IActivityTaskManager create() {
+-                    final IBinder b = ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE);
+-                    return IActivityTaskManager.Stub.asInterface(b);
++                    // [OH_ADAPTER] Check if OH adaptation layer is available
++                    if (OHEnvironment.isOHEnvironment()) {
++                        try {
++                            return new ActivityTaskManagerAdapter();
++                        } catch (Exception e) {
++                            android.util.Log.w("ActivityTaskManager",
++                                "OH adapter init failed, falling back to original", e);
++                        }
++                    }
++                    // Original AOSP implementation (fallback)
++                    final IBinder b = ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE);
++                    return IActivityTaskManager.Stub.asInterface(b);
+                 }
+             };

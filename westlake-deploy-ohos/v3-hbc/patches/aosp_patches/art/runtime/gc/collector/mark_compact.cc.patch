@@ -1,0 +1,21 @@
+--- a/runtime/gc/collector/mark_compact.cc
++++ b/runtime/gc/collector/mark_compact.cc
+@@ -20,6 +20,18 @@
+ #include <linux/falloc.h>
+ #endif
+ #include <linux/userfaultfd.h>
++// OH compat: kernel UAPI predates Linux 5.7 UFFDIO_CONTINUE. Provide the
++// struct so the single call site below compiles. The runtime path requires
++// UFFD_FEATURE_MINOR_SHMEM which OH does not report, so execution never
++// reaches the ioctl.
++#ifndef _UFFDIO_CONTINUE
++#define _UFFDIO_CONTINUE (0x07)
++struct uffdio_continue {
++  struct uffdio_range range;
++  __u64 mode;
++  __s64 mapped;
++};
++#endif
+ #include <poll.h>
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>

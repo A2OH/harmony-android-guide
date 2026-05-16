@@ -1,0 +1,12 @@
+diff --git a/interfaces/inner_api/appexecfwk_base/include/application_info.h b/interfaces/inner_api/appexecfwk_base/include/application_info.h
+index 5a27333d4..bc824db25 100644
+--- a/interfaces/inner_api/appexecfwk_base/include/application_info.h
++++ b/interfaces/inner_api/appexecfwk_base/include/application_info.h
+@@ -60,6 +60,7 @@ enum class BundleType {
+     SHARED = 2,
+     APP_SERVICE_FWK = 3,
+     APP_PLUGIN = 4,
++    APP_ANDROID = 10,      // Android application (APK installed via adapter)
+ };
+ 
+ enum class CompatiblePolicy {

@@ -1,0 +1,200 @@
+###设备文件备份<一次性, TS 用当天日期, 例 20260421; 仅设备侧 cp, 不做本机 hdc file recv>
+hdc shell mount -o rw,remount /
+hdc shell "cd /system/lib && cp libwms.z.so libwms.z.so.orig_20260421 && cp libappms.z.so libappms.z.so.orig_20260421 && cp libbms.z.so libbms.z.so.orig_20260421 && cp libskia_canvaskit.z.so libskia_canvaskit.z.so.orig_20260421 && cp libinstalls.z.so libinstalls.z.so.orig_20260421 && cp libappspawn_client.z.so libappspawn_client.z.so.orig_20260421"
+hdc shell "cd /system/lib/platformsdk && cp libabilityms.z.so libabilityms.z.so.orig_20260421 && cp libscene_session_manager.z.so libscene_session_manager.z.so.orig_20260421 && cp libscene_session.z.so libscene_session.z.so.orig_20260421 && cp librender_service_base.z.so librender_service_base.z.so.orig_20260421 && cp libappexecfwk_common.z.so libappexecfwk_common.z.so.orig_20260421"
+hdc shell "cd /system/etc && cp ld-musl-namespace-arm.ini ld-musl-namespace-arm.ini.orig_20260421"
+hdc shell "cd /system/etc/selinux/targeted/contexts && cp file_contexts file_contexts.orig_20260421"
+hdc shell "ls /system/lib/*.orig_20260421 /system/lib/platformsdk/*.orig_20260421 /system/etc/ld-musl-namespace-arm.ini.orig_20260421 /system/etc/selinux/targeted/contexts/file_contexts.orig_20260421 | wc -l"
+
+### 目录创建<一次性; /system/etc/init 和 /system/lib/platformsdk 是 factory 原有, 前者不建, 后者 mkdir -p 幂等>
+hdc shell mkdir -p /system/lib/platformsdk
+hdc shell mkdir -p /system/android/lib
+hdc shell mkdir -p /system/android/framework/arm
+hdc shell mkdir -p /system/android/etc/icu
+hdc shell mkdir -p /data/local/tmp/stage
+hdc shell "mkdir -p /data/service/el1/public/appspawnx/dalvik-cache"
+hdc shell "mkdir -p /data/misc/appspawnx/dalvik-cache/arm"
+hdc shell "param set persist.oh.adapter.enabled true"
+
+### 公共命令
+hdc list targets
+hdc shell mount -o rw,remount /
+hdc shell begetctl stop_service foundation
+hdc shell begetctl stop_service render_service
+hdc shell "pidof foundation; pidof render_service; pidof hdcd"
+hdc shell reboot
+
+###部署 OH 系统服务 (10 files) — 先到 staging, 再 cp 到 /system
+hdc shell mount -o rw,remount /
+hdc file send out\oh-service\libwms.z.so /data/local/tmp/stage/libwms.z.so
+hdc file send out\oh-service\libappms.z.so /data/local/tmp/stage/libappms.z.so
+hdc file send out\oh-service\libbms.z.so /data/local/tmp/stage/libbms.z.so
+hdc file send out\oh-service\libskia_canvaskit.z.so /data/local/tmp/stage/libskia_canvaskit.z.so
+hdc file send out\oh-service\libappspawn_client.z.so /data/local/tmp/stage/libappspawn_client.z.so
+hdc file send out\oh-service\libabilityms.z.so /data/local/tmp/stage/libabilityms.z.so
+hdc file send out\oh-service\libscene_session_manager.z.so /data/local/tmp/stage/libscene_session_manager.z.so
+hdc file send out\oh-service\libscene_session.z.so /data/local/tmp/stage/libscene_session.z.so
+hdc file send out\oh-service\librender_service_base.z.so /data/local/tmp/stage/librender_service_base.z.so
+hdc file send out\aosp_lib\libappexecfwk_common.z.so /data/local/tmp/stage/libappexecfwk_common.z.so
+hdc shell "ls -la /data/local/tmp/stage/ | grep '^d' | grep -vE ' \\.$| \\.\\.$'"
+hdc shell "cp /data/local/tmp/stage/libwms.z.so /system/lib/libwms.z.so && cp /data/local/tmp/stage/libappms.z.so /system/lib/libappms.z.so && cp /data/local/tmp/stage/libbms.z.so /system/lib/libbms.z.so && cp /data/local/tmp/stage/libskia_canvaskit.z.so /system/lib/libskia_canvaskit.z.so && cp /data/local/tmp/stage/libappspawn_client.z.so /system/lib/libappspawn_client.z.so"
+hdc shell "cp /data/local/tmp/stage/libabilityms.z.so /system/lib/platformsdk/libabilityms.z.so && cp /data/local/tmp/stage/libscene_session_manager.z.so /system/lib/platformsdk/libscene_session_manager.z.so && cp /data/local/tmp/stage/libscene_session.z.so /system/lib/platformsdk/libscene_session.z.so && cp /data/local/tmp/stage/librender_service_base.z.so /system/lib/platformsdk/librender_service_base.z.so && cp /data/local/tmp/stage/libappexecfwk_common.z.so /system/lib/platformsdk/libappexecfwk_common.z.so"
+hdc shell "rm -f /system/lib/platformsdk/libbms.z.so && ln -sf /system/lib/libbms.z.so /system/lib/platformsdk/libbms.z.so"
+
+###部署 AOSP Native层基础库 (38 aosp_lib + 3 adapter shim = 41 .so) — 先到 staging 再 cp
+hdc file send out\aosp_lib\libandroid_runtime.so /data/local/tmp/stage/libandroid_runtime.so
+hdc file send out\aosp_lib\libandroidfw.so /data/local/tmp/stage/libandroidfw.so
+hdc file send out\aosp_lib\libandroidio.so /data/local/tmp/stage/libandroidio.so
+hdc file send out\aosp_lib\libart-compiler.so /data/local/tmp/stage/libart-compiler.so
+hdc file send out\aosp_lib\libart.so /data/local/tmp/stage/libart.so
+hdc file send out\aosp_lib\libart_runtime_stubs.so /data/local/tmp/stage/libart_runtime_stubs.so
+hdc file send out\aosp_lib\libartbase.so /data/local/tmp/stage/libartbase.so
+hdc file send out\aosp_lib\libartpalette-system.so /data/local/tmp/stage/libartpalette-system.so
+hdc file send out\aosp_lib\libartpalette.so /data/local/tmp/stage/libartpalette.so
+hdc file send out\aosp_lib\libbase.so /data/local/tmp/stage/libbase.so
+hdc file send out\aosp_lib\libbionic_compat.so /data/local/tmp/stage/libbionic_compat.so
+hdc file send out\aosp_lib\libcrypto.so /data/local/tmp/stage/libcrypto.so
+hdc file send out\aosp_lib\libcutils.so /data/local/tmp/stage/libcutils.so
+hdc file send out\aosp_lib\libdexfile.so /data/local/tmp/stage/libdexfile.so
+hdc file send out\aosp_lib\libelffile.so /data/local/tmp/stage/libelffile.so
+hdc file send out\aosp_lib\libexpat.so /data/local/tmp/stage/libexpat.so
+hdc file send out\aosp_lib\libft2.so /data/local/tmp/stage/libft2.so
+hdc file send out\aosp_lib\libharfbuzz_ng.so /data/local/tmp/stage/libharfbuzz_ng.so
+hdc file send out\aosp_lib\libhwui.so /data/local/tmp/stage/libhwui.so
+hdc file send out\aosp_lib\libicu_jni.so /data/local/tmp/stage/libicu_jni.so
+hdc file send out\aosp_lib\libicui18n.so /data/local/tmp/stage/libicui18n.so
+hdc file send out\aosp_lib\libicuuc.so /data/local/tmp/stage/libicuuc.so
+hdc file send out\aosp_lib\libjavacore.so /data/local/tmp/stage/libjavacore.so
+hdc file send out\aosp_lib\liblog.so /data/local/tmp/stage/liblog.so
+hdc file send out\aosp_lib\liblz4.so /data/local/tmp/stage/liblz4.so
+hdc file send out\aosp_lib\libminikin.so /data/local/tmp/stage/libminikin.so
+hdc file send out\aosp_lib\libnativebridge.so /data/local/tmp/stage/libnativebridge.so
+hdc file send out\aosp_lib\libnativehelper.so /data/local/tmp/stage/libnativehelper.so
+hdc file send out\aosp_lib\libnativeloader.so /data/local/tmp/stage/libnativeloader.so
+hdc file send out\aosp_lib\libopenjdk.so /data/local/tmp/stage/libopenjdk.so
+hdc file send out\aosp_lib\libopenjdkjvm.so /data/local/tmp/stage/libopenjdkjvm.so
+hdc file send out\aosp_lib\libprofile.so /data/local/tmp/stage/libprofile.so
+hdc file send out\aosp_lib\libsigchain.so /data/local/tmp/stage/libsigchain.so
+hdc file send out\aosp_lib\libtinyxml2.so /data/local/tmp/stage/libtinyxml2.so
+hdc file send out\aosp_lib\libunwindstack.so /data/local/tmp/stage/libunwindstack.so
+hdc file send out\aosp_lib\libutils.so /data/local/tmp/stage/libutils.so
+hdc file send out\aosp_lib\libvixl.so /data/local/tmp/stage/libvixl.so
+hdc file send out\aosp_lib\libziparchive.so /data/local/tmp/stage/libziparchive.so
+hdc file send out\adapter\liboh_hwui_shim.so /data/local/tmp/stage/liboh_hwui_shim.so
+hdc file send out\adapter\liboh_android_runtime.so /data/local/tmp/stage/liboh_android_runtime.so
+hdc file send out\adapter\liboh_skia_rtti_shim.so /data/local/tmp/stage/liboh_skia_rtti_shim.so
+hdc shell "cp /data/local/tmp/stage/libandroid_runtime.so /data/local/tmp/stage/libandroidfw.so /data/local/tmp/stage/libandroidio.so /data/local/tmp/stage/libart-compiler.so /data/local/tmp/stage/libart.so /data/local/tmp/stage/libart_runtime_stubs.so /data/local/tmp/stage/libartbase.so /data/local/tmp/stage/libartpalette-system.so /data/local/tmp/stage/libartpalette.so /data/local/tmp/stage/libbase.so /data/local/tmp/stage/libbionic_compat.so /data/local/tmp/stage/libcrypto.so /data/local/tmp/stage/libcutils.so /data/local/tmp/stage/libdexfile.so /data/local/tmp/stage/libelffile.so /data/local/tmp/stage/libexpat.so /data/local/tmp/stage/libft2.so /data/local/tmp/stage/libharfbuzz_ng.so /data/local/tmp/stage/libhwui.so /data/local/tmp/stage/libicu_jni.so /system/android/lib/"
+hdc shell "cp /data/local/tmp/stage/libicui18n.so /data/local/tmp/stage/libicuuc.so /data/local/tmp/stage/libjavacore.so /data/local/tmp/stage/liblog.so /data/local/tmp/stage/liblz4.so /data/local/tmp/stage/libminikin.so /data/local/tmp/stage/libnativebridge.so /data/local/tmp/stage/libnativehelper.so /data/local/tmp/stage/libnativeloader.so /data/local/tmp/stage/libopenjdk.so /data/local/tmp/stage/libopenjdkjvm.so /data/local/tmp/stage/libprofile.so /data/local/tmp/stage/libsigchain.so /data/local/tmp/stage/libtinyxml2.so /data/local/tmp/stage/libunwindstack.so /data/local/tmp/stage/libutils.so /data/local/tmp/stage/libvixl.so /data/local/tmp/stage/libziparchive.so /data/local/tmp/stage/liboh_hwui_shim.so /data/local/tmp/stage/liboh_android_runtime.so /data/local/tmp/stage/liboh_skia_rtti_shim.so /system/android/lib/"
+hdc shell "ls /system/android/lib/*.so | wc -l"
+
+###部署 AOSP Java层Framework (11 jars + 1 ICU) — 先到 staging 再 cp
+hdc file send out\aosp_fwk\framework.jar /data/local/tmp/stage/framework.jar
+hdc file send out\aosp_fwk\framework-classes.dex.jar /data/local/tmp/stage/framework-classes.dex.jar
+hdc file send out\aosp_fwk\framework-res-package.jar /data/local/tmp/stage/framework-res-package.jar
+hdc file send out\aosp_fwk\core-oj.jar /data/local/tmp/stage/core-oj.jar
+hdc file send out\aosp_fwk\core-libart.jar /data/local/tmp/stage/core-libart.jar
+hdc file send out\aosp_fwk\core-icu4j.jar /data/local/tmp/stage/core-icu4j.jar
+hdc file send out\aosp_fwk\okhttp.jar /data/local/tmp/stage/okhttp.jar
+hdc file send out\aosp_fwk\bouncycastle.jar /data/local/tmp/stage/bouncycastle.jar
+hdc file send out\aosp_fwk\apache-xml.jar /data/local/tmp/stage/apache-xml.jar
+hdc file send out\adapter\oh-adapter-framework.jar /data/local/tmp/stage/oh-adapter-framework.jar
+hdc file send out\adapter\oh-adapter-runtime.jar /data/local/tmp/stage/oh-adapter-runtime.jar
+hdc file send out\aosp_fwk\icu\icudt72l.dat /data/local/tmp/stage/icudt72l.dat
+hdc shell "cp /data/local/tmp/stage/framework.jar /data/local/tmp/stage/framework-classes.dex.jar /data/local/tmp/stage/framework-res-package.jar /data/local/tmp/stage/core-oj.jar /data/local/tmp/stage/core-libart.jar /data/local/tmp/stage/core-icu4j.jar /data/local/tmp/stage/okhttp.jar /data/local/tmp/stage/bouncycastle.jar /data/local/tmp/stage/apache-xml.jar /data/local/tmp/stage/oh-adapter-framework.jar /data/local/tmp/stage/oh-adapter-runtime.jar /system/android/framework/"
+hdc shell "cp /data/local/tmp/stage/icudt72l.dat /system/android/etc/icu/icudt72l.dat"
+
+###部署 Boot Image (24 files, ARM32) — 先到 staging 再 cp + md5 全验
+hdc file send out\boot-image\boot.art /data/local/tmp/stage/boot.art
+hdc file send out\boot-image\boot.oat /data/local/tmp/stage/boot.oat
+hdc file send out\boot-image\boot.vdex /data/local/tmp/stage/boot.vdex
+hdc file send out\boot-image\boot-core-libart.art /data/local/tmp/stage/boot-core-libart.art
+hdc file send out\boot-image\boot-core-libart.oat /data/local/tmp/stage/boot-core-libart.oat
+hdc file send out\boot-image\boot-core-libart.vdex /data/local/tmp/stage/boot-core-libart.vdex
+hdc file send out\boot-image\boot-core-icu4j.art /data/local/tmp/stage/boot-core-icu4j.art
+hdc file send out\boot-image\boot-core-icu4j.oat /data/local/tmp/stage/boot-core-icu4j.oat
+hdc file send out\boot-image\boot-core-icu4j.vdex /data/local/tmp/stage/boot-core-icu4j.vdex
+hdc file send out\boot-image\boot-okhttp.art /data/local/tmp/stage/boot-okhttp.art
+hdc file send out\boot-image\boot-okhttp.oat /data/local/tmp/stage/boot-okhttp.oat
+hdc file send out\boot-image\boot-okhttp.vdex /data/local/tmp/stage/boot-okhttp.vdex
+hdc file send out\boot-image\boot-bouncycastle.art /data/local/tmp/stage/boot-bouncycastle.art
+hdc file send out\boot-image\boot-bouncycastle.oat /data/local/tmp/stage/boot-bouncycastle.oat
+hdc file send out\boot-image\boot-bouncycastle.vdex /data/local/tmp/stage/boot-bouncycastle.vdex
+hdc file send out\boot-image\boot-apache-xml.art /data/local/tmp/stage/boot-apache-xml.art
+hdc file send out\boot-image\boot-apache-xml.oat /data/local/tmp/stage/boot-apache-xml.oat
+hdc file send out\boot-image\boot-apache-xml.vdex /data/local/tmp/stage/boot-apache-xml.vdex
+hdc file send out\boot-image\boot-framework.art /data/local/tmp/stage/boot-framework.art
+hdc file send out\boot-image\boot-framework.oat /data/local/tmp/stage/boot-framework.oat
+hdc file send out\boot-image\boot-framework.vdex /data/local/tmp/stage/boot-framework.vdex
+hdc file send out\boot-image\boot-oh-adapter-framework.art /data/local/tmp/stage/boot-oh-adapter-framework.art
+hdc file send out\boot-image\boot-oh-adapter-framework.oat /data/local/tmp/stage/boot-oh-adapter-framework.oat
+hdc file send out\boot-image\boot-oh-adapter-framework.vdex /data/local/tmp/stage/boot-oh-adapter-framework.vdex
+hdc shell "cp /data/local/tmp/stage/boot.art /data/local/tmp/stage/boot.oat /data/local/tmp/stage/boot.vdex /data/local/tmp/stage/boot-core-libart.art /data/local/tmp/stage/boot-core-libart.oat /data/local/tmp/stage/boot-core-libart.vdex /data/local/tmp/stage/boot-core-icu4j.art /data/local/tmp/stage/boot-core-icu4j.oat /data/local/tmp/stage/boot-core-icu4j.vdex /data/local/tmp/stage/boot-okhttp.art /data/local/tmp/stage/boot-okhttp.oat /data/local/tmp/stage/boot-okhttp.vdex /system/android/framework/arm/"
+hdc shell "cp /data/local/tmp/stage/boot-bouncycastle.art /data/local/tmp/stage/boot-bouncycastle.oat /data/local/tmp/stage/boot-bouncycastle.vdex /data/local/tmp/stage/boot-apache-xml.art /data/local/tmp/stage/boot-apache-xml.oat /data/local/tmp/stage/boot-apache-xml.vdex /data/local/tmp/stage/boot-framework.art /data/local/tmp/stage/boot-framework.oat /data/local/tmp/stage/boot-framework.vdex /data/local/tmp/stage/boot-oh-adapter-framework.art /data/local/tmp/stage/boot-oh-adapter-framework.oat /data/local/tmp/stage/boot-oh-adapter-framework.vdex /system/android/framework/arm/"
+hdc shell "stat -c '%s' /system/android/framework/arm/boot-framework.art"
+
+###部署 Adapter (appspawn-x + JNI bridges + cfg + namespace linker) — 先到 staging 再 cp
+hdc shell mount -o rw,remount /
+hdc file send out\adapter\appspawn-x /data/local/tmp/stage/appspawn-x
+hdc file send out\adapter\liboh_adapter_bridge.so /data/local/tmp/stage/liboh_adapter_bridge.so
+hdc file send out\adapter\libapk_installer.so /data/local/tmp/stage/libapk_installer.so
+hdc file send out\adapter\libinstalls.z.so /data/local/tmp/stage/libinstalls.z.so
+hdc file send framework\appspawn-x\config\appspawn_x.cfg /data/local/tmp/stage/appspawn_x.cfg
+hdc file send framework\appspawn-x\config\appspawn_x_sandbox.json /data/local/tmp/stage/appspawn_x_sandbox.json
+hdc file send ohos_patches\third_party\musl\config\ld-musl-namespace-arm.ini /data/local/tmp/stage/ld-musl-namespace-arm.ini
+hdc file send out\oh-service\file_contexts /data/local/tmp/stage/file_contexts
+hdc shell "cp /data/local/tmp/stage/appspawn-x /system/bin/appspawn-x"
+hdc shell "cp /data/local/tmp/stage/liboh_adapter_bridge.so /system/lib/liboh_adapter_bridge.so && cp /data/local/tmp/stage/libapk_installer.so /system/lib/libapk_installer.so && cp /data/local/tmp/stage/libinstalls.z.so /system/lib/libinstalls.z.so"
+hdc shell "cp /data/local/tmp/stage/appspawn_x.cfg /system/etc/init/appspawn_x.cfg"
+hdc shell "cp /data/local/tmp/stage/appspawn_x_sandbox.json /system/etc/appspawn_x_sandbox.json"
+hdc shell "cp /data/local/tmp/stage/ld-musl-namespace-arm.ini /system/etc/ld-musl-namespace-arm.ini"
+hdc shell "cp /data/local/tmp/stage/file_contexts /system/etc/selinux/targeted/contexts/file_contexts"
+hdc shell "ln -sf /lib/ld-musl-arm.so.1 /system/lib/libc_musl.so"
+hdc shell "rm -f /system/android/lib/libshared_libz.z.so && ln -sf /system/lib/chipset-sdk-sp/libshared_libz.z.so /system/android/lib/libshared_libz.z.so"
+hdc shell "rm -f /system/android/lib/libappexecfwk_common.z.so && ln -sf /system/lib/platformsdk/libappexecfwk_common.z.so /system/android/lib/libappexecfwk_common.z.so"
+hdc shell chmod 755 /system/bin/appspawn-x
+hdc shell "chmod 644 /system/lib/liboh_adapter_bridge.so /system/lib/libapk_installer.so /system/lib/libinstalls.z.so /system/lib/libappms.z.so /system/lib/libwms.z.so /system/lib/libbms.z.so /system/lib/libskia_canvaskit.z.so /system/lib/libappspawn_client.z.so"
+hdc shell "chmod 644 /system/lib/platformsdk/libabilityms.z.so /system/lib/platformsdk/librender_service_base.z.so /system/lib/platformsdk/libscene_session.z.so /system/lib/platformsdk/libscene_session_manager.z.so /system/lib/platformsdk/libappexecfwk_common.z.so"
+hdc shell "chmod 644 /system/android/lib/*.so"
+hdc shell "chmod 644 /system/android/framework/*.jar"
+hdc shell "chmod 644 /system/android/framework/arm/*.art /system/android/framework/arm/*.oat /system/android/framework/arm/*.vdex"
+hdc shell "chmod 644 /system/etc/init/appspawn_x.cfg /system/etc/appspawn_x_sandbox.json /system/etc/ld-musl-namespace-arm.ini /system/etc/selinux/targeted/contexts/file_contexts"
+# restorecon: 按新 file_contexts 给 push 过的文件重打 SELinux label (必须在 file_contexts 到位之后)
+# 注意: OH toybox restorecon 不支持 -R, 用 find -exec 替代 (覆盖 dir + 文件 + symlink)
+hdc shell restorecon /system/bin/appspawn-x
+hdc shell "find /system/android/lib -exec restorecon {} \;"
+
+###完整性 + 一致性校验 (推荐用 deploy_stage.sh 跑)
+bash deploy/deploy_stage.sh 3.9
+
+###清理 staging
+hdc shell rm -rf /data/local/tmp/stage
+
+###reboot + 系统健康验证
+hdc shell sync
+hdc shell reboot
+hdc list targets
+hdc shell "pidof foundation; pidof render_service; pidof com.ohos.launcher; pidof hdcd"
+hdc shell "hilog | grep -iE 'BMS|BundleMgr' | grep -iE 'ready|init.*ok' | head -5"
+
+###部署 Hello World APK
+hdc file send out\app\HelloWorld.apk /data/local/tmp/HelloWorld.apk
+hdc shell bm install -p /data/local/tmp/HelloWorld.apk
+hdc shell bm dump -n com.example.helloworld
+hdc shell aa start -a com.example.helloworld.MainActivity -b com.example.helloworld
+hdc shell pidof com.example.helloworld
+
+###从ECS同步编译产出到本机 (只同步最终产物，子目录内无中间文件)
+bash build/pull_ecs_artifacts.sh
+
+###手动启动appspawn-x进程
+hdc shell "begetctl start_service appspawn-x"
+
+###紧急回滚 (单文件误推场景; 大事故走物理 recover)
+hdc shell "for f in \$(find /system -name '*.orig_20260421' 2>/dev/null); do cp \$f \${f%.orig_20260421}; done"
+hdc shell "rm -rf /system/android /system/bin/appspawn-x /system/lib/liboh_adapter_bridge.so /system/lib/libapk_installer.so /system/lib/libinstalls.z.so /system/etc/init/appspawn_x.cfg /system/etc/appspawn_x_sandbox.json"
+hdc shell reboot
+
+本机VSCode访问ECS方法：
+  1. VS Code 中按 F1 → 输入 Remote-SSH: Connect to Host
+  2. 选择 oh-build（会自动读取你的 ~/.ssh/config）
+  3. 连接后打开文件夹 /home/HanBingChen/oh/ 即可编辑源码

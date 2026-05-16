@@ -1,0 +1,18 @@
+--- /home/HanBingChen/aosp/external/icu/android_icu4j/Android.bp.bak	2026-04-27 10:28:32.377368432 +0800
++++ /home/HanBingChen/aosp/external/icu/android_icu4j/Android.bp	2026-04-27 10:28:32.377368432 +0800
+@@ -94,6 +94,7 @@
+ // since it is in a different APEX module that can be updated independently.
+ java_library_static {
+     name: "core-repackaged-icu4j",
++    java_version: "1.8",
+     installable: false,
+     srcs: [":android_icu4j_repackaged_src_files"],
+     libs: ["unsupportedappusage"],
+@@ -126,6 +127,7 @@
+ // not in ART module.
+ java_library {
+     name: "core-icu4j",
++    java_version: "1.8",
+     defaults: ["libcore_icu_bridge_defaults"],
+     visibility: [
+         "//packages/modules/RuntimeI18n/apex",

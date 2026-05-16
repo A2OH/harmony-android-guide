@@ -1,0 +1,21 @@
+--- base/security/selinux_adapter/sepolicy/ohos_policy/startup/appspawn/system/file_contexts
++++ base/security/selinux_adapter/sepolicy/ohos_policy/startup/appspawn/system/file_contexts
+@@ -12,6 +12,8 @@
+ # limitations under the License.
+
+ /system/bin/appspawn        u:object_r:appspawn_exec:s0
++# adapter project: Android APK spawner binary
++/system/bin/appspawn-x      u:object_r:appspawn_exec:s0
+
+ /system/bin/cjappspawn        u:object_r:cjappspawn_exec:s0
+
+@@ -26,3 +28,9 @@
+ /dev/unix/socket/CJAppSpawn       u:object_r:appspawn_socket:s0
+
+ /dev/unix/socket/NativeSpawn       u:object_r:appspawn_socket:s0
++# adapter project: AppSpawnX socket (Android APK spawner)
++/dev/unix/socket/AppSpawnX         u:object_r:appspawn_socket:s0
++# adapter project: Android native lib dir (must be system_lib_file for mmap PROT_EXEC in appspawn domain)
++/system/android/lib(/.*)?          u:object_r:system_lib_file:s0
++# adapter project: Android framework dir (boot image + AOSP jars, need system_lib_file for ART flock)
++/system/android/framework(/.*)?    u:object_r:system_lib_file:s0

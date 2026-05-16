@@ -1,0 +1,11 @@
+uname=aarch64; pwd=/; free=/dev/block/mmcblk0p15  19G 1.0G   18G   6% /mnt/user/100/nosharefs/appdata/el5/base
+00_initial.jpeg
+00_layout.xml
+00_start.png
+01_enableWifi.png
+01_enableWifi_L.xml
+01_isActive.png
+01_wifi_basic.jpeg
+02_after_enable.jpeg
+02_disable.png
+02_disableWifi.png

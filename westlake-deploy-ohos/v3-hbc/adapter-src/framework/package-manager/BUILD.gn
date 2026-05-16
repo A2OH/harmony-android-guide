@@ -1,0 +1,57 @@
+# BUILD.gn for apk-installer module
+#
+# APK installation subsystem: AXML parser, BundleInfo mapper,
+# file deployment, permission mapping, and signature verification.
+#
+# This module is a shared library linked into the BMS (BundleManagerService)
+# process to handle Android APK installation alongside standard HAP installation.
+
+import("//build/ohos.gni")
+
+config("apk_installer_config") {
+  include_dirs = [
+    "jni",
+    "//third_party/minizip",
+    "//third_party/openssl/include",
+    "//third_party/json/include",
+    # AOSP androidfw headers (from cross-compiled ART)
+    "//prebuilts/android/frameworks/native/include",
+    "//prebuilts/android/system/core/include",
+    # OH BMS headers
+    "//foundation/bundlemanager/bundle_framework/interfaces/inner_api/appexecfwk_base/include",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
+    # OH base
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "//commonlibrary/c_utils/base/include",
+  ]
+}
+
+ohos_shared_library("apk_installer") {
+  sources = [
+    "jni/apk_manifest_parser.cpp",
+    "jni/apk_bundle_parser.cpp",
+    "jni/apk_installer.cpp",
+    "jni/permission_mapper.cpp",
+    "jni/apk_signature_verifier.cpp",
+  ]
+
+  configs = [ ":apk_installer_config" ]
+
+  deps = [
+    "//third_party/minizip:minizip",
+    "//third_party/openssl:libcrypto_shared",
+    "//third_party/openssl:libssl_shared",
+    # AOSP androidfw library (ResXMLParser)
+    "//prebuilts/android/frameworks:libandroidfw",
+  ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
+
+  part_name = "oh_adapter"
+  subsystem_name = "oh_adapter"
+}

@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>OH 补丁差异报告 — Android-OH Adapter</title>
+<style>
+body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; margin: 20px 40px; background: #fafafa; color: #333; }
+h1 { background: linear-gradient(135deg, #1a5276, #2980b9); color: #fff; padding: 16px 24px; border-radius: 6px; }
+h2 { background: linear-gradient(135deg, #1e8449, #27ae60); color: #fff; padding: 10px 18px; border-radius: 4px; margin-top: 30px; }
+h3 { background: #ecf0f1; padding: 8px 14px; border-left: 4px solid #2980b9; margin-top: 20px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+th { background: #2c3e50; color: #fff; padding: 8px 12px; text-align: left; }
+td { border: 1px solid #ddd; padding: 6px 12px; }
+tr:nth-child(even) { background: #f2f2f2; }
+.add { color: #27ae60; font-weight: bold; }
+.del { color: #c0392b; font-weight: bold; }
+.new-tag { background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 0.85em; }
+pre.diff { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px; line-height: 1.4; max-height: 600px; overflow-y: auto; }
+.diff-add { color: #6a9955; }
+.diff-del { color: #f44747; }
+.diff-hunk { color: #569cd6; font-weight: bold; }
+.diff-header { color: #dcdcaa; }
+.diff-ctx { color: #d4d4d4; }
+a { color: #2980b9; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.toc { background: #fff; border: 1px solid #ddd; padding: 16px 24px; border-radius: 6px; margin: 16px 0; }
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { padding: 3px 0; }
+.toc li::before { content: "\25B6"; color: #2980b9; margin-right: 8px; font-size: 0.8em; }
+.summary { background: #eaf2f8; border: 1px solid #aed6f1; padding: 12px 18px; border-radius: 4px; margin: 12px 0; }
+</style>
+</head>
+<body>
+<h1>OH 补丁差异报告</h1>
+<p><strong>基线版本：</strong>OH V7.0.0.18-strict (sdk 26.0.0.18)<br>
+<strong>目标产品：</strong>rk3568 (arm32)<br>
+<strong>补丁来源：</strong>adapter/ohos_patches/ (ability_rt + bundle_framework)<br>
+<strong>生成日期：</strong>2026-04-07<br>
+<strong>编译验证：</strong>5 个关键目标全部通过 (libabilityms, libappms, libscene_session_manager, libscene_session, libbms)</p>
+
+<div class="toc">
+<strong>目录</strong>
+<ul>
+<li><a href="#ch1">1. 变更总览</a></li>
+<li><a href="#ch2">2. ability_rt 补丁详情</a></li>
+<li><a href="#ch3">3. bundle_framework 补丁详情</a></li>
+<li><a href="#ch4">4. 新增文件</a></li>
+<li><a href="#ch5">5. 未应用的补丁</a></li>
+</ul>
+</div>
+
+<h2 id="ch1">1. 变更总览</h2>
+<table><tr><th>#</th><th>模块</th><th>文件</th><th>说明</th><th>增</th><th>删</th></tr>
+<tr><td>1</td><td>ability_rt</td><td><a href="#file1">services/abilitymgr/include/mission/mission.h</a></td><td>Mission 类头文件 — 添加多 Ability 栈支持</td><td class="add">+319</td><td class="del">-237</td></tr>
+<tr><td>2</td><td>ability_rt</td><td><a href="#file2">services/abilitymgr/src/mission/mission.cpp</a></td><td>Mission 类实现 — 多 Ability 栈操作方法</td><td class="add">+287</td><td class="del">-165</td></tr>
+<tr><td>3</td><td>ability_rt</td><td><a href="#file3">interfaces/.../ability_manager_interface.h</a></td><td>IAbilityManager 接口 — 添加 StartAbilityInMission()</td><td class="add">+14</td><td class="del">-0</td></tr>
+<tr><td>4</td><td>ability_rt</td><td><a href="#file4">interfaces/.../ability_manager_ipc_interface_code.h</a></td><td>IPC 接口编码 — 添加 START_ABILITY_IN_MISSION = 6200</td><td class="add">+3</td><td class="del">-0</td></tr>
+<tr><td>5</td><td>ability_rt</td><td><a href="#file5">services/appmgr/include/remote_client_manager.h</a></td><td>RemoteClientManager 头文件 — 添加 GetAndroidSpawnClient()</td><td class="add">+3</td><td class="del">-0</td></tr>
+<tr><td>6</td><td>ability_rt</td><td><a href="#file6">services/appmgr/src/remote_client_manager.cpp</a></td><td>RemoteClientManager 实现 — appspawn-x 客户端</td><td class="add">+9</td><td class="del">-0</td></tr>
+<tr><td>7</td><td>ability_rt</td><td><a href="#file7">services/appmgr/src/app_mgr_service_inner.cpp</a></td><td>AppMgrServiceInner — APP_ANDROID 路由到 appspawn-x</td><td class="add">+12</td><td class="del">-1</td></tr>
+<tr><td>8</td><td>bundle_framework</td><td><a href="#file8">interfaces/.../application_info.h</a></td><td>BundleType 枚举 — 添加 APP_ANDROID = 10</td><td class="add">+0</td><td class="del">-0</td></tr>
+<tr><td>9</td><td>bundle_framework</td><td><a href="#file9">services/bundlemgr/include/ipc/installd_interface.h</a></td><td>IInstalld 接口 — 添加 5 个 Android 安装 IPC 方法</td><td class="add">+39</td><td class="del">-0</td></tr>
+<tr><td>10</td><td>bundle_framework</td><td><a href="#file10">services/bundlemgr/src/bundle_installer.cpp</a></td><td>BundleInstaller — APK 检测逻辑 (#ifdef OH_ADAPTER_ANDROID)</td><td class="add">+12</td><td class="del">-0</td></tr>
+<tr><td>11</td><td>ability_rt</td><td><a href="#file11">services/abilitymgr/src/mission/mission_list_manager_patch.cpp</a> <span class="new-tag">NEW</span></td><td>MissionListManager 扩展 — StartAbilityInMission 实现</td><td class="add">+231</td><td class="del">-0</td></tr>
+<tr><td>12</td><td>bundle_framework</td><td><a href="#file12">services/bundlemgr/src/installd/installd_host_impl_android.cpp</a> <span class="new-tag">NEW</span></td><td>Installd Android 实现 — 5 个 IPC 方法实现</td><td class="add">+273</td><td class="del">-0</td></tr>
+<tr style="font-weight:bold"><td colspan="4">合计</td><td class="add">+1202</td><td class="del">-403</td></tr>
+</table>
+<div class="summary">共修改 <strong>10</strong> 个文件，新增 <strong>2</strong> 个文件。补丁范围覆盖 Mission 多 Ability 栈、Android 进程启动路由、APK 安装框架。</div>
+<h2 id="ch2">2. ability_rt 补丁详情</h2>
+<h3 id="file1">services/abilitymgr/include/mission/mission.h</h3>
+<p>Mission 类头文件 — 添加多 Ability 栈支持</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/services/abilitymgr/include/mission/mission.h.bak	2026-04-07 10:28:09.352671185 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/services/abilitymgr/include/mission/mission.h	2026-04-07 10:28:09.356671347 +0800</span>
+<span class="diff-hunk">@@ -1,237 +1,319 @@</span>
+<span class="diff-del">-/*</span>
+<span class="diff-del">- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.</span>
+<span class="diff-del">- * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="diff-del">- * you may not use this file except in compliance with the License.</span>
+<span class="diff-del">- * You may obtain a copy of the License at</span>
+<span class="diff-del">- *</span>
+<span class="diff-del">- *     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="diff-del">- *</span>
+<span class="diff-del">- * Unless required by applicable law or agreed to in writing, software</span>
+<span class="diff-del">- * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="diff-del">- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="diff-del">- * See the License for the specific language governing permissions and</span>
+<span class="diff-del">- * limitations under the License.</span>
+<span class="diff-del">- */</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-#ifndef OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-del">-#define OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-#include &lt;memory&gt;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-#include &quot;inner_mission_info.h&quot;</span>
+<span class="diff-del">-#include &quot;mission_ability_record.h&quot;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-namespace OHOS {</span>
+<span class="diff-del">-namespace AAFwk {</span>
+<span class="diff-del">-class MissionList;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-/**</span>
+<span class="diff-del">- * @class Mission</span>
+<span class="diff-del">- * a mission only contains an AbilityRecord</span>
+<span class="diff-del">- */</span>
+<span class="diff-del">-class Mission : public std::enable_shared_from_this&lt;Mission&gt; {</span>
+<span class="diff-del">-public:</span>
+<span class="diff-del">-    Mission(int32_t id, MissionAbilityRecordPtr abilityRecord, const std::string &amp;missionName = &quot;&quot;,</span>
+<span class="diff-del">-        int32_t startMethod = 0);</span>
+<span class="diff-del">-    explicit Mission(const std::shared_ptr&lt;Mission&gt; &amp;mission);</span>
+<span class="diff-del">-    virtual ~Mission();</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * set the mission list.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param missionList: the parent mission list</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void SetMissionList(const std::shared_ptr&lt;MissionList&gt; &amp;missionList);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * check whether ability contains by this mission is singleton.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return is ability contains by this mission is singleton.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsSingletonAbility() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * check whether ability contains by this mission is specified.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return is ability contains by this mission is specified.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsSpecifiedAbility() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * check whether ability contains by this mission is standard.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return is ability contains by this mission is standard.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsStandardAbility() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * get owner mission list.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return mission list.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    std::shared_ptr&lt;MissionList&gt; GetMissionList();</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * get name of this mission.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return missionName.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    std::string GetMissionName() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Get the Ability Record object</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return MissionAbilityRecordPtr</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    MissionAbilityRecordPtr GetAbilityRecord() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Get the mission id</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return the mission id</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    int32_t GetMissionId() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Set the Locked State</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param lockedState true/false</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void SetLockedState(bool lockedState);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief get the Locked State</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return the lockedState</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsLockedState() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Set the Moving State</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param movingState true/false</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void SetMovingState(bool movingState);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief get the Moving State</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return the movingState</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsMovingState() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Set application not response state true</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void SetANRState(bool state);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief Is application not response state</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsANRState() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief dump mission</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param info dump result.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void Dump(std::vector&lt;std::string&gt; &amp;info);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief whether it is a form ByCall start-up</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return true form BaCall start-up, false other</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool IsStartByCall();</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * @brief update mission id</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param id mission id.</span>
+<span class="diff-del">-     * @param method start method.</span>
+<span class="diff-del">-     * @return Returns true on success, false on failure</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    bool UpdateMissionId(int32_t id, int32_t method);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * Set whether to notify Launcher that the mission has been created.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param needNotify Indicates whether the Launcher needs to be notified.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    inline void SetNotifyLabel(bool needNotify)</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        needNotify_ = needNotify;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * Get whether to notify Launcher that the mission has been created.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param return Whether the Launcher needs to be notified.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    inline bool NeedNotify() const</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        return needNotify_;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * Set mission specified flag.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @param flag specified flag.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    void SetSpecifiedFlag(const std::string &amp;flag);</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    /**</span>
+<span class="diff-del">-     * Get mission specified flag.</span>
+<span class="diff-del">-     *</span>
+<span class="diff-del">-     * @return specified flag.</span>
+<span class="diff-del">-     */</span>
+<span class="diff-del">-    std::string GetSpecifiedFlag() const;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    inline void SetNeedNotifyUpdateLabel(bool flag)</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        needNotifyUpdateLabel_ = flag;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    inline bool NeedNotifyUpdateLabel() const</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        return needNotifyUpdateLabel_;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    inline void UpdateMissionTime(const std::string &amp;missionTime)</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        missionTime_ = missionTime;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    inline std::string GetMissionTime() const</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        return missionTime_;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    inline void SetUnclearable(const bool &amp;unclearable)</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        unclearable_ = unclearable;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    bool IsUnclearable()</span>
+<span class="diff-del">-    {</span>
+<span class="diff-del">-        return unclearable_;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-private:</span>
+<span class="diff-del">-    bool lockedState_ = false;</span>
+<span class="diff-del">-    bool isMovingToFront_ = false;</span>
+<span class="diff-del">-    bool isANRState_ = false;</span>
+<span class="diff-del">-    bool needNotify_ = true;</span>
+<span class="diff-del">-    bool needNotifyUpdateLabel_ = false;</span>
+<span class="diff-del">-    bool unclearable_ = false;</span>
+<span class="diff-del">-    int32_t missionId_;</span>
+<span class="diff-del">-    int32_t startMethod_;</span>
+<span class="diff-del">-    std::weak_ptr&lt;MissionList&gt; ownerMissionList_;</span>
+<span class="diff-del">-    MissionAbilityRecordPtr abilityRecord_;</span>
+<span class="diff-del">-    std::string missionName_;</span>
+<span class="diff-del">-    std::string specifiedFlag_;</span>
+<span class="diff-del">-    std::string missionTime_ = &quot;0&quot;;</span>
+<span class="diff-del">-};</span>
+<span class="diff-del">-}  // namespace AAFwk</span>
+<span class="diff-del">-}  // namespace OHOS</span>
+<span class="diff-del">-#endif  // OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-add">+/*</span>
+<span class="diff-add">+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.</span>
+<span class="diff-add">+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="diff-add">+ * you may not use this file except in compliance with the License.</span>
+<span class="diff-add">+ * You may obtain a copy of the License at</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ *     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ * Unless required by applicable law or agreed to in writing, software</span>
+<span class="diff-add">+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="diff-add">+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="diff-add">+ * See the License for the specific language governing permissions and</span>
+<span class="diff-add">+ * limitations under the License.</span>
+<span class="diff-add">+ */</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+#ifndef OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-add">+#define OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+#include &lt;memory&gt;</span>
+<span class="diff-add">+#include &lt;vector&gt;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+#include &quot;inner_mission_info.h&quot;</span>
+<span class="diff-add">+#include &quot;mission_ability_record.h&quot;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+namespace OHOS {</span>
+<span class="diff-add">+namespace AAFwk {</span>
+<span class="diff-add">+class MissionList;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+/**</span>
+<span class="diff-add">+ * @class Mission</span>
+<span class="diff-add">+ * A mission contains one or more AbilityRecords in a stack.</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ * For OH native apps: stack always has exactly 1 Ability (unchanged behavior).</span>
+<span class="diff-add">+ * For Android adapted apps: stack may have multiple Abilities (Activity stack).</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ * GetAbilityRecord() returns the stack top, maintaining backward compatibility</span>
+<span class="diff-add">+ * with all existing callers that expect a single AbilityRecord per Mission.</span>
+<span class="diff-add">+ */</span>
+<span class="diff-add">+class Mission : public std::enable_shared_from_this&lt;Mission&gt; {</span>
+<span class="diff-add">+public:</span>
+<span class="diff-add">+    Mission(int32_t id, MissionAbilityRecordPtr abilityRecord, const std::string &amp;missionName = &quot;&quot;,</span>
+<span class="diff-add">+        int32_t startMethod = 0);</span>
+<span class="diff-add">+    explicit Mission(const std::shared_ptr&lt;Mission&gt; &amp;mission);</span>
+<span class="diff-add">+    virtual ~Mission();</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * set the mission list.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param missionList: the parent mission list</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void SetMissionList(const std::shared_ptr&lt;MissionList&gt; &amp;missionList);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * check whether ability contains by this mission is singleton.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return is ability contains by this mission is singleton.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsSingletonAbility() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * check whether ability contains by this mission is specified.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return is ability contains by this mission is specified.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsSpecifiedAbility() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * check whether ability contains by this mission is standard.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return is ability contains by this mission is standard.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsStandardAbility() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * get owner mission list.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return mission list.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    std::shared_ptr&lt;MissionList&gt; GetMissionList();</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * get name of this mission.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return missionName.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    std::string GetMissionName() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Get the top Ability Record (stack top).</span>
+<span class="diff-add">+     * For single-ability missions (OH native), returns the only ability.</span>
+<span class="diff-add">+     * For multi-ability missions (Android adapted), returns the stack top.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return MissionAbilityRecordPtr</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    MissionAbilityRecordPtr GetAbilityRecord() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Get the mission id</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return the mission id</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    int32_t GetMissionId() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Set the Locked State</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param lockedState true/false</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void SetLockedState(bool lockedState);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief get the Locked State</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return the lockedState</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsLockedState() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Set the Moving State</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param movingState true/false</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void SetMovingState(bool movingState);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief get the Moving State</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return the movingState</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsMovingState() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Set application not response state true</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void SetANRState(bool state);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief Is application not response state</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsANRState() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief dump mission</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param info dump result.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void Dump(std::vector&lt;std::string&gt; &amp;info);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief whether it is a form ByCall start-up</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return true form BaCall start-up, false other</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool IsStartByCall();</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * @brief update mission id</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param id mission id.</span>
+<span class="diff-add">+     * @param method start method.</span>
+<span class="diff-add">+     * @return Returns true on success, false on failure</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool UpdateMissionId(int32_t id, int32_t method);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Set whether to notify Launcher that the mission has been created.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param needNotify Indicates whether the Launcher needs to be notified.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    inline void SetNotifyLabel(bool needNotify)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        needNotify_ = needNotify;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Get whether to notify Launcher that the mission has been created.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param return Whether the Launcher needs to be notified.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    inline bool NeedNotify() const</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return needNotify_;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Set mission specified flag.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param flag specified flag.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void SetSpecifiedFlag(const std::string &amp;flag);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Get mission specified flag.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return specified flag.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    std::string GetSpecifiedFlag() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    inline void SetNeedNotifyUpdateLabel(bool flag)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        needNotifyUpdateLabel_ = flag;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    inline bool NeedNotifyUpdateLabel() const</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return needNotifyUpdateLabel_;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    inline void UpdateMissionTime(const std::string &amp;missionTime)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        missionTime_ = missionTime;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    inline std::string GetMissionTime() const</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return missionTime_;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    inline void SetUnclearable(const bool &amp;unclearable)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        unclearable_ = unclearable;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    bool IsUnclearable()</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return unclearable_;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // ==================== Multi-Ability Stack (Android adapter) ====================</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Push a new AbilityRecord onto the stack top.</span>
+<span class="diff-add">+     * Used by Android adapter to add a new Activity to the Mission.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param abilityRecord the new AbilityRecord to push</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    void PushAbility(MissionAbilityRecordPtr abilityRecord);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Pop the top AbilityRecord from the stack.</span>
+<span class="diff-add">+     * Will not pop the last ability (stack must retain at least one).</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @return the popped AbilityRecord, or nullptr if stack size &lt;= 1</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    MissionAbilityRecordPtr PopAbility();</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Get the number of AbilityRecords in the stack.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    size_t GetAbilityStackSize() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Get the bottom (first) AbilityRecord in the stack.</span>
+<span class="diff-add">+     * Used for Android RecentTaskInfo.baseActivity.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    MissionAbilityRecordPtr GetBaseAbilityRecord() const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Find an AbilityRecord in the stack by ability name.</span>
+<span class="diff-add">+     * Searches from top to bottom.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param abilityName target ability name</span>
+<span class="diff-add">+     * @return found AbilityRecord, or nullptr</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    MissionAbilityRecordPtr FindAbilityByName(const std::string &amp;abilityName) const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Check if an AbilityRecord exists in the stack.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param abilityRecord the AbilityRecord to search for</span>
+<span class="diff-add">+     * @return true if found</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    bool ContainsAbility(const std::shared_ptr&lt;AbilityRecord&gt; &amp;abilityRecord) const;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Pop all AbilityRecords above the target ability (for CLEAR_TOP).</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param abilityName target ability name</span>
+<span class="diff-add">+     * @param includeSelf whether to also pop the target itself</span>
+<span class="diff-add">+     * @return list of popped AbilityRecords (need to be terminated)</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    std::vector&lt;MissionAbilityRecordPtr&gt; PopAbilitiesAbove(</span>
+<span class="diff-add">+        const std::string &amp;abilityName, bool includeSelf = false);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Check if this Mission supports multi-ability stack (Android adapter mode).</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    inline bool IsMultiAbilityMode() const { return multiAbilityMode_; }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Enable or disable multi-ability stack mode.</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    inline void SetMultiAbilityMode(bool enabled) { multiAbilityMode_ = enabled; }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+private:</span>
+<span class="diff-add">+    bool lockedState_ = false;</span>
+<span class="diff-add">+    bool isMovingToFront_ = false;</span>
+<span class="diff-add">+    bool isANRState_ = false;</span>
+<span class="diff-add">+    bool needNotify_ = true;</span>
+<span class="diff-add">+    bool needNotifyUpdateLabel_ = false;</span>
+<span class="diff-add">+    bool unclearable_ = false;</span>
+<span class="diff-add">+    int32_t missionId_;</span>
+<span class="diff-add">+    int32_t startMethod_;</span>
+<span class="diff-add">+    std::weak_ptr&lt;MissionList&gt; ownerMissionList_;</span>
+<span class="diff-add">+    std::string missionName_;</span>
+<span class="diff-add">+    std::string specifiedFlag_;</span>
+<span class="diff-add">+    std::string missionTime_ = &quot;0&quot;;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Ability stack: back = top, front = bottom.</span>
+<span class="diff-add">+    // For OH native apps: always exactly 1 element (behavior unchanged).</span>
+<span class="diff-add">+    // For Android adapted apps: may have multiple elements.</span>
+<span class="diff-add">+    std::vector&lt;MissionAbilityRecordPtr&gt; abilityStack_;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Multi-ability mode flag. Default false (OH native behavior).</span>
+<span class="diff-add">+    bool multiAbilityMode_ = false;</span>
+<span class="diff-add">+};</span>
+<span class="diff-add">+}  // namespace AAFwk</span>
+<span class="diff-add">+}  // namespace OHOS</span>
+<span class="diff-add">+#endif  // OHOS_ABILITY_RUNTIME_MISSION_H</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file2">services/abilitymgr/src/mission/mission.cpp</h3>
+<p>Mission 类实现 — 多 Ability 栈操作方法</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/services/abilitymgr/src/mission/mission.cpp.bak	2026-04-07 10:28:09.356671347 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/services/abilitymgr/src/mission/mission.cpp	2026-04-07 10:28:09.356671347 +0800</span>
+<span class="diff-hunk">@@ -1,165 +1,287 @@</span>
+<span class="diff-del">-/*</span>
+<span class="diff-del">- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.</span>
+<span class="diff-del">- * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="diff-del">- * you may not use this file except in compliance with the License.</span>
+<span class="diff-del">- * You may obtain a copy of the License at</span>
+<span class="diff-del">- *</span>
+<span class="diff-del">- *     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="diff-del">- *</span>
+<span class="diff-del">- * Unless required by applicable law or agreed to in writing, software</span>
+<span class="diff-del">- * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="diff-del">- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="diff-del">- * See the License for the specific language governing permissions and</span>
+<span class="diff-del">- * limitations under the License.</span>
+<span class="diff-del">- */</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-#include &quot;mission.h&quot;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-#include &quot;mission_list.h&quot;</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-namespace OHOS {</span>
+<span class="diff-del">-namespace AAFwk {</span>
+<span class="diff-del">-Mission::Mission(int32_t id, MissionAbilityRecordPtr abilityRecord, const std::string &amp;missionName,</span>
+<span class="diff-del">-    int32_t startMethod)</span>
+<span class="diff-del">-    : missionId_(id), startMethod_(startMethod), abilityRecord_(abilityRecord), missionName_(missionName)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-Mission::Mission(const std::shared_ptr&lt;Mission&gt; &amp;mission)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    if (!mission) {</span>
+<span class="diff-del">-        return;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    missionId_ = mission-&gt;missionId_;</span>
+<span class="diff-del">-    startMethod_ = mission-&gt;startMethod_;</span>
+<span class="diff-del">-    abilityRecord_ = mission-&gt;abilityRecord_;</span>
+<span class="diff-del">-    missionName_ = mission-&gt;missionName_;</span>
+<span class="diff-del">-    lockedState_ = mission-&gt;lockedState_;</span>
+<span class="diff-del">-    ownerMissionList_ = mission-&gt;ownerMissionList_;</span>
+<span class="diff-del">-    unclearable_ = mission-&gt;unclearable_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-Mission::~Mission()</span>
+<span class="diff-del">-{}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-MissionAbilityRecordPtr Mission::GetAbilityRecord() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return abilityRecord_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-int32_t Mission::GetMissionId() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return missionId_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsSingletonAbility() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    if (abilityRecord_) {</span>
+<span class="diff-del">-        return abilityRecord_-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::SINGLETON;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    return false;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsSpecifiedAbility() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    if (abilityRecord_) {</span>
+<span class="diff-del">-        return abilityRecord_-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::SPECIFIED;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    return false;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsStandardAbility() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    if (abilityRecord_) {</span>
+<span class="diff-del">-        return abilityRecord_-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::STANDARD;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    return false;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::SetSpecifiedFlag(const std::string &amp;flag)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    specifiedFlag_ = flag;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-std::string Mission::GetSpecifiedFlag() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return specifiedFlag_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-std::shared_ptr&lt;MissionList&gt; Mission::GetMissionList()</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return ownerMissionList_.lock();</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-std::string Mission::GetMissionName() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return missionName_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::SetMissionList(const std::shared_ptr&lt;MissionList&gt; &amp;missionList)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    ownerMissionList_ = missionList;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::SetLockedState(bool lockedState)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    lockedState_ = lockedState;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsLockedState() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return lockedState_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::SetMovingState(bool movingState)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    isMovingToFront_ = movingState;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsMovingState() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return isMovingToFront_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::SetANRState(bool state)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    isANRState_ = state;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsANRState() const</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return isANRState_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-void Mission::Dump(std::vector&lt;std::string&gt; &amp;info)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    std::string dumpInfo = &quot;    Mission ID #&quot; + std::to_string(missionId_);</span>
+<span class="diff-del">-    dumpInfo += &quot;  mission name #[&quot; + missionName_ + &quot;]&quot; + &quot;  lockedState #&quot; + std::to_string(lockedState_)</span>
+<span class="diff-del">-        + &quot;  ANR State #&quot; + std::to_string(isANRState_);</span>
+<span class="diff-del">-    info.push_back(dumpInfo);</span>
+<span class="diff-del">-    if (abilityRecord_) {</span>
+<span class="diff-del">-        abilityRecord_-&gt;Dump(info);</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::IsStartByCall()</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    return static_cast&lt;int32_t&gt;(StartMethod::START_CALL) == startMethod_;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-bool Mission::UpdateMissionId(int32_t id, int32_t method)</span>
+<span class="diff-del">-{</span>
+<span class="diff-del">-    if (method == startMethod_ &amp;&amp; id &gt; 0) {</span>
+<span class="diff-del">-        return false;</span>
+<span class="diff-del">-    }</span>
+<span class="diff-del">-</span>
+<span class="diff-del">-    startMethod_ = method;</span>
+<span class="diff-del">-    missionId_ = id;</span>
+<span class="diff-del">-    return true;</span>
+<span class="diff-del">-}</span>
+<span class="diff-del">-}  // namespace AAFwk</span>
+<span class="diff-del">-}  // namespace OHOS</span>
+<span class="diff-add">+/*</span>
+<span class="diff-add">+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.</span>
+<span class="diff-add">+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="diff-add">+ * you may not use this file except in compliance with the License.</span>
+<span class="diff-add">+ * You may obtain a copy of the License at</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ *     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="diff-add">+ *</span>
+<span class="diff-add">+ * Unless required by applicable law or agreed to in writing, software</span>
+<span class="diff-add">+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="diff-add">+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="diff-add">+ * See the License for the specific language governing permissions and</span>
+<span class="diff-add">+ * limitations under the License.</span>
+<span class="diff-add">+ */</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+#include &quot;mission.h&quot;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+#include &quot;hilog_tag_wrapper.h&quot;</span>
+<span class="diff-add">+#include &quot;mission_list.h&quot;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+namespace OHOS {</span>
+<span class="diff-add">+namespace AAFwk {</span>
+<span class="diff-add">+Mission::Mission(int32_t id, MissionAbilityRecordPtr abilityRecord, const std::string &amp;missionName,</span>
+<span class="diff-add">+    int32_t startMethod)</span>
+<span class="diff-add">+    : missionId_(id), startMethod_(startMethod), missionName_(missionName)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    // Initialize the ability stack with the first ability</span>
+<span class="diff-add">+    if (abilityRecord) {</span>
+<span class="diff-add">+        abilityStack_.push_back(abilityRecord);</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+Mission::Mission(const std::shared_ptr&lt;Mission&gt; &amp;mission)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!mission) {</span>
+<span class="diff-add">+        return;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    missionId_ = mission-&gt;missionId_;</span>
+<span class="diff-add">+    startMethod_ = mission-&gt;startMethod_;</span>
+<span class="diff-add">+    abilityStack_ = mission-&gt;abilityStack_;</span>
+<span class="diff-add">+    missionName_ = mission-&gt;missionName_;</span>
+<span class="diff-add">+    lockedState_ = mission-&gt;lockedState_;</span>
+<span class="diff-add">+    ownerMissionList_ = mission-&gt;ownerMissionList_;</span>
+<span class="diff-add">+    unclearable_ = mission-&gt;unclearable_;</span>
+<span class="diff-add">+    multiAbilityMode_ = mission-&gt;multiAbilityMode_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+Mission::~Mission()</span>
+<span class="diff-add">+{}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+MissionAbilityRecordPtr Mission::GetAbilityRecord() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    // Return the stack top (most recent ability).</span>
+<span class="diff-add">+    // For OH native apps (stack size 1), this returns the only ability.</span>
+<span class="diff-add">+    // For Android adapted apps, this returns the top Activity.</span>
+<span class="diff-add">+    if (abilityStack_.empty()) {</span>
+<span class="diff-add">+        return nullptr;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return abilityStack_.back();</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+int32_t Mission::GetMissionId() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return missionId_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsSingletonAbility() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    // Use the base (first) ability to determine launch mode,</span>
+<span class="diff-add">+    // as it defines the Mission&#x27;s identity.</span>
+<span class="diff-add">+    if (!abilityStack_.empty()) {</span>
+<span class="diff-add">+        return abilityStack_.front()-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::SINGLETON;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return false;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsSpecifiedAbility() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!abilityStack_.empty()) {</span>
+<span class="diff-add">+        return abilityStack_.front()-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::SPECIFIED;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return false;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsStandardAbility() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!abilityStack_.empty()) {</span>
+<span class="diff-add">+        return abilityStack_.front()-&gt;GetAbilityInfo().launchMode == AppExecFwk::LaunchMode::STANDARD;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return false;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::SetSpecifiedFlag(const std::string &amp;flag)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    specifiedFlag_ = flag;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+std::string Mission::GetSpecifiedFlag() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return specifiedFlag_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+std::shared_ptr&lt;MissionList&gt; Mission::GetMissionList()</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return ownerMissionList_.lock();</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+std::string Mission::GetMissionName() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return missionName_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::SetMissionList(const std::shared_ptr&lt;MissionList&gt; &amp;missionList)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    ownerMissionList_ = missionList;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::SetLockedState(bool lockedState)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    lockedState_ = lockedState;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsLockedState() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return lockedState_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::SetMovingState(bool movingState)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    isMovingToFront_ = movingState;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsMovingState() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return isMovingToFront_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::SetANRState(bool state)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    isANRState_ = state;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsANRState() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return isANRState_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::Dump(std::vector&lt;std::string&gt; &amp;info)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    std::string dumpInfo = &quot;    Mission ID #&quot; + std::to_string(missionId_);</span>
+<span class="diff-add">+    dumpInfo += &quot;  mission name #[&quot; + missionName_ + &quot;]&quot; + &quot;  lockedState #&quot; + std::to_string(lockedState_)</span>
+<span class="diff-add">+        + &quot;  ANR State #&quot; + std::to_string(isANRState_)</span>
+<span class="diff-add">+        + &quot;  multiAbility #&quot; + std::to_string(multiAbilityMode_)</span>
+<span class="diff-add">+        + &quot;  stackSize #&quot; + std::to_string(abilityStack_.size());</span>
+<span class="diff-add">+    info.push_back(dumpInfo);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Dump all abilities in the stack (top to bottom)</span>
+<span class="diff-add">+    for (auto it = abilityStack_.rbegin(); it != abilityStack_.rend(); ++it) {</span>
+<span class="diff-add">+        if (*it) {</span>
+<span class="diff-add">+            (*it)-&gt;Dump(info);</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::IsStartByCall()</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return static_cast&lt;int32_t&gt;(StartMethod::START_CALL) == startMethod_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::UpdateMissionId(int32_t id, int32_t method)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (method == startMethod_ &amp;&amp; id &gt; 0) {</span>
+<span class="diff-add">+        return false;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    startMethod_ = method;</span>
+<span class="diff-add">+    missionId_ = id;</span>
+<span class="diff-add">+    return true;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+// ==================== Multi-Ability Stack Methods ====================</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+void Mission::PushAbility(MissionAbilityRecordPtr abilityRecord)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!abilityRecord) {</span>
+<span class="diff-add">+        return;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    abilityRecord-&gt;SetMissionId(missionId_);</span>
+<span class="diff-add">+    abilityStack_.push_back(abilityRecord);</span>
+<span class="diff-add">+    TAG_LOGI(AAFwkTag::ABILITYMGR,</span>
+<span class="diff-add">+        &quot;Mission %{public}d: pushed ability %{public}s, stack size=%{public}zu&quot;,</span>
+<span class="diff-add">+        missionId_, abilityRecord-&gt;GetAbilityInfo().name.c_str(), abilityStack_.size());</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+MissionAbilityRecordPtr Mission::PopAbility()</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    // Do not pop the last ability — Mission must always have at least one.</span>
+<span class="diff-add">+    // The last ability is removed through Mission destruction.</span>
+<span class="diff-add">+    if (abilityStack_.size() &lt;= 1) {</span>
+<span class="diff-add">+        return nullptr;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    auto top = abilityStack_.back();</span>
+<span class="diff-add">+    abilityStack_.pop_back();</span>
+<span class="diff-add">+    TAG_LOGI(AAFwkTag::ABILITYMGR,</span>
+<span class="diff-add">+        &quot;Mission %{public}d: popped ability %{public}s, stack size=%{public}zu&quot;,</span>
+<span class="diff-add">+        missionId_, top ? top-&gt;GetAbilityInfo().name.c_str() : &quot;null&quot;, abilityStack_.size());</span>
+<span class="diff-add">+    return top;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+size_t Mission::GetAbilityStackSize() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    return abilityStack_.size();</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+MissionAbilityRecordPtr Mission::GetBaseAbilityRecord() const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (abilityStack_.empty()) {</span>
+<span class="diff-add">+        return nullptr;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return abilityStack_.front();</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+MissionAbilityRecordPtr Mission::FindAbilityByName(const std::string &amp;abilityName) const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    // Search from top to bottom</span>
+<span class="diff-add">+    for (auto it = abilityStack_.rbegin(); it != abilityStack_.rend(); ++it) {</span>
+<span class="diff-add">+        if (*it &amp;&amp; (*it)-&gt;GetAbilityInfo().name == abilityName) {</span>
+<span class="diff-add">+            return *it;</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return nullptr;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+bool Mission::ContainsAbility(const std::shared_ptr&lt;AbilityRecord&gt; &amp;abilityRecord) const</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!abilityRecord) {</span>
+<span class="diff-add">+        return false;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    for (const auto &amp;record : abilityStack_) {</span>
+<span class="diff-add">+        if (record == abilityRecord) {</span>
+<span class="diff-add">+            return true;</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return false;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+std::vector&lt;MissionAbilityRecordPtr&gt; Mission::PopAbilitiesAbove(</span>
+<span class="diff-add">+    const std::string &amp;abilityName, bool includeSelf)</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    std::vector&lt;MissionAbilityRecordPtr&gt; popped;</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Find the target ability in the stack (search from bottom)</span>
+<span class="diff-add">+    auto targetIt = abilityStack_.end();</span>
+<span class="diff-add">+    for (auto it = abilityStack_.begin(); it != abilityStack_.end(); ++it) {</span>
+<span class="diff-add">+        if (*it &amp;&amp; (*it)-&gt;GetAbilityInfo().name == abilityName) {</span>
+<span class="diff-add">+            targetIt = it;</span>
+<span class="diff-add">+            break;</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    if (targetIt == abilityStack_.end()) {</span>
+<span class="diff-add">+        return popped;  // Target not found</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Determine where to start popping</span>
+<span class="diff-add">+    auto startPop = includeSelf ? targetIt : (targetIt + 1);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Collect abilities to pop</span>
+<span class="diff-add">+    for (auto it = startPop; it != abilityStack_.end(); ++it) {</span>
+<span class="diff-add">+        popped.push_back(*it);</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Erase from stack</span>
+<span class="diff-add">+    abilityStack_.erase(startPop, abilityStack_.end());</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    TAG_LOGI(AAFwkTag::ABILITYMGR,</span>
+<span class="diff-add">+        &quot;Mission %{public}d: popped %{public}zu abilities above %{public}s, stack size=%{public}zu&quot;,</span>
+<span class="diff-add">+        missionId_, popped.size(), abilityName.c_str(), abilityStack_.size());</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    return popped;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+}  // namespace AAFwk</span>
+<span class="diff-add">+}  // namespace OHOS</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file3">interfaces/.../ability_manager_interface.h</h3>
+<p>IAbilityManager 接口 — 添加 StartAbilityInMission()</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/interfaces/inner_api/ability_manager/include/ability_manager_interface.h.bak	2026-04-07 10:29:15.719358688 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/interfaces/inner_api/ability_manager/include/ability_manager_interface.h	2026-04-07 10:29:38.756291472 +0800</span>
+<span class="diff-hunk">@@ -2631,6 +2631,20 @@</span>
+<span class="diff-ctx">     {</span>
+<span class="diff-ctx">         return 0;</span>
+<span class="diff-ctx">     }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    /**</span>
+<span class="diff-add">+     * Start an Ability within an existing Mission (push onto Ability stack).</span>
+<span class="diff-add">+     * Used by Android adapter to add a new Activity to the same Task/Mission.</span>
+<span class="diff-add">+     *</span>
+<span class="diff-add">+     * @param want       the Want to start the new Ability</span>
+<span class="diff-add">+     * @param missionId  the target Mission ID to push the Ability into</span>
+<span class="diff-add">+     * @return ERR_OK on success</span>
+<span class="diff-add">+     */</span>
+<span class="diff-add">+    virtual int StartAbilityInMission(const Want &amp;want, int32_t missionId)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return 0;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-ctx"> };</span>
+<span class="diff-ctx"> }  // namespace AAFwk</span>
+<span class="diff-ctx"> }  // namespace OHOS</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file4">interfaces/.../ability_manager_ipc_interface_code.h</h3>
+<p>IPC 接口编码 — 添加 START_ABILITY_IN_MISSION = 6200</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/interfaces/inner_api/ability_manager/include/ability_manager_ipc_interface_code.h.bak	2026-04-07 10:29:15.723358850 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/interfaces/inner_api/ability_manager/include/ability_manager_ipc_interface_code.h	2026-04-07 10:40:38.306852653 +0800</span>
+<span class="diff-hunk">@@ -718,6 +718,9 @@</span>
+<span class="diff-ctx"> </span>
+<span class="diff-ctx">     // start ability by oe extension</span>
+<span class="diff-ctx">     START_ABILITY_BY_OE_EXT = 6161,</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // Multi-ability stack support (Android adapter)</span>
+<span class="diff-add">+    START_ABILITY_IN_MISSION = 6200,</span>
+<span class="diff-ctx"> };</span>
+<span class="diff-ctx"> }  // namespace AAFwk</span>
+<span class="diff-ctx"> }  // namespace OHOS</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file5">services/appmgr/include/remote_client_manager.h</h3>
+<p>RemoteClientManager 头文件 — 添加 GetAndroidSpawnClient()</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/include/remote_client_manager.h.bak	2026-04-07 10:30:13.589701905 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/include/remote_client_manager.h	2026-04-07 10:30:13.593702067 +0800</span>
+<span class="diff-hunk">@@ -63,6 +63,8 @@</span>
+<span class="diff-ctx"> </span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; GetNativeSpawnClient();</span>
+<span class="diff-ctx"> </span>
+<span class="diff-add">+    std::shared_ptr&lt;AppSpawnClient&gt; GetAndroidSpawnClient();</span>
+<span class="diff-add">+</span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; GetHybridSpawnClient();</span>
+<span class="diff-ctx"> </span>
+<span class="diff-ctx"> private:</span>
+<span class="diff-hunk">@@ -71,6 +73,7 @@</span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; nwebSpawnClient_;</span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; cjAppSpawnClient_;</span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; nativeSpawnClient_;</span>
+<span class="diff-add">+    std::shared_ptr&lt;AppSpawnClient&gt; androidSpawnClient_;</span>
+<span class="diff-ctx">     std::shared_ptr&lt;AppSpawnClient&gt; hybridSpawnClient_;</span>
+<span class="diff-ctx"> };</span>
+<span class="diff-ctx"> }  // namespace AppExecFwk</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file6">services/appmgr/src/remote_client_manager.cpp</h3>
+<p>RemoteClientManager 实现 — appspawn-x 客户端</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/src/remote_client_manager.cpp.bak	2026-04-07 10:30:33.226497014 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/src/remote_client_manager.cpp	2026-04-07 10:30:58.587523903 +0800</span>
+<span class="diff-hunk">@@ -26,6 +26,7 @@</span>
+<span class="diff-ctx">     : appSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;()), nwebSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;(true)),</span>
+<span class="diff-ctx">     cjAppSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;(&quot;cjappspawn&quot;)),</span>
+<span class="diff-ctx">     nativeSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;(&quot;nativespawn&quot;)),</span>
+<span class="diff-add">+    androidSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;(&quot;appspawn-x&quot;)),</span>
+<span class="diff-ctx">     hybridSpawnClient_(std::make_shared&lt;AppSpawnClient&gt;(&quot;hybridspawn&quot;))</span>
+<span class="diff-ctx"> {}</span>
+<span class="diff-ctx"> </span>
+<span class="diff-hunk">@@ -76,6 +77,14 @@</span>
+<span class="diff-ctx">     return nativeSpawnClient_;</span>
+<span class="diff-ctx"> }</span>
+<span class="diff-ctx"> </span>
+<span class="diff-add">+std::shared_ptr&lt;AppSpawnClient&gt; RemoteClientManager::GetAndroidSpawnClient()</span>
+<span class="diff-add">+{</span>
+<span class="diff-add">+    if (!androidSpawnClient_) {</span>
+<span class="diff-add">+        return nullptr;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+    return androidSpawnClient_;</span>
+<span class="diff-add">+}</span>
+<span class="diff-add">+</span>
+<span class="diff-ctx"> std::shared_ptr&lt;AppSpawnClient&gt; RemoteClientManager::GetHybridSpawnClient()</span>
+<span class="diff-ctx"> {</span>
+<span class="diff-ctx">     if (hybridSpawnClient_) {</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file7">services/appmgr/src/app_mgr_service_inner.cpp</h3>
+<p>AppMgrServiceInner — APP_ANDROID 路由到 appspawn-x</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/src/app_mgr_service_inner.cpp.bak	2026-04-07 10:32:04.530193974 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/ability/ability_runtime/services/appmgr/src/app_mgr_service_inner.cpp	2026-04-07 10:32:04.538194298 +0800</span>
+<span class="diff-hunk">@@ -4847,7 +4847,18 @@</span>
+<span class="diff-ctx">     PerfProfile::GetInstance().SetAppForkStartTime(GetTickCount());</span>
+<span class="diff-ctx">     pid_t pid = 0;</span>
+<span class="diff-ctx">     ErrCode errCode = ERR_OK;</span>
+<span class="diff-del">-    if (isCJApp) {</span>
+<span class="diff-add">+    // Android APK routing (Android adapter)</span>
+<span class="diff-add">+    if (bundleType == BundleType::APP_ANDROID) {</span>
+<span class="diff-add">+        TAG_LOGI(AAFwkTag::APPMGR, &quot;StartProcess: routing to appspawn-x for Android app: %{public}s&quot;,</span>
+<span class="diff-add">+                 bundleName.c_str());</span>
+<span class="diff-add">+        if (!remoteClientManager_-&gt;GetAndroidSpawnClient()) {</span>
+<span class="diff-add">+            TAG_LOGE(AAFwkTag::APPMGR, &quot;androidSpawnClient null&quot;);</span>
+<span class="diff-add">+            appRunningManager_-&gt;RemoveAppRunningRecordById(appRecord-&gt;GetRecordId());</span>
+<span class="diff-add">+            return AAFwk::ERR_GET_SPAWN_CLIENT_FAILED;</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+        startMsg.gids.push_back(SHADER_CACHE_GROUPID);</span>
+<span class="diff-add">+        errCode = remoteClientManager_-&gt;GetAndroidSpawnClient()-&gt;StartProcess(startMsg, pid);</span>
+<span class="diff-add">+    } else if (isCJApp) {</span>
+<span class="diff-ctx">         if (!remoteClientManager_-&gt;GetCJSpawnClient()) {</span>
+<span class="diff-ctx">             TAG_LOGE(AAFwkTag::APPMGR, &quot;appSpawnClient null&quot;);</span>
+<span class="diff-ctx">             appRunningManager_-&gt;RemoveAppRunningRecordById(appRecord-&gt;GetRecordId());</span>
+<span class="diff-ctx"></span></pre>
+<h2 id="ch3">3. bundle_framework 补丁详情</h2>
+<h3 id="file9">services/bundlemgr/include/ipc/installd_interface.h</h3>
+<p>IInstalld 接口 — 添加 5 个 Android 安装 IPC 方法</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/bundlemanager/bundle_framework/services/bundlemgr/include/ipc/installd_interface.h.bak	2026-04-07 10:37:46.787909539 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/bundlemanager/bundle_framework/services/bundlemgr/include/ipc/installd_interface.h	2026-04-07 10:45:17.214065472 +0800</span>
+<span class="diff-hunk">@@ -575,6 +575,45 @@</span>
+<span class="diff-ctx">     {</span>
+<span class="diff-ctx">         return ERR_OK;</span>
+<span class="diff-ctx">     }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    // ============================================================</span>
+<span class="diff-add">+    // Android APK installation support - new IPC methods (codes 90-94)</span>
+<span class="diff-add">+    // ============================================================</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    virtual ErrCode CreateAndroidDataDir(const std::string&amp; bundleName,</span>
+<span class="diff-add">+                                          int32_t uid, int32_t gid,</span>
+<span class="diff-add">+                                          int32_t targetSdkVersion)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return ERR_OK;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    virtual ErrCode ExtractApkNativeLibs(const std::string&amp; apkPath,</span>
+<span class="diff-add">+                                          const std::string&amp; targetDir,</span>
+<span class="diff-add">+                                          const std::string&amp; primaryAbi)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return ERR_OK;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    virtual ErrCode DexOptAndroid(const std::string&amp; apkPath,</span>
+<span class="diff-add">+                                   const std::string&amp; oatDir,</span>
+<span class="diff-add">+                                   int32_t uid,</span>
+<span class="diff-add">+                                   const std::string&amp; instructionSet,</span>
+<span class="diff-add">+                                   const std::string&amp; compilerFilter)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return ERR_OK;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    virtual ErrCode RemoveAndroidDataDir(const std::string&amp; bundleName)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return ERR_OK;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+    virtual ErrCode VerifyApkSignature(const std::string&amp; apkPath,</span>
+<span class="diff-add">+                                        const std::string&amp; expectedCertHash)</span>
+<span class="diff-add">+    {</span>
+<span class="diff-add">+        return ERR_OK;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+</span>
+<span class="diff-ctx"> };</span>
+<span class="diff-ctx"> </span>
+<span class="diff-ctx"> #define INSTALLD_PARCEL_WRITE_INTERFACE_TOKEN(parcel, token)                        \</span>
+<span class="diff-ctx"></span></pre>
+<h3 id="file10">services/bundlemgr/src/bundle_installer.cpp</h3>
+<p>BundleInstaller — APK 检测逻辑 (#ifdef OH_ADAPTER_ANDROID)</p>
+<pre class="diff"><span class="diff-header">--- /home/HanBingChen/oh/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_installer.cpp.bak	2026-04-07 10:38:57.278763038 +0800</span>
+<span class="diff-header">+++ /home/HanBingChen/oh/foundation/bundlemanager/bundle_framework/services/bundlemgr/src/bundle_installer.cpp	2026-04-07 10:38:57.286763362 +0800</span>
+<span class="diff-hunk">@@ -66,6 +66,18 @@</span>
+<span class="diff-ctx"> </span>
+<span class="diff-ctx"> void BundleInstaller::Install(const std::string &amp;bundleFilePath, const InstallParam &amp;installParam)</span>
+<span class="diff-ctx"> {</span>
+<span class="diff-add">+#ifdef OH_ADAPTER_ANDROID</span>
+<span class="diff-add">+    // Android APK detection: route .apk files to ProcessApkInstall</span>
+<span class="diff-add">+    if (bundleFilePath.size() &gt; 4 &amp;&amp;</span>
+<span class="diff-add">+        bundleFilePath.compare(bundleFilePath.size() - 4, 4, &quot;.apk&quot;) == 0) {</span>
+<span class="diff-add">+        ErrCode resultCode = ProcessApkInstall(bundleFilePath, installParam);</span>
+<span class="diff-add">+        if (statusReceiver_ != nullptr) {</span>
+<span class="diff-add">+            statusReceiver_-&gt;OnFinished(resultCode,</span>
+<span class="diff-add">+                resultCode == ERR_OK ? &quot;Install success&quot; : &quot;APK install failed&quot;);</span>
+<span class="diff-add">+        }</span>
+<span class="diff-add">+        return;</span>
+<span class="diff-add">+    }</span>
+<span class="diff-add">+#endif</span>
+<span class="diff-ctx">     ErrCode resultCode = ERR_OK;</span>
+<span class="diff-ctx">     if (installParam.userId == Constants::ALL_USERID) {</span>
+<span class="diff-ctx">         auto userInstallParam = installParam;</span>
+<span class="diff-ctx"></span></pre>
+<h2 id="ch4">4. 新增文件</h2>
+<h3 id="file11">services/abilitymgr/src/mission/mission_list_manager_patch.cpp <span class="new-tag">NEW</span></h3>
+<p>MissionListManager 扩展 — StartAbilityInMission 实现（231 行）</p>
+<pre class="diff"><span class="diff-add">/*
+ * mission_list_manager_patch.cpp
+ *
+ * Patch additions for MissionListManager to support multi-Ability Mission stacks.
+ * These methods are added to the existing MissionListManager class.
+ *
+ * Apply by adding to mission_list_manager.cpp or including as a separate
+ * compilation unit linked with the MissionListManager class.
+ *
+ * Changes:
+ *   1. New method: StartAbilityInMission()
+ *      - Pushes a new Ability onto an existing Mission&#x27;s stack
+ *      - Backgrounds the current stack top, foregrounds the new Ability
+ *
+ *   2. Modified: TerminateAbilityLocked()
+ *      - When mission-&gt;IsMultiAbilityMode() &amp;&amp; stack size &gt; 1:
+ *        Pops the stack instead of destroying the Mission
+ *      - Otherwise: existing behavior unchanged
+ */
+
+// ==================== ADD TO mission_list_manager.h ====================
+// public:
+//     int StartAbilityInMission(AbilityRequest &amp;abilityRequest, int32_t missionId);
+
+// ==================== ADD TO mission_list_manager.cpp ====================
+
+/*
+ * StartAbilityInMission: push a new Ability onto an existing Mission&#x27;s stack.
+ *
+ * Flow:
+ *   1. Find the target Mission by missionId
+ *   2. Create new AbilityRecord from the request
+ *   3. Background the current stack top
+ *   4. Push new AbilityRecord onto Mission stack
+ *   5. Foreground the new AbilityRecord
+ *   6. Update MissionInfo (label/want become new stack top&#x27;s)
+ */
+
+#if 0  // Paste into MissionListManager class implementation
+
+int MissionListManager::StartAbilityInMission(
+    AbilityRequest &amp;abilityRequest, int32_t missionId)
+{
+    std::lock_guard&lt;std::recursive_mutex&gt; guard(managerLock_);
+
+    TAG_LOGI(AAFwkTag::ABILITYMGR,
+        &quot;StartAbilityInMission: missionId=%{public}d, ability=%{public}s&quot;,
+        missionId, abilityRequest.abilityInfo.name.c_str());
+
+    // 1. Find target Mission
+    std::shared_ptr&lt;Mission&gt; targetMission = nullptr;
+    for (auto &amp;missionList : currentMissionLists_) {
+        if (!missionList) continue;
+        targetMission = missionList-&gt;GetMissionById(missionId);
+        if (targetMission) break;
+    }
+    // Also search default lists
+    if (!targetMission &amp;&amp; defaultStandardList_) {
+        targetMission = defaultStandardList_-&gt;GetMissionById(missionId);
+    }
+    if (!targetMission &amp;&amp; defaultSingleList_) {
+        targetMission = defaultSingleList_-&gt;GetMissionById(missionId);
+    }
+
+    if (!targetMission) {
+        TAG_LOGE(AAFwkTag::ABILITYMGR,
+            &quot;StartAbilityInMission: Mission %{public}d not found&quot;, missionId);
+        return ERR_INVALID_VALUE;
+    }
+
+    // 2. Handle FLAG_ACTIVITY_CLEAR_TOP via android_clear_top Want parameter
+    bool clearTop = abilityRequest.want.GetBoolParam(&quot;android_clear_top&quot;, false);
+    if (clearTop &amp;&amp; targetMission-&gt;IsMultiAbilityMode()) {
+        std::string targetAbilityName = abilityRequest.abilityInfo.name;
+        auto existingRecord = targetMission-&gt;FindAbilityByName(targetAbilityName);
+        if (existingRecord) {
+            // Pop all abilities above the target (and the target itself for recreate)
+            auto popped = targetMission-&gt;PopAbilitiesAbove(targetAbilityName, false);
+            for (auto &amp;record : popped) {
+                if (record) {
+                    record-&gt;Terminate(nullptr);
+                    terminateAbilityList_.push_back(record);
+                }
+            }
+            TAG_LOGI(AAFwkTag::ABILITYMGR,
+                &quot;StartAbilityInMission: CLEAR_TOP popped %{public}zu abilities above %{public}s&quot;,
+                popped.size(), targetAbilityName.c_str());
+
+            // Foreground the existing target ability (now the new stack top)
+            auto newTop = targetMission-&gt;GetAbilityRecord();
+            if (newTop) {
+                newTop-&gt;ProcessForegroundAbility(abilityRequest.callerToken);
+            }
+
+            // Update MissionInfo
+            InnerMissionInfo clearInfo;
+            auto clearInfoMgr = DelayedSingleton&lt;MissionInfoMgr&gt;::GetInstance();
+            if (clearInfoMgr &amp;&amp; clearInfoMgr-&gt;GetInnerMissionInfoById(missionId, clearInfo) == ERR_OK) {
+                if (newTop) {
+                    clearInfo.missionInfo.want = newTop-&gt;GetWant();
+                    clearInfo.missionInfo.label = newTop-&gt;GetLabel();
+                }
+                clearInfo.missionInfo.time = GetCurrentTime();
+                clearInfoMgr-&gt;UpdateMissionInfo(clearInfo);
+            }
+
+            if (listenerController_) {
+                listenerController_-&gt;NotifyMissionSnapshotChanged(missionId);
+            }
+            return ERR_OK;
+        }
+        // Target not found in stack — fall through to normal push
+    }
+
+    // 3. Create new AbilityRecord
+    auto newRecord = MissionAbilityRecord::CreateAbilityRecord(abilityRequest);
+    if (!newRecord) {
+        TAG_LOGE(AAFwkTag::ABILITYMGR,
+            &quot;StartAbilityInMission: Failed to create AbilityRecord&quot;);
+        return ERR_INVALID_VALUE;
+    }
+
+    // 4. Background current stack top
+    auto currentTop = targetMission-&gt;GetAbilityRecord();
+    if (currentTop &amp;&amp; currentTop-&gt;IsAbilityState(AbilityState::FOREGROUND)) {
+        MoveToBackgroundTask(currentTop);
+    }
+
+    // 5. Push new Ability onto Mission stack
+    targetMission-&gt;PushAbility(newRecord);
+
+    // 6. Move Mission to top of its MissionList
+    auto missionList = targetMission-&gt;GetMissionList();
+    if (missionList) {
+        missionList-&gt;AddMissionToTop(targetMission);
+    }
+
+    // 7. Foreground the new Ability
+    newRecord-&gt;ProcessForegroundAbility(abilityRequest.callerToken);
+
+    // 8. Update MissionInfo — label/want/time now reflect new stack top
+    InnerMissionInfo innerInfo;
+    auto infoMgr = DelayedSingleton&lt;MissionInfoMgr&gt;::GetInstance();
+    if (infoMgr &amp;&amp; infoMgr-&gt;GetInnerMissionInfoById(missionId, innerInfo) == ERR_OK) {
+        innerInfo.missionInfo.want = newRecord-&gt;GetWant();
+        innerInfo.missionInfo.label = newRecord-&gt;GetLabel();
+        innerInfo.missionInfo.time = GetCurrentTime();
+        infoMgr-&gt;UpdateMissionInfo(innerInfo);
+    }
+
+    // 9. Notify listeners
+    if (listenerController_) {
+        listenerController_-&gt;NotifyMissionSnapshotChanged(missionId);
+    }
+
+    return ERR_OK;
+}
+
+#endif
+
+// ==================== MODIFY TerminateAbilityLocked ====================
+// Add this branch at the beginning of TerminateAbilityLocked,
+// before the existing RemoveTerminatingAbility call:
+
+#if 0  // Insert at top of TerminateAbilityLocked
+
+    // --- Multi-Ability stack: pop instead of destroy ---
+    auto missionId = abilityRecord-&gt;GetMissionId();
+    auto mission = GetMissionById(missionId);
+    if (mission &amp;&amp; mission-&gt;IsMultiAbilityMode() &amp;&amp; mission-&gt;GetAbilityStackSize() &gt; 1) {
+        // Pop the terminating ability from the stack
+        auto popped = mission-&gt;PopAbility();
+        if (popped) {
+            // Add to termination queue for cleanup
+            terminateAbilityList_.push_back(popped);
+
+            // Foreground the new stack top
+            auto newTop = mission-&gt;GetAbilityRecord();
+            if (newTop) {
+                newTop-&gt;ProcessForegroundAbility(nullptr);
+            }
+
+            // Update MissionInfo to reflect new stack top
+            InnerMissionInfo innerInfo;
+            auto infoMgr = DelayedSingleton&lt;MissionInfoMgr&gt;::GetInstance();
+            if (infoMgr &amp;&amp; infoMgr-&gt;GetInnerMissionInfoById(missionId, innerInfo) == ERR_OK) {
+                if (newTop) {
+                    innerInfo.missionInfo.want = newTop-&gt;GetWant();
+                    innerInfo.missionInfo.label = newTop-&gt;GetLabel();
+                }
+                innerInfo.missionInfo.time = GetCurrentTime();
+                infoMgr-&gt;UpdateMissionInfo(innerInfo);
+            }
+
+            // Notify listeners for snapshot update
+            if (listenerController_) {
+                listenerController_-&gt;NotifyMissionSnapshotChanged(missionId);
+            }
+
+            TAG_LOGI(AAFwkTag::ABILITYMGR,
+                &quot;TerminateAbility: popped from mission %{public}d stack, &quot;
+                &quot;remaining=%{public}zu&quot;, missionId, mission-&gt;GetAbilityStackSize());
+        }
+
+        return ERR_OK;
+    }
+    // --- End multi-Ability stack handling ---
+    // (existing TerminateAbilityLocked code follows below unchanged)
+
+#endif
+
+// ==================== MODIFY CleanMissionLocked ====================
+// Add stack cleanup before existing logic:
+
+#if 0  // Insert at top of CleanMissionLocked
+
+    auto mission = GetMissionById(missionId);
+    if (mission &amp;&amp; mission-&gt;IsMultiAbilityMode() &amp;&amp; mission-&gt;GetAbilityStackSize() &gt; 1) {
+        // Terminate all stacked abilities from top to bottom
+        while (mission-&gt;GetAbilityStackSize() &gt; 1) {
+            auto popped = mission-&gt;PopAbility();
+            if (popped) {
+                popped-&gt;Terminate(nullptr);
+                terminateAbilityList_.push_back(popped);
+            }
+        }
+    }
+    // Then continue with existing CleanMissionLocked logic
+    // which handles the last remaining ability and Mission destruction
+
+#endif
+</span></pre>
+<h3 id="file12">services/bundlemgr/src/installd/installd_host_impl_android.cpp <span class="new-tag">NEW</span></h3>
+<p>Installd Android 实现 — 5 个 IPC 方法实现（273 行）</p>
+<pre class="diff"><span class="diff-add">/*
+ * installd_host_impl_android.cpp
+ *
+ * OH installd extension: Android APK-specific installation operations.
+ *
+ * Implements the 5 new IPC methods added to InstalldInterface for APK support:
+ *   - CreateAndroidDataDir (code 90)
+ *   - ExtractApkNativeLibs (code 91)
+ *   - DexOptAndroid (code 92)
+ *   - RemoveAndroidDataDir (code 93)
+ *   - VerifyApkSignature (code 94)
+ *
+ * These methods are added to InstalldHostImpl as an extension.
+ * The implementation runs in the installd daemon process with root privileges.
+ */
+
+#include &quot;installd_host_impl.h&quot;
+
+#include &lt;cerrno&gt;
+#include &lt;cstring&gt;
+#include &lt;fstream&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;vector&gt;
+
+#include &lt;unzip.h&gt;  // minizip
+
+#include &quot;directory_ex.h&quot;
+#include &quot;app_log_wrapper.h&quot;
+
+namespace OHOS {
+namespace AppExecFwk {
+
+namespace {
+
+constexpr const char* ANDROID_DATA_BASE = &quot;/data/app/el2/0/android&quot;;
+constexpr const char* ANDROID_EXT_BASE = &quot;/data/app/el2/0/android_ext&quot;;
+constexpr const char* DEX2OAT_BIN = &quot;/system/android/bin/dex2oat&quot;;
+constexpr const char* BOOT_IMAGE = &quot;/system/android/framework/boot.art&quot;;
+constexpr const char* ANDROID_ROOT = &quot;/system/android&quot;;
+constexpr size_t COPY_BUF_SIZE = 65536;
+
+// Supported ABI priority (ARM64 device)
+const std::vector&lt;std::string&gt; kSupportedAbis = {
+    &quot;arm64-v8a&quot;,
+    &quot;armeabi-v7a&quot;,
+    &quot;armeabi&quot;
+};
+
+bool MakeDirWithOwner(const std::string&amp; path, mode_t mode, int32_t uid, int32_t gid) {
+    if (!ForceCreateDirectory(path)) {
+        APP_LOGE(&quot;MakeDirWithOwner: mkdir failed: %{public}s&quot;, path.c_str());
+        return false;
+    }
+    if (chmod(path.c_str(), mode) != 0) {
+        APP_LOGW(&quot;MakeDirWithOwner: chmod failed: %{public}s (%{public}s)&quot;,
+                 path.c_str(), strerror(errno));
+    }
+    if (chown(path.c_str(), uid, gid) != 0) {
+        APP_LOGW(&quot;MakeDirWithOwner: chown failed: %{public}s (%{public}s)&quot;,
+                 path.c_str(), strerror(errno));
+    }
+    return true;
+}
+
+}  // namespace
+
+ErrCode InstalldHostImpl::CreateAndroidDataDir(
+        const std::string&amp; bundleName, int32_t uid, int32_t gid,
+        int32_t targetSdkVersion) {
+    APP_LOGI(&quot;CreateAndroidDataDir: %{public}s uid=%{public}d&quot;, bundleName.c_str(), uid);
+
+    std::string baseDir = std::string(ANDROID_DATA_BASE) + &quot;/&quot; + bundleName;
+
+    // Create Android-style subdirectories
+    const std::vector&lt;std::pair&lt;std::string, mode_t&gt;&gt; dirs = {
+        {&quot;&quot;,              0771},
+        {&quot;/cache&quot;,        0771},
+        {&quot;/code_cache&quot;,   0771},
+        {&quot;/databases&quot;,    0771},
+        {&quot;/files&quot;,        0771},
+        {&quot;/shared_prefs&quot;, 0771},
+        {&quot;/lib&quot;,          0755},
+    };
+
+    for (const auto&amp; [sub, mode] : dirs) {
+        std::string path = baseDir + sub;
+        if (!MakeDirWithOwner(path, mode, uid, gid)) {
+            return ERR_APPEXECFWK_INSTALLD_CREATE_DIR_FAILED;
+        }
+    }
+
+    // External storage directory
+    std::string extDir = std::string(ANDROID_EXT_BASE) + &quot;/&quot; + bundleName;
+    if (!MakeDirWithOwner(extDir, 0771, uid, 1015 /* sdcard_rw */)) {
+        APP_LOGW(&quot;CreateAndroidDataDir: external dir creation failed (non-fatal)&quot;);
+    }
+
+    APP_LOGI(&quot;CreateAndroidDataDir: success for %{public}s&quot;, bundleName.c_str());
+    return ERR_OK;
+}
+
+ErrCode InstalldHostImpl::ExtractApkNativeLibs(
+        const std::string&amp; apkPath,
+        const std::string&amp; targetDir,
+        const std::string&amp; primaryAbi) {
+    APP_LOGI(&quot;ExtractApkNativeLibs: apk=%{public}s abi=%{public}s&quot;,
+             apkPath.c_str(), primaryAbi.c_str());
+
+    ForceCreateDirectory(targetDir);
+
+    unzFile zip = unzOpen(apkPath.c_str());
+    if (zip == nullptr) {
+        APP_LOGE(&quot;ExtractApkNativeLibs: failed to open APK&quot;);
+        return ERR_APPEXECFWK_INSTALLD_EXTRACT_FILES_FAILED;
+    }
+
+    std::string prefix = &quot;lib/&quot; + primaryAbi + &quot;/&quot;;
+    int extractedCount = 0;
+
+    if (unzGoToFirstFile(zip) == UNZ_OK) {
+        do {
+            char filename[512];
+            unz_file_info fileInfo;
+            if (unzGetCurrentFileInfo(zip, &amp;fileInfo, filename, sizeof(filename),
+                                       nullptr, 0, nullptr, 0) != UNZ_OK) {
+                continue;
+            }
+
+            std::string entryName(filename);
+            if (entryName.compare(0, prefix.size(), prefix) != 0) continue;
+            if (entryName.size() &lt;= prefix.size()) continue;
+
+            std::string soName = entryName.substr(prefix.size());
+            if (soName.find(&#x27;/&#x27;) != std::string::npos) continue;
+
+            if (unzOpenCurrentFile(zip) != UNZ_OK) continue;
+
+            std::string outPath = targetDir + &quot;/&quot; + soName;
+            std::ofstream out(outPath, std::ios::binary | std::ios::trunc);
+            if (!out) {
+                unzCloseCurrentFile(zip);
+                continue;
+            }
+
+            char buf[COPY_BUF_SIZE];
+            int bytesRead;
+            while ((bytesRead = unzReadCurrentFile(zip, buf, sizeof(buf))) &gt; 0) {
+                out.write(buf, bytesRead);
+            }
+
+            out.close();
+            unzCloseCurrentFile(zip);
+            chmod(outPath.c_str(), 0755);
+            extractedCount++;
+        } while (unzGoToNextFile(zip) == UNZ_OK);
+    }
+
+    unzClose(zip);
+    APP_LOGI(&quot;ExtractApkNativeLibs: extracted %{public}d files&quot;, extractedCount);
+    return ERR_OK;
+}
+
+ErrCode InstalldHostImpl::DexOptAndroid(
+        const std::string&amp; apkPath,
+        const std::string&amp; oatDir,
+        int32_t uid,
+        const std::string&amp; instructionSet,
+        const std::string&amp; compilerFilter) {
+    APP_LOGI(&quot;DexOptAndroid: apk=%{public}s filter=%{public}s&quot;,
+             apkPath.c_str(), compilerFilter.c_str());
+
+    ForceCreateDirectory(oatDir);
+
+    std::string oatFile = oatDir + &quot;/base.odex&quot;;
+
+    std::vector&lt;std::string&gt; args = {
+        DEX2OAT_BIN,
+        &quot;--dex-file=&quot; + apkPath,
+        &quot;--oat-file=&quot; + oatFile,
+        &quot;--instruction-set=&quot; + instructionSet,
+        &quot;--compiler-filter=&quot; + compilerFilter,
+        &quot;--boot-image=&quot; + std::string(BOOT_IMAGE),
+        &quot;--android-root=&quot; + std::string(ANDROID_ROOT),
+    };
+
+    pid_t pid = fork();
+    if (pid &lt; 0) {
+        APP_LOGE(&quot;DexOptAndroid: fork failed: %{public}s&quot;, strerror(errno));
+        return ERR_APPEXECFWK_INSTALLD_DEXOPT_FAILED;
+    }
+
+    if (pid == 0) {
+        // Child process: drop to app UID before running dex2oat
+        if (setuid(uid) != 0) {
+            APP_LOGE(&quot;DexOptAndroid: setuid failed&quot;);
+            _exit(127);
+        }
+
+        std::vector&lt;const char*&gt; argv;
+        for (const auto&amp; arg : args) {
+            argv.push_back(arg.c_str());
+        }
+        argv.push_back(nullptr);
+
+        execv(argv[0], const_cast&lt;char**&gt;(argv.data()));
+        // If execv returns, it failed
+        _exit(127);
+    }
+
+    // Parent: wait for completion
+    int status;
+    waitpid(pid, &amp;status, 0);
+
+    if (WIFEXITED(status) &amp;&amp; WEXITSTATUS(status) == 0) {
+        APP_LOGI(&quot;DexOptAndroid: success, output=%{public}s&quot;, oatFile.c_str());
+        return ERR_OK;
+    }
+
+    APP_LOGE(&quot;DexOptAndroid: dex2oat failed with exit code %{public}d&quot;,
+             WEXITSTATUS(status));
+    return ERR_APPEXECFWK_INSTALLD_DEXOPT_FAILED;
+}
+
+ErrCode InstalldHostImpl::RemoveAndroidDataDir(const std::string&amp; bundleName) {
+    APP_LOGI(&quot;RemoveAndroidDataDir: %{public}s&quot;, bundleName.c_str());
+
+    std::string dataDir = std::string(ANDROID_DATA_BASE) + &quot;/&quot; + bundleName;
+    std::string extDir = std::string(ANDROID_EXT_BASE) + &quot;/&quot; + bundleName;
+
+    bool success = true;
+    if (!ForceRemoveDirectory(dataDir)) {
+        APP_LOGW(&quot;RemoveAndroidDataDir: failed to remove: %{public}s&quot;, dataDir.c_str());
+        success = false;
+    }
+    if (!ForceRemoveDirectory(extDir)) {
+        APP_LOGW(&quot;RemoveAndroidDataDir: failed to remove: %{public}s&quot;, extDir.c_str());
+        success = false;
+    }
+
+    return success ? ERR_OK : ERR_APPEXECFWK_INSTALLD_REMOVE_DIR_FAILED;
+}
+
+ErrCode InstalldHostImpl::VerifyApkSignature(
+        const std::string&amp; apkPath,
+        const std::string&amp; expectedCertHash) {
+    APP_LOGI(&quot;VerifyApkSignature: %{public}s&quot;, apkPath.c_str());
+
+    // Delegate to ApkSignatureVerifier
+    oh_adapter::ApkSignatureVerifier::VerifyResult result =
+        oh_adapter::ApkSignatureVerifier::Verify(apkPath);
+
+    if (!result.verified) {
+        APP_LOGE(&quot;VerifyApkSignature: failed: %{public}s&quot;, result.errorMsg.c_str());
+        return ERR_APPEXECFWK_INSTALL_FAILED_VERIFY_SIGNATURE;
+    }
+
+    // If expectedCertHash is provided (update scenario), verify certificate matches
+    if (!expectedCertHash.empty() &amp;&amp;
+        result.certFingerprint != expectedCertHash) {
+        APP_LOGE(&quot;VerifyApkSignature: certificate mismatch&quot;);
+        return ERR_APPEXECFWK_INSTALL_FAILED_INCONSISTENT_SIGNATURE;
+    }
+
+    APP_LOGI(&quot;VerifyApkSignature: success, cert=%{public}s&quot;,
+             result.certFingerprint.c_str());
+    return ERR_OK;
+}
+
+}  // namespace AppExecFwk
+}  // namespace OHOS
+</span></pre>
+<h2 id="ch5">5. 未应用的补丁</h2>
+<p>以下补丁因目标平台不匹配而未应用：</p>
+<table>
+<tr><th>补丁目录</th><th>原因</th></tr>
+<tr><td>ohos_patches/build/</td><td>针对 DAYU600 (aarch64) 的 GN 构建补丁，不适用于当前 DAYU200 (rk3568, arm32)</td></tr>
+<tr><td>ohos_patches/third_party/musl/</td><td>针对 aarch64 的 musl syscall 修复，arm32 无此问题</td></tr>
+<tr><td>ohos_patches/graphic_2d/</td><td>rs_buffer_reclaim 补丁，与 arm32 编译无关</td></tr>
+</table>
+
+</body></html>

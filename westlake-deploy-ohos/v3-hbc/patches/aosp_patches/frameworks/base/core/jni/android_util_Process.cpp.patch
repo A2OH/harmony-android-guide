@@ -1,0 +1,17 @@
+--- a/frameworks/base/core/jni/android_util_Process.cpp
++++ b/frameworks/base/core/jni/android_util_Process.cpp
+@@ -27,6 +27,13 @@
+ #include <meminfo/procmeminfo.h>
+ #include <meminfo/sysmeminfo.h>
+ #include <processgroup/processgroup.h>
+ #include <processgroup/sched_policy.h>
++// libutils's AndroidThreads.h wraps androidSetThreadPriority in
++// `#if defined(__ANDROID__)`. We cross-compile against OH musl sysroot and
++// don't define __ANDROID__, so that guard hides the function. Declaring it
++// explicitly here lets Process.cpp reference it; libutils.so at runtime
++// provides the definition (libutils is cross-compiled to OH musl already).
++extern "C" int androidSetThreadPriority(pid_t tid, int prio);
++extern "C" int androidGetThreadPriority(pid_t tid);
+ #include <android-base/unique_fd.h>
+
+ #include <algorithm>

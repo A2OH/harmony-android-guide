@@ -1,0 +1,22 @@
+--- Asset.cpp.orig
++++ Asset.cpp
+@@ -455,7 +455,8 @@
+ {
+     assert(mFp == NULL);    // no reopen
+     assert(!mMap.has_value());
+-    assert(dataMap != NULL);
++    // OH cross-build: incfs::IncFsFileMap lacks operator bool here; assert removed.
++    // The original ! NULL check was on a moved-in value-type object.
+
+     mMap = std::move(dataMap);
+     mStart = -1;            // not used
+@@ -801,7 +802,8 @@
+ {
+     assert(mFp == NULL);
+     assert(!mMap.has_value());
+-    assert(dataMap != NULL);
++    // OH cross-build: incfs::IncFsFileMap lacks operator bool here; assert removed.
++    // (Same pattern as above at line ~458.)
+
+     mStart = std::move(dataMap);
+     mLength = mStart->length();

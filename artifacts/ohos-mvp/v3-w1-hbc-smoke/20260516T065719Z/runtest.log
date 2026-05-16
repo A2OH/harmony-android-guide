@@ -1,0 +1,102 @@
+--- file ---
+appspawn-x: ELF shared object, 32-bit LSB arm, EABI5, soft float, dynamic (/lib/ld-musl-arm.so.1), not stripped
+--- ld-musl resolver ---
+-rwxr-xr-x 1 root shell 1235180 2026-04-04 16:39 /lib/ld-musl-arm.so.1
+-rwxr-xr-x 1 root shell 1235180 2026-04-04 16:39 /system/lib/ld-musl-arm.so.1
+--- attempt run --help (expected to either print usage or crash w/ DSO error) ---
+Error loading shared library libnativehelper.so: (needed by ./appspawn-x)
+Error loading shared library liblog.so: (needed by ./appspawn-x)
+Error loading shared library libbionic_compat.so: (needed by ./appspawn-x)
+Error loading shared library libbionic_compat.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library liblog.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libbase.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libcutils.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libutils.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libnativehelper.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libsigchain.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libdexfile.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libartbase.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libartpalette.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libvixl.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library liblz4.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libziparchive.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libelffile.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libnativebridge.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libnativeloader.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+Error loading shared library libprofile.so: (needed by /data/local/tmp/v3-hbc-smoke/libart.so)
+--- exit code: 0 ---
+--- libart.so deps via readelf-like probe ---
+/bin/sh: tr: inaccessible or not found
+FileTransfer finish, Size:19212810, File count = 23, time:1329ms rate:14456.59kB/s
+23
+Error loading shared library libtinyxml2.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libart.so)
+Error loading shared library libunwindstack.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libart.so)
+Error loading shared library libart_runtime_stubs.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libprofile.so)
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ThreadStateE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_8RootTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMaps7ReparseEPb: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack4Regs15CreateFromLocalEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMapsC1Ev: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack4Regs11CurrentArchEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack6Memory31CreateProcessMemoryThreadCachedEi: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack14CreateJitDebugENS_8ArchEnumERNSt3__h10shared_ptrINS_6MemoryEEENS1_6vectorINS1_12basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEENSA_ISC_EEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack14CreateDexFilesENS_8ArchEnumERNSt3__h10shared_ptrINS_6MemoryEEENS1_6vectorINS1_12basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEENSA_ISC_EEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMaps5ParseEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack8Unwinder11SetJitDebugEPNS_20GlobalDebugInterfaceINS_3ElfEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack8Unwinder11SetDexFilesEPNS_20GlobalDebugInterfaceINS_7DexFileEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack3Elf17SetCachingEnabledEb: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_15IndirectRefKindE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_10InvokeTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ClassStatusE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gclsERNSt3__h13basic_ostreamIcNS1_11char_traitsIcEEEENS0_13CollectorTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gc5spacelsERNSt3__h13basic_ostreamIcNS2_11char_traitsIcEEEENS1_11RegionSpace10RegionTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_8LockWord9LockStateE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_20ReflectionSourceTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_25EncodedArrayValueIterator9ValueTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_14InstructionSetE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gclsERNSt3__h13basic_ostreamIcNS1_11char_traitsIcEEEENS0_13AllocatorTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gc9collectorlsERNSt3__h13basic_ostreamIcNS2_11char_traitsIcEEEENS1_6GcTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ImageHeader11ImageMethodE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ImageHeader11StorageModeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3fmt2v76detail7vformatENS0_17basic_string_viewIcEENS0_11format_argsE: symbol not found
+EXIT=0
+FileTransfer finish, Size:20966314, File count = 30, time:1535ms rate:13658.84kB/s
+24
+Error loading shared library libtinyxml2.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libart.so)
+Error loading shared library libunwindstack.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libart.so)
+Error loading shared library libart_runtime_stubs.so: (needed by /data/local/tmp/v3-hbc-smoke-dir/libprofile.so)
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ThreadStateE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_8RootTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMaps7ReparseEPb: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack4Regs15CreateFromLocalEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMapsC1Ev: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack4Regs11CurrentArchEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack6Memory31CreateProcessMemoryThreadCachedEi: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack14CreateJitDebugENS_8ArchEnumERNSt3__h10shared_ptrINS_6MemoryEEENS1_6vectorINS1_12basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEENSA_ISC_EEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack14CreateDexFilesENS_8ArchEnumERNSt3__h10shared_ptrINS_6MemoryEEENS1_6vectorINS1_12basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEENSA_ISC_EEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack18LocalUpdatableMaps5ParseEv: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack8Unwinder11SetJitDebugEPNS_20GlobalDebugInterfaceINS_3ElfEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack8Unwinder11SetDexFilesEPNS_20GlobalDebugInterfaceINS_7DexFileEEE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN11unwindstack3Elf17SetCachingEnabledEb: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_15IndirectRefKindE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_10InvokeTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_11ClassStatusE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gclsERNSt3__h13basic_ostreamIcNS1_11char_traitsIcEEEENS0_13CollectorTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3art2gc5spacelsERNSt3__h13basic_ostreamIcNS2_11char_traitsIcEEEENS1_11RegionSpace10RegionTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_8LockWord9LockStateE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_20ReflectionSourceTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_25EncodedArrayValueIterator9ValueTypeE: symbol not found
+Error relocating /data/local/tmp/v3-hbc-smoke-dir/libart.so: _ZN3artlsERNSt3__h13basic_ostreamIcNS0_11char_traitsIcEEEENS_14InstructionSetE: symbol not found
+EXIT=0
+/bin/sh: ./appspawn-x: can't execute: Permission denied
+EXIT=0
+Usage: ./appspawn-x [OPTIONS]
+
+Options:
+  --socket-name NAME       Unix socket name (default: AppSpawnX)
+  --sandbox-config PATH    Sandbox config JSON (default: /system/etc/appspawn_x_sandbox.json)
+  --help, -h               Show this help
+EXIT=0
+---
+Signal 6 
+EXIT2=0

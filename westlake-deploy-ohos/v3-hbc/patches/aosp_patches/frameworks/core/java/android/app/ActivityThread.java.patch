@@ -1,0 +1,42 @@
+================================================================================
+ AOSP Modification: ActivityThread.java
+ File: frameworks/core/java/android/app/ActivityThread.java
+ Purpose: Replace IPackageManager singleton to return PackageManagerAdapter
+================================================================================
+
+--- a/core/java/android/app/ActivityThread.java
++++ b/core/java/android/app/ActivityThread.java
+@@ -86,6 +86,9 @@ import android.content.pm.IPackageManager;
+ ...existing imports...
+
++// [OH_ADAPTER] Import adapter classes
++import adapter.core.OHEnvironment;
++import adapter.packagemanager.PackageManagerAdapter;
++
+ ...
+
+@@ -2570,10 +2573,20 @@ public final class ActivityThread extends ClientTransactionHandler
+     @UnsupportedAppUsage
+     public static IPackageManager getPackageManager() {
+         if (sPackageManager != null) {
+             return sPackageManager;
+         }
+-        final IBinder b = ServiceManager.getService("package");
+-        sPackageManager = IPackageManager.Stub.asInterface(b);
+-        return sPackageManager;
++        // [OH_ADAPTER] Check if OH adaptation layer is available
++        if (OHEnvironment.isOHEnvironment()) {
++            try {
++                sPackageManager = new PackageManagerAdapter();
++                return sPackageManager;
++            } catch (Exception e) {
++                Log.w("ActivityThread",
++                    "OH PackageManager adapter init failed, falling back to original", e);
++            }
++        }
++        // Original AOSP implementation (fallback)
++        final IBinder b = ServiceManager.getService("package");
++        sPackageManager = IPackageManager.Stub.asInterface(b);
++        return sPackageManager;
+     }
+

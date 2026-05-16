@@ -1,0 +1,37 @@
+diff --git a/rosen/modules/render_service_base/src/transaction/rs_transaction_data.cpp b/rosen/modules/render_service_base/src/transaction/rs_transaction_data.cpp
+--- a/rosen/modules/render_service_base/src/transaction/rs_transaction_data.cpp
++++ b/rosen/modules/render_service_base/src/transaction/rs_transaction_data.cpp
+@@ -347,5 +347,33 @@ std::string RSTransactionData::PrintCommandMapDesc(
+ bool RSTransactionData::IsCallingPidValid(pid_t callingPid, const RSRenderNodeMap& nodeMap) const
+ {
++    // ========================================================================
++    // 2026-05-11 G2.14aq adapter (Android-OpenHarmony adapter project):
++    // SECURITY-RELAXING FALLBACK for TF_ASYNC binder.
++    //
++    // OH kernel binder zeros sender_pid for one-way (TF_ASYNC) transactions
++    // (drivers/staging/android/binder.c binder_get_txn_from(t)==NULL branch).
++    // rs_client_to_render_connection_proxy.cpp:99 sends CommitTransaction with
++    // TF_ASYNC, so IPCSkeleton::GetCallingPid() returns 0 on the stub side.
++    // For normal-apl clients (isNonSystemAppCalling=true) the kernel-attested
++    // callingPid=0 then mismatches every commandPid extracted from nodeId, and
++    // every PERMISSION_APP command (SURFACE_NODE_UPDATE_SURFACE_SIZE, property
++    // updates, etc.) is dropped — bounds/frame never reach RS, hwui frames are
++    // produced but the layer never composites.
++    //
++    // NEGATIVE IMPACT (acknowledged & documented in doc/build_patch_log.html):
++    // RSTransactionData::pid_ is set by the client (SetSendingPid) and reaches
++    // the server via parcel.WriteInt32 (~line 180 above) — it is NOT
++    // kernel-attested.  A malicious normal-apl process can forge pid_ to any
++    // value.  The fallback below trusts pid_ when callingPid==0, weakening
++    // pid-based isolation between normal-apl processes.  System apps are
++    // unaffected (isNonSystemAppCalling=false bypasses this check entirely at
++    // rs_client_to_render_connection_stub.cpp:351/382).
++    //
++    // See doc/build_patch_log.html [Patch G2.14aq] for the full risk analysis.
++    // ========================================================================
++    if (callingPid == 0 && pid_ != 0) {
++        callingPid = pid_;
++    }
+     std::unordered_map<pid_t, std::unordered_map<NodeId, std::set<
+         std::pair<uint16_t, uint16_t>>>> inaccessibleCommandMap;
+     std::unique_lock<std::mutex> lock(commandMutex_);

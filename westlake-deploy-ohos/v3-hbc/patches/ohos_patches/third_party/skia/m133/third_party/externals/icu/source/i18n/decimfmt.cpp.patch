@@ -1,0 +1,15 @@
+--- a/third_party/skia/m133/third_party/externals/icu/source/i18n/decimfmt.cpp
++++ b/third_party/skia/m133/third_party/externals/icu/source/i18n/decimfmt.cpp
+@@ -1880,9 +1880,9 @@
+             *(--ptr) = fields->fastData.cpGroupingSeparator;
+             group = 1;
+         }
+-        std::div_t res = std::div(input, 10);
+-        *(--ptr) = static_cast<char16_t>(fields->fastData.cpZero + res.rem);
+-        input = res.quot;
++        auto res_quot = input / 10; auto res_rem = input % 10;
++        *(--ptr) = static_cast<char16_t>(fields->fastData.cpZero + res_rem);
++        input = res_quot;
+     }
+     int32_t len = localCapacity - static_cast<int32_t>(ptr - localBuffer);
+     output.append(ptr, len);

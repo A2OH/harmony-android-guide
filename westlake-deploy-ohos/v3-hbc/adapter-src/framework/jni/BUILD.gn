@@ -1,0 +1,201 @@
+# ============================================================================
+# !!! 重要：本 BUILD.gn 是历史遗留 / 不参与实际编译 !!!
+# ============================================================================
+#
+# liboh_adapter_bridge.so 的实际编译走的是独立 cross-compile 脚本：
+#     build/compile_oh_adapter_bridge.sh
+#
+# 即 OH clang + arm-linux-ohos musl，bypass OH GN/ninja 系统。原因（详见
+# compile_oh_adapter_bridge.sh 头部 Rationale 段）：
+#
+#   framework/jni/BUILD.gn 里的 include_dirs 引用 //foundation/xxx/ 的
+#   header 路径触发 OH cross-component include isolation 规则
+#   (BUILDCONFIG.gn:1068)。要让 GN 编通必须把每个依赖暴露成正经的 OH
+#   inner_api 加 header_base 元数据，那是多日的结构性工作。独立 cross-
+#   compile 脚本完全绕开这个：直接控制 -I / -L / -l / NEEDED 集，不需
+#   要 GN 配合。
+#
+# 因此本 BUILD.gn 文件**不参与实际构建**：
+#   - 不要执行 `./build.sh --build-target oh_adapter_bridge` —— 这条路径
+#     从来没真正跑通过；ccache 偶尔的"命中假象"反而会误导诊断（详见
+#     compile_oh_adapter_bridge.sh [BR-7]）
+#   - 不要为了"让 GN 编通"而修改本文件加 -I / external_deps —— 修改本
+#     文件触发 cflags 哈希变化，会让 ccache 全 miss 触雷一系列预存
+#     missing -I 问题，而真正的编译入口（独立脚本）根本没受影响
+#
+# 添加新 OH 依赖的正确步骤（更新 oh_adapter_bridge.so）：
+#   1. 改 build/compile_oh_adapter_bridge.sh 的 INCLUDES 段加 -I
+#      <OH inner_api 路径>
+#   2. 改同脚本 LIBS 段加 -l<lib 名>
+#   3. 改同脚本 ldflags 段加 -L<lib 输出路径>（如需）
+#   4. ssh oh-build "cd ~/adapter && bash build/compile_oh_adapter_bridge.sh"
+#   5. scp 拉回本机 out/adapter/liboh_adapter_bridge.so
+#
+# 本文件保留只是为了 doc/build_and_deployment_design.html 历史溯源完整。
+# 长期来看应迁到 _deprecated/ 或彻底删除（pending architectural decision）。
+# 同样背景的 OH GN 编译路径不可走的事实，参见 build_and_deployment_design
+# §1.1 类别 ⑤（Adapter C++ 编译 = 独立 clang++ 脚本）。
+#
+# ============================================================================
+# 历史描述（仅供阅读，不反映现实）：
+# ============================================================================
+#
+# This library contains all JNI native methods for the adapter layer,
+# bridging Android Framework Java calls to OH system services via OH IPC.
+#
+# Previously defined as cc_library_shared in Android.bp, but migrated to
+# OH BUILD.gn because:
+#   1. It links against OH IPC libraries (ipc_core, samgr_proxy) which are
+#      only available in the OH build environment
+#   2. It must be compiled with OH toolchain (clang + musl libc) to run
+#      on the OH system — AOSP Soong produces bionic-linked binaries
+#   3. The AOSP Android.bp had OH deps commented out as a workaround;
+#      BUILD.gn resolves this properly
+#
+# 注：上述 "BUILD.gn resolves this properly" 在实践中并未实现 —— GN
+# include isolation rule 让 BUILD.gn 跑不通，最终改走独立脚本。
+#
+# Android.bp now only builds platform-independent artifacts (Java/APK).
+
+import("//build/ohos.gni")
+
+config("oh_adapter_bridge_config") {
+  include_dirs = [
+    # Local adapter-side headers (same project, not cross-component)
+    "../core/jni",
+    "../activity/jni",
+    "../window/jni",
+    "../surface/jni",
+    "../broadcast/jni",
+    "../contentprovider/jni",
+    "../package-manager/jni",
+    # OH inner API headers come via external_deps below (OH build system
+    # injects them based on each dep's bundle.json header_base). Do NOT add
+    # `//foundation/...` paths here — that violates cross-component
+    # include isolation (BUILDCONFIG.gn:1068).
+    # AOSP headers are provided by the cross-compile chain via direct
+    # reference from source files (e.g., #include "android/log.h") — path
+    # resolution happens via adapter-local wrappers, not BUILD.gn.
+  ]
+
+  cflags_cc = [
+    "-std=c++17",
+    "-Wall",
+    "-Werror",
+    "-fPIC",
+    # Align with OH default (ohos_shared_library implicitly uses -fno-rtti).
+    # OH inner classes such as OHOS::AAFwk::AbilityConnectionStub have vtable
+    # export but no typeinfo (no _ZTI symbol) because their provider .so is
+    # compiled -fno-rtti. If adapter keeps default -frtti, Clang emits typeinfo
+    # for derived AbilityConnectionAdapter referencing parent typeinfo, which
+    # ends up UND and breaks dlopen at runtime.
+    # See doc/compile_report.html §3.9 for the full diagnosis.
+    "-fno-rtti",
+  ]
+
+  defines = [
+    "OH_ADAPTER_BRIDGE",
+    "LOG_TAG=\"OH_AdapterBridge\"",
+  ]
+}
+
+ohos_shared_library("oh_adapter_bridge") {
+  sources = [
+    # core: JNI entry point, JavaVM management, callback dispatch
+    "../core/jni/adapter_bridge.cpp",
+    "../core/jni/oh_callback_handler.cpp",
+    "../core/jni/skia_codec_register.cpp",
+
+    # activity: AMS/ATMS bridges, lifecycle, Intent/Want conversion
+    "../activity/jni/oh_ability_manager_client.cpp",
+    "../activity/jni/oh_app_mgr_client.cpp",
+    "../activity/jni/app_scheduler_adapter.cpp",
+    "../activity/jni/ability_scheduler_adapter.cpp",
+    "../activity/jni/ability_connection_adapter.cpp",
+    "../activity/jni/intent_want_converter.cpp",
+    "../activity/jni/lifecycle_state_mapper.cpp",
+
+    # window: WMS/WindowSession bridges, input event bridging
+    "../window/jni/oh_window_manager_client.cpp",
+    "../window/jni/oh_anativewindow_shim.cpp",
+    "../window/jni/oh_input_bridge.cpp",
+    # G2.14v (2026-05-07): control-plane bridge for IInputManager (peer to
+    # oh_input_bridge.cpp's per-session data plane). See
+    # doc/Input_Adapter_design.html §5.7.
+    "../window/jni/oh_input_manager_bridge.cpp",
+    "../window/jni/window_callback_adapter.cpp",
+    "../window/jni/session_stage_adapter.cpp",
+    "../window/jni/window_manager_agent_adapter.cpp",
+    "../window/jni/display_manager_adapter_jni.cpp",
+
+    # surface: RSSurfaceNode + IGraphicBufferProducer bridging
+    "../surface/jni/oh_surface_bridge.cpp",
+    "../surface/jni/oh_graphic_buffer_producer.cpp",
+
+    # canvas: software rendering via OH Drawing NDK
+    "../surface/jni/oh_canvas_renderer.cpp",
+
+    # egl: hardware rendering via OH NativeWindow + EGL
+    "../surface/jni/oh_egl_surface_adapter.cpp",
+
+    # broadcast: CommonEvent / BroadcastReceiver bridging
+    "../broadcast/jni/oh_common_event_client.cpp",
+    "../broadcast/jni/common_event_subscriber_adapter.cpp",
+
+    # contentprovider: DataShare / ContentProvider bridging
+    "../contentprovider/jni/oh_datashare_client.cpp",
+
+    # package-manager: BMS client (PackageManager queries)
+    "../package-manager/jni/oh_bundle_mgr_client.cpp",
+  ]
+
+  configs = [ ":oh_adapter_bridge_config" ]
+
+  # OH system dependencies
+  external_deps = [
+    "hilog:libhilog",
+    "c_utils:utils",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
+    "ability_runtime:ability_connect_callback_stub",
+    "window_manager:libwm",
+    "window_manager:libdm",
+    "graphic_2d:librender_service_client",
+    "graphic_2d:native_drawing_ndk",
+    "graphic_surface:surface",
+    "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+  ]
+
+  # EGL/OpenGL ES libraries (for hardware rendering)
+  libs = [
+    "EGL",
+    "GLESv2",
+  ]
+
+  # Android runtime libraries are supplied by the AOSP cross-compile chain
+  # (out/aosp_lib/libnativehelper.so, deployed to /system/android/lib/), and
+  # linked at runtime via the rpath below — no GN deps entry required.
+  ldflags = [
+    "-ldl",
+    # DT_RUNPATH so liboh_adapter_bridge's DT_NEEDED libnativehelper/libart
+    # resolves from /system/android/lib/ without touching OH namespace linker.
+    "-Wl,--enable-new-dtags",
+    "-Wl,-rpath,/system/android/lib",
+    # Link against cross-compiled libnativehelper.so shipped in out/aosp_lib/.
+    "-L" + rebase_path("//adapter/out/aosp_lib", root_build_dir),
+    "-lnativehelper",
+  ]
+
+  output_name = "oh_adapter_bridge"
+  install_enable = true
+  install_images = [ "system" ]
+  module_install_dir = "lib64"
+
+  part_name = "oh_adapter"
+  subsystem_name = "oh_adapter"
+}

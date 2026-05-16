@@ -1,0 +1,609 @@
+/*
+ * android_view_surface_stubs.cpp — P13 REAL implementation (2026-04-11)
+ *
+ * ============================================================================
+ * 2026-05-06 — ENTIRE FILE BODY DEACTIVATED via #if 0 ... #endif
+ * ============================================================================
+ *
+ * Reason: this file is superseded by the v3.0 graphics_rendering_design.html
+ * (Surface 适配 / HWUI 适配 / VSync 适配 / 硬件合成适配 章节). All three Parts
+ * are inconsistent with the new design and/or have been replaced by the
+ * implementations in framework/android-runtime/src/. The body is preserved
+ * (commented via #if 0) for historical reference per user request 2026-05-06
+ * "和本设计方案不一致的代码，请注释掉但不删除，已备后续了解".
+ *
+ *   Part 1 DisplayEventReceiver — superseded by
+ *     framework/android-runtime/src/android_view_DisplayEventReceiver.cpp
+ *     (G2.14n: real timer + ScopedAttach + mVsyncEventData population).
+ *     Active path is in liboh_android_runtime.so; this Part 1 in
+ *     liboh_adapter_bridge.so was never wired into adapter_bridge.cpp::JNI_OnLoad
+ *     (verified 2026-05-06), so it is dead code.
+ *
+ *   Part 2 Surface lockCanvas/unlockAndPost — software-rendering path,
+ *     deleted from design v3.0 (硬件渲染 only). Active Surface natives are
+ *     registered by framework/android-runtime/src/android_graphics_compat_shim.cpp
+ *     (S_nativeLockCanvas returns 0 per design — hwui owns drawing, not lockCanvas).
+ *     register_android_view_Surface() defined here is never called.
+ *
+ *   Part 3 SurfaceControl dummy 0xAD4C7500 fake-handle — superseded by
+ *     framework/android-runtime/src/android_view_SurfaceControl.cpp (magic
+ *     struct + sessionId field, G2.14r). AndroidRuntime::startReg's kRegJNI
+ *     entry resolves register_android_view_SurfaceControl to the magic-struct
+ *     version (in same .so as startReg = liboh_android_runtime.so). The
+ *     dummy here in liboh_adapter_bridge.so is dead code.
+ *
+ * If this file is ever to be re-enabled, first verify (a) the design has
+ * reverted to allowing software-rendering fallback, (b) the symbols here do
+ * not collide with framework/android-runtime/src/ definitions, and (c) JNI
+ * registration ordering does not undo the magic-struct + DER-real-timer paths.
+ *
+ * ============================================================================
+ * Original P13 header comments preserved below for reference:
+ * ----------------------------------------------------------------------------
+ *
+ * Replaces the previous 30+ no-op stubs with:
+ *
+ *   1. DisplayEventReceiver: REAL timer-based vsync driver. nativeInit
+ *      allocates a native state struct, nativeScheduleVsync starts a
+ *      std::thread that sleeps 16ms then calls Java dispatchVsync() via
+ *      JNI. Drives the UI thread's Choreographer frame pump for real.
+ *
+ *   2. Surface: lockCanvas throws Surface$OutOfResourcesException (Java
+ *      ViewRootImpl.drawSoftware catches this and logs+skips the frame).
+ *      App continues running, initial frame is blank, but nothing crashes.
+ *      Other Surface methods return non-null / success for graceful Java
+ *      handling. Real buffer-flow routing to OH NativeWindow = follow-up.
+ *
+ *   3. SurfaceControl: all methods return non-null opaque handles or
+ *      succeed silently. SC is used by window layering, animations, etc.
+ *      None of which affect Hello World's first-frame draw pipeline.
+ *
+ * These 3 classes together provide the minimum "app process boots + runs"
+ * state. The visible result on a real device would be: app launches, Java
+ * side executes onCreate/onResume normally, UI thread gets vsync ticks
+ * every 16ms, Choreographer runs traversal callbacks, but no pixels reach
+ * the screen because lockCanvas throws.  This is a non-crashing, partially-
+ * functional state — the last remaining gap to "pixels on screen" is
+ * routing lockCanvas output to OH NativeWindow, which is P13.2.
+ *
+ * Per CLAUDE.md "APK 透明适配原则": these are system-side JNI methods
+ * registered into the unmodified Android Framework; no APK changes needed.
+ */
+
+#if 0  // 2026-05-06 file body deactivated — see header comment above.
+
+#include <jni.h>
+#include <cstdint>
+#include <cstdio>
+#include <atomic>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <hilog/log.h>
+
+#define SSB_LOG(level, fmt, ...) \
+    HiLogPrint(LOG_CORE, level, 0xD000F00u, "OH_SurfaceStubs", \
+               "[STAGE0] " fmt, ##__VA_ARGS__)
+
+// =============================================================================
+// Part 1 — DisplayEventReceiver real vsync driver
+// =============================================================================
+
+namespace {
+
+// Cached JNI reflection info.
+static JavaVM*    gJavaVM = nullptr;
+static jclass     gDisplayEventReceiverClass = nullptr;  // android.view.DisplayEventReceiver
+static jmethodID  gDispatchVsyncMethod = nullptr;         // dispatchVsync(JJI)V
+
+struct DERState {
+    // Global ref to the WeakReference<DisplayEventReceiver> passed in from Java.
+    jobject weakRefGlobal = nullptr;
+
+    // VSync scheduling state.
+    std::atomic<bool> scheduled{false};
+    std::atomic<bool> destroyed{false};
+
+    // Single-shot timer thread restarted on each scheduleVsync call.
+    std::mutex threadLock;
+    std::thread timerThread;
+
+    int64_t frameNumber = 0;
+};
+
+static void vsyncTimerFn(DERState* state) {
+    // Sleep 16ms (60Hz), then fire dispatchVsync on Java side.
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+    if (state->destroyed.load()) return;
+    if (!state->scheduled.exchange(false)) return;  // cancelled
+
+    JNIEnv* env = nullptr;
+    if (gJavaVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        JavaVMAttachArgs args;
+        args.version = JNI_VERSION_1_6;
+        args.name = const_cast<char*>("DER-vsync");
+        args.group = nullptr;
+        if (gJavaVM->AttachCurrentThread(&env, &args) != JNI_OK) {
+            return;
+        }
+    }
+
+    // Resolve the WeakReference -> DisplayEventReceiver strong ref.
+    jclass weakRefClass = env->FindClass("java/lang/ref/WeakReference");
+    if (!weakRefClass) { env->ExceptionClear(); return; }
+    jmethodID getMethod = env->GetMethodID(weakRefClass, "get", "()Ljava/lang/Object;");
+    if (!getMethod) { env->ExceptionClear(); env->DeleteLocalRef(weakRefClass); return; }
+    jobject receiver = env->CallObjectMethod(state->weakRefGlobal, getMethod);
+    env->DeleteLocalRef(weakRefClass);
+    if (!receiver || env->ExceptionCheck()) {
+        env->ExceptionClear();
+        return;
+    }
+
+    // Call dispatchVsync(long timestampNanos, long physicalDisplayId, int frame).
+    int64_t nowNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        std::chrono::steady_clock::now().time_since_epoch()).count();
+    env->CallVoidMethod(receiver, gDispatchVsyncMethod,
+                        (jlong)nowNs, (jlong)0, (jint)(state->frameNumber++));
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(receiver);
+}
+
+// JNI method signature per DisplayEventReceiver.java:
+//   nativeInit(WeakReference<DER>, WeakReference<VsyncEventData>,
+//              MessageQueue, int vsyncSource, int eventRegistration, long layerHandle)
+static jlong nativeInitDER(JNIEnv* env, jclass /*clazz*/,
+                           jobject receiverWeak, jobject /*vsyncEventDataWeak*/,
+                           jobject /*messageQueue*/, jint /*vsyncSource*/,
+                           jint /*eventRegistration*/, jlong /*layerHandle*/) {
+    if (!gJavaVM) {
+        env->GetJavaVM(&gJavaVM);
+    }
+    if (!gDisplayEventReceiverClass) {
+        jclass local = env->FindClass("android/view/DisplayEventReceiver");
+        if (local) {
+            gDisplayEventReceiverClass = reinterpret_cast<jclass>(env->NewGlobalRef(local));
+            gDispatchVsyncMethod = env->GetMethodID(local, "dispatchVsync", "(JJI)V");
+            env->DeleteLocalRef(local);
+        }
+    }
+
+    auto* state = new DERState();
+    if (receiverWeak) {
+        state->weakRefGlobal = env->NewGlobalRef(receiverWeak);
+    }
+    return reinterpret_cast<jlong>(state);
+}
+
+static jlong nativeGetDisplayEventReceiverFinalizerDER(JNIEnv*, jclass) {
+    return 0;
+}
+
+static void nativeDisposeDER(JNIEnv* env, jclass, jlong receiverPtr) {
+    auto* state = reinterpret_cast<DERState*>(receiverPtr);
+    if (!state) return;
+    state->destroyed.store(true);
+    state->scheduled.store(false);
+
+    {
+        std::lock_guard<std::mutex> lock(state->threadLock);
+        if (state->timerThread.joinable()) {
+            state->timerThread.detach();
+        }
+    }
+    if (state->weakRefGlobal) {
+        env->DeleteGlobalRef(state->weakRefGlobal);
+    }
+    delete state;
+}
+
+static void nativeScheduleVsync(JNIEnv*, jclass, jlong receiverPtr) {
+    auto* state = reinterpret_cast<DERState*>(receiverPtr);
+    if (!state || state->destroyed.load()) return;
+
+    // Idempotent: if already scheduled, ignore (matches AOSP behavior).
+    bool expected = false;
+    if (!state->scheduled.compare_exchange_strong(expected, true)) {
+        return;
+    }
+
+    // Launch one-shot timer thread.
+    std::lock_guard<std::mutex> lock(state->threadLock);
+    if (state->timerThread.joinable()) {
+        state->timerThread.detach();
+    }
+    state->timerThread = std::thread(vsyncTimerFn, state);
+}
+
+static jobject nativeGetLatestVsyncEventDataDER(JNIEnv*, jclass, jlong) {
+    return nullptr;  // Java checks for null and uses a default
+}
+
+static const JNINativeMethod gDisplayEventReceiverMethods[] = {
+    {"nativeInit",
+     "(Ljava/lang/ref/WeakReference;Ljava/lang/ref/WeakReference;"
+     "Landroid/os/MessageQueue;IIJ)J",
+     (void*)nativeInitDER},
+    {"nativeGetDisplayEventReceiverFinalizer", "()J", (void*)nativeGetDisplayEventReceiverFinalizerDER},
+    {"nativeScheduleVsync", "(J)V", (void*)nativeScheduleVsync},
+    {"nativeGetLatestVsyncEventData",
+     "(J)Landroid/view/DisplayEventReceiver$VsyncEventData;",
+     (void*)nativeGetLatestVsyncEventDataDER},
+};
+
+}  // anonymous namespace
+
+namespace android {
+
+int register_android_view_DisplayEventReceiver(JNIEnv* env) {
+    jclass clazz = env->FindClass("android/view/DisplayEventReceiver");
+    if (clazz == nullptr) return -1;
+    return env->RegisterNatives(clazz, gDisplayEventReceiverMethods,
+                                sizeof(gDisplayEventReceiverMethods) / sizeof(JNINativeMethod));
+}
+
+}  // namespace android
+
+// =============================================================================
+// Part 2 — Surface (P13.2.b OH dmabuf-backed path with heap fallback)
+// =============================================================================
+//
+// SurfaceState now tries TWO paths in order:
+//
+//   1. OH dmabuf path: construct an OHGraphicBufferProducer wrapping an
+//      in-process OH Surface (via surface_oh_helper). On lockCanvas, dequeue
+//      a real OH dmabuf buffer, get the mmapped virAddr from BufferHandle,
+//      install it into an SkBitmap via SkBitmap::installPixels (zero-copy
+//      external pixel storage). Java draw routes Skia M133 → fills the OH
+//      dmabuf directly. On unlockCanvasAndPost, queueBuffer() submits the
+//      buffer to OH BufferQueue (in-process consumer accepts it but the
+//      consumer is unrouted to display — pixels go nowhere visible until
+//      P13.2.c wires the WindowManager → RSDisplayNode chain).
+//
+//   2. Heap fallback (P13.2.a): if OH path fails (helper returns nullptr,
+//      dequeueBuffer fails, virAddr is null), allocate a regular heap SkBitmap
+//      and proceed. Java draw lands in heap memory and is dropped on unlock.
+//
+// Both paths exercise the FULL hwui draw pipeline without crashing.
+
+#include <SkBitmap.h>
+#include <SkImageInfo.h>
+// OH Surface complete type needed before oh_graphic_buffer_producer.h because
+// the producer header has an inline getOHSurface() returning sptr<Surface>,
+// which needs the complete type for IncStrongRef/DecStrongRef.
+#include "surface.h"
+#include "framework/surface/jni/oh_graphic_buffer_producer.h"
+
+// Use the REAL hwui Canvas + GraphicsJNI headers so the vtable layout of the
+// pointer returned by GraphicsJNI::getNativeCanvas matches what we then call
+// through. A locally-defined abstract Canvas with a single pure virtual would
+// give us a 1-slot vtable that bears no relation to the real hwui::Canvas
+// vtable — setBitmap() would dispatch to the wrong slot and crash.
+#include <log/log.h>        // for LOG_ALWAYS_FATAL used inline in Canvas.h
+#include "hwui/Canvas.h"
+#include "jni/GraphicsJNI.h"
+
+// surface_oh_helper.cpp / rs_surface_helper.cpp exports — OH-side producer factory.
+// rs_surface_helper_create_display_surface wires to the real RenderService
+// via RSSurfaceNode::Create + GetSurface (P13.2.c "Option B"). If it returns
+// null at runtime (RS unavailable), we fall back to the in-process producer
+// from surface_oh_helper.cpp so the app still boots and buffers round-trip.
+extern "C" {
+    void* surface_oh_create_in_process_producer(const char* name);
+    void  surface_oh_release_producer(void* producerRaw);
+    void* rs_surface_helper_create_display_surface(const char* name);
+    void  rs_surface_helper_release(void* producerRaw);
+}
+
+// Forward decl of OHOS::Surface so we can pass the raw pointer to producer ctor.
+namespace OHOS {
+    template<typename T> class sptr;
+    class Surface;
+}
+
+namespace {
+
+struct SurfaceState {
+    int width = 1080;
+    int height = 1920;
+
+    // OH dmabuf path state
+    void* ohSurfaceRaw = nullptr;  // OHOS::Surface* (RS or in-process producer)
+    bool  ohSurfaceIsRs = false;   // true=rs_surface_helper, false=in-process helper
+    oh_adapter::OHGraphicBufferProducer* producer = nullptr;
+    int currentSlot = -1;
+    int currentFenceFd = -1;
+    void* currentVirAddr = nullptr;
+    int   currentStride = 0;
+
+    // Heap fallback path state
+    SkBitmap fallbackBitmap;
+
+    // The bitmap currently bound to Java Canvas (either dmabuf-backed or heap)
+    SkBitmap activeBitmap;
+
+    bool locked = false;
+
+    SurfaceState() {
+        // Try real RS path first (pixels actually reach RenderService).
+        ohSurfaceRaw = rs_surface_helper_create_display_surface("OHAdapterSurface");
+        if (ohSurfaceRaw) {
+            ohSurfaceIsRs = true;
+        } else {
+            // Fallback: in-process producer — round-trip works, but consumer
+            // is local so pixels go to the BufferQueue free pool (no display).
+            ohSurfaceRaw = surface_oh_create_in_process_producer("OHAdapterSurface");
+        }
+        if (ohSurfaceRaw) {
+            // Construct OHGraphicBufferProducer with the raw OH Surface.
+            // OHGraphicBufferProducer ctor takes sptr<Surface>; we wrap the raw
+            // pointer manually. The helper already incremented strong ref.
+            OHOS::sptr<OHOS::Surface>* sptrWrap =
+                reinterpret_cast<OHOS::sptr<OHOS::Surface>*>(&ohSurfaceRaw);
+            producer = new oh_adapter::OHGraphicBufferProducer(*sptrWrap);
+            producer->connect();
+        }
+
+        // Always pre-allocate the heap fallback so it's ready if OH path errors
+        // mid-lockCanvas (e.g. dequeueBuffer fails after surface init succeeded).
+        SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+        fallbackBitmap.setInfo(info);
+        fallbackBitmap.allocPixels();
+    }
+    ~SurfaceState() {
+        if (producer) {
+            producer->disconnect();
+            delete producer;
+        }
+        if (ohSurfaceRaw) {
+            if (ohSurfaceIsRs) {
+                rs_surface_helper_release(ohSurfaceRaw);
+            } else {
+                surface_oh_release_producer(ohSurfaceRaw);
+            }
+        }
+    }
+};
+
+static jlong nativeCreateFromSurfaceTexture(JNIEnv*, jclass, jobject) {
+    auto* s = new SurfaceState();
+    SSB_LOG(LOG_INFO,
+            "nativeCreateFromSurfaceTexture -> SurfaceState=%{public}p ohSurfaceRaw=%{public}p isRs=%{public}d",
+            s, s->ohSurfaceRaw, (int)s->ohSurfaceIsRs);
+    return reinterpret_cast<jlong>(s);
+}
+static jlong nativeCreateFromSurfaceControl(JNIEnv*, jclass, jlong nativeSurfaceControl) {
+    auto* s = new SurfaceState();
+    SSB_LOG(LOG_INFO,
+            "nativeCreateFromSurfaceControl(sc=0x%{public}llx) -> SurfaceState=%{public}p ohSurfaceRaw=%{public}p isRs=%{public}d",
+            (unsigned long long)nativeSurfaceControl, s, s->ohSurfaceRaw, (int)s->ohSurfaceIsRs);
+    return reinterpret_cast<jlong>(s);
+}
+static jlong nativeGetFromSurfaceControl(JNIEnv*, jclass, jlong nativeObject, jlong nativeSurfaceControl) {
+    auto* s = new SurfaceState();
+    SSB_LOG(LOG_INFO,
+            "nativeGetFromSurfaceControl(curr=0x%{public}llx, sc=0x%{public}llx) -> SurfaceState=%{public}p ohSurfaceRaw=%{public}p isRs=%{public}d",
+            (unsigned long long)nativeObject,
+            (unsigned long long)nativeSurfaceControl,
+            s, s->ohSurfaceRaw, (int)s->ohSurfaceIsRs);
+    return reinterpret_cast<jlong>(s);
+}
+
+static jlong nativeLockCanvas(JNIEnv* env, jclass, jlong nativeObject,
+                              jobject canvasObj, jobject /*dirtyRect*/) {
+    auto* state = reinterpret_cast<SurfaceState*>(nativeObject);
+    if (!state) {
+        jclass exClass = env->FindClass("android/view/Surface$OutOfResourcesException");
+        if (exClass) {
+            env->ThrowNew(exClass, "Surface state not initialized");
+            env->DeleteLocalRef(exClass);
+        }
+        return 0;
+    }
+    if (state->locked) {
+        jclass exClass = env->FindClass("java/lang/IllegalArgumentException");
+        if (exClass) {
+            env->ThrowNew(exClass, "Surface was already locked");
+            env->DeleteLocalRef(exClass);
+        }
+        return 0;
+    }
+
+    // ---- Try OH dmabuf path first ----
+    bool ohPathOk = false;
+    if (state->producer) {
+        int slot = -1, fenceFd = -1;
+        // PIXEL_FORMAT_RGBA_8888 = 1, USAGE_SW_READ_OFTEN | USAGE_SW_WRITE_OFTEN = 0x33
+        int rc = state->producer->dequeueBuffer(&slot, &fenceFd,
+                                                state->width, state->height,
+                                                /*format*/ 1, /*usage*/ 0x33);
+        if (rc == 0 && slot >= 0) {
+            void* virAddr = state->producer->getBufferAddr(slot);
+            int32_t bw = 0, bh = 0, bs = 0, bf = 0;
+            state->producer->getBufferInfo(slot, &bw, &bh, &bs, &bf);
+            if (virAddr && bs > 0) {
+                state->currentSlot = slot;
+                state->currentFenceFd = fenceFd;
+                state->currentVirAddr = virAddr;
+                state->currentStride = bs;
+                // Wrap external pixels — zero-copy. SkBitmap doesn't take
+                // ownership; the dmabuf is owned by the OH SurfaceBuffer.
+                SkImageInfo info = SkImageInfo::MakeN32Premul(bw, bh);
+                state->activeBitmap.installPixels(info, virAddr, bs);
+                ohPathOk = true;
+            } else {
+                // Failed to get virAddr — release the slot and fall through.
+                state->producer->cancelBuffer(slot, fenceFd);
+            }
+        }
+    }
+
+    // ---- Fall back to heap bitmap if OH path didn't work ----
+    if (!ohPathOk) {
+        state->activeBitmap = state->fallbackBitmap;
+    }
+
+    // Get Java Canvas's existing native hwui::Canvas and point it at the active
+    // bitmap (dmabuf-backed if OH ok, else heap). After this call all Java draw
+    // ops route through hwui::Canvas → SkiaCanvas → SkCanvas → activeBitmap pixels.
+    if (canvasObj) {
+        android::Canvas* javaNativeCanvas = GraphicsJNI::getNativeCanvas(env, canvasObj);
+        if (javaNativeCanvas) {
+            javaNativeCanvas->setBitmap(state->activeBitmap);
+        }
+    }
+
+    state->locked = true;
+    return reinterpret_cast<jlong>(state);  // non-zero lock token
+}
+
+static void nativeUnlockCanvasAndPost(JNIEnv*, jclass, jlong nativeObject, jobject /*canvasObj*/) {
+    auto* state = reinterpret_cast<SurfaceState*>(nativeObject);
+    if (!state) return;
+
+    // OH dmabuf path: queueBuffer submits the rendered buffer back to the
+    // BufferQueue. Our consumer is in-process and ignores the buffer (P13.2.b
+    // limitation), so the pixels never actually display — but the round-trip
+    // through OH RequestBuffer/FlushBuffer is exercised, validating the
+    // BufferHandle/virAddr/dmabuf integration.
+    if (state->producer && state->currentSlot >= 0) {
+        state->producer->queueBuffer(state->currentSlot, state->currentFenceFd,
+                                     /*timestamp*/ 0,
+                                     0, 0, state->width, state->height);
+        state->currentSlot = -1;
+        state->currentFenceFd = -1;
+        state->currentVirAddr = nullptr;
+        state->currentStride = 0;
+    }
+    state->locked = false;
+}
+
+static void    nativeRelease(JNIEnv*, jclass, jlong nativeObject) {
+    auto* state = reinterpret_cast<SurfaceState*>(nativeObject);
+    delete state;  // safe on null
+}
+static jboolean nativeIsValid(JNIEnv*, jclass, jlong nativeObject) {
+    return nativeObject != 0 ? JNI_TRUE : JNI_FALSE;
+}
+static jboolean nativeIsConsumerRunningBehind(JNIEnv*, jclass, jlong) { return JNI_FALSE; }
+static jlong   nativeReadFromParcel(JNIEnv*, jclass, jlong, jobject) {
+    return reinterpret_cast<jlong>(new SurfaceState());
+}
+static void    nativeWriteToParcel(JNIEnv*, jclass, jlong, jobject) {}
+static void    nativeAllocateBuffers(JNIEnv*, jclass, jlong) {}
+static jint    nativeGetWidth(JNIEnv*, jclass, jlong nativeObject) {
+    auto* state = reinterpret_cast<SurfaceState*>(nativeObject);
+    return state ? state->width : 1080;
+}
+static jint    nativeGetHeight(JNIEnv*, jclass, jlong nativeObject) {
+    auto* state = reinterpret_cast<SurfaceState*>(nativeObject);
+    return state ? state->height : 1920;
+}
+static jlong   nativeGetNextFrameNumber(JNIEnv*, jclass, jlong) { return 0; }
+static jint    nativeSetScalingMode(JNIEnv*, jclass, jlong, jint) { return 0; }
+static jint    nativeForceScopedDisconnect(JNIEnv*, jclass, jlong) { return 0; }
+static jint    nativeAttachAndQueueBufferWithColorSpace(JNIEnv*, jclass, jlong, jobject, jint) { return 0; }
+static jint    nativeSetSharedBufferModeEnabled(JNIEnv*, jclass, jlong, jboolean) { return 0; }
+static jint    nativeSetAutoRefreshEnabled(JNIEnv*, jclass, jlong, jboolean) { return 0; }
+static jint    nativeSetFrameRate(JNIEnv*, jclass, jlong, jfloat, jint, jint) { return 0; }
+
+static const JNINativeMethod gSurfaceMethods[] = {
+    {"nativeCreateFromSurfaceTexture", "(Landroid/graphics/SurfaceTexture;)J", (void*)nativeCreateFromSurfaceTexture},
+    {"nativeRelease", "(J)V", (void*)nativeRelease},
+    {"nativeIsValid", "(J)Z", (void*)nativeIsValid},
+    {"nativeIsConsumerRunningBehind", "(J)Z", (void*)nativeIsConsumerRunningBehind},
+    {"nativeLockCanvas", "(JLandroid/graphics/Canvas;Landroid/graphics/Rect;)J", (void*)nativeLockCanvas},
+    {"nativeUnlockCanvasAndPost", "(JLandroid/graphics/Canvas;)V", (void*)nativeUnlockCanvasAndPost},
+    {"nativeAllocateBuffers", "(J)V", (void*)nativeAllocateBuffers},
+    {"nativeGetWidth", "(J)I", (void*)nativeGetWidth},
+    {"nativeGetHeight", "(J)I", (void*)nativeGetHeight},
+    {"nativeGetNextFrameNumber", "(J)J", (void*)nativeGetNextFrameNumber},
+    {"nativeSetScalingMode", "(JI)I", (void*)nativeSetScalingMode},
+    {"nativeForceScopedDisconnect", "(J)I", (void*)nativeForceScopedDisconnect},
+    {"nativeReadFromParcel", "(JLandroid/os/Parcel;)J", (void*)nativeReadFromParcel},
+    {"nativeWriteToParcel", "(JLandroid/os/Parcel;)V", (void*)nativeWriteToParcel},
+};
+
+}  // namespace
+
+namespace android {
+
+int register_android_view_Surface(JNIEnv* env) {
+    jclass clazz = env->FindClass("android/view/Surface");
+    if (clazz == nullptr) return -1;
+    return env->RegisterNatives(clazz, gSurfaceMethods,
+                                sizeof(gSurfaceMethods) / sizeof(JNINativeMethod));
+}
+
+}  // namespace android
+
+// =============================================================================
+// Part 3 — SurfaceControl non-null stubs
+// =============================================================================
+
+namespace {
+
+static int gSurfaceControlDummyHandle = 0xAD4C7500;
+
+static jlong nativeCreate(JNIEnv*, jclass, jobject, jstring, jint, jint, jint, jint, jlong, jobject, jint, jint) {
+    return reinterpret_cast<jlong>(&gSurfaceControlDummyHandle);
+}
+static jlong nativeReadFromParcelSC(JNIEnv*, jclass, jobject) {
+    return reinterpret_cast<jlong>(&gSurfaceControlDummyHandle);
+}
+static void nativeWriteToParcelSC(JNIEnv*, jclass, jlong, jobject) {}
+static void nativeReleaseSC(JNIEnv*, jclass, jlong) {}
+static void nativeDisconnect(JNIEnv*, jclass, jlong) {}
+static jlong nativeMirrorSurface(JNIEnv*, jclass, jlong) {
+    return reinterpret_cast<jlong>(&gSurfaceControlDummyHandle);
+}
+static jlong nativeCreateTransaction(JNIEnv*, jclass) {
+    return reinterpret_cast<jlong>(&gSurfaceControlDummyHandle);
+}
+static void nativeApplyTransaction(JNIEnv*, jclass, jlong, jboolean) {}
+static void nativeMergeTransaction(JNIEnv*, jclass, jlong, jlong) {}
+static void nativeSetVisibility(JNIEnv*, jclass, jlong, jlong, jboolean) {}
+static void nativeSetLayer(JNIEnv*, jclass, jlong, jlong, jint) {}
+static void nativeSetPosition(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat) {}
+static void nativeSetSize(JNIEnv*, jclass, jlong, jlong, jint, jint) {}
+static void nativeSetAlpha(JNIEnv*, jclass, jlong, jlong, jfloat) {}
+static void nativeSetMatrix(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat, jfloat, jfloat) {}
+
+static const JNINativeMethod gSurfaceControlMethods[] = {
+    {"nativeRelease", "(J)V", (void*)nativeReleaseSC},
+    {"nativeDisconnect", "(J)V", (void*)nativeDisconnect},
+    {"nativeMirrorSurface", "(J)J", (void*)nativeMirrorSurface},
+    {"nativeCreateTransaction", "()J", (void*)nativeCreateTransaction},
+    {"nativeApplyTransaction", "(JZ)V", (void*)nativeApplyTransaction},
+    {"nativeMergeTransaction", "(JJ)V", (void*)nativeMergeTransaction},
+    {"nativeSetVisibility", "(JJZ)V", (void*)nativeSetVisibility},
+    {"nativeSetLayer", "(JJI)V", (void*)nativeSetLayer},
+    {"nativeSetPosition", "(JJFF)V", (void*)nativeSetPosition},
+    {"nativeSetSize", "(JJII)V", (void*)nativeSetSize},
+    {"nativeSetAlpha", "(JJF)V", (void*)nativeSetAlpha},
+    {"nativeSetMatrix", "(JJFFFF)V", (void*)nativeSetMatrix},
+};
+
+}  // namespace
+
+namespace android {
+
+int register_android_view_SurfaceControl(JNIEnv* env) {
+    jclass clazz = env->FindClass("android/view/SurfaceControl");
+    if (clazz == nullptr) return -1;
+    return env->RegisterNatives(clazz, gSurfaceControlMethods,
+                                sizeof(gSurfaceControlMethods) / sizeof(JNINativeMethod));
+}
+
+// P13 new: SurfaceSession is a very small related class — Window uses it to
+// create SurfaceControls. libandroid_runtime.so references this register
+// function too. Provide an empty registration that at least satisfies the
+// symbol, so JNI_OnLoad doesn't hit a null call.
+int register_android_view_SurfaceSession(JNIEnv* /*env*/) {
+    return 0;  // No native methods to register
+}
+
+}  // namespace android
+
+#endif  // 2026-05-06 file body deactivated

@@ -1,0 +1,23 @@
+diff --git a/surface/src/buffer_queue.cpp b/surface/src/buffer_queue.cpp
+--- a/surface/src/buffer_queue.cpp
++++ b/surface/src/buffer_queue.cpp
+@@ -856,6 +856,19 @@
+     mapIter->second.buffer->SetFlushTimestamp(std::chrono::duration_cast<std::chrono::nanoseconds>(
+         std::chrono::steady_clock::now().time_since_epoch()).count());
+     dirtyList_.push_back(sequence);
++    // ========================================================================
++    // 2026-05-12 G2.14aw adapter probe (Android-OpenHarmony adapter project):
++    // Log every server-side FlushBuffer push into dirtyList_ with the producer
++    // identity (uniqueId_) and calling pid (GetRealPid).  Compared against the
++    // app-side uniqueId chain logged in oh_window_manager_client::getOhNativeWindow,
++    // oh_anw_wrap and aanw_queueBuffer, this lets us determine whether hwui's
++    // swap actually reaches the server BufferQueue bound to helloworld's named
++    // producer.  PROBE ONLY — does not alter logic; safe to keep enabled.
++    // See doc/build_patch_log.html [Patch G2.14aw probe].
++    // ========================================================================
++    BLOGI("[G2.14aw probe FlushBuffer] uniqueId=0x%{public}" PRIx64 " name=%{public}s pid=%{public}d "
++        "seq=%{public}u dirtyList=%{public}zu freeList=%{public}zu",
++        uniqueId_, name_.c_str(), GetRealPid(), sequence, dirtyList_.size(), freeList_.size());
+     lastFlusedSequence_ = sequence;
+     lastFlusedFence_ = fence;
+     lastFlushedTransform_ = transform_;

@@ -1,0 +1,41 @@
+================================================================================
+ AOSP Modification: ActivityManager.java
+ File: frameworks/core/java/android/app/ActivityManager.java
+ Purpose: Replace IActivityManager Singleton to return ActivityManagerAdapter
+================================================================================
+
+--- a/core/java/android/app/ActivityManager.java
++++ b/core/java/android/app/ActivityManager.java
+@@ -86,6 +86,9 @@ import com.android.internal.app.LocalePicker;
+ ...existing imports...
+
++// [OH_ADAPTER] Import adapter classes
++import adapter.core.OHEnvironment;
++import adapter.activity.ActivityManagerAdapter;
++
+ ...
+
+@@ -5209,12 +5212,22 @@ public class ActivityManager {
+     @UnsupportedAppUsage
+     private static final Singleton<IActivityManager> IActivityManagerSingleton =
+             new Singleton<IActivityManager>() {
+                 @Override
+                 protected IActivityManager create() {
+-                    final IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);
+-                    final IActivityManager am = IActivityManager.Stub.asInterface(b);
+-                    return am;
++                    // [OH_ADAPTER] Check if OH adaptation layer is available
++                    if (OHEnvironment.isOHEnvironment()) {
++                        try {
++                            return new ActivityManagerAdapter();
++                        } catch (Exception e) {
++                            Log.w("ActivityManager",
++                                "OH adapter init failed, falling back to original", e);
++                        }
++                    }
++                    // Original AOSP implementation (fallback)
++                    final IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);
++                    final IActivityManager am = IActivityManager.Stub.asInterface(b);
++                    return am;
+                 }
+             };

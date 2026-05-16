@@ -1,0 +1,42 @@
+--- a/foundation/bundlemanager/bundle_framework/services/bundlemgr/BUILD.gn
++++ b/foundation/bundlemanager/bundle_framework/services/bundlemgr/BUILD.gn
+@@ -308,12 +308,21 @@
+
+   sources += bundle_install_sources
+
++  # gap 0.2/0.6 — minimal viable APK install path. Compiled only when
++  # OH_ADAPTER_ANDROID is defined (see defines below).
++  sources += [ "src/adapter_apk_install_minimal.cpp" ]
++  sources += [ "src/apk_manifest_parser.cpp" ]
++
+   defines = [
+     "APP_LOG_TAG = \"BMS\"",
+     "LOG_DOMAIN = 0xD001120",
+   ]
+   defines += [ "OH_ADAPTER_ANDROID" ]  # enable Android APK routing in libbms (gap 0.6)
+
++  # gap 0.2/0.6: link libandroidfw cross-compiled in adapter/out/aosp_lib/.
++  # apk_manifest_parser.{h,cpp} + adapter_apk_install_minimal.cpp are deployed
++  # into local src/ by restore_after_sync.sh phase B9 (no cross-component
++  # include_dirs needed — gn rejects those for non-innerapi headers).
++  ldflags = [ "-L" + rebase_path("//adapter/out/aosp_lib", root_build_dir), "-landroidfw" ]
+   if (is_emulator) {
+     defines += [ "X86_EMULATOR_MODE" ]
+   }
+@@ -340,6 +349,16 @@
+     "-Wno-non-c-typedef-for-linkage",
+     "-Os",
+     "-fstack-protector-strong",
++    "-I__AOSP_ROOT__/frameworks/base/libs/androidfw/include",
++    "-I__AOSP_ROOT__/system/libbase/include",
++    "-I__AOSP_ROOT__/system/core/include",
++    "-I__AOSP_ROOT__/system/core/libutils/include",
++    "-I__AOSP_ROOT__/system/core/libcutils/include",
++    "-I__AOSP_ROOT__/system/core/libsystem/include",
++    "-I__AOSP_ROOT__/system/incremental_delivery/incfs/util/include",
++    "-I__AOSP_ROOT__/external/fmtlib/include",
++    "-I__AOSP_ROOT__/system/logging/liblog/include",
++    "-I__AOSP_ROOT__/frameworks/native/include",
+   ]
+   if (target_cpu == "arm") {
+     cflags += [ "-DBINDER_IPC_32BIT" ]

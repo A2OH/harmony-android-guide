@@ -1,0 +1,106 @@
+================================================================================
+ AOSP Modification: WindowManagerGlobal.java
+ File: frameworks/core/java/android/view/WindowManagerGlobal.java
+ Purpose: Replace IWindowManager and IWindowSession with adapters
+================================================================================
+
+--- a/core/java/android/view/WindowManagerGlobal.java
++++ b/core/java/android/view/WindowManagerGlobal.java
+@@ -35,6 +35,10 @@ import android.view.inputmethod.InputMethodManager;
+ ...existing imports...
+
++// [OH_ADAPTER] Import adapter classes
++import adapter.core.OHEnvironment;
++import adapter.window.WindowManagerAdapter;
++import adapter.window.WindowSessionAdapter;
++
+ ...
+
+@@ -167,16 +171,29 @@ public final class WindowManagerGlobal {
+     @UnsupportedAppUsage
+     public static IWindowManager getWindowManagerService() {
+         synchronized (WindowManagerGlobal.class) {
+             if (sWindowManagerService == null) {
+-                sWindowManagerService = IWindowManager.Stub.asInterface(
+-                        ServiceManager.getService("window"));
+-                try {
+-                    if (sWindowManagerService != null) {
+-                        ValueAnimator.setDurationScale(
+-                                sWindowManagerService.getCurrentAnimatorScale());
+-                        sUseBLASTAdapter = sWindowManagerService.useBLAST();
++                // [OH_ADAPTER] Check if OH adaptation layer is available
++                if (OHEnvironment.isOHEnvironment()) {
++                    try {
++                        sWindowManagerService = new WindowManagerAdapter();
++                    } catch (Exception e) {
++                        Log.w("WindowManagerGlobal",
++                            "OH adapter init failed, falling back to original", e);
++                        sWindowManagerService = null;
+                     }
+-                } catch (RemoteException e) {
+-                    throw e.rethrowFromSystemServer();
++                }
++                // Original AOSP implementation (fallback)
++                if (sWindowManagerService == null) {
++                    sWindowManagerService = IWindowManager.Stub.asInterface(
++                            ServiceManager.getService("window"));
++                    try {
++                        if (sWindowManagerService != null) {
++                            ValueAnimator.setDurationScale(
++                                    sWindowManagerService.getCurrentAnimatorScale());
++                            sUseBLASTAdapter = sWindowManagerService.useBLAST();
++                        }
++                    } catch (RemoteException e) {
++                        throw e.rethrowFromSystemServer();
++                    }
+                 }
+             }
+             return sWindowManagerService;
+@@ -187,17 +204,28 @@ public final class WindowManagerGlobal {
+     @UnsupportedAppUsage
+     public static IWindowSession getWindowSession() {
+         synchronized (WindowManagerGlobal.class) {
+             if (sWindowSession == null) {
+-                try {
+-                    // Emulate the legacy behavior.  The global instance of InputMethodManager
+-                    // was instantiated here.
+-                    // TODO(b/116157766): Remove this hack after cleaning up @UnsupportedAppUsage
+-                    InputMethodManager.ensureDefaultInstanceForDefaultDisplayIfNecessary();
+-                    IWindowManager windowManager = getWindowManagerService();
+-                    sWindowSession = windowManager.openSession(
+-                            new IWindowSessionCallback.Stub() {
+-                                @Override
+-                                public void onAnimatorScaleChanged(float scale) {
+-                                    ValueAnimator.setDurationScale(scale);
+-                                }
+-                            });
+-                } catch (RemoteException e) {
+-                    throw e.rethrowFromSystemServer();
++                // [OH_ADAPTER] Check if OH adaptation layer is available
++                if (OHEnvironment.isOHEnvironment()) {
++                    try {
++                        sWindowSession = new WindowSessionAdapter();
++                    } catch (Exception e) {
++                        Log.w("WindowManagerGlobal",
++                            "OH adapter init failed for WindowSession, falling back", e);
++                        sWindowSession = null;
++                    }
++                }
++                // Original AOSP implementation (fallback)
++                if (sWindowSession == null) {
++                    try {
++                        InputMethodManager.ensureDefaultInstanceForDefaultDisplayIfNecessary();
++                        IWindowManager windowManager = getWindowManagerService();
++                        sWindowSession = windowManager.openSession(
++                                new IWindowSessionCallback.Stub() {
++                                    @Override
++                                    public void onAnimatorScaleChanged(float scale) {
++                                        ValueAnimator.setDurationScale(scale);
++                                    }
++                                });
++                    } catch (RemoteException e) {
++                        throw e.rethrowFromSystemServer();
++                    }
+                 }
+             }
+             return sWindowSession;

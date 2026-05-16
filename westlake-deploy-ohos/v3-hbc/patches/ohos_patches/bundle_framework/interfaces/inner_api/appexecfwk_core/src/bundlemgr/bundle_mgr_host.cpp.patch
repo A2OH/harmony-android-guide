@@ -1,0 +1,12 @@
+--- a/interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp
++++ b/interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp
+Description: Fix -Werror,-Wformat on aarch64: %llu -> %lu for unsigned long
+  weekly_20260302 has this bug; fixed in later 6.1-Release commits.
+
+@@ -1929,7 +1929,7 @@
+-        APP_LOGI_NOFUNC("cleaned size %{public}llu", cleanedSize.value());
++        APP_LOGI_NOFUNC("cleaned size %{public}lu", cleanedSize.value());
+
+Apply command:
+  sed -i 's/%{public}llu", cleanedSize.value()/%{public}lu", cleanedSize.value()/' \
+    ~/oh/foundation/bundlemanager/bundle_framework/interfaces/inner_api/appexecfwk_core/src/bundlemgr/bundle_mgr_host.cpp

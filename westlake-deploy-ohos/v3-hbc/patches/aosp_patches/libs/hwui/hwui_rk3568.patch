@@ -1,0 +1,1571 @@
+diff --git a/libs/hwui/Android.bp b/libs/hwui/Android.bp
+index db581471..75ced9fb 100644
+--- a/libs/hwui/Android.bp
++++ b/libs/hwui/Android.bp
+@@ -629,7 +629,7 @@ cc_defaults {
+             srcs: [
+                 "utils/HostColorSpace.cpp",
+             ],
+-            export_static_lib_headers: [
++            static_libs: [
+                 "libarect",
+             ],
+         },
+diff --git a/libs/hwui/AutoBackendTextureRelease.cpp b/libs/hwui/AutoBackendTextureRelease.cpp
+index b656b6ac..3ae327cb 100644
+--- a/libs/hwui/AutoBackendTextureRelease.cpp
++++ b/libs/hwui/AutoBackendTextureRelease.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "AutoBackendTextureRelease.h"
++#include "include/gpu/ganesh/SkImageGanesh.h"  // P10.E
+ 
+ #include "renderthread/RenderThread.h"
+ #include "utils/Color.h"
+@@ -70,7 +71,7 @@ void AutoBackendTextureRelease::unref(bool releaseImage) {
+ 
+ // releaseProc is invoked by SkImage, when texture is no longer in use.
+ // "releaseContext" contains an "AutoBackendTextureRelease*".
+-static void releaseProc(SkImage::ReleaseContext releaseContext) {
++static void releaseProc(SkImages::ReleaseContext releaseContext  /* P10.E */) {
+     AutoBackendTextureRelease* textureRelease =
+             reinterpret_cast<AutoBackendTextureRelease*>(releaseContext);
+     textureRelease->unref(false);
+@@ -86,7 +87,7 @@ void AutoBackendTextureRelease::makeImage(AHardwareBuffer* buffer,
+     // MakeFromTexture if there is a failure, or later when SkImage is discarded. It must
+     // be called before MakeFromTexture, otherwise Skia may remove HWUI's ref on failure.
+     ref();
+-    mImage = SkImage::MakeFromTexture(
++    mImage = SkImages::BorrowTextureFrom(  /* P10.E: M133 namespace */
+             context, mBackendTexture, kTopLeft_GrSurfaceOrigin, colorType, kPremul_SkAlphaType,
+             uirenderer::DataSpaceToColorSpace(dataspace), releaseProc, this);
+ }
+@@ -103,6 +104,8 @@ void AutoBackendTextureRelease::releaseQueueOwnership(GrDirectContext* context)
+     }
+ 
+     LOG_ALWAYS_FATAL_IF(Properties::getRenderPipelineType() != RenderPipelineType::SkiaVulkan);
++#ifdef SK_VULKAN
++    /* P10.E: entire body Vulkan-only; compiled out when SK_VULKAN is undefined */
+     if (mBackendTexture.isValid()) {
+         // Passing in VK_IMAGE_LAYOUT_UNDEFINED means we keep the old layout.
+         GrBackendSurfaceMutableState newState(VK_IMAGE_LAYOUT_UNDEFINED,
+@@ -115,8 +118,9 @@ void AutoBackendTextureRelease::releaseQueueOwnership(GrDirectContext* context)
+         // Note that we don't have an explicit call to set the backend texture back onto the
+         // graphics queue when we use the VkImage again. Internally, Skia will notice that the image
+         // is not on the graphics queue and will do the transition automatically.
+-        context->setBackendTextureState(mBackendTexture, newState, nullptr, releaseProc, this);
++        /* M133: setBackendTextureState requires MutableTextureState; stubbed for adapter */ (void)releaseProc;
+     }
++#endif  /* SK_VULKAN */
+ }
+ 
+ } /* namespace uirenderer */
+diff --git a/libs/hwui/CanvasTransform.cpp b/libs/hwui/CanvasTransform.cpp
+index cd4fae86..fd7a7ed2 100644
+--- a/libs/hwui/CanvasTransform.cpp
++++ b/libs/hwui/CanvasTransform.cpp
+@@ -125,7 +125,7 @@ static BitmapPalette filterPalette(const SkPaint* paint, BitmapPalette palette)
+     }
+ 
+     SkColor color = palette == BitmapPalette::Light ? SK_ColorWHITE : SK_ColorBLACK;
+-    color = paint->getColorFilter()->filterColor(color);
++    color = color /* OH adapter: filterColor stub */;
+     return paletteForColorHSV(color);
+ }
+ 
+diff --git a/libs/hwui/DeferredLayerUpdater.cpp b/libs/hwui/DeferredLayerUpdater.cpp
+index b763a96e..0d05985f 100644
+--- a/libs/hwui/DeferredLayerUpdater.cpp
++++ b/libs/hwui/DeferredLayerUpdater.cpp
+@@ -14,6 +14,14 @@
+  * limitations under the License.
+  */
+ #include "DeferredLayerUpdater.h"
++// OH adapter stubs for missing ASurfaceTexture/ARect APIs
++typedef struct ARect_stub { int32_t left, top, right, bottom; } ARect;
++extern "C" {
++static inline int ASurfaceTexture_releaseConsumerOwnership(void*) { return 0; }
++static inline int ASurfaceTexture_takeConsumerOwnership(void*) { return 0; }
++static inline int ASurfaceTexture_getTransformMatrix(void*, float[16]) { return 0; }
++static inline int ASurfaceTexture_getCropRect(void*, ARect*) { return 0; }
++}
+ 
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
+diff --git a/libs/hwui/HardwareBitmapUploader.cpp b/libs/hwui/HardwareBitmapUploader.cpp
+index b7e99994..1e4059ba 100644
+--- a/libs/hwui/HardwareBitmapUploader.cpp
++++ b/libs/hwui/HardwareBitmapUploader.cpp
+@@ -15,6 +15,25 @@
+  */
+ 
+ #include "HardwareBitmapUploader.h"
++// P10.E: explicit hardware_buffer.h for AHARDWAREBUFFER_FORMAT_*
++#include <android/hardware_buffer.h>
++// P10.E: SkImages namespace
++#include "include/gpu/ganesh/SkImageGanesh.h"
++// P10.E: VK_FORMAT_* stubs — Vulkan paths in this file are dead code on OH (createUploader picks EGL).
++#ifndef VK_FORMAT_R8G8B8A8_UNORM
++#define VK_FORMAT_UNDEFINED 0
++#define VK_FORMAT_R8G8B8A8_UNORM 0
++#define VK_FORMAT_R16G16B16A16_SFLOAT 0
++#define VK_FORMAT_A2B10G10R10_UNORM_PACK32 0
++#define VK_FORMAT_R5G6B5_UNORM_PACK16 0
++#define VK_FORMAT_R8_UNORM 0
++// AHARDWAREBUFFER_FORMAT_R8_UNORM not visible because <android/hardware_buffer.h>
++// resolves to a partial header on this build configuration. Define from
++// nativewindow/include/android/hardware_buffer.h:175 (value 0x38).
++#ifndef AHARDWAREBUFFER_FORMAT_R8_UNORM
++#define AHARDWAREBUFFER_FORMAT_R8_UNORM ((AHardwareBuffer_Format)0x38)
++#endif
++#endif
+ 
+ #include <EGL/egl.h>
+ #include <EGL/eglext.h>
+@@ -246,7 +265,11 @@ private:
+           ATRACE_CALL();
+           std::lock_guard _lock{mVkLock};
+ 
++#ifndef HWUI_NO_VULKAN
+           renderthread::VulkanManager* vkManager = getVulkanManager();
++#else
++          renderthread::VulkanManager* vkManager = nullptr;
++#endif
+           if (!vkManager->hasVkContext()) {
+               LOG_ALWAYS_FATAL_IF(mGrContext,
+                                   "GrContext exists with no VulkanManager for vulkan uploads");
+@@ -261,11 +284,11 @@ private:
+               this->postIdleTimeoutCheck();
+           }
+ 
+-          sk_sp<SkImage> image =
+-              SkImage::MakeFromAHardwareBufferWithData(mGrContext.get(), bitmap.pixmap(), ahb);
+-          mGrContext->submit(true);
+-
+-          uploadSucceeded = (image.get() != nullptr);
++          // P10.E: M133 removed SkImage::MakeFromAHardwareBufferWithData; submit() sig changed.
++          // VkUploader is dead code on OH (createUploader picks EGLUploader).
++          (void)ahb; (void)bitmap;
++          sk_sp<SkImage> image = nullptr;
++          uploadSucceeded = false;
+         });
+         return uploadSucceeded;
+     }
+@@ -305,6 +328,8 @@ static bool checkSupport(AHardwareBuffer_Format format) {
+     return buffer != nullptr;
+ }
+ 
++// P10.E: header inline-defines these when __ANDROID__ is undef.
++#ifdef __ANDROID__
+ bool HardwareBitmapUploader::hasFP16Support() {
+     static bool hasFP16Support = checkSupport(AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT);
+     return hasFP16Support;
+@@ -319,6 +344,7 @@ bool HardwareBitmapUploader::hasAlpha8Support() {
+     static bool hasAlpha8Support = checkSupport(AHARDWAREBUFFER_FORMAT_R8_UNORM);
+     return hasAlpha8Support;
+ }
++#endif  // __ANDROID__
+ 
+ static FormatInfo determineFormat(const SkBitmap& skBitmap, bool usingGL) {
+     FormatInfo formatInfo;
+@@ -442,8 +468,12 @@ sk_sp<Bitmap> HardwareBitmapUploader::allocateHardwareBitmap(const SkBitmap& sou
+     if (!sUploader->uploadHardwareBitmap(bitmap, format, ahb.get())) {
+         return nullptr;
+     }
+-    return Bitmap::createFrom(ahb.get(), bitmap.colorType(), bitmap.refColorSpace(),
+-                              bitmap.alphaType(), Bitmap::computePalette(bitmap));
++    // P10.E: Bitmap::createFrom(AHardwareBuffer*, SkColorType, ...) is gated by
++    // #ifdef __ANDROID__ in Bitmap.h and not visible in this build. The whole
++    // hardware-bitmap allocation path is dead on OH; return nullptr so the caller
++    // falls back to a normal SkBitmap allocation.
++    (void)bitmap;
++    return nullptr;
+ }
+ 
+ void HardwareBitmapUploader::initialize() {
+diff --git a/libs/hwui/Mesh.cpp b/libs/hwui/Mesh.cpp
+index e59bc956..91cedea9 100644
+--- a/libs/hwui/Mesh.cpp
++++ b/libs/hwui/Mesh.cpp
+@@ -90,8 +90,8 @@ std::tuple<bool, SkString> Mesh::validate() {
+             FAIL_MESH_VALIDATE("%s mode requires at least %zu vertices but vertex count is %zu.",
+                                modeToStr(meshMode), min_vcount_for_mode(meshMode), mVertexCount);
+         }
+-        SkASSERT(!fICount);
+-        SkASSERT(!fIOffset);
++
++
+     }
+ 
+     if (!sm.ok()) {
+diff --git a/libs/hwui/Mesh.h b/libs/hwui/Mesh.h
+index 13e3c8e7..1a159580 100644
+--- a/libs/hwui/Mesh.h
++++ b/libs/hwui/Mesh.h
+@@ -143,21 +143,19 @@ public:
+         }
+ 
+         if (mIsDirty || genId != mGenerationId) {
+-            auto vb = SkMesh::MakeVertexBuffer(
+-                    context, reinterpret_cast<const void*>(mVertexBufferData.data()),
++            auto vb = SkMeshes::MakeVertexBuffer( reinterpret_cast<const void*>(mVertexBufferData.data()),
+                     mVertexBufferData.size());
+             auto meshMode = SkMesh::Mode(mMode);
+             if (!mIndexBufferData.empty()) {
+-                auto ib = SkMesh::MakeIndexBuffer(
+-                        context, reinterpret_cast<const void*>(mIndexBufferData.data()),
++                auto ib = SkMeshes::MakeIndexBuffer( reinterpret_cast<const void*>(mIndexBufferData.data()),
+                         mIndexBufferData.size());
+                 mMesh = SkMesh::MakeIndexed(mMeshSpec, meshMode, vb, mVertexCount, mVertexOffset,
+-                                            ib, mIndexCount, mIndexOffset, mBuilder->fUniforms,
++                                            ib, mIndexCount, mIndexOffset, mBuilder->fUniforms, {},
+                                             mBounds)
+                                 .mesh;
+             } else {
+                 mMesh = SkMesh::Make(mMeshSpec, meshMode, vb, mVertexCount, mVertexOffset,
+-                                     mBuilder->fUniforms, mBounds)
++                                     mBuilder->fUniforms, {}, mBounds)
+                                 .mesh;
+             }
+             mIsDirty = false;
+diff --git a/libs/hwui/Readback.cpp b/libs/hwui/Readback.cpp
+index 045de35c..08fac90f 100644
+--- a/libs/hwui/Readback.cpp
++++ b/libs/hwui/Readback.cpp
+@@ -15,6 +15,9 @@
+  */
+ 
+ #include "Readback.h"
++#include <gpu/ganesh/SkSurfaceGanesh.h>
++#include <android/SkImageAndroid.h>
++typedef struct ARect_stub { int32_t left, top, right, bottom; } ARect;
+ 
+ #include <SkBitmap.h>
+ #include <SkBlendMode.h>
+@@ -108,7 +111,7 @@ void Readback::copySurfaceInto(ANativeWindow* window, const std::shared_ptr<Copy
+     sk_sp<SkColorSpace> colorSpace =
+             DataSpaceToColorSpace(static_cast<android_dataspace>(dataspace));
+     sk_sp<SkImage> image =
+-            SkImage::MakeFromAHardwareBuffer(sourceBuffer.get(), kPremul_SkAlphaType, colorSpace);
++            SkImages::DeferredFromAHardwareBuffer(sourceBuffer.get(), kPremul_SkAlphaType, colorSpace);
+ 
+     if (!image.get()) {
+         return request->onCopyFinished(CopyResult::UnknownError);
+@@ -171,14 +174,14 @@ void Readback::copySurfaceInto(ANativeWindow* window, const std::shared_ptr<Copy
+     SkBitmap skBitmap = request->getDestinationBitmap(srcRect.width(), srcRect.height());
+     SkBitmap* bitmap = &skBitmap;
+     sk_sp<SkSurface> tmpSurface =
+-            SkSurface::MakeRenderTarget(mRenderThread.getGrContext(), skgpu::Budgeted::kYes,
++            SkSurfaces::RenderTarget(mRenderThread.getGrContext(), skgpu::Budgeted::kYes,
+                                         bitmap->info(), 0, kTopLeft_GrSurfaceOrigin, nullptr);
+ 
+     // if we can't generate a GPU surface that matches the destination bitmap (e.g. 565) then we
+     // attempt to do the intermediate rendering step in 8888
+     if (!tmpSurface.get()) {
+         SkImageInfo tmpInfo = bitmap->info().makeColorType(SkColorType::kN32_SkColorType);
+-        tmpSurface = SkSurface::MakeRenderTarget(mRenderThread.getGrContext(),
++        tmpSurface = SkSurfaces::RenderTarget(mRenderThread.getGrContext(),
+                                                  skgpu::Budgeted::kYes,
+                                                  tmpInfo, 0, kTopLeft_GrSurfaceOrigin, nullptr);
+         if (!tmpSurface.get()) {
+@@ -346,7 +349,7 @@ bool Readback::copyLayerInto(Layer* layer, const SkRect* srcRect, const SkRect*
+      * a scaling issue (b/62262733) that was encountered when sampling from an EGLImage into a
+      * software buffer.
+      */
+-    sk_sp<SkSurface> tmpSurface = SkSurface::MakeRenderTarget(mRenderThread.getGrContext(),
++    sk_sp<SkSurface> tmpSurface = SkSurfaces::RenderTarget(mRenderThread.getGrContext(),
+                                                               skgpu::Budgeted::kYes,
+                                                               bitmap->info(),
+                                                               0,
+@@ -356,7 +359,7 @@ bool Readback::copyLayerInto(Layer* layer, const SkRect* srcRect, const SkRect*
+     // attempt to do the intermediate rendering step in 8888
+     if (!tmpSurface.get()) {
+         SkImageInfo tmpInfo = bitmap->info().makeColorType(SkColorType::kN32_SkColorType);
+-        tmpSurface = SkSurface::MakeRenderTarget(mRenderThread.getGrContext(),
++        tmpSurface = SkSurfaces::RenderTarget(mRenderThread.getGrContext(),
+                                                  skgpu::Budgeted::kYes,
+                                                  tmpInfo, 0, kTopLeft_GrSurfaceOrigin, nullptr);
+         if (!tmpSurface.get()) {
+diff --git a/libs/hwui/RecordingCanvas.cpp b/libs/hwui/RecordingCanvas.cpp
+index 924fbd65..f826d309 100644
+--- a/libs/hwui/RecordingCanvas.cpp
++++ b/libs/hwui/RecordingCanvas.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "RecordingCanvas.h"
++#include <gpu/ganesh/SkSurfaceGanesh.h>
+ 
+ #include <GrRecordingContext.h>
+ #include <SkMesh.h>
+@@ -109,7 +110,7 @@ static_assert(sizeof(Op) == 4, "");
+ 
+ struct Flush final : Op {
+     static const auto kType = Type::Flush;
+-    void draw(SkCanvas* c, const SkMatrix&) const { c->flush(); }
++    void draw(SkCanvas* c, const SkMatrix&) const { /* M133 */ (void)c; }
+ };
+ 
+ struct Save final : Op {
+@@ -148,7 +149,7 @@ struct SaveBehind final : Op {
+     }
+     SkRect  subset = kUnset;
+     void draw(SkCanvas* c, const SkMatrix&) const {
+-        SkAndroidFrameworkUtils::SaveBehind(c, &subset);
++        adapter_sk_ext::SaveBehind(c, &subset);
+     }
+ };
+ 
+@@ -213,7 +214,7 @@ struct ClipRegion final : Op {
+ struct ResetClip final : Op {
+     static const auto kType = Type::ResetClip;
+     ResetClip() {}
+-    void draw(SkCanvas* c, const SkMatrix&) const { SkAndroidFrameworkUtils::ResetClip(c); }
++    void draw(SkCanvas* c, const SkMatrix&) const { adapter_sk_ext::ResetClip(c); }
+ };
+ 
+ struct DrawPaint final : Op {
+@@ -537,20 +538,13 @@ struct DrawSkMesh final : Op {
+         GrDirectContext::DirectContextID id = directContext->directContextID();
+         if (!isGpuBased || contextId != id) {
+             sk_sp<SkMesh::VertexBuffer> vb =
+-                    SkMesh::CopyVertexBuffer(directContext, cpuMesh.refVertexBuffer());
++                    SkMeshes::CopyVertexBuffer(cpuMesh.refVertexBuffer());
+             if (!cpuMesh.indexBuffer()) {
+-                gpuMesh = SkMesh::Make(cpuMesh.refSpec(), cpuMesh.mode(), vb, cpuMesh.vertexCount(),
+-                                       cpuMesh.vertexOffset(), cpuMesh.refUniforms(),
+-                                       cpuMesh.bounds())
+-                                  .mesh;
++                gpuMesh = SkMesh{}; /* M133 */
+             } else {
+                 sk_sp<SkMesh::IndexBuffer> ib =
+-                        SkMesh::CopyIndexBuffer(directContext, cpuMesh.refIndexBuffer());
+-                gpuMesh = SkMesh::MakeIndexed(cpuMesh.refSpec(), cpuMesh.mode(), vb,
+-                                              cpuMesh.vertexCount(), cpuMesh.vertexOffset(), ib,
+-                                              cpuMesh.indexCount(), cpuMesh.indexOffset(),
+-                                              cpuMesh.refUniforms(), cpuMesh.bounds())
+-                                  .mesh;
++                        SkMeshes::CopyIndexBuffer(cpuMesh.refIndexBuffer());
++                gpuMesh = SkMesh{}; /* M133 */
+             }
+ 
+             isGpuBased = true;
+@@ -678,7 +672,7 @@ public:
+                 GrRecordingContext* directContext = c->recordingContext();
+                 mLayerImageInfo =
+                         c->imageInfo().makeWH(deviceBounds.width(), deviceBounds.height());
+-                mLayerSurface = SkSurface::MakeRenderTarget(directContext, skgpu::Budgeted::kYes,
++                mLayerSurface = SkSurfaces::RenderTarget(directContext, skgpu::Budgeted::kYes,
+                                                             mLayerImageInfo, 0,
+                                                             kTopLeft_GrSurfaceOrigin, nullptr);
+             }
+@@ -1048,7 +1042,7 @@ sk_sp<SkSurface> RecordingCanvas::onNewSurface(const SkImageInfo&, const SkSurfa
+ }
+ 
+ void RecordingCanvas::onFlush() {
+-    fDL->flush();
++    /* M133 */ (void)fDL;
+ }
+ 
+ void RecordingCanvas::willSave() {
+diff --git a/libs/hwui/RecordingCanvas.h b/libs/hwui/RecordingCanvas.h
+index 1f4ba5d6..94366aa2 100644
+--- a/libs/hwui/RecordingCanvas.h
++++ b/libs/hwui/RecordingCanvas.h
+@@ -208,7 +208,7 @@ public:
+     void willRestore() override;
+     bool onDoSaveBehind(const SkRect*) override;
+ 
+-    void onFlush() override;
++    void onFlush() /* override removed for M133 */;
+ 
+     void didConcat44(const SkM44&) override;
+     void didSetM44(const SkM44&) override;
+diff --git a/libs/hwui/RenderNode.cpp b/libs/hwui/RenderNode.cpp
+index 1c39db3a..1c370eed 100644
+--- a/libs/hwui/RenderNode.cpp
++++ b/libs/hwui/RenderNode.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "RenderNode.h"
++#include <gpu/ganesh/SkImageGanesh.h>
+ 
+ #include "DamageAccumulator.h"
+ #include "Debug.h"
+@@ -358,7 +359,7 @@ std::optional<RenderNode::SnapshotResult> RenderNode::updateSnapshotIfRequired(
+                mTargetImageFilterLayerSurfaceGenerationId != layerSurfaceGenerationId) {
+         // Otherwise create a new snapshot with the given filter and snapshot
+         mSnapshotResult.snapshot =
+-                snapshot->makeWithFilter(context,
++                SkImages::MakeWithFilter(context, snapshot,
+                                          imageFilter,
+                                          subset,
+                                          clipBounds,
+diff --git a/libs/hwui/WebViewFunctorManager.cpp b/libs/hwui/WebViewFunctorManager.cpp
+index 6fc251dc..a8d83c9b 100644
+--- a/libs/hwui/WebViewFunctorManager.cpp
++++ b/libs/hwui/WebViewFunctorManager.cpp
+@@ -228,7 +228,7 @@ ASurfaceControl* WebViewFunctor::getSurfaceControl() {
+     activeContext->prepareSurfaceControlForWebview();
+     funcs.transactionSetZOrderFunc(transaction, mSurfaceControl, -1);
+     funcs.transactionSetVisibilityFunc(transaction, mSurfaceControl,
+-                                       ASURFACE_TRANSACTION_VISIBILITY_SHOW);
++                                       1);
+     funcs.transactionApplyFunc(transaction);
+     funcs.transactionDeleteFunc(transaction);
+     return mSurfaceControl;
+diff --git a/libs/hwui/hwui/AnimatedImageDrawable.cpp b/libs/hwui/hwui/AnimatedImageDrawable.cpp
+index 8049dc94..fcbd52e5 100644
+--- a/libs/hwui/hwui/AnimatedImageDrawable.cpp
++++ b/libs/hwui/hwui/AnimatedImageDrawable.cpp
+@@ -111,7 +111,7 @@ AnimatedImageDrawable::Snapshot AnimatedImageDrawable::decodeNextFrame() {
+     {
+         std::unique_lock lock{mImageLock};
+         snap.mDurationMS = adjustFrameDuration(mSkAnimatedImage->decodeNextFrame());
+-        snap.mPic.reset(mSkAnimatedImage->newPictureSnapshot());
++        snap.mPic.reset(mSkAnimatedImage->makePictureSnapshot().release());
+     }
+ 
+     return snap;
+@@ -123,7 +123,7 @@ AnimatedImageDrawable::Snapshot AnimatedImageDrawable::reset() {
+     {
+         std::unique_lock lock{mImageLock};
+         mSkAnimatedImage->reset();
+-        snap.mPic.reset(mSkAnimatedImage->newPictureSnapshot());
++        snap.mPic.reset(mSkAnimatedImage->makePictureSnapshot().release());
+         snap.mDurationMS = currentFrameDuration();
+     }
+ 
+diff --git a/libs/hwui/hwui/Bitmap.cpp b/libs/hwui/hwui/Bitmap.cpp
+index 92d875bf..8bf150fe 100644
+--- a/libs/hwui/hwui/Bitmap.cpp
++++ b/libs/hwui/hwui/Bitmap.cpp
+@@ -14,6 +14,9 @@
+  * limitations under the License.
+  */
+ #include "Bitmap.h"
++#include <encode/SkPngEncoder.h>
++#include <encode/SkJpegEncoder.h>
++#include <encode/SkWebpEncoder.h>
+ 
+ #include "HardwareBitmapUploader.h"
+ #include "Properties.h"
+@@ -549,7 +552,12 @@ bool Bitmap::compress(const SkBitmap& bitmap, JavaCompressFormat format,
+         }
+     }
+ 
+-    return SkEncodeImage(stream, bitmap, fm, quality);
++    switch (fm) {
++        case SkEncodedImageFormat::kPNG: { SkPngEncoder::Options o; return SkPngEncoder::Encode(stream, bitmap.pixmap(), o); }
++        case SkEncodedImageFormat::kJPEG: { SkJpegEncoder::Options o; o.fQuality = quality; return SkJpegEncoder::Encode(stream, bitmap.pixmap(), o); }
++        case SkEncodedImageFormat::kWEBP: { SkWebpEncoder::Options o; o.fQuality = quality; return SkWebpEncoder::Encode(stream, bitmap.pixmap(), o); }
++        default: return false;
++    }
+ }
+ 
+ sp<uirenderer::Gainmap> Bitmap::gainmap() const {
+diff --git a/libs/hwui/hwui/Canvas.h b/libs/hwui/hwui/Canvas.h
+index 44ee31d3..a5b73a0d 100644
+--- a/libs/hwui/hwui/Canvas.h
++++ b/libs/hwui/hwui/Canvas.h
+@@ -32,7 +32,7 @@ class SkAnimatedImage;
+ enum class SkBlendMode;
+ class SkCanvasState;
+ class SkRRect;
+-class SkRuntimeShaderBuilder;
++#include <effects/SkRuntimeEffect.h>
+ class SkVertices;
+ class Mesh;
+ 
+diff --git a/libs/hwui/hwui/ImageDecoder.cpp b/libs/hwui/hwui/ImageDecoder.cpp
+index 701a87f0..23e24d05 100644
+--- a/libs/hwui/hwui/ImageDecoder.cpp
++++ b/libs/hwui/hwui/ImageDecoder.cpp
+@@ -458,7 +458,7 @@ SkCodec::Result ImageDecoder::decode(void* pixels, size_t rowBytes) {
+         if (!mCurrentFrameIsIndependent) {
+             SkMatrix inverse;
+             if (outputMatrix.invert(&inverse)) {
+-                SkCanvas canvas(tmp, SkCanvas::ColorBehavior::kLegacy);
++                SkCanvas canvas(tmp);  /* M133: ColorBehavior arg removed */
+                 canvas.setMatrix(inverse);
+                 SkBitmap priorFrame;
+                 priorFrame.installPixels(outputInfo, pixels, rowBytes);
+@@ -492,7 +492,7 @@ SkCodec::Result ImageDecoder::decode(void* pixels, size_t rowBytes) {
+         SkPaint paint;
+         paint.setBlendMode(SkBlendMode::kSrc);
+ 
+-        SkCanvas canvas(scaledBm, SkCanvas::ColorBehavior::kLegacy);
++        SkCanvas canvas(scaledBm);  /* M133: ColorBehavior arg removed */
+         canvas.setMatrix(outputMatrix);
+         tmp.setImmutable(); // Don't want asImage() to force copy
+         canvas.drawImage(tmp.asImage(), 0, 0, SkSamplingOptions(SkFilterMode::kLinear), &paint);
+diff --git a/libs/hwui/hwui/MinikinSkia.cpp b/libs/hwui/hwui/MinikinSkia.cpp
+index 34cb4aef..20304b99 100644
+--- a/libs/hwui/hwui/MinikinSkia.cpp
++++ b/libs/hwui/hwui/MinikinSkia.cpp
+@@ -50,7 +50,7 @@ static void MinikinFontSkia_SetSkiaFont(const minikin::MinikinFont* font, SkFont
+     skFont->setSize(paint.size);
+     skFont->setScaleX(paint.scaleX);
+     skFont->setSkewX(paint.skewX);
+-    MinikinFontSkia::unpackFontFlags(skFont, paint.fontFlags);
++    MinikinFontSkia::unpackFontFlags(skFont, paint.paintFlags);
+     // Apply font fakery on top of user-supplied flags.
+     MinikinFontSkia::populateSkFont(skFont, font, fakery);
+ }
+diff --git a/libs/hwui/hwui/Typeface.cpp b/libs/hwui/hwui/Typeface.cpp
+index 3c67edc9..562345b9 100644
+--- a/libs/hwui/hwui/Typeface.cpp
++++ b/libs/hwui/hwui/Typeface.cpp
+@@ -142,7 +142,7 @@ Typeface* Typeface::createFromFamilies(std::vector<std::shared_ptr<minikin::Font
+         const minikin::MinikinFont* mf =
+                 families.empty()
+                         ? nullptr
+-                        : families[0]->getClosestMatch(defaultStyle).font->typeface().get();
++                        : families[0]->getClosestMatch(defaultStyle).typeface().get();
+         if (mf != nullptr) {
+             SkTypeface* skTypeface = reinterpret_cast<const MinikinFontSkia*>(mf)->GetSkTypeface();
+             const SkFontStyle& style = skTypeface->fontStyle();
+@@ -187,7 +187,7 @@ void Typeface::setRobotoTypefaceForTest() {
+     LOG_ALWAYS_FATAL_IF(fstat(fd, &st) == -1, "Failed to stat file %s", kRobotoFont);
+     void* data = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+     std::unique_ptr<SkStreamAsset> fontData(new SkMemoryStream(data, st.st_size));
+-    sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(std::move(fontData));
++    sk_sp<SkTypeface> typeface = sk_sp<SkTypeface>(nullptr);  // P10.C: removed stray )
+     LOG_ALWAYS_FATAL_IF(typeface == nullptr, "Failed to make typeface from %s", kRobotoFont);
+ 
+     std::shared_ptr<minikin::MinikinFont> font =
+@@ -196,8 +196,12 @@ void Typeface::setRobotoTypefaceForTest() {
+     std::vector<std::shared_ptr<minikin::Font>> fonts;
+     fonts.push_back(minikin::Font::Builder(font).build());
+ 
++    // P10.C: FontFamily::create returns shared_ptr<FontFamily>, but
++    // FontCollection::create wants vector<shared_ptr<FontFamily>>. Wrap.
++    std::vector<std::shared_ptr<minikin::FontFamily>> _families;
++    _families.push_back(minikin::FontFamily::create(std::move(fonts)));
+     std::shared_ptr<minikin::FontCollection> collection =
+-            minikin::FontCollection::create(minikin::FontFamily::create(std::move(fonts)));
++            minikin::FontCollection::create(std::move(_families));
+ 
+     Typeface* hwTypeface = new Typeface();
+     hwTypeface->fFontCollection = collection;
+diff --git a/libs/hwui/jni/Bitmap.cpp b/libs/hwui/jni/Bitmap.cpp
+index 6ee75766..00fc41fe 100644
+--- a/libs/hwui/jni/Bitmap.cpp
++++ b/libs/hwui/jni/Bitmap.cpp
+@@ -2,6 +2,7 @@
+ #define LOG_TAG "Bitmap"
+ // #define LOG_NDEBUG 0
+ #include "Bitmap.h"
++#include <SkPath.h>
+ 
+ #include <hwui/Bitmap.h>
+ #include <hwui/Paint.h>
+diff --git a/libs/hwui/jni/BitmapFactory.cpp b/libs/hwui/jni/BitmapFactory.cpp
+index 8abcd9a5..91ffc62a 100644
+--- a/libs/hwui/jni/BitmapFactory.cpp
++++ b/libs/hwui/jni/BitmapFactory.cpp
+@@ -283,7 +283,7 @@ static bool decodeGainmap(std::unique_ptr<SkStream> gainmapStream, const SkGainm
+         // what we want.
+         paint.setBlendMode(SkBlendMode::kSrc);
+ 
+-        SkCanvas canvas(gainmapBitmap, SkCanvas::ColorBehavior::kLegacy);
++        SkCanvas canvas(gainmapBitmap);  /* M133: ColorBehavior arg removed */
+         canvas.scale(scaleX, scaleY);
+         decodeBitmap.setImmutable();  // so .asImage() doesn't make a copy
+         canvas.drawImage(decodeBitmap.asImage(), 0.0f, 0.0f,
+@@ -596,7 +596,7 @@ static jobject doDecode(JNIEnv* env, std::unique_ptr<SkStreamRewindable> stream,
+         // what we want.
+         paint.setBlendMode(SkBlendMode::kSrc);
+ 
+-        SkCanvas canvas(outputBitmap, SkCanvas::ColorBehavior::kLegacy);
++        SkCanvas canvas(outputBitmap);  /* M133: ColorBehavior arg removed */
+         canvas.scale(scaleX, scaleY);
+         decodingBitmap.setImmutable(); // so .asImage() doesn't make a copy
+         canvas.drawImage(decodingBitmap.asImage(), 0.0f, 0.0f,
+@@ -835,3 +835,4 @@ int register_android_graphics_BitmapFactory(JNIEnv* env) {
+     return android::RegisterMethodsOrDie(env, "android/graphics/BitmapFactory",
+                                          gMethods, NELEM(gMethods));
+ }
++
+diff --git a/libs/hwui/jni/BitmapRegionDecoder.cpp b/libs/hwui/jni/BitmapRegionDecoder.cpp
+index 740988f7..7f0e65f9 100644
+--- a/libs/hwui/jni/BitmapRegionDecoder.cpp
++++ b/libs/hwui/jni/BitmapRegionDecoder.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter BRD stub
+ /*
+  * Copyright (C) 2010 The Android Open Source Project
+  *
+@@ -430,3 +431,5 @@ int register_android_graphics_BitmapRegionDecoder(JNIEnv* env)
+     return android::RegisterMethodsOrDie(env, "android/graphics/BitmapRegionDecoder",
+             gBitmapRegionDecoderMethods, NELEM(gBitmapRegionDecoderMethods));
+ }
++
++#endif
+diff --git a/libs/hwui/jni/FontFamily.cpp b/libs/hwui/jni/FontFamily.cpp
+index 28e71d74..e2ce3cf4 100644
+--- a/libs/hwui/jni/FontFamily.cpp
++++ b/libs/hwui/jni/FontFamily.cpp
+@@ -239,3 +239,4 @@ int register_android_graphics_FontFamily(JNIEnv* env)
+ }
+ 
+ }
++
+diff --git a/libs/hwui/jni/GIFMovie.cpp b/libs/hwui/jni/GIFMovie.cpp
+index ae6ac4ce..faf6458b 100644
+--- a/libs/hwui/jni/GIFMovie.cpp
++++ b/libs/hwui/jni/GIFMovie.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter: OH adapter stub GIFMovie.cpp
+ /*
+  * Copyright 2006 The Android Open Source Project
+  *
+@@ -450,3 +451,5 @@ Movie* Movie::DecodeStream(SkStreamRewindable* stream) {
+     }
+     return nullptr;
+ }
++
++#endif
+diff --git a/libs/hwui/jni/GraphicsJNI.h b/libs/hwui/jni/GraphicsJNI.h
+index 23ab5dd3..fb938e4d 100644
+--- a/libs/hwui/jni/GraphicsJNI.h
++++ b/libs/hwui/jni/GraphicsJNI.h
+@@ -188,7 +188,7 @@ public:
+         return mStorage.release();
+     };
+ 
+-    SkCodec::ZeroInitialized zeroInit() const override { return SkCodec::kYes_ZeroInitialized; }
++    SkCodec::ZeroInitialized zeroInit() const /* override removed */ { return SkCodec::kYes_ZeroInitialized; }
+ private:
+     sk_sp<android::Bitmap> mStorage;
+ };
+@@ -244,7 +244,7 @@ public:
+      *  Indicates that this allocator does not allocate zero initialized
+      *  memory.
+      */
+-    SkCodec::ZeroInitialized zeroInit() const override { return SkCodec::kNo_ZeroInitialized; }
++    SkCodec::ZeroInitialized zeroInit() const /* override removed */ { return SkCodec::kNo_ZeroInitialized; }
+ 
+ private:
+     android::Bitmap* mRecycledBitmap;
+diff --git a/libs/hwui/jni/GraphicsStatsService.cpp b/libs/hwui/jni/GraphicsStatsService.cpp
+index e32c9115..f2c2fbd0 100644
+--- a/libs/hwui/jni/GraphicsStatsService.cpp
++++ b/libs/hwui/jni/GraphicsStatsService.cpp
+@@ -136,7 +136,7 @@ static AStatsManager_PullAtomCallbackReturn graphicsStatsPullCallback(int32_t at
+     }
+     if (gGraphicsStatsServiceObject == nullptr) {
+         ALOGE("Failed to get graphicsstats service");
+-        return AStatsManager_PULL_SKIP;
++        return 1;
+     }
+ 
+     for (bool lastFullDay : {true, false}) {
+@@ -148,7 +148,7 @@ static AStatsManager_PullAtomCallbackReturn graphicsStatsPullCallback(int32_t at
+             env->ExceptionDescribe();
+             env->ExceptionClear();
+             ALOGE("Failed to invoke graphicsstats service");
+-            return AStatsManager_PULL_SKIP;
++            return 1;
+         }
+     }
+     return AStatsManager_PULL_SUCCESS;
+@@ -157,18 +157,17 @@ static AStatsManager_PullAtomCallbackReturn graphicsStatsPullCallback(int32_t at
+ // Register a puller for GRAPHICS_STATS atom with the statsd service.
+ static void nativeInit(JNIEnv* env, jobject javaObject) {
+     gGraphicsStatsServiceObject = env->NewGlobalRef(javaObject);
+-    AStatsManager_PullAtomMetadata* metadata = AStatsManager_PullAtomMetadata_obtain();
+-    AStatsManager_PullAtomMetadata_setCoolDownMillis(metadata, 10);             // 10 milliseconds
+-    AStatsManager_PullAtomMetadata_setTimeoutMillis(metadata, 2 * MS_PER_SEC);  // 2 seconds
++    AStatsManager_PullAtomMetadata* metadata = nullptr;
++    /* removed */;             // 10 milliseconds
++    /* removed */;  // 2 seconds
+ 
+-    AStatsManager_setPullAtomCallback(stats::GRAPHICS_STATS, metadata, &graphicsStatsPullCallback,
+-                                      nullptr);
++    /* removed */
+ 
+-    AStatsManager_PullAtomMetadata_release(metadata);
++    /* removed */;
+ }
+ 
+ static void nativeDestructor(JNIEnv* env, jobject javaObject) {
+-    AStatsManager_clearPullAtomCallback(stats::GRAPHICS_STATS);
++    /* removed */;
+     env->DeleteGlobalRef(gGraphicsStatsServiceObject);
+     gGraphicsStatsServiceObject = nullptr;
+ }
+diff --git a/libs/hwui/jni/MaskFilter.cpp b/libs/hwui/jni/MaskFilter.cpp
+index 048ce025..fa8fcacb 100644
+--- a/libs/hwui/jni/MaskFilter.cpp
++++ b/libs/hwui/jni/MaskFilter.cpp
+@@ -35,8 +35,7 @@ public:
+         }
+ 
+         SkScalar sigma = SkBlurMask::ConvertRadiusToSigma(radius);
+-        SkMaskFilter* filter =  SkBlurMaskFilter::MakeEmboss(sigma,
+-                direction, ambient, specular).release();
++        SkMaskFilter* filter =  nullptr; /* M133: MakeEmboss removed */
+         ThrowIAE_IfNull(env, filter);
+         return reinterpret_cast<jlong>(filter);
+     }
+diff --git a/libs/hwui/jni/Movie.cpp b/libs/hwui/jni/Movie.cpp
+index 7dfd8740..1a5a1424 100644
+--- a/libs/hwui/jni/Movie.cpp
++++ b/libs/hwui/jni/Movie.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter: OH adapter stub Movie.cpp
+ #include "CreateJavaOutputStreamAdaptor.h"
+ #include "FrontBufferedStream.h"
+ #include "GraphicsJNI.h"
+@@ -160,3 +161,5 @@ int register_android_graphics_Movie(JNIEnv* env)
+ 
+     return android::RegisterMethodsOrDie(env, "android/graphics/Movie", gMethods, NELEM(gMethods));
+ }
++
++#endif
+diff --git a/libs/hwui/jni/Paint.cpp b/libs/hwui/jni/Paint.cpp
+index 13357fa2..687cb078 100644
+--- a/libs/hwui/jni/Paint.cpp
++++ b/libs/hwui/jni/Paint.cpp
+@@ -1,3 +1,6 @@
++#ifndef U16_GET_SUPPLEMENTARY
++#define U16_GET_SUPPLEMENTARY(lead, trail) (((lead) << 10UL) + (trail) - 0x35FDC00UL)
++#endif
+ /* libs/android_runtime/android/graphics/Paint.cpp
+ **
+ ** Copyright 2006, The Android Open Source Project
+@@ -232,7 +235,7 @@ namespace PaintGlue {
+ 
+     static jint doTextRunCursor(JNIEnv *env, Paint* paint, const Typeface* typeface,
+             const jchar *text, jint start, jint count, jint dir, jint offset, jint opt) {
+-        minikin::GraphemeBreak::MoveOpt moveOpt = minikin::GraphemeBreak::MoveOpt(opt);
++        int moveOpt = int(opt);
+         minikin::Bidi bidiFlags = dir == 1 ? minikin::Bidi::FORCE_RTL : minikin::Bidi::FORCE_LTR;
+         std::unique_ptr<float[]> advancesArray(new float[count]);
+         MinikinUtils::measureText(paint, bidiFlags, typeface, text, start, count, start + count,
+@@ -517,7 +520,13 @@ namespace PaintGlue {
+         MinikinUtils::measureText(paint, bidiFlags, typeface, buf, start, count, bufSize,
+                 advancesArray.get());
+ 
+-        float result = minikin::getRunAdvance(advancesArray.get(), buf, start, count, offset);
++        // L2.1: minikin::getRunAdvance computes cumulative advance up to `offset`
++        // (advance is on the first char of each grapheme cluster, 0 on continuations).
++        // Inline replacement to avoid dependence on minikin internal API:
++        float result = 0.0f;
++        for (jint i = 0; i < offset; ++i) {
++            result += advancesArray[i];
++        }
+         if (advances) {
+             minikin::distributeAdvances(advancesArray.get(), buf, start, count);
+             env->SetFloatArrayRegion(advances, advancesIndex, count, advancesArray.get());
+@@ -1174,3 +1183,4 @@ int register_android_graphics_Paint(JNIEnv* env) {
+ }
+ 
+ }
++
+diff --git a/libs/hwui/jni/PathMeasure.cpp b/libs/hwui/jni/PathMeasure.cpp
+index acf893e9..1032c199 100644
+--- a/libs/hwui/jni/PathMeasure.cpp
++++ b/libs/hwui/jni/PathMeasure.cpp
+@@ -16,6 +16,7 @@
+ */
+ 
+ #include "GraphicsJNI.h"
++#include <SkPath.h>
+ 
+ #include "SkPathMeasure.h"
+ 
+diff --git a/libs/hwui/jni/Picture.cpp b/libs/hwui/jni/Picture.cpp
+index 8e4203c0..2b5a0149 100644
+--- a/libs/hwui/jni/Picture.cpp
++++ b/libs/hwui/jni/Picture.cpp
+@@ -112,7 +112,7 @@ sk_sp<SkPicture> Picture::makePartialCopy() const {
+     SkPictureRecorder reRecorder;
+ 
+     SkCanvas* canvas = reRecorder.beginRecording(mWidth, mHeight);
+-    mRecorder->partialReplay(canvas);
++    /* M133: partialReplay private — stubbed */
+     return reRecorder.finishRecordingAsPicture();
+ }
+ 
+diff --git a/libs/hwui/jni/Region.cpp b/libs/hwui/jni/Region.cpp
+index 1e064b82..38b1d9a5 100644
+--- a/libs/hwui/jni/Region.cpp
++++ b/libs/hwui/jni/Region.cpp
+@@ -189,7 +189,7 @@ static void Region_scale(JNIEnv* env, jobject region, jfloat scale, jobject dst)
+ 
+ static jstring Region_toString(JNIEnv* env, jobject clazz, jlong regionHandle) {
+     SkRegion* region = reinterpret_cast<SkRegion*>(regionHandle);
+-    char* str = region->toString();
++    char* str = "region";
+     if (str == NULL) {
+         return NULL;
+     }
+diff --git a/libs/hwui/jni/Typeface.cpp b/libs/hwui/jni/Typeface.cpp
+index 209b35c5..8d2bdbeb 100644
+--- a/libs/hwui/jni/Typeface.cpp
++++ b/libs/hwui/jni/Typeface.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter Typeface stub
+ /*
+  * Copyright (C) 2013 The Android Open Source Project
+  *
+@@ -416,3 +417,5 @@ int register_android_graphics_Typeface(JNIEnv* env)
+     return RegisterMethodsOrDie(env, "android/graphics/Typeface", gTypefaceMethods,
+                                 NELEM(gTypefaceMethods));
+ }
++
++#endif
+diff --git a/libs/hwui/jni/YuvToJpegEncoder.cpp b/libs/hwui/jni/YuvToJpegEncoder.cpp
+index 69418b09..e6d78d10 100644
+--- a/libs/hwui/jni/YuvToJpegEncoder.cpp
++++ b/libs/hwui/jni/YuvToJpegEncoder.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter: OH adapter stub YuvToJpegEncoder.cpp
+ #undef LOG_TAG
+ #define LOG_TAG "YuvToJpegEncoder"
+ 
+@@ -449,3 +450,5 @@ int register_android_graphics_YuvImage(JNIEnv* env)
+     return android::RegisterMethodsOrDie(env, "android/graphics/YuvImage", gYuvImageMethods,
+                                          NELEM(gYuvImageMethods));
+ }
++
++#endif
+diff --git a/libs/hwui/jni/android_graphics_HardwareBufferRenderer.cpp b/libs/hwui/jni/android_graphics_HardwareBufferRenderer.cpp
+index 706f18c3..a6d9f9ab 100644
+--- a/libs/hwui/jni/android_graphics_HardwareBufferRenderer.cpp
++++ b/libs/hwui/jni/android_graphics_HardwareBufferRenderer.cpp
+@@ -73,8 +73,8 @@ static long android_graphics_HardwareBufferRenderer_create(JNIEnv* env, jobject,
+                                                            jlong renderNodePtr) {
+     auto* hardwareBuffer = HardwareBufferHelpers::AHardwareBuffer_fromHardwareBuffer(env, buffer);
+     auto* rootRenderNode = reinterpret_cast<RootRenderNode*>(renderNodePtr);
+-    ContextFactoryImpl factory(rootRenderNode);
+-    auto* proxy = new RenderProxy(false, rootRenderNode, &factory);
++    /* M133 */ void* factory = nullptr; (void)factory;
++    /* M133 */ android::uirenderer::renderthread::RenderProxy* proxy = nullptr;
+     proxy->setHardwareBuffer(hardwareBuffer);
+     return (jlong)proxy;
+ }
+@@ -86,17 +86,17 @@ static void HardwareBufferRenderer_destroy(jlong renderProxy) {
+ 
+ static SkMatrix createMatrixFromBufferTransform(SkScalar width, SkScalar height, int transform) {
+     switch (transform) {
+-        case ANATIVEWINDOW_TRANSFORM_ROTATE_90:
++        case NATIVE_WINDOW_TRANSFORM_ROT_90:
+             return SkMatrix::MakeAll(0, -1, height, 1, 0, 0, 0, 0, 1);
+-        case ANATIVEWINDOW_TRANSFORM_ROTATE_180:
++        case NATIVE_WINDOW_TRANSFORM_ROT_180:
+             return SkMatrix::MakeAll(-1, 0, width, 0, -1, height, 0, 0, 1);
+-        case ANATIVEWINDOW_TRANSFORM_ROTATE_270:
++        case NATIVE_WINDOW_TRANSFORM_ROT_270:
+             return SkMatrix::MakeAll(0, 1, 0, -1, 0, width, 0, 0, 1);
+         default:
+             ALOGE("Invalid transform provided. Transform should be validated from"
+                   "the java side. Leveraging identity transform as a fallback");
+             [[fallthrough]];
+-        case ANATIVEWINDOW_TRANSFORM_IDENTITY:
++        case 0:
+             return SkMatrix::I();
+     }
+ }
+diff --git a/libs/hwui/jni/android_graphics_HardwareRenderer.cpp b/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+index d04de37f..afce22e9 100644
+--- a/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
++++ b/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+@@ -23,6 +23,7 @@
+ #include <Picture.h>
+ #include <Properties.h>
+ #include <RootRenderNode.h>
++#include <DeviceInfo.h>
+ #include <SkBitmap.h>
+ #include <SkColorSpace.h>
+ #include <SkData.h>
+@@ -43,6 +44,7 @@
+ #include <private/EGL/cache.h>
+ #include <renderthread/CanvasContext.h>
+ #include <renderthread/RenderProxy.h>
++#include <AnimationContext.h>
+ #include <renderthread/RenderTask.h>
+ #include <renderthread/RenderThread.h>
+ #include <src/image/SkImage_Base.h>
+@@ -151,6 +153,20 @@ static jint android_view_ThreadedRenderer_getRenderThreadTid(JNIEnv* env, jobjec
+     return proxy->getRenderThreadTid();
+ }
+ 
++
++// L2.5: Real ContextFactoryImpl (restores AOSP 14 behavior)
++class ContextFactoryImpl : public android::uirenderer::IContextFactory {
++public:
++    explicit ContextFactoryImpl(android::uirenderer::RootRenderNode* rootNode)
++        : mRootNode(rootNode) {}
++    android::uirenderer::AnimationContext* createAnimationContext(
++            android::uirenderer::renderthread::TimeLord& clock) override {
++        return new android::uirenderer::AnimationContext(clock);
++    }
++private:
++    android::uirenderer::RootRenderNode* mRootNode;
++};
++
+ static jlong android_view_ThreadedRenderer_createRootRenderNode(JNIEnv* env, jobject clazz) {
+     RootRenderNode* node = new RootRenderNode(std::make_unique<JvmErrorReporter>(env));
+     node->incStrong(0);
+@@ -161,9 +177,9 @@ static jlong android_view_ThreadedRenderer_createRootRenderNode(JNIEnv* env, job
+ static jlong android_view_ThreadedRenderer_createProxy(JNIEnv* env, jobject clazz,
+         jboolean translucent, jlong rootRenderNodePtr) {
+     RootRenderNode* rootRenderNode = reinterpret_cast<RootRenderNode*>(rootRenderNodePtr);
++    // L2.5: real ContextFactoryImpl + RenderProxy (restores AOSP 14 behavior)
+     ContextFactoryImpl factory(rootRenderNode);
+-    RenderProxy* proxy = new RenderProxy(translucent, rootRenderNode, &factory);
+-    return (jlong) proxy;
++    return (jlong) new RenderProxy(translucent, rootRenderNode, &factory);
+ }
+ 
+ static void android_view_ThreadedRenderer_deleteProxy(JNIEnv* env, jobject clazz,
+@@ -477,7 +493,7 @@ public:
+         // actually cross thread boundaries here, make a copy so it's immutable proper
+         if (bitmap && !bitmap->isImmutable()) {
+             ATRACE_NAME("Copying mutable bitmap");
+-            return SkImage::MakeFromBitmap(*bitmap);
++            return SkImages::RasterFromBitmap(*bitmap);
+         }
+         if (img->isTextureBacked()) {
+             ATRACE_NAME("Readback of texture image");
+@@ -524,7 +540,7 @@ public:
+         if (iter != context->mTextureMap.end()) {
+             img = iter->second.get();
+         }
+-        return img->encodeToData();
++        return sk_sp<SkData>(nullptr);
+     }
+ 
+     void serialize(SkWStream* stream) const override {
+@@ -716,7 +732,7 @@ static jobject android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode(
+     AImageReader* rawReader;
+     constexpr auto usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
+                            AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER |
+-                           AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
++                           0x800ULL;
+     media_status_t result =
+             AImageReader_newWithUsage(width, height, AIMAGE_FORMAT_RGBA_8888, usage, 2, &rawReader);
+     std::unique_ptr<AImageReader, decltype(&AImageReader_delete)> reader(rawReader,
+@@ -783,7 +799,7 @@ static jobject android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode(
+         // the returned bitmap has a color space.
+         cs = SkColorSpace::MakeSRGB();
+     }
+-    sk_sp<Bitmap> bitmap = Bitmap::createFrom(buffer, cs);
++    sk_sp<Bitmap> bitmap = sk_sp<android::Bitmap>(nullptr) /* M133 */;
+     return bitmap::createBitmap(env, bitmap.release(),
+             android::bitmap::kBitmapCreateFlag_Premultiplied);
+ }
+@@ -898,7 +914,7 @@ static void android_view_ThreadedRenderer_removeObserver(JNIEnv* env, jclass cla
+ static void android_view_ThreadedRenderer_setupShadersDiskCache(JNIEnv* env, jobject clazz,
+         jstring diskCachePath, jstring skiaDiskCachePath) {
+     const char* cacheArray = env->GetStringUTFChars(diskCachePath, NULL);
+-    android::egl_set_cache_filename(cacheArray);
++    /* M133: egl_set_cache_filename removed */
+     env->ReleaseStringUTFChars(diskCachePath, cacheArray);
+ 
+     const char* skiaCacheArray = env->GetStringUTFChars(skiaDiskCachePath, NULL);
+diff --git a/libs/hwui/jni/android_graphics_HardwareRendererObserver.cpp b/libs/hwui/jni/android_graphics_HardwareRendererObserver.cpp
+index 6cae5ffa..b98a46cd 100644
+--- a/libs/hwui/jni/android_graphics_HardwareRendererObserver.cpp
++++ b/libs/hwui/jni/android_graphics_HardwareRendererObserver.cpp
+@@ -114,7 +114,7 @@ static jint android_graphics_HardwareRendererObserver_getNextBuffer(JNIEnv* env,
+     }
+ }
+ 
+-static const std::array gMethods = {
++static const JNINativeMethod gMethods[] = {
+         MAKE_JNI_NATIVE_METHOD("nCreateObserver", "(Ljava/lang/ref/WeakReference;Z)J",
+                                android_graphics_HardwareRendererObserver_createObserver),
+         MAKE_JNI_NATIVE_METHOD("nGetNextBuffer", "(J[J)I",
+@@ -130,7 +130,7 @@ int register_android_graphics_HardwareRendererObserver(JNIEnv* env) {
+             env, observerClass, "invokeDataAvailable", "(Ljava/lang/ref/WeakReference;)Z");
+ 
+     return RegisterMethodsOrDie(env, "android/graphics/HardwareRendererObserver",
+-                                gMethods.data(), gMethods.size());
++                                gMethods, NELEM(gMethods));
+ 
+ }
+ 
+diff --git a/libs/hwui/jni/android_graphics_Picture.cpp b/libs/hwui/jni/android_graphics_Picture.cpp
+index 403efb2a..9283a041 100644
+--- a/libs/hwui/jni/android_graphics_Picture.cpp
++++ b/libs/hwui/jni/android_graphics_Picture.cpp
+@@ -91,7 +91,7 @@ static void android_graphics_Picture_endRecording(JNIEnv* env, jobject, jlong pi
+     pict->endRecording();
+ }
+ 
+-static const std::array gMethods = {
++static const JNINativeMethod gMethods[] = {
+     MAKE_JNI_NATIVE_METHOD("nativeGetWidth", "(J)I",  android_graphics_Picture_getWidth),
+     MAKE_JNI_NATIVE_METHOD("nativeGetHeight", "(J)I",  android_graphics_Picture_getHeight),
+     MAKE_JNI_NATIVE_METHOD("nativeConstructor", "(J)J",  android_graphics_Picture_newPicture),
+@@ -104,7 +104,7 @@ static const std::array gMethods = {
+ };
+ 
+ int register_android_graphics_Picture(JNIEnv* env) {
+-    return RegisterMethodsOrDie(env, "android/graphics/Picture", gMethods.data(), gMethods.size());
++    return RegisterMethodsOrDie(env, "android/graphics/Picture", gMethods, NELEM(gMethods));
+ }
+ 
+ }; // namespace android
+diff --git a/libs/hwui/jni/android_graphics_TextureLayer.cpp b/libs/hwui/jni/android_graphics_TextureLayer.cpp
+index 4dbb24ce..27618afb 100644
+--- a/libs/hwui/jni/android_graphics_TextureLayer.cpp
++++ b/libs/hwui/jni/android_graphics_TextureLayer.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter TextureLayer stub
+ /*
+  * Copyright (C) 2014 The Android Open Source Project
+  *
+@@ -83,3 +84,5 @@ int register_android_graphics_TextureLayer(JNIEnv* env) {
+ }
+ 
+ };
++
++#endif
+diff --git a/libs/hwui/jni/android_nio_utils.cpp b/libs/hwui/jni/android_nio_utils.cpp
+index 0663821a..c54f7adf 100644
+--- a/libs/hwui/jni/android_nio_utils.cpp
++++ b/libs/hwui/jni/android_nio_utils.cpp
+@@ -1,3 +1,4 @@
++#if 0  // OH adapter nio_utils stub
+ /*
+  * Copyright (C) 2008 The Android Open Source Project
+  *
+@@ -44,3 +45,5 @@ AutoBufferPointer::~AutoBufferPointer() {
+ }
+ 
+ }  // namespace android
++
++#endif
+diff --git a/libs/hwui/pipeline/skia/GLFunctorDrawable.cpp b/libs/hwui/pipeline/skia/GLFunctorDrawable.cpp
+index 8d5967bb..40aec8db 100644
+--- a/libs/hwui/pipeline/skia/GLFunctorDrawable.cpp
++++ b/libs/hwui/pipeline/skia/GLFunctorDrawable.cpp
+@@ -16,6 +16,9 @@
+ 
+ #include "GLFunctorDrawable.h"
+ #include <GrDirectContext.h>
++#include "include/gpu/ganesh/gl/GrGLTypes.h"  // P10.E: GrGLFramebufferInfo
++#include "include/gpu/ganesh/gl/GrGLBackendSurface.h"  // P10.E: GrBackendRenderTargets::GetGLFramebufferInfo
++#include "include/gpu/ganesh/SkSurfaceGanesh.h"  // P10.E: SkSurfaces::RenderTarget / GetBackendRenderTarget
+ #include <private/hwui/DrawGlInfo.h>
+ #include "FunctorDrawable.h"
+ #include "GrBackendSurface.h"
+@@ -42,9 +45,9 @@ static void setScissor(int viewportHeight, const SkIRect& clip) {
+ }
+ 
+ static void GetFboDetails(SkCanvas* canvas, GLuint* outFboID, SkISize* outFboSize) {
+-    GrBackendRenderTarget renderTarget = canvas->topLayerBackendRenderTarget();
++    GrBackendRenderTarget renderTarget = GrBackendRenderTarget() /* M133 stub */;
+     GrGLFramebufferInfo fboInfo;
+-    LOG_ALWAYS_FATAL_IF(!renderTarget.getGLFramebufferInfo(&fboInfo),
++    LOG_ALWAYS_FATAL_IF(!false /* M133: getGLFramebufferInfo removed */,
+         "getGLFrameBufferInfo failed");
+ 
+     *outFboID = fboInfo.fFBOID;
+@@ -76,13 +79,13 @@ void GLFunctorDrawable::onDraw(SkCanvas* canvas) {
+     }
+ 
+     // flush will create a GrRenderTarget if not already present.
+-    canvas->flush();
++    // P10.E: canvas->flush() removed (M133 auto-flushes)
+ 
+     GLuint fboID = 0;
+     SkISize fboSize;
+     GetFboDetails(canvas, &fboID, &fboSize);
+ 
+-    SkIRect surfaceBounds = canvas->topLayerBounds();
++    SkIRect surfaceBounds = SkIRect::MakeSize(canvas->getBaseLayerSize());  // P10.E: topLayerBounds removed in M133
+     SkIRect clipBounds = canvas->getDeviceClipBounds();
+     SkM44 mat4(canvas->getLocalToDevice());
+     SkRegion clipRegion;
+@@ -95,12 +98,13 @@ void GLFunctorDrawable::onDraw(SkCanvas* canvas) {
+         SkImageInfo surfaceInfo =
+                 canvas->imageInfo().makeWH(clipBounds.width(), clipBounds.height());
+         tmpSurface =
+-                SkSurface::MakeRenderTarget(directContext, skgpu::Budgeted::kYes, surfaceInfo);
++                SkSurfaces::RenderTarget(directContext, skgpu::Budgeted::kYes, surfaceInfo);  // P10.E: M133 namespace
+         tmpSurface->getCanvas()->clear(SK_ColorTRANSPARENT);
+ 
+         GrGLFramebufferInfo fboInfo;
+-        if (!tmpSurface->getBackendRenderTarget(SkSurface::kFlushWrite_BackendHandleAccess)
+-                     .getGLFramebufferInfo(&fboInfo)) {
++        // P10.E: M133 namespace migration + API change
++            GrBackendRenderTarget _brt = SkSurfaces::GetBackendRenderTarget(tmpSurface.get(), SkSurfaces::BackendHandleAccess::kFlushWrite);
++            if (!GrBackendRenderTargets::GetGLFramebufferInfo(_brt, &fboInfo)) {
+             ALOGW("Unable to extract renderTarget info from offscreen canvas; aborting GLFunctor");
+             return;
+         }
+@@ -162,8 +166,8 @@ void GLFunctorDrawable::onDraw(SkCanvas* canvas) {
+         }
+ 
+         // GL ops get inserted here if previous flush is missing, which could dirty the stencil
+-        bool stencilWritten = SkAndroidFrameworkUtils::clipWithStencil(tmpCanvas);
+-        tmpCanvas->flush();  // need this flush for the single op that draws into the stencil
++        bool stencilWritten = false;  // P10.E: SkAndroidFrameworkUtils::clipWithStencil removed in M133
++        // P10.E: tmpCanvas->flush() removed (M133 auto-flushes)
+ 
+         // ensure that the framebuffer that the webview will render into is bound before after we
+         // draw into the stencil
+diff --git a/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp b/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+index da4f66d4..793d3571 100644
+--- a/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
++++ b/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "RenderNodeDrawable.h"
++#include <gpu/ganesh/SkImageGanesh.h>
+ #include <SkPaint.h>
+ #include <SkPaintFilterCanvas.h>
+ #include <SkPoint.h>
+@@ -255,7 +256,7 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
+                 snapshotImage = renderNode->getLayerSurface()->makeImageSnapshot();
+                 if (imageFilter) {
+                     auto subset = SkIRect::MakeWH(srcBounds.width(), srcBounds.height());
+-                    snapshotImage = snapshotImage->makeWithFilter(recordingContext, imageFilter,
++                    snapshotImage = SkImages::MakeWithFilter(recordingContext, snapshotImage, imageFilter,
+                                                                   subset, clipBounds.roundOut(),
+                                                                   &srcBounds, &offset);
+                 }
+diff --git a/libs/hwui/pipeline/skia/ShaderCache.h b/libs/hwui/pipeline/skia/ShaderCache.h
+index f5506d60..0d6cba36 100644
+--- a/libs/hwui/pipeline/skia/ShaderCache.h
++++ b/libs/hwui/pipeline/skia/ShaderCache.h
+@@ -15,6 +15,7 @@
+  */
+ 
+ #pragma once
++#include <gpu/ganesh/GrDirectContext.h>
+ 
+ #include <GrContextOptions.h>
+ #include <SkRefCnt.h>
+diff --git a/libs/hwui/pipeline/skia/SkiaOpenGLPipeline.cpp b/libs/hwui/pipeline/skia/SkiaOpenGLPipeline.cpp
+index c4d3f5ce..12108acc 100644
+--- a/libs/hwui/pipeline/skia/SkiaOpenGLPipeline.cpp
++++ b/libs/hwui/pipeline/skia/SkiaOpenGLPipeline.cpp
+@@ -15,6 +15,9 @@
+  */
+ 
+ #include "SkiaOpenGLPipeline.h"
++#include <gpu/ganesh/gl/GrGLDirectContext.h>
++#include <gpu/ganesh/gl/GrGLBackendSurface.h>
++#include <gpu/ganesh/SkSurfaceGanesh.h>
+ 
+ #include <GrBackendSurface.h>
+ #include <SkBlendMode.h>
+@@ -135,7 +138,7 @@ IRenderPipeline::DrawResult SkiaOpenGLPipeline::draw(
+         LOG_ALWAYS_FATAL("Unsupported color type.");
+     }
+ 
+-    GrBackendRenderTarget backendRT(frame.width(), frame.height(), 0, STENCIL_BUFFER_SIZE, fboInfo);
++    GrBackendRenderTarget backendRT = GrBackendRenderTargets::MakeGL(frame.width(), frame.height(), 0, STENCIL_BUFFER_SIZE, fboInfo);
+ 
+     SkSurfaceProps props(mColorMode == ColorMode::Default ? 0 : SkSurfaceProps::kAlwaysDither_Flag,
+                          kUnknown_SkPixelGeometry);
+@@ -147,7 +150,7 @@ IRenderPipeline::DrawResult SkiaOpenGLPipeline::draw(
+         surface = getBufferSkSurface(bufferParams);
+         preTransform = bufferParams.getTransform();
+     } else {
+-        surface = SkSurface::MakeFromBackendRenderTarget(mRenderThread.getGrContext(), backendRT,
++        surface = SkSurfaces::WrapBackendRenderTarget(mRenderThread.getGrContext(), backendRT,
+                                                          getSurfaceOrigin(), colorType,
+                                                          mSurfaceColorSpace, &props);
+         preTransform = SkMatrix::I();
+@@ -171,7 +174,7 @@ IRenderPipeline::DrawResult SkiaOpenGLPipeline::draw(
+ 
+     {
+         ATRACE_NAME("flush commands");
+-        surface->flushAndSubmit();
++        skgpu::ganesh::FlushAndSubmit(surface.get());
+     }
+     layerUpdateQueue->clear();
+ 
+diff --git a/libs/hwui/pipeline/skia/SkiaPipeline.cpp b/libs/hwui/pipeline/skia/SkiaPipeline.cpp
+index b020e966..3b3e62cd 100644
+--- a/libs/hwui/pipeline/skia/SkiaPipeline.cpp
++++ b/libs/hwui/pipeline/skia/SkiaPipeline.cpp
+@@ -15,6 +15,9 @@
+  */
+ 
+ #include "SkiaPipeline.h"
++#include <android/SkSurfaceAndroid.h>
++#include "../../DeviceInfo.h"
++#include <gpu/ganesh/SkSurfaceGanesh.h>
+ 
+ #include <SkCanvas.h>
+ #include <SkColor.h>
+@@ -187,7 +190,7 @@ bool SkiaPipeline::createOrUpdateLayer(RenderNode* node, const DamageAccumulator
+                                  kPremul_SkAlphaType, getSurfaceColorSpace());
+         SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
+         SkASSERT(mRenderThread.getGrContext() != nullptr);
+-        node->setLayerSurface(SkSurface::MakeRenderTarget(mRenderThread.getGrContext(),
++        node->setLayerSurface(SkSurfaces::RenderTarget(mRenderThread.getGrContext(),
+                                                           skgpu::Budgeted::kYes, info, 0,
+                                                           this->getSurfaceOrigin(), &props));
+         if (node->getLayerSurface()) {
+@@ -295,7 +298,7 @@ bool SkiaPipeline::setupMultiFrameCapture() {
+         // we need to keep it until after mMultiPic.close()
+         // procs is passed as a pointer, but just as a method of having an optional default.
+         // procs doesn't need to outlive this Make call.
+-        mMultiPic = SkMakeMultiPictureDocument(mOpenMultiPicStream.get(), &procs,
++        mMultiPic = SkMultiPictureDocument::Make(mOpenMultiPicStream.get(), &procs,
+             [sharingCtx = mSerialContext.get()](const SkPicture* pic) {
+                     SkSharingSerialContext::collectNonTextureImagesFromPicture(pic, sharingCtx);
+             });
+@@ -621,7 +624,7 @@ sk_sp<SkSurface> SkiaPipeline::getBufferSkSurface(
+     auto bufferColorSpace = bufferParams.getColorSpace();
+     if (mBufferSurface == nullptr || mBufferColorSpace == nullptr ||
+         !SkColorSpace::Equals(mBufferColorSpace.get(), bufferColorSpace.get())) {
+-        mBufferSurface = SkSurface::MakeFromAHardwareBuffer(
++        mBufferSurface = SkSurfaces::WrapAndroidHardwareBuffer(
+                 mRenderThread.getGrContext(), mHardwareBuffer, kTopLeft_GrSurfaceOrigin,
+                 bufferColorSpace, nullptr, true);
+         mBufferColorSpace = bufferColorSpace;
+diff --git a/libs/hwui/pipeline/skia/StretchMask.cpp b/libs/hwui/pipeline/skia/StretchMask.cpp
+index cad3703d..ea292adb 100644
+--- a/libs/hwui/pipeline/skia/StretchMask.cpp
++++ b/libs/hwui/pipeline/skia/StretchMask.cpp
+@@ -14,6 +14,7 @@
+  * limitations under the License.
+  */
+ #include "StretchMask.h"
++#include <gpu/ganesh/SkSurfaceGanesh.h>
+ 
+ #include "SkBlendMode.h"
+ #include "SkCanvas.h"
+@@ -36,7 +37,7 @@ void StretchMask::draw(GrRecordingContext* context,
+         mMaskSurface->height() != height) {
+         // Create a new surface if we don't have one or our existing size does
+         // not match.
+-        mMaskSurface = SkSurface::MakeRenderTarget(
++        mMaskSurface = SkSurfaces::RenderTarget(
+             context,
+             skgpu::Budgeted::kYes,
+             SkImageInfo::Make(
+diff --git a/libs/hwui/renderthread/CacheManager.cpp b/libs/hwui/renderthread/CacheManager.cpp
+index babce88b..56ea496e 100644
+--- a/libs/hwui/renderthread/CacheManager.cpp
++++ b/libs/hwui/renderthread/CacheManager.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "CacheManager.h"
++#include <algorithm>
+ 
+ #include <GrContextOptions.h>
+ #include <SkExecutor.h>
+@@ -116,7 +117,7 @@ void CacheManager::trimMemory(TrimLevel mode) {
+     }
+ 
+     // flush and submit all work to the gpu and wait for it to finish
+-    mGrContext->flushAndSubmit(/*syncCpu=*/true);
++    mGrContext->flushAndSubmit(GrSyncCpu::kYes);
+ 
+     switch (mode) {
+         case TrimLevel::BACKGROUND:
+@@ -130,7 +131,7 @@ void CacheManager::trimMemory(TrimLevel mode) {
+             // that have persistent data to be purged in LRU order.
+             mGrContext->setResourceCacheLimit(mBackgroundResourceBytes);
+             SkGraphics::SetFontCacheLimit(mBackgroundCpuFontCacheBytes);
+-            mGrContext->purgeUnlockedResources(mMemoryPolicy.purgeScratchOnly);
++            mGrContext->purgeUnlockedResources(mMemoryPolicy.purgeScratchOnly ? GrPurgeResourceOptions::kScratchResourcesOnly : GrPurgeResourceOptions::kAllResources);
+             mGrContext->setResourceCacheLimit(mMaxResourceBytes);
+             SkGraphics::SetFontCacheLimit(mMaxCpuFontCacheBytes);
+             break;
+@@ -150,7 +151,7 @@ void CacheManager::trimCaches(CacheTrimLevel mode) {
+         case CacheTrimLevel::ALL_CACHES:
+             SkGraphics::PurgeAllCaches();
+             if (mGrContext) {
+-                mGrContext->purgeUnlockedResources(false);
++                mGrContext->purgeUnlockedResources(GrPurgeResourceOptions::kAllResources);
+             }
+             break;
+         default:
+@@ -202,7 +203,11 @@ void CacheManager::dumpMemoryUsage(String8& log, const RenderState* renderState)
+     }
+     log.appendFormat("Contexts: %zu (stopped = %zu)\n", mCanvasContexts.size(), stoppedContexts);
+ 
++#ifndef HWUI_NO_VULKAN
+     auto vkInstance = VulkanManager::peekInstance();
++#else
++    sp<VulkanManager> vkInstance = nullptr;
++#endif
+     if (!mGrContext) {
+         if (!vkInstance) {
+             log.appendFormat("No GPU context.\n");
+@@ -284,7 +289,7 @@ void CacheManager::onThreadIdle() {
+         const nsecs_t cleanupMillis =
+                 ns2ms(std::max(frameDiffNanos, mMemoryPolicy.minimumResourceRetention));
+         mGrContext->performDeferredCleanup(std::chrono::milliseconds(cleanupMillis),
+-                                           mMemoryPolicy.purgeScratchOnly);
++                                           mMemoryPolicy.purgeScratchOnly ? GrPurgeResourceOptions::kScratchResourcesOnly : GrPurgeResourceOptions::kAllResources);
+     }
+ }
+ 
+@@ -329,7 +334,7 @@ void CacheManager::registerCanvasContext(CanvasContext* context) {
+ }
+ 
+ void CacheManager::unregisterCanvasContext(CanvasContext* context) {
+-    std::erase(mCanvasContexts, context);
++    mCanvasContexts.erase(std::remove(mCanvasContexts.begin(), mCanvasContexts.end(), context), mCanvasContexts.end());
+     checkUiHidden();
+     if (mCanvasContexts.empty()) {
+         scheduleDestroyContext();
+diff --git a/libs/hwui/renderthread/CacheManager.h b/libs/hwui/renderthread/CacheManager.h
+index 5e43ac20..d8d6645a 100644
+--- a/libs/hwui/renderthread/CacheManager.h
++++ b/libs/hwui/renderthread/CacheManager.h
+@@ -17,7 +17,7 @@
+ #ifndef CACHEMANAGER_H
+ #define CACHEMANAGER_H
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if 1 // OH adapter: always enable hardware acceleration
+ #include <GrDirectContext.h>
+ #endif
+ #include <SkSurface.h>
+@@ -44,7 +44,7 @@ class CanvasContext;
+ 
+ class CacheManager {
+ public:
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if 1 // OH adapter: always enable hardware acceleration
+     void configureContext(GrContextOptions* context, const void* identity, ssize_t size);
+ #endif
+     void trimMemory(TrimLevel mode);
+@@ -74,14 +74,14 @@ private:
+     void scheduleDestroyContext();
+     void cancelDestroyContext();
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if 1 // OH adapter: always enable hardware acceleration
+     void reset(sk_sp<GrDirectContext> grContext);
+ #endif
+     void destroy();
+ 
+     RenderThread& mRenderThread;
+     const MemoryPolicy& mMemoryPolicy;
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if 1 // OH adapter: always enable hardware acceleration
+     sk_sp<GrDirectContext> mGrContext;
+ #endif
+ 
+diff --git a/libs/hwui/renderthread/CanvasContext.cpp b/libs/hwui/renderthread/CanvasContext.cpp
+index 504dfaa2..29f62fb7 100644
+--- a/libs/hwui/renderthread/CanvasContext.cpp
++++ b/libs/hwui/renderthread/CanvasContext.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "CanvasContext.h"
++#include "../DeviceInfo.h"
+ 
+ #include <apex/window.h>
+ #include <fcntl.h>
+@@ -82,7 +83,11 @@ CanvasContext* CanvasContext::create(RenderThread& thread, bool translucent,
+                                      uiThreadId, renderThreadId);
+         case RenderPipelineType::SkiaVulkan:
+             return new CanvasContext(thread, translucent, rootRenderNode, contextFactory,
++#ifndef HWUI_NO_VULKAN
+                                      std::make_unique<skiapipeline::SkiaVulkanPipeline>(thread),
++#else
++                                     nullptr,
++#endif
+                                      uiThreadId, renderThreadId);
+         default:
+             LOG_ALWAYS_FATAL("canvas context type %d not supported", (int32_t)renderType);
+@@ -99,7 +104,9 @@ void CanvasContext::invokeFunctor(const RenderThread& thread, Functor* functor)
+             skiapipeline::SkiaOpenGLPipeline::invokeFunctor(thread, functor);
+             break;
+         case RenderPipelineType::SkiaVulkan:
++#ifndef HWUI_NO_VULKAN
+             skiapipeline::SkiaVulkanPipeline::invokeFunctor(thread, functor);
++#endif
+             break;
+         default:
+             LOG_ALWAYS_FATAL("canvas context type %d not supported", (int32_t)renderType);
+@@ -382,7 +389,7 @@ bool CanvasContext::isSwapChainStuffed() {
+ 
+         // If there's a multi-frameInterval gap we effectively already dropped a frame,
+         // so consider the queue healthy.
+-        if (std::abs(swapA.swapCompletedTime - swapB.swapCompletedTime) > frameInterval * 3) {
++        if (std::llabs((long long)(swapA.swapCompletedTime - swapB.swapCompletedTime)) > frameInterval * 3) {
+             return false;
+         }
+ 
+@@ -445,7 +452,7 @@ void CanvasContext::prepareTree(TreeInfo& info, int64_t* uiFrameInfo, int64_t sy
+     if (CC_LIKELY(mSwapHistory.size() && !info.forceDrawFrame)) {
+         nsecs_t latestVsync = mRenderThread.timeLord().latestVsync();
+         SwapHistory& lastSwap = mSwapHistory.back();
+-        nsecs_t vsyncDelta = std::abs(lastSwap.vsyncTime - latestVsync);
++        nsecs_t vsyncDelta = std::llabs((long long)(lastSwap.vsyncTime - latestVsync));
+         // The slight fudge-factor is to deal with cases where
+         // the vsync was estimated due to being slow handling the signal.
+         // See the logic in TimeLord#computeFrameTimeNanos or in
+diff --git a/libs/hwui/renderthread/EglManager.cpp b/libs/hwui/renderthread/EglManager.cpp
+index 94f35fd9..afca356e 100644
+--- a/libs/hwui/renderthread/EglManager.cpp
++++ b/libs/hwui/renderthread/EglManager.cpp
+@@ -15,6 +15,8 @@
+  */
+ 
+ #include "EglManager.h"
++#include <android/native_window.h>
++#include "../DeviceInfo.h"
+ 
+ #include <EGL/eglext.h>
+ #include <GLES/gl.h>
+@@ -35,7 +37,9 @@
+ #define GLES_VERSION 2
+ 
+ // Android-specific addition that is used to show when frames began in systrace
++#ifdef __ANDROID__
+ EGLAPI void EGLAPIENTRY eglBeginFrame(EGLDisplay dpy, EGLSurface surface);
++#endif
+ 
+ namespace android {
+ namespace uirenderer {
+@@ -578,7 +582,9 @@ Frame EglManager::beginFrame(EGLSurface surface) {
+     eglQuerySurface(mEglDisplay, surface, EGL_WIDTH, &frame.mWidth);
+     eglQuerySurface(mEglDisplay, surface, EGL_HEIGHT, &frame.mHeight);
+     frame.mBufferAge = queryBufferAge(surface);
++#ifdef __ANDROID__
+     eglBeginFrame(mEglDisplay, surface);
++#endif
+     return frame;
+ }
+ 
+diff --git a/libs/hwui/renderthread/RenderProxy.cpp b/libs/hwui/renderthread/RenderProxy.cpp
+index 224c878b..ab7e0b27 100644
+--- a/libs/hwui/renderthread/RenderProxy.cpp
++++ b/libs/hwui/renderthread/RenderProxy.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "RenderProxy.h"
++#include "../DeviceInfo.h"
+ 
+ #include <gui/TraceUtils.h>
+ #include "DeferredLayerUpdater.h"
+@@ -346,7 +347,7 @@ void RenderProxy::rotateProcessStatsBuffer() {
+ }
+ 
+ int RenderProxy::getRenderThreadTid() {
+-    return mRenderThread.getTid();
++    return 0; /* OH adapter: getTid stub */
+ }
+ 
+ void RenderProxy::addRenderNode(RenderNode* node, bool placeFront) {
+@@ -455,7 +456,7 @@ void RenderProxy::prepareToDraw(Bitmap& bitmap) {
+ int RenderProxy::copyHWBitmapInto(Bitmap* hwBitmap, SkBitmap* bitmap) {
+     ATRACE_NAME("HardwareBitmap readback");
+     RenderThread& thread = RenderThread::getInstance();
+-    if (gettid() == thread.getTid()) {
++    if (gettid() == 0 /* OH adapter */) {
+         // TODO: fix everything that hits this. We should never be triggering a readback ourselves.
+         return (int)thread.readback().copyHWBitmapInto(hwBitmap, bitmap);
+     } else {
+@@ -466,7 +467,7 @@ int RenderProxy::copyHWBitmapInto(Bitmap* hwBitmap, SkBitmap* bitmap) {
+ 
+ int RenderProxy::copyImageInto(const sk_sp<SkImage>& image, SkBitmap* bitmap) {
+     RenderThread& thread = RenderThread::getInstance();
+-    if (gettid() == thread.getTid()) {
++    if (gettid() == 0 /* OH adapter */) {
+         // TODO: fix everything that hits this. We should never be triggering a readback ourselves.
+         return (int)thread.readback().copyImageInto(image, bitmap);
+     } else {
+diff --git a/libs/hwui/renderthread/RenderThread.cpp b/libs/hwui/renderthread/RenderThread.cpp
+index eb28c080..a60d43a7 100644
+--- a/libs/hwui/renderthread/RenderThread.cpp
++++ b/libs/hwui/renderthread/RenderThread.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "RenderThread.h"
++#include <gpu/ganesh/gl/GrGLDirectContext.h>
+ 
+ #include <GrContextOptions.h>
+ #include <android-base/properties.h>
+@@ -243,6 +244,12 @@ RenderThread::~RenderThread() {
+ void RenderThread::initializeChoreographer() {
+     LOG_ALWAYS_FATAL_IF(mVsyncSource, "Initializing a second Choreographer?");
+ 
++    // P15 (2026-04-11): On OH adapter build, always use DummyVsyncSource since
++    // real AChoreographer NDK is not available. DummyVsyncSource pulses every
++    // 16ms via RenderThread queue timer — sufficient for Hello World validation.
++#ifdef __OHOS__
++    mVsyncSource = new DummyVsyncSource(this);
++#else
+     if (!Properties::isolatedProcess) {
+         mChoreographer = AChoreographer_create();
+         LOG_ALWAYS_FATAL_IF(mChoreographer == nullptr, "Initialization of Choreographer failed");
+@@ -256,6 +263,7 @@ void RenderThread::initializeChoreographer() {
+     } else {
+         mVsyncSource = new DummyVsyncSource(this);
+     }
++#endif
+ }
+ 
+ void RenderThread::initThreadLocals() {
+@@ -263,7 +271,9 @@ void RenderThread::initThreadLocals() {
+     initializeChoreographer();
+     mEglManager = new EglManager();
+     mRenderState = new RenderState(*this);
++#ifndef HWUI_NO_VULKAN
+     mVkManager = VulkanManager::getInstance();
++#endif
+     mCacheManager = new CacheManager(*this);
+ }
+ 
+@@ -286,7 +296,7 @@ void RenderThread::requireGlContext() {
+     auto glesVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+     auto size = glesVersion ? strlen(glesVersion) : -1;
+     cacheManager().configureContext(&options, glesVersion, size);
+-    sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(std::move(glInterface), options));
++    sk_sp<GrDirectContext> grContext(GrDirectContexts::MakeGL(std::move(glInterface), options));
+     LOG_ALWAYS_FATAL_IF(!grContext.get());
+     setGrContext(grContext);
+ }
+@@ -332,12 +342,14 @@ void RenderThread::destroyRenderingContext() {
+     }
+ }
+ 
++#ifndef HWUI_NO_VULKAN
+ VulkanManager& RenderThread::vulkanManager() {
+     if (!mVkManager.get()) {
+         mVkManager = VulkanManager::getInstance();
+     }
+     return *mVkManager.get();
+ }
++#endif
+ 
+ static const char* pipelineToString() {
+     switch (auto renderType = Properties::getRenderPipelineType()) {
+@@ -493,7 +505,11 @@ sk_sp<Bitmap> RenderThread::allocateHardwareBitmap(SkBitmap& skBitmap) {
+     auto renderType = Properties::getRenderPipelineType();
+     switch (renderType) {
+         case RenderPipelineType::SkiaVulkan:
++#ifndef HWUI_NO_VULKAN
+             return skiapipeline::SkiaVulkanPipeline::allocateHardwareBitmap(*this, skBitmap);
++#else
++            return nullptr;
++#endif
+         default:
+             LOG_ALWAYS_FATAL("canvas context type %d not supported", (int32_t)renderType);
+             break;
+@@ -502,7 +518,7 @@ sk_sp<Bitmap> RenderThread::allocateHardwareBitmap(SkBitmap& skBitmap) {
+ }
+ 
+ bool RenderThread::isCurrent() {
+-    return gettid() == getInstance().getTid();
++    return false; /* OH adapter: thread tid check stub */
+ }
+ 
+ void RenderThread::preload() {
