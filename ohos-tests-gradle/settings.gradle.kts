@@ -1,28 +1,31 @@
 // ohos-tests-gradle — Phase 2 OHOS MVP test artifacts.
 //
-// Modules:
-//   :hello                — single-class Java for HelloOhos.dex (MVP-0, #616)
-//   :trivial-activity     — single-Activity APK with no resources (MVP-1, #619)
-//   :launcher             — OhosMvpLauncher (Activity-driver for MVP-1/2)
-//   :red-square           — MVP-2 visible-pixels APK (PF-ohos-mvp-003)
-//   :m6-test              — M6 DRM daemon Java client + driver (PF-ohos-m6-002)
+// [SUPERSEDED-V3 2026-05-16] Most modules archived per W13 to
+// archive/v2-ohos-substrate/ohos-tests-gradle/. See
+// docs/engine/V3-W11-CARRYFORWARD-AUDIT.md §1.2 and
+// docs/engine/V3-W12-CR61.1-CODE-DISPOSITION.md §2.5.
+// Only :xcomponent-test remains active (CR60-followup; HBC-integration
+// forensic test, independent of CR61 prohibition).
+//
+// Active modules:
 //   :xcomponent-test      — CR60 follow-up: in-process OHOS NDK API call
 //                           (proves dlopen produces working function pointers,
 //                           not just resolved symbols). Plain-Java module
 //                           whose static main is run under dalvikvm-arm32-dyn.
-//   :hello-color-apk      — CR60-followup E12 smoke APK (2026-05-15): tiny
-//                           Activity exposing a ColorView via the
-//                           InProcDrawSource interface so the in-process
-//                           launcher can drive its onDraw → BGRA → DRM.
-//   :inproc-app-launcher  — CR60-followup E12 in-process Activity launcher
-//                           (DexClassLoader-shaped; stage 1 keeps APK on
-//                           -Xbootclasspath until the DexClassLoader gate
-//                           is open). Hosts InProcDrawSource interface +
-//                           DrmInprocessPresenter JNI shim.
 //
-// Mirrors multiproc-test-gradle/ layout; see /scripts/run-ohos-test.sh
-// for the driver that compiles + pushes + runs these artifacts on the
-// OHOS board (rk3568 dd011a414436314130101250040eac00).
+// Archived modules (V2-OHOS substrate; superseded by HBC framework.jar
+// + real libhwui under V3 — see V3-ARCHITECTURE.md §4):
+//   :hello                — MVP-0 single-class Java marker
+//   :trivial-activity     — MVP-1 single-Activity APK
+//   :launcher             — OhosMvpLauncher (replaced by HBC `aa start <bundle>`)
+//   :red-square           — MVP-2 visible-pixels APK
+//   :m6-test              — M6 DRM daemon Java client + driver
+//   :hello-color-apk      — CR60-followup E12 smoke APK
+//   :inproc-app-launcher  — CR60-followup E12 in-process Activity launcher
+//                           (SoftwareCanvas + DrmInprocessPresenter)
+//
+// To un-archive a module: `git mv archive/v2-ohos-substrate/ohos-tests-gradle/<mod>
+// ohos-tests-gradle/<mod>` and uncomment the corresponding include() below.
 
 pluginManagement {
     repositories {
@@ -39,11 +42,12 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "OhosTests"
-include(":hello")
-include(":trivial-activity")
-include(":launcher")
-include(":red-square")
-include(":m6-test")
+// Archived per W13 (2026-05-16):
+// include(":hello")
+// include(":trivial-activity")
+// include(":launcher")
+// include(":red-square")
+// include(":m6-test")
+// include(":hello-color-apk")
+// include(":inproc-app-launcher")
 include(":xcomponent-test")
-include(":hello-color-apk")
-include(":inproc-app-launcher")
