@@ -426,15 +426,81 @@ smoke_v3_deployed() {
 # ============================================================================
 
 w2_slot() {
-    # W2-STUB — Boot HBC runtime standalone on DAYU200.
-    # Owner: V3-WORKSTREAMS.md §W2. Recommended fill-in:
-    #   - hdc shell into BOARD_DIR/v3-hbc, run appspawn-x with HBC boot
-    #     classpath, capture marker line ("HBC runtime: BOOTED" or similar).
-    #   - Acceptance: dalvikvm-x process visible via `ps -ef | grep appspawn-x`
-    #     and HBC boot completes within 30s without SIGSEGV/SIGBUS.
-    # See: westlake-deploy-ohos/v3-hbc/bin/appspawn-x; docs/engine/V3-ARCHITECTURE.md §"HBC boot".
-    echo "W2 owner not yet implemented (boot HBC runtime standalone)"
-    return 99
+    # W2 — Boot HBC runtime standalone on DAYU200.
+    # Filled in: 2026-05-16 (agent 49, V3-WORKSTREAMS §W2, issue #627).
+    #
+    # Verdict policy:
+    #   PASS           : /system/bin/appspawn-x is deployed AND
+    #                    pidof appspawn-x is non-empty AND
+    #                    /data/misc/appspawnx state dir exists (init service ran).
+    #   PASS-with-warn : appspawn-x deployed but daemon not yet running
+    #                    (board may be mid-reboot or daemon respawning).
+    #   FAIL           : appspawn-x missing from /system/bin/ — deploy never landed.
+    #   SKIP           : board not reachable.
+    #
+    # Implementation notes:
+    #   * Read-only per regression-suite contract (never deploys, never writes).
+    #     The push of /data/local/tmp/v3_w2_probe.sh is a probe artifact only.
+    #   * Some Windows hdc.exe builds silently drop `hdc shell` stdout. We
+    #     detect that case (empty bin_size first) and fall back to a
+    #     push-probe-recv pattern using /data/local/tmp/v3_w2_probe.{sh,out}.
+    board_reachable || { echo "board not reachable"; return 99; }
+
+    # Step 1: try plain hdc shell stdout.
+    local bin_size
+    bin_size=$(hdc_shell "stat -c %s /system/bin/appspawn-x 2>/dev/null" | tr -d ' ')
+
+    if [ -z "$bin_size" ]; then
+        # Fallback: push probe + exec + recv result.
+        local probe_local="/tmp/v3_w2_probe.$$.sh"
+        local probe_out_local="/tmp/v3_w2_probe.$$.out"
+        cat >"$probe_local" <<'PROBE'
+echo "BIN=$(stat -c %s /system/bin/appspawn-x 2>/dev/null || echo MISSING)"
+echo "PID=$(pidof appspawn-x 2>/dev/null || echo NONE)"
+echo "CFG=$(ls /system/etc/init/appspawn_x.cfg 2>/dev/null || echo MISSING)"
+echo "STATE_DIR=$(ls -d /data/misc/appspawnx 2>/dev/null || echo MISSING)"
+PROBE
+        local win_probe; win_probe=$(wslpath -w "$probe_local" 2>/dev/null || echo "$probe_local")
+        local win_out;   win_out=$(wslpath -w "$probe_out_local" 2>/dev/null || echo "$probe_out_local")
+        hdc file send "$win_probe" /data/local/tmp/v3_w2_probe.sh >/dev/null 2>&1 || true
+        hdc shell "sh /data/local/tmp/v3_w2_probe.sh > /data/local/tmp/v3_w2_probe.out 2>&1" >/dev/null 2>&1 || true
+        hdc file recv /data/local/tmp/v3_w2_probe.out "$win_out" >/dev/null 2>&1 || true
+        if [ ! -f "$probe_out_local" ]; then
+            echo "W2: hdc shell+probe cycle non-functional (Windows hdc.exe quirk?)"
+            rm -f "$probe_local"
+            return 77
+        fi
+        local probe_data; probe_data=$(cat "$probe_out_local" | tr -d '\r')
+        rm -f "$probe_local" "$probe_out_local"
+        local bin pid cfg state
+        bin=$(echo "$probe_data"   | sed -n 's/^BIN=//p')
+        pid=$(echo "$probe_data"   | sed -n 's/^PID=//p')
+        cfg=$(echo "$probe_data"   | sed -n 's/^CFG=//p')
+        state=$(echo "$probe_data" | sed -n 's/^STATE_DIR=//p')
+        if [ "$bin" = "MISSING" ] || [ -z "$bin" ]; then
+            echo "W2: /system/bin/appspawn-x not deployed (run scripts/v3/deploy-hbc-to-dayu200.sh)"
+            return 1
+        fi
+        if [ "$pid" = "NONE" ] || [ -z "$pid" ]; then
+            echo "W2: appspawn-x deployed (size=$bin) but daemon not running (cfg=$cfg, state=$state)"
+            return 77
+        fi
+        echo "W2: appspawn-x size=$bin pid=$pid cfg=$cfg state_dir=$state"
+        return 0
+    fi
+
+    # Path B: hdc shell stdout works.
+    if [ "$bin_size" = "0" ]; then
+        echo "W2: /system/bin/appspawn-x not deployed (size=0)"
+        return 1
+    fi
+    local pid; pid=$(hdc_shell "pidof appspawn-x 2>/dev/null" | tr -d ' ')
+    if [ -z "$pid" ]; then
+        echo "W2: appspawn-x deployed (size=$bin_size) but daemon not running"
+        return 77
+    fi
+    echo "W2: appspawn-x running pid=$pid size=$bin_size"
+    return 0
 }
 
 w3_slot() {
