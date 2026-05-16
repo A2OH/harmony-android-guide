@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 # ============================================================================
+# [SUPERSEDED-V3 2026-05-16 / W13]
+#   This script drives the V2-OHOS substrate (dalvik-kitkat + aosp-shim-ohos.dex)
+#   which is archived under archive/v2-ohos-substrate/. The V3 OHOS analog
+#   for HBC-runtime smoke + regression is scripts/v3/run-hbc-regression.sh.
+#   Subcommands `hello`, `trivial-activity`, `red-square-drm`, `m6-drm-daemon`,
+#   and `m6-java-client` reference now-archived test modules — they will fail
+#   unless those modules are un-archived first (see archive README).
+#   Subcommands `status` and `push-bcp` may still work for forensic rebuild.
+#   See docs/engine/V3-W11-CARRYFORWARD-AUDIT.md §1.3 row "scripts/run-ohos-test.sh"
+#   and V3-W12-CR61.1-CODE-DISPOSITION.md §2.7.
+# ============================================================================
 # run-ohos-test.sh — Phase 2 OHOS MVP single-command driver
 #                    (#624 / PF-ohos-mvp-011)
 #
