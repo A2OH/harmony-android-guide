@@ -60,6 +60,11 @@
 #include <android/log.h>
 
 #include "JavaBBinderHolder.h"
+// W9 (CR-FF Pattern 1, 2026-05-16) — promote previously file-local
+// ScopedAttachedEnv struct to the reusable westlake::ScopedJniAttach class
+// living in aosp-libbinder-port/include/westlake/scoped_jni_attach.h.  Now
+// shared with daemon JNI callbacks and future V3 adapter reverse-call paths.
+#include "westlake/scoped_jni_attach.h"
 
 using namespace android;
 
@@ -91,56 +96,19 @@ const char gJavaBBinderSubclassID = 'J';
 
 static JavaVM* g_vm_for_jbinder = nullptr;
 
-// CR1-fix: codex Tier 1 MEDIUM-3 -- if a native binder thread (started by
-// IPCThreadState::self()->joinThreadPool() in the binder threadpool) reaches
-// here, GetEnv returns JNI_EDETACHED and we used to AttachCurrentThread
-// without ever detaching, leaking a JVM thread reference each time and
-// preventing the JVM from cleanly exiting.  Wrap (env, attached) in a small
-// RAII-friendly helper so callers can DetachCurrentThread on the same thread
-// when they're done.
-struct ScopedAttachedEnv {
-    JavaVM* vm = nullptr;
-    JNIEnv* env = nullptr;
-    bool attached = false;     // true if we called AttachCurrentThread
-    ~ScopedAttachedEnv() {
-        if (attached && vm != nullptr) {
-            vm->DetachCurrentThread();
-        }
-    }
-};
-
-static void getEnvOrAttach(JavaVM* vm, ScopedAttachedEnv* out) {
-    out->vm = vm;
-    out->env = nullptr;
-    out->attached = false;
-    if (vm == nullptr) return;
-    jint rc = vm->GetEnv(reinterpret_cast<void**>(&out->env), JNI_VERSION_1_6);
-    if (rc == JNI_OK && out->env != nullptr) return;
-    // Not attached -- attach (rare; M3++ doesn't do BG transactions but the
-    // binder threadpool may dispatch here for getInterfaceDescriptor lookups
-    // or future onTransact paths).
-    if (vm->AttachCurrentThread(&out->env, nullptr) == JNI_OK) {
-        out->attached = true;
-    } else {
-        out->env = nullptr;
-    }
-}
-
-// Legacy callers that don't care about detaching (e.g. logged-only paths)
-// still get an env.  When this returns a freshly attached thread the caller
-// LEAKS the attach -- prefer ScopedAttachedEnv for any new code.
-static JNIEnv* javavm_to_jnienv(JavaVM* vm) {
-    JNIEnv* env = nullptr;
-    if (vm == nullptr) return nullptr;
-    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
-        return env;
-    }
-    // Note: caller is responsible for detaching.  Most callers in this file
-    // have been migrated to ScopedAttachedEnv; this helper remains for any
-    // future code that wants a quick env handle.
-    if (vm->AttachCurrentThread(&env, nullptr) == JNI_OK) return env;
-    return nullptr;
-}
+// CR1-fix (2026-04-…): codex Tier 1 MEDIUM-3 — binder-pool threads reach this
+// file unattached to the JVM.  GetEnv returns JNI_EDETACHED and naive code
+// used to AttachCurrentThread without ever detaching, leaking a JVM thread
+// reference and tripping ART CheckJNI "thread exited without
+// DetachCurrentThread" SIGABRT.
+//
+// W9 (2026-05-16): the file-local ScopedAttachedEnv struct + getEnvOrAttach()
+// helper + leak-by-design javavm_to_jnienv() trio has been replaced by the
+// reusable westlake::ScopedJniAttach class in
+// aosp-libbinder-port/include/westlake/scoped_jni_attach.h.  All call sites
+// in this file now construct a ScopedJniAttach directly; the leaky
+// javavm_to_jnienv() helper is intentionally gone — any new code path must
+// use the RAII class.
 
 namespace android {
 
@@ -169,16 +137,15 @@ public:
 protected:
     // CR1-fix: codex Tier 1 MEDIUM-3 -- the dtor may run on any thread the
     // sp<> ref-count drops to zero on, which can be a binder threadpool
-    // thread NOT attached to the JVM.  Use ScopedAttachedEnv so we
-    // DetachCurrentThread before returning if we attached.
+    // thread NOT attached to the JVM.  W9 (2026-05-16): use the shared
+    // westlake::ScopedJniAttach class — DetachCurrentThread is automatic if
+    // (and only if) this scope did the attach.
     virtual ~JavaBBinder() {
         WLK_LOGI("JavaBBinder dtor: this=%p", this);
         if (mObject != nullptr && mVM != nullptr) {
-            ScopedAttachedEnv sa;
-            getEnvOrAttach(mVM, &sa);
-            if (sa.env != nullptr) sa.env->DeleteGlobalRef(mObject);
+            westlake::ScopedJniAttach attach(mVM, "WLK-JavaBBinder-dtor");
+            if (attach.valid()) attach.env()->DeleteGlobalRef(mObject);
         }
-        // sa goes out of scope -- DetachCurrentThread if attached.
     }
 
     // Cross-process transact path: NOT IMPLEMENTED for M3++.
@@ -194,13 +161,12 @@ protected:
 
     // CR1-fix: codex Tier 1 MEDIUM-3 -- same Attach/Detach concern as the
     // dtor.  getInterfaceDescriptor() is virtual and may be invoked from a
-    // binder thread (or from servicemanager-side logging).  ScopedAttachedEnv
-    // ensures balanced detach.
+    // binder thread (or from servicemanager-side logging).  W9 (2026-05-16):
+    // shared westlake::ScopedJniAttach ensures balanced detach.
     const String16& getInterfaceDescriptor() const override {
         std::call_once(mDescriptorOnce, [this] {
-            ScopedAttachedEnv sa;
-            getEnvOrAttach(mVM, &sa);
-            JNIEnv* env = sa.env;
+            westlake::ScopedJniAttach attach(mVM, "WLK-JavaBBinder-descr");
+            JNIEnv* env = attach.env();
             if (env == nullptr || mObject == nullptr) return;
             jclass cls = env->GetObjectClass(mObject);
             if (cls == nullptr) { env->ExceptionClear(); return; }
