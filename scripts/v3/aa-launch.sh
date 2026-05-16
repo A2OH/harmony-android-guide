@@ -10,6 +10,11 @@
 # This is the W3 acceptance artifact (V3-WORKSTREAMS §W3, GitHub
 # A2OH/westlake#628).
 #
+# Deploy discipline: see docs/engine/V3-DEPLOY-SOP.md (W9 Pattern 2,
+# 2026-05-16). This script is SOP-compliant — it only invokes `aa start`,
+# never writes /system. The board MUST already have v3-hbc/ deployed per
+# the V3-DEPLOY-SOP Stage 3 protocol before this script can launch.
+#
 # Subcommands:
 #   launch <bundle> <ability>     pre-check + `aa start -b <bundle> -a <ability>`
 #   launch-helloworld             shortcut for HBC's bundled HelloWorld

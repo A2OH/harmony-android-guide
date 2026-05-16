@@ -260,6 +260,56 @@ check_doc_v3_regression() {
         "$REPO_ROOT/docs/engine/V3-REGRESSION.md"
 }
 
+# W9 Pattern 2 (2026-05-16, CR-FF) — Deploy-SOP compliance probe.
+# Scans scripts/v3/deploy-hbc-to-dayu200.sh for any `hdc file send` line
+# that targets /system/... directly (bypassing the mandatory
+# /data/local/tmp/stage/ staging area, see V3-DEPLOY-SOP.md §V3 Stage 3).
+# Drift here is a PASS-with-warn, not a FAIL, because the script is
+# pre-existing and the rework is tracked as a TODO. Real abort happens
+# when an agent actually tries to run the script — this probe is the
+# early-warning gate.
+check_deploy_sop_compliance() {
+    local target="$REPO_ROOT/scripts/v3/deploy-hbc-to-dayu200.sh"
+    if [ ! -f "$target" ]; then
+        echo "deploy-hbc-to-dayu200.sh not present"
+        return 77
+    fi
+    # Static-lint for V3-DEPLOY-SOP.md §V3 Stage 3 compliance:
+    #   * The script's push_file helper internally calls `hdc file send`.
+    #   * The mandatory pattern is: send to /data/local/tmp/stage/<basename>,
+    #     verify it's a file via `ls -la`, then `cp` into /system.
+    #   * Current script bypasses the staging area and pushes direct to
+    #     /system targets — see KNOWN GAP in the script's header.
+    #
+    # Lint: count non-comment `push_file ... /system/...` calls. Any non-zero
+    # count emits PASS-with-warn so agents see the gap before deploying.
+    local hits
+    hits=$(grep -nE '^[[:space:]]*push_file[[:space:]].*/system/' "$target" 2>/dev/null \
+           | grep -v '^[[:space:]]*#' | wc -l | tr -d ' \n')
+    if [ "$hits" -eq 0 ]; then
+        echo "deploy-hbc-to-dayu200.sh: no direct push_file -> /system/ calls"
+        return 0
+    fi
+    # Acceptable when the script's push_file helper itself implements the
+    # staging template (send-to-stage, ls -la verify, then cp to /system).
+    # We detect this by looking for an `hdc.* shell .* cp .* /system/`
+    # invocation *inside* the push_file body — the giveaway pattern.
+    if awk '/^push_file\(\)[[:space:]]*\{/{f=1;next} f && /^\}/{f=0} f' "$target" \
+       | grep -qE 'hdc[[:space:]]+shell[[:space:]]+.*cp[[:space:]]+.*/system/'; then
+        echo "deploy-hbc-to-dayu200.sh: $hits push_file calls; helper routes via staging+cp"
+        return 0
+    fi
+    echo "WARN: deploy-hbc-to-dayu200.sh has $hits push_file -> /system/ calls bypassing /data/local/tmp/stage/ (see V3-DEPLOY-SOP.md §V3 Stage 3 / KNOWN GAP)"
+    return 77
+}
+
+check_doc_v3_deploy_sop() {
+    # V3-DEPLOY-SOP.md must exist — W9 deliverable, mandatory for any
+    # agent doing a V3 deploy.
+    check_expected_artifact "docs/engine/V3-DEPLOY-SOP.md" \
+        "$REPO_ROOT/docs/engine/V3-DEPLOY-SOP.md"
+}
+
 # ============================================================================
 # Section 2: Board smoke probes (READ-ONLY)
 # ============================================================================
@@ -448,6 +498,8 @@ run_check "v3-hbc/bin/appspawn-x present"  check_v3_appspawn_x
 run_check "doc: V3-ARCHITECTURE.md"        check_doc_v3_arch
 run_check "doc: CR61_1_AMENDMENT_LIBIPC_VIA_HBC.md" check_doc_cr61_1
 run_check "doc: V3-REGRESSION.md"          check_doc_v3_regression
+run_check "doc: V3-DEPLOY-SOP.md"          check_doc_v3_deploy_sop
+run_check "deploy-hbc-to-dayu200.sh SOP-compliant" check_deploy_sop_compliance
 echo
 
 echo "${BOLD}-- Section 2: DAYU200 smoke probes (read-only) --${RESET}"
