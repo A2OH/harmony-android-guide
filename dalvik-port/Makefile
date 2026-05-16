@@ -124,6 +124,51 @@ else ifeq ($(TARGET),ohos-arm32-dynamic)
                -lc -ldl \
                $(OHOS_LIBUNWIND_ARM32) \
                $(OHOS_SYSROOT_ARM32)/usr/lib/crtn.o
+else ifeq ($(TARGET),ohos-arm32-shlib)
+  # OpenHarmony ARM32 — SHARED LIBRARY (CR-BB W0, 2026-05-15).
+  # Builds libdvm_arm32.so exposing dvm_entry(int argc, const char** argv).
+  # Same compile flags as ohos-arm32-dynamic; only link mode differs:
+  # -shared instead of -pie -fPIE, and the launcher.cpp main() is
+  # compiled with -DDVM_BUILD_SHLIB so it provides dvm_entry instead.
+  # Re-uses build-ohos-arm32-dynamic/*.o objects through a sibling
+  # build directory; the library output lives in build-ohos-arm32-shlib/.
+  OHOS_SYSROOT_ARM32 := $(CURDIR)/ohos-sysroot-arm32
+  CXX       := $(OHOS_LLVM)/bin/clang++
+  CC        := $(OHOS_LLVM)/bin/clang
+  AR        := $(OHOS_LLVM)/bin/llvm-ar
+  RANLIB    := $(OHOS_LLVM)/bin/llvm-ranlib
+  BUILD     := $(CURDIR)/build-ohos-arm32-shlib
+  TARGET_FLAGS := --target=arm-linux-ohos \
+                  --sysroot=$(OHOS_SYSROOT_ARM32) \
+                  -D__MUSL__ \
+                  -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                  -fPIC \
+                  -fuse-ld=lld \
+                  --rtlib=compiler-rt
+  OHOS_LIBUNWIND_ARM32 := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libunwind.a
+  OHOS_LIBCXX_ARM32    := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libc++.a
+  OHOS_LIBCXXABI_ARM32 := $(OHOS_LLVM)/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libc++abi.a
+  OHOS_BUILTINS_ARM32  := $(OHOS_LLVM)/lib/clang/15.0.4/lib/arm-linux-ohos/a7_softfp_neon-vfpv4/libclang_rt.builtins.a
+  # Shared-lib link flags. crtbeginS.o + crtendS.o would normally be
+  # used here, but the OHOS arm32 sysroot under usr/lib doesn't ship
+  # them as separate files (see ls $(OHOS_SYSROOT_ARM32)/usr/lib).
+  # The compiler-rt builtins archive provides the few helpers needed
+  # (e.g., __aeabi_unwind_cpp_pr0) just like the static build.
+  LINK_FLAGS := -fuse-ld=lld --rtlib=compiler-rt \
+                --target=arm-linux-ohos \
+                --sysroot=$(OHOS_SYSROOT_ARM32) \
+                -march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+                -shared -fPIC \
+                -Wl,-soname,libdvm_arm32.so \
+                -nostdlib
+  LINK_OBJS_PREFIX :=
+  LDFLAGS   := -L$(OHOS_SYSROOT_ARM32)/usr/lib-dynamic \
+               -L$(OHOS_SYSROOT_ARM32)/usr/lib \
+               $(OHOS_LIBCXX_ARM32) $(OHOS_LIBCXXABI_ARM32) \
+               -lz -lffi \
+               $(OHOS_BUILTINS_ARM32) \
+               -lc -ldl \
+               $(OHOS_LIBUNWIND_ARM32)
 else ifeq ($(TARGET),ohos-x86)
   # OpenHarmony x86_64 (for OHOS emulator)
   CXX       := $(OHOS_LLVM)/bin/clang++
@@ -333,7 +378,7 @@ DVM_SRCS := \
 # HintsEABI.cpp pair — the generic FFI path mismatches the JNI calling
 # convention (env in r0 disappears, see CR60 followup investigation
 # 2026-05-14). All other targets fall through to the generic FFI path.
-ifeq ($(filter $(TARGET),ohos-arm32 ohos-arm32-dynamic),$(TARGET))
+ifeq ($(filter $(TARGET),ohos-arm32 ohos-arm32-dynamic ohos-arm32-shlib),$(TARGET))
   DVM_ASM_SRCS := $(COMPAT)/CallEABI.S
   DVM_ARCH_SRCS := $(VM)/arch/arm/HintsEABI.cpp
 else
@@ -530,6 +575,68 @@ drm-inproc-bridge:
 else
 drm-inproc-bridge:
 	@echo "(skipped: drm-inproc-bridge is OHOS-arm32-dynamic only; current TARGET=$(TARGET))"
+endif
+
+# dvm-shlib — CR-BB W0 sub-gate 1 (agent 36, 2026-05-15).
+# Produces libdvm_arm32.so by re-linking libdvm.a (--whole-archive) +
+# launcher.cpp compiled with -DDVM_BUILD_SHLIB into a -shared SO. The
+# launcher's main() is replaced by dvm_entry(int argc, const char**
+# argv) under that define, so the HAP NAPI module can dlopen the .so
+# and dlsym("dvm_entry") to drive the VM in-process.
+ifeq ($(filter $(TARGET),ohos-arm32-shlib),$(TARGET))
+dvm-shlib: link
+	@echo "═══ Building libdvm_arm32.so (OHOS ARM32 shared) ═══"
+	$(CXX) $(CXXFLAGS) -DDVM_BUILD_SHLIB -c launcher.cpp -o $(BUILD)/launcher_shlib.o
+	$(CXX) $(LINK_FLAGS) -o $(BUILD)/libdvm_arm32.so \
+		-Wl,--whole-archive $(BUILD)/libdvm.a -Wl,--no-whole-archive \
+		$(BUILD)/launcher_shlib.o \
+		$(LDFLAGS)
+	@echo "Created: $(BUILD)/libdvm_arm32.so"
+	@ls -lh $(BUILD)/libdvm_arm32.so
+	@file $(BUILD)/libdvm_arm32.so
+	@$(OHOS_LLVM)/bin/llvm-nm -D $(BUILD)/libdvm_arm32.so | grep -E " T (dvm_entry|JNI_CreateJavaVM)" || true
+else
+dvm-shlib:
+	@echo "(skipped: dvm-shlib is OHOS-arm32-shlib only; current TARGET=$(TARGET))"
+endif
+
+# test-dvm-entry-inproc — CR-BB W0 sub-gates 2+3 harness (agent 36, 2026-05-15).
+# Tiny dynamic-PIE C executable that dlopens libdvm_arm32.so + dlsyms
+# dvm_entry, optionally with sub-gate-3 prior-SIGBUS-handler test mode
+# enabled via the DVM_HARNESS_TEST_SIGBUS_CHAIN env var. Built only
+# against the OHOS arm32 dynamic toolchain.
+ifeq ($(filter $(TARGET),ohos-arm32-dynamic),$(TARGET))
+test-dvm-entry-inproc:
+	@echo "═══ Building test_dvm_entry_inproc (OHOS ARM32 dynamic) ═══"
+	@mkdir -p $(BUILD)
+	$(CC) -std=c11 -O2 -fPIE \
+		$(TARGET_FLAGS) \
+		-c $(COMPAT)/test_dvm_entry_inproc.c \
+		-o $(BUILD)/test_dvm_entry_inproc.o
+	$(CC) -fuse-ld=lld --rtlib=compiler-rt \
+		--target=arm-linux-ohos \
+		--sysroot=$(OHOS_SYSROOT_ARM32) \
+		-march=armv7-a -mfloat-abi=softfp -mfpu=neon \
+		-fPIE -pie \
+		-Wl,-dynamic-linker=/lib/ld-musl-arm.so.1 \
+		-Wl,-rpath=/lib \
+		-nostdlib \
+		-o $(BUILD)/test_dvm_entry_inproc \
+		$(OHOS_SYSROOT_ARM32)/usr/lib/Scrt1.o \
+		$(OHOS_SYSROOT_ARM32)/usr/lib/crti.o \
+		$(BUILD)/test_dvm_entry_inproc.o \
+		-L$(OHOS_SYSROOT_ARM32)/usr/lib-dynamic \
+		-L$(OHOS_SYSROOT_ARM32)/usr/lib \
+		$(OHOS_BUILTINS_ARM32) \
+		-lc -ldl \
+		$(OHOS_LIBUNWIND_ARM32) \
+		$(OHOS_SYSROOT_ARM32)/usr/lib/crtn.o
+	@echo "Created: $(BUILD)/test_dvm_entry_inproc"
+	@ls -lh $(BUILD)/test_dvm_entry_inproc
+	@file $(BUILD)/test_dvm_entry_inproc
+else
+test-dvm-entry-inproc:
+	@echo "(skipped: test-dvm-entry-inproc is OHOS-arm32-dynamic only; current TARGET=$(TARGET))"
 endif
 
 clean:

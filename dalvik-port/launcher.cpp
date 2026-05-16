@@ -80,6 +80,33 @@ static void crash_handler_sigaction(int sig, siginfo_t *info, void *ucontext) {
     _exit(128 + sig);
 }
 
+/* CR-BB W0 sub-gate 1 (agent 36, 2026-05-15): when built into the
+ * libdvm_arm32.so shared library (-DDVM_BUILD_SHLIB), the entry point
+ * is `dvm_entry(int argc, const char** argv)` — same args the executable's
+ * main() takes. The implementation body is shared via dvm_run_main()
+ * below; only the linkage entry point and the crash-handler installation
+ * differ.
+ *
+ * IMPORTANT: when loaded as a .so inside a HAP process, the host
+ * process likely already has SIGSEGV/SIGABRT/SIGBUS handlers (faultloggerd,
+ * hilog). We MUST NOT clobber them. The shared-lib entry path therefore
+ * SKIPS the crash_handler_sigaction install entirely. The dalvikvm-port
+ * SIGBUS busCatcher in /home/dspfac/dalvik-kitkat/vm/Init.cpp:1350-1356
+ * is dead code (`if (false)`), confirmed via grep and Init.cpp inspection,
+ * so the VM itself does NOT install a SIGBUS handler — the dalvikvm
+ * launcher is the only signal-handler installer in the chain, and we
+ * skip it here. Sub-gate 3 (signal chaining) is therefore N/A for the
+ * VM proper; the test harness simulates a hypothetical chain anyway.
+ */
+static int dvm_run_main(int argc, char* argv[]);
+
+#ifdef DVM_BUILD_SHLIB
+extern "C" __attribute__((visibility("default")))
+int dvm_entry(int argc, const char** argv) {
+    /* Cast away const for internal use; we never mutate argv strings. */
+    return dvm_run_main(argc, (char**)argv);
+}
+#else
 int main(int argc, char* argv[]) {
     struct sigaction sa;
     sa.sa_sigaction = crash_handler_sigaction;
@@ -87,6 +114,11 @@ int main(int argc, char* argv[]) {
     sigemptyset(&sa.sa_mask);
     sigaction(SIGSEGV, &sa, NULL);
     sigaction(SIGABRT, &sa, NULL);
+    return dvm_run_main(argc, argv);
+}
+#endif
+
+static int dvm_run_main(int argc, char* argv[]) {
     const char* classpath = NULL;
     const char* className = NULL;
     int classArgStart = 0;
