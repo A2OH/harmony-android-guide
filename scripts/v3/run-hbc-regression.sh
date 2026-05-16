@@ -310,6 +310,46 @@ check_doc_v3_deploy_sop() {
         "$REPO_ROOT/docs/engine/V3-DEPLOY-SOP.md"
 }
 
+check_westlake_restore_sh() {
+    # W9 Pattern 3: scripts/westlake-restore.sh exists and is executable.
+    local p="$REPO_ROOT/scripts/westlake-restore.sh"
+    if [ ! -f "$p" ]; then
+        echo "scripts/westlake-restore.sh missing"
+        return 77
+    fi
+    if [ ! -x "$p" ]; then
+        echo "scripts/westlake-restore.sh present but not executable"
+        return 77
+    fi
+    echo "scripts/westlake-restore.sh present + executable"
+}
+
+check_doc_v3_restore() {
+    check_expected_artifact "docs/engine/V3-RESTORE.md" \
+        "$REPO_ROOT/docs/engine/V3-RESTORE.md"
+}
+
+# W9 Pattern 3 drift-detection — runs westlake-restore.sh --verify --tree-only
+# (read-only, no side effects) and propagates its exit code:
+#   0  => clean tree
+#   3  => warnings only (the common case; tree has expected untracked +
+#         drift, restore script left them alone) => PASS-with-warn
+#   1+ => fatal => FAIL
+check_tree_drift() {
+    local p="$REPO_ROOT/scripts/westlake-restore.sh"
+    if [ ! -x "$p" ]; then
+        echo "scripts/westlake-restore.sh not executable; skip"
+        return 77
+    fi
+    local rc=0
+    "$p" --verify --tree-only >/dev/null 2>&1 || rc=$?
+    case "$rc" in
+        0)  echo "westlake-restore.sh --verify --tree-only: clean";    return 0 ;;
+        3)  echo "westlake-restore.sh --verify --tree-only: drift detected (warnings only)"; return 77 ;;
+        *)  echo "westlake-restore.sh --verify --tree-only: rc=$rc";   return 1 ;;
+    esac
+}
+
 # ============================================================================
 # Section 2: Board smoke probes (READ-ONLY)
 # ============================================================================
@@ -500,6 +540,9 @@ run_check "doc: CR61_1_AMENDMENT_LIBIPC_VIA_HBC.md" check_doc_cr61_1
 run_check "doc: V3-REGRESSION.md"          check_doc_v3_regression
 run_check "doc: V3-DEPLOY-SOP.md"          check_doc_v3_deploy_sop
 run_check "deploy-hbc-to-dayu200.sh SOP-compliant" check_deploy_sop_compliance
+run_check "scripts/westlake-restore.sh present"    check_westlake_restore_sh
+run_check "doc: V3-RESTORE.md"             check_doc_v3_restore
+run_check "westlake-restore.sh --verify --tree-only" check_tree_drift
 echo
 
 echo "${BOLD}-- Section 2: DAYU200 smoke probes (read-only) --${RESET}"
