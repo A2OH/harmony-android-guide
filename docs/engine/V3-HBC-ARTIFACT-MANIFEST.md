@@ -32,16 +32,18 @@ Smoke test record: `/home/dspfac/android-to-openharmony-migration/artifacts/ohos
 
 ## 2. Subdir-by-subdir inventory
 
-### `lib/` — 54 cross-built `.so` files (86 MB)
+### `lib/` — 56 cross-built `.so` files (~87 MB)
 
 ARM32 EABI5 ELF shared objects, soft-float, built against OHOS musl. Verified with `file(1)` on each.
+
+> **2026-05-16 (W2 recovery, agent 53):** Added `libinstalls.z.so` (999 KB; md5 `bafc989ffcbd4185bcc1f6140d05f260`) and `libappexecfwk_common.z.so` (21 KB; md5 `a8c74b317410566d386d60acb8b82a45`), both pulled from `chenyue@1.95.175.212:/home/HanBingChen/oh/out/rk3568/packages/phone/system/lib*/`. Both are mandatory per HBC's `DEPLOY_SOP.md` (Stage 3f and Stage 3b respectively). Their absence in the W1 pull was the reason the W2 deploy was missing 2 of the SOP-mandated 94 files. See `V3-W2-RECOVERY-PROCEDURE.md`.
 
 * **AOSP runtime (38 files)** — from HBC `out/aosp_lib/`:
   `libart.so` (11.8 MB), `libart-compiler.so` (3.6 MB), `libartbase.so`, `libart_runtime_stubs.so`, `libartpalette.so`, `libartpalette-system.so`, `libdexfile.so`, `libprofile.so`, `libelffile.so`, `libsigchain.so`, `libnativebridge.so`, `libnativeloader.so`, `libnativehelper.so`, `libvixl.so`, `libunwindstack.so`, `libbionic_compat.so`, `libandroid_runtime.so`, `libandroidfw.so`, `libandroidio.so`, `libhwui.so` (2.3 MB), `libbase.so`, `libcutils.so`, `libutils.so`, `liblog.so`, `libziparchive.so`, `liblz4.so`, `libtinyxml2.so`, `libminikin.so`, `libharfbuzz_ng.so`, `libft2.so`, `libicui18n.so` (3.1 MB), `libicuuc.so`, `libicu_jni.so`, `libcrypto.so`, `libexpat.so`, `libjavacore.so`, `libopenjdk.so`, `libopenjdkjvm.so`.
 * **HBC adapter shims (5 files)** — from `out/adapter/`:
   `liboh_adapter_bridge.so` (1.6 MB; the central JNI bridge), `liboh_android_runtime.so`, `liboh_hwui_shim.so`, `liboh_skia_rtti_shim.so` (12.6 KB; Skia ABI shim), `libapk_installer.so`.
-* **OH service replacements (11 files)** — from `out/oh-service/`:
-  `libabilityms.z.so` (4.6 MB), `libappms.z.so`, `libbms.z.so` (5.0 MB), `libwms.z.so`, `libscene_session.z.so`, `libscene_session_manager.z.so`, `librender_service.z.so` (5.4 MB), `librender_service_base.z.so` (8.1 MB), `libsurface.z.so`, `libskia_canvaskit.z.so` (23 MB), `libappspawn_client.z.so`.
+* **OH service replacements (13 files)** — from `out/oh-service/` (11) plus `oh/out/rk3568/packages/phone/system/lib*/` (2):
+  `libabilityms.z.so` (4.6 MB), `libappms.z.so`, `libbms.z.so` (5.0 MB), `libwms.z.so`, `libscene_session.z.so`, `libscene_session_manager.z.so`, `librender_service.z.so` (5.4 MB), `librender_service_base.z.so` (8.1 MB), `libsurface.z.so`, `libskia_canvaskit.z.so` (23 MB), `libappspawn_client.z.so`, **`libinstalls.z.so` (999 KB; → /system/lib/, Stage 3f)**, **`libappexecfwk_common.z.so` (21 KB; → /system/lib/platformsdk/ + symlink /system/android/lib/, Stage 3b + [8/8])**.
 
 ### `jars/` — 12 cross-built Java framework artifacts + 1 dex (152 MB)
 
